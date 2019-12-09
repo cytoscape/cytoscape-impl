@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -14,7 +13,6 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.command.StringToModel;
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -26,7 +24,6 @@ import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -66,14 +63,10 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
-	private final CyNetworkViewManager netViewMgr;
 	private final CyNetworkManager netMgr;
 	private CyNetworkViewFactory viewFactory;
 	private final Set<NetworkViewRenderer> viewRenderers;
 	private final CyLayoutAlgorithmManager layoutMgr;
-	private final CyEventHelper eventHelper;
-	private final VisualMappingManager vmMgr;
-	private final RenderingEngineManager renderingEngineMgr;
 	private final CyApplicationManager appMgr;
 	private final CyServiceRegistrar serviceRegistrar;
 	private final CyNetworkView sourceView;
@@ -96,17 +89,12 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 	public boolean layout = true;
 
 	public CreateNetworkViewTask(final Collection<CyNetwork> networks,
-								 final CyNetworkViewManager netViewMgr,
 								 final CyNetworkManager netMgr,
 								 final CyLayoutAlgorithmManager layoutMgr,
-								 final CyEventHelper eventHelper,
-								 final VisualMappingManager vmMgr,
-								 final RenderingEngineManager renderingEngineMgr,
 								 final CyApplicationManager appMgr,
 								 final Set<NetworkViewRenderer> viewRenderers,
 								 final CyServiceRegistrar serviceRegistrar) {
-		this(networks, null, netViewMgr, netMgr, layoutMgr, eventHelper, vmMgr, renderingEngineMgr, appMgr,
-				serviceRegistrar);
+		this(networks, null, netMgr, layoutMgr, appMgr, serviceRegistrar);
 		
 		if (viewRenderers != null) {
 			this.viewRenderers.addAll(viewRenderers);
@@ -118,24 +106,16 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 
 	public CreateNetworkViewTask(final Collection<CyNetwork> networks,
 								 final CyNetworkViewFactory viewFactory,
-								 final CyNetworkViewManager netViewMgr,
 								 final CyNetworkManager netMgr,
 								 final CyLayoutAlgorithmManager layoutMgr,
-								 final CyEventHelper eventHelper,
-								 final VisualMappingManager vmMgr,
-								 final RenderingEngineManager renderingEngineMgr,
 								 final CyApplicationManager appMgr,
 								 final CyNetworkView sourceView,
 								 final CyServiceRegistrar serviceRegistrar) {
 		super(networks);
 
 		this.viewFactory = viewFactory;
-		this.netViewMgr = netViewMgr;
 		this.netMgr = netMgr;
 		this.layoutMgr = layoutMgr;
-		this.eventHelper = eventHelper;
-		this.vmMgr = vmMgr;
-		this.renderingEngineMgr = renderingEngineMgr;
 		this.appMgr = appMgr;
 		this.sourceView = sourceView;
 		this.serviceRegistrar = serviceRegistrar;
@@ -150,16 +130,11 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 
 	public CreateNetworkViewTask(final Collection<CyNetwork> networks,
 								 final CyNetworkViewFactory viewFactory,
-								 final CyNetworkViewManager netViewMgr,
 								 final CyNetworkManager netMgr,
 								 final CyLayoutAlgorithmManager layoutMgr,
-								 final CyEventHelper eventHelper,
-								 final VisualMappingManager vmMgr,
-								 final RenderingEngineManager renderingEngineMgr,
 								 final CyApplicationManager appMgr,
 								 final CyServiceRegistrar serviceRegistrar) {
-		this(networks, viewFactory, netViewMgr, netMgr, layoutMgr, eventHelper, vmMgr, renderingEngineMgr, appMgr,
-				null, serviceRegistrar);
+		this(networks, viewFactory, netMgr, layoutMgr, appMgr, null, serviceRegistrar);
 	}
 
 	@Override
@@ -174,13 +149,15 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 		
 		if (viewFactory == null && viewRenderers.size() > 1) {
 			// Let the user choose the network view renderer first
-			final ChooseViewRendererTask chooseRendererTask = new ChooseViewRendererTask(netList);
+			var chooseRendererTask = new ChooseViewRendererTask(netList);
 			insertTasksAfterCurrentTask(chooseRendererTask);
 		} else {
 			final CyNetwork curNet = appMgr.getCurrentNetwork();
 			CyNetworkView curView = appMgr.getCurrentNetworkView();
 			
-			final VisualStyle style = vmMgr.getCurrentVisualStyle();
+			var netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+			var vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
+			var style = vmMgr.getCurrentVisualStyle();
 			int i = 0;
 			int viewCount = netList.size();
 			
@@ -204,12 +181,10 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 			}
 			
 			if (!cancelled) {
-				if (layoutMgr == null) {
-					// Create network from selection?
-					insertTasksAfterCurrentTask(new RegisterNetworkTask(networkViews.get(0), style, netMgr, vmMgr, appMgr, netViewMgr));
-				} else {
-					insertTasksAfterCurrentTask(new RegisterNetworkTask(networkViews, style, netMgr, vmMgr, appMgr, netViewMgr));
-				}
+				if (layoutMgr == null) // Create network from selection?
+					insertTasksAfterCurrentTask(new RegisterNetworkTask(networkViews.get(0), style, serviceRegistrar));
+				else
+					insertTasksAfterCurrentTask(new RegisterNetworkTask(networkViews, style, serviceRegistrar));
 			}
 		}
 		
@@ -221,19 +196,18 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 		tm.setProgress(1.0);
 	}
 
-	private final CyNetworkView createView(final CyNetwork network, final VisualStyle style, TaskMonitor tm)
-			throws Exception {
+	private final CyNetworkView createView(CyNetwork network, VisualStyle style, TaskMonitor tm) throws Exception {
 		final long start = System.currentTimeMillis();
 
 		try {
 			// By calling this task, actual view will be created even if it's a large network.
-			
 			final long startnv = System.currentTimeMillis();
 			final CyNetworkView view = viewFactory.createNetworkView(network);
 			System.out.println("Network factory creation finished in " + (System.currentTimeMillis() - startnv) + " msec.");
 			
 			// Create a default title
-			final Collection<CyNetworkView> netViews = netViewMgr.getNetworkViews(network);
+			var netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+			var netViews = netViewMgr.getNetworkViews(network);
 			String title = network.getDefaultNetworkTable().getRow(network.getSUID()).get(CyNetwork.NAME, String.class);
 			title += (netViews.isEmpty() ? "" : " (" + (netViews.size() + 1) + ")");
 			
@@ -246,6 +220,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 
 			// Apply visual style
 			if (style != null) {
+				var vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
 				vmMgr.setVisualStyle(style, view);
 				style.apply(view);
 			}
@@ -257,7 +232,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 			// nodes along with the visual style.
 			if (sourceView != null) {
 				insertTasksAfterCurrentTask(
-						new CopyExistingViewTask(renderingEngineMgr, view, sourceView, style, null, null, true));
+						new CopyExistingViewTask(view, sourceView, style, null, null, true, serviceRegistrar));
 			} else if (layout == true) {
 				final Set<CyNetworkView> views = new HashSet<>();
 				views.add(view);
@@ -270,7 +245,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 			throw new Exception("Could not create network view for network: " + DataUtils.getNetworkName(network), e);
 		} finally {
 			serviceRegistrar.getService(UndoSupport.class).postEdit(
-					new CreateNetworkViewEdit(eventHelper, network, viewFactory, netViewMgr));
+					new CreateNetworkViewEdit(network, serviceRegistrar));
 	
 			logger.info("Network view creation finished in " + (System.currentTimeMillis() - start) + " msec.");
 		}
@@ -300,8 +275,9 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 //	}
 	
 	private void disposeNewViews() {
-		Set<CyNetworkView> viewSet = netViewMgr.getNetworkViewSet();
-		Iterator<CyNetworkView> iter = networkViews.iterator();
+		var netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+		var viewSet = netViewMgr.getNetworkViewSet();
+		var iter = networkViews.iterator();
 		
 		while (iter.hasNext()) {
 			CyNetworkView view = iter.next();
@@ -377,10 +353,10 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 		@Override
 		public void run(TaskMonitor tm) throws Exception {
 			// Try again, now with the selected view factory
-			final CyNetworkViewFactory factory = renderers.getSelectedValue().getNetworkViewFactory();
-			final CreateNetworkViewTask createViewTask = new CreateNetworkViewTask(networks, factory, 
-					netViewMgr, netMgr, layoutMgr, eventHelper, vmMgr, renderingEngineMgr, appMgr, serviceRegistrar);
-			
+			var viewFactory = renderers.getSelectedValue().getNetworkViewFactory();
+			var createViewTask = new CreateNetworkViewTask(networks, viewFactory, netMgr, layoutMgr, appMgr,
+					serviceRegistrar);
+
 			if (!cancelled)
 				insertTasksAfterCurrentTask(createViewTask);
 		}

@@ -269,7 +269,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	 * does not get re-assigned while a frame is being drawn.
 	 */
 	private void checkModelIsDirty() {
-		final boolean updateModel = viewModel.isDirty();
+		final boolean updateModel = viewModel.isDirty(true);
 		final boolean updateView = updateModel || contentChanged;
 		
 		if(updateModel) {
@@ -301,7 +301,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 	private void updateModel() {
 		// create a new snapshot, this should be very fast
-		viewModelSnapshot = viewModel.createSnapshot(); // sets viewModel.isDirty() to false
+		viewModelSnapshot = viewModel.createSnapshot();
 		
 		// Check for important changes between snapshots
 		Paint backgroundPaint = viewModelSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT);

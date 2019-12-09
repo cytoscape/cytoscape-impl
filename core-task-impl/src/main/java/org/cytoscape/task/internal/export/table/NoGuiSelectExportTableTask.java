@@ -3,8 +3,6 @@ package org.cytoscape.task.internal.export.table;
 import java.io.IOException;
 import java.util.HashMap;
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.write.CyTableWriterManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
@@ -22,7 +20,7 @@ import org.cytoscape.work.TaskMonitor;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -48,46 +46,43 @@ public class NoGuiSelectExportTableTask extends AbstractTask {
 	@ContainsTunables
 	public CyTableWriter tableWriter;
 	
-	private final CyTableWriterManager writerManager;
-	private final CyTableManager cyTableManagerServiceRef;
-	private final CyApplicationManager cyApplicationManagerServiceRef;
-	private final CyServiceRegistrar serviceRegistrar;
-	
 	private CyTable tbl;
 	private HashMap<CyTable, CyNetwork> tableNetworkMap = new HashMap<>();
 	
-	public NoGuiSelectExportTableTask(CyTableWriterManager writerManager, CyTableManager cyTableManagerServiceRef,
-			CyApplicationManager cyApplicationManagerServiceRef, CyServiceRegistrar serviceRegistrar) {
-		this.cyTableManagerServiceRef = cyTableManagerServiceRef;
-		this.writerManager = writerManager;
-		this.cyApplicationManagerServiceRef = cyApplicationManagerServiceRef;
+	private final CyServiceRegistrar serviceRegistrar;
+	
+	public NoGuiSelectExportTableTask(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 
 		populateNetworkTableMap();
 		selectTable = new TableTunable(serviceRegistrar);
 
 		// Grab an arbitrary table
-		CyTable tab = getFirstTable();
-		if (tab == null)
+		CyTable table = getFirstTable();
+		
+		if (table == null)
 			throw new RuntimeException("No tables available to export");
 
 		// We need to initialize this here to the Tunables get picked up.
-		tableWriter = new CyTableWriter(writerManager, cyApplicationManagerServiceRef, tab);
+		tableWriter = new CyTableWriter(table, serviceRegistrar);
 	}
 
 	private void populateNetworkTableMap() {
-		CyNetworkManager netManager = serviceRegistrar.getService(CyNetworkManager.class);
+		var netManager = serviceRegistrar.getService(CyNetworkManager.class);
 		
-		for (CyNetwork net: netManager.getNetworkSet()) {
-			this.tableNetworkMap.put(net.getDefaultNetworkTable(), net);
-			this.tableNetworkMap.put(net.getDefaultNodeTable(), net);
-			this.tableNetworkMap.put(net.getDefaultEdgeTable(), net);
+		for (var net : netManager.getNetworkSet()) {
+			tableNetworkMap.put(net.getDefaultNetworkTable(), net);
+			tableNetworkMap.put(net.getDefaultNodeTable(), net);
+			tableNetworkMap.put(net.getDefaultEdgeTable(), net);
 		}
 	}
 
 	private CyTable getFirstTable() {
-		for (CyTable table: cyTableManagerServiceRef.getAllTables(true))
+		var tableManager = serviceRegistrar.getService(CyTableManager.class);
+		
+		for (CyTable table : tableManager.getAllTables(true))
 			return table;
+
 		return null;
 	}
 	
@@ -95,10 +90,10 @@ public class NoGuiSelectExportTableTask extends AbstractTask {
 	public void run(TaskMonitor tm) throws IOException {
 		//Get the selected table
 		tbl = this.selectTable.getTable();
-		tableWriter = new CyTableWriter(writerManager, cyApplicationManagerServiceRef, tbl);
+		tableWriter = new CyTableWriter(tbl, serviceRegistrar);
 
 		// Export the selected table
-		this.insertTasksAfterCurrentTask(tableWriter);		
+		insertTasksAfterCurrentTask(tableWriter);		
 	}
 	
 	@ProvidesTitle

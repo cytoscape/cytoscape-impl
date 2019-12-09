@@ -1,12 +1,29 @@
 package org.cytoscape.task.internal.group;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.cytoscape.group.CyGroup;
+import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractNodeViewTaskFactory;
+import org.cytoscape.task.edit.CollapseGroupTaskFactory;
+import org.cytoscape.task.edit.ExpandGroupTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2012 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2012 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,38 +41,17 @@ package org.cytoscape.task.internal.group;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.group.CyGroup;
-import org.cytoscape.group.CyGroupManager;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableUtil;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.AbstractNodeViewTaskFactory;
-import org.cytoscape.task.edit.CollapseGroupTaskFactory;
-import org.cytoscape.task.edit.ExpandGroupTaskFactory;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskIterator;
-
 public class GroupNodeContextTaskFactoryImpl extends AbstractNodeViewTaskFactory 
                                              implements CollapseGroupTaskFactory, ExpandGroupTaskFactory,
                                                         TaskFactory {
 	
-	private final CyApplicationManager appMgr;
 	private final CyGroupManager mgr;
 	private final CyServiceRegistrar serviceRegistrar;
 	private boolean collapse;
 
-	public GroupNodeContextTaskFactoryImpl(CyApplicationManager appMgr, CyGroupManager mgr, boolean collapse,
-			CyServiceRegistrar serviceRegistrar) {
+	public GroupNodeContextTaskFactoryImpl(CyGroupManager mgr, boolean collapse, CyServiceRegistrar serviceRegistrar) {
 		super();
 		this.mgr = mgr;
-		this.appMgr = appMgr;
 		this.collapse = collapse;
 		this.serviceRegistrar = serviceRegistrar;
 	}
@@ -67,7 +63,7 @@ public class GroupNodeContextTaskFactoryImpl extends AbstractNodeViewTaskFactory
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new CollapseGroupTask(appMgr, mgr, collapse, serviceRegistrar));
+		return new TaskIterator(new CollapseGroupTask(mgr, collapse, serviceRegistrar));
 	}
 
 	@Override

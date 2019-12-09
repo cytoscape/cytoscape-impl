@@ -56,7 +56,7 @@ public class CyNetworkViewConfigImpl implements CyNetworkViewConfig {
 		return noClearVPs;
 	}
 	
-	public Set<Object> getKeys(VisualProperty<?> vp) {
+	public Set<Object> getTrackingKeys(VisualProperty<?> vp) {
 		return vpToKey.getOrDefault(vp, Collections.emptySet());
 	}
 	

@@ -104,25 +104,27 @@ public class DeleteSelectedNodesAndEdgesTask extends AbstractTask implements Obs
 
 		tm.setProgress(0.3);
 		
-		final UndoSupport undoSupport = serviceRegistrar.getService(UndoSupport.class);
-		final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
-		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
-		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
-		
-		undoSupport.postEdit(
-				new DeleteEdit((CySubNetwork) network, selectedNodes, selectedEdges, netViewMgr, vmMgr, eventHelper));
-
-		// Delete the actual nodes and edges:
-		network.removeEdges(selectedEdges);
-		tm.setProgress(0.7);
-		network.removeNodes(selectedNodes);
-		tm.setProgress(0.9);
-		
-		// Update network views
-		final Collection<CyNetworkView> views = netViewMgr.getNetworkViews(network);
-		
-		for (final CyNetworkView netView : views)
-			netView.updateView();
+		if(!selectedEdges.isEmpty() || !selectedNodes.isEmpty()) {
+			final UndoSupport undoSupport = serviceRegistrar.getService(UndoSupport.class);
+			final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+			final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
+			final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+			
+			undoSupport.postEdit(
+					new DeleteEdit((CySubNetwork) network, selectedNodes, selectedEdges, netViewMgr, vmMgr, eventHelper));
+	
+			// Delete the actual nodes and edges:
+			network.removeEdges(selectedEdges);
+			tm.setProgress(0.7);
+			network.removeNodes(selectedNodes);
+			tm.setProgress(0.9);
+			
+			// Update network views
+			final Collection<CyNetworkView> views = netViewMgr.getNetworkViews(network);
+			
+			for (final CyNetworkView netView : views)
+				netView.updateView();
+		}
 		
 		tm.setProgress(1.0);
 	}

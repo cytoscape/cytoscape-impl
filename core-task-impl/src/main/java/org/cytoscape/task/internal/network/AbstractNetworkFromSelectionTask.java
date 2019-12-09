@@ -28,8 +28,6 @@ import org.cytoscape.task.internal.view.CreateNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskMonitor;
 
 /*
@@ -58,40 +56,28 @@ import org.cytoscape.work.TaskMonitor;
 
 abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 	
-	protected final CyRootNetworkManager rootNetMgr;
+	protected final CyApplicationManager applicationManager;
+	protected final CyRootNetworkManager rootNetManager;
+	protected final CyNetworkManager netManager;
+	protected final CyNetworkViewManager viewManager;
 	protected final CyNetworkViewFactory viewFactory;
-	protected final VisualMappingManager vmMgr;
-	protected final CyNetworkNaming networkNaming;
-	protected final CyApplicationManager appMgr;
-	private final CyEventHelper eventHelper;
-	private final RenderingEngineManager renderingEngineMgr;
-	protected final CyGroupManager groupMgr;
-	protected final CyServiceRegistrar serviceRegistrar;
+	protected final CyNetworkNaming netNaming;
+	protected final CyGroupManager groupManager;
+	protected final CyEventHelper eventHelper;
+	
 	protected CySubNetwork newNet;
 
-	public AbstractNetworkFromSelectionTask(final CyNetwork parentNetwork,
-	                                        final CyRootNetworkManager rootNetMgr,
-	                                        final CyNetworkViewFactory viewFactory,
-	                                        final CyNetworkManager netMgr,
-	                                        final CyNetworkViewManager netViewMgr,
-	                                        final CyNetworkNaming networkNaming,
-	                                        final VisualMappingManager vmMgr,
-	                                        final CyApplicationManager appManager,
-	                                        final CyEventHelper eventHelper,
-	                                        final CyGroupManager groupMgr,
-	                                        final RenderingEngineManager renderingEngineMgr,
-	                                        final CyServiceRegistrar serviceRegistrar) {
-		super(parentNetwork, netMgr, netViewMgr);
+	public AbstractNetworkFromSelectionTask(CyNetwork parentNetwork, CyServiceRegistrar serviceRegistrar) {
+		super(parentNetwork, serviceRegistrar);
 
-		this.rootNetMgr = rootNetMgr;
-		this.viewFactory = viewFactory;
-		this.networkNaming = networkNaming;
-		this.vmMgr = vmMgr;
-		this.appMgr = appManager;
-		this.eventHelper = eventHelper;
-		this.groupMgr = groupMgr;
-		this.renderingEngineMgr = renderingEngineMgr;
-		this.serviceRegistrar = serviceRegistrar;
+		applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
+		rootNetManager = serviceRegistrar.getService(CyRootNetworkManager.class);
+		netManager = serviceRegistrar.getService(CyNetworkManager.class);
+		viewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
+		viewFactory = serviceRegistrar.getService(CyNetworkViewFactory.class);
+		netNaming = serviceRegistrar.getService(CyNetworkNaming.class);
+		groupManager = serviceRegistrar.getService(CyGroupManager.class);
+		eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 	}
 
 	abstract Set<CyNode> getNodes(CyNetwork net);
@@ -99,7 +85,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 	abstract Set<CyEdge> getEdges(CyNetwork net);
 
 	String getNetworkName() {
-		return networkNaming.getSuggestedSubnetworkTitle(parentNetwork);
+		return netNaming.getSuggestedSubnetworkTitle(parentNetwork);
 	}
 
 	@Override
@@ -111,7 +97,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 			return;
 		}
 		
-		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(parentNetwork);		
+		final Collection<CyNetworkView> views = viewManager.getNetworkViews(parentNetwork);		
 		CyNetworkView sourceView = null;
 		
 		if (views.size() != 0)
@@ -127,7 +113,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 			throw new IllegalArgumentException("No nodes are selected.");
 
 		// create subnetwork and add selected nodes and appropriate edges
-		newNet = rootNetMgr.getRootNetwork(parentNetwork).addSubNetwork();
+		newNet = rootNetManager.getRootNetwork(parentNetwork).addSubNetwork();
 		
 		//We need to cpy the columns to local tables, since copying them to default table will duplicate the virtual columns.
 		addColumns(parentNetwork.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS), newNet.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS));
@@ -142,8 +128,8 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 			//Set rows and edges to not selected state to avoid conflicts with table browser
 			newNet.getRow(node).set(CyNetwork.SELECTED, false);
 			
-			if (groupMgr.isGroup(node, parentNetwork)) {
-				CyGroup group = groupMgr.getGroup(node, parentNetwork);
+			if (groupManager.isGroup(node, parentNetwork)) {
+				CyGroup group = groupManager.getGroup(node, parentNetwork);
 				GroupUtils.addGroupToNetwork(group, parentNetwork, newNet);
 			}
 		}
@@ -162,7 +148,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		newNet.getRow(newNet).set(CyNetwork.NAME, getNetworkName());
 		DataUtils.saveParentNetworkSUID(newNet, parentNetwork.getSUID());
 
-		networkManager.addNetwork(newNet, false);
+		netManager.addNetwork(newNet, false);
 		tm.setProgress(0.6);
 
 		// create the view in a separate task
@@ -173,16 +159,14 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		CyNetworkViewFactory sourceViewFactory = viewFactory;
 		
 		if (sourceView != null) {
-			NetworkViewRenderer networkViewRenderer = appMgr.getNetworkViewRenderer(sourceView.getRendererId());
+			NetworkViewRenderer networkViewRenderer = applicationManager.getNetworkViewRenderer(sourceView.getRendererId());
 			if (networkViewRenderer != null) {
 				sourceViewFactory = networkViewRenderer.getNetworkViewFactory();
 			}
 		}
 		
-		final CreateNetworkViewTask createViewTask = 
-			new CreateNetworkViewTask(networks, sourceViewFactory, networkViewManager, networkManager,
-				                        null, eventHelper, vmMgr, renderingEngineMgr, appMgr, sourceView,
-				                        serviceRegistrar);
+		var createViewTask = new CreateNetworkViewTask(networks, sourceViewFactory, netManager, null,
+				applicationManager, sourceView, serviceRegistrar);
 		insertTasksAfterCurrentTask(createViewTask);
 		/*
 		insertTasksAfterCurrentTask(createViewTask, new AbstractTask() {
@@ -197,11 +181,11 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 					CyNetworkView nv = createdViews.get(createdViews.size() - 1);
 
 					if (nv != null) {
-						insertTasksAfterCurrentTask(new RegisterNetworkTask(nv, null, networkManager, vmMgr, appMgr, networkViewManager));
+						insertTasksAfterCurrentTask(new RegisterNetworkTask(nv, null, netManager, visMapManager, appMgr, viewManager));
 						return;
 					}
 				}
-				insertTasksAfterCurrentTask(new RegisterNetworkTask(newNet, networkManager, vmMgr, appMgr, networkViewManager));
+				insertTasksAfterCurrentTask(new RegisterNetworkTask(newNet, netManager, visMapManager, appMgr, viewManager));
 				
 				tm.setProgress(1.0);
 			}

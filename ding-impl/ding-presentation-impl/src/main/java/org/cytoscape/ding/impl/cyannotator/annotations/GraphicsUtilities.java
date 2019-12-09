@@ -32,6 +32,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.LinearGradientPaint;
 import java.awt.MultipleGradientPaint;
+import java.awt.MultipleGradientPaint.ColorSpaceType;
+import java.awt.MultipleGradientPaint.CycleMethod;
 import java.awt.Paint;
 import java.awt.RadialGradientPaint;
 import java.awt.Shape;
@@ -659,38 +661,32 @@ class GraphicsUtilities {
 	}
 
 	static private Paint fixGradients(Paint paint, Shape shape) {
-		if (paint instanceof LinearGradientPaint) {
-			LinearGradientPaint lgp = (LinearGradientPaint) paint;
-			Point2D start = fixPoint(lgp.getStartPoint(), shape);
-			Point2D end = fixPoint(lgp.getEndPoint(), shape);
-			float[] fractions = lgp.getFractions();
-			Color[] colors = lgp.getColors();
-			/*
-			 * System.out.println("Stops: "); for (int i = 0; i < fractions.length; i++) {
-			 * System.out.println(""+fractions[i]+" "+colors[i]); }
-			 */
-			return new LinearGradientPaint(start, end, fractions, colors);
-		}
-		if (paint instanceof RadialGradientPaint) {
-			RadialGradientPaint rgp = (RadialGradientPaint) paint;
-			Point2D center = fixPoint(rgp.getCenterPoint(), shape);
-			Point2D focus = fixPoint(rgp.getFocusPoint(), shape);
-			float radius = rgp.getRadius() * (float) (shape.getBounds2D().getWidth() / 2.0);
-			return new RadialGradientPaint(center, radius, focus, rgp.getFractions(), rgp.getColors(),
-					MultipleGradientPaint.CycleMethod.NO_CYCLE);
+		if(paint instanceof MultipleGradientPaint) {
+			MultipleGradientPaint mgp = (MultipleGradientPaint) paint;
+			float[] fractions = mgp.getFractions();
+			Color[] colors = mgp.getColors();
+			
+			// the gradient is translated and scaled into the shape
+			var bounds = shape.getBounds();
+			var tr = mgp.getTransform();
+			tr.translate(bounds.getX(), bounds.getY());
+			tr.scale(bounds.getWidth(), bounds.getHeight());
+			
+			if (paint instanceof LinearGradientPaint) {
+				LinearGradientPaint lgp = (LinearGradientPaint) paint;
+				Point2D start = lgp.getStartPoint();
+				Point2D end = lgp.getEndPoint();
+				return new LinearGradientPaint(start, end, fractions, colors, CycleMethod.NO_CYCLE, ColorSpaceType.SRGB, tr);
+			}
+			if (paint instanceof RadialGradientPaint) {
+				RadialGradientPaint rgp = (RadialGradientPaint) paint;
+				Point2D center = rgp.getCenterPoint();
+				Point2D focus = rgp.getFocusPoint();
+				float radius = rgp.getRadius();
+				return new RadialGradientPaint(center, radius, focus, fractions, colors, CycleMethod.NO_CYCLE, ColorSpaceType.SRGB, tr);
+			}
 		}
 		return paint;
-	}
-
-	static private Point2D fixPoint(Point2D point, Shape shape) {
-		Rectangle2D bounds = shape.getBounds2D();
-		double height = bounds.getHeight();
-		double width = bounds.getWidth();
-		float x = (float) bounds.getX();
-		float y = (float) bounds.getY();
-		float xPoint = (float) (point.getX() * width);
-		float yPoint = (float) (point.getY() * height);
-		return new Point2D.Float(xPoint, yPoint);
 	}
 
 }

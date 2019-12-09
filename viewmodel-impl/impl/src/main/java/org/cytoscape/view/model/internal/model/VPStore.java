@@ -158,13 +158,11 @@ public class VPStore {
 		
 		// this used to be propagateLockedVisualProperty() in ding
 		VisualLexiconNode node = visualLexicon.getVisualLexiconNode(parentVP);
-		node.visit(n -> {
-			VisualProperty vp = n.getVisualProperty();
+		node.visitDescendants(n -> {
+			var vp = n.getVisualProperty();
 			if(!isDirectlyLocked(suid, vp) && parentVP.getClass() == vp.getClass()) { // Preventing ClassCastExceptions
-				
 				changed[0] |= isChanged(allLocks, suid, vp, value);
 				allLocks = put(allLocks, suid, vp, value);
-				
 				updateTrackedVP(suid, vp);
 			}
 		});
@@ -179,29 +177,28 @@ public class VPStore {
 	
 	private void removeTrackedVPs(Long suid) {
 		for(VisualProperty<?> vp : config.getTrackedVPs(type)) {
-			for(Object key : config.getKeys(vp)) {
-				Set<Long> set = tracked.getOrElse(key, HashSet.empty());
-				set = set.remove(suid);
-				tracked = tracked.put(key, set);
+			for(var key : config.getTrackingKeys(vp)) {
+				Set<Long> suids = tracked.getOrElse(key, HashSet.empty());
+				suids = suids.remove(suid);
+				tracked = tracked.put(key, suids);
 			}
 		}
 	}
 	
-	
 	protected void updateTrackedVP(Long suid, VisualProperty<?> vp) {
-		Collection<Object> keys = config.getKeys(vp);
+		Collection<Object> keys = config.getTrackingKeys(vp);
 		if(keys.isEmpty())
 			return;
 		
 		// This VP is tracked
-		Object value = getVisualProperty(suid, vp);
-		for(Object key : keys) {
-			boolean test = config.getPredicate(key).test(value);
-			Set<Long> set = tracked.getOrElse(key, HashSet.empty());
-			if(test) {
-				tracked = tracked.put(key, set.add(suid));
-			} else if(!set.isEmpty()) {
-				tracked = tracked.put(key, set.remove(suid));
+		var value = getVisualProperty(suid, vp);
+		for(var key : keys) {
+			Set<Long> suids = tracked.getOrElse(key, HashSet.empty());
+			boolean track = config.getPredicate(key).test(value);
+			if(track) {
+				tracked = tracked.put(key, suids.add(suid));
+			} else if(!suids.isEmpty()) {
+				tracked = tracked.put(key, suids.remove(suid));
 			}
 		}
 	}

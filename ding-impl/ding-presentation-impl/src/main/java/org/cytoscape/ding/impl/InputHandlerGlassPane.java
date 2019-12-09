@@ -22,8 +22,8 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
@@ -59,6 +59,7 @@ import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.AddAnnotationTask;
 import org.cytoscape.ding.impl.cyannotator.tasks.EditAnnotationTaskFactory;
+import org.cytoscape.ding.impl.cyannotator.tasks.RemoveAnnotationsTask;
 import org.cytoscape.ding.impl.undo.AnnotationEdit;
 import org.cytoscape.ding.impl.undo.CompositeCyEdit;
 import org.cytoscape.ding.impl.undo.ViewChangeEdit;
@@ -122,23 +123,24 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		this.re = re;
 		this.cyAnnotator = re.getCyAnnotator();
 		
+		
 		// Order matters, some listeners use MouseEvent.consume() to prevent subsequent listeners from running
 		this.orderedMouseAdapter = new OrderedMouseAdapter(
         	new FocusRequestListener(),
+        	new CanvasKeyListener(),  // key listener also needs to listen for mouse presses
         	new ContextMenuListener(),
         	new DoubleClickListener(),
         	new AddEdgeListener(),
         	new TooltipListener(),
         	new AddAnnotationListener(),
         	new SelecionClickAndDragListener(),
-//        	new SelectionLassoListener(), // comment out for 3.8
         	new SelectionRectangleListener(),
         	new PanListener() // panning only happens if no node/edge/annotation/handle is clicked, so it needs to go last
         );
         
 		addMouseListener(orderedMouseAdapter);
 		addMouseMotionListener(orderedMouseAdapter);
-		addKeyListener(new CanvasKeyListener());
+		addKeyListener(orderedMouseAdapter.get(CanvasKeyListener.class));
         addMouseWheelListener(new CanvasMouseWheelListener());
         setFocusable(true); // key listener needs the focus
         
@@ -253,31 +255,103 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	}
 	
 	
-	private class CanvasKeyListener extends KeyAdapter {
+	
+	private class CanvasKeyListener extends MouseAdapter implements KeyListener {
 
+		private final int KEYPRESS_TIMER_DELAY = 600; //milliseconds
+		
+		private AnnotationEdit moveAnnotationsEdit;
+		private ViewChangeEdit moveNodesEdit;
+		private ViewChangeEdit panEdit;
+		
+		private Timer swingTimer;
+		
+		private void maybePostMoveEdit() {
+			// If the timer expires, or the user switches to mouse input, then post the undo edit.
+			if(swingTimer != null) {
+				swingTimer.stop();
+				swingTimer = null;
+			}
+			
+			if(moveAnnotationsEdit != null || moveNodesEdit != null || panEdit != null) {
+				var composite = new CompositeCyEdit("Move", registrar, 3);
+				composite.add(moveAnnotationsEdit, moveNodesEdit, panEdit);
+				composite.post();
+			}
+			
+			moveAnnotationsEdit = null;
+			moveNodesEdit = null;
+			panEdit = null;
+		}
+		
+		/**
+		 * Key listener also needs to listen for mouse presses to cancel the undo timer.
+		 */
+		@Override
+		public void mousePressed(MouseEvent e) {
+			maybePostMoveEdit();
+		}
+		
+		private void resetMoveTimer() {
+			// Use a swing timer to coalesce multiple quick keypresses into a single undo edit.
+			if(swingTimer == null) {
+				swingTimer = new Timer(KEYPRESS_TIMER_DELAY, ev -> maybePostMoveEdit());
+				swingTimer.start();
+			} else {
+				swingTimer.restart();
+			}
+		}
+		
+		
+		private int getMoveAmountImageUnit(KeyEvent e) {
+			return e.isShiftDown() ? 15 : 2;
+		}
+		
+		private float getMoveAmountNodeUnit(KeyEvent e) {
+			int imageUnit = getMoveAmountImageUnit(e);
+			float nodeUnit = re.getTransform().getNodeDistance(imageUnit);
+			return nodeUnit;
+		}
+		
 		@Override
 		public void keyPressed(KeyEvent e) {
 			int code = e.getKeyCode();
 			
+			boolean allChanged = false;
+			boolean annotationsChanged = false;
+			boolean moved = false;
+			
 			if(code == VK_UP || code == VK_DOWN || code == VK_LEFT || code == VK_RIGHT) {
-				if(annotationSelectionEnabled()) {
-					moveAnnotations(e);
-				}
 				if(isControlOrMetaDown(e)) {
 					panCanvas(e);
-				} else if(nodeSelectionEnabled()) {
-					moveNodesAndHandles(e);
+					moved = allChanged = true;
+				} else {
+					if(nodeSelectionEnabled()) {
+						moved |= allChanged = moveNodesAndHandles(e);
+					}
+					if(annotationSelectionEnabled()) {
+						moved |= annotationsChanged = moveAnnotations(e);
+					}
 				}
-				re.updateView(UpdateType.ALL_FULL);
 			} else if(code == VK_ESCAPE) {
-				cancelAddingEdge();
+				allChanged = cancelAddingEdge();
 				if(annotationSelectionEnabled()) {
-					cancelAnnotations();
+					allChanged |= cancelAnnotations();
 				}
-				re.updateView(UpdateType.ALL_FULL);
 			} else if(code == VK_BACK_SPACE) {
-				deleteSelectedNodesAndEdges();
+				// in this case changing the model will trigger a render
+				deleteSelected();
+			}
+			
+
+			if(allChanged) {
 				re.updateView(UpdateType.ALL_FULL);
+			} else if(annotationsChanged) {
+				re.updateView(UpdateType.JUST_ANNOTATIONS);
+			}
+			
+			if(moved) {
+				resetMoveTimer();
 			}
 		}
 		
@@ -293,13 +367,21 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			} 
 		}
 		
-		private void moveAnnotations(KeyEvent e) {
+		private boolean moveAnnotations(KeyEvent e) {
 			var selection = cyAnnotator.getAnnotationSelection();
+			if(selection.isEmpty())
+				return false;
+			
 			Point start = re.getTransform().getImageCoordinates(selection.getLocation());
 			int x = start.x;
 			int y = start.y;
 			
-			final int move = 2;
+			if(moveAnnotationsEdit == null) {
+				String message = selection.size() == 1 ? "Move Annotation" : "Move Annotations";
+				moveAnnotationsEdit = new AnnotationEdit(message, cyAnnotator, registrar);
+			}
+			
+			final int move = getMoveAmountImageUnit(e);
 			switch(e.getKeyCode()) {
 				case VK_UP:    y -= move; break;
 				case VK_DOWN:  y += move; break;
@@ -309,55 +391,59 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			
 			selection.setMovingStartOffset(start);
 			selection.moveSelection(x, y);
-			re.updateView(UpdateType.JUST_ANNOTATIONS);
+
+			return true;
 		}
 		
-		private void cancelAnnotations() {
+		private boolean cancelAnnotations() {
 			if (cyAnnotator.getResizeShape() != null) {
 				cyAnnotator.getResizeShape().contentChanged();
 				cyAnnotator.resizeShape(null);
 				cyAnnotator.postUndoEdit();
+				return true;
 			} else if(cyAnnotator.getRepositioningArrow() != null) {
 				cyAnnotator.getRepositioningArrow().contentChanged();
 				cyAnnotator.positionArrow(null);
 				cyAnnotator.postUndoEdit();
+				return true;
 			}
+			return false;
 		}
 		
 		
 		private void panCanvas(KeyEvent k) {
-			int code = k.getKeyCode();
-			final float move = k.isShiftDown() ? 15.0f : 1.0f;
-
-			if(code == VK_UP)
-				re.pan(0, move);
-			else if (code == VK_DOWN)
-				re.pan(0, -move);
-			else if (code == VK_LEFT)
-				re.pan(-move, 0);
-			else if (code == VK_RIGHT)
-				re.pan(move, 0);
+			if(panEdit == null) {
+				panEdit = new ViewChangeEdit(re, null, "Pan", registrar); 
+			}
+			
+			float move = getMoveAmountNodeUnit(k);
+			switch(k.getKeyCode()) {
+				case VK_UP:    re.pan(0,  move); break;
+				case VK_DOWN:  re.pan(0, -move); break;
+				case VK_LEFT:  re.pan( move, 0); break;
+				case VK_RIGHT: re.pan(-move, 0); break;
+			}
 		}
 		
 
-		private void moveNodesAndHandles(KeyEvent k) {
-			final int code = k.getKeyCode();
-			final float move = k.isShiftDown() ? 15.0f : 1.0f;
-
+		private boolean moveNodesAndHandles(KeyEvent k) {
 			var snapshot = re.getViewModelSnapshot();
 			var selectedNodes = snapshot.getTrackedNodes(DingNetworkViewFactory.SELECTED_NODES);
+			
+			if(!selectedNodes.isEmpty() && moveNodesEdit == null) {
+				moveNodesEdit = new ViewChangeEdit(re, ViewChangeEdit.SavedObjs.SELECTED, "Move", registrar);
+			}
+			
+			final float move = getMoveAmountNodeUnit(k);
 			for(View<CyNode> node : selectedNodes) {
 				double xPos = re.getNodeDetails().getXPosition(node);
 				double yPos = re.getNodeDetails().getYPosition(node);
 
-				if (code == VK_UP) {
-					yPos -= move;
-				} else if (code == VK_DOWN) {
-					yPos += move;
-				} else if (code == VK_LEFT) {
-					xPos -= move;
-				} else if (code == VK_RIGHT) {
-					xPos += move;
+				switch(k.getKeyCode()) {
+					case VK_UP:    yPos -= move; break;
+					case VK_DOWN:  yPos += move; break;
+					case VK_LEFT:  xPos -= move; break;
+					case VK_RIGHT: xPos += move; break;
 				}
 
 				// MKTODO better way of doing this???
@@ -375,26 +461,45 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				float x = (float) newPoint.getX();
 				float y = (float) newPoint.getY();
 
-				if (code == VK_UP) {
-					re.getBendStore().moveHandle(handleKey, x, y - move);
-				} else if (code == VK_DOWN) {
-					re.getBendStore().moveHandle(handleKey, x, y + move);
-				} else if (code == VK_LEFT) {
-					re.getBendStore().moveHandle(handleKey, x - move, y);
-				} else if (code == VK_RIGHT) {
-					re.getBendStore().moveHandle(handleKey, x + move, y);
+				var bendStore = re.getBendStore();
+				switch(k.getKeyCode()) {
+					case VK_UP:    bendStore.moveHandle(handleKey, x, y - move); break;
+					case VK_DOWN:  bendStore.moveHandle(handleKey, x, y + move); break;
+					case VK_LEFT:  bendStore.moveHandle(handleKey, x - move, y); break;
+					case VK_RIGHT: bendStore.moveHandle(handleKey, x + move, y); break;
 				}
 			}
+			
+			return !selectedNodes.isEmpty() || !handlesToMove.isEmpty();
 		}
 		
-		private void cancelAddingEdge() {
-			get(AddEdgeListener.class).reset();
+		private boolean cancelAddingEdge() {
+			var addEdgeListener = get(AddEdgeListener.class);
+			if(addEdgeListener.addingEdge()) {
+				addEdgeListener.reset();
+				return true;
+			}
+			return false;
 		}
 		
-		private void deleteSelectedNodesAndEdges() {
-			final TaskManager<?, ?> taskManager = registrar.getService(TaskManager.class);
+		private void deleteSelected() {
+			TaskIterator tasks = new TaskIterator();
+			
+			var annotationSelection = cyAnnotator.getAnnotationSelection();
+			if(!annotationSelection.isEmpty()) {
+				Collection<Annotation> annotations = new ArrayList<>(annotationSelection.getSelectedAnnotations());
+				tasks.append(new RemoveAnnotationsTask(re, annotations, registrar));
+			}
+			
 			NetworkTaskFactory taskFactory = registrar.getService(DeleteSelectedNodesAndEdgesTaskFactory.class);
-			taskManager.execute(taskFactory.createTaskIterator(re.getViewModel().getModel()));
+			tasks.append(taskFactory.createTaskIterator(re.getViewModel().getModel()));
+			
+			TaskManager<?,?> taskManager = registrar.getService(TaskManager.class);
+			taskManager.execute(tasks);
+		}
+
+		@Override
+		public void keyTyped(KeyEvent e) {
 		}
 	}
 	
@@ -509,6 +614,10 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			this.sourceNode = null;
 			this.startPoint = null;
 			this.endPoint = null;
+		}
+		
+		public boolean addingEdge() {
+			return startPoint != null;
 		}
 		
 		@Override
@@ -709,7 +818,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		}
 		
 		private void mousePressedHandleAnnotationAnchor(AnchorLocation anchor, MouseEvent e) {
-			annotationResizeEdit = new AnnotationEdit("Resize Annotation", cyAnnotator, registrar);
 			changeCursor(getResizeCursor(anchor.getPosition()));
 			
 			var annotationSelection = cyAnnotator.getAnnotationSelection();
@@ -731,11 +839,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 					toggle = Toggle.SELECT;
 				}
 			}
-
-			var annotationSelection = cyAnnotator.getAnnotationSelection();
-			if(!annotationSelection.isEmpty()) {
-				annotationMovingEdit = new AnnotationEdit("Move Annotation", cyAnnotator, registrar);
-			} 
 
 			if(toggle != Toggle.NOCHANGE)
 				re.updateView(UpdateType.JUST_ANNOTATIONS);
@@ -823,20 +926,16 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			
 			mousePressedPoint = null;
 			
-			if(annotationMovingEdit != null && moveNodesEdit != null) {
-				CompositeCyEdit compositeEdit = new CompositeCyEdit("Move", registrar);
-				compositeEdit.add(annotationMovingEdit, moveNodesEdit);
-				compositeEdit.post();
+			if(annotationMovingEdit != null || moveNodesEdit != null) {
+				var composite = new CompositeCyEdit("Move", registrar, 2);
+				composite.add(annotationMovingEdit, moveNodesEdit);
+				composite.post();
 			} else if(annotationResizeEdit != null) {
 				annotationResizeEdit.post();
-			} else if(annotationMovingEdit != null) {
-				annotationMovingEdit.post();
 			} else if(removeHandleEdit != null) {
 				removeHandleEdit.post();
 			} else if(addHandleEdit != null) {
 				addHandleEdit.post();
-			} else if(moveNodesEdit != null) {
-				moveNodesEdit.post();
 			}
 			
 			e.consume();
@@ -867,10 +966,16 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			
 			if(!annotationSelection.isEmpty()) {
 				if(annotationSelection.isResizing()) {
+					if(annotationResizeEdit == null) {
+						annotationResizeEdit = new AnnotationEdit("Resize Annotation", cyAnnotator, registrar);
+					}
 					annotationSelection.resizeAnnotationsRelative(e.getX(), e.getY());
 					re.updateView(UpdateType.JUST_ANNOTATIONS);
 					return;
 				} else {
+					if(annotationMovingEdit == null) {
+						annotationMovingEdit = new AnnotationEdit("Move Annotation", cyAnnotator, registrar);
+					} 
 					annotationSelection.moveSelection(e.getPoint());
 					annotationSelection.setMovingStartOffset(e.getPoint());
 				}

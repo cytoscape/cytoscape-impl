@@ -8,6 +8,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.write.CySessionWriterFactory;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
@@ -20,10 +21,32 @@ import org.cytoscape.work.util.ListChangeListener;
 import org.cytoscape.work.util.ListSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 
+/*
+ * #%L
+ * Cytoscape Core Task Impl (core-task-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  * Task to export all networks and styles as Cytoscape.js style JSON.
- * 
  */
 public class ExportAsWebArchiveTask extends AbstractTask implements TunableValidator, RequestsUIHelper {
 
@@ -62,32 +85,29 @@ public class ExportAsWebArchiveTask extends AbstractTask implements TunableValid
 	private final CySessionWriterFactory fullWriterFactory;
 	private final CySessionWriterFactory simpleWriterFactory;
 	private final CySessionWriterFactory zippedWriterFactory;
-	private final CyApplicationManager applicationManager;
-	private final CySessionManager sessionManager;
+	private final CyServiceRegistrar serviceRegistrar;
 	
 	private CyWriter writer;
 
 	public ExportAsWebArchiveTask(
-			final CySessionWriterFactory fullWriterFactory,
-			final CySessionWriterFactory simpleWriterFactory,
-			final CySessionWriterFactory zippedWriterFactory,
-			final CyApplicationManager applicationManager,
-			final CySessionManager sessionManager) {
-		super();
+			CySessionWriterFactory fullWriterFactory,
+			CySessionWriterFactory simpleWriterFactory,
+			CySessionWriterFactory zippedWriterFactory,
+			CyServiceRegistrar serviceRegistrar
+	) {
 		this.fullWriterFactory = fullWriterFactory;
 		this.simpleWriterFactory = simpleWriterFactory;
 		this.zippedWriterFactory = zippedWriterFactory;
-		this.applicationManager = applicationManager;
-		this.sessionManager = sessionManager;
+		this.serviceRegistrar = serviceRegistrar;
 		
 		this.outputFormat = new ListSingleSelection<String>(AS_SPA, AS_SIMPLE_PAGE, AS_ZIPPED_ARCHIVE);
 		this.file = getSuggestedFile();
+		
 		outputFormat.addListener(new ListChangeListener<String>() {
 			@Override
 			public void selectionChanged(ListSelection<String> source) {
 				file = getSuggestedFile();
 			}
-
 			@Override
 			public void listChanged(ListSelection<String> source) {
 			}
@@ -98,57 +118,63 @@ public class ExportAsWebArchiveTask extends AbstractTask implements TunableValid
 	 * Archive the data into a zip file.
 	 */
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
-		if(file == null) {
-			return;
-		}
-		// Get export type
-		final String exportType = this.outputFormat.getSelectedValue();
+	public void run(TaskMonitor tm) throws Exception {
+		tm.setProgress(0);
 		
-		taskMonitor.setProgress(0.05);
+		if (file == null)
+			return;
+		
+		// Get export type
+		String exportType = outputFormat.getSelectedValue();
 
 		// Add extension if missing.
 		if (!file.getName().endsWith(FILE_EXTENSION))
 			file = new File(file.getPath() + FILE_EXTENSION);
 
 		// Compress everything as a zip archive.
-		final FileOutputStream os = new FileOutputStream(file);
+		var os = new FileOutputStream(file);
 		CyWriter writer = null;
-		if(exportType.equals(AS_SPA)) {
+
+		if (exportType.equals(AS_SPA)) {
 			writer = fullWriterFactory.createWriter(os, null);
-		} else if(exportType.equals(AS_SIMPLE_PAGE)) {
+		} else if (exportType.equals(AS_SIMPLE_PAGE)) {
 			writer = simpleWriterFactory.createWriter(os, null);
-		} else if(exportType.equals(AS_ZIPPED_ARCHIVE)) {
+		} else if (exportType.equals(AS_ZIPPED_ARCHIVE)) {
 			writer = zippedWriterFactory.createWriter(os, null);
 		} else {
 			os.close();
 			throw new NullPointerException("Could not find web session writer.");
 		}
-		writer.run(taskMonitor);
+
+		writer.run(tm);
 		os.close();
 
-		taskMonitor.setProgress(1.0);
+		tm.setProgress(1.0);
 	}
 
 	@Override
 	public void cancel() {
 		super.cancel();
+		
 		if (writer != null)
 			writer.cancel();
 	}
 
 	private File getSuggestedFile() {
 		String exportName = null;
-		if(!outputFormat.getSelectedValue().equals(AS_SIMPLE_PAGE)) {
+		var sessionManager = serviceRegistrar.getService(CySessionManager.class);
+		var applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
+		
+		if (!outputFormat.getSelectedValue().equals(AS_SIMPLE_PAGE)) {
 			exportName = FilenameUtils.getBaseName(sessionManager.getCurrentSessionFileName());
-		}
-		else {
-			CyNetwork network = applicationManager.getCurrentNetwork();
+		} else {
+			var network = applicationManager.getCurrentNetwork();
 			exportName = network.getRow(network).get(CyNetwork.NAME, String.class);
 		}
-		if(exportName == null || exportName.trim().isEmpty())
-			exportName = "Untitled";
 		
+		if (exportName == null || exportName.trim().isEmpty())
+			exportName = "Untitled";
+
 		return new File(applicationManager.getCurrentDirectory(), exportName + FILE_EXTENSION);
 	}
 

@@ -13,6 +13,7 @@ import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.undo.AbstractCyEdit;
 
@@ -143,8 +144,15 @@ public class GroupEdit extends AbstractCyEdit {
 		edgesList.addAll(group.getExternalEdgeList());
 		edgesMap.put(group, edgesList);
 
-		// Get the networks
-		networkMap.put(group, new ArrayList<>(group.getNetworkSet()));
+		// Make sure the root network is the first element
+		List<CyNetwork> networks = new ArrayList<>();
+		for(CyNetwork network : group.getNetworkSet()) {
+			if(network instanceof CyRootNetwork)
+				networks.add(0, network);
+			else
+				networks.add(network);
+		}
+		networkMap.put(group, networks);
 
 		// Get the collapse set
 		List<CyNetwork> collapseList = new ArrayList<>();

@@ -98,7 +98,6 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		synchronized (nodeLock) {
 			synchronized (edgeLock) {
 				synchronized (netLock) {
-					this.dirty = false;
 					return new CyNetworkViewSnapshotImpl(
 						this, 
 						rendererId, 
@@ -110,7 +109,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 						nodeVPs.createSnapshot(),
 						edgeVPs.createSnapshot(),
 						netVPs.createSnapshot(),
-						visualLexicon instanceof BasicVisualLexicon
+						visualLexicon
 					);
 				}
 			}
@@ -123,8 +122,11 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	}
 	
 	@Override
-	public boolean isDirty() {
-		return dirty;
+	public synchronized boolean isDirty(boolean clear) {
+		boolean val = dirty;
+		if(clear)
+			dirty = false;
+		return val;
 	}
 	
 	@Override

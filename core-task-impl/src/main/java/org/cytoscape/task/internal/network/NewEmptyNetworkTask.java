@@ -21,10 +21,8 @@ import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.ProvidesTitle;
@@ -62,17 +60,10 @@ import org.cytoscape.work.util.ListSingleSelection;
  */
 public class NewEmptyNetworkTask extends AbstractTask implements ObservableTask {
 
-	private final CyNetworkNaming namingUtil; 
-	private final CyNetworkViewManager netViewMgr;
-	private final VisualMappingManager vmMgr;
-	private final CyApplicationManager appMgr;
-	protected final CyNetworkFactory netFactory;
-	protected final CyNetworkManager netMgr;
-	protected final CyRootNetworkManager rootNetMgr;
-	protected final CyServiceRegistrar registrar;
-
 	private CyNetworkView view;
 	private CySubNetwork subNetwork;
+	
+	private final CyServiceRegistrar serviceRegistrar;
 
 	public static final String CRERATE_NEW_COLLECTION_STRING = " -- Create new network collection --";
 
@@ -113,25 +104,8 @@ public class NewEmptyNetworkTask extends AbstractTask implements ObservableTask 
 	protected HashMap<String, CyRootNetwork> name2RootMap;
 
 	@SuppressWarnings("unchecked")
-	public NewEmptyNetworkTask(
-			CyNetworkFactory netFactory,
-			CyNetworkManager netMgr,
-			CyNetworkViewManager netViewMgr,
-			CyNetworkNaming namingUtil,
-			VisualMappingManager vmMgr,
-			CyRootNetworkManager rootNetMgr,
-			CyApplicationManager appMgr,
-			Set<NetworkViewRenderer> viewRenderers,
-			CyServiceRegistrar registrar
-	) {
-		this.netMgr = netMgr;
-		this.netViewMgr = netViewMgr;
-		this.netFactory = netFactory;
-		this.namingUtil = namingUtil;
-		this.vmMgr = vmMgr;
-		this.rootNetMgr = rootNetMgr;
-		this.appMgr = appMgr;
-		this.registrar = registrar;
+	public NewEmptyNetworkTask(Set<NetworkViewRenderer> viewRenderers, CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 
 		// initialize the network Collection
 		this.name2RootMap = getRootNetworkMap();
@@ -149,15 +123,16 @@ public class NewEmptyNetworkTask extends AbstractTask implements ObservableTask 
 		if (!rootNames.isEmpty())
 			rootNetworkList.setSelectedValue(rootNames.get(0));
 
-		final List<CyNetwork> selectedNetworks = appMgr.getSelectedNetworks();
+		var applicationMgr = serviceRegistrar.getService(CyApplicationManager.class);
+		List<CyNetwork> selectedNetworks = applicationMgr.getSelectedNetworks();
 
 		if (selectedNetworks != null && selectedNetworks.size() > 0) {
-			CyNetwork selectedNetwork = appMgr.getSelectedNetworks().get(0);
+			CyNetwork selectedNetwork = applicationMgr.getSelectedNetworks().get(0);
 			String rootName = "";
 
 			if (selectedNetwork instanceof CySubNetwork) {
-				final CySubNetwork subnet = (CySubNetwork) selectedNetwork;
-				final CyRootNetwork rootNet = subnet.getRootNetwork();
+				var subNet = (CySubNetwork) selectedNetwork;
+				var rootNet = subNet.getRootNetwork();
 				rootName = rootNet.getRow(rootNet).get(CyNetwork.NAME, String.class);
 			} else {
 				// it is a root network
@@ -171,7 +146,7 @@ public class NewEmptyNetworkTask extends AbstractTask implements ObservableTask 
 		// so the combo-box does not appear to the user, since there is nothing to select anyway.
 		if (viewRenderers.size() > 1) {
 			renderers = new ListSingleSelection<NetworkViewRenderer>(new ArrayList<>(viewRenderers));
-			final NetworkViewRenderer defViewRenderer = appMgr.getDefaultNetworkViewRenderer();
+			var defViewRenderer = applicationMgr.getDefaultNetworkViewRenderer();
 
 			if (defViewRenderer != null && viewRenderers.contains(defViewRenderer))
 				renderers.setSelectedValue(defViewRenderer);
@@ -181,14 +156,15 @@ public class NewEmptyNetworkTask extends AbstractTask implements ObservableTask 
 	}
 
 	@Override
-	public void run(final TaskMonitor tm) {
+	public void run(TaskMonitor tm) {
 		tm.setTitle("New Empty Network");
 		tm.setProgress(0.0);
 
-		final String networkCollectionName = rootNetworkList.getSelectedValue();
+		String networkCollectionName = rootNetworkList.getSelectedValue();
 
 		if (networkCollectionName == null || networkCollectionName.equalsIgnoreCase(CRERATE_NEW_COLLECTION_STRING)) {
 			// This is a new network collection, create a root network and a subnetwork, which is a base subnetwork
+			var netFactory = serviceRegistrar.getService(CyNetworkFactory.class);
 			subNetwork = (CySubNetwork) netFactory.createNetwork();
 		} else {
 			// Add a new subNetwork to the given collection
@@ -197,7 +173,7 @@ public class NewEmptyNetworkTask extends AbstractTask implements ObservableTask 
 
 		tm.setProgress(0.2);
 
-		final String networkName = namingUtil.getSuggestedNetworkTitle(name);
+		var networkName = serviceRegistrar.getService(CyNetworkNaming.class).getSuggestedNetworkTitle(name);
 		subNetwork.getRow(subNetwork).set(CyNetwork.NAME, networkName);
 
 		if (networkCollectionName == null || networkCollectionName.equalsIgnoreCase(CRERATE_NEW_COLLECTION_STRING)) {
@@ -215,21 +191,33 @@ public class NewEmptyNetworkTask extends AbstractTask implements ObservableTask 
 			                                       " using default renderer.");
 		}
 
+		var applicationMgr = serviceRegistrar.getService(CyApplicationManager.class);
+		
 		if (nvRenderer == null)
-			nvRenderer = appMgr.getDefaultNetworkViewRenderer();
+			nvRenderer = applicationMgr.getDefaultNetworkViewRenderer();
 
-		final CyNetworkViewFactory netViewFactory = nvRenderer.getNetworkViewFactory();
-
+		var netViewFactory = nvRenderer.getNetworkViewFactory();
 		tm.setProgress(0.4);
+		
 		view = netViewFactory.createNetworkView(subNetwork);
 		tm.setProgress(0.6);
+		
+		var netMgr = serviceRegistrar.getService(CyNetworkManager.class);
 		netMgr.addNetwork(subNetwork, false);
-		appMgr.setCurrentNetwork(subNetwork);
+		applicationMgr.setCurrentNetwork(subNetwork);
 		tm.setProgress(0.8);
-		final VisualStyle style = vmMgr.getCurrentVisualStyle(); // get the current style before registering the view!
-		netViewMgr.addNetworkView(view);
+		
+		var visMapMgr = serviceRegistrar.getService(VisualMappingManager.class);
+		var style = visMapMgr.getCurrentVisualStyle(); // get the current style before registering the view!
+		serviceRegistrar.getService(CyNetworkViewManager.class).addNetworkView(view);
 		tm.setProgress(0.9);
-		applyVisualStyle(style);
+		
+		if (style != null) {
+			visMapMgr.setVisualStyle(style, view);
+			style.apply(view);
+			view.updateView();
+		}
+		
 		tm.setProgress(1.0);
 	}
 
@@ -237,19 +225,13 @@ public class NewEmptyNetworkTask extends AbstractTask implements ObservableTask 
 		return view;
 	}
 
-	private void applyVisualStyle(final VisualStyle style) {
-		if (style != null) {
-			vmMgr.setVisualStyle(style, view);
-			style.apply(view);
-			view.updateView();
-		}
-	}
-
 	public HashMap<String, CyRootNetwork> getRootNetworkMap() {
 		HashMap<String, CyRootNetwork> name2RootMap = new HashMap<>();
+		var netMgr = serviceRegistrar.getService(CyNetworkManager.class);
+		var rootNetMgr = serviceRegistrar.getService(CyRootNetworkManager.class);
 
 		for (CyNetwork net : netMgr.getNetworkSet()) {
-			final CyRootNetwork rootNet = rootNetMgr.getRootNetwork(net);
+			CyRootNetwork rootNet = rootNetMgr.getRootNetwork(net);
 
 			if (!name2RootMap.containsValue(rootNet))
 				name2RootMap.put(rootNet.getRow(rootNet).get(CyRootNetwork.NAME, String.class), rootNet);
@@ -260,7 +242,7 @@ public class NewEmptyNetworkTask extends AbstractTask implements ObservableTask 
 
 	private void sort(final List<String> names) {
 		if (!names.isEmpty()) {
-			final Collator collator = Collator.getInstance(Locale.getDefault());
+			var collator = Collator.getInstance(Locale.getDefault());
 
 			Collections.sort(names, new Comparator<String>() {
 				@Override
@@ -274,6 +256,8 @@ public class NewEmptyNetworkTask extends AbstractTask implements ObservableTask 
 		}
 	}
 
+	@Override
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Object getResults(Class type) {
 		if (type.equals(CyNetwork.class)) {
 			return subNetwork;
@@ -292,8 +276,8 @@ public class NewEmptyNetworkTask extends AbstractTask implements ObservableTask 
 		return subNetwork;
 	}
 
+	@Override
 	public List<Class<?>> getResultClasses() {
 		return Arrays.asList(CyNetwork.class, String.class, JSONResult.class);
 	}
-
 }

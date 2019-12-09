@@ -1,8 +1,5 @@
 package org.cytoscape.task.internal.export.table;
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.write.CyTableWriterManager;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.write.ExportSelectedTableTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
@@ -14,7 +11,7 @@ import org.cytoscape.work.TaskIterator;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -34,24 +31,14 @@ import org.cytoscape.work.TaskIterator;
 
 public class ExportNoGuiSelectedTableTaskFactoryImpl extends AbstractTaskFactory implements ExportSelectedTableTaskFactory{
 
-	private final CyTableWriterManager writerManager;
-	private final CyTableManager cyTableManagerServiceRef;
-	private final CyApplicationManager cyApplicationManagerServiceRef;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	
-	public ExportNoGuiSelectedTableTaskFactoryImpl(CyTableWriterManager writerManager,
-			CyTableManager cyTableManagerServiceRef, CyApplicationManager cyApplicationManagerServiceRef,
-			CyServiceRegistrar serviceRegistrar) {
-		this.writerManager = writerManager;
-		this.cyTableManagerServiceRef = cyTableManagerServiceRef;
-		this.cyApplicationManagerServiceRef = cyApplicationManagerServiceRef;
+	public ExportNoGuiSelectedTableTaskFactoryImpl(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new NoGuiSelectExportTableTask(writerManager, cyTableManagerServiceRef,
-				cyApplicationManagerServiceRef, serviceRegistrar));
+		return new TaskIterator(new NoGuiSelectExportTableTask(serviceRegistrar));
 	}
 }

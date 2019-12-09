@@ -110,8 +110,8 @@ import org.cytoscape.internal.view.help.HelpContactHelpDeskTaskFactory;
 import org.cytoscape.internal.view.help.HelpReportABugTaskFactory;
 import org.cytoscape.internal.view.help.HelpTourTaskFactory;
 import org.cytoscape.internal.view.help.HelpTutorialsTaskFactory;
-import org.cytoscape.internal.view.help.HelpVideosTaskFactory;
 import org.cytoscape.internal.view.help.HelpUserManualTaskFactory;
+import org.cytoscape.internal.view.help.HelpVideosTaskFactory;
 import org.cytoscape.internal.view.util.ViewUtil;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.NetworkDestroyedListener;
@@ -309,13 +309,13 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, helpUserManualTaskFactory, TaskFactory.class, props);
 		}
 		{
-                        Properties props = new Properties();
-                        props.setProperty(PREFERRED_MENU, HELP_MENU);
-                        props.setProperty(TITLE, "Video Demos");
-                        props.setProperty(MENU_GRAVITY, "1.1");
-                        props.setProperty(TOOLTIP, "Show Demo Videos");
-                        registerService(bc, helpVideosTaskFactory, TaskFactory.class, props);
-                }
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_MENU, HELP_MENU);
+			props.setProperty(TITLE, "Video Demos");
+			props.setProperty(MENU_GRAVITY, "1.1");
+			props.setProperty(TOOLTIP, "Show Demo Videos");
+			registerService(bc, helpVideosTaskFactory, TaskFactory.class, props);
+		}
 		{
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, HELP_MENU);
@@ -345,7 +345,6 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(MENU_GRAVITY, "8.0");
 			registerService(bc, helpReportABugTaskFactory, TaskFactory.class, props);
 		}
-
 		{
 			Properties props = new Properties();
 			props.setProperty(ServiceProperties.ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);

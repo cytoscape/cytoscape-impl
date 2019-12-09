@@ -680,8 +680,7 @@ public final class GraphRenderer {
 			trgYOut = floatBuff[1];
 		}
 
-		calcIntersection(srcNodeShape, srcNodeExtents, srcX, srcY, 
-		                 srcXOut, srcYOut, floatBuff); 
+		calcIntersection(srcNodeShape, srcNodeExtents, srcX, srcY, srcXOut, srcYOut, floatBuff); 
 		final float srcXAdj = floatBuff[0];
 		final float srcYAdj = floatBuff[1];
 

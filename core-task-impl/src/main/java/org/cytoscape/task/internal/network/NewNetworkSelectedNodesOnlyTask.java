@@ -3,21 +3,11 @@ package org.cytoscape.task.internal.network;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.view.vizmap.VisualMappingManager;
 
 /*
  * #%L
@@ -25,7 +15,7 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -47,21 +37,9 @@ public class NewNetworkSelectedNodesOnlyTask extends AbstractNetworkFromSelectio
 	
 	private Set<CyNode> nodes;
 	private Set<CyEdge> edges;
-	
-	public NewNetworkSelectedNodesOnlyTask(final CyNetwork net,
-	                                       final CyRootNetworkManager cyroot,
-	                                       final CyNetworkViewFactory cnvf,
-	                                       final CyNetworkManager netmgr,
-	                                       final CyNetworkViewManager networkViewManager,
-	                                       final CyNetworkNaming cyNetworkNaming,
-	                                       final VisualMappingManager vmm,
-	                                       final CyApplicationManager appManager,
-	                                       final CyEventHelper eventHelper,
-	                                       final CyGroupManager groupMgr,
-	                                       final RenderingEngineManager renderingEngineMgr,
-	                                       final CyServiceRegistrar serviceRegistrar) {
-		super(net, cyroot, cnvf, netmgr, networkViewManager, cyNetworkNaming,
-		      vmm, appManager, eventHelper, groupMgr, renderingEngineMgr, serviceRegistrar);
+
+	public NewNetworkSelectedNodesOnlyTask(CyNetwork net, CyServiceRegistrar serviceRegistrar) {
+		super(net, serviceRegistrar);
 	}
 
 	/**
@@ -82,10 +60,10 @@ public class NewNetworkSelectedNodesOnlyTask extends AbstractNetworkFromSelectio
 	Set<CyEdge> getEdges(final CyNetwork net) {
 		if (edges == null) {
 			edges = new HashSet<>();
-			final Set<CyNode> nodes = getNodes(net);
+			var nodes = getNodes(net);
 
-			for (final CyNode n1 : nodes) {
-				for (final CyNode n2 : nodes)
+			for (var n1 : nodes) {
+				for (var n2 : nodes)
 					edges.addAll(net.getConnectingEdgeList(n1, n2, CyEdge.Type.ANY));
 			}
 		}

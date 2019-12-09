@@ -3,6 +3,7 @@ package org.cytoscape.task.internal.hide;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNetworkViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -35,25 +36,49 @@ public abstract class AbstractUnHideTaskFactory extends AbstractNetworkViewTaskF
 	@Override
 	public boolean isReady(final CyNetworkView networkView) {
 		if(super.isReady(networkView)) {
-			if(unhideNodes) {
-				var views = networkView.getNodeViewsIterable();
-				if(hasHidden(views, BasicVisualLexicon.NODE_VISIBLE)) {
-					return true;
-				}
+			if(unhideNodes && hasHiddenNodes(networkView)) {
+				return true;
 			}
-			if(unhideEdges) {
-				// Checking all edges for visibility doesn't scale for large networks, just bail out
-				if(networkView.getModel().getEdgeCount() > 500000) {
-					return true;
-				}
-				var views = networkView.getEdgeViewsIterable();
-				if(hasHidden(views, BasicVisualLexicon.EDGE_VISIBLE)) {
-					return true;
-				}
+			if(unhideEdges && hasHiddenEdges(networkView)) {
+				return true;
 			}
 		}
 		return false;
 	}
+	
+	
+	private boolean hasHiddenNodes(CyNetworkView networkView) {
+		// fast path
+		if(networkView.supportsSnapshots()) {
+			CyNetworkViewSnapshot snapshot = networkView.createSnapshot();
+			if(snapshot.isTrackedNodeKey("HIDDEN_NODES")) {
+				return snapshot.getTrackedNodeCount("HIDDEN_NODES") > 0;
+			}
+		} 
+		// slow path
+		var views = networkView.getNodeViewsIterable();
+		return hasHidden(views, BasicVisualLexicon.NODE_VISIBLE);
+	}
+	
+	private boolean hasHiddenEdges(CyNetworkView networkView) {
+		// fast path
+		if(networkView.supportsSnapshots()) {
+			CyNetworkViewSnapshot snapshot = networkView.createSnapshot();
+			if(snapshot.isTrackedNodeKey("HIDDEN_EDGES")) {
+				return snapshot.getTrackedNodeCount("HIDDEN_EDGES") > 0;
+			}
+		} 
+		
+		// Maybe bail out, checking all edges for visibility doesn't scale for large networks
+		if(networkView.getModel().getEdgeCount() > 400000) {
+			return true;
+		}
+		
+		// slow path
+		var views = networkView.getEdgeViewsIterable();
+		return hasHidden(views, BasicVisualLexicon.EDGE_VISIBLE);
+	}
+	
 	
 	private <T> boolean hasHidden(Iterable<View<T>> views, VisualProperty<?> vp) {
 		for(var v : views) {

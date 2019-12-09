@@ -5,17 +5,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.NetworkViewRenderer;
-import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.create.NewEmptyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
@@ -26,7 +19,7 @@ import org.cytoscape.work.TaskIterator;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -46,35 +39,12 @@ import org.cytoscape.work.TaskIterator;
 
 public class NewEmptyNetworkTaskFactoryImpl extends AbstractTaskFactory implements NewEmptyNetworkViewFactory {
 	
-	private final CyNetworkFactory netFactory;
-	private final CyNetworkManager netMgr;
-	private final CyNetworkViewManager netViewMgr;
-	private final CyNetworkNaming namingUtil;
-	private final SynchronousTaskManager<?> syncTaskMgr;
-	private final VisualMappingManager vmMgr;
-	private final CyRootNetworkManager rootNetMgr;
-	private final CyApplicationManager appMgr;
-	private final CyServiceRegistrar registrar;
 	private final Set<NetworkViewRenderer> viewRenderers;
+	private final CyServiceRegistrar serviceRegistrar;
 	
-	public NewEmptyNetworkTaskFactoryImpl(final CyNetworkFactory netFactory,
-										  final CyNetworkManager netMgr,
-										  final CyNetworkViewManager netViewMgr,
-										  final CyNetworkNaming namingUtil,
-										  final SynchronousTaskManager<?> syncTaskMgr,
-										  final VisualMappingManager vmMgr,
-										  final CyRootNetworkManager rootNetMgr,
-										  final CyApplicationManager appMgr,
-											final CyServiceRegistrar registrar) {
-		this.netFactory = netFactory;
-		this.netMgr = netMgr;
-		this.netViewMgr = netViewMgr;
-		this.namingUtil = namingUtil;
-		this.syncTaskMgr = syncTaskMgr;
-		this.vmMgr = vmMgr;
-		this.rootNetMgr = rootNetMgr;
-		this.appMgr = appMgr;
-		this.registrar = registrar;
+	public NewEmptyNetworkTaskFactoryImpl(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
+		
 		viewRenderers = new TreeSet<>(new Comparator<NetworkViewRenderer>() {
 			@Override
 			public int compare(NetworkViewRenderer r1, NetworkViewRenderer r2) {
@@ -88,19 +58,11 @@ public class NewEmptyNetworkTaskFactoryImpl extends AbstractTaskFactory implemen
 		return new TaskIterator(createTask());
 	} 
 
-	private NewEmptyNetworkTask createTask() {
-		if (viewRenderers.isEmpty())
-			throw new RuntimeException("Unable to create Network View: There is no NetworkViewRenderer.");
-		
-		return new NewEmptyNetworkTask(netFactory, netMgr, netViewMgr, namingUtil, vmMgr, rootNetMgr,
-				appMgr, viewRenderers, registrar);
-	}
-	
 	@Override
 	public CyNetworkView createNewEmptyNetworkView() {
 		// no tunables, so no need to set the execution context
 		NewEmptyNetworkTask task = createTask();
-		syncTaskMgr.execute(new TaskIterator(task));	
+		serviceRegistrar.getService(SynchronousTaskManager.class).execute(new TaskIterator(task));	
 		
 		return task.getView(); 
 	}
@@ -111,5 +73,12 @@ public class NewEmptyNetworkTaskFactoryImpl extends AbstractTaskFactory implemen
 
 	public void removeNetworkViewRenderer(final NetworkViewRenderer renderer, final Map<?, ?> props) {
 		viewRenderers.remove(renderer);
+	}
+	
+	private NewEmptyNetworkTask createTask() {
+		if (viewRenderers.isEmpty())
+			throw new RuntimeException("Unable to create Network View: There is no NetworkViewRenderer.");
+		
+		return new NewEmptyNetworkTask(viewRenderers, serviceRegistrar);
 	}
 }

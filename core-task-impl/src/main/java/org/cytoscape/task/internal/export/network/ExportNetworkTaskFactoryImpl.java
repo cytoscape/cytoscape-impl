@@ -1,12 +1,24 @@
 package org.cytoscape.task.internal.export.network;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractNetworkTaskFactory;
+import org.cytoscape.task.write.ExportNetworkTaskFactory;
+import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TunableSetter;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,52 +36,34 @@ package org.cytoscape.task.internal.export.network;
  * #L%
  */
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.write.CyNetworkViewWriterManager;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.task.AbstractNetworkTaskFactory;
-import org.cytoscape.task.write.ExportNetworkTaskFactory;
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TunableSetter;
-
 public class ExportNetworkTaskFactoryImpl extends AbstractNetworkTaskFactory 
                                           implements ExportNetworkTaskFactory, TaskFactory {
 
-	private final CyNetworkViewWriterManager writerManager;
-	private final CyApplicationManager cyApplicationManager;
-	private final TunableSetter tunableSetter;
-
+	private final CyServiceRegistrar serviceRegistrar;
 	
-	public ExportNetworkTaskFactoryImpl(CyNetworkViewWriterManager writerManager, CyApplicationManager cyApplicationManager,
-			TunableSetter tunableSetter) {
-		this.writerManager = writerManager;
-		this.cyApplicationManager = cyApplicationManager;
-		this.tunableSetter = tunableSetter;
+	public ExportNetworkTaskFactoryImpl(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
-	
+
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(2,new CyNetworkWriter(writerManager, cyApplicationManager, null, true));
+		return new TaskIterator(2, new CyNetworkWriter(null, true, serviceRegistrar));
 	}
-	
+
 	@Override
 	public TaskIterator createTaskIterator(CyNetwork network) {
-		return new TaskIterator(2,new CyNetworkWriter(writerManager, cyApplicationManager, network, false));
+		return new TaskIterator(2, new CyNetworkWriter(network, false, serviceRegistrar));
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(CyNetwork network, File file) {
-		final Map<String, Object> m = new HashMap<String, Object>();
+		final Map<String, Object> m = new HashMap<>();
 		m.put("OutputFile", file);
 
-		CyNetworkWriter writer = new CyNetworkWriter(writerManager, cyApplicationManager, network, false);
+		CyNetworkWriter writer = new CyNetworkWriter(network, false, serviceRegistrar);
 		writer.setDefaultFileFormatUsingFileExt(file);
-		return tunableSetter.createTaskIterator(new TaskIterator(2,writer), m); 
+		
+		return serviceRegistrar.getService(TunableSetter.class).createTaskIterator(new TaskIterator(2, writer), m);
 	}
 
 	@Override

@@ -1,5 +1,7 @@
 package org.cytoscape.task.internal.network;
 
+import static org.mockito.Mockito.when;
+
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.group.CyGroupFactory;
@@ -27,37 +29,53 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 public class CloneNetworkTaskFactoryTest {
+	
 	@Test
 	public void testObserver() throws Exception {
 		NetworkViewTestSupport viewSupport = new NetworkViewTestSupport();
 		NetworkTestSupport networkSupport = new NetworkTestSupport();
 		
-		CyNetworkManager networkMgr = Mockito.mock(CyNetworkManager.class);
-		CyNetworkViewManager networkViewMgr = Mockito.mock(CyNetworkViewManager.class);
-		VisualMappingManager vmm = Mockito.mock(VisualMappingManager.class);
-		CyNetworkFactory netFactory = networkSupport.getNetworkFactory();
-		CyNetworkViewFactory netViewFactory = viewSupport.getNetworkViewFactory();
-		CyNetworkNaming naming = Mockito.mock(CyNetworkNaming.class);
-		CyApplicationManager appMgr = Mockito.mock(CyApplicationManager.class);
-		CyNetworkTableManager netTableMgr = Mockito.mock(CyNetworkTableManager.class);
-		CyRootNetworkManager rootNetMgr = new CyRootNetworkManagerImpl();
-		CyGroupManager groupMgr = Mockito.mock(CyGroupManager.class);
-		CyGroupFactory groupFactory = Mockito.mock(CyGroupFactory.class);
-		RenderingEngineManager renderingEngineMgr = Mockito.mock(RenderingEngineManager.class);
-		CyNetworkViewFactory nullNetworkViewFactory = new NullCyNetworkViewFactory();
+		var netMgr = Mockito.mock(CyNetworkManager.class);
+		var netViewMgr = Mockito.mock(CyNetworkViewManager.class);
+		var vmm = Mockito.mock(VisualMappingManager.class);
+		var netFactory = networkSupport.getNetworkFactory();
+		var netViewFactory = viewSupport.getNetworkViewFactory();
+		var netNaming = Mockito.mock(CyNetworkNaming.class);
+		var appMgr = Mockito.mock(CyApplicationManager.class);
+		var netTableMgr = Mockito.mock(CyNetworkTableManager.class);
+		var rootNetMgr = new CyRootNetworkManagerImpl();
+		var groupMgr = Mockito.mock(CyGroupManager.class);
+		var groupFactory = Mockito.mock(CyGroupFactory.class);
+		var renderingEngineMgr = Mockito.mock(RenderingEngineManager.class);
+		var nullNetViewFactory = new NullCyNetworkViewFactory();
+		
 		CyServiceRegistrar serviceRegistrar = Mockito.mock(CyServiceRegistrar.class);
-		CloneNetworkTaskFactoryImpl factory = new CloneNetworkTaskFactoryImpl(networkMgr, networkViewMgr, vmm, 
-				netFactory, netViewFactory, naming, appMgr, netTableMgr, rootNetMgr, groupMgr, groupFactory, 
-				renderingEngineMgr, nullNetworkViewFactory, serviceRegistrar);
+		when(serviceRegistrar.getService(CyApplicationManager.class)).thenReturn(appMgr);
+		when(serviceRegistrar.getService(CyNetworkManager.class)).thenReturn(netMgr);
+		when(serviceRegistrar.getService(CyNetworkViewManager.class)).thenReturn(netViewMgr);
+		when(serviceRegistrar.getService(CyNetworkTableManager.class)).thenReturn(netTableMgr);
+		when(serviceRegistrar.getService(CyRootNetworkManager.class)).thenReturn(rootNetMgr);
+		when(serviceRegistrar.getService(VisualMappingManager.class)).thenReturn(vmm);
+		when(serviceRegistrar.getService(CyNetworkFactory.class)).thenReturn(netFactory);
+		when(serviceRegistrar.getService(CyNetworkViewFactory.class)).thenReturn(netViewFactory);
+		when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(netNaming);
+		when(serviceRegistrar.getService(CyGroupManager.class)).thenReturn(groupMgr);
+		when(serviceRegistrar.getService(CyGroupFactory.class)).thenReturn(groupFactory);
+		when(serviceRegistrar.getService(RenderingEngineManager.class)).thenReturn(renderingEngineMgr);
+		when(serviceRegistrar.getService(CyNetworkViewFactory.class, "(id=NullCyNetworkViewFactory)")).thenReturn(nullNetViewFactory);
+		
+		var factory = new CloneNetworkTaskFactoryImpl(serviceRegistrar);
 		
 		CyNetwork network = netFactory.createNetwork();
 		TaskObserver observer = Mockito.mock(TaskObserver.class);
 		TaskIterator iterator = factory.createTaskIterator(network);
 
 		TaskMonitor taskMonitor = Mockito.mock(TaskMonitor.class);
+		
 		while (iterator.hasNext()) {
 			Task t = iterator.next();
 			t.run(taskMonitor);
+			
 			if (t instanceof ObservableTask)
 				observer.taskFinished((ObservableTask)t);
 		}

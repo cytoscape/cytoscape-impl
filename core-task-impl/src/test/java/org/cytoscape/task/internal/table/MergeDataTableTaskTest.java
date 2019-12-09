@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -13,7 +13,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.equations.Interpreter;
@@ -25,12 +24,14 @@ import org.cytoscape.event.DummyCyEventHelper;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.SavePolicy;
-import org.cytoscape.model.TableTestSupport;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.internal.CyNetworkManagerImpl;
 import org.cytoscape.model.internal.CyNetworkTableManagerImpl;
@@ -40,9 +41,11 @@ import org.cytoscape.model.internal.CyTableImpl;
 import org.cytoscape.model.internal.CyTableManagerImpl;
 import org.cytoscape.model.internal.column.ColumnDataFactory;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.internal.network.NewNetworkSelectedNodesOnlyTask;
+import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.RenderingEngineManager;
@@ -50,6 +53,7 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.TunableSetter;
 import org.cytoscape.work.internal.sync.SyncTunableHandlerFactory;
 import org.cytoscape.work.internal.sync.SyncTunableMutator;
 import org.cytoscape.work.internal.sync.SyncTunableMutatorFactory;
@@ -87,37 +91,48 @@ public class MergeDataTableTaskTest {
 
 	private final NetworkTestSupport support = new NetworkTestSupport();
 	private final NetworkViewTestSupport viewSupport = new NetworkViewTestSupport();
-	private final TableTestSupport tableSupport = new TableTestSupport();
 	private CyRootNetwork root;
 
 	private CyEventHelper eventHelper = new DummyCyEventHelper();
 	private UndoSupport undoSupport = mock(UndoSupport.class);
 	private CyNetworkNaming namingUtil = mock(CyNetworkNaming.class);
     private CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
-	private CyNetworkManagerImpl netMgr = new CyNetworkManagerImpl(serviceRegistrar);	
-	private final CyRootNetworkManagerImpl rootNetMgr = new CyRootNetworkManagerImpl();
+	private CyNetworkManagerImpl netMgr = new CyNetworkManagerImpl(serviceRegistrar);
+	private CyNetworkViewManager netViewMgr = mock(CyNetworkViewManager.class);
+	private CyRootNetworkManagerImpl rootNetMgr = new CyRootNetworkManagerImpl();
+	private VisualMappingManager visMapMgr = mock(VisualMappingManager.class);
 	private EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl(serviceRegistrar));
 	private Interpreter interpreter = new InterpreterImpl();
-	private final CyTableManagerImpl tableMgr = new CyTableManagerImpl(new CyNetworkTableManagerImpl(), netMgr, serviceRegistrar);
+	private CyTableManagerImpl tableMgr = new CyTableManagerImpl(new CyNetworkTableManagerImpl(), netMgr, serviceRegistrar);
 	
-	private SyncTunableMutator stm = new SyncTunableMutator();
-	SyncTunableHandlerFactory syncTunableHandlerFactory = new SyncTunableHandlerFactory();
+	private SyncTunableMutator<?> stm = new SyncTunableMutator<>();
+	private SyncTunableHandlerFactory syncTunableHandlerFactory = new SyncTunableHandlerFactory();
 
-	private TunableSetterImpl ts = new TunableSetterImpl(new SyncTunableMutatorFactory(syncTunableHandlerFactory),  new TunableRecorderManager());
-	Properties syncFactoryProp = new Properties();
+	private TunableSetterImpl ts = new TunableSetterImpl(new SyncTunableMutatorFactory(syncTunableHandlerFactory), new TunableRecorderManager());
+	private Properties syncFactoryProp = new Properties();
 	
 	private CyGroupManager groupMgr = mock(CyGroupManager.class);
-	private RenderingEngineManager renderingEngineManager = mock(RenderingEngineManager.class);
+	private RenderingEngineManager renderingEngineMgr = mock(RenderingEngineManager.class);
 
 	@Before
 	public void setUp() throws Exception {
+		when(serviceRegistrar.getService(CyRootNetworkManager.class)).thenReturn(rootNetMgr);
+		when(serviceRegistrar.getService(CyNetworkManager.class)).thenReturn(netMgr);
+		when(serviceRegistrar.getService(CyNetworkFactory.class)).thenReturn(support.getNetworkFactory());
+		when(serviceRegistrar.getService(CyNetworkViewFactory.class)).thenReturn(viewSupport.getNetworkViewFactory());
+		when(serviceRegistrar.getService(CyNetworkViewManager.class)).thenReturn(netViewMgr);
+		when(serviceRegistrar.getService(CyTableManager.class)).thenReturn(tableMgr);
+		when(serviceRegistrar.getService(RenderingEngineManager.class)).thenReturn(renderingEngineMgr);
+		when(serviceRegistrar.getService(CyGroupManager.class)).thenReturn(groupMgr);
+		when(serviceRegistrar.getService(VisualMappingManager.class)).thenReturn(visMapMgr);
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
         when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
         when(serviceRegistrar.getService(EquationCompiler.class)).thenReturn(compiler);
 		when(serviceRegistrar.getService(Interpreter.class)).thenReturn(interpreter);
 		when(serviceRegistrar.getService(UndoSupport.class)).thenReturn(undoSupport);
+		when(serviceRegistrar.getService(TunableSetter.class)).thenReturn(ts);
 		
-		when(renderingEngineManager.getRenderingEngines(any(View.class))).thenReturn(Collections.EMPTY_LIST);
+		when(renderingEngineMgr.getRenderingEngines(any(View.class))).thenReturn(Collections.EMPTY_LIST);
 	}
 	
 	@Test
@@ -158,7 +173,6 @@ public class MergeDataTableTaskTest {
 		String table4sRow2 = "col4 row2";
 		
 		
-		
 		//creating first network with 2 nodes
 		net1 = support.getNetwork();
 		net1.getRow(net1).set(CyNetwork.NAME, "net1");
@@ -172,8 +186,7 @@ public class MergeDataTableTaskTest {
 		netMgr.addNetwork(net1);
 		((CySubNetworkImpl) net1).handleEvent(new NetworkAddedEvent(netMgr, net1));
 
-		
-		List<CyNetwork> firstnetlist = new ArrayList<CyNetwork>(netMgr.getNetworkSet());
+		List<CyNetwork> firstnetlist = new ArrayList<>(netMgr.getNetworkSet());
 		
 		//creating a table for mapping to all networks
 		table1 = new CyTableImpl("dummy table", "ID", String.class, true, true, 
@@ -186,7 +199,7 @@ public class MergeDataTableTaskTest {
 		row2.set(table1sCol, table1sRow2);
 		
 		root = rootNetMgr.getRootNetwork(net1);
-		List<String> listCols = new ArrayList<String>();
+		List<String> listCols = new ArrayList<>();
 		listCols.add(table1sCol);
 		mapping(table1,listCols,"ID", true, net1, root, root.getDefaultNodeTable().getColumn(CyRootNetwork.SHARED_NAME),false);
 		//check the mapping by task
@@ -197,11 +210,7 @@ public class MergeDataTableTaskTest {
 		net1.getDefaultNodeTable().getRow(node1.getSUID()).set(CyNetwork.SELECTED, true);
 		net1.getDefaultNodeTable().getRow(node2.getSUID()).set(CyNetwork.SELECTED, true);
 		
-		NewNetworkSelectedNodesOnlyTask newNetTask = new NewNetworkSelectedNodesOnlyTask(net1,
-				support.getRootNetworkFactory(), viewSupport.getNetworkViewFactory(), netMgr,
-				mock(CyNetworkViewManager.class), mock(CyNetworkNaming.class), mock(VisualMappingManager.class),
-				mock(CyApplicationManager.class), eventHelper, groupMgr, renderingEngineManager,
-				mock(CyServiceRegistrar.class));
+		NewNetworkSelectedNodesOnlyTask newNetTask = new NewNetworkSelectedNodesOnlyTask(net1, serviceRegistrar);
 
 		assertNotNull(newNetTask);
 		newNetTask.setTaskIterator(new TaskIterator(newNetTask));
@@ -215,7 +224,6 @@ public class MergeDataTableTaskTest {
 		secondNetList  = new ArrayList<>(netMgr.getNetworkSet());
 		
 		((CySubNetworkImpl) subnet1).handleEvent(new NetworkAddedEvent(netMgr, subnet1));
-		
 		
 		assertEquals(2, subnet1.getNodeList().size());
 		
@@ -235,7 +243,7 @@ public class MergeDataTableTaskTest {
 		row4.set(table2sCol,table2sRow2);
 		
 		root = rootNetMgr.getRootNetwork(net1);
-		listCols = new ArrayList<String>();
+		listCols = new ArrayList<>();
 		listCols.add(table2sCol);
 		mapping(table2,listCols,"ID", true, net1,root, root.getDefaultNodeTable().getColumn(CyRootNetwork.SHARED_NAME), true);
 		//check the mapping by task
@@ -247,11 +255,7 @@ public class MergeDataTableTaskTest {
 		//creating another subnetwork (subnet2) to check that bot virtual columns will be added
 		net1.getDefaultNodeTable().getRow(node1.getSUID()).set(CyNetwork.SELECTED, true);
 		
-		NewNetworkSelectedNodesOnlyTask newNetTask2 = new NewNetworkSelectedNodesOnlyTask(net1,
-				support.getRootNetworkFactory(), viewSupport.getNetworkViewFactory(), netMgr,
-				mock(CyNetworkViewManager.class), mock(CyNetworkNaming.class), mock(VisualMappingManager.class),
-				mock(CyApplicationManager.class), eventHelper, groupMgr, renderingEngineManager,
-				mock(CyServiceRegistrar.class));
+		NewNetworkSelectedNodesOnlyTask newNetTask2 = new NewNetworkSelectedNodesOnlyTask(net1, serviceRegistrar);
 
 		assertNotNull(newNetTask2);
 		newNetTask2.setTaskIterator(new TaskIterator(newNetTask2));
@@ -262,7 +266,6 @@ public class MergeDataTableTaskTest {
 		assertEquals(1, thirdNetList.size());
 		subnet2 = thirdNetList.get(0);		
 		((CySubNetworkImpl) subnet2).handleEvent(new NetworkAddedEvent(netMgr, subnet2));
-		
 		
 		assertEquals(2, subnet2.getNodeList().size());
 		
@@ -288,7 +291,6 @@ public class MergeDataTableTaskTest {
 		rowTemp.set(table2sCol, table2sRow2);
 		rowTemp.set(table3sCol, table3sRow2);
 		
-		
 		table4 = new CyTableImpl("dummy table 4", "ID", String.class, true, true, 
 				SavePolicy.DO_NOT_SAVE , eventHelper, ColumnDataFactory.createDefaultFactory(), interpreter, 2);
 		table4.createColumn(table2sCol, String.class, false);
@@ -302,50 +304,50 @@ public class MergeDataTableTaskTest {
 		rowTemp.set(table4sCol, table4sRow2);
 		
 		tableMgr.addTable(table3);
-		
 		tableMgr.addTable(table4);
 		
-		List<String> listCols2 = new ArrayList<String>();
+		List<String> listCols2 = new ArrayList<>();
 		listCols2.add(table3sCol);
 		
 		mappingGlobalTable(table3,table4,listCols2,table2sCol,false,null,null,table4.getColumn(table2sCol),false);
 		
 		assertEquals(table3sRow1, table4.getRow(row1Name).get(table3sCol, String.class) );
-		
 		assertEquals(table3sRow2, table4.getRow(row2Name).get(table3sCol, String.class) );
-	
 	}
-	
-	public void mapping(CyTable sourceTable,List<String> sourceColumnsList, String sourceKeyColumn,boolean mergeColumnVirtual, CyNetwork net,CyRootNetwork rootNet, CyColumn col, boolean selectedOnly) throws Exception{
-		
-		MergeTablesTaskFactoryImpl mappingTF = new MergeTablesTaskFactoryImpl(tableMgr,netMgr, ts, rootNetMgr);
-		List<CyNetwork> nets = new ArrayList<CyNetwork>();
+
+	public void mapping(CyTable sourceTable, List<String> sourceColumnsList, String sourceKeyColumn,
+			boolean mergeColumnVirtual, CyNetwork net, CyRootNetwork rootNet, CyColumn col, boolean selectedOnly)
+			throws Exception {
+		var mappingTF = new MergeTablesTaskFactoryImpl(serviceRegistrar);
+		List<CyNetwork> nets = new ArrayList<>();
 		nets.add(net);
-		
-		TaskIterator ti = mappingTF.createTaskIterator(sourceTable,null,sourceColumnsList,sourceKeyColumn,mergeColumnVirtual, true,selectedOnly, nets ,rootNet,col, CyNode.class);
+
+		TaskIterator ti = mappingTF.createTaskIterator(sourceTable, null, sourceColumnsList, sourceKeyColumn,
+				mergeColumnVirtual, true, selectedOnly, nets, rootNet, col, CyNode.class);
 		assertNotNull("task iterator is null", ti);
-		
+
 		assertTrue(ti.hasNext());
 		Task t = ti.next();
 		assertNotNull("task is null", t);
 		t.run(mock(TaskMonitor.class));
-	
+
 	}
-	
-    public void mappingGlobalTable(CyTable sourceTable,CyTable targetTable,List<String> sourceColumnsList, String sourceKeyColumn,boolean mergeColumnVirtual, CyNetwork net,CyRootNetwork rootNet, CyColumn col, boolean selectedOnly) throws Exception{
-		
-		MergeTablesTaskFactoryImpl mappingTF = new MergeTablesTaskFactoryImpl(tableMgr,netMgr, ts, rootNetMgr);
-		List<CyNetwork> nets = new ArrayList<CyNetwork>();
-		if(net != null)
+
+	public void mappingGlobalTable(CyTable sourceTable, CyTable targetTable, List<String> sourceColumnsList,
+			String sourceKeyColumn, boolean mergeColumnVirtual, CyNetwork net, CyRootNetwork rootNet, CyColumn col,
+			boolean selectedOnly) throws Exception {
+		var mappingTF = new MergeTablesTaskFactoryImpl(serviceRegistrar);
+		List<CyNetwork> nets = new ArrayList<>();
+		if (net != null)
 			nets.add(net);
-		
-		TaskIterator ti = mappingTF.createTaskIterator(sourceTable,targetTable,sourceColumnsList,sourceKeyColumn,mergeColumnVirtual, false,selectedOnly, nets ,rootNet,col, CyNode.class);
+
+		TaskIterator ti = mappingTF.createTaskIterator(sourceTable, targetTable, sourceColumnsList, sourceKeyColumn,
+				mergeColumnVirtual, false, selectedOnly, nets, rootNet, col, CyNode.class);
 		assertNotNull("task iterator is null", ti);
-		
+
 		assertTrue(ti.hasNext());
 		Task t = ti.next();
 		assertNotNull("task is null", t);
 		t.run(mock(TaskMonitor.class));
-	
 	}
 }
