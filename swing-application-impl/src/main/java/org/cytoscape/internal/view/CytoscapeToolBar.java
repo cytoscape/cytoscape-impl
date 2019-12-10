@@ -245,12 +245,14 @@ public class CytoscapeToolBar extends JToolBar {
 	private void resave() {
 		List<String> hidden = new ArrayList<>();
 		
-		for (Component comp : getComponents()) {
-			if (comp instanceof JButton)
+		for (var comp : getComponents()) {
+			if (comp instanceof AbstractButton) {
 				if (!comp.isVisible()) {
-					String butnName = ((CyAction) ((JButton) comp).getAction()).getName();
-					hidden.add(butnName);
+					var button = (AbstractButton) comp;
+					var name = ((CyAction) button.getAction()).getName();
+					hidden.add(name);
 				}
+			}
 		}
 		
 		writeStopList(hidden);
@@ -285,15 +287,15 @@ public class CytoscapeToolBar extends JToolBar {
 			insertSepAfter = ((AbstractCyAction) action).insertToolbarSeparatorAfter();
 		}
 
-		ActionButton button = new ActionButton(createToolBarButton(action), insertSepBefore, insertSepAfter);
+		var actionButton = new ActionButton(createToolBarButton(action), insertSepBefore, insertSepAfter);
 		
-		componentGravity.put(button, action.getToolbarGravity());
-		actionButtonMap.put(action, button);
+		componentGravity.put(actionButton, action.getToolbarGravity());
+		actionButtonMap.put(action, actionButton);
 		int addIndex = getInsertLocation(action.getToolbarGravity());
-		orderedList.add(addIndex, button);
+		orderedList.add(addIndex, actionButton);
 		
 		if (stopList.contains(action.getName()))
-			button.component.setVisible(false);
+			actionButton.component.setVisible(false);
 
 		update();
 
@@ -462,8 +464,8 @@ public class CytoscapeToolBar extends JToolBar {
 		removeAll();
 		
 		for (Object o : orderedList) {
-			if (o instanceof JButton) {
-				add((JButton) o);
+			if (o instanceof AbstractButton) {
+				add((AbstractButton) o);
 			} else if (o instanceof Float) {
 				addSeparator();
 			} else if (o instanceof ToolBarComponent) {
@@ -544,15 +546,14 @@ public class CytoscapeToolBar extends JToolBar {
 		BufferedWriter writer = null;
 		
 		try {
-			CyApplicationConfiguration cyApplicationConfiguration = serviceRegistrar
-					.getService(CyApplicationConfiguration.class);
+			var applicationConfig = serviceRegistrar.getService(CyApplicationConfiguration.class);
 			
-			if (cyApplicationConfiguration == null) {
+			if (applicationConfig == null) {
 				System.err.println("cyApplicationConfiguration not found");
 				return;
 			}
 
-			File configDirectory = cyApplicationConfiguration.getConfigurationDirectoryLocation();
+			File configDirectory = applicationConfig.getConfigurationDirectoryLocation();
 			File configFile = null;
 			
 			if (configDirectory.exists())
