@@ -122,10 +122,28 @@ public class NetworkPicker {
 		re.getTransform().xformImageToNodeCoords(locn);
 		double xP = locn[0];
 		double yP = locn[1];	
-						
-		List<DLabelSelection> overlapNodes = new ArrayList<>();
 		
-		for(View<CyNode> nodeView : snapshot.getNodeViews()) {
+		Rectangle networkPaneBound = re.getComponentBounds();
+		
+		double[] ptBuff = {0d, 0d};
+		re.getTransform().xformImageToNodeCoords(ptBuff);
+		final float xMin = (float) ptBuff[0];
+		final float yMin = (float) ptBuff[1];
+		ptBuff[0] =  networkPaneBound.width;
+		ptBuff[1] =  networkPaneBound.height;
+		re.getTransform().xformImageToNodeCoords(ptBuff);
+		final float xMax = (float) ptBuff[0];
+		final float yMax = (float) ptBuff[1];
+				
+		DLabelSelection selection = null;
+		
+		SpacialIndex2DEnumerator<Long> under = snapshot.getSpacialIndex2D().queryOverlap(xMin, yMin, xMax, yMax);
+		
+		float[] extentsBuff = new float[4];
+
+		while (under.hasNext()) {
+			final Long suid = under.nextExtents(extentsBuff);
+			View<CyNode> nodeView = snapshot.getNodeView(suid.longValue());
 		
 			// compute the actual size of label text rectangle
 			String labelText = nodeDetails.getLabelText(nodeView);
@@ -187,14 +205,11 @@ public class NetworkPicker {
 				ObjectPosition pos = nodeView.isSet(DVisualLexicon.NODE_LABEL_POSITION) ?
 						 nodeView.getVisualProperty(DVisualLexicon.NODE_LABEL_POSITION) : null;
 
-				overlapNodes.add(new DLabelSelection ( nodeView, r, pos, nodeDetails.isSelected(nodeView)));
+				selection = (new DLabelSelection ( nodeView, r, pos, nodeDetails.isSelected(nodeView)));
 			}
 		} 
 				
-		Collections.sort(overlapNodes, 
-				Comparator.comparing(labelSelection -> Double.valueOf(nodeDetails.getZPosition(labelSelection.getNode()) )));
-
-		return overlapNodes.size() == 0 ? null : overlapNodes.get(overlapNodes.size()-1);
+		return selection;
 	} 
 	
 	public View<CyEdge> getEdgeAt(Point2D pt) {

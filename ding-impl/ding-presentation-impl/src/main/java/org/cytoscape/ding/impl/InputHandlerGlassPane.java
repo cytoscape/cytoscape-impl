@@ -319,7 +319,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		@Override
 		public void keyPressed(KeyEvent e) {
 			
-			//cleare the label selection if it enabled
+			//clear the label selection if it is enabled
 			if (labelSelectionEnabled()) 
 			   get(SelecionClickAndDragListener.class).resetLabelSelection();
 			
@@ -517,7 +517,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		@Override
 		public void mouseWheelMoved(MouseWheelEvent e) {
 			
-			//cleare the label selection if it enabled
+			//clear the label selection if it is enabled
 			if (labelSelectionEnabled()) 
 			   get(SelecionClickAndDragListener.class).resetLabelSelection();
 			
@@ -954,7 +954,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				if ( ((int)offsetX) != 0 || ((int)offsetY) != 0 ) {
 					double scaleFactor = re.getTransform().getScaleFactor();
 				
-					View<CyNode> mutableNode = re.getViewModelSnapshot().getMutableNodeView(selectedLabel.getNode().getSUID());
+					View<CyNode> mutableNode = re.getViewModelSnapshot().getMutableNodeView(selectedLabel.getNode().getSUID().longValue());
 					ObjectPosition position = new ObjectPosition( mutableNode.getVisualProperty(DVisualLexicon.NODE_LABEL_POSITION));
 					position.setOffsetX(position.getOffsetX()+ offsetX /scaleFactor);
 					position.setOffsetY(position.getOffsetY() + offsetY /scaleFactor);
@@ -963,7 +963,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 					
 					// handle Undo
 					NodeLabelChangeEdit undoEntry = new NodeLabelChangeEdit(registrar, selectedLabel.getPreviousPosition(), 
-							re.getViewModel(), mutableNode);
+							re.getViewModel(), mutableNode.getModel().getSUID());
 					undoEntry.post(position);
 				}
 				

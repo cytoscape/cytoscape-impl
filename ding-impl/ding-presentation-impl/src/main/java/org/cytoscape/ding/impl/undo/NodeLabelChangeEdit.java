@@ -24,17 +24,16 @@ public class NodeLabelChangeEdit extends AbstractCyEdit {
 	private ObjectPosition newValue;
 	private CyServiceRegistrar serviceRegistrar;
 	private CyNetworkView netView;
-	private View<CyNode>  node;
+	private Long  nodeId;
 
 	public NodeLabelChangeEdit(CyServiceRegistrar serviceRegistrar, ObjectPosition previousValue,
-			CyNetworkView netview, View<CyNode> nodeView) {
+			CyNetworkView netview, Long nodeId) {
 		super("Move Label");
-		// TODO Auto-generated constructor stub
 		this.serviceRegistrar = serviceRegistrar;
 		
 		this.oldValue = previousValue;
 		this.netView = netview;
-		this.node = nodeView;
+		this.nodeId = nodeId;
 	}
 	
 
@@ -61,6 +60,9 @@ public class NodeLabelChangeEdit extends AbstractCyEdit {
 	@Override
 	public void undo() {
 		if (isNetworkViewRegistered()) { // Make sure the network view still exists!
+			
+			CyNode cyN = netView.getModel().getNode(nodeId.longValue());
+			View<CyNode> node = netView.getNodeView(cyN);
 			if ( oldValue != null)
 				node.setLockedValue(DVisualLexicon.NODE_LABEL_POSITION, oldValue);
 			else
@@ -73,6 +75,7 @@ public class NodeLabelChangeEdit extends AbstractCyEdit {
 	@Override
 	public void redo() {
 		if (isNetworkViewRegistered()) {
+			View<CyNode> node = netView.getNodeView(netView.getModel().getNode(nodeId.longValue()));
 			node.setLockedValue(DVisualLexicon.NODE_LABEL_POSITION, newValue);
 			updateView();
 		}	
