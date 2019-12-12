@@ -349,10 +349,10 @@ public class NetworkViewImplTest {
 		
 		ExecutorService executor = Executors.newCachedThreadPool();
 		
+		var iterable = netView.getNodeViewsIterable();
 		
 		Callable<Integer> iterateRunnable = () -> {
 			int count = 0;
-			var iterable = netView.getNodeViewsIterable();
 			for(var element : iterable) {
 				doSomething(element);
 				count++;
