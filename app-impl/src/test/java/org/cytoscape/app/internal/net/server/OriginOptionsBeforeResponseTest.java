@@ -72,7 +72,7 @@ public class OriginOptionsBeforeResponseTest {
         assertEquals(connection.getHeaderField("Access-Control-Allow-Origin"), "*");
         assertEquals(connection.getHeaderField("Access-Control-Allow-Methods"), "POST, PUT, GET, OPTIONS");
         assertEquals(connection.getHeaderField("Access-Control-Max-Age"), "1");
-        assertEquals(connection.getHeaderField("Access-Control-Allow-Headers"), "origin, accept");
+        assertEquals(connection.getHeaderField("Access-Control-Allow-Headers"), "origin, content-type, accept, authorization");
 
         connection = connectToURL(url, "GET");
         assertTrue(connection.getResponseCode() == HttpURLConnection.HTTP_OK);
