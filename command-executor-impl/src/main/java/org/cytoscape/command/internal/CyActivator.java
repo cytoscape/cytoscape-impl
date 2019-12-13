@@ -25,6 +25,7 @@ import org.cytoscape.command.internal.tunables.BoundedDoubleTunableHandler;
 import org.cytoscape.command.internal.tunables.BoundedFloatTunableHandler;
 import org.cytoscape.command.internal.tunables.BoundedIntTunableHandler;
 import org.cytoscape.command.internal.tunables.BoundedLongTunableHandler;
+import org.cytoscape.command.internal.tunables.CharTunableHandlerImpl;
 import org.cytoscape.command.internal.tunables.CommandTunableInterceptorImpl;
 import org.cytoscape.command.internal.tunables.CyIdentifiableStringTunableHandlerFactory;
 import org.cytoscape.command.internal.tunables.CyNetworkTunableHandler;
@@ -106,6 +107,7 @@ public class CyActivator extends AbstractCyActivator {
 		StringTunableHandlerFactory<LongTunableHandler> longTHF = new SimpleStringTunableHandlerFactory<>(LongTunableHandler.class, Long.class, long.class);
 		StringTunableHandlerFactory<BooleanTunableHandler> booleanTHF = new SimpleStringTunableHandlerFactory<>(BooleanTunableHandler.class, Boolean.class, boolean.class);
 		StringTunableHandlerFactory<StringTunableHandlerImpl> stringTHF = new SimpleStringTunableHandlerFactory<>(StringTunableHandlerImpl.class, String.class);
+		StringTunableHandlerFactory<CharTunableHandlerImpl> charTHF = new SimpleStringTunableHandlerFactory<>(CharTunableHandlerImpl.class, Character.class, char.class);
 		StringTunableHandlerFactory<BoundedIntTunableHandler> boundedIntTHF = new SimpleStringTunableHandlerFactory<>(BoundedIntTunableHandler.class, BoundedInteger.class);
 		StringTunableHandlerFactory<BoundedDoubleTunableHandler> boundedDoubleTHF = new SimpleStringTunableHandlerFactory<>(BoundedDoubleTunableHandler.class, BoundedDouble.class);
 		StringTunableHandlerFactory<BoundedFloatTunableHandler> boundedFloatTHF = new SimpleStringTunableHandlerFactory<>(BoundedFloatTunableHandler.class, BoundedFloat.class);
@@ -121,6 +123,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, longTHF, StringTunableHandlerFactory.class, new Properties());
 		registerService(bc, booleanTHF, StringTunableHandlerFactory.class, new Properties());
 		registerService(bc, stringTHF, StringTunableHandlerFactory.class, new Properties());
+		registerService(bc, charTHF, StringTunableHandlerFactory.class, new Properties());
 		registerService(bc, boundedIntTHF, StringTunableHandlerFactory.class, new Properties());
 		registerService(bc, boundedDoubleTHF, StringTunableHandlerFactory.class, new Properties());
 		registerService(bc, boundedFloatTHF, StringTunableHandlerFactory.class, new Properties());
