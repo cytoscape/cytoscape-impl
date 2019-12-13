@@ -52,10 +52,12 @@ public class CyNetworkViewFactoryImpl implements CyNetworkViewFactory {
 		
 		for(CyEdge edge : network.getEdgeList()) {
 			View<CyEdge> view = networkViewImpl.addEdge( edge);
-			// calling getDefaultNodeTable() is faster than calling getModel().getRow(node).
-			CyRow row = network.getDefaultEdgeTable().getRow(edge.getSUID());
-			Boolean selected = row.get(CyNetwork.SELECTED, Boolean.class);
-			view.setVisualProperty(BasicVisualLexicon.EDGE_SELECTED, selected);
+			if(view != null) {
+				// calling getDefaultNodeTable() is faster than calling getModel().getRow(node).
+				CyRow row = network.getDefaultEdgeTable().getRow(edge.getSUID());
+				Boolean selected = row.get(CyNetwork.SELECTED, Boolean.class);
+				view.setVisualProperty(BasicVisualLexicon.EDGE_SELECTED, selected);
+			}
 		}
 		
 		return networkViewImpl;
