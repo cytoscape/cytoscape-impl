@@ -61,7 +61,7 @@ public final class BirdsEyeView implements RenderingEngine<CyNetwork>, ContentCh
 			public void componentResized(ComponentEvent e) {
 				// make sure the view is initialized properly, but we have 
 				// to wait for setBounds() to be called to know the viewport size
-				fitCanvasToNetwork();
+				contentChanged();
 				e.getComponent().removeComponentListener(this);
 			}
 		});
