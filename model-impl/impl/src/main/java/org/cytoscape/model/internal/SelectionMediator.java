@@ -101,7 +101,6 @@ public class SelectionMediator implements RowsSetListener {
 	
 	
 	public void listenerAdded(SelectedNodesAndEdgesListener listener, Map<String,String> args) {
-		System.out.println("SelectionMediator.listenerAdded()");
 		fireSelectionEvents = true;
 	}
 	
