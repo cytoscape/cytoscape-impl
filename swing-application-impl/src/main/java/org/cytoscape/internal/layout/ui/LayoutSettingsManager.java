@@ -66,7 +66,7 @@ public class LayoutSettingsManager {
     	// Do nothing
     }
     
-    private void restoreLayoutContext(CyLayoutAlgorithm layout) {
+    public void restoreLayoutContext(CyLayoutAlgorithm layout) {
     	try {
 			Object layoutContext = layout.getDefaultLayoutContext();
 	        CyProperty<Properties> cyProperty = getPropertyService(layout);

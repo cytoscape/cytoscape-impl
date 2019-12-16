@@ -105,6 +105,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	private JPanel layoutAttrPnl;
 	private JButton makeDefaultBtn;
     private JButton applyBtn;
+    private JButton resetBtn;
     private JButton doneBtn;
     private JCheckBox selectedOnlyChk;
 
@@ -332,6 +333,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			
 			buttonPnl.add(getSelectedOnlyChk());
 			buttonPnl.add(Box.createHorizontalGlue());
+			buttonPnl.add(getResetBtn());
 			buttonPnl.add(getApplyBtn());
 			buttonPnl.add(getDoneBtn());
 		}
@@ -353,6 +355,19 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		}
 		
 		return applyBtn;
+	}
+	
+	private JButton getResetBtn() {
+		if (resetBtn == null) {
+			resetBtn = new JButton(new AbstractAction("Reset Defaults") {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					final Object context = currentLayout.getDefaultLayoutContext();		// this is the state of the dialog, not the default
+					layoutSettingsMgr.addLayout(currentLayout, null);
+				}
+			});
+		}
+		return resetBtn;
 	}
 	
 	public JButton getDoneBtn() {
