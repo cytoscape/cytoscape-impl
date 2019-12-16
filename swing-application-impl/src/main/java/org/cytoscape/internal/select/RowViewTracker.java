@@ -77,7 +77,6 @@ public class RowViewTracker implements NetworkViewAddedListener,
 	public void handleEvent(final NetworkViewAddedEvent e) {
 		String rendererId = e.getNetworkView().getRendererId();
 		if(rendererId.equals(DING_ID)) {
-			System.out.println("RowViewTracker.handleEvent(NetworkViewAddedEvent) " + e.getNetworkView().getSUID());
 			DING_ID = rendererId; // optimization, makes calling equals() faster because reference equality
 			return;
 		}

@@ -296,7 +296,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		setContentChanged(false);
 		
 		// Fire this event on another thread (and debounce) so that it doesn't block the renderer
-		eventFireTimer.debounce(() -> eventHelper.fireEvent(new UpdateNetworkPresentationEvent(getViewModel())));
+		if(!eventFireTimer.isShutdown())
+			eventFireTimer.debounce(() -> eventHelper.fireEvent(new UpdateNetworkPresentationEvent(getViewModel())));
 	}
 	
 	private void updateModel() {
