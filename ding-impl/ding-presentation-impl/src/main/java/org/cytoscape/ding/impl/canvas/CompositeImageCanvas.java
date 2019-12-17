@@ -36,7 +36,8 @@ public class CompositeImageCanvas {
 	private final NodeCanvas<ImageGraphicsProvider> nodeCanvas;
 	private final EdgeCanvas<ImageGraphicsProvider> edgeCanvas;
 	private final AnnotationCanvas<ImageGraphicsProvider> bgAnnotationCanvas;
-	private final ColorCanvas<ImageGraphicsProvider> bgColorCanvas;
+	
+	private Color bgColor = Color.WHITE;
 	
 	private GraphLOD lod;
 	private final ImageGraphicsProvider image;
@@ -58,8 +59,7 @@ public class CompositeImageCanvas {
 			fgAnnotationCanvas = new AnnotationCanvas<>(NullGraphicsProvider.INSTANCE, re, FOREGROUND),
 			nodeCanvas = new NodeCanvas<>(newBuffer(transform), re),
 			edgeCanvas = new EdgeCanvas<>(newBuffer(transform), re),
-			bgAnnotationCanvas = new AnnotationCanvas<>(NullGraphicsProvider.INSTANCE, re, BACKGROUND),
-			bgColorCanvas = new ColorCanvas<>(newBuffer(transform), null)
+			bgAnnotationCanvas = new AnnotationCanvas<>(NullGraphicsProvider.INSTANCE, re, BACKGROUND)
 		);
 	
 		// Must paint over top of each other in reverse order
@@ -126,12 +126,11 @@ public class CompositeImageCanvas {
 	}
 	
 	public void setBackgroundPaint(Paint paint) {
-		Color color = (paint instanceof Color) ? (Color)paint : ColorCanvas.DEFAULT_COLOR;
-		bgColorCanvas.setColor(color);
+		this.bgColor = (paint instanceof Color) ? (Color)paint : Color.WHITE;
 	}
 	
 	public Color getBackgroundPaint() {
-		return bgColorCanvas.getColor();
+		return bgColor;
 	}
 	
 	public void setViewport(int width, int height) {
@@ -193,6 +192,8 @@ public class CompositeImageCanvas {
 	private Image paintImpl(ProgressMonitor pm, RenderDetailFlags flags, Predicate<DingCanvas<?>> layers) {
 		var subPms = pm.split(weights);
 		pm.start();
+		
+		image.fill(bgColor);
 		
 		for(int i = 0; i < canvasList.size(); i++) {
 			var canvas = canvasList.get(i);
