@@ -30,9 +30,11 @@ public class NetworkImageBuffer implements ImageGraphicsProvider {
 			this.image = null;
 			return;
 		}
-		
-		if(image == null || (transform.getWidth() != image.getWidth(null) || transform.getHeight() != image.getHeight(null))) {
-			this.image = new BufferedImage(transform.getWidth(), transform.getHeight(), BufferedImage.TYPE_INT_ARGB);
+		if(image == null) {
+			return;
+		}
+		if(transform.getWidth() != image.getWidth(null) || transform.getHeight() != image.getHeight(null)) {
+			this.image = null;
 		}
 	}
 	
@@ -67,8 +69,13 @@ public class NetworkImageBuffer implements ImageGraphicsProvider {
 	 * g.setTransform(networkImageBuffer.getAffineTransform()).
 	 */
 	public Graphics2D getGraphics() {
-		if(!enabled || image == null)
+		if(!enabled) {
 			return null;
+		}
+		if(image == null) {
+			image = new BufferedImage(transform.getWidth(), transform.getHeight(), BufferedImage.TYPE_INT_ARGB);
+		}
+		
 		var g = (Graphics2D) image.getGraphics();
 		clear(g);
 		return g;
