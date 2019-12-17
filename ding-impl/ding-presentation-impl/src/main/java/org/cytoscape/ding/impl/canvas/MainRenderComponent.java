@@ -46,11 +46,6 @@ public class MainRenderComponent extends RenderComponent {
 	}
 	
 	@Override
-	protected void updateThumbnail(ImageFuture future) {
-//		re.fireThumbnailChanged(future.join());
-	}
-	
-	@Override
 	protected ProgressMonitor getSlowProgressMonitor() {
 		return re.getInputHandlerGlassPane().createProgressMonitor();
 	}

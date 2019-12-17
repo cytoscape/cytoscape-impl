@@ -117,7 +117,6 @@ public abstract class RenderComponent extends JComponent {
 			}
 			if(fastFuture != null) {
 				fastFuture.cancel();
-				fastFuture = null;
 			}
 			
 			// don't render slow frames while panning, only render slow when user releases mouse button
@@ -149,7 +148,7 @@ public abstract class RenderComponent extends JComponent {
 		
 		if(slowFuture != null && slowFuture.isReady()) {
 			future = slowFuture;
-		} else if(fastFuture != null) {
+		} else if(fastFuture != null && fastFuture.isReady()) {
 			future = fastFuture;
 		} else {
 			if(slowFuture != null) {
@@ -173,14 +172,12 @@ public abstract class RenderComponent extends JComponent {
 			lastFastRenderFlags = fastFuture.getLastRenderDetail();
 			
 			future = fastFuture;
-			updateThumbnail(fastFuture);
 
 			// start a slow frame if necessary
 			if(updateType == UpdateType.ALL_FULL && !sameDetail()) { 
 				var slowPm = debugPm(UpdateType.ALL_FULL, getSlowProgressMonitor());
 				slowFuture = slowCanvas.paint(slowPm);
 				slowFuture.thenRun(this::repaint);
-				slowFuture.thenAccept(this::updateThumbnail);
 			}
 			updateType = UpdateType.ALL_FAST;
 		}
@@ -190,9 +187,6 @@ public abstract class RenderComponent extends JComponent {
 		g.drawImage(image, 0, 0, null);
 	}
 	
-	
-	protected void updateThumbnail(ImageFuture slowFuture) {
-	}
 	
 	protected void setRenderDetailFlags(RenderDetailFlags flags) {
 	}

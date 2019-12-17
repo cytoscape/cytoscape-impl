@@ -28,11 +28,13 @@ public class CompositeGraphicsCanvas {
 			new AnnotationCanvas<>(g, re, FOREGROUND, false),
 			new NodeCanvas<>(g, re),
 			new EdgeCanvas<>(g, re),
-			new AnnotationCanvas<>(g, re, BACKGROUND, false),
-			new ColorCanvas<>(g, bgPaint)
+			new AnnotationCanvas<>(g, re, BACKGROUND, false)
 		);
 		Collections.reverse(canvasList);
 		
+		g.fill(bgPaint);
 		canvasList.forEach(c -> c.paint(pm, flags));
 	}
+	
+	
 }
