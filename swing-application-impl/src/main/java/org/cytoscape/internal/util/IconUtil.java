@@ -1,5 +1,7 @@
 package org.cytoscape.internal.util;
 
+import java.awt.Color;
+
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
@@ -28,7 +30,20 @@ public abstract class IconUtil {
 	
 	public static final String CY_FONT_NAME = "cytoscape-3";
 	
+	// Colors
+	public static Color C1 = new Color(5, 62, 96); // Main color
+	public static Color C2 = Color.WHITE; // Background color
+	public static Color C3 = new Color(56, 120, 158); // Highlight color
+	
+	public static final Color[] COLORS_2A = new Color[] { C1, C2 };
+	public static final Color[] COLORS_2B = new Color[] { C1, C3 };
+	public static final Color[] COLORS_3 = new Color[] { C1, C2, C3 };
+	
 	public static final String CYTOSCAPE_LOGO = "b";
+	
+	public static final String NEW_FROM_SELECTED_1 = "H";
+	public static final String NEW_FROM_SELECTED_2 = "I";
+	public static final String NEW_FROM_SELECTED_3 = "J";
 	
 	public static final String SELECTION_MODE_ANNOTATIONS = "7";
 	public static final String SELECTION_MODE_EDGES = "8";
@@ -44,6 +59,9 @@ public abstract class IconUtil {
 	public static final String GD_LOW = "&";
 	
 	public static final String FILE_EXPORT = "+";
+	
+	// Layers used to build a TextIcon
+	public static final String[] LAYERED_NEW_FROM_SELECTED = new String[] { NEW_FROM_SELECTED_1, NEW_FROM_SELECTED_2, NEW_FROM_SELECTED_3 };
 	
 	private IconUtil() {
 		// ...

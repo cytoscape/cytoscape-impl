@@ -4,10 +4,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
 import java.awt.Image;
 import java.awt.Toolkit;
-import java.awt.Window;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.FilteredImageSource;
@@ -130,9 +128,9 @@ public class CytoscapeToolBar extends JToolBar {
 			}
 			private void showPopup(MouseEvent e) {
 				if (e.isPopupTrigger()) {
-					final JPopupMenu popup = new JPopupMenu();
+					var popup = new JPopupMenu();
 					
-					JMenuItem menuItem = new JMenuItem("Show All");
+					var menuItem = new JMenuItem("Show All");
 					popup.add(menuItem);
 					menuItem.addActionListener(ev -> {
 						showAll();
@@ -147,19 +145,19 @@ public class CytoscapeToolBar extends JToolBar {
 						resave();
 					});
 					
-					for (Component comp : getComponents()) {
-						if (comp instanceof JButton) {
-							JButton button = (JButton) comp;
+					for (var comp : getComponents()) {
+						if (comp instanceof AbstractButton) {
+							var button = (AbstractButton) comp;
 							String tip = button.getToolTipText();
 							
 							if (tip == null || tip.isEmpty())
 								continue;
 							
-							JCheckBoxMenuItem mi = new JCheckBoxMenuItem();
+							var mi = new JCheckBoxMenuItem();
 							mi.setText(tip);
 							mi.setState(button.isVisible());
 							
-							Icon icon = button.getIcon();
+							var icon = button.getIcon();
 							
 							if (icon instanceof ImageIcon) {
 								if (icon.getIconWidth() > ICON_WIDTH || icon.getIconHeight() > ICON_HEIGHT)
@@ -196,10 +194,10 @@ public class CytoscapeToolBar extends JToolBar {
 					}
 					
 					// Calculate max number of visible menu items before scrolling
-					Window window = SwingUtilities.getWindowAncestor(CytoscapeToolBar.this);
+					var window = SwingUtilities.getWindowAncestor(CytoscapeToolBar.this);
 					
 					if (window != null) {
-						GraphicsConfiguration gc = window.getGraphicsConfiguration();
+						var gc = window.getGraphicsConfiguration();
 						int sh = ViewUtil.getEffectiveScreenArea(gc).height;
 						int ph = popup.getPreferredSize().height;
 						
@@ -247,12 +245,14 @@ public class CytoscapeToolBar extends JToolBar {
 	private void resave() {
 		List<String> hidden = new ArrayList<>();
 		
-		for (Component comp : getComponents()) {
-			if (comp instanceof JButton)
+		for (var comp : getComponents()) {
+			if (comp instanceof AbstractButton) {
 				if (!comp.isVisible()) {
-					String butnName = ((CyAction) ((JButton) comp).getAction()).getName();
-					hidden.add(butnName);
+					var button = (AbstractButton) comp;
+					var name = ((CyAction) button.getAction()).getName();
+					hidden.add(name);
 				}
+			}
 		}
 		
 		writeStopList(hidden);
@@ -287,15 +287,15 @@ public class CytoscapeToolBar extends JToolBar {
 			insertSepAfter = ((AbstractCyAction) action).insertToolbarSeparatorAfter();
 		}
 
-		ActionButton button = new ActionButton(createToolBarButton(action), insertSepBefore, insertSepAfter);
+		var actionButton = new ActionButton(createToolBarButton(action), insertSepBefore, insertSepAfter);
 		
-		componentGravity.put(button, action.getToolbarGravity());
-		actionButtonMap.put(action, button);
+		componentGravity.put(actionButton, action.getToolbarGravity());
+		actionButtonMap.put(action, actionButton);
 		int addIndex = getInsertLocation(action.getToolbarGravity());
-		orderedList.add(addIndex, button);
+		orderedList.add(addIndex, actionButton);
 		
 		if (stopList.contains(action.getName()))
-			button.component.setVisible(false);
+			actionButton.component.setVisible(false);
 
 		update();
 
@@ -464,8 +464,8 @@ public class CytoscapeToolBar extends JToolBar {
 		removeAll();
 		
 		for (Object o : orderedList) {
-			if (o instanceof JButton) {
-				add((JButton) o);
+			if (o instanceof AbstractButton) {
+				add((AbstractButton) o);
 			} else if (o instanceof Float) {
 				addSeparator();
 			} else if (o instanceof ToolBarComponent) {
@@ -546,15 +546,14 @@ public class CytoscapeToolBar extends JToolBar {
 		BufferedWriter writer = null;
 		
 		try {
-			CyApplicationConfiguration cyApplicationConfiguration = serviceRegistrar
-					.getService(CyApplicationConfiguration.class);
+			var applicationConfig = serviceRegistrar.getService(CyApplicationConfiguration.class);
 			
-			if (cyApplicationConfiguration == null) {
+			if (applicationConfig == null) {
 				System.err.println("cyApplicationConfiguration not found");
 				return;
 			}
 
-			File configDirectory = cyApplicationConfiguration.getConfigurationDirectoryLocation();
+			File configDirectory = applicationConfig.getConfigurationDirectoryLocation();
 			File configFile = null;
 			
 			if (configDirectory.exists())

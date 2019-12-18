@@ -59,12 +59,12 @@ class GraphicsUtilities {
 
 	protected static final ShapeType supportedShapes[] = { ShapeType.RECTANGLE, ShapeType.ROUNDEDRECTANGLE,
 			ShapeType.ELLIPSE, ShapeType.STAR5, ShapeType.TRIANGLE, ShapeType.STAR6, ShapeType.HEXAGON,
-			ShapeType.PENTAGON, ShapeType.OCTAGON, ShapeType.PARALLELOGRAM };
+			ShapeType.PENTAGON, ShapeType.OCTAGON, ShapeType.PARALLELOGRAM,ShapeType.DIAMOND,ShapeType.V };
 
 	protected static final List<String> supportedShapeNames = Arrays.asList(ShapeType.RECTANGLE.shapeName(),
 			ShapeType.ROUNDEDRECTANGLE.shapeName(), ShapeType.ELLIPSE.shapeName(), ShapeType.STAR5.shapeName(),
 			ShapeType.TRIANGLE.shapeName(), ShapeType.STAR6.shapeName(), ShapeType.HEXAGON.shapeName(),
-			ShapeType.PENTAGON.shapeName(), ShapeType.OCTAGON.shapeName(), ShapeType.PARALLELOGRAM.shapeName(),
+			ShapeType.PENTAGON.shapeName(), ShapeType.OCTAGON.shapeName(), ShapeType.PARALLELOGRAM.shapeName(),ShapeType.DIAMOND.shapeName(),ShapeType.V.shapeName(),
 			ShapeType.CUSTOM.shapeName());
 
 	protected static final ArrowType supportedArrows[] = { ArrowType.CIRCLE, ArrowType.CLOSED, ArrowType.CONCAVE,
@@ -88,6 +88,8 @@ class GraphicsUtilities {
 			case HEXAGON: return regularPolygon(6, x, y, width, height); // Hexagon
 			case OCTAGON: return regularPolygon(8, x, y, width, height); // Octagon added 3.6
 			case PARALLELOGRAM: return parallelogramShape(x, y, width, height); // Parallelogram added 3.7
+			case DIAMOND: return diamondShape(x, y, width, height); // Diamond added 3.8
+			case V: return vShape(x, y, width, height); // V added 3.8
 			case CUSTOM: return null;
 			default: return rectangleShape(x, y, width, height);
 		}
@@ -424,6 +426,36 @@ class GraphicsUtilities {
 		poly.lineTo(((2.0f * xMax) + x) / 3.0f, y);
 		poly.lineTo(xMax, yMax);
 		poly.lineTo(((2.0f * x) + xMax) / 3.0f, yMax);
+		poly.closePath();
+		return poly;
+	}
+
+	static private Shape diamondShape(double x, double y, double width, double height) {
+		Path2D poly = new Path2D.Double(Path2D.WIND_EVEN_ODD, 4);
+		double xMax = x + width;
+		double yMax = y + height;
+		double xMid = x + (width/2);
+		double yMid = y + (height/2);
+
+		poly.moveTo(xMid, y);
+		poly.lineTo(xMax, yMid);
+		poly.lineTo(xMid, yMax);
+		poly.lineTo(x, yMid);
+		poly.closePath();
+		return poly;
+	}
+
+	static private Shape vShape(double x, double y, double width, double height) {
+		Path2D poly = new Path2D.Double(Path2D.WIND_EVEN_ODD, 4);
+		double xMax = x + width;
+		double yMax = y + height;
+		double xMid = x + (width/2);
+		double yMid = y + (height/2);
+
+		poly.moveTo(x, y);
+		poly.lineTo(xMid, yMid);
+		poly.lineTo(xMax, y);
+		poly.lineTo(xMid, yMax);
 		poly.closePath();
 		return poly;
 	}

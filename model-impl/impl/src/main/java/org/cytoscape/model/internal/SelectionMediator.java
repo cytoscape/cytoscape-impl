@@ -67,13 +67,11 @@ public class SelectionMediator implements RowsSetListener {
 		
 		if(source == network.getDefaultNodeTable()) {
 			debounceTimer.debounce("nodes", () -> {
-				System.out.println("SelectionMediator.handleEvent(NODES)");
 				eventHelper.fireEvent(new SelectedNodesAndEdgesEvent(network, isCurrent, true, false));
 			});
 		} 
 		else if(source == network.getDefaultEdgeTable()) {
 			debounceTimer.debounce("edges", () -> {
-				System.out.println("SelectionMediator.handleEvent(EDGES)");
 				eventHelper.fireEvent(new SelectedNodesAndEdgesEvent(network, isCurrent, false, true));
 			});
 		}
@@ -103,7 +101,6 @@ public class SelectionMediator implements RowsSetListener {
 	
 	
 	public void listenerAdded(SelectedNodesAndEdgesListener listener, Map<String,String> args) {
-		System.out.println("SelectionMediator.listenerAdded()");
 		fireSelectionEvents = true;
 	}
 	

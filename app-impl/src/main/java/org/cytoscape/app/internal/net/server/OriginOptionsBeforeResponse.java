@@ -40,7 +40,7 @@ public class OriginOptionsBeforeResponse implements CyHttpBeforeResponse
 
     public OriginOptionsBeforeResponse(final String... allowedHeaders)
     {
-        final StringBuffer allowedHeadersBuffer = new StringBuffer("origin, accept");
+        final StringBuffer allowedHeadersBuffer = new StringBuffer("origin, content-type, accept, authorization");
         for (final String allowedHeader : allowedHeaders)
         {
             allowedHeadersBuffer.append(", ");

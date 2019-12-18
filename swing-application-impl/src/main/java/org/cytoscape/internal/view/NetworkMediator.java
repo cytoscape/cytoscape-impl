@@ -479,6 +479,12 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 				}
 			}
 			
+			popup.addPropertyChangeListener("visible", ev -> {
+				boolean visible = Boolean.TRUE.equals(ev.getNewValue());
+				if(!visible) {
+					popup.setInvoker(null); // avoid memory leak
+				}
+			});
 			popup.show(e.getComponent(), e.getX(), e.getY());
 		}
 
