@@ -1322,7 +1322,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			viewDialog.dispose();
 		}
 		
-		if (item.getModel().getViewCount() > 0) {
+		if (item.getModel().getViewCount() > 1) {
 			final Window windowAncestor = SwingUtilities.getWindowAncestor(item);
 			final CyNetworkView currentView = serviceRegistrar.getService(CyApplicationManager.class)
 					.getCurrentNetworkView();
