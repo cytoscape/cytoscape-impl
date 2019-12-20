@@ -3,6 +3,7 @@ package org.cytoscape.ding;
 import static org.cytoscape.ding.DVisualLexicon.NETWORK_ANNOTATION_SELECTION;
 import static org.cytoscape.ding.DVisualLexicon.NETWORK_EDGE_SELECTION;
 import static org.cytoscape.ding.DVisualLexicon.NETWORK_NODE_SELECTION;
+import static org.cytoscape.ding.DVisualLexicon.NETWORK_NODE_LABEL_SELECTION;
 
 import java.awt.event.ActionEvent;
 
@@ -49,6 +50,7 @@ public class SelectModeAction extends AbstractCyAction {
 	public static final String EDGES = "Edges Only";
 	public static final String ANNOTATIONS = "Annotations Only";
 	public static final String NODES_EDGES = "Nodes and Edges";
+	public static final String NODE_LABELS = "Node Labels Only";
 	public static final String ALL = "All";
 	
 	private final CyServiceRegistrar serviceRegistrar;
@@ -72,22 +74,32 @@ public class SelectModeAction extends AbstractCyAction {
 				view.setLockedValue(NETWORK_NODE_SELECTION, Boolean.TRUE);
 				view.setLockedValue(NETWORK_EDGE_SELECTION, Boolean.FALSE);
 				view.setLockedValue(NETWORK_ANNOTATION_SELECTION, Boolean.FALSE);
+				view.setLockedValue(NETWORK_NODE_LABEL_SELECTION, Boolean.FALSE);
 			} else if (name.equalsIgnoreCase(EDGES)) {
 				view.setLockedValue(NETWORK_NODE_SELECTION, Boolean.FALSE);
 				view.setLockedValue(NETWORK_EDGE_SELECTION, Boolean.TRUE);
 				view.setLockedValue(NETWORK_ANNOTATION_SELECTION, Boolean.FALSE);
+				view.setLockedValue(NETWORK_NODE_LABEL_SELECTION, Boolean.FALSE);
 			} else if (name.equalsIgnoreCase(ANNOTATIONS)) {
 				view.setLockedValue(NETWORK_NODE_SELECTION, Boolean.FALSE);
 				view.setLockedValue(NETWORK_EDGE_SELECTION, Boolean.FALSE);
 				view.setLockedValue(NETWORK_ANNOTATION_SELECTION, Boolean.TRUE);
+				view.setLockedValue(NETWORK_NODE_LABEL_SELECTION, Boolean.FALSE);
 			} else if (name.equalsIgnoreCase(NODES_EDGES)) {
 				view.setLockedValue(NETWORK_NODE_SELECTION, Boolean.TRUE);
 				view.setLockedValue(NETWORK_EDGE_SELECTION, Boolean.TRUE);
 				view.setLockedValue(NETWORK_ANNOTATION_SELECTION, Boolean.FALSE);
+				view.setLockedValue(NETWORK_NODE_LABEL_SELECTION, Boolean.FALSE);
+			} else if (name.equalsIgnoreCase(NODE_LABELS)) {
+				view.setLockedValue(NETWORK_NODE_SELECTION, Boolean.FALSE);
+				view.setLockedValue(NETWORK_EDGE_SELECTION, Boolean.FALSE);
+				view.setLockedValue(NETWORK_ANNOTATION_SELECTION, Boolean.FALSE);
+				view.setLockedValue(NETWORK_NODE_LABEL_SELECTION, Boolean.TRUE);
 			} else if (name.equalsIgnoreCase(ALL)) {
 				view.setLockedValue(NETWORK_NODE_SELECTION, Boolean.TRUE);
 				view.setLockedValue(NETWORK_EDGE_SELECTION, Boolean.TRUE);
 				view.setLockedValue(NETWORK_ANNOTATION_SELECTION, Boolean.TRUE);
+				view.setLockedValue(NETWORK_NODE_LABEL_SELECTION, Boolean.TRUE);
 			}
 		}
 	}
@@ -127,8 +139,9 @@ public class SelectModeAction extends AbstractCyAction {
 			Boolean nodeSelection = view.getVisualProperty(NETWORK_NODE_SELECTION);
 			Boolean edgeSelection = view.getVisualProperty(NETWORK_EDGE_SELECTION);
 			Boolean annotationSelection = view.getVisualProperty(NETWORK_ANNOTATION_SELECTION);
+			Boolean nodeLabelSelection = view.getVisualProperty(NETWORK_NODE_LABEL_SELECTION);
 			
-			if (nodeSelection && edgeSelection && annotationSelection)
+			if (nodeSelection && edgeSelection && annotationSelection && nodeLabelSelection)
 				select = name.equalsIgnoreCase(ALL);
 			else if (nodeSelection && edgeSelection)
 				select = name.equalsIgnoreCase(NODES_EDGES);
@@ -138,6 +151,8 @@ public class SelectModeAction extends AbstractCyAction {
 				select = name.equalsIgnoreCase(EDGES);
 			else if (annotationSelection)
 				select = name.equalsIgnoreCase(ANNOTATIONS);
+			else if (nodeLabelSelection)
+				select = name.equalsIgnoreCase(NODE_LABELS);
 		}
 		
 		putValue(SELECTED_KEY, select);

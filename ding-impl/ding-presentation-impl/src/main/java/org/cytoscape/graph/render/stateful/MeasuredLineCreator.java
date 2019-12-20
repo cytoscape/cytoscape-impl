@@ -42,7 +42,7 @@ import org.cytoscape.graph.render.immed.GraphGraphics;
  * splits the text into MeasuredLines based on newline characters and whether 
  * line length is otherwise greater than the specified label width limit.
  */
-class MeasuredLineCreator {
+public class MeasuredLineCreator {
 	private double maxLineWidth;
 	private double totalHeight;
 

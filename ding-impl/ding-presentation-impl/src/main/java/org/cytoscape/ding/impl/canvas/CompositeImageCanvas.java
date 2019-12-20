@@ -5,6 +5,7 @@ import static org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.Can
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Paint;
 import java.util.Arrays;
@@ -36,7 +37,8 @@ public class CompositeImageCanvas {
 	private final NodeCanvas<ImageGraphicsProvider> nodeCanvas;
 	private final EdgeCanvas<ImageGraphicsProvider> edgeCanvas;
 	private final AnnotationCanvas<ImageGraphicsProvider> bgAnnotationCanvas;
-	private final ColorCanvas<ImageGraphicsProvider> bgColorCanvas;
+	
+	private Color bgColor = Color.WHITE;
 	
 	private GraphLOD lod;
 	private final ImageGraphicsProvider image;
@@ -58,8 +60,7 @@ public class CompositeImageCanvas {
 			fgAnnotationCanvas = new AnnotationCanvas<>(NullGraphicsProvider.INSTANCE, re, FOREGROUND),
 			nodeCanvas = new NodeCanvas<>(newBuffer(transform), re),
 			edgeCanvas = new EdgeCanvas<>(newBuffer(transform), re),
-			bgAnnotationCanvas = new AnnotationCanvas<>(NullGraphicsProvider.INSTANCE, re, BACKGROUND),
-			bgColorCanvas = new ColorCanvas<>(newBuffer(transform), null)
+			bgAnnotationCanvas = new AnnotationCanvas<>(NullGraphicsProvider.INSTANCE, re, BACKGROUND)
 		);
 	
 		// Must paint over top of each other in reverse order
@@ -126,12 +127,11 @@ public class CompositeImageCanvas {
 	}
 	
 	public void setBackgroundPaint(Paint paint) {
-		Color color = (paint instanceof Color) ? (Color)paint : ColorCanvas.DEFAULT_COLOR;
-		bgColorCanvas.setColor(color);
+		this.bgColor = (paint instanceof Color) ? (Color)paint : Color.WHITE;
 	}
 	
 	public Color getBackgroundPaint() {
-		return bgColorCanvas.getColor();
+		return bgColor;
 	}
 	
 	public void setViewport(int width, int height) {
@@ -194,6 +194,9 @@ public class CompositeImageCanvas {
 		var subPms = pm.split(weights);
 		pm.start();
 		
+		Image composite = image.getImage();
+		fill(composite, bgColor);
+		
 		for(int i = 0; i < canvasList.size(); i++) {
 			var canvas = canvasList.get(i);
 			var subPm = subPms.get(i);
@@ -206,7 +209,7 @@ public class CompositeImageCanvas {
 			}
 				
 			if(canvasImage != null) {
-				overlayImage(image.getImage(), canvasImage);
+				overlayImage(composite, canvasImage);
 			}
 		}
 		
@@ -215,9 +218,20 @@ public class CompositeImageCanvas {
 		else
 			pm.done();
 		
-		return image.getImage();
+		return composite;
 	}
 	
+	private void fill(Image image, Color color) {
+		NetworkTransform t = getTransform();
+		Graphics2D g = (Graphics2D) image.getGraphics();
+		if(g != null) {
+			if(color == null) {
+				color = new Color(0,0,0,0); // transparent
+			}
+			g.setColor(color);
+			g.fillRect(0, 0, t.getWidth(), t.getHeight());
+		}
+	}
 	
 //	/**
 //	 * Starts painting using a thread pool provided by the given ExecutorService. 
