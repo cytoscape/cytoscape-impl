@@ -14,23 +14,26 @@ public abstract class AbstractUnHideTaskFactory extends AbstractNetworkViewTaskF
 	private final String description;
 	private final boolean unhideNodes;
 	private final boolean unhideEdges;
+	private final boolean justSelected;
 	private final CyServiceRegistrar serviceRegistrar;
 
 	public AbstractUnHideTaskFactory(
 			final String description,
 			final boolean unhideNodes,
 			final boolean unhideEdges,
+			final boolean justSelected,
 			final CyServiceRegistrar serviceRegistrar
 	) {
 		this.description = description;
 		this.unhideNodes = unhideNodes;
 		this.unhideEdges = unhideEdges;
+		this.justSelected = justSelected;
 		this.serviceRegistrar = serviceRegistrar;
 	}
 	
 	@Override
 	public TaskIterator createTaskIterator(final CyNetworkView view) {
-		return new TaskIterator(new UnHideAllTask(description, unhideNodes, unhideEdges, view, serviceRegistrar));
+		return new TaskIterator(new UnHideFromSelectionTask(description, unhideNodes, unhideEdges, justSelected, view, serviceRegistrar));
 	}
 	
 	@Override

@@ -26,12 +26,12 @@ package org.cytoscape.task.internal.hide;
 
 
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.hide.UnHideAllNodesTaskFactory;
+import org.cytoscape.task.hide.UnHideSelectedEdgesTaskFactory;
 
 
-public class UnHideAllNodesTaskFactoryImpl extends AbstractUnHideTaskFactory implements UnHideAllNodesTaskFactory {
+public class UnHideSelectedEdgesTaskFactoryImpl extends AbstractUnHideTaskFactory implements UnHideSelectedEdgesTaskFactory {
 	
-	public UnHideAllNodesTaskFactoryImpl(final CyServiceRegistrar serviceRegistrar) {
-		super("Show All Nodes", true, false, false, serviceRegistrar);
+	public UnHideSelectedEdgesTaskFactoryImpl(final CyServiceRegistrar serviceRegistrar) {
+		super("Show Selected Edges", false, true, true, serviceRegistrar);
 	}
 }
