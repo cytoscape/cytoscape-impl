@@ -6,51 +6,8 @@ import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_SEL
 import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_SELECTED_NODES;
 import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_SELECTED_NODES_OR_EDGES;
 import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_SINGLE_NETWORK;
-import static org.cytoscape.task.internal.utils.IconUtil.APPLY_LAYOUT;
-import static org.cytoscape.task.internal.utils.IconUtil.C1;
-import static org.cytoscape.task.internal.utils.IconUtil.COLORS_2A;
-import static org.cytoscape.task.internal.utils.IconUtil.COLORS_2B;
-import static org.cytoscape.task.internal.utils.IconUtil.COLORS_3;
-import static org.cytoscape.task.internal.utils.IconUtil.FIRST_NEIGHBORS;
-import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_HELP;
-import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_HIDE_SELECTED;
-import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_IMPORT_NET;
-import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_OPEN_FILE;
-import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_SAVE;
-import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_SHOW_ALL;
-import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_ZOOM_FIT;
-import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_ZOOM_IN;
-import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_ZOOM_OUT;
-import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_ZOOM_SEL;
-import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
-import static org.cytoscape.work.ServiceProperties.COMMAND;
-import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
-import static org.cytoscape.work.ServiceProperties.COMMAND_EXAMPLE_JSON;
-import static org.cytoscape.work.ServiceProperties.COMMAND_LONG_DESCRIPTION;
-import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
-import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
-import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
-import static org.cytoscape.work.ServiceProperties.ID;
-import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
-import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
-import static org.cytoscape.work.ServiceProperties.IN_CONTEXT_MENU;
-import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
-import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
-import static org.cytoscape.work.ServiceProperties.IN_TOOL_BAR;
-import static org.cytoscape.work.ServiceProperties.LARGE_ICON_ID;
-import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
-import static org.cytoscape.work.ServiceProperties.NETWORK_GROUP_MENU;
-import static org.cytoscape.work.ServiceProperties.NETWORK_SELECT_MENU;
-import static org.cytoscape.work.ServiceProperties.NODE_ADD_MENU;
-import static org.cytoscape.work.ServiceProperties.NODE_GROUP_MENU;
-import static org.cytoscape.work.ServiceProperties.NODE_SELECT_MENU;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_ACTION;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
-import static org.cytoscape.work.ServiceProperties.TITLE;
-import static org.cytoscape.work.ServiceProperties.TOOLTIP;
-import static org.cytoscape.work.ServiceProperties.TOOLTIP_IMAGE;
-import static org.cytoscape.work.ServiceProperties.TOOLTIP_LONG_DESCRIPTION;
-import static org.cytoscape.work.ServiceProperties.TOOL_BAR_GRAVITY;
+import static org.cytoscape.task.internal.utils.IconUtil.*;
+import static org.cytoscape.work.ServiceProperties.*;
 
 import java.awt.Font;
 import java.io.BufferedReader;
@@ -112,6 +69,8 @@ import org.cytoscape.task.hide.HideUnselectedTaskFactory;
 import org.cytoscape.task.hide.UnHideAllEdgesTaskFactory;
 import org.cytoscape.task.hide.UnHideAllNodesTaskFactory;
 import org.cytoscape.task.hide.UnHideAllTaskFactory;
+import org.cytoscape.task.hide.UnHideSelectedEdgesTaskFactory;
+import org.cytoscape.task.hide.UnHideSelectedNodesTaskFactory;
 import org.cytoscape.task.hide.UnHideTaskFactory;
 import org.cytoscape.task.internal.edit.ConnectSelectedNodesTaskFactoryImpl;
 import org.cytoscape.task.internal.export.graphics.ExportNetworkImageTaskFactoryImpl;
@@ -155,6 +114,8 @@ import org.cytoscape.task.internal.hide.UnHideAllEdgesTaskFactoryImpl;
 import org.cytoscape.task.internal.hide.UnHideAllNodesTaskFactoryImpl;
 import org.cytoscape.task.internal.hide.UnHideAllTaskFactoryImpl;
 import org.cytoscape.task.internal.hide.UnHideCommandTaskFactory;
+import org.cytoscape.task.internal.hide.UnHideSelectedEdgesTaskFactoryImpl;
+import org.cytoscape.task.internal.hide.UnHideSelectedNodesTaskFactoryImpl;
 import org.cytoscape.task.internal.hide.UnHideTaskFactoryImpl;
 import org.cytoscape.task.internal.layout.ApplyPreferredLayoutTaskFactoryImpl;
 import org.cytoscape.task.internal.layout.GetPreferredLayoutTaskFactory;
@@ -1112,6 +1073,26 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(TITLE, factory.getDescription());
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 			registerService(bc, factory, UnHideAllEdgesTaskFactory.class, props);
+		}
+		{
+			var factory = new UnHideSelectedNodesTaskFactoryImpl(serviceRegistrar);
+			var props = new Properties();
+			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
+			props.setProperty(PREFERRED_MENU, "Select.Nodes[2]");
+			props.setProperty(MENU_GRAVITY, "3.0");
+			props.setProperty(TITLE, factory.getDescription());
+			registerService(bc, factory, NetworkViewTaskFactory.class, props);
+			registerService(bc, factory, UnHideSelectedNodesTaskFactory.class, props);
+		}
+		{
+			var factory = new UnHideSelectedEdgesTaskFactoryImpl(serviceRegistrar);
+			var props = new Properties();
+			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
+			props.setProperty(PREFERRED_MENU, "Select.Edges[3]");
+			props.setProperty(MENU_GRAVITY, "3");
+			props.setProperty(TITLE, factory.getDescription());
+			registerService(bc, factory, NetworkViewTaskFactory.class, props);
+			registerService(bc, factory, UnHideSelectedEdgesTaskFactory.class, props);
 		}
 		{
 			var factory = new HideTaskFactoryImpl(serviceRegistrar);
