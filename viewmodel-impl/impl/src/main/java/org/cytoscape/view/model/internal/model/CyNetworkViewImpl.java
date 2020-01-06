@@ -28,7 +28,7 @@ import org.cytoscape.view.model.events.AboutToRemoveNodeViewsEvent;
 import org.cytoscape.view.model.events.AddedEdgeViewsEvent;
 import org.cytoscape.view.model.events.AddedNodeViewsEvent;
 import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
-import org.cytoscape.view.model.internal.CyNetworkViewConfigImpl;
+import org.cytoscape.view.model.internal.CyNetworkViewFactoryConfigImpl;
 import org.cytoscape.view.model.internal.model.snapshot.CyNetworkViewSnapshotImpl;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
@@ -71,7 +71,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	protected final VPNetworkStore netVPs;
 	
 
-	public CyNetworkViewImpl(CyServiceRegistrar registrar, CyNetwork network, VisualLexicon visualLexicon, String rendererId, CyNetworkViewConfigImpl config) {
+	public CyNetworkViewImpl(CyServiceRegistrar registrar, CyNetwork network, VisualLexicon visualLexicon, String rendererId, CyNetworkViewFactoryConfigImpl config) {
 		super(network);
 		this.eventHelper = registrar.getService(CyEventHelper.class);
 		this.rendererId = rendererId;
@@ -122,7 +122,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	}
 	
 	@Override
-	public synchronized boolean isDirty(boolean clear) {
+	public synchronized boolean dirty(boolean clear) {
 		boolean val = dirty;
 		if(clear)
 			dirty = false;

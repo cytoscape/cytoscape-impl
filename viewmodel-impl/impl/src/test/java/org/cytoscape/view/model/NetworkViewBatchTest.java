@@ -29,20 +29,20 @@ public class NetworkViewBatchTest {
 		CyNetworkViewImpl netView = NetworkViewTestUtils.createNetworkView(network);
 		
 		netView.setVisualProperty(NODE_PAINT, Color.BLUE);
-		assertTrue(netView.isDirty(false));
+		assertTrue(netView.dirty(false));
 		
 		netView.createSnapshot();
-		assertTrue(netView.isDirty(true));
-		assertFalse(netView.isDirty(false));
+		assertTrue(netView.dirty(true));
+		assertFalse(netView.dirty(false));
 		
 		netView.batch(net -> {
 			net.setVisualProperty(NETWORK_BACKGROUND_PAINT, Color.RED);
-			assertFalse(netView.isDirty(false));
+			assertFalse(netView.dirty(false));
 			net.setVisualProperty(NODE_PAINT, Color.BLUE);
-			assertFalse(netView.isDirty(false));
+			assertFalse(netView.dirty(false));
 		});
 		
-		assertTrue(netView.isDirty(false));
+		assertTrue(netView.dirty(false));
 	}
 	
 	@Test
@@ -54,8 +54,8 @@ public class NetworkViewBatchTest {
 		
 		CyNetworkViewImpl netView = NetworkViewTestUtils.createNetworkView(network);
 		netView.createSnapshot();
-		assertTrue(netView.isDirty(true));
-		assertFalse(netView.isDirty(false));
+		assertTrue(netView.dirty(true));
+		assertFalse(netView.dirty(false));
 		
 		netView.batch(net -> {
 			View<CyNode> nv1 = netView.getNodeView(n1);
@@ -63,19 +63,19 @@ public class NetworkViewBatchTest {
 			View<CyEdge> ev1 = netView.getEdgeView(e1);
 			
 			net.setVisualProperty(NETWORK_BACKGROUND_PAINT, Color.RED);
-			assertFalse(netView.isDirty(false));
+			assertFalse(netView.dirty(false));
 			
 			nv1.setVisualProperty(NODE_PAINT, Color.RED);
-			assertFalse(netView.isDirty(false));
+			assertFalse(netView.dirty(false));
 			
 			nv2.setVisualProperty(NODE_PAINT, Color.BLUE);
-			assertFalse(netView.isDirty(false));
+			assertFalse(netView.dirty(false));
 			
 			ev1.setVisualProperty(EDGE_PAINT, Color.BLACK);
-			assertFalse(netView.isDirty(false));
+			assertFalse(netView.dirty(false));
 		});
 		
-		assertTrue(netView.isDirty(false));
+		assertTrue(netView.dirty(false));
 	}
 	
 	@Test
@@ -87,24 +87,24 @@ public class NetworkViewBatchTest {
 		
 		CyNetworkViewImpl netView = NetworkViewTestUtils.createNetworkView(network);
 		netView.createSnapshot();
-		netView.isDirty(true);
+		netView.dirty(true);
 		
 		netView.batch(net -> {
 			
 			net.setVisualProperty(NETWORK_BACKGROUND_PAINT, Color.RED);
-			assertFalse(netView.isDirty(false));
+			assertFalse(netView.dirty(false));
 			
 			net.batch(net2 -> {
 				net2.setVisualProperty(NETWORK_BACKGROUND_PAINT, Color.BLUE);
-				assertFalse(netView.isDirty(false));
+				assertFalse(netView.dirty(false));
 			});
-			assertFalse(netView.isDirty(false));
+			assertFalse(netView.dirty(false));
 			
 			net.setVisualProperty(NETWORK_BACKGROUND_PAINT, Color.GREEN);
-			assertFalse(netView.isDirty(false));
+			assertFalse(netView.dirty(false));
 		});
 		
-		assertTrue(netView.isDirty(false));
+		assertTrue(netView.dirty(false));
 	}
 	
 	@Test
@@ -116,7 +116,7 @@ public class NetworkViewBatchTest {
 		
 		CyNetworkViewImpl netView = NetworkViewTestUtils.createNetworkView(network);
 		netView.createSnapshot();
-		netView.isDirty(true);
+		netView.dirty(true);
 		
 		netView.batch(net -> {
 			View<CyNode> nv1 = netView.getNodeView(n1);
@@ -125,31 +125,31 @@ public class NetworkViewBatchTest {
 			
 			net.batch(net2 -> {
 				net2.setVisualProperty(NETWORK_BACKGROUND_PAINT, Color.RED);
-				assertFalse(netView.isDirty(false));
+				assertFalse(netView.dirty(false));
 			});
-			assertFalse(netView.isDirty(false));
+			assertFalse(netView.dirty(false));
 			
 			nv1.batch(nv1_2 -> {
 				nv1.setVisualProperty(NODE_PAINT, Color.RED);
-				assertFalse(netView.isDirty(false));
+				assertFalse(netView.dirty(false));
 				
 				nv1_2.batch(nv1_3 -> {
 					nv2.setVisualProperty(NODE_PAINT, Color.BLUE);
-					assertFalse(netView.isDirty(false));
+					assertFalse(netView.dirty(false));
 				});
-				assertFalse(netView.isDirty(false));
+				assertFalse(netView.dirty(false));
 				
 			});
-			assertFalse(netView.isDirty(false));
+			assertFalse(netView.dirty(false));
 			
 			ev1.batch(ev1_2 -> {
 				ev1.setVisualProperty(EDGE_PAINT, Color.BLACK);
-				assertFalse(netView.isDirty(false));
+				assertFalse(netView.dirty(false));
 			});
-			assertFalse(netView.isDirty(false));
+			assertFalse(netView.dirty(false));
 		});
 		
-		assertTrue(netView.isDirty(false));
+		assertTrue(netView.dirty(false));
 	}
 	
 }

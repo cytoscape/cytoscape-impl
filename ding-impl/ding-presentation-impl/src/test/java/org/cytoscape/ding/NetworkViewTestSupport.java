@@ -4,7 +4,7 @@ package org.cytoscape.ding;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.CyNetworkViewFactoryFactory;
+import org.cytoscape.view.model.CyNetworkViewFactoryProvider;
 import org.cytoscape.view.model.NetworkViewFactoryTestSupport;
 
 /*
@@ -47,7 +47,7 @@ public class NetworkViewTestSupport extends NetworkTestSupport {
 		return networkViewFactoryTestSupport.getNetworkViewFactory();
 	}
 	
-	public CyNetworkViewFactoryFactory getNetworkViewFactoryFactory() {
+	public CyNetworkViewFactoryProvider getNetworkViewFactoryFactory() {
 		return networkViewFactoryTestSupport.getNetworkViewFactoryFactory();
 	}
 	

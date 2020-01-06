@@ -12,10 +12,10 @@ import java.util.function.Predicate;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.CyNetworkViewConfig;
+import org.cytoscape.view.model.CyNetworkViewFactoryConfig;
 import org.cytoscape.view.model.VisualProperty;
 
-public class CyNetworkViewConfigImpl implements CyNetworkViewConfig {
+public class CyNetworkViewFactoryConfigImpl implements CyNetworkViewFactoryConfig {
 	
 	private final Set<VisualProperty<?>> noClearVPs = new HashSet<>();
 	private final Map<VisualProperty<?>,Set<Object>> vpToKey = new HashMap<>();

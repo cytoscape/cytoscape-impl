@@ -269,7 +269,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	 * does not get re-assigned while a frame is being drawn.
 	 */
 	private void checkModelIsDirty() {
-		final boolean updateModel = viewModel.isDirty(true);
+		final boolean updateModel = viewModel.dirty(true);
 		final boolean updateView = updateModel || contentChanged;
 		
 		if(updateModel) {
