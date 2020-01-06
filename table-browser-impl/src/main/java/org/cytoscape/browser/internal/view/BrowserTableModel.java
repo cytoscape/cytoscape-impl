@@ -16,6 +16,7 @@ import org.cytoscape.browser.internal.util.TableBrowserUtil;
 import org.cytoscape.browser.internal.util.ValidatedObjectAndEditString;
 import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.EquationCompiler;
+import org.cytoscape.equations.EquationUtil;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -515,40 +516,8 @@ public final class BrowserTableModel extends AbstractTableModel
 				JOptionPane.ERROR_MESSAGE);
 	}
 
-	private boolean eqnTypeIsCompatible(final Class<?> columnType, final Class<?> listElementType, 
-	                                    final Class<?> eqnType) {
-		if (columnType == eqnType)
-			return true;
-		if (columnType == String.class) // Anything can be trivially converted to a string.
-			return true;
-		if (columnType == Integer.class && (eqnType == Long.class || eqnType == Double.class))
-			return true;
-		if (columnType == Long.class && (eqnType == Integer.class || eqnType == Double.class))
-			return true;
-		if (columnType == Double.class && eqnType == Long.class)
-			return true;
-		if (columnType == Boolean.class && (eqnType == Long.class || eqnType == Double.class))
-			return true;
-		if (columnType != List.class || !columnType.isAssignableFrom(eqnType))
-			return false;
-
-		// HACK!!!!!!  We don't know the type of the List, but we can do some type checking
-		// for our own builtins.  We need to do this as a negative evaluation in case
-		// an App wants to add a new List function
-		if (eqnType.getSimpleName().equals("DoubleList") && listElementType != Double.class)
-			return false;
-
-		if (eqnType.getSimpleName().equals("LongList") && 
-		    (listElementType != Integer.class && listElementType != Long.class))
-			return false;
-
-		if (eqnType.getSimpleName().equals("BooleanList") && listElementType != Boolean.class)
-			return false;
-
-		if (eqnType.getSimpleName().equals("StringList") && listElementType != String.class)
-			return false;
-
-		return true;
+	private boolean eqnTypeIsCompatible(final Class<?> columnType, final Class<?> listElementType, final Class<?> eqnType) {
+		return EquationUtil.eqnTypeIsCompatible(columnType, listElementType, eqnType);
 	}
 
 	private String getUnqualifiedName(final Class<?> type) {
