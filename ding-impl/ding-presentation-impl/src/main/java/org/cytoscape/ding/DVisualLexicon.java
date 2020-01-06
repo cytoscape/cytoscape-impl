@@ -100,7 +100,7 @@ public class DVisualLexicon extends BasicVisualLexicon {
 			CyNetwork.class);
 
 	public static final VisualProperty<Boolean> NETWORK_NODE_LABEL_SELECTION = new BooleanVisualProperty(
-			Boolean.FALSE, "NETWORK_NODE_LABEL_SELECTION", "Network Node Label Drag & Drop",
+			Boolean.FALSE, "NETWORK_NODE_LABEL_SELECTION", "Network Node Label Selection",
 			CyNetwork.class);
 
 	public static final VisualProperty<ObjectPosition> NODE_LABEL_POSITION = new ObjectPositionVisualProperty(
