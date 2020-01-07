@@ -114,8 +114,8 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 	         context="nongui")
 	public String dataTypeList;
 	
-	@Tunable(description="Decimal character used in the decimal format",
-			longDescription="Character that separates the integer-part (characteristic) and the fractional-part (mantissa) of a decimal number. The default value is the dot \".\"",
+	@Tunable(description="Decimal character used in the decimal format in text files",
+			longDescription="Character that separates the integer-part (characteristic) and the fractional-part (mantissa) of a decimal number. This can only be used with text files. The default value is the dot \".\"",
 			exampleStringValue=".",
 			context="nogui")
 	public Character decimalSeparator;
@@ -208,9 +208,10 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 				try {
 					workbook = WorkbookFactory.create(isStart);
 					
-					if(decimalSeparator == null) {
-						decimalSeparator = ((DecimalFormat)DecimalFormat.getInstance()).getDecimalFormatSymbols().getDecimalSeparator();
-					}
+					// In case of an Excel sheet, the reader will use String.valueOf() to format numbers
+					// In this case, the decimal separator does not depend on the Locale
+					// It is the dot
+					decimalSeparator = '.';
 				} catch (InvalidFormatException e) {
 					e.printStackTrace();
 					throw new IllegalArgumentException("Could not read Excel file.  Maybe the file is broken?");
@@ -272,8 +273,7 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 				}
 
 				if (!TypeUtil.allowsDuplicateName(ImportType.TABLE_IMPORT, types[i], types[dupIndex])) {
-//TODO add message to user
-					return;
+					throw new Exception("Duplicate column name \""+curName+"\".");
 				}
 			}
 

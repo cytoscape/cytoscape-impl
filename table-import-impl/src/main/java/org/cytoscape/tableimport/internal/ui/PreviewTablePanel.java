@@ -38,6 +38,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -82,6 +83,7 @@ import javax.swing.table.TableModel;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -630,6 +632,63 @@ public class PreviewTablePanel extends JPanel {
 
 		return false;
 	}
+	private Class<?> getNumericClass(double val) {
+		// We use BigDecimal to know if the numerical value is int, long or double
+        BigDecimal bd = BigDecimal.valueOf(val);
+        try {
+        	bd.intValueExact();
+        	return Integer.class;
+        } catch(ArithmeticException eInt) {
+        	try {
+        		bd.longValueExact();
+        		return Long.class;
+        	} catch(ArithmeticException eLong) {
+        		return Double.class;
+        	}
+        }
+	}
+	
+	private String formatCell(Cell cell, Class<?> cellClass, DataFormatter formatter, FormulaEvaluator evaluator) {
+		if (cell == null) {
+			return "";
+		}
+		
+		int cellType = cell.getCellType();
+        if (cellType == Cell.CELL_TYPE_FORMULA) {
+            if (evaluator == null) {
+                return cell.getCellFormula();
+            }
+            cellType = evaluator.evaluateFormulaCell(cell);
+        }
+        switch (cellType) {
+            case Cell.CELL_TYPE_NUMERIC :
+            	if (DateUtil.isCellDateFormatted(cell)) {
+                    return formatter.formatCellValue(cell, evaluator);
+                }
+                BigDecimal val = BigDecimal.valueOf(cell.getNumericCellValue());
+
+                if(cellClass == Integer.class) {
+                	return String.valueOf(val.intValue());
+                }
+                if(cellClass == Long.class) {
+                	return String.valueOf(val.longValue());
+                }
+                if(cellClass == Double.class) {
+                	return String.valueOf(val.doubleValue());
+                }
+                return val.toPlainString();
+
+            case Cell.CELL_TYPE_STRING :
+                return cell.getRichStringCellValue().getString();
+
+            case Cell.CELL_TYPE_BOOLEAN :
+                return String.valueOf(cell.getBooleanCellValue());
+            case Cell.CELL_TYPE_BLANK :
+                return "";
+        }
+        
+        return "";
+	}
 
 	private PreviewTableModel parseExcel(final Sheet sheet, int startLine) throws IOException {
 		int size = getPreviewSize();
@@ -639,6 +698,7 @@ public class PreviewTablePanel extends JPanel {
 
 		int maxCol = 0;
 		final Vector<Vector<String>> data = new Vector<>();
+		final boolean firstRowNames = importType == NETWORK_IMPORT || importType == TABLE_IMPORT;
 
 		int rowCount = 0;
 		int validRowCount = 0;
@@ -646,33 +706,129 @@ public class PreviewTablePanel extends JPanel {
 		DataFormatter formatter = new DataFormatter();
 		Row row;
 
+		Vector<Class<?>> colTypes = new Vector<>();
+		Vector<Row> previewRows = new Vector<>();
+
 		while (((row = sheet.getRow(rowCount)) != null) && (validRowCount < size)) {
 			if (rowCount >= startLine) {
-				final Vector<String> rowVector = new Vector<>();
-
 				if (maxCol < row.getLastCellNum())
 					maxCol = row.getLastCellNum();
-
-				for (short j = 0; j < maxCol; j++) {
-					Cell cell = row.getCell(j);
-					if (cell == null || cell.getCellType() == Cell.CELL_TYPE_ERROR || 
-							(cell.getCellType() == Cell.CELL_TYPE_FORMULA && cell.getCachedFormulaResultType() == Cell.CELL_TYPE_ERROR)) {
-						rowVector.add(null);
-					} else {
-						rowVector.add(formatter.formatCellValue(cell, evaluator));
+				
+				// We initialize colTypes
+				if(colTypes.size() != maxCol) {
+					for(int c=colTypes.size(); c<maxCol; ++c) {
+						colTypes.add(null);
 					}
 				}
 
-				data.add(rowVector);
+				for (short j = 0; j < maxCol; j++) {
+					Cell cell = row.getCell(j);
+					if (cell != null && cell.getCellType() != Cell.CELL_TYPE_ERROR && 
+							(cell.getCellType() != Cell.CELL_TYPE_FORMULA || cell.getCachedFormulaResultType() != Cell.CELL_TYPE_ERROR)) {
+						// We check types only if it's not the names of columns
+						if(!firstRowNames || validRowCount > 0) {
+							Class<?> colType = colTypes.get(j);
+							
+							int cellType = cell.getCellType();
+							if (cellType == Cell.CELL_TYPE_FORMULA) {
+								if (evaluator != null) {
+									cellType = evaluator.evaluateFormulaCell(cell);
+								}
+							}
+							
+							if(colType == null) {
+								switch (cellType) {
+								case Cell.CELL_TYPE_NUMERIC :
+									if (DateUtil.isCellDateFormatted(cell)) {
+										colType = String.class;
+									} else {
+										colType = getNumericClass(cell.getNumericCellValue());
+									}
+									break;
+								case Cell.CELL_TYPE_STRING :
+									colType = String.class;
+									break;
+								case Cell.CELL_TYPE_BOOLEAN :
+									colType = Boolean.class;
+									break;
+								case Cell.CELL_TYPE_FORMULA :
+								case Cell.CELL_TYPE_BLANK :
+									colType = null; // don't know yet
+									break;
+								}
+							} else {
+								// colType is not null
+								// We check if the current type fits with the one of the cell
+
+								// Previously detected as boolean?
+								if (colType == Boolean.class) {
+									// Just make sure the other rows are also compatible with boolean values...
+									if (cellType != Cell.CELL_TYPE_BOOLEAN) {
+										// This row does not contain a boolean, so the column has to be a String
+										colType = String.class;
+									}
+								} else if (colType == Integer.class) {
+									// Make sure the other rows are also integers...
+									if (cellType == Cell.CELL_TYPE_NUMERIC) {
+										Class<?> cellNumericType = getNumericClass(cell.getNumericCellValue());
+										if (cellNumericType == Long.class)
+											colType = Long.class;
+										else if (cellNumericType == Double.class)
+											colType = Double.class;
+										// else it is Integer, we don't change
+									} else {
+										// Previously numeric, not numeric anymore: String
+										colType = String.class;
+									}
+								} else if (colType == Long.class) {
+									// Make sure the other rows are also longs (no need to check for integers anymore)...
+									if (cellType == Cell.CELL_TYPE_NUMERIC) {
+										Class<?> cellNumericType = getNumericClass(cell.getNumericCellValue());
+										if (cellNumericType == Double.class)
+											colType = Double.class;
+									} else {
+										// Previously numeric, not numeric anymore: String
+										colType = String.class;
+									}
+								} else if (colType == Double.class) {
+									// Make sure the other rows are also doubles (no need to check for other numeric types)...
+									if (cellType != Cell.CELL_TYPE_NUMERIC) {
+										colType = String.class;
+									}
+								}
+							}
+
+							colTypes.set(j, colType);
+						}
+					}
+				}
+
+				previewRows.add(row);
 				validRowCount++;
 			}
 
 			rowCount++;
 		}
-
-		final boolean firstRowNames = importType == NETWORK_IMPORT || importType == TABLE_IMPORT;
 		
-		return new PreviewTableModel(data, new Vector<String>(), firstRowNames);
+		// Now that we know the type of each column, we can read the rows again for the preview
+		for(Row r : previewRows) {
+			final Vector<String> rowVector = new Vector<>();
+			
+			for (short col = 0; col < maxCol; col++) {
+				Cell cell = r.getCell(col);
+
+				if (cell == null || cell.getCellType() == Cell.CELL_TYPE_ERROR || 
+						(cell.getCellType() == Cell.CELL_TYPE_FORMULA && cell.getCachedFormulaResultType() == Cell.CELL_TYPE_ERROR)) {
+					rowVector.add(null);
+				} else {
+					rowVector.add(formatCell(cell, colTypes.get(col), formatter, evaluator));
+				}
+			}
+			
+			data.add(rowVector);
+		}
+		
+		return new PreviewTableModel(data, new Vector<String>(), colTypes, firstRowNames);
 	}
 	
 	private PreviewTableModel parseText(InputStream tempIs, List<String> delimiters, int startLine)
@@ -981,7 +1137,7 @@ public class PreviewTablePanel extends JPanel {
 		if (newModel.getRowCount() > 0) {
 			final String sheetName = sheet.getSheetName();
 			
-			dataTypes = TypeUtil.guessDataTypes(newModel, decimalSeparator);
+			dataTypes = TypeUtil.guessSheetDataTypes(newModel, decimalSeparator);
 			types = TypeUtil.guessTypes(importType, newModel, dataTypes, getIgnoredTypes());
 			listDelimiters = new String[newModel.getColumnCount()];
 			namespaces = TypeUtil.getPreferredNamespaces(types);
@@ -1161,14 +1317,33 @@ public class PreviewTablePanel extends JPanel {
 		return tableScrollPane;
 	}
 	
-	class PreviewTableModel extends DefaultTableModel {
+	public class PreviewTableModel extends DefaultTableModel {
 		
 		private boolean firstRowNames;
+		private Vector<Class<?>> predefinedClasses;
+		
+		public PreviewTableModel(final Vector<Vector<String>> data, final Vector<String> columnNames,
+				Vector<Class<?>> columnTypes, final boolean firstRowNames) {
+			super(data, columnNames);
+			this.firstRowNames = firstRowNames;
+			this.predefinedClasses = columnTypes;
+		}
 
 		public PreviewTableModel(final Vector<Vector<String>> data, final Vector<String> columnNames,
 				final boolean firstRowNames) {
-			super(data, columnNames);
-			this.firstRowNames = firstRowNames;
+			this(data,columnNames, null, firstRowNames);
+		}
+		
+		public boolean hasPredefinedTypes() {
+			return predefinedClasses != null;
+		}
+		
+		public Class<?> getPredefinedColumnClass(final int column) {
+			if(predefinedClasses != null && column < predefinedClasses.size()) {
+				return predefinedClasses.get(column);
+			}
+			
+			return String.class;
 		}
 
 		@SuppressWarnings("unchecked")

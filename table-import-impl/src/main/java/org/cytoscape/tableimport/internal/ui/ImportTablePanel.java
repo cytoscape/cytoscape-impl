@@ -70,7 +70,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -747,7 +746,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			}
 			
 			// Custom decimal format
-			{
+			if(fileType == null || (!fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension())
+					&& !fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension()))) {
+				// If this is an Excel sheet, we do not display the custom decimal separator
 				final JSeparator sep = new JSeparator();
 
 				hGroup
@@ -1099,7 +1100,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	/**
 	 * Actions for selecting start line.
 	 */
-	@SuppressWarnings("unchecked")
 	private void startRowSpinnerMouseWheelMoved(MouseWheelEvent evt) {
 		JSpinner source = (JSpinner) evt.getSource();
 
@@ -1142,25 +1142,10 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 			otherDelimiterTextField.setEnabled(false);
 
-			// The default decimal separator depends on the fileType
-			if(fileType != null && (fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension())
-					|| fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension()))) {
-				// If this is an Excel sheet, we use the locale decimal separator
-				char localeDecimalSeparator = ((DecimalFormat)DecimalFormat.getInstance()).getDecimalFormatSymbols().getDecimalSeparator();
-				
-				if(localeDecimalSeparator == '.') {
-					dotDecimalSeparatorRadioButton.setSelected(true);
-				} else if (localeDecimalSeparator == ',') {
-					commaDecimalSeparatorRadioButton.setSelected(true);
-				} else {
-					otherDecimalSeparatorRadioButton.setSelected(true);
-					otherDecimalSeparatorTextField.setText(localeDecimalSeparator+"");
-				}
-			} else {
-				// Else we use the dot as default
-				dotDecimalSeparatorRadioButton.setSelected(true);
-				otherDecimalSeparatorTextField.setEnabled(false);
-			}
+
+			// Else we use the dot as default
+			dotDecimalSeparatorRadioButton.setSelected(true);
+			otherDecimalSeparatorTextField.setEnabled(false);
 			
 			if (importType != NETWORK_IMPORT)
 				updateMappingAttributeComboBox();

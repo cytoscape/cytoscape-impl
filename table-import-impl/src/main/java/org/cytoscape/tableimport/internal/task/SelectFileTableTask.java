@@ -81,6 +81,7 @@ public class SelectFileTableTask extends AbstractTask {
 			}
 		} catch (IOException e) {
 			logger.warn("Error opening stream to URI: " + file.toString(), e);
+			throw new Exception("Error opening stream to URI: " + file.toString());
 		}
 
 		String fileFormat = file.toURI().toString().substring(file.toURI().toString().lastIndexOf('.'));
