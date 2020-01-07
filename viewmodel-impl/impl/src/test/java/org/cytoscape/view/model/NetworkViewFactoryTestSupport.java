@@ -6,7 +6,7 @@ import static org.mockito.Mockito.withSettings;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.model.internal.CyNetworkViewFactoryFactoryImpl;
+import org.cytoscape.view.model.internal.CyNetworkViewFactoryProviderImpl;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NullVisualProperty;
 
@@ -19,14 +19,14 @@ public class NetworkViewFactoryTestSupport {
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(mock(CyEventHelper.class));
 	}
 	
-	public CyNetworkViewFactoryFactory getNetworkViewFactoryFactory() {
-		return new CyNetworkViewFactoryFactoryImpl(serviceRegistrar);
+	public CyNetworkViewFactoryProvider getNetworkViewFactoryFactory() {
+		return new CyNetworkViewFactoryProviderImpl(serviceRegistrar);
 	}
 	
 	public CyNetworkViewFactory getNetworkViewFactory() {
 		VisualProperty<NullDataType> rootVp = new NullVisualProperty("ROOT", "root");
 		BasicVisualLexicon lexicon = new BasicVisualLexicon(rootVp);
-		CyNetworkViewFactoryFactory networkViewFactoryFactory = getNetworkViewFactoryFactory();
+		CyNetworkViewFactoryProvider networkViewFactoryFactory = getNetworkViewFactoryFactory();
 		return networkViewFactoryFactory.createNetworkViewFactory(lexicon, "test.renderer");
 	}
 }

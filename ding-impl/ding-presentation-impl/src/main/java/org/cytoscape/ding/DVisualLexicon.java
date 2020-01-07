@@ -99,6 +99,10 @@ public class DVisualLexicon extends BasicVisualLexicon {
 			Boolean.FALSE, "NETWORK_ANNOTATION_SELECTION", "Network Annotation Selection",
 			CyNetwork.class);
 
+	public static final VisualProperty<Boolean> NETWORK_NODE_LABEL_SELECTION = new BooleanVisualProperty(
+			Boolean.FALSE, "NETWORK_NODE_LABEL_SELECTION", "Network Node Label Selection",
+			CyNetwork.class);
+
 	public static final VisualProperty<ObjectPosition> NODE_LABEL_POSITION = new ObjectPositionVisualProperty(
 			ObjectPosition.DEFAULT_POSITION, "NODE_LABEL_POSITION",
 			"Node Label Position", CyNode.class);
@@ -392,6 +396,7 @@ public class DVisualLexicon extends BasicVisualLexicon {
 		addVisualProperty(NETWORK_NODE_SELECTION, NETWORK);
 		addVisualProperty(NETWORK_EDGE_SELECTION, NETWORK);
 		addVisualProperty(NETWORK_ANNOTATION_SELECTION, NETWORK);
+		addVisualProperty(NETWORK_NODE_LABEL_SELECTION, NETWORK);
 
 		addVisualProperty(NODE_LABEL_POSITION, NODE);
 		addVisualProperty(COMPOUND_NODE_SHAPE, NODE);

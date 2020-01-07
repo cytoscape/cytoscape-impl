@@ -5,6 +5,7 @@ import java.util.List;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
@@ -34,17 +35,19 @@ import org.cytoscape.work.TaskMonitor;
  * #L%
  */
 
-public class UnHideAllTask extends AbstractNetworkViewTask {
+public class UnHideFromSelectionTask extends AbstractNetworkViewTask {
 
 	private final String description;
 	private final boolean unhideNodes;
 	private final boolean unhideEdges;
+	private final boolean justSelected;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public UnHideAllTask(
+	public UnHideFromSelectionTask(
 			final String description,
 			final boolean unhideNodes,
 			final boolean unhideEdges,
+			final boolean justSelected, 
 			final CyNetworkView view,
 			final CyServiceRegistrar serviceRegistrar
 	) {
@@ -52,6 +55,7 @@ public class UnHideAllTask extends AbstractNetworkViewTask {
 		this.description = description;
 		this.unhideNodes = unhideNodes;
 		this.unhideEdges = unhideEdges;
+		this.justSelected = justSelected;
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
@@ -65,13 +69,20 @@ public class UnHideAllTask extends AbstractNetworkViewTask {
 		List<CyEdge> edges = null;
 
 		if (unhideNodes) {
-			nodes = network.getNodeList();
+			if(justSelected)
+				nodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
+			else
+				nodes = network.getNodeList();
 		}
 		
 		tm.setProgress(0.1);
 
-		if (unhideEdges)
-			edges = network.getEdgeList();
+		if (unhideEdges) {
+			if(justSelected)
+				edges = CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true);
+			else
+				edges = network.getEdgeList();
+		}
 
 		UnHideTask unHideTask = new UnHideTask(description, nodes, edges, view, serviceRegistrar);
 		insertTasksAfterCurrentTask(unHideTask);

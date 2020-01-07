@@ -16,7 +16,6 @@ public class NetworkImageBuffer implements ImageGraphicsProvider {
 	private static final Color TRANSPARENT_COLOR = new Color(0,0,0,0);
 	
 	private NetworkTransform transform;
-	private boolean enabled = true;
 	private Image image;
 	
 	public NetworkImageBuffer(NetworkTransform transform) {
@@ -25,11 +24,7 @@ public class NetworkImageBuffer implements ImageGraphicsProvider {
 		updateImage();
 	}
 	
-	private void updateImage() {
-		if(!enabled) {
-			this.image = null;
-			return;
-		}
+	private synchronized void updateImage() {
 		if(image == null) {
 			return;
 		}
@@ -44,38 +39,20 @@ public class NetworkImageBuffer implements ImageGraphicsProvider {
 	}
 	
 	@Override
-	public Image getImage() {
+	public synchronized Image getImage() {
+		if(image == null) {
+			image = new BufferedImage(transform.getWidth(), transform.getHeight(), BufferedImage.TYPE_INT_ARGB);
+		}
 		return image;
 	}
 	
-	public boolean isEnabled() {
-		return enabled;
-	}
-	
-	public void setEnabled(boolean enabled) {
-		if(this.enabled == enabled)
-			return;
-		
-		this.enabled = enabled;
-		
-		if(enabled)
-			updateImage();
-		else
-			this.image = null;
-	}
-	/**
+	/*
 	 * Returns the Graphics2D object directly from the image buffer, the AffineTransform has not 
 	 * been applied yet. To draw in node coordinates make sure to call
 	 * g.setTransform(networkImageBuffer.getAffineTransform()).
 	 */
 	public Graphics2D getGraphics() {
-		if(!enabled) {
-			return null;
-		}
-		if(image == null) {
-			image = new BufferedImage(transform.getWidth(), transform.getHeight(), BufferedImage.TYPE_INT_ARGB);
-		}
-		
+		image = getImage();
 		var g = (Graphics2D) image.getGraphics();
 		clear(g);
 		return g;

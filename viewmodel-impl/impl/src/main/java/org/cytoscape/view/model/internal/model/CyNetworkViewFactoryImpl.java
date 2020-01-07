@@ -12,7 +12,7 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewListener;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.model.internal.CyNetworkViewConfigImpl;
+import org.cytoscape.view.model.internal.CyNetworkViewFactoryConfigImpl;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 
@@ -22,9 +22,9 @@ public class CyNetworkViewFactoryImpl implements CyNetworkViewFactory {
 	private final CyServiceRegistrar registrar;
 	private final VisualLexicon visualLexicon;
 	private final String rendererId;
-	private final CyNetworkViewConfigImpl config;
+	private final CyNetworkViewFactoryConfigImpl config;
 	
-	public CyNetworkViewFactoryImpl(CyServiceRegistrar registrar, VisualLexicon visualLexicon, String rendererId, CyNetworkViewConfigImpl config) {
+	public CyNetworkViewFactoryImpl(CyServiceRegistrar registrar, VisualLexicon visualLexicon, String rendererId, CyNetworkViewFactoryConfigImpl config) {
 		this.registrar = registrar;
 		this.visualLexicon = visualLexicon;
 		this.rendererId = rendererId;

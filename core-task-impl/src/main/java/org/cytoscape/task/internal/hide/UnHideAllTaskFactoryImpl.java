@@ -32,6 +32,6 @@ import org.cytoscape.task.hide.UnHideAllTaskFactory;
 public class UnHideAllTaskFactoryImpl extends AbstractUnHideTaskFactory implements UnHideAllTaskFactory {
 	
 	public UnHideAllTaskFactoryImpl(final CyServiceRegistrar serviceRegistrar) {
-		super("Show All Nodes and Edges", true, true, serviceRegistrar);
+		super("Show All Nodes and Edges", true, true, false, serviceRegistrar);
 	}
 }

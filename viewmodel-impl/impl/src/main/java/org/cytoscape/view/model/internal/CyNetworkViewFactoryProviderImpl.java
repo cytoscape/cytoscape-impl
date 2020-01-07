@@ -11,25 +11,25 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
 
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.model.CyNetworkViewConfig;
+import org.cytoscape.view.model.CyNetworkViewFactoryConfig;
 import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.CyNetworkViewFactoryFactory;
+import org.cytoscape.view.model.CyNetworkViewFactoryProvider;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.internal.model.CyNetworkViewFactoryImpl;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 
-public class CyNetworkViewFactoryFactoryImpl implements CyNetworkViewFactoryFactory {
+public class CyNetworkViewFactoryProviderImpl implements CyNetworkViewFactoryProvider {
 
 	private final CyServiceRegistrar registrar;
 	
-	public CyNetworkViewFactoryFactoryImpl(CyServiceRegistrar registrar) {
+	public CyNetworkViewFactoryProviderImpl(CyServiceRegistrar registrar) {
 		this.registrar = registrar;
 	}
 	
 	@Override
-	public CyNetworkViewConfigImpl createConfig(VisualLexicon lexicon) {
-		CyNetworkViewConfigImpl config = new CyNetworkViewConfigImpl();
+	public CyNetworkViewFactoryConfigImpl createConfig(VisualLexicon lexicon) {
+		CyNetworkViewFactoryConfigImpl config = new CyNetworkViewFactoryConfigImpl();
 		if(lexicon instanceof BasicVisualLexicon) {
 			// Tracked VPs... Don't track any VP's by default
 			// Non-clearable VPs
@@ -47,8 +47,8 @@ public class CyNetworkViewFactoryFactoryImpl implements CyNetworkViewFactoryFact
 	}
 
 	@Override
-	public CyNetworkViewFactory createNetworkViewFactory(VisualLexicon lexicon, String rendererId, CyNetworkViewConfig config) {
-		return new CyNetworkViewFactoryImpl(registrar, lexicon, rendererId, (CyNetworkViewConfigImpl) config);
+	public CyNetworkViewFactory createNetworkViewFactory(VisualLexicon lexicon, String rendererId, CyNetworkViewFactoryConfig config) {
+		return new CyNetworkViewFactoryImpl(registrar, lexicon, rendererId, (CyNetworkViewFactoryConfigImpl) config);
 	}
 
 }

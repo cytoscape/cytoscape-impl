@@ -9,9 +9,9 @@ import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewConfig;
+import org.cytoscape.view.model.CyNetworkViewFactoryConfig;
 import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.CyNetworkViewFactoryFactory;
+import org.cytoscape.view.model.CyNetworkViewFactoryProvider;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -62,8 +62,8 @@ public class DingNetworkViewFactory implements CyNetworkViewFactory, NetworkView
 	 * Get the default config and add a tracked visual property for animated edges. 
 	 * This makes it easy to quickly find the animated edges in DRenderingEngine.
 	 */
-	public static CyNetworkViewConfig getNetworkViewConfig(CyNetworkViewFactoryFactory factoryFactory, DVisualLexicon dVisualLexicon) {
-		CyNetworkViewConfig config = factoryFactory.createConfig(dVisualLexicon);
+	public static CyNetworkViewFactoryConfig getNetworkViewConfig(CyNetworkViewFactoryProvider factoryFactory, DVisualLexicon dVisualLexicon) {
+		CyNetworkViewFactoryConfig config = factoryFactory.createConfig(dVisualLexicon);
 		// Do not track selected edges, its too performance intensive
 		config.addTrackedVisualProperty(SELECTED_NODES, BasicVisualLexicon.NODE_SELECTED, Boolean.TRUE::equals);
 		config.addTrackedVisualProperty(ANIMATED_EDGES, BasicVisualLexicon.EDGE_LINE_TYPE, dVisualLexicon::isAnimated);

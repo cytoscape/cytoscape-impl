@@ -105,6 +105,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	private JPanel layoutAttrPnl;
 	private JButton makeDefaultBtn;
     private JButton applyBtn;
+    private JButton resetBtn;
     private JButton doneBtn;
     private JCheckBox selectedOnlyChk;
 
@@ -332,6 +333,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			
 			buttonPnl.add(getSelectedOnlyChk());
 			buttonPnl.add(Box.createHorizontalGlue());
+			buttonPnl.add(getResetBtn());
 			buttonPnl.add(getApplyBtn());
 			buttonPnl.add(getDoneBtn());
 		}
@@ -353,6 +355,35 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		}
 		
 		return applyBtn;
+	}
+	/*
+	 * a new button added in 3.8, as per  https://cytoscape.atlassian.net/browse/CYTOSCAPE-12502
+	 */
+	private JButton getResetBtn() {
+		if (resetBtn == null) {
+			resetBtn = new JButton(new AbstractAction("Reset Defaults") {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+// this value is the state of the dialog, not the default we want:
+//	final Object context = currentLayout.getDefaultLayoutContext();		
+//			System.out.println("resetting-it");
+			layoutSettingsMgr.restoreLayoutContext(currentLayout);
+// if you Apply Layout now, you'll see context has been restored, but UI hasn't changed
+
+// unsuccessful attempts to update the dialog:
+//			final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+//			final CyNetworkView view = appMgr.getCurrentNetworkView();
+//			setNetworkView(view);
+
+//			final PanelTaskManager taskMgr = serviceRegistrar.getService(PanelTaskManager.class);
+//			taskMgr.validateAndApplyTunables(currentLayout.getDefaultLayoutContext());
+//			LayoutSettingsDialog.this.pack();
+			
+//			algorithmCmb.actionPerformed(null);
+			}
+			});
+		}
+		return resetBtn;
 	}
 	
 	public JButton getDoneBtn() {

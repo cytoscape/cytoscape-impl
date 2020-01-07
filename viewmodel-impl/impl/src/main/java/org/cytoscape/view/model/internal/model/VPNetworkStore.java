@@ -7,7 +7,7 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWOR
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.model.internal.CyNetworkViewConfigImpl;
+import org.cytoscape.view.model.internal.CyNetworkViewFactoryConfigImpl;
 
 import io.vavr.collection.HashSet;
 import io.vavr.collection.Set;
@@ -25,7 +25,7 @@ public class VPNetworkStore extends VPStore {
 	private double networkScaleFactor     = NETWORK_SCALE_FACTOR.getDefault();
 	
 	
-	public VPNetworkStore(VisualLexicon visualLexicon, CyNetworkViewConfigImpl config) {
+	public VPNetworkStore(VisualLexicon visualLexicon, CyNetworkViewFactoryConfigImpl config) {
 		super(CyNetwork.class, visualLexicon, config);
 	}
 	

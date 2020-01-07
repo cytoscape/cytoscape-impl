@@ -21,8 +21,8 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.model.internal.CyNetworkViewConfigImpl;
-import org.cytoscape.view.model.internal.CyNetworkViewFactoryFactoryImpl;
+import org.cytoscape.view.model.internal.CyNetworkViewFactoryConfigImpl;
+import org.cytoscape.view.model.internal.CyNetworkViewFactoryProviderImpl;
 import org.cytoscape.view.model.internal.model.CyNetworkViewImpl;
 import org.cytoscape.view.model.spacial.SpacialIndex2D;
 import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
@@ -38,15 +38,15 @@ public class NetworkViewTestUtils {
 	}
 	
 	
-	public static CyNetworkViewImpl createNetworkView(CyNetwork network, Consumer<CyNetworkViewConfig> configExtender) {
+	public static CyNetworkViewImpl createNetworkView(CyNetwork network, Consumer<CyNetworkViewFactoryConfig> configExtender) {
 		VisualProperty<NullDataType> rootVp = new NullVisualProperty("ROOT", "root");
 		BasicVisualLexicon lexicon = new BasicVisualLexicon(rootVp);
 		
 		CyServiceRegistrar registrar = mock(CyServiceRegistrar.class);
 		when(registrar.getService(CyEventHelper.class)).thenReturn(mock(CyEventHelper.class));
 		
-		CyNetworkViewFactoryFactoryImpl factoryFactory = new CyNetworkViewFactoryFactoryImpl(registrar);
-		CyNetworkViewConfigImpl config = factoryFactory.createConfig(lexicon);
+		CyNetworkViewFactoryProviderImpl factoryFactory = new CyNetworkViewFactoryProviderImpl(registrar);
+		CyNetworkViewFactoryConfigImpl config = factoryFactory.createConfig(lexicon);
 		if(configExtender != null) {
 			configExtender.accept(config);
 		}

@@ -5,6 +5,7 @@ import static org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.Can
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Paint;
 import java.util.Arrays;
@@ -193,7 +194,8 @@ public class CompositeImageCanvas {
 		var subPms = pm.split(weights);
 		pm.start();
 		
-		image.fill(bgColor);
+		Image composite = image.getImage();
+		fill(composite, bgColor);
 		
 		for(int i = 0; i < canvasList.size(); i++) {
 			var canvas = canvasList.get(i);
@@ -207,7 +209,7 @@ public class CompositeImageCanvas {
 			}
 				
 			if(canvasImage != null) {
-				overlayImage(image.getImage(), canvasImage);
+				overlayImage(composite, canvasImage);
 			}
 		}
 		
@@ -216,9 +218,20 @@ public class CompositeImageCanvas {
 		else
 			pm.done();
 		
-		return image.getImage();
+		return composite;
 	}
 	
+	private void fill(Image image, Color color) {
+		NetworkTransform t = getTransform();
+		Graphics2D g = (Graphics2D) image.getGraphics();
+		if(g != null) {
+			if(color == null) {
+				color = new Color(0,0,0,0); // transparent
+			}
+			g.setColor(color);
+			g.fillRect(0, 0, t.getWidth(), t.getHeight());
+		}
+	}
 	
 //	/**
 //	 * Starts painting using a thread pool provided by the given ExecutorService. 

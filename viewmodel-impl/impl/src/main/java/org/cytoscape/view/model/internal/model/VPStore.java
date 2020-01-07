@@ -6,7 +6,7 @@ import java.util.Objects;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.model.internal.CyNetworkViewConfigImpl;
+import org.cytoscape.view.model.internal.CyNetworkViewFactoryConfigImpl;
 
 import io.vavr.collection.HashMap;
 import io.vavr.collection.HashSet;
@@ -23,15 +23,15 @@ public class VPStore {
 	private Map<Long,Map<VisualProperty<?>,Object>> directLocks = HashMap.empty();
 	private Map<VisualProperty<?>,Object> defaultValues = HashMap.empty();
 	
-	private final CyNetworkViewConfigImpl config;
+	private final CyNetworkViewFactoryConfigImpl config;
 	private final Class<?> type;
 	private Map<Object,Set<Long>> tracked = HashMap.empty();
 	
 	
-	public VPStore(Class<?> type, VisualLexicon visualLexicon, CyNetworkViewConfigImpl config) {
+	public VPStore(Class<?> type, VisualLexicon visualLexicon, CyNetworkViewFactoryConfigImpl config) {
 		this.type = type;
 		this.visualLexicon = visualLexicon;
-		this.config = config == null ? new CyNetworkViewConfigImpl() : config;
+		this.config = config == null ? new CyNetworkViewFactoryConfigImpl() : config;
 	}
 	
 	protected VPStore(VPStore other) {
@@ -49,7 +49,7 @@ public class VPStore {
 		return new VPStore(this);
 	}
 	
-	public CyNetworkViewConfigImpl getConfig() {
+	public CyNetworkViewFactoryConfigImpl getConfig() {
 		return config;
 	}
 	

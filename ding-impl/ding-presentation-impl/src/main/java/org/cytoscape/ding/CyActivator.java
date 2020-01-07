@@ -79,9 +79,9 @@ import org.cytoscape.task.EdgeViewTaskFactory;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
-import org.cytoscape.view.model.CyNetworkViewConfig;
+import org.cytoscape.view.model.CyNetworkViewFactoryConfig;
 import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.CyNetworkViewFactoryFactory;
+import org.cytoscape.view.model.CyNetworkViewFactoryProvider;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
@@ -174,8 +174,8 @@ public class CyActivator extends AbstractCyActivator {
 		ObjectPositionEditor objectPositionEditor =
 				new ObjectPositionEditor(objectPositionValueEditor, continuousMappingCellRendererFactory, serviceRegistrar);
 
-		CyNetworkViewFactoryFactory netViewFactoryFactory = getService(bc, CyNetworkViewFactoryFactory.class);
-		CyNetworkViewConfig viewFactoryConfig = DingNetworkViewFactory.getNetworkViewConfig(netViewFactoryFactory, dVisualLexicon);
+		CyNetworkViewFactoryProvider netViewFactoryFactory = getService(bc, CyNetworkViewFactoryProvider.class);
+		CyNetworkViewFactoryConfig viewFactoryConfig = DingNetworkViewFactory.getNetworkViewConfig(netViewFactoryFactory, dVisualLexicon);
 		CyNetworkViewFactory netViewFactory = netViewFactoryFactory.createNetworkViewFactory(dVisualLexicon, DingRenderer.ID, viewFactoryConfig);
 		DingNetworkViewFactory dingNetViewFactory = new DingNetworkViewFactory(netViewFactory, dVisualLexicon, annotationFactoryManager, dingGraphLOD, handleFactory, serviceRegistrar);
 		registerService(bc, dingNetViewFactory, NetworkViewAboutToBeDestroyedListener.class);
@@ -449,6 +449,10 @@ public class CyActivator extends AbstractCyActivator {
 		SelectModeAction selectNodesEdgesAction = new SelectModeAction(SelectModeAction.NODES_EDGES, 0.8f, serviceRegistrar);
 		registerAllServices(bc, selectNodesEdgesAction);
 
+		
+		SelectModeAction selectNodeLabelsAction = new SelectModeAction(SelectModeAction.NODE_LABELS, 0.85f, serviceRegistrar);
+		registerAllServices(bc, selectNodeLabelsAction);
+		
 		SelectModeAction selectAllAction = new SelectModeAction(SelectModeAction.ALL, 0.9f, serviceRegistrar);
 		registerAllServices(bc, selectAllAction);
 		
