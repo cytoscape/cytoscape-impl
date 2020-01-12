@@ -35,10 +35,11 @@ public abstract class AbstractAppTask extends AbstractTask {
 	protected App getApp(String appName) {
 		List<App> matchingApps = new ArrayList<App>();
 		for (App app: appList) {
-			if (appName.equalsIgnoreCase(app.getAppName()))
+			if (appName.equalsIgnoreCase(app.getAppName())) {
 				if (app.getStatus() == AppStatus.INSTALLED)
 					return app;
 				matchingApps.add(app);
+			}
 		}
 		if (matchingApps.size() == 0)
 			return null;

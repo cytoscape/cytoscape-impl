@@ -27,6 +27,7 @@ public class EnableTask extends AbstractAppTask implements ObservableTask {
 	         exampleStringValue="stringApp",
 	         context="nogui", required=true)
 	public String app = null;
+	public String error = null;
 
 	public EnableTask(final AppManager appManager) {
 		super(appManager);
@@ -40,17 +41,21 @@ public class EnableTask extends AbstractAppTask implements ObservableTask {
 		}
 		taskMonitor.setTitle("Enabling app "+app);
 		App appObject = getApp(app);
+		// System.out.println("App "+appObject.getAppName()+" version "+appObject.getVersion());
 		if (appObject == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Can't find app '"+app+"'");
+			error = "Can't find app '"+app+"'";
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR, error);
 			return;
 		}
 		if (!appObject.getStatus().equals(App.AppStatus.DISABLED)) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "App '"+app+"' is not disabled");
+			error = "App '"+app+"' is not disabled";
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR, error);
 			return;
 		}
 		appManager.installApp(appObject);
 		updateApps();
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, "App '"+app+"' re-enabled");
+		error = "App '"+app+"' re-enabled";
+		taskMonitor.showMessage(TaskMonitor.Level.INFO, error);
 	}
 
 	@Override
@@ -67,7 +72,7 @@ public class EnableTask extends AbstractAppTask implements ObservableTask {
 			};
 			return (R)res;
 		} else if (type.equals(String.class)) {
-			String res = "App "+app+" uninstalled";
+			String res = error;
 			return (R)res;
 		}
 		return null;
