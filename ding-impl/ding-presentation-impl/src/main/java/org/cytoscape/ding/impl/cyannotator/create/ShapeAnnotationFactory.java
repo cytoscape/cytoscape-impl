@@ -89,7 +89,7 @@ public class ShapeAnnotationFactory extends AbstractDingAnnotationFactory<ShapeA
 			icon = new TextIcon(
 					new String[] { IconUtil.ICON_ANNOTATION_SHAPE_1, IconUtil.ICON_ANNOTATION_SHAPE_2 },
 					font,
-					new Color[] { Color.BLACK, Color.WHITE },
+					new Color[] { Color.WHITE, Color.BLACK },
 					ICON_SIZE, ICON_SIZE,
 					1
 			);
