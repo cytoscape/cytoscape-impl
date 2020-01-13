@@ -162,7 +162,7 @@ public final class BrowserTableModel extends AbstractTableModel
 	@Override
 	public Object getValueAt(final int rowIndex, final int columnIndex) {	
 		final String columnName = getColumnName(columnIndex);
-		final CyRow row = getCyRow(rowIndex);	
+		final CyRow row = getCyRow(rowIndex);
 		
 		return getValidatedObjectAndEditString(row, columnName);
 	}
@@ -191,12 +191,14 @@ public final class BrowserTableModel extends AbstractTableModel
 				case AUTO:
 					if (selectedRows == null)
 						selectedRows = new ArrayList<>(dataTable.getMatchingRows(CyNetwork.SELECTED, true));
-					if (selectedRows.size() > 0)
-						return selectedRows.get(rowIndex);
+					
+					if (!selectedRows.isEmpty())
+						return rowIndex < selectedRows.size() ? selectedRows.get(rowIndex) : null;
 					else
 						return dataTable.getRow(rowIndexToPrimaryKey[rowIndex]);
 			}
-		} catch (ArrayIndexOutOfBoundsException e) {
+		} catch (IndexOutOfBoundsException e) {
+			e.printStackTrace();
 			return null;
 		}
 		
