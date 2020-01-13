@@ -961,7 +961,6 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			List<CyRow> allRows = btModel.getDataTable().getAllRows();
 			
 			try {
-				System.out.println("ignoreRowSetEvents = true 2");
 				ignoreRowSetEvents = true;
 				
 				for (CyRow row : allRows) {
@@ -985,7 +984,6 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 					curView.updateView();
 				}
 			} finally {
-				System.out.println("ignoreRowSetEvents = false 2");
 				ignoreRowSetEvents = false;
 			}
 			
