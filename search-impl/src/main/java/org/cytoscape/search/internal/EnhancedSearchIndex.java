@@ -45,7 +45,6 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.search.internal.util.CaseInsensitiveWhitespaceAnalyzer;
-import org.cytoscape.search.internal.util.EnhancedSearchUtils;
 import org.cytoscape.work.TaskMonitor;
 
 
@@ -144,9 +143,9 @@ public class EnhancedSearchIndex implements Callable {
 		Set<String> attributeNames = CyTableUtil.getColumnNames(cyDataTable);
 
 		for (final String attrName : attributeNames) {
-			// Handle whitespace characters and case in attribute names
-			String attrIndexingName = EnhancedSearchUtils.replaceWhitespace(attrName);
-			attrIndexingName = attrIndexingName.toLowerCase();
+			if(attrName == null)
+				continue;
+			String attrIndexingName = attrName.toLowerCase();
 
 			// Determine type
 			Class<?> valueType = cyDataTable.getColumn(attrName).getType();
@@ -158,29 +157,33 @@ public class EnhancedSearchIndex implements Callable {
 				}				
 				doc.add(new Field(attrIndexingName, attrValue, Field.Store.YES, Field.Index.ANALYZED));
 			} else if (valueType == Integer.class) {
-				if (network.getRow(graphObject).get(attrName, Integer.class) == null){
+				Integer attrValue = network.getRow(graphObject).get(attrName, Integer.class);
+				if (attrValue == null){
 					continue;
 				}
-
-				int attrValue = network.getRow(graphObject).get(attrName, Integer.class);
-
 				NumericField field = new NumericField(attrIndexingName);
 				field.setIntValue(attrValue);
 				doc.add(field);
-			} else if (valueType == Double.class) {	
-				if (network.getRow(graphObject).get(attrName, Double.class) == null){
+			} else if (valueType == Long.class) {
+				Long attrValue = network.getRow(graphObject).get(attrName, Long.class);
+				if(attrValue == null) {
 					continue;
 				}
-				
-				double attrValue = network.getRow(graphObject).get(attrName, Double.class);
-				
+				NumericField field = new NumericField(attrIndexingName);
+				field.setLongValue(attrValue);
+				doc.add(field);
+			} else if (valueType == Double.class) {	
+				Double attrValue = network.getRow(graphObject).get(attrName, Double.class);
+				if(attrValue == null){
+					continue;
+				}
 				NumericField field = new NumericField(attrIndexingName);
 				field.setDoubleValue(attrValue);
 				doc.add(field);
 			} else if (valueType == Boolean.class) {
-				if (network.getRow(graphObject).get(attrName, Boolean.class) != null){
-					String attrValue = network.getRow(graphObject).get(attrName, Boolean.class).toString();
-					doc.add(new Field(attrIndexingName, attrValue, Field.Store.YES, Field.Index.ANALYZED));					
+				Boolean attrValue = network.getRow(graphObject).get(attrName, Boolean.class);
+				if (attrValue != null){
+					doc.add(new Field(attrIndexingName, attrValue.toString(), Field.Store.YES, Field.Index.ANALYZED));					
 				}
 			} else if (valueType == List.class) {
 				List<?> attrValueList = network.getRow(graphObject).get(attrName, List.class);

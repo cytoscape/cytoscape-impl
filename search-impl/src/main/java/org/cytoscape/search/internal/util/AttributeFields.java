@@ -56,12 +56,20 @@ public class AttributeFields {
 	 */
 	private void initFields(final CyNetwork network) {
 		CyTable nodeCyDataTable = network.getDefaultNodeTable();
-		for (final CyColumn column : nodeCyDataTable.getColumns())
-			columnTypeMap.put(EnhancedSearchUtils.replaceWhitespace(column.getName()).toLowerCase(), column.getType());
+		for(CyColumn column : nodeCyDataTable.getColumns()) {
+			String name = column.getName(); 
+			if(name != null) {
+				columnTypeMap.put(name.toLowerCase(), column.getType());
+			}
+		}
 
 		CyTable edgeCyDataTable = network.getDefaultEdgeTable();
-		for (final CyColumn column : edgeCyDataTable.getColumns())
-			columnTypeMap.put(EnhancedSearchUtils.replaceWhitespace(column.getName()).toLowerCase(), column.getType());
+		for(CyColumn column : edgeCyDataTable.getColumns()) {
+			String name = column.getName(); 
+			if(name != null) {
+				columnTypeMap.put(name.toLowerCase(), column.getType());
+			}
+		}
 	}
 
 	/**

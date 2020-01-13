@@ -68,7 +68,19 @@ public class CustomMultiFieldQueryParser extends MultiFieldQueryParser {
 				// when trying to convert non-numeric queryText into numeric.
 				// throw new ParseException(e.getMessage());
 			}
-
+		} else if (attrFields.getType(field) == Long.class) {
+			try {
+				long num1 = Long.parseLong(queryText);
+				
+				Query q = NumericRangeQuery.newLongRange(field, num1, num1, true, true);
+				return q;
+				
+			} catch (NumberFormatException e) {
+				// Do nothing. When using a MultiFieldQueryParser, queryText is
+				// searched in each one of the fields. This exception occurs
+				// when trying to convert non-numeric queryText into numeric.
+				// throw new ParseException(e.getMessage());
+			}
 		} else if (attrFields.getType(field) == Double.class) {
 			try {
 				double num1 = Double.parseDouble(queryText);
@@ -107,7 +119,20 @@ public class CustomMultiFieldQueryParser extends MultiFieldQueryParser {
 				throw new ParseException(e.getMessage());
 			}
 		}
-		if (attrFields.getType(field) == Double.class) {
+		else if (attrFields.getType(field) == Long.class) {
+			try {
+				
+				long num1 = Long.parseLong(part1);
+				long num2 = Long.parseLong(part2);
+
+				Query q = NumericRangeQuery.newLongRange(field, num1, num2, inclusive, inclusive);
+
+				return q;
+			} catch (NumberFormatException e) {
+				throw new ParseException(e.getMessage());
+			}
+		}
+		else if (attrFields.getType(field) == Double.class) {
 			try {
 				double num1 = Double.parseDouble(part1);
 				double num2 = Double.parseDouble(part2);

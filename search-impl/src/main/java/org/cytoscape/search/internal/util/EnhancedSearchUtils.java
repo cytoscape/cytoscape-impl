@@ -47,6 +47,7 @@ public final class EnhancedSearchUtils {
 	 * Replaces whitespace characters with underline. Method: Search for
 	 * SEARCH_STRING, replace with REPLACE_STRING.
 	 */
+	@Deprecated
 	public static String replaceWhitespace(final String searchTerm) {
 
 		if (searchTerm == null){

@@ -31,7 +31,6 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.search.internal.EnhancedSearch;
 import org.cytoscape.search.internal.IndexAndSearchTask;
 import org.cytoscape.search.internal.SearchResults;
-import org.cytoscape.search.internal.SearchResults.Status;
 import org.cytoscape.search.internal.SearchTaskFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -147,7 +146,7 @@ public class EnhancedSearchPanel extends JPanel {
 		tfSearchText = new JTextField();
 		tfSearchText.putClientProperty("JTextField.variant", "search");
 
-		tfSearchText.setToolTipText("<html>Example Search Queries:<br><br>YL* -- Search all columns<br>name:YL* -- Search 'name' column<br>GO\\:1232 -- Escape special characters with backslash</html>");
+		tfSearchText.setToolTipText("<html>Example Search Queries:<br><br>YL* -- Search all columns<br>name:YL* -- Search 'name' column<br>GO\\:1232 -- Escape special characters and spaces with backslash</html>");
 		tfSearchText.setName("tfSearchText");
 		
 		if (!isAquaLAF()) {
