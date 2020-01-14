@@ -116,7 +116,7 @@ public class DGraphViewApplyTest {
 		when(serviceRegistrar.getService(VisualMappingManager.class)).thenReturn(visualMappingManager);
 		when(serviceRegistrar.getService(CyNetworkViewManager.class)).thenReturn(networkViewManager);
 		
-		dgv = testSupport.getNetworkViewFactoryFactory().createNetworkViewFactory(dingLexicon, DingRenderer.ID).createNetworkView(network);
+		dgv = testSupport.getNetworkViewFactoryProvider().createNetworkViewFactory(dingLexicon, DingRenderer.ID).createNetworkView(network);
 		re = new DRenderingEngine(dgv, dingLexicon, annotationFactoryManager, dingGraphLOD, handleFactory, serviceRegistrar);
 		nodeDetails = re.getNodeDetails();
 		edgeDetails = re.getEdgeDetails();

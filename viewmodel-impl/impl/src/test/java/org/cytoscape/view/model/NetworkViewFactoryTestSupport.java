@@ -26,6 +26,10 @@ public class NetworkViewFactoryTestSupport {
 	public CyNetworkViewFactory getNetworkViewFactory() {
 		VisualProperty<NullDataType> rootVp = new NullVisualProperty("ROOT", "root");
 		BasicVisualLexicon lexicon = new BasicVisualLexicon(rootVp);
+		return getNetworkViewFactory(lexicon);
+	}
+	
+	public CyNetworkViewFactory getNetworkViewFactory(VisualLexicon lexicon) {
 		CyNetworkViewFactoryProvider networkViewFactoryFactory = getNetworkViewFactoryFactory();
 		return networkViewFactoryFactory.createNetworkViewFactory(lexicon, "test.renderer");
 	}
