@@ -1,5 +1,7 @@
 package org.cytoscape.io.internal.write.graphics;
 
+import static org.cytoscape.io.internal.write.graphics.PDFWriter.PreDefinedPageSize.*;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
@@ -26,6 +28,8 @@ package org.cytoscape.io.internal.write.graphics;
 
 import java.awt.Graphics2D;
 import java.io.OutputStream;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.view.presentation.RenderingEngine;
@@ -34,6 +38,7 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.util.ListSingleSelection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,14 +49,51 @@ import com.lowagie.text.pdf.DefaultFontMapper;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfWriter;
 
-
 /**
  * PDF exporter by the iText library.
  */
 public class PDFWriter extends AbstractTask implements CyWriter {
 
 	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	
+	private static final int UNITS_PER_INCH = 72;
+	
+	private static final String PORTRAIT  = "Portrait";
+	private static final String LANDSCAPE = "Landscape";
+	
+	enum PreDefinedPageSize {
+		CUSTOM(PageSize.LETTER, "Custom"),
+		LETTER(PageSize.LETTER, "Letter"),
+		LEGAL(PageSize.LEGAL, "Legal"),
+		TABLOID(PageSize.TABLOID, "Tabloid"),
+		A0(PageSize.A0, "A0"),
+		A1(PageSize.A1, "A1"),
+		A2(PageSize.A2, "A2"),
+		A3(PageSize.A3, "A3"),
+		A4(PageSize.A4, "A4"),
+		A5(PageSize.A5, "A5");
+		
+		final Rectangle size;
+		final String label;
+		
+		PreDefinedPageSize(Rectangle size, String label) {
+			this.size = size;
+			this.label = label;
+		}
+		
+		static PreDefinedPageSize fromLabel(String label) {
+			for(var ps : values()) {
+				if(ps.label.equals(label)) {
+					return ps;
+				}
+			}
+			return null;
+		}
+	}
+	
+	
 
+	// ----------------------------
 	@Tunable(
 			description = "Export text as font:",
 			longDescription = "If true (the default value), texts will be exported as fonts.",
@@ -60,6 +102,9 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 	)
 	public boolean exportTextAsFont = true;
 	
+	
+	
+	// ----------------------------
 	@Tunable(
 			description = "Hide Labels:",
 			longDescription = "If true then node and edge labels will not be visible in the image.",
@@ -68,6 +113,107 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 			gravity = 2.2
 	)
 	public boolean hideLabels;
+	
+	
+	
+	// ----------------------------
+	public ListSingleSelection<String> pageSize;
+	
+	@Tunable(
+			description = "Page Size:",
+			longDescription = "Predefined standard page size, or choose custom.",
+			exampleStringValue = "Letter",
+			groups = { "Page Size" },
+			gravity = 1.1
+	)
+	public ListSingleSelection<String> getPageSize() {
+		return pageSize;
+	}
+	
+	public void setPageSize(ListSingleSelection<String> pageSize) {
+		this.pageSize = pageSize;
+	} 
+	
+	
+	
+	// ----------------------------
+	public ListSingleSelection<String> orientation = new ListSingleSelection<>(PORTRAIT, LANDSCAPE);
+	
+	@Tunable(
+			description = "Orientation:",
+			longDescription = "Page orientation, portrait or landscape.",
+			exampleStringValue = PORTRAIT,
+			groups = { "Page Size" },
+			dependsOn = "PageSize!=Custom",
+			gravity = 1.2
+	)
+	public ListSingleSelection<String> getOrientation() {
+		return orientation;
+	}
+	
+	public void setOrientation(ListSingleSelection<String> orientation) {
+		this.orientation = orientation;
+	} 
+	
+	
+	
+	// ----------------------------
+	public float customWidthInches = PageSize.LETTER.getWidth() / UNITS_PER_INCH;
+	
+	@Tunable(
+			description = "Width (inches):",
+			longDescription = "The width (in inches) of the exported image when pageSize=Custom.",
+			exampleStringValue = "10.0",
+			groups = { "Page Size" },
+			params = "alignments=vertical",
+			listenForChange = { "PageSize", "Orientation" },
+			dependsOn = "PageSize=Custom",
+			gravity = 1.3
+	)
+	public float getCustomWidthInches() {
+		return getPageSizeInches(true);
+	}
+	
+	public void setCustomWidthInches(float width) {
+		this.customWidthInches = width;
+	}
+	
+	
+	
+	// ----------------------------
+	public float customHeightInches = PageSize.LETTER.getHeight() / UNITS_PER_INCH;
+	
+	@Tunable(
+			description = "Height (inches):",
+			longDescription = "The height (in inches) of the exported image when pageSize=Custom.",
+			exampleStringValue = "10.0",
+			groups = { "Page Size" },
+			params = "alignments=vertical",
+			listenForChange = { "PageSize", "Orientation" },
+			dependsOn = "PageSize=Custom",
+			gravity = 1.4
+	)
+	public float getCustomHeightInches() {
+		return getPageSizeInches(false);
+	}
+	
+	public void setCustomHeightInches(float height) {
+		this.customHeightInches = height;
+	}
+	
+	
+	
+	private float getPageSizeInches(boolean width) {
+		if(CUSTOM.label.equals(pageSize.getSelectedValue())) {
+			return width ? customWidthInches : customHeightInches;
+		} else {
+			if(LANDSCAPE.equals(orientation.getSelectedValue()))
+				width = !width;
+			PreDefinedPageSize ps = PreDefinedPageSize.fromLabel(pageSize.getSelectedValue());
+			float inches = (width ? ps.size.getWidth() : ps.size.getHeight()) / UNITS_PER_INCH;
+			return new BigDecimal(inches).setScale(1, RoundingMode.HALF_UP).floatValue();
+		}
+	}
 	
 	
 	@ProvidesTitle
@@ -89,8 +235,14 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 
 		this.engine = engine;
 		this.stream = stream;
+		
+		pageSize = new ListSingleSelection<>(
+				CUSTOM.label, LETTER.label, LEGAL.label, TABLOID.label, 
+				A0.label, A1.label, A2.label, A3.label, A4.label, A5.label
+		);
+		pageSize.setSelectedValue(LETTER.label);
 
-		width = engine.getViewModel().getVisualProperty(BasicVisualLexicon.NETWORK_WIDTH);
+		width  = engine.getViewModel().getVisualProperty(BasicVisualLexicon.NETWORK_WIDTH);
 		height = engine.getViewModel().getVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT);
 
 		logger.debug("PDFWriter created.");
@@ -107,9 +259,19 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 		tm.setProgress(0.0);
 
 		logger.debug("PDF Rendering start");
-		final Rectangle pageSize = PageSize.LETTER;
-		final Document document = new Document(pageSize);
-
+		
+		PreDefinedPageSize pageSize = PreDefinedPageSize.fromLabel(this.pageSize.getSelectedValue());
+		
+		final Rectangle dimensions;
+		if(pageSize == CUSTOM)
+			dimensions = new Rectangle(customWidthInches * UNITS_PER_INCH, customHeightInches * UNITS_PER_INCH);
+		else if (PORTRAIT.equals(orientation.getSelectedValue()))
+			dimensions = pageSize.size;
+		else
+			dimensions = new Rectangle(pageSize.size.getHeight(), pageSize.size.getWidth());
+		
+		final Document document = new Document(dimensions);
+		
 		logger.debug("Document created: " + document);
 		
 		final PdfWriter writer = PdfWriter.getInstance(document, stream);
@@ -120,8 +282,8 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 		final PdfContentByte canvas = writer.getDirectContent();
 		logger.debug("CB0 created: " + canvas.getClass());
 		
-		final float pageWidth = pageSize.getWidth();
-		final float pageHeight = pageSize.getHeight();
+		final float pageWidth  = dimensions.getWidth();
+		final float pageHeight = dimensions.getHeight();
 		
 		logger.debug("Page W: " + pageWidth + " Page H: " + pageHeight);
 		final DefaultFontMapper fontMapper = new DefaultFontMapper();
@@ -144,7 +306,7 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 		
 		logger.debug("##### G2D created: " + g);
 		
-		double imageScale = Math.min(pageSize.getWidth() / width, pageSize.getHeight() / height);
+		double imageScale = Math.min(dimensions.getWidth() / width, dimensions.getHeight() / height);
 		g.scale(imageScale, imageScale);
 
 		logger.debug("##### Start Rendering Phase 2: " + engine.toString());
