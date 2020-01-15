@@ -5,9 +5,8 @@ import java.awt.Paint;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -467,30 +466,24 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 		final double minValue = tracer.getMin(type);
 
 		final List<Thumb<Color>> sorted = getSlider().getModel().getSortedThumbs();
-		
 		for (Thumb<Color> t : sorted)
 			getSlider().getModel().removeThumb(getSlider().getModel().getThumbIndex(t));
-
-		// Sort points
-		final SortedMap<Double, ContinuousMappingPoint<T, Color>> sortedPoints = new TreeMap<>();
 		
-		for (final ContinuousMappingPoint<T, Color> point : mapping.getAllPoints()) {
-			final Number val = point.getValue();
-			sortedPoints.put(val.doubleValue(), point);
-		}
-
-		for (Double key : sortedPoints.keySet()) {
-			final ContinuousMappingPoint<T, Color> point = sortedPoints.get(key);
+		
+		// Sort points
+		var points = new ArrayList<>(mapping.getAllPoints());
+		points.sort((p1, p2) -> Double.compare(p1.getValue().doubleValue(), p2.getValue().doubleValue()));
+		
+		for(var point : points) {
 			BoundaryRangeValues<Color> bound = point.getRange();
-
 			getSlider().getModel().addThumb(
 					((Number) ((point.getValue().doubleValue() - minValue) / actualRange)).floatValue() * 100,
 					bound.equalValue);
 		}
 
-		if (!sortedPoints.isEmpty()) {
-			below = sortedPoints.get(sortedPoints.firstKey()).getRange().lesserValue;
-			above = sortedPoints.get(sortedPoints.lastKey()).getRange().greaterValue;
+		if(!points.isEmpty()) {
+			below = points.get(0).getRange().lesserValue;
+			above = points.get(points.size()-1).getRange().greaterValue;
 		} else {
 			below = Color.BLACK;
 			above = Color.WHITE;

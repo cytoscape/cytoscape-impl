@@ -711,8 +711,10 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 					
 						final List<?> valueList = col.getValues(col.getType());
 	
+						boolean hasValue = false;
 						for (Object o : valueList) {
 							if (o instanceof Number) {
+								hasValue = true;
 								Number val = (Number) o;
 		
 								if (val.doubleValue() > max)
@@ -723,12 +725,21 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 							}
 	
 						}
+						
+						if(hasValue) {
+							tracer.setMax(type, max);
+							tracer.setMin(type, min);
+						} else {
+							tracer.setMin(type, 0.0);
+							tracer.setMax(type, 1.0);
+						}
 					}
-	
-					tracer.setMax(type, max);
-					tracer.setMin(type, min);
 				}
 			}
+		}
+		
+		if(tracer.getRange(type) == 0) { // if the range is still 0
+			tracer.setMax(type, tracer.getMax(type) + 1.0);
 		}
 	}
 
