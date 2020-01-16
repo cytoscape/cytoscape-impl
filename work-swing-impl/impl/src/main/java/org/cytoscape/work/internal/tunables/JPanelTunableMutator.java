@@ -2,6 +2,7 @@ package org.cytoscape.work.internal.tunables;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dialog;
 import java.awt.Window;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -37,6 +38,7 @@ import org.cytoscape.work.swing.AbstractGUITunableHandler;
 import org.cytoscape.work.swing.AbstractGUITunableHandler.TunableFieldPanel;
 import org.cytoscape.work.swing.DirectlyPresentableTunableHandler;
 import org.cytoscape.work.swing.GUITunableHandler;
+import org.cytoscape.work.swing.TunableUIHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,7 +88,7 @@ import org.slf4j.LoggerFactory;
  * @author pasteur
  */
 public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableHandler> 
-								  implements TunableMutator<GUITunableHandler, JPanel> {
+								  implements TunableMutator<GUITunableHandler, JPanel>, TunableUIHelper {
 
 	private static final String TOP_GROUP = "__CY_TOP_GROUP";
 	
@@ -102,6 +104,8 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	
 	private boolean updatingMargins;
 	private final ComponentListener controlComponentListener;
+	private Window parent = null;
+
 	protected List<GUITunableHandler> handlers;
 	
 	private final Object lock = new Object();
@@ -171,6 +175,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	JPanel buildConfiguration(final Object objectWithTunables, Window possibleParent) {
 		int factoryCount = 0; // # of descendents of TaskFactory...
 		int otherCount = 0;   // ...everything else.  (Presumeably descendents of Task.)
+		this.parent = possibleParent;
 		
 		if (objectWithTunables instanceof TaskFactory)
 			++factoryCount;
@@ -320,6 +325,33 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 		}
 		
 		return handlers;
+	}
+
+	@Override
+	public Window getParent() {
+		return parent;
+	}
+
+	@Override
+	public void setModality(Dialog.ModalityType modality) {
+		// No-op for panel mutator
+	}
+
+	@Override
+	public void update(Object objectWithTunables) {
+		if (!handlerMap.containsKey(objectWithTunables)) {
+			return;
+		}
+
+		if (handlers != null && handlers.size() > 0) {
+			for (GUITunableHandler handler: handlers)
+				handler.update();
+		}
+	}
+
+	@Override
+	public void refresh(Object objectWithTunables) {
+		update(objectWithTunables);
 	}
 
 	private void updateTunableFieldPanelMargins() {
