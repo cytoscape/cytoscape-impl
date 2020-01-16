@@ -78,7 +78,9 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.TunableMutator;
 import org.cytoscape.work.swing.PanelTaskManager;
+import org.cytoscape.work.swing.TunableUIHelper;
 import org.cytoscape.work.util.ListChangeListener;
 import org.cytoscape.work.util.ListSelection;
 import org.cytoscape.work.util.ListSingleSelection;
@@ -119,6 +121,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	private Set<CyLayoutAlgorithm> tunablesToSave = new HashSet<>();
 	
 	private final CyServiceRegistrar serviceRegistrar;
+	private final PanelTaskManager taskMgr;
 	
 	/**
 	 * Creates a new LayoutSettingsDialog object.
@@ -132,6 +135,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 
 		this.layoutSettingsMgr = layoutSettingsMgr;
 		this.serviceRegistrar = serviceRegistrar;
+		taskMgr = serviceRegistrar.getService(PanelTaskManager.class);
 		
 		initComponents();
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -347,7 +351,6 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					final Object context = currentLayout.getDefaultLayoutContext();
-					final PanelTaskManager taskMgr = serviceRegistrar.getService(PanelTaskManager.class);
 					if (taskMgr.validateAndApplyTunables(context))
 						taskMgr.execute(currentAction.createTaskIterator());
 				}
@@ -364,23 +367,20 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			resetBtn = new JButton(new AbstractAction("Reset Defaults") {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-// this value is the state of the dialog, not the default we want:
-//	final Object context = currentLayout.getDefaultLayoutContext();		
-//			System.out.println("resetting-it");
-			layoutSettingsMgr.restoreLayoutContext(currentLayout);
-// if you Apply Layout now, you'll see context has been restored, but UI hasn't changed
+					// Get the default (initial) context
+					final Object context = currentLayout.createLayoutContext();
 
-// unsuccessful attempts to update the dialog:
-//			final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
-//			final CyNetworkView view = appMgr.getCurrentNetworkView();
-//			setNetworkView(view);
+					// Now, save that as our property
+					layoutSettingsMgr.saveLayoutContext(taskMgr, currentLayout, context);
 
-//			final PanelTaskManager taskMgr = serviceRegistrar.getService(PanelTaskManager.class);
-//			taskMgr.validateAndApplyTunables(currentLayout.getDefaultLayoutContext());
-//			LayoutSettingsDialog.this.pack();
-			
-//			algorithmCmb.actionPerformed(null);
-			}
+					// This is the tricky part -- we need to reload the defaultContext from those properties
+					layoutSettingsMgr.restoreLayoutContext(currentLayout);
+
+					// Get the TunableMutator for our task manager and reset our tunables
+					TunableMutator tunableMutator = taskMgr.getTunableMutator();
+					if (tunableMutator instanceof TunableUIHelper)
+						((TunableUIHelper)tunableMutator).update(currentLayout.getDefaultLayoutContext());
+				}
 			});
 		}
 		return resetBtn;
@@ -412,7 +412,6 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 				
 				if (o instanceof CyLayoutAlgorithm) {
 					currentLayout = (CyLayoutAlgorithm) o;
-					final PanelTaskManager taskMgr = serviceRegistrar.getService(PanelTaskManager.class);
 					final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 					
 					//Checking if the context has already been charged, if so there is no need to do it again
@@ -481,7 +480,6 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 				String layoutAttribute = layoutMgr.getLayoutAttribute(currentLayout, view);
 				String selectedAttribute = attributeList.contains(layoutAttribute) ? layoutAttribute : attributeList.get(0);
 				
-				final PanelTaskManager taskMgr = serviceRegistrar.getService(PanelTaskManager.class);
 				JPanel panel = null;
 				if (haveEdgeAttribute) {
 					layoutEdgeAttrTunable = new LayoutEdgeAttributeTunable();
@@ -647,8 +645,6 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	}
 	
 	private void saveLayoutContexts() {
-		final PanelTaskManager taskMgr = serviceRegistrar.getService(PanelTaskManager.class);
-
 		for (CyLayoutAlgorithm layout : tunablesToSave) {
 			layoutSettingsMgr.saveLayoutContext(taskMgr, layout);
 		}

@@ -66,42 +66,55 @@ public class LayoutSettingsManager {
     	// Do nothing
     }
     
-    public void restoreLayoutContext(CyLayoutAlgorithm layout) {
-    	try {
+	public void restoreLayoutContext(CyLayoutAlgorithm layout) {
+		try {
 			Object layoutContext = layout.getDefaultLayoutContext();
-	        CyProperty<Properties> cyProperty = getPropertyService(layout);
+			CyProperty<Properties> cyProperty = getPropertyService(layout);
 			Properties propsBefore = cyProperty.getProperties();
-	        
+
 			if (!propsBefore.isEmpty()) {
-	            // use the Properties to restore the values of the Tunable fields
+				// use the Properties to restore the values of the Tunable fields
 				TunablePropertySerializerFactory serializerFactory = serviceRegistrar.getService(TunablePropertySerializerFactory.class);
 				TunablePropertySerializer serializer = serializerFactory.createSerializer();
-	            serializer.setTunables(layoutContext, propsBefore);
-	        }
-			
+				serializer.setTunables(layoutContext, propsBefore);
+			}
+
 			CyLayoutAlgorithmManager layoutManager = serviceRegistrar.getService(CyLayoutAlgorithmManager.class);
 			String layoutAttribute = propsBefore.getProperty(LAYOUT_ATTRIBUTE_PROP);
-	    	layoutManager.setLayoutAttribute(layout, layoutAttribute);
-	    	
-    	} catch (Exception e) {
-    		logger.error("Error restoring layout settings for '" + layout.getName() + "'", e);
-    	}
+			layoutManager.setLayoutAttribute(layout, layoutAttribute);
+
+		} catch (Exception e) {
+			logger.error("Error restoring layout settings for '" + layout.getName() + "'", e);
+		}
 	}
-    
-    public void saveLayoutContext(PanelTaskManager taskMgr, CyLayoutAlgorithm layout) {
+
+	public void clearLayoutContext(PanelTaskManager taskMgr, CyLayoutAlgorithm layout) {
+		try {
+			CyProperty<Properties> cyProperty = getPropertyService(layout);
+			cyProperty.getProperties().clear();
+		} catch (Exception e) {
+			logger.error("Error saving layout settings for '" + layout.getName() + "'", e);
+		}
+	}
+
+	public void saveLayoutContext(PanelTaskManager taskMgr, CyLayoutAlgorithm layout) {
+		Object layoutContext = layout.getDefaultLayoutContext();
+		saveLayoutContext(taskMgr, layout, layoutContext);
+	}
+
+    public void saveLayoutContext(PanelTaskManager taskMgr, CyLayoutAlgorithm layout, Object layoutContext) {
     	try {
-	    	Object layoutContext = layout.getDefaultLayoutContext();
 	    	taskMgr.validateAndApplyTunables(layoutContext);
-	    	
+
 	    	CyLayoutAlgorithmManager layoutManager = serviceRegistrar.getService(CyLayoutAlgorithmManager.class);
 	    	String layoutAttribute = layoutManager.getLayoutAttribute(layout, null);
-	    	
+
 	    	TunablePropertySerializerFactory serializerFactory = serviceRegistrar.getService(TunablePropertySerializerFactory.class);
 	    	TunablePropertySerializer serializer = serializerFactory.createSerializer();
 	    	Properties layoutProps = serializer.toProperties(layoutContext);
 	    	if(layoutAttribute != null)
 	    		layoutProps.put(LAYOUT_ATTRIBUTE_PROP, layoutAttribute);
-	    	
+
 	    	// No need to save empty props
 	    	if(!layoutProps.isEmpty()) {
 	        	CyProperty<Properties> cyProperty = getPropertyService(layout);
@@ -112,7 +125,7 @@ public class LayoutSettingsManager {
     		logger.error("Error saving layout settings for '" + layout.getName() + "'", e);
     	}
 	}
-	
+
 	private synchronized CyProperty<Properties> getPropertyService(CyLayoutAlgorithm layout) {
 		CyProperty<Properties> service = registeredPropertyServices.get(layout.getName());
 		if(service == null) {
