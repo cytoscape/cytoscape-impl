@@ -26,13 +26,10 @@ package org.cytoscape.view.model.internal;
 
 import java.util.Properties;
 
-import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewFactoryProvider;
-import org.cytoscape.view.model.internal.debug.PrintSpacialIndexAction;
-import org.cytoscape.view.model.internal.debug.PrintViewModelAction;
 import org.osgi.framework.BundleContext;
 
 public class CyActivator extends AbstractCyActivator {
@@ -55,13 +52,5 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factoryFactory, CyNetworkViewFactoryProvider.class, new Properties());
 		}
 		
-		// Debug actions
-		CyAction printModelAction = new PrintViewModelAction(serviceRegistrar);
-		printModelAction.setPreferredMenu("Tools.Renderer DEBUG");
-		registerAllServices(bc, printModelAction, new Properties());
-		
-		CyAction printSpacialAction = new PrintSpacialIndexAction(serviceRegistrar);
-		printSpacialAction.setPreferredMenu("Tools.Renderer DEBUG");
-		registerAllServices(bc, printSpacialAction, new Properties());
 	}
 }
