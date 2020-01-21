@@ -33,7 +33,7 @@ public class SolidStroke extends BasicStroke implements WidthStroke {
 	private float width;
 
 	public SolidStroke(float width) {
-		super(width,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND);
+		super(width,BasicStroke.CAP_BUTT,BasicStroke.JOIN_MITER);
 		this.width = width;
 	}
 

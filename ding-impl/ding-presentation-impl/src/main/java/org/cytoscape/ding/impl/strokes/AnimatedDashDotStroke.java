@@ -32,7 +32,7 @@ public class AnimatedDashDotStroke extends BasicStroke implements DAnimatedStrok
 	private final float offset;
 
 	public AnimatedDashDotStroke(float width) {
-		super(width, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 10.0f,
+		super(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f,
 				new float[] { width * 4f, width * 2f, width, width * 2f }, 0.0f);
 
 		this.width = width;
@@ -40,7 +40,7 @@ public class AnimatedDashDotStroke extends BasicStroke implements DAnimatedStrok
 	}
 
 	public AnimatedDashDotStroke(float width, float offset) {
-		super(width, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 10.0f,
+		super(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f,
 				new float[] { width * 4f, width * 2f, width, width * 2f }, width*9f*offset);
 
 		this.width = width;
