@@ -84,8 +84,14 @@ public final class CySessionWriter extends AbstractTask implements CyWriter {
 		if (filters.size() > 1)
 			throw new IllegalArgumentException("Found too many session filters.");
 
+		// Check to make sure we have a directory
+		File dir = outputFile.isDirectory() ? outputFile : outputFile.getParentFile();
+		if (dir == null) {
+			outputFile = new File(System.getProperty("user.home")+System.getProperty("file.separator")+outputFile.toString());
+		}
+
 		String filepath = outputFile.getAbsolutePath();
-		
+
 		if (!filepath.toLowerCase().endsWith(".cys")) {
 			filepath += ".cys";
 			outputFile = new File(filepath);
@@ -215,8 +221,8 @@ public final class CySessionWriter extends AbstractTask implements CyWriter {
 	}
 	
 	private boolean canWrite(final File file) {
-		final File dir = file.isDirectory() ? file : file.getParentFile();
-		
+		File dir = file.isDirectory() ? file : file.getParentFile();
+
 		if (!dir.canWrite()) {
 			// Should be enough for most OSs
 			return false;
