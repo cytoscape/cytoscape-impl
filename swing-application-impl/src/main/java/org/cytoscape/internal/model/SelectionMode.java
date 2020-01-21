@@ -55,7 +55,7 @@ public enum SelectionMode {
 	NODE_LABEL_SELECTION(
 			"Toggle Node Label Selection",
 			SELECTION_MODE_NODE_LABELES,   // Character which map to the icon in the font.
-			"Turn off this option if you don't want node labels to be selected when they are drag-selected.",
+			"Turn on this option if you want node labels to be selected and manually repositioned.",
 			"/images/tooltips/selection-mode-node-label.gif",
 			"NETWORK_NODE_LABEL_SELECTION"
 	);
