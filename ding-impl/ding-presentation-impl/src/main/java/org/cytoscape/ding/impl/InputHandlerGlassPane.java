@@ -765,10 +765,9 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		private boolean mousePressedCheckHit(MouseEvent e) {
 			NetworkPicker picker = re.getPicker();
 						
-			if ( labelSelectionEnabled() ) {   // if label drag feature is enabled
-			
+			if(labelSelectionEnabled()) {   // if label drag feature is enabled
 				selectedLabel = picker.getNodeLabelAt(e.getPoint());
-				if ( selectedLabel != null) {
+				if(selectedLabel != null) {
 					toggleSelection(selectedLabel.getNode(), CyNode.class, Toggle.SELECT);
 					repaint();
 					return true;
@@ -945,29 +944,26 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			if(!isLeftClick(e)) // We only care about left mouse button
 				return;
 			
-			if (selectedLabel != null ) {
-				// update the visual property here.
-				
+			if (selectedLabel != null) {
 				double offsetX = e.getX() - mousePressedPoint.getX(); //  selectedLabel.getOriginalX();
 				double offsetY = e.getY() - mousePressedPoint.getY(); //selectedLabel.getOriginalY();
 				
-				if ( ((int)offsetX) != 0 || ((int)offsetY) != 0 ) {
+				if(((int)offsetX) != 0 || ((int)offsetY) != 0) {
 					double scaleFactor = re.getTransform().getScaleFactor();
 				
 					View<CyNode> mutableNode = re.getViewModelSnapshot().getMutableNodeView(selectedLabel.getNode().getSUID().longValue());
-					ObjectPosition position = new ObjectPosition( mutableNode.getVisualProperty(DVisualLexicon.NODE_LABEL_POSITION));
-					position.setOffsetX(position.getOffsetX()+ offsetX /scaleFactor);
-					position.setOffsetY(position.getOffsetY() + offsetY /scaleFactor);
+					ObjectPosition position = new ObjectPosition(mutableNode.getVisualProperty(DVisualLexicon.NODE_LABEL_POSITION));
+					position.setOffsetX(position.getOffsetX() + offsetX / scaleFactor);
+					position.setOffsetY(position.getOffsetY() + offsetY / scaleFactor);
 
 					mutableNode.setLockedValue(DVisualLexicon.NODE_LABEL_POSITION, position);
 					
 					// handle Undo
-					NodeLabelChangeEdit undoEntry = new NodeLabelChangeEdit(registrar, selectedLabel.getPreviousPosition(), 
-							re.getViewModel(), mutableNode.getModel().getSUID());
+					NodeLabelChangeEdit undoEntry = new NodeLabelChangeEdit(registrar, selectedLabel.getPreviousPosition(),  re.getViewModel(), mutableNode.getModel().getSUID());
 					undoEntry.post(position);
 				}
 				
-				if( !selectedLabel.getNodeWasSelected()) {
+				if(!selectedLabel.getNodeWasSelected()) {
 					toggleSelection(selectedLabel.getNode(), CyNode.class, Toggle.DESELECT);
 				}
 				selectedLabel = null;
@@ -1017,9 +1013,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				return;
 			
 			if (selectedLabel != null) {				
-				selectedLabel.moveRectangle(e.getX() - (int) mousePressedPoint.getX() /* (int)selectedLabel.getOriginalX()*/, 
-						e.getY() - (int) mousePressedPoint.getY() /*(int)selectedLabel.getOriginalY()*/ );
-				
+				selectedLabel.moveRectangle(e.getX() - (int) mousePressedPoint.getX(), e.getY() - (int) mousePressedPoint.getY());
 				repaint(); // repaint the glass pane
 				return;
 			}
@@ -1392,6 +1386,9 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 					re.getBendStore().selectHandle(handle);
 				for(DingAnnotation a : annotations)
 					a.setSelected(true);
+				
+				if(nodes.isEmpty() && edges.isEmpty() && !annotations.isEmpty())
+					re.updateView(UpdateType.JUST_ANNOTATIONS);
 			}
 			selectionRect = null;
 			mousePressedPoint = null;
