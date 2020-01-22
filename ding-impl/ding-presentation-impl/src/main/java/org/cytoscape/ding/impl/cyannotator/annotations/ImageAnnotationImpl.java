@@ -124,11 +124,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			CustomGraphicsManager customGraphicsManager
 	) {
 		super(re, argMap);
-		
 		this.customGraphicsManager = customGraphicsManager;
-
-		this.width = ViewUtils.getDouble(argMap, ImageAnnotation.WIDTH, 100.0);
-		this.height = ViewUtils.getDouble(argMap, ImageAnnotation.HEIGHT, 100.0);
 
 		opacity = ViewUtils.getFloat(argMap, OPACITY, 1.0f);
 		brightness = ViewUtils.getInteger(argMap, LIGHTNESS, 0);
@@ -136,24 +132,21 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 		this.image = null;
 
-		if (!argMap.containsKey(URL))
-			return;
-
-		// Get the image from the image pool
-		try {
-			this.url = new URL(argMap.get(URL));
-			this.cg = customGraphicsManager.getCustomGraphicsBySourceURL(this.url);
-			
-			if (cg != null) {
-				this.image = ImageUtil.toBufferedImage(cg.getRenderedImage());
-				customGraphicsManager.addCustomGraphics(cg, this.url);
-				customGraphicsManager.setUsedInCurrentSession(cg, true);
+		if(argMap.containsKey(URL)) {
+			// Get the image from the image pool
+			try {
+				this.url = new URL(argMap.get(URL));
+				this.cg = customGraphicsManager.getCustomGraphicsBySourceURL(this.url);
+				
+				if (cg != null) {
+					this.image = ImageUtil.toBufferedImage(cg.getRenderedImage());
+					customGraphicsManager.addCustomGraphics(cg, this.url);
+					customGraphicsManager.setUsedInCurrentSession(cg, true);
+				}
+				name = getDefaultName();
+			} catch (Exception e) {
+				logger.warn("Unable to restore image '" + argMap.get(URL) + "'", e);
 			}
-			
-			name = getDefaultName();
-		} catch (Exception e) {
-			logger.warn("Unable to restore image '" + argMap.get(URL) + "'", e);
-			return;
 		}
 	}
 

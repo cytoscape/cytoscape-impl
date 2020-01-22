@@ -124,7 +124,9 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		super(re, argMap);
 
 		this.lineColor = ViewUtils.getColor(argMap, ARROWCOLOR, Color.BLACK);
-		this.lineWidth = ViewUtils.getFloat(argMap, ARROWTHICKNESS, 1.0f);
+		
+		double zoom = getLegacyZoom(argMap);
+		this.lineWidth = ViewUtils.getFloat(argMap, ARROWTHICKNESS, 1.0f) / (float)zoom;
 
 		// Source
 		if (argMap.containsKey(SOURCEANN)) {
@@ -155,11 +157,11 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		} else if (argMap.containsKey(TARGETNODE)) {
 			String point = argMap.get(TARGETNODE);
 			String[] xy = point.split(",");
-			double x = Double.parseDouble(xy[0]);
-			double y = Double.parseDouble(xy[1]);
-			target = re.getPicker().getNodeAt(new Point2D.Double(x, y));
+			double centerX = Double.parseDouble(xy[0]);
+			double centerY = Double.parseDouble(xy[1]);
+			// MKTODO This is a terrible way of looking up the node. What if there are overlapping nodes???
+			target = re.getPicker().getNodeForArrowAnnotation(centerX, centerY);
 		}
-		
 		updateBounds();
 	}
 	

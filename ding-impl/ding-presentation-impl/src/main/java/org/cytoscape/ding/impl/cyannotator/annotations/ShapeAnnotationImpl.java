@@ -93,18 +93,20 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		this.shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, width, height);
 	}
 
-	public ShapeAnnotationImpl(DRenderingEngine re, Map<String, String> argMap) {
+	public ShapeAnnotationImpl(DRenderingEngine re, Map<String,String> argMap) {
 		super(re, argMap);
 
 		this.fillColor = ViewUtils.getColor(argMap, FILLCOLOR, null);
 		this.fillOpacity = ViewUtils.getDouble(argMap, FILLOPACITY, 100.0);
-
-		// If this is an old bounded text, we might not (yet) have a width or
-		// height
-		this.width  = ViewUtils.getDouble(argMap, ShapeAnnotation.WIDTH,  100.0);
-		this.height = ViewUtils.getDouble(argMap, ShapeAnnotation.HEIGHT, 100.0);
 		
-		this.borderWidth = ViewUtils.getDouble(argMap, EDGETHICKNESS, 1.0);
+		double zoom = getLegacyZoom(argMap);
+
+		// If this is an old bounded text, we might not (yet) have a width or height
+		this.width  = ViewUtils.getDouble(argMap, ShapeAnnotation.WIDTH,  100.0) / zoom;
+		this.height = ViewUtils.getDouble(argMap, ShapeAnnotation.HEIGHT, 100.0) / zoom;
+		
+		this.borderWidth = ViewUtils.getDouble(argMap, EDGETHICKNESS, 1.0) / zoom;
+		
 		this.borderColor = ViewUtils.getColor(argMap, EDGECOLOR, Color.BLACK);
 		this.borderOpacity = ViewUtils.getDouble(argMap, EDGEOPACITY, 100.0);
 
@@ -126,23 +128,24 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		Map<String, String> argMap = super.getArgMap();
 		argMap.put(TYPE, ShapeAnnotation.class.getName());
 
-		if (this.fillColor != null)
-			argMap.put(FILLCOLOR, ViewUtils.convertColor(this.fillColor));
+		if (fillColor != null)
+			argMap.put(FILLCOLOR, ViewUtils.convertColor(fillColor));
 
-		argMap.put(FILLOPACITY, Double.toString(this.fillOpacity));
+		argMap.put(FILLOPACITY, Double.toString(fillOpacity));
 
-		if (this.borderColor != null)
-			argMap.put(EDGECOLOR, ViewUtils.convertColor(this.borderColor));
+		if (borderColor != null)
+			argMap.put(EDGECOLOR, ViewUtils.convertColor(borderColor));
 
-		argMap.put(EDGETHICKNESS, Double.toString(this.borderWidth));
-		argMap.put(EDGEOPACITY, Double.toString(this.borderOpacity));
-		if (this.shapeType != null) {
-			argMap.put(SHAPETYPE, this.shapeType.name());
+		argMap.put(EDGETHICKNESS, Double.toString(borderWidth));
+		argMap.put(EDGEOPACITY, Double.toString(borderOpacity));
+		
+		if (shapeType != null) {
+			argMap.put(SHAPETYPE, shapeType.name());
 			if (shapeType.equals(ShapeType.CUSTOM) && shape != null)
 				argMap.put(CUSTOMSHAPE, GraphicsUtilities.serializeShape(shape));
 		}
-		argMap.put(ShapeAnnotation.WIDTH,  Double.toString(this.width));
-		argMap.put(ShapeAnnotation.HEIGHT, Double.toString(this.height));
+		argMap.put(ShapeAnnotation.WIDTH,  Double.toString(width));
+		argMap.put(ShapeAnnotation.HEIGHT, Double.toString(height));
 
 		return argMap;
 	}

@@ -9,8 +9,8 @@ import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewFactoryConfig;
 import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewFactoryConfig;
 import org.cytoscape.view.model.CyNetworkViewFactoryProvider;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
@@ -82,9 +82,6 @@ public class DingNetworkViewFactory implements CyNetworkViewFactory, NetworkView
 		netView.addNetworkViewListener(re);
 		
 		mainRenderingEngines.put(netView, re);
-		
-		// this has to be done after DRenderingEngine is instantiated and added to mainRenderingEngines
-		re.getCyAnnotator().loadAnnotations();
 		
 		return netView;
 	}

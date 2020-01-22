@@ -72,6 +72,7 @@ import org.cytoscape.ding.internal.charts.ring.RingChartFactory;
 import org.cytoscape.ding.internal.gradients.linear.LinearGradientFactory;
 import org.cytoscape.ding.internal.gradients.radial.RadialGradientFactory;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.events.SelectedNodesAndEdgesListener;
 import org.cytoscape.property.PropertyUpdatedListener;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -79,8 +80,8 @@ import org.cytoscape.task.EdgeViewTaskFactory;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
-import org.cytoscape.view.model.CyNetworkViewFactoryConfig;
 import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewFactoryConfig;
 import org.cytoscape.view.model.CyNetworkViewFactoryProvider;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
@@ -146,6 +147,7 @@ public class CyActivator extends AbstractCyActivator {
 			DingDebugPanel debugPanel = new DingDebugPanel(serviceRegistrar);
 			registerService(bc, debugPanel, CytoPanelComponent.class);
 			registerService(bc, debugPanel, SetCurrentNetworkViewListener.class);
+			registerService(bc, debugPanel, SelectedNodesAndEdgesListener.class);
 		}
 	}
 

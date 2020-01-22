@@ -127,6 +127,14 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 			this.uuid = UUID.fromString(argMap.get(ANNOTATION_ID));
 	}
 
+	protected static double getLegacyZoom(Map<String,String> argMap) {
+		// Legacy, support for annotations created before 3.8
+		@SuppressWarnings("deprecation")
+		double zoom = ViewUtils.getDouble(argMap, ZOOM, 1.0);
+		if(zoom == 0)
+			zoom = 1.0;
+		return zoom;
+	}
 	
 	//------------------------------------------------------------------------
 
@@ -364,7 +372,6 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 		
 		argMap.put(X, Double.toString(getX()));
 		argMap.put(Y, Double.toString(getY()));
-		argMap.put(ZOOM, Double.toString(re.getZoom())); // Legacy
 		argMap.put(CANVAS, canvas.toArgName());
 		argMap.put(ANNOTATION_ID, uuid.toString());
 

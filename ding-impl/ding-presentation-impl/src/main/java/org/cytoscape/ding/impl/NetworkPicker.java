@@ -17,7 +17,6 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -29,6 +28,7 @@ import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
 import org.cytoscape.graph.render.stateful.GraphRenderer;
+import org.cytoscape.graph.render.stateful.MeasuredLineCreator;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 import org.cytoscape.model.CyEdge;
@@ -39,11 +39,10 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
-import org.cytoscape.view.presentation.property.values.ObjectPosition;
-import org.cytoscape.view.presentation.property.values.Position;
-import org.cytoscape.graph.render.stateful.MeasuredLineCreator;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.Handle;
+import org.cytoscape.view.presentation.property.values.ObjectPosition;
+import org.cytoscape.view.presentation.property.values.Position;
 
 
 /**
@@ -91,7 +90,7 @@ public class NetworkPicker {
 		re.getTransform().xformImageToNodeCoords(locn);
 		float x = (float) locn[0];
 		float y = (float) locn[1];
-
+		
 		List<Long> suids = getNodesIntersectingRectangle(x, y, x, y);
 		if(suids.isEmpty())
 			return null;
@@ -99,14 +98,26 @@ public class NetworkPicker {
 		Long suid = suids.get(suids.size() - 1);
 		return re.getViewModelSnapshot().getNodeView(suid);
 	}
+	
+	// WARNING Only to be used when loading arrow annotations
+	public View<CyNode> getNodeForArrowAnnotation(double centerX, double centerY) {
+		CyNetworkViewSnapshot snapshot = re.getViewModelSnapshot();
+		float x = (float)centerX, y = (float)centerY;
+		
+		SpacialIndex2DEnumerator<Long> under = snapshot.getSpacialIndex2D().queryOverlap(x, y, x, y);
+		
+		Long suid = null;
+		while(under.hasNext()) {
+			suid = under.next();
+		}
+		
+		return suid == null ? null : re.getViewModelSnapshot().getMutableNodeView(suid);
+	}
 
 	public DLabelSelection getNodeLabelAt(Point2D pt) {
-	
-		if ( !renderDetailFlags.has(LOD_NODE_LABELS))
+		if(!renderDetailFlags.has(LOD_NODE_LABELS))
 			return null;
-	
 		return  selectLabel(re.getViewModelSnapshot(), pt);
-
 	}
 	
 	/**
@@ -116,9 +127,7 @@ public class NetworkPicker {
 	 * @return a DLabelSelection object if there is a node label under the specified point. null if no labels are found at this point.
 	 */
 	private DLabelSelection selectLabel(CyNetworkViewSnapshot snapshot, Point2D pt ) {
-		
 		double[] locn = {pt.getX(), pt.getY()};
-		
 		re.getTransform().xformImageToNodeCoords(locn);
 		double xP = locn[0];
 		double yP = locn[1];	
@@ -555,7 +564,6 @@ public class NetworkPicker {
 		final float yMin = (float) yMinimum;
 		final float xMax = (float) xMaximum;
 		final float yMax = (float) yMaximum;
-
 		SpacialIndex2DEnumerator<Long> under = snapshot.getSpacialIndex2D().queryOverlap(xMin, yMin, xMax, yMax);
 		if (!under.hasNext())
 			return Collections.emptyList();

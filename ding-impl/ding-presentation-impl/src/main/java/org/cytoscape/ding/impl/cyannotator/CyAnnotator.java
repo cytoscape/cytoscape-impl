@@ -519,7 +519,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 				continue;
 			}
 
-			Annotation a = annotationFactoryManager.createAnnotation(type, re.getViewModel() ,argMap);
+			Annotation a = annotationFactoryManager.createAnnotation(type, re.getViewModel(), argMap);
 			
 			if (a == null || !(a instanceof DingAnnotation))
 				continue;

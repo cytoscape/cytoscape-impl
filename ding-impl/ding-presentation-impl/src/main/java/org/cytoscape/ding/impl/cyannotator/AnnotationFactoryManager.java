@@ -82,16 +82,12 @@ public class AnnotationFactoryManager {
 	}
 
 	public Annotation createAnnotation(Class type, CyNetworkView view, Map<String, String> argMap) {
-		Annotation annotation = null;
-		
 		for (AnnotationFactory<? extends Annotation> factory : annotationFactories) {
-			annotation = factory.createAnnotation(type, view, argMap);
-
-			if (annotation != null)
-				break;
+			Annotation annotation = factory.createAnnotation(type, view, argMap);
+			if(annotation != null)
+				return annotation;
 		}
-
-		return annotation;
+		return null;
 	}
 
 	public void addAnnotationFactory(AnnotationFactory<?> factory, Map<?, ?> props) {

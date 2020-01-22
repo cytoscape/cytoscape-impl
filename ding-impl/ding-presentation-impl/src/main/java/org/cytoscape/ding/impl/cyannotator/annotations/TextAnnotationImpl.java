@@ -72,10 +72,15 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	// This constructor is used to construct a text annotation from an
 	// argument map.
 	// Need to make sure all arguments have reasonable options
-	public TextAnnotationImpl(DRenderingEngine re, Map<String, String> argMap) {
+	public TextAnnotationImpl(DRenderingEngine re, Map<String,String> argMap) {
 		super(re, argMap);
 		
 		font = ViewUtils.getArgFont(argMap, "Arial", Font.PLAIN, initialFontSize);
+		double zoom = getLegacyZoom(argMap);
+		if(zoom != 1.0) {
+			font = font.deriveFont(font.getSize2D() / (float)zoom);
+		}
+		
 		textColor = (Color) ViewUtils.getColor(argMap, COLOR, Color.BLACK);
 		text = ViewUtils.getString(argMap, TEXT, "");
 		fontSize = font.getSize();
@@ -90,11 +95,11 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	public Map<String,String> getArgMap() {
 		var argMap = super.getArgMap();
 		argMap.put(TYPE, TextAnnotation.class.getName());
-		argMap.put(TEXT, this.text);
-		argMap.put(COLOR, ViewUtils.convertColor(this.textColor));
-		argMap.put(FONTFAMILY, this.font.getFamily());
-		argMap.put(FONTSIZE, Integer.toString(this.font.getSize()));
-		argMap.put(FONTSTYLE, Integer.toString(this.font.getStyle()));
+		argMap.put(TEXT, text);
+		argMap.put(COLOR, ViewUtils.convertColor(textColor));
+		argMap.put(FONTFAMILY, font.getFamily());
+		argMap.put(FONTSIZE, Integer.toString(font.getSize()));
+		argMap.put(FONTSTYLE, Integer.toString(font.getStyle()));
 		return argMap;
 	}
 

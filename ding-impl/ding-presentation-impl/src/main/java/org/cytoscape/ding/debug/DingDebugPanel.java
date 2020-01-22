@@ -1,6 +1,7 @@
 package org.cytoscape.ding.debug;
 
 import java.awt.Component;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -23,12 +24,18 @@ import org.cytoscape.ding.impl.canvas.NetworkTransform;
 import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.events.SelectedNodesAndEdgesEvent;
+import org.cytoscape.model.events.SelectedNodesAndEdgesListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 @SuppressWarnings("serial")
-public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugCallback, TransformChangeListener, SetCurrentNetworkViewListener {
+public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugCallback, 
+	TransformChangeListener, SetCurrentNetworkViewListener, SelectedNodesAndEdgesListener {
 
 	private final CyServiceRegistrar registrar;
 	
@@ -40,6 +47,7 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 	private JLabel transformViewLabel;
 	private JLabel transformCntrLabel;
 	private JLabel transformZoomLabel;
+	private JLabel selectedNodeLabel;
 	
 	private JCheckBox logCheckbox;
 	
@@ -74,9 +82,11 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 		JButton edgeButton = new JButton("Count Edges");
 		edgeButton.addActionListener(e -> countEdges());
 		
+		selectedNodeLabel = new JLabel("Selected Node - none");
+		
 		logCheckbox = new JCheckBox("log to console");
 		
-		LookAndFeelUtil.makeSmall(edgeButton, edgeCountLabel, logCheckbox);
+		LookAndFeelUtil.makeSmall(edgeButton, edgeCountLabel, logCheckbox, selectedNodeLabel);
 		
 		GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
@@ -88,6 +98,7 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 			.addComponent(transformViewLabel)
 			.addComponent(transformCntrLabel)
 			.addComponent(transformZoomLabel)
+			.addComponent(selectedNodeLabel)
 			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
 				.addComponent(edgeButton)
 				.addComponent(edgeCountLabel)
@@ -111,6 +122,7 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 			.addComponent(transformViewLabel)
 			.addComponent(transformCntrLabel)
 			.addComponent(transformZoomLabel)
+			.addComponent(selectedNodeLabel)
 			.addGroup(layout.createSequentialGroup()
 				.addComponent(edgeButton)
 				.addComponent(edgeCountLabel)
@@ -181,6 +193,27 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 		}
 	}
 	
+	@Override
+	public void handleEvent(SelectedNodesAndEdgesEvent event) {
+		Collection<CyNode> nodes = event.getSelectedNodes();
+		String labelText = "Selected Node - ";
+		if(nodes.isEmpty()) {
+			labelText += "none";
+		} else if(nodes.size() == 1) {
+			CyNode node = nodes.iterator().next();
+			View<CyNode> nodeView = re.getViewModel().getNodeView(node);
+			if(nodeView != null) {
+				var x = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
+				var y = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
+				var w = nodeView.getVisualProperty(BasicVisualLexicon.NODE_WIDTH);
+				var h = nodeView.getVisualProperty(BasicVisualLexicon.NODE_HEIGHT);
+				labelText += String.format("(x:%.2f, y:%.2f, w:%.2f, h:%.2f)", x, y, w, h);
+			}
+		} else {
+			labelText += nodes.size() + " nodes selected";
+		}
+		selectedNodeLabel.setText(labelText);
+	}
 	
 	private FramePanel getPanel(DebugFrameType type) {
 		switch(type) {

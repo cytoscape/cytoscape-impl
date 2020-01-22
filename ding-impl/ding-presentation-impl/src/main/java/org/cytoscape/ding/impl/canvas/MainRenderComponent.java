@@ -15,6 +15,7 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 public class MainRenderComponent extends RenderComponent {
 
 	private FontMetrics fontMetrics;
+	private boolean annotationsLoaded = false;
 	
 	public MainRenderComponent(DRenderingEngine re, DingGraphLOD lod) {
 		super(re, lod);
@@ -31,6 +32,12 @@ public class MainRenderComponent extends RenderComponent {
 			netView.setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH,  (double) width);
 			netView.setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT, (double) height);
 		}, false); // don't set the dirty flag
+		
+		if(!annotationsLoaded) {
+			// this has to be done after the session is fully loaded and all the VPs have been set
+			annotationsLoaded = true;
+			re.getCyAnnotator().loadAnnotations();
+		}
 	}
 
 	@Override
