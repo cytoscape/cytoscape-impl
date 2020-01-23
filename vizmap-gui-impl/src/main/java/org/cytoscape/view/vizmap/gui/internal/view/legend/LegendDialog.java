@@ -194,7 +194,7 @@ public class LegendDialog extends JDialog {
 	}
 
 	private void export() {
-		final ExportDialog export = new ExportDialog();
+		final ExportDialog export = new ExportDialog(null, false);
 		export.addExportFileType(new SVGExportFileType());
 		export.addExportFileType(new GIFExportFileType());
 		// This should work, but I always get an error
