@@ -34,7 +34,7 @@ public class HelpReportABugTask extends AbstractTask {
 
 	/*private static final String BUG_REPORT_URL = "https://chianti.ucsd.edu/cyto_web/bugreport/bugreport.php";
 */
-	private static final String BUG_REPORT_URL = "https://https://cytoscape.org/bug-report.html";
+	private static final String BUG_REPORT_URL = "https://cytoscape.org/bug-report.html";
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
