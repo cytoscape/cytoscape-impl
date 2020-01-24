@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -113,8 +114,8 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 	         context="nongui")
 	public String dataTypeList;
 	
-	@Tunable(description="Decimal character used in the decimal format",
-			longDescription="Character that separates the integer-part (characteristic) and the fractional-part (mantissa) of a decimal number. The default value is the dot \".\"",
+	@Tunable(description="Decimal character used in the decimal format in text files",
+			longDescription="Character that separates the integer-part (characteristic) and the fractional-part (mantissa) of a decimal number. This can only be used with text files. The default value is the dot \".\"",
 			exampleStringValue=".",
 			context="nogui")
 	public Character decimalSeparator;
@@ -193,10 +194,6 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		tm.setProgress(0.0);
 		tm.setStatusMessage("Loading table...");
 		
-		if(decimalSeparator == null) {
-			decimalSeparator = AbstractMappingParameters.DEF_DECIMAL_SEPARATOR;
-		}
-		
 		List<String> attrNameList = new ArrayList<>();
 		int colCount;
 		String[] attributeNames;
@@ -210,6 +207,11 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 					workbook == null) {
 				try {
 					workbook = WorkbookFactory.create(isStart);
+					
+					// In case of an Excel sheet, the reader will use String.valueOf() to format numbers
+					// In this case, the decimal separator does not depend on the Locale
+					// It is the dot
+					decimalSeparator = '.';
 				} catch (InvalidFormatException e) {
 					e.printStackTrace();
 					throw new IllegalArgumentException("Could not read Excel file.  Maybe the file is broken?");
@@ -221,6 +223,10 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		} catch (Exception ioe) {
 			tm.showMessage(TaskMonitor.Level.ERROR, "Unable to read table: "+ioe.getMessage());
 			return;
+		}
+		
+		if(decimalSeparator == null) {
+			decimalSeparator = AbstractMappingParameters.DEF_DECIMAL_SEPARATOR;
 		}
 		
 		if (startLoadRow > 0)
@@ -267,8 +273,7 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 				}
 
 				if (!TypeUtil.allowsDuplicateName(ImportType.TABLE_IMPORT, types[i], types[dupIndex])) {
-//TODO add message to user
-					return;
+					throw new Exception("Duplicate column name \""+curName+"\".");
 				}
 			}
 

@@ -746,7 +746,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			}
 			
 			// Custom decimal format
-			{
+			if(fileType == null || (!fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension())
+					&& !fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension()))) {
+				// If this is an Excel sheet, we do not display the custom decimal separator
 				final JSeparator sep = new JSeparator();
 
 				hGroup
@@ -1098,7 +1100,6 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	/**
 	 * Actions for selecting start line.
 	 */
-	@SuppressWarnings("unchecked")
 	private void startRowSpinnerMouseWheelMoved(MouseWheelEvent evt) {
 		JSpinner source = (JSpinner) evt.getSource();
 
@@ -1141,6 +1142,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 			otherDelimiterTextField.setEnabled(false);
 
+
+			// Else we use the dot as default
 			dotDecimalSeparatorRadioButton.setSelected(true);
 			otherDecimalSeparatorTextField.setEnabled(false);
 			

@@ -61,23 +61,32 @@ public class AttributeLineParser extends AbstractLineParser {
 		final int keyIndex = mapping.getKeyIndex();
 		
 		if (keyIndex >= 0) {
-			final AttributeDataType typeKey = mapping.getDataTypes()[keyIndex];
-			
-			switch (typeKey) {
+			if(keyIndex < partsLen) {
+				final AttributeDataType typeKey = mapping.getDataTypes()[keyIndex];
+				
+				String part = "";
+				if(parts[keyIndex] != null) {
+					part = parts[keyIndex].trim();
+				}
+
+				switch (typeKey) {
 				case TYPE_BOOLEAN:
-					primaryKey = Boolean.valueOf(parts[keyIndex].trim());
+					primaryKey = Boolean.valueOf(part);
 					break;
 				case TYPE_INTEGER:
-					primaryKey = Integer.valueOf(parts[keyIndex].trim());
+					primaryKey = Integer.valueOf(part);
 					break;
 				case TYPE_LONG:
-					primaryKey = Long.valueOf(parts[keyIndex].trim());
+					primaryKey = Long.valueOf(part);
 					break;
 				case TYPE_FLOATING:
-					primaryKey = Double.valueOf(parts[keyIndex].trim());
+					primaryKey = Double.valueOf(part);
 					break;
 				default:
-					primaryKey = parts[keyIndex].trim();
+					primaryKey = part;
+				}
+			} else {
+				primaryKey = null;
 			}
 		} else { // Not importing a key column, so the table must have the default SUID one
 			if (!table.getPrimaryKey().getName().equals(CyTable.SUID))
@@ -88,17 +97,19 @@ public class AttributeLineParser extends AbstractLineParser {
 			primaryKey = SUIDFactory.getNextSUID();
 		}
 
-		if (keyIndex >= 0 && partsLen == 1) {
-			table.getRow(parts[0]);
-		} else {
-			final SourceColumnSemantic[] types = mapping.getTypes();
-			
-			for (int i = 0; i < partsLen; i++) {
-				if (i != keyIndex && types[i] != SourceColumnSemantic.NONE) {
-					if (parts[i] == null)
-						continue;
-					else
-						mapAttribute(table, primaryKey, parts[i].trim(), i);
+		if(primaryKey != null) {
+			if (keyIndex >= 0 && partsLen == 1) {
+				table.getRow(parts[0]);
+			} else {
+				final SourceColumnSemantic[] types = mapping.getTypes();
+
+				for (int i = 0; i < partsLen; i++) {
+					if (i != keyIndex && types[i] != SourceColumnSemantic.NONE) {
+						if (parts[i] == null)
+							continue;
+						else
+							mapAttribute(table, primaryKey, parts[i].trim(), i);
+					}
 				}
 			}
 		}

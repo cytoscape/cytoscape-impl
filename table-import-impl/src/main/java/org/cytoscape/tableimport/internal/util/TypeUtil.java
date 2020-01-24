@@ -37,6 +37,8 @@ import javax.swing.table.TableModel;
 
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.tableimport.internal.ui.PreviewTablePanel;
+import org.cytoscape.tableimport.internal.ui.PreviewTablePanel.PreviewTableModel;
 
 /*
  * #%L
@@ -243,6 +245,33 @@ public final class TypeUtil {
 		}
 
 		return types;
+	}
+	
+	public static AttributeDataType[] guessSheetDataTypes(final PreviewTableModel model, Character decimalSeparator) {
+		if(!model.hasPredefinedTypes()) {
+			return guessDataTypes(model, decimalSeparator);
+		}
+		
+		// TODO LIST?
+
+		final AttributeDataType[] dataTypes = new AttributeDataType[model.getColumnCount()];
+		for (int col = 0; col < model.getColumnCount(); col++) {
+			Class<?> predefinedClass = model.getPredefinedColumnClass(col);
+			
+			if(predefinedClass == Double.class) {
+				dataTypes[col] = TYPE_FLOATING;
+			} else if(predefinedClass == Long.class) {
+				dataTypes[col] = TYPE_LONG;
+			} else if(predefinedClass == Integer.class) {
+				dataTypes[col] = TYPE_INTEGER;
+			} else if(predefinedClass == Boolean.class) {
+				dataTypes[col] = TYPE_BOOLEAN;
+			} else {
+				dataTypes[col] = TYPE_STRING;
+			}
+		}
+		
+		return dataTypes;
 	}
 	
 	public static AttributeDataType[] guessDataTypes(final TableModel model, Character decimalSeparator) {

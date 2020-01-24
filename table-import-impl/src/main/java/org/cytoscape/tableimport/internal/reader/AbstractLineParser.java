@@ -110,7 +110,7 @@ public abstract class AbstractLineParser {
 				else if (type == TYPE_LONG_LIST)
 					list.add(Long.valueOf(listItem.trim()));
 				else if (type == TYPE_FLOATING_LIST)
-					list.add(new Double(listItem.trim()));
+					list.add(Double.valueOf(listItem.trim()));
 				else // TYPE_STRING or unknown
 					list.add(listItem.trim());				
 			} catch (NumberFormatException e) {
