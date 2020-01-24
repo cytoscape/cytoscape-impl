@@ -634,18 +634,18 @@ public class PreviewTablePanel extends JPanel {
 	}
 	private Class<?> getNumericClass(double val) {
 		// We use BigDecimal to know if the numerical value is int, long or double
-        BigDecimal bd = BigDecimal.valueOf(val);
-        try {
-        	bd.intValueExact();
-        	return Integer.class;
-        } catch(ArithmeticException eInt) {
-        	try {
-        		bd.longValueExact();
-        		return Long.class;
-        	} catch(ArithmeticException eLong) {
-        		return Double.class;
-        	}
-        }
+		BigDecimal bd = BigDecimal.valueOf(val);
+		try {
+			bd.intValueExact();
+			return Integer.class;
+		} catch (ArithmeticException eInt) {
+			try {
+				bd.longValueExact();
+				return Long.class;
+			} catch (ArithmeticException eLong) {
+				return Double.class;
+			}
+		}
 	}
 	
 	private String formatCell(Cell cell, Class<?> cellClass, DataFormatter formatter, FormulaEvaluator evaluator) {
@@ -654,40 +654,39 @@ public class PreviewTablePanel extends JPanel {
 		}
 		
 		int cellType = cell.getCellType();
-        if (cellType == Cell.CELL_TYPE_FORMULA) {
-            if (evaluator == null) {
-                return cell.getCellFormula();
-            }
-            cellType = evaluator.evaluateFormulaCell(cell);
-        }
-        switch (cellType) {
-            case Cell.CELL_TYPE_NUMERIC :
-            	if (DateUtil.isCellDateFormatted(cell)) {
-                    return formatter.formatCellValue(cell, evaluator);
-                }
-                BigDecimal val = BigDecimal.valueOf(cell.getNumericCellValue());
+		if (cellType == Cell.CELL_TYPE_FORMULA) {
+			if (evaluator == null) {
+				return cell.getCellFormula();
+			}
+			cellType = evaluator.evaluateFormulaCell(cell);
+		}
+		switch (cellType) {
+		case Cell.CELL_TYPE_NUMERIC:
+			if (DateUtil.isCellDateFormatted(cell)) {
+				return formatter.formatCellValue(cell, evaluator);
+			}
+			BigDecimal val = BigDecimal.valueOf(cell.getNumericCellValue());
 
-                if(cellClass == Integer.class) {
-                	return String.valueOf(val.intValue());
-                }
-                if(cellClass == Long.class) {
-                	return String.valueOf(val.longValue());
-                }
-                if(cellClass == Double.class) {
-                	return String.valueOf(val.doubleValue());
-                }
-                return val.toPlainString();
+			if (cellClass == Integer.class) {
+				return String.valueOf(val.intValue());
+			}
+			if (cellClass == Long.class) {
+				return String.valueOf(val.longValue());
+			}
+			if (cellClass == Double.class) {
+				return String.valueOf(val.doubleValue());
+			}
+			return val.toPlainString();
 
-            case Cell.CELL_TYPE_STRING :
-                return cell.getRichStringCellValue().getString();
+		case Cell.CELL_TYPE_STRING:
+			return cell.getRichStringCellValue().getString();
+		case Cell.CELL_TYPE_BOOLEAN:
+			return String.valueOf(cell.getBooleanCellValue());
+		case Cell.CELL_TYPE_BLANK:
+			return "";
+		}
 
-            case Cell.CELL_TYPE_BOOLEAN :
-                return String.valueOf(cell.getBooleanCellValue());
-            case Cell.CELL_TYPE_BLANK :
-                return "";
-        }
-        
-        return "";
+		return "";
 	}
 
 	private PreviewTableModel parseExcel(final Sheet sheet, int startLine) throws IOException {

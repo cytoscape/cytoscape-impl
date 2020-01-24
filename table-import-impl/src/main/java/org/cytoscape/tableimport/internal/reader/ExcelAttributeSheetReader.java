@@ -83,40 +83,39 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 		}
 		
 		int cellType = cell.getCellType();
-        if (cellType == Cell.CELL_TYPE_FORMULA) {
-            if (evaluator == null) {
-                return cell.getCellFormula();
-            }
-            cellType = evaluator.evaluateFormulaCell(cell);
-        }
-        switch (cellType) {
-            case Cell.CELL_TYPE_NUMERIC :
-            	if (DateUtil.isCellDateFormatted(cell)) {
-                    return formatter.formatCellValue(cell, evaluator);
-                }
-                BigDecimal val = BigDecimal.valueOf(cell.getNumericCellValue());
+		if (cellType == Cell.CELL_TYPE_FORMULA) {
+			if (evaluator == null) {
+				return cell.getCellFormula();
+			}
+			cellType = evaluator.evaluateFormulaCell(cell);
+		}
+		switch (cellType) {
+		case Cell.CELL_TYPE_NUMERIC:
+			if (DateUtil.isCellDateFormatted(cell)) {
+				return formatter.formatCellValue(cell, evaluator);
+			}
+			BigDecimal val = BigDecimal.valueOf(cell.getNumericCellValue());
 
-                if(cellDT == AttributeDataType.TYPE_INTEGER) {
-                	return String.valueOf(val.intValue());
-                }
-                if(cellDT == AttributeDataType.TYPE_LONG) {
-                	return String.valueOf(val.longValue());
-                }
-                if(cellDT == AttributeDataType.TYPE_FLOATING) {
-                	return String.valueOf(val.doubleValue());
-                }
-                return val.toPlainString();
+			if (cellDT == AttributeDataType.TYPE_INTEGER) {
+				return String.valueOf(val.intValue());
+			}
+			if (cellDT == AttributeDataType.TYPE_LONG) {
+				return String.valueOf(val.longValue());
+			}
+			if (cellDT == AttributeDataType.TYPE_FLOATING) {
+				return String.valueOf(val.doubleValue());
+			}
+			return val.toPlainString();
 
-            case Cell.CELL_TYPE_STRING :
-                return cell.getRichStringCellValue().getString();
+		case Cell.CELL_TYPE_STRING:
+			return cell.getRichStringCellValue().getString();
+		case Cell.CELL_TYPE_BOOLEAN:
+			return String.valueOf(cell.getBooleanCellValue());
+		case Cell.CELL_TYPE_BLANK:
+			return "";
+		}
 
-            case Cell.CELL_TYPE_BOOLEAN :
-                return String.valueOf(cell.getBooleanCellValue());
-            case Cell.CELL_TYPE_BLANK :
-                return "";
-        }
-        
-        return "";
+		return "";
 	}
 
 	@Override
