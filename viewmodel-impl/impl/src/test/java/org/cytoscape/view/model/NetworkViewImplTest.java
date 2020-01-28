@@ -235,6 +235,26 @@ public class NetworkViewImplTest {
 	
 	
 	@Test
+	public void testSpecialNetworkVisualProperties() {
+		CyNetworkViewImpl netView = createSquareTestNetworkView();
+		
+		// test special network VPs
+		assertEquals(0.0, netView.getVisualProperty(NETWORK_CENTER_X_LOCATION), 0.0);
+		assertFalse(netView.isSet(NETWORK_CENTER_X_LOCATION));
+		assertTrue(NETWORK_CENTER_X_LOCATION.shouldIgnoreDefault());
+		netView.setViewDefault(NETWORK_CENTER_X_LOCATION, 99.0);
+		assertEquals(0.0, netView.getVisualProperty(NETWORK_CENTER_X_LOCATION), 0.0);
+		assertFalse(netView.isSet(NETWORK_CENTER_X_LOCATION));
+		netView.setVisualProperty(NETWORK_CENTER_X_LOCATION, 99.0);
+		assertEquals(99.0, netView.getVisualProperty(NETWORK_CENTER_X_LOCATION), 0.0);
+		assertTrue(netView.isSet(NETWORK_CENTER_X_LOCATION));
+		netView.setVisualProperty(NETWORK_CENTER_X_LOCATION, null);
+		assertEquals(0.0, netView.getVisualProperty(NETWORK_CENTER_X_LOCATION), 0.0);
+		assertFalse(netView.isSet(NETWORK_CENTER_X_LOCATION));
+	}
+	
+	
+	@Test
 	public void testVisualPropertyEvents() {
 		CyNetworkViewImpl netView = createSquareTestNetworkView();
 		CyNetwork network = netView.getModel();

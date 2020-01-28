@@ -24,6 +24,11 @@ public class VPNetworkStore extends VPStore {
 	private double networkCenterYLocation = NETWORK_CENTER_Y_LOCATION.getDefault();
 	private double networkScaleFactor     = NETWORK_SCALE_FACTOR.getDefault();
 	
+	// Need to track if these values are explicitly set, or if the view default is being used.
+	private boolean networkCenterXLocationSet = false;
+	private boolean networkCenterYLocationSet = false;
+	private boolean networkScaleFactorSet = false;
+	
 	
 	public VPNetworkStore(VisualLexicon visualLexicon, CyNetworkViewFactoryConfigImpl config) {
 		super(CyNetwork.class, visualLexicon, config);
@@ -34,6 +39,9 @@ public class VPNetworkStore extends VPStore {
 		this.networkCenterXLocation = other.networkCenterXLocation;
 		this.networkCenterYLocation = other.networkCenterYLocation;
 		this.networkScaleFactor = other.networkScaleFactor;
+		this.networkCenterXLocationSet = other.networkCenterXLocationSet;
+		this.networkCenterYLocationSet = other.networkCenterYLocationSet;
+		this.networkScaleFactorSet = other.networkScaleFactorSet;
 	}
 	
 	@Override
@@ -41,39 +49,50 @@ public class VPNetworkStore extends VPStore {
 		return new VPNetworkStore(this);
 	}
 	
-	private double getSpecialNetworkProp(VisualProperty<?> vp) {
-		if(vp == NETWORK_CENTER_X_LOCATION)
-			return networkCenterXLocation;
-		if(vp == NETWORK_CENTER_Y_LOCATION)
-			return networkCenterYLocation;
-		if(vp == NETWORK_SCALE_FACTOR)
-			return networkScaleFactor;
-		return 0; // should never happen
-	}
-	
-	private void setSpecialNetworkProp(VisualProperty<?> vp, Object value) {
-		if(vp == NETWORK_CENTER_X_LOCATION)
-			networkCenterXLocation = ((Number)value).doubleValue();
-		else if(vp == NETWORK_CENTER_Y_LOCATION)
-			networkCenterYLocation = ((Number)value).doubleValue();
-		if(vp == NETWORK_SCALE_FACTOR)
-			networkScaleFactor = ((Number)value).doubleValue();
-	}
-	
-	@Override
-	public <T> T getSpecialVisualProperty(Long suid, VisualProperty<T> vp) {
-		if(NETWORK_PROPS.contains(vp))
-			return (T) Double.valueOf(getSpecialNetworkProp(vp));
-		return null;
-	}
-
 	@Override
 	protected <T, V extends T> boolean setSpecialVisualProperty(Long suid, VisualProperty<? extends T> vp, V value) {
-		if(NETWORK_PROPS.contains(vp)) {
-			setSpecialNetworkProp(vp, value);
-			// don't set the dirty flag in this case
+		if(vp == NETWORK_CENTER_X_LOCATION) {
+			if(value == null) {
+				networkCenterXLocation = NETWORK_CENTER_X_LOCATION.getDefault();
+				networkCenterXLocationSet = false;
+			} else {
+				networkCenterXLocation = ((Number)value).doubleValue();
+				networkCenterXLocationSet = true;
+			}
+			return true;
+		}
+		if(vp == NETWORK_CENTER_Y_LOCATION) {
+			if(value == null) {
+				networkCenterYLocation = NETWORK_CENTER_Y_LOCATION.getDefault();
+				networkCenterYLocationSet = false;
+			} else {
+				networkCenterYLocation = ((Number)value).doubleValue();
+				networkCenterYLocationSet = true;
+			}
+			return true;
+		}
+		if(vp == NETWORK_SCALE_FACTOR) {
+			if(value == null) {
+				networkScaleFactor = NETWORK_SCALE_FACTOR.getDefault();
+				networkScaleFactorSet = false;
+			} else {
+				networkScaleFactor = ((Number)value).doubleValue();
+				networkScaleFactorSet = true;
+			}
 			return true;
 		}
 		return false;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T> T getSpecialVisualProperty(Long suid, VisualProperty<T> vp) {
+		if(vp == NETWORK_CENTER_X_LOCATION && networkCenterXLocationSet)
+			return (T) Double.valueOf(networkCenterXLocation);
+		if(vp == NETWORK_CENTER_Y_LOCATION && networkCenterYLocationSet)
+			return (T) Double.valueOf(networkCenterYLocation);
+		if(vp == NETWORK_SCALE_FACTOR && networkScaleFactorSet)
+			return (T) Double.valueOf(networkScaleFactor);
+		return null;
 	}
 }
