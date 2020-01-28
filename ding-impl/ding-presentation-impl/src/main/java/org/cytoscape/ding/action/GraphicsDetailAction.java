@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.event.MenuEvent;
 
@@ -13,6 +14,7 @@ import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.ShowGraphicsDetailsTaskFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -23,7 +25,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -44,6 +46,9 @@ import org.cytoscape.work.swing.DialogTaskManager;
 @SuppressWarnings("serial")
 public class GraphicsDetailAction extends AbstractCyAction {
 
+	private Long lastViewSuid;
+	private long lastTime = -1;
+	
 	private ShowGraphicsDetailsTaskFactory taskFactory;
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -78,11 +83,32 @@ public class GraphicsDetailAction extends AbstractCyAction {
 	 * @param ev Triggering event - not used.
 	 */
 	@Override
-	public void actionPerformed(ActionEvent ev) {
-		CyNetworkView view = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
+	public void actionPerformed(ActionEvent evt) {
+		var view = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
+		var currentTime = System.currentTimeMillis();
 		
-		if (taskFactory.isReady(view))
+		if (taskFactory.isReady(view)) {
+			var source = evt.getSource();
+			
+			// There is a bug in Java 9+ where the ActionListener is called twice when using accelerator key
+			// on JCheckBoxMenuItem: https://bugs.openjdk.java.net/browse/JDK-8208712
+			// 
+			// Because of that, the second call reverts the "Graphics Details" to the original boolean value right away.
+			// The workaround here is to first check if we are on macOS+Aqua and the source is a JCheckBoxMenuItem.
+			// If so, we also check if the last call for the same View happened after a very short time threshold,
+			// to make sure it's really another user action and not the second "buggy" call.
+			// See: https://cytoscape.atlassian.net/browse/CYTOSCAPE-12637
+			if (LookAndFeelUtil.isAquaLAF() && source instanceof JCheckBoxMenuItem
+					&& view.getSUID().equals(lastViewSuid) && currentTime - lastTime < 32)
+				return;
+			
+			if (LookAndFeelUtil.isAquaLAF() && source instanceof JCheckBoxMenuItem) {
+				lastTime = currentTime;
+				lastViewSuid = view.getSUID();
+			}
+			
 			serviceRegistrar.getService(DialogTaskManager.class).execute(taskFactory.createTaskIterator(view));
+		}
 	}
 
 	@Override
