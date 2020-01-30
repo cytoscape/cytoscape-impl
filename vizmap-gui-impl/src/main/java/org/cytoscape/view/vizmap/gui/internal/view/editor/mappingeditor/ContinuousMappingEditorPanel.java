@@ -733,6 +733,9 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 							tracer.setMin(type, 0.0);
 							tracer.setMax(type, 1.0);
 						}
+					} else {
+						tracer.setMax(type, max);
+						tracer.setMin(type, min);
 					}
 				}
 			}
