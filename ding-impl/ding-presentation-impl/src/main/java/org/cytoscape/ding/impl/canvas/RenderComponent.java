@@ -37,6 +37,8 @@ public abstract class RenderComponent extends JComponent {
 	private RenderDetailFlags lastFastRenderFlags;
 	private boolean initialized = false;
 	
+	private Runnable initializedCallback;
+	
 	public RenderComponent(DRenderingEngine re, GraphLOD lod) {
 		this.re = re;
 		
@@ -51,16 +53,26 @@ public abstract class RenderComponent extends JComponent {
 	abstract DebugFrameType getDebugFrameType(UpdateType type);
 	
 	
+	public void setInitializedCallback(Runnable callback) {
+		this.initializedCallback = callback;
+	}
+	
 	
 	@Override
 	public void setBounds(int x, int y, int width, int height) {
-		initialized = true;
 		if(width == getWidth() && height == getHeight()) {
 			return;
 		}
 		super.setBounds(x, y, width, height);
 		fastCanvas.setViewport(width, height);
 		slowCanvas.setViewport(width, height);
+		
+		if(!initialized) {
+			initialized = true;
+			if(initializedCallback != null) {
+				initializedCallback.run();
+			}
+		}
 		
 		updateView(UpdateType.ALL_FULL);
 	}

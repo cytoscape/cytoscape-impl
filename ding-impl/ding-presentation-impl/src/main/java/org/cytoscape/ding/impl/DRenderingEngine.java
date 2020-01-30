@@ -444,13 +444,19 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		eventHelper.flushPayloadEvents();
 
 		synchronized (dingLock) {
+			if(!renderComponent.isInitialized()) {
+				renderComponent.setInitializedCallback(() -> {
+					renderComponent.setInitializedCallback(null);
+					handleFitContent();
+				});
+				return;
+			}
+			
 			// make sure we use the latest snapshot, don't wait for timer to check dirty flag
 			CyNetworkViewSnapshot netViewSnapshot = getViewModel().createSnapshot();
 			if(netViewSnapshot.getNodeCount() == 0)
 				return;
 			
-			if(!renderComponent.isInitialized())
-				return;
 			NetworkTransform transform = renderComponent.getTransform();
 			if(transform.getWidth() == 0 || transform.getHeight() == 0)
 				return;
