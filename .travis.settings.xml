@@ -1,17 +1,17 @@
 <settings>
   <servers>
-    <server>
-      <id>releases</id>
+   <server>
+      <id>cytoscape_releases</id>
       <username>${env.NEXUS_USERNAME}</username>
       <password>${env.NEXUS_PASSWORD}</password>
     </server>
     <server>
-      <id>snapshots</id>
+      <id>cytoscape_snapshots</id>
       <username>${env.NEXUS_USERNAME}</username>
       <password>${env.NEXUS_PASSWORD}</password>
     </server>
     <server>
-      <id>thirdparty</id>
+      <id>cytoscape_thirdparty</id>
       <username>${env.NEXUS_USERNAME}</username>
       <password>${env.NEXUS_PASSWORD}</password>
     </server>
