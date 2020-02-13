@@ -6,7 +6,7 @@ package org.cytoscape.task.internal.help;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -26,19 +26,19 @@ package org.cytoscape.task.internal.help;
  
 
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.AbstractTaskFactory;
-
+import org.cytoscape.work.TaskIterator;
 
 public class HelpTaskFactory extends AbstractTaskFactory {
-    private final CyServiceRegistrar registrar;
 
-	public HelpTaskFactory(final CyServiceRegistrar serviceRegistrar) {
-		super();
-		registrar = serviceRegistrar;
+	private final CyServiceRegistrar serviceRegistrar;
+
+	public HelpTaskFactory(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new HelpTask(registrar,"http://manual.cytoscape.org/en/3.7.0/Quick_Tour_of_Cytoscape.html"));
-	} 
+		return new TaskIterator(new HelpTask(serviceRegistrar));
+	}
 }
