@@ -84,6 +84,16 @@ public class CyVersionImpl implements CyVersion {
 		minor = Integer.parseInt(m.group(2));
 		bugfix = Integer.parseInt(m.group(3));
 		qualifier = m.group(4);
+		
+		try {
+			// Some classes (e.g. LookAndFeelUtil) cannot get the CyVersion service,
+			// so let's set these system properties for them:
+			System.setProperty("cytoscape.version.major", "" + major);
+			System.setProperty("cytoscape.version.minor", "" + minor);
+			System.setProperty("cytoscape.version.fix", "" + bugfix);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
