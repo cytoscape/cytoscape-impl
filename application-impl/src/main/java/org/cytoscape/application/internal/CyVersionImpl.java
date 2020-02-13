@@ -16,7 +16,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -76,7 +76,7 @@ public class CyVersionImpl implements CyVersion {
 			throw new IllegalArgumentException("Malformed version number: " + version
 					+ "  The version number must match this regular expression: " + CyVersion.VERSION_REGEX);
 
-		final Properties props = (Properties) serviceRegistrar
+		var props = (Properties) serviceRegistrar
 				.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)").getProperties();
 		props.setProperty(CyVersion.VERSION_PROPERTY_NAME, version);
 

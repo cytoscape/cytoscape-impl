@@ -609,11 +609,11 @@ public class CyActivator extends AbstractCyActivator {
 	}
 	
 	private void setLookAndFeel(final BundleContext bc) {
-		IconManager iconManager = getService(bc, IconManager.class);
+		var iconManager = getService(bc, IconManager.class);
 		
 		// Set Look and Feel
-		final Properties props = getCy3Property(bc).getProperties();
-		String lookAndFeel = props.getProperty("lookAndFeel");
+		var props = getCy3Property(bc).getProperties();
+		var lookAndFeel = props.getProperty("lookAndFeel");
 		
 		if (lookAndFeel == null) {
 			if (isMac() || isWindows())
@@ -631,7 +631,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		if (isAquaLAF()) {
 			final boolean useScreenMenuBar;
-			String useScreenMenuBarVal = props.getProperty("useScreenMenuBar");
+			var useScreenMenuBarVal = props.getProperty("useScreenMenuBar");
 			
 			if ("true".equalsIgnoreCase(useScreenMenuBarVal)) {
 				useScreenMenuBar = true;

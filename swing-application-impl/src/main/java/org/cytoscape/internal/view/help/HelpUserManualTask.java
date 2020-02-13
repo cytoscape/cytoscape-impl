@@ -12,7 +12,7 @@ import org.cytoscape.work.TaskMonitor;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -32,7 +32,7 @@ import org.cytoscape.work.TaskMonitor;
 
 public class HelpUserManualTask extends AbstractTask {
 	
-	private static final String MANUAL_URL = "https://manual.cytoscape.org/en/";
+	private static final String URL_TEMPLATE = "https://manual.cytoscape.org/en/%s.%s.%s/";
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -42,12 +42,14 @@ public class HelpUserManualTask extends AbstractTask {
 
 	@Override
 	public void run(TaskMonitor tm) {
-		final OpenBrowser openBrowser = serviceRegistrar.getService(OpenBrowser.class);
-		final CyVersion cyVersion = serviceRegistrar.getService(CyVersion.class);
+		var openBrowser = serviceRegistrar.getService(OpenBrowser.class);
+		var cyVersion = serviceRegistrar.getService(CyVersion.class);
 		
-		openBrowser.openURL(MANUAL_URL + 
-				cyVersion.getMajorVersion() + "." +
-				cyVersion.getMinorVersion() + "." +
-				cyVersion.getBugFixVersion());
+		var major = cyVersion.getMajorVersion();
+		var minor = cyVersion.getMinorVersion();
+		var fix = cyVersion.getBugFixVersion();
+		var url = String.format(URL_TEMPLATE, major, minor, fix);
+		
+		openBrowser.openURL(url);
 	}
 }
