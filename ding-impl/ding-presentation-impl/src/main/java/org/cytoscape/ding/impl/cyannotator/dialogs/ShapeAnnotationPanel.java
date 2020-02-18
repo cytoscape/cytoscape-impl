@@ -33,6 +33,7 @@ import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
 import java.awt.Color;
 import java.awt.Paint;
+import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -74,6 +75,7 @@ public class ShapeAnnotationPanel extends JPanel {
 	private PreviewPanel previewPanel;
 
 	private ShapeAnnotationImpl annotation;
+	private Shape customShape;
 
 	public ShapeAnnotationPanel(final ShapeAnnotation annotation, final PreviewPanel previewPanel) {
 		this.annotation = (ShapeAnnotationImpl) annotation;
@@ -93,13 +95,19 @@ public class ShapeAnnotationPanel extends JPanel {
 		final JLabel label5 = new JLabel("Border Opacity:");
 		final JLabel label6 = new JLabel("Border Width:");
 
+		if(annotation.getShapeTypeEnum() == ShapeType.CUSTOM) {
+			customShape = annotation.getShape();
+		}
+		
 		shapeList = new JList<>();
 		shapeList.setModel(new AbstractListModel<>() {
 			List<String> typeList; 
 			{
 				typeList = new ArrayList<>(annotation.getSupportedShapes());
-				// currently no support in UI for creating a custom shape
-				typeList.remove(ShapeType.CUSTOM.shapeName()); 
+				if(annotation.getShapeTypeEnum() != ShapeType.CUSTOM) {
+					// currently no support in UI for creating a custom shape
+					typeList.remove(ShapeType.CUSTOM.shapeName());
+				}
 			}
 			@Override public int getSize() { return typeList.size(); }
 			@Override public String getElementAt(int i) { return typeList.get(i); }
@@ -293,7 +301,12 @@ public class ShapeAnnotationPanel extends JPanel {
 	
 	public void modifySAPreview(){
 		preview.setBorderWidth(Integer.parseInt((String) (borderWidthCombo.getModel().getSelectedItem())));
-		preview.setShapeType(shapeList.getSelectedValue());
+		String shapeType = shapeList.getSelectedValue();
+		if(ShapeType.CUSTOM.shapeName().equals(shapeType)) { // This option will only be available if user started by editing a custom shape
+			preview.setCustomShape(customShape); // You can't edit the custom shape, but you can reset it.
+		} else {
+			preview.setShapeType(shapeType);
+		}
 		preview.setName(annotation.getName());
 
 		previewPanel.repaint();
