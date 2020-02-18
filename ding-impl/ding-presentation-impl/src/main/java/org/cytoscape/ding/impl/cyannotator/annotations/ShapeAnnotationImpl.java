@@ -6,6 +6,7 @@ import java.awt.Paint;
 import java.awt.Shape;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.swing.JDialog;
 
@@ -67,8 +68,12 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		borderColor = c.getBorderColor();
 		borderWidth = c.getBorderWidth();
 		fillColor = c.getFillColor();
-		shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, width, height);
 		name = c.getName() != null ? c.getName() : getDefaultName();
+		if(shapeType == ShapeType.CUSTOM) {
+			shape = GraphicsUtilities.copyCustomShape(c.getShape(), width, height);
+		} else { 
+			shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, width, height);
+		}
 	}
 
 	public ShapeAnnotationImpl(
@@ -165,13 +170,12 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		return shapeType.shapeName();
 	}
 
-	public ShapeType getShapeTypeInt() {
+	public ShapeType getShapeTypeEnum() {
 		return shapeType;
 	}
 
 	public void setShapeType(ShapeType type) {
 		shapeType = type;
-		
 		if (shapeType != ShapeType.CUSTOM)
 			this.shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, width, height);
 		update();
@@ -179,8 +183,10 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 
 	@Override
 	public void setShapeType(String type) {
-		shapeType = getShapeFromString(type);
-		setShapeType(shapeType);
+		ShapeType shapeType = getShapeFromString(type);
+		if(!Objects.equals(this.shapeType, shapeType)) {
+			setShapeType(shapeType);
+		}
 	}
 
 	@Override

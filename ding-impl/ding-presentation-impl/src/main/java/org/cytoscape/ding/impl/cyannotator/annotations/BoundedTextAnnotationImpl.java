@@ -160,7 +160,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		shapeIsFit = true;
 
 		// Different depending on the type...
-		ShapeType shapeType = getShapeTypeInt();
+		ShapeType shapeType = getShapeTypeEnum();
 		switch (shapeType) {
 		case ELLIPSE:
 			width = getTextWidth()*3/2+8;

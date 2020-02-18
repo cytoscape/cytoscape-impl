@@ -36,6 +36,7 @@ import java.awt.MultipleGradientPaint.ColorSpaceType;
 import java.awt.MultipleGradientPaint.CycleMethod;
 import java.awt.Paint;
 import java.awt.RadialGradientPaint;
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
@@ -48,6 +49,7 @@ import java.awt.geom.RoundRectangle2D;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl.ArrowType;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation.ArrowEnd;
@@ -57,23 +59,6 @@ import org.cytoscape.view.presentation.annotations.ShapeAnnotation.ShapeType;
 class GraphicsUtilities {
 	private static double halfPI = Math.PI / 2.0;
 
-	protected static final ShapeType supportedShapes[] = { ShapeType.RECTANGLE, ShapeType.ROUNDEDRECTANGLE,
-			ShapeType.ELLIPSE, ShapeType.STAR5, ShapeType.TRIANGLE, ShapeType.STAR6, ShapeType.HEXAGON,
-			ShapeType.PENTAGON, ShapeType.OCTAGON, ShapeType.PARALLELOGRAM,ShapeType.DIAMOND,ShapeType.V };
-
-	protected static final List<String> supportedShapeNames = Arrays.asList(ShapeType.RECTANGLE.shapeName(),
-			ShapeType.ROUNDEDRECTANGLE.shapeName(), ShapeType.ELLIPSE.shapeName(), ShapeType.STAR5.shapeName(),
-			ShapeType.TRIANGLE.shapeName(), ShapeType.STAR6.shapeName(), ShapeType.HEXAGON.shapeName(),
-			ShapeType.PENTAGON.shapeName(), ShapeType.OCTAGON.shapeName(), ShapeType.PARALLELOGRAM.shapeName(),ShapeType.DIAMOND.shapeName(),ShapeType.V.shapeName(),
-			ShapeType.CUSTOM.shapeName());
-
-	protected static final ArrowType supportedArrows[] = { ArrowType.CIRCLE, ArrowType.CLOSED, ArrowType.CONCAVE,
-			ArrowType.DIAMOND, ArrowType.OPEN, ArrowType.X, ArrowType.NONE, ArrowType.TRIANGLE, ArrowType.TSHAPE };
-
-	protected static final List<String> supportedArrowNames = Arrays.asList(ArrowType.CIRCLE.arrowName(),
-			ArrowType.CLOSED.arrowName(), ArrowType.CONCAVE.arrowName(), ArrowType.DIAMOND.arrowName(),
-			ArrowType.OPEN.arrowName(), ArrowType.NONE.arrowName(), ArrowType.X.arrowName(),
-			ArrowType.TRIANGLE.arrowName(), ArrowType.TSHAPE.arrowName());
 
 	static public Shape getShape(String shapeName, double x, double y, double width, double height) {
 		ShapeType shapeType = getShapeType(shapeName);
@@ -96,16 +81,8 @@ class GraphicsUtilities {
 	}
 
 	static public ShapeType getShapeType(String shapeName) {
-		for (ShapeType type : supportedShapes) {
+		for(ShapeType type : ShapeType.values()) {
 			if (shapeName.equals(type.shapeName()))
-				return type;
-		}
-		return ShapeType.RECTANGLE; // If we can't do anything else...
-	}
-
-	static public ShapeType getShapeType(int shapeNumber) {
-		for (ShapeType type : supportedShapes) {
-			if (shapeNumber == type.ordinal())
 				return type;
 		}
 		return ShapeType.RECTANGLE; // If we can't do anything else...
@@ -124,7 +101,7 @@ class GraphicsUtilities {
 	}
 
 	static public List<String> getSupportedShapes() {
-		return supportedShapeNames;
+		return Arrays.stream(ShapeType.values()).map(ShapeType::shapeName).collect(Collectors.toList());
 	}
 
 	// Given a position and a size, draw a shape. We use the ShapeAnnotation to get the shape itself, colors, strokes, etc.
@@ -190,6 +167,43 @@ class GraphicsUtilities {
 		}
 	}
 
+	
+	public static Shape copyCustomShape(Shape s, double width, double height) {
+		Rectangle bounds = s.getBounds();
+		var sx = width  / bounds.getWidth();
+		var sy = height / bounds.getHeight();
+		AffineTransform t = AffineTransform.getScaleInstance(sx, sy);
+		
+		PathIterator i = s.getPathIterator(t);
+		Path2D.Double path = new Path2D.Double();
+		path.setWindingRule(i.getWindingRule());
+		
+		double[] nums = new double[6];
+		for (; !i.isDone(); i.next()) {
+			int type = i.currentSegment(nums);
+			switch(type) {
+			case PathIterator.SEG_CLOSE:
+				path.closePath();
+				break;
+			case PathIterator.SEG_MOVETO:
+				path.moveTo(nums[0], nums[1]);
+				break;
+			case PathIterator.SEG_LINETO:
+				path.lineTo(nums[0], nums[1]);
+				break;
+			case PathIterator.SEG_QUADTO:
+				path.quadTo(nums[0], nums[1], nums[2], nums[3]);
+				break;
+			case PathIterator.SEG_CUBICTO:
+				path.curveTo(nums[0], nums[1], nums[2], nums[3], nums[4], nums[5]);
+				break;
+			}
+		}
+		
+		return path;
+	}
+	
+	
 	static public String serializeShape(final Shape s) {
 		final StringBuffer buffer = new StringBuffer();
 		final PathIterator i = s.getPathIterator(null);
@@ -290,7 +304,7 @@ class GraphicsUtilities {
 			}
 		}
 
-		return (Shape) path;
+		return path;
 	}
 
 	private static int parseDoubles(final String[] pieces, final int startIndex, final int expectedNum, final double[] nums) {
@@ -332,26 +346,19 @@ class GraphicsUtilities {
 	}
 
 	static public ArrowType getArrowType(String arrowName) {
-		for (ArrowType type : supportedArrows) {
+		for (ArrowType type : ArrowType.values()) {
 			if (arrowName.equals(type.arrowName()))
 				return type;
 		}
 		return ArrowType.NONE; // If we can't do anything else...
 	}
 
-	static public ArrowType getArrowType(int arrowNumber) {
-		for (ArrowType type : supportedArrows) {
-			if (arrowNumber == type.ordinal())
-				return type;
-		}
-		return ArrowType.NONE; // If we can't do anything else...
-	}
 
 	static public ArrowType getArrowType(Map<String, String> argMap, String key, ArrowType defValue) {
 		if (!argMap.containsKey(key) || argMap.get(key) == null)
 			return defValue;
 		int arrowNumber = Integer.parseInt(argMap.get(key));
-		for (ArrowType type : supportedArrows) {
+		for (ArrowType type : ArrowType.values()) {
 			if (arrowNumber == type.ordinal())
 				return type;
 		}
@@ -359,11 +366,11 @@ class GraphicsUtilities {
 	}
 
 	static public ArrowType[] getSupportedArrowTypes() {
-		return supportedArrows;
+		return ArrowType.values();
 	}
 
 	static public List<String> getSupportedArrowTypeNames() {
-		return supportedArrowNames;
+		return Arrays.stream(ArrowType.values()).map(ArrowType::arrowName).collect(Collectors.toList());
 	}
 
 	static public void drawArrow(Graphics g, Line2D line, ArrowEnd end, Paint paint, double size, ArrowType type) {
