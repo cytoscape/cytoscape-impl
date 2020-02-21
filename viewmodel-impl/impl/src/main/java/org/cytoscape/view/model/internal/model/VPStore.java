@@ -7,6 +7,7 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.internal.CyNetworkViewFactoryConfigImpl;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 import io.vavr.collection.HashMap;
 import io.vavr.collection.HashSet;
@@ -147,6 +148,9 @@ public class VPStore {
 	
 	public <T, V extends T> boolean setLockedValue(Long suid, VisualProperty<? extends T> parentVP, V value) {
 		boolean[] changed = { false };
+		
+		if(parentVP == BasicVisualLexicon.NODE_SELECTED || parentVP == BasicVisualLexicon.EDGE_SELECTED)
+			return false;
 		
 		changed[0] |= isChanged(directLocks, suid, parentVP, value);
 		directLocks = put(directLocks, suid, parentVP, value);
