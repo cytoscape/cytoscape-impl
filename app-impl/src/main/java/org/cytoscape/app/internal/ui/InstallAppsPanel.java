@@ -32,11 +32,9 @@ import java.awt.Container;
 import java.awt.Desktop;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
@@ -288,13 +286,8 @@ public class InstallAppsPanel extends JPanel {
         searchAppsLabel.setVisible(!LookAndFeelUtil.isAquaLAF());
         filterTextField.putClientProperty("JTextField.variant", "search"); // Aqua LAF only
         filterTextField.setToolTipText("To search, start typing");
-
-        installFromFileButton.addActionListener(new ActionListener() {
-        	@Override
-            public void actionPerformed(ActionEvent evt) {
-                installFromFileButtonActionPerformed(evt);
-            }
-        });
+        
+        installFromFileButton.addActionListener(evt -> installFromFileButtonActionPerformed(evt));
 
         descriptionSplitPane.setBorder(null);
         descriptionSplitPane.setDividerLocation(390);
@@ -347,41 +340,22 @@ public class InstallAppsPanel extends JPanel {
         descriptionSplitPane.setRightComponent(descriptionPanel);
 
         viewOnAppStoreButton.setEnabled(false);
-        viewOnAppStoreButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                viewOnAppStoreButtonActionPerformed(evt);
-            }
-        });
+        viewOnAppStoreButton.addActionListener(evt -> viewOnAppStoreButtonActionPerformed(evt));
 
         installButton.setEnabled(false);
-        installButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                installButtonActionPerformed(evt);
-            }
-        });
+        installButton.addActionListener(evt -> installButtonActionPerformed(evt));
 
         downloadSiteComboBox.setModel(new DefaultComboBoxModel(new String[] { WebQuerier.DEFAULT_APP_STORE_URL }));
-        downloadSiteComboBox.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent evt) {
-                downloadSiteComboBoxItemStateChanged(evt);
-            }
-        });
-        downloadSiteComboBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                downloadSiteComboBoxActionPerformed(evt);
-            }
-        });
+        downloadSiteComboBox.addItemListener(evt -> downloadSiteComboBoxItemStateChanged(evt));
+        downloadSiteComboBox.addActionListener(evt -> downloadSiteComboBoxActionPerformed(evt));
         downloadSiteComboBox.addKeyListener(new KeyAdapter() {
+        	@Override
             public void keyPressed(KeyEvent evt) {
                 downloadSiteComboBoxKeyPressed(evt);
             }
         });
 
-        manageSitesButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                manageSitesButtonActionPerformed(evt);
-            }
-        });
+        manageSitesButton.addActionListener(evt -> manageSitesButtonActionPerformed(evt));
         
         LookAndFeelUtil.equalizeSize(installFromFileButton, viewOnAppStoreButton, installButton);
         
@@ -441,7 +415,6 @@ public class InstallAppsPanel extends JPanel {
 		    	final Object selectedValue = editor.getItem();
 				
 				if (e.isActionKey() || e.getKeyCode() == KeyEvent.VK_ENTER) {
-					
 			    	if (downloadSiteComboBox.getModel() instanceof DefaultComboBoxModel
 			    			&& selectedValue != null) {
 			    		final DefaultComboBoxModel comboBoxModel = (DefaultComboBoxModel) downloadSiteComboBox.getModel();
