@@ -507,6 +507,14 @@ public class InstallAppsPanel extends JPanel {
 		tagsTree.setCellRenderer(tagsTreeCellRenderer);
     }
     
+    @Override
+    public void addNotify() {
+    	super.addNotify();
+    	
+    	if (filterTextField != null)
+    		filterTextField.requestFocusInWindow();
+    }
+    
 	private void installFromFileButtonActionPerformed(ActionEvent evt) {
 		// Setup a the file filter for the open file dialog
 		FileChooserFilter fileChooserFilter = new FileChooserFilter(
