@@ -11,6 +11,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GraphicsConfiguration;
 import java.awt.KeyboardFocusManager;
+import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.AWTEventListener;
@@ -46,6 +47,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.internal.view.GridViewToggleModel.Mode;
 import org.cytoscape.internal.view.NetworkViewGrid.ThumbnailPanel;
 import org.cytoscape.model.CyNetwork;
@@ -962,6 +964,9 @@ public class NetworkViewMainPanel extends JPanel {
 		popupMenu.show(source, 0, source.getHeight());
 	}
 	
+	/**
+	 * This listener is used to pass mouse events through the glass pane to the network view.
+	 */
 	private class MousePressedAWTEventListener implements AWTEventListener {
 		
         @Override
@@ -970,12 +975,37 @@ public class NetworkViewMainPanel extends JPanel {
 				final KeyboardFocusManager keyboardFocusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
 				final Window window = keyboardFocusManager.getActiveWindow();
 				
-				if (!(window instanceof NetworkViewFrame || window instanceof CytoscapeDesktop))
+				if (!(window instanceof NetworkViewFrame || window instanceof CySwingApplication))
 					return;
+				
+				MouseEvent me = (MouseEvent) event;
+				
+				if (window instanceof CySwingApplication) {
+					// Get all CytoPanels and check if they are undocked.
+					// If so, and the mouse event is inside the CytoPanel's bounds, ignore the event.
+					// If we don't do this here and just call requestFocusInWindow() on the view component,
+					// that would steal the focus from widgets on the CytoPanel, such as when editing a Node Table cell,
+					// for instance.
+					// See bug: https://cytoscape.atlassian.net/browse/CYTOSCAPE-12661
+					for (var cpName : CytoPanelName.values()) {
+						var cp = ((CySwingApplication) window).getCytoPanel(cpName);
+						
+						if (cp instanceof CytoPanelImpl == false || cp.getThisComponent() == null)
+							continue;
+						
+						// We only check UNDOCKED CytoPanels, because thet's when they can be rendered
+						// on the glass pane over the network view area
+						if (((CytoPanelImpl) cp).getStateInternal() == CytoPanelStateInternal.UNDOCK) {
+							var pt = new Point(SwingUtilities.convertPoint(me.getComponent(), me.getPoint(), cp.getThisComponent()));
+							
+							if (cp.getThisComponent().contains(pt))
+								return; // Ignore the mouse event because it was meant for an undocked CytoPanel
+						}
+					}
+				}
 				
 				// Detect if a new view container received the mouse pressed event.
 				// If so, it must request focus.
-				MouseEvent me = (MouseEvent) event;
                 final Set<Component> targets = new HashSet<>();
                 
                 // Find the view container to be verified
@@ -1002,7 +1032,8 @@ public class NetworkViewMainPanel extends JPanel {
                 for (Component c : targets) {
                 	me = SwingUtilities.convertMouseEvent(me.getComponent(), me, c);
                 	
-                	// Received the mouse event? So it should get focus now.
+                	// Received the mouse event and got here?
+                	// So it should get focus now, otherwise keyboard events may not work on the view.
                 	if (c.getBounds().contains(me.getPoint()))
                 		c.requestFocusInWindow();
                 }
