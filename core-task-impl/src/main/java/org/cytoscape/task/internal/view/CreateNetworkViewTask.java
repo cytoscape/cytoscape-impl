@@ -15,6 +15,7 @@ import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNetworkCollectionTask;
 import org.cytoscape.task.internal.layout.ApplyPreferredLayoutTask;
@@ -152,24 +153,35 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 			var chooseRendererTask = new ChooseViewRendererTask(netList);
 			insertTasksAfterCurrentTask(chooseRendererTask);
 		} else {
-			final CyNetwork curNet = appMgr.getCurrentNetwork();
-			CyNetworkView curView = appMgr.getCurrentNetworkView();
+			var curNet = appMgr.getCurrentNetwork();
+			var curView = appMgr.getCurrentNetworkView();
 			
-			var netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
-			var vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
-			var style = vmMgr.getCurrentVisualStyle();
+			var rootNetMgr = serviceRegistrar.getService(CyRootNetworkManager.class);
+			var viewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+			var visMapMgr = serviceRegistrar.getService(VisualMappingManager.class);
+			VisualStyle style = null;
+			
 			int i = 0;
 			int viewCount = netList.size();
 			
 			for (CyNetwork n : netList) {
+				style = visMapMgr.getDefaultVisualStyle();
+				
 				if (cancelled)
 					break;
 				
 				// TODO Remove this check when multiple views per network is supported
-				if (netViewMgr.viewExists(n))
+				if (viewMgr.viewExists(n))
 					continue;
 				
-				final CyNetworkView view = createView(n, style, tm);
+				// If the base network of this collection has a view, use the same base network’s style
+				var rootNet = rootNetMgr.getRootNetwork(n);
+				var baseViewSet = viewMgr.getNetworkViews(rootNet.getBaseNetwork());
+				
+				if (!baseViewSet.isEmpty())
+					style = visMapMgr.getVisualStyle(baseViewSet.iterator().next());
+				
+				var view = createView(n, style, tm);
 				networkViews.add(view);
 				
 				if (curView == null && n.equals(curNet))
@@ -184,7 +196,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 				if (layoutMgr == null) // Create network from selection?
 					insertTasksAfterCurrentTask(new RegisterNetworkTask(networkViews.get(0), style, serviceRegistrar));
 				else
-					insertTasksAfterCurrentTask(new RegisterNetworkTask(networkViews, style, serviceRegistrar));
+					insertTasksAfterCurrentTask(new RegisterNetworkTask(networkViews, null, serviceRegistrar));
 			}
 		}
 		
@@ -222,7 +234,6 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 			if (style != null) {
 				var vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
 				vmMgr.setVisualStyle(style, view);
-				style.apply(view);
 			}
 			
 			if (cancelled)

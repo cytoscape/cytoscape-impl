@@ -9,6 +9,7 @@ import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
@@ -18,7 +19,6 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
@@ -155,21 +155,27 @@ public class GenerateNetworkViewsTask extends AbstractTask implements Observable
 	}
 	
 	private void createNetworkView(final CyNetwork network) {
-		final VisualMappingManager vmManager = serviceRegistrar.getService(VisualMappingManager.class);
-		// get the current style before registering the views!
-		final VisualStyle curStyle = vmManager.getCurrentVisualStyle();
+		var view = viewReader.buildCyNetworkView(network);
 		
-		final CyNetworkView view = viewReader.buildCyNetworkView(network);
-		final VisualStyle viewStyle = vmManager.getVisualStyle(view);
-		serviceRegistrar.getService(CyNetworkViewManager.class).addNetworkView(view, false);
+		var vmManager = serviceRegistrar.getService(VisualMappingManager.class);
+		var viewStyle = vmManager.getVisualStyle(view);
 		
-		// Only set current style when no style (or usually the default one) is already set for this view.
+		var viewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
+		viewManager.addNetworkView(view, false);
+		
+		// Only set a style explicitly when no style (or usually the default one) is already set for this view.
 		// This allows the CyNetworkReader implementation to set the desired style itself.
-		if (viewStyle != null && !viewStyle.equals(vmManager.getDefaultVisualStyle())) {
-			viewStyle.apply(view);
-		} else {
-			vmManager.setVisualStyle(curStyle, view);
-			curStyle.apply(view);
+		if (viewStyle == null || viewStyle.equals(vmManager.getDefaultVisualStyle())) {
+			var style = vmManager.getDefaultVisualStyle();
+			
+			// If the base network of this collection has a view, use the same base network’s style
+			var rootNet = serviceRegistrar.getService(CyRootNetworkManager.class).getRootNetwork(network);
+			var baseViewSet = viewManager.getNetworkViews(rootNet.getBaseNetwork());
+			
+			if (!baseViewSet.isEmpty())
+				style = vmManager.getVisualStyle(baseViewSet.iterator().next());
+			
+			vmManager.setVisualStyle(style, view);
 		}
 		
 		if (!view.isSet(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION)

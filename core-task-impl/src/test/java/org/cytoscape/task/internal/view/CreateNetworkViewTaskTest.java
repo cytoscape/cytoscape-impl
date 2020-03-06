@@ -17,6 +17,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -62,6 +63,7 @@ public class CreateNetworkViewTaskTest {
 	private final NetworkTestSupport support = new NetworkTestSupport();
 	private final NetworkViewTestSupport viewSupport = new NetworkViewTestSupport();
 	private CyNetworkViewFactory viewFactory = viewSupport.getNetworkViewFactory();
+	private final CyRootNetworkManager rootNetManager = support.getRootNetworkFactory();
 
 	@Mock private CyNetworkViewManager netViewManager;
 	@Mock private CyNetworkManager netManager;
@@ -69,23 +71,27 @@ public class CreateNetworkViewTaskTest {
 	@Mock private UndoSupport undoSupport;
 	@Mock private TaskMonitor tm;
 	@Mock private CyEventHelper eventHelper;
-	@Mock private VisualMappingManager vmm;
+	@Mock private VisualMappingManager vmManager;
 	@Mock private CyApplicationManager appManager;
-	@Mock private VisualStyle currentStyle;
+	@Mock private VisualStyle defStyle;
 	@Mock private CyServiceRegistrar serviceRegistrar;
 
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
-		when(vmm.getCurrentVisualStyle()).thenReturn(currentStyle);
+		
+		when(vmManager.getDefaultVisualStyle()).thenReturn(defStyle);
+		when(vmManager.getVisualStyle(any(CyNetworkView.class))).thenReturn(defStyle);
+		
 		when(renderingEngineManager.getRenderingEngines(any(View.class))).thenReturn(Collections.EMPTY_LIST);
 		
 		when(serviceRegistrar.getService(UndoSupport.class)).thenReturn(undoSupport);
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
 		when(serviceRegistrar.getService(RenderingEngineManager.class)).thenReturn(renderingEngineManager);
-		when(serviceRegistrar.getService(VisualMappingManager.class)).thenReturn(vmm);
+		when(serviceRegistrar.getService(VisualMappingManager.class)).thenReturn(vmManager);
 		when(serviceRegistrar.getService(CyApplicationManager.class)).thenReturn(appManager);
 		when(serviceRegistrar.getService(CyNetworkViewManager.class)).thenReturn(netViewManager);
+		when(serviceRegistrar.getService(CyRootNetworkManager.class)).thenReturn(rootNetManager);
 	}
 	
 	@Test
@@ -112,6 +118,6 @@ public class CreateNetworkViewTaskTest {
 		task.setTaskIterator(new TaskIterator(task));
 		task.run(tm);
 		verify(netViewManager, times(2)).addNetworkView(any(CyNetworkView.class), eq(false));
-		verify(vmm, times(2)).setVisualStyle(eq(currentStyle), any(CyNetworkView.class));
+		verify(vmManager, times(2)).setVisualStyle(eq(defStyle), any(CyNetworkView.class));
 	}
 }
