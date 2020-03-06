@@ -160,6 +160,10 @@ public class NewEmptyNetworkTask extends AbstractTask implements ObservableTask 
 		tm.setTitle("New Empty Network");
 		tm.setProgress(0.0);
 
+		var viewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+		var visMapMgr = serviceRegistrar.getService(VisualMappingManager.class);
+		var style = visMapMgr.getDefaultVisualStyle();
+		
 		String networkCollectionName = rootNetworkList.getSelectedValue();
 
 		if (networkCollectionName == null || networkCollectionName.equalsIgnoreCase(CRERATE_NEW_COLLECTION_STRING)) {
@@ -168,9 +172,14 @@ public class NewEmptyNetworkTask extends AbstractTask implements ObservableTask 
 			subNetwork = (CySubNetwork) netFactory.createNetwork();
 		} else {
 			// Add a new subNetwork to the given collection
-			subNetwork = name2RootMap.get(networkCollectionName).addSubNetwork();
+			var rootNet = name2RootMap.get(networkCollectionName);
+			var baseViewSet = viewMgr.getNetworkViews(rootNet.getBaseNetwork());
+			subNetwork = rootNet.addSubNetwork();
+			
+			if (!baseViewSet.isEmpty())
+				style = visMapMgr.getVisualStyle(baseViewSet.iterator().next());
 		}
-
+		
 		tm.setProgress(0.2);
 
 		var networkName = serviceRegistrar.getService(CyNetworkNaming.class).getSuggestedNetworkTitle(name);
@@ -207,16 +216,11 @@ public class NewEmptyNetworkTask extends AbstractTask implements ObservableTask 
 		applicationMgr.setCurrentNetwork(subNetwork);
 		tm.setProgress(0.8);
 		
-		var visMapMgr = serviceRegistrar.getService(VisualMappingManager.class);
-		var style = visMapMgr.getCurrentVisualStyle(); // get the current style before registering the view!
-		serviceRegistrar.getService(CyNetworkViewManager.class).addNetworkView(view);
+		viewMgr.addNetworkView(view);
 		tm.setProgress(0.9);
 		
-		if (style != null) {
+		if (style != null)
 			visMapMgr.setVisualStyle(style, view);
-			style.apply(view);
-			view.updateView();
-		}
 		
 		tm.setProgress(1.0);
 	}

@@ -70,12 +70,12 @@ public class NewEmptyNetworkTaskTest {
 	@Mock private VisualMappingManager vmm;
 	@Mock private CyApplicationManager appMgr;
 	@Mock private NetworkViewRenderer netViewRenderer;
-	@Mock private VisualStyle currentStyle;
+	@Mock private VisualStyle defStyle;
 
 	@Before
 	public void initMocks() {
 		MockitoAnnotations.initMocks(this);
-		when(vmm.getCurrentVisualStyle()).thenReturn(currentStyle);
+		when(vmm.getDefaultVisualStyle()).thenReturn(defStyle);
 		when(netViewRenderer.getNetworkViewFactory()).thenReturn(netViewFactory);
 		when(appMgr.getDefaultNetworkViewRenderer()).thenReturn(netViewRenderer);
 		
@@ -95,6 +95,6 @@ public class NewEmptyNetworkTaskTest {
 
 		verify(netMgr, times(1)).addNetwork(any(CyNetwork.class), eq(false));
 		verify(netViewMgr, times(1)).addNetworkView(any(CyNetworkView.class));
-		verify(vmm, times(1)).setVisualStyle(eq(currentStyle), any(CyNetworkView.class));
+		verify(vmm, times(1)).setVisualStyle(eq(defStyle), any(CyNetworkView.class));
 	}
 }
