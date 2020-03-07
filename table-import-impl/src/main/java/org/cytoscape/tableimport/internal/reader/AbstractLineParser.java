@@ -66,12 +66,16 @@ public abstract class AbstractLineParser {
 						DecimalFormat df = new DecimalFormat();
 						df.setDecimalFormatSymbols(dfs);
 						df.setGroupingUsed(false); // We don't use the grouping
+
+						// DecimalFormat doesn't support using 'e' as a separator between the mantissa and the exponent
+						String s1 = s.replace('e','E');
 						
 						try {
-							return df.parse(s.trim()).doubleValue();
+							return df.parse(s1.trim()).doubleValue();
 						} catch (ParseException pe) {
-							value = createInvalidNumberEquation(s.trim(), type);
+							value = createInvalidNumberEquation(s1.trim(), type);
 						}
+
 					case TYPE_STRING:   return s.trim();
 	
 					case TYPE_BOOLEAN_LIST:

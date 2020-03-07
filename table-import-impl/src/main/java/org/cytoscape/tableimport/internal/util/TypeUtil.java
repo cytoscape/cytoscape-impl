@@ -597,14 +597,17 @@ public final class TypeUtil {
 			df.setGroupingUsed(false); // We don't use the grouping
 
 			ParsePosition parsePosition = new ParsePosition(0);
-			df.parse(val, parsePosition);
-			if(parsePosition.getIndex() != val.length()) {
+
+			// DecimalFormat parse doesn't accept 'e'
+			String val1 = val.replace('e', 'E');
+			df.parse(val1, parsePosition);
+			if(parsePosition.getIndex() != val1.length()) {
 				return false;
 			}
 			
 			// Also check if it ends with 'f' or 'd' (if so, it should be a String!)
-			val = val.toLowerCase();
-			return !val.endsWith("f") && !val.endsWith("d");
+			val1 = val1.toLowerCase();
+			return !val1.endsWith("f") && !val1.endsWith("d");
 		}
 		
 		return false;
