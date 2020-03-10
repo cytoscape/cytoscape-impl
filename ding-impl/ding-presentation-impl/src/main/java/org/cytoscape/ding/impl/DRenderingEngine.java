@@ -29,7 +29,7 @@ import javax.swing.Timer;
 
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.PrintLOD;
-import org.cytoscape.ding.debug.DebugCallback;
+import org.cytoscape.ding.debug.DebugProgressMonitorFactory;
 import org.cytoscape.ding.icon.VisualPropertyIconFactory;
 import org.cytoscape.ding.impl.canvas.CompositeGraphicsCanvas;
 import org.cytoscape.ding.impl.canvas.MainRenderComponent;
@@ -144,7 +144,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 	private final BendStore bendStore;
 	private InputHandlerGlassPane inputHandler = null;
-	private DebugCallback debugCallback;
+	private DebugProgressMonitorFactory debugProgressMonitorFactory;
 	
 	// This is Ding's own rendering thread. All rendering is single-threaded, but off the EDT
 	private final ExecutorService singleThreadExecutor;
@@ -213,12 +213,12 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		component.add(renderComponent, BorderLayout.CENTER);
 	}
 	
-	public void setDebugCallback(DebugCallback callback) {
-		this.debugCallback = callback;
+	public void setDebugProgressMonitorFactory(DebugProgressMonitorFactory factory) {
+		this.debugProgressMonitorFactory = factory;
 	}
 	
-	public DebugCallback getDebugCallback() {
-		return debugCallback;
+	public DebugProgressMonitorFactory getDebugProgressMonitorFactory() {
+		return debugProgressMonitorFactory;
 	}
 	
 	public Image getImage() {

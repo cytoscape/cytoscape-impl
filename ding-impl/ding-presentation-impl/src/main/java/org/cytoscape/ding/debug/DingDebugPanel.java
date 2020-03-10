@@ -1,7 +1,6 @@
 package org.cytoscape.ding.debug;
 
 import java.awt.Component;
-import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -13,32 +12,19 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
-import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.ding.impl.DRenderingEngine;
-import org.cytoscape.ding.impl.DingRenderer;
-import org.cytoscape.ding.impl.TransformChangeListener;
 import org.cytoscape.ding.impl.canvas.NetworkTransform;
 import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.events.SelectedNodesAndEdgesEvent;
-import org.cytoscape.model.events.SelectedNodesAndEdgesListener;
-import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 @SuppressWarnings("serial")
-public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugCallback, 
-	TransformChangeListener, SetCurrentNetworkViewListener, SelectedNodesAndEdgesListener {
+public class DingDebugPanel extends JPanel implements CytoPanelComponent {
 
-	private final CyServiceRegistrar registrar;
-	
 	private DRenderingEngine re;
 	
 	private JLabel networkNameLabel;
@@ -59,12 +45,7 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 	private Map<DebugFrameType,Integer> frameCount = new EnumMap<>(DebugFrameType.class);
 	
 	
-	public DingDebugPanel(CyServiceRegistrar registrar) {
-		this.registrar = registrar;
-		createContents();
-	}
-
-	private void createContents() {
+	public DingDebugPanel() {
 		networkNameLabel = new JLabel("Network Name");
 		transformViewLabel = new JLabel("");
 		transformCntrLabel = new JLabel("");
@@ -145,7 +126,7 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 		);
 	}
 	
-	private void clear() {
+	public void clear() {
 		fastPanel.clear();
 		slowPanel.clear();
 		fastBirdPanel.clear();
@@ -160,60 +141,37 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 		edgeCountLabel.setText(text);
 	}
 	
-	private void updateTransform(NetworkTransform t) {
+	public void updateTransform(NetworkTransform t) {
 		transformViewLabel.setText(String.format("Viewport - w:%d h:%d",           t.getWidth(), t.getHeight()));
 		transformCntrLabel.setText(String.format("Network Center - x:%.4f y:%.4f", t.getCenterX(), t.getCenterY()));
 		transformZoomLabel.setText(String.format("Zoom - %.4f",                    t.getScaleFactor()));
 	}
 	
-	@Override
-	public void handleEvent(SetCurrentNetworkViewEvent e) {
-		clear();
-		frameCount.clear();
-		
+	public void setRenderingEngine(DRenderingEngine re) {
+		this.re = re;
 		if(re != null) {
-			re.setDebugCallback(null);
-			re.removeTransformChangeListener(this);
-		}
-		
-		CyNetworkView netView = e.getNetworkView();
-		if(netView == null) {
-			re = null; // avoid memory leak
-		} else {
+			CyNetworkView netView = re.getViewModel();
 			CyNetwork model = netView.getModel();
 			String name = model.getRow(model).get(CyNetwork.NAME, String.class);
 			networkNameLabel.setText(name);
-			
-			DingRenderer dingRenderer = registrar.getService(DingRenderer.class);
-			re = dingRenderer.getRenderingEngine(netView);
-			if(re != null) {
-				re.setDebugCallback(this);
-				re.addTransformChangeListener(this);
-			}
+		} else {
+			networkNameLabel.setText(" -- none -- ");
 		}
 	}
 	
-	@Override
-	public void handleEvent(SelectedNodesAndEdgesEvent event) {
-		Collection<CyNode> nodes = event.getSelectedNodes();
-		String labelText = "Selected Node - ";
-		if(nodes.isEmpty()) {
-			labelText += "none";
-		} else if(nodes.size() == 1) {
-			CyNode node = nodes.iterator().next();
-			View<CyNode> nodeView = re.getViewModel().getNodeView(node);
-			if(nodeView != null) {
-				var x = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
-				var y = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
-				var w = nodeView.getVisualProperty(BasicVisualLexicon.NODE_WIDTH);
-				var h = nodeView.getVisualProperty(BasicVisualLexicon.NODE_HEIGHT);
-				labelText += String.format("(x:%.2f, y:%.2f, w:%.2f, h:%.2f)", x, y, w, h);
-			}
-		} else {
-			labelText += nodes.size() + " nodes selected";
-		}
-		selectedNodeLabel.setText(labelText);
+	
+	public void setSelectedNodesInfo(int nodeCount) {
+		if(nodeCount == 0)
+			selectedNodeLabel.setText("Selected Node - none");
+		else
+			selectedNodeLabel.setText("Selected Node - " + nodeCount + " nodes selected");
+		
 	}
+	
+	public void setSingleNode(double x, double y, double w, double h) {
+		selectedNodeLabel.setText("Selected Node - " + String.format("(x:%.2f, y:%.2f, w:%.2f, h:%.2f)", x, y, w, h));
+	}
+	
 	
 	private FramePanel getPanel(DebugFrameType type) {
 		switch(type) {
@@ -227,7 +185,6 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 		return null;
 	}
 	
-	@Override
 	public void start(DebugFrameType type) {
 		int frameNumber = frameCount.merge(type, 0, (x,y) -> x + 1);
 		if(logCheckbox.isSelected()) { 
@@ -235,7 +192,6 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 		}
 	}
 	
-	@Override
 	public void done(DebugFrameType type, boolean cancelled, int nodeCount, int edgeCountEstimate, long time) {
 		DebugEntry entry = new DebugEntry(time, cancelled, type, nodeCount, edgeCountEstimate);
 		int frameNumber = frameCount.getOrDefault(type, 0);
@@ -247,10 +203,6 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 		});
 	}
 	
-	@Override
-	public void transformChanged() {
-		updateTransform(re.getTransform());
-	}
 	
 	@Override
 	public Component getComponent() {

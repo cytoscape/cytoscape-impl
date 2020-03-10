@@ -9,9 +9,8 @@ import java.awt.Paint;
 
 import javax.swing.JComponent;
 
-import org.cytoscape.ding.CyActivator;
 import org.cytoscape.ding.debug.DebugFrameType;
-import org.cytoscape.ding.debug.DebugProgressMonitor;
+import org.cytoscape.ding.debug.DebugProgressMonitorFactory;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
 import org.cytoscape.ding.impl.TransformChangeListener;
@@ -203,9 +202,14 @@ public abstract class RenderComponent extends JComponent {
 	protected void setRenderDetailFlags(RenderDetailFlags flags) {
 	}
 	
+	
 	private ProgressMonitor debugPm(UpdateType updateType, ProgressMonitor pm) {
-		var debugType = getDebugFrameType(updateType);
-		return CyActivator.DEBUG ? new DebugProgressMonitor(debugType, pm, re.getDebugCallback()) : pm;
+		DebugProgressMonitorFactory factory = re.getDebugProgressMonitorFactory();
+		if(factory != null) {
+			var debugType = getDebugFrameType(updateType);
+			return factory.create(debugType, pm);
+		}
+		return pm;
 	}
 	
 	private boolean sameDetail() {

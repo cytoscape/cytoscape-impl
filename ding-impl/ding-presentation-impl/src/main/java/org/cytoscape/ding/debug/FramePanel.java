@@ -2,11 +2,13 @@ package org.cytoscape.ding.debug;
 
 import java.awt.BorderLayout;
 import java.awt.Rectangle;
+import java.util.LinkedList;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.table.AbstractTableModel;
 
 @SuppressWarnings("serial")
 public class FramePanel extends JPanel {
@@ -14,11 +16,11 @@ public class FramePanel extends JPanel {
 	private static final int MAX_ITEMS = 300;
 	
 	private final JTable table;
-	private final DebugTableModel model;
+	private final FramePanelTableModel model;
 	
 	
 	public FramePanel(String title) {
-		model = new DebugTableModel(MAX_ITEMS);
+		model = new FramePanelTableModel(MAX_ITEMS);
 		table = new JTable(model);
 		JLabel label = new JLabel(title);
 		JScrollPane scrollPane = new JScrollPane(table);
@@ -38,5 +40,72 @@ public class FramePanel extends JPanel {
 	public void clear() {
 		model.clear();
 	}
+	
+	
+	private class FramePanelTableModel extends AbstractTableModel {
+		
+		private static final int NODE_COL = 0;
+		private static final int EDGE_COL = 1;
+		private static final int TIME_COL = 2;
+
+		private final int maxSize;
+		private LinkedList<DebugEntry> list = new LinkedList<>();
+		
+		
+		public FramePanelTableModel(int maxSize) {
+			this.maxSize = maxSize;
+		}
+		
+		public void add(DebugEntry entry) {
+			if(list.size() == maxSize) {
+				list.removeFirst();
+				fireTableRowsDeleted(0, 0);
+			}
+			list.addLast(entry);
+			int last = list.size() - 1;
+			fireTableRowsInserted(last, last);
+		}
+		
+		public void clear() {
+			if(list.isEmpty())
+				return;
+			int last = list.size() - 1;
+			list.clear();
+			fireTableRowsDeleted(0, last);
+		}
+		
+		@Override
+		public int getColumnCount() {
+			return 3;
+		}
+		
+		@Override
+		public int getRowCount() {
+			return list.size();
+		}
+		
+		@Override
+		public String getColumnName(int col) {
+			switch(col) {
+				case TIME_COL: return "Time (MS)";
+				case NODE_COL: return "Nodes";
+				case EDGE_COL: return "Edges (est)";
+			}
+			return null;
+		}
+
+		@Override
+		public Object getValueAt(int row, int col) {
+			DebugEntry entry = list.get(row);
+			switch(col) {
+				case TIME_COL: return entry.getTimeMessage();
+				case NODE_COL: return entry.getNodeCount();
+				case EDGE_COL: return entry.getEdgeCountEstimate();
+			}
+			return null;
+		}
+
+	}
+
 	
 }
