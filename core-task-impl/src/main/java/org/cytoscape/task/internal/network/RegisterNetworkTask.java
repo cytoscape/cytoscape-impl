@@ -107,7 +107,7 @@ public class RegisterNetworkTask extends AbstractTask implements ObservableTask 
 			tm.setStatusMessage("Registering " + views.size() + " view(s)...");
 			var netViewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
 			var visMapManager = serviceRegistrar.getService(VisualMappingManager.class);
-
+			
 			for (var view : views) {
 				if (cancelled)
 					return;
@@ -118,6 +118,7 @@ public class RegisterNetworkTask extends AbstractTask implements ObservableTask 
 
 					if (style != null) {
 						visMapManager.setVisualStyle(style, view);
+						style.apply(view);
 						tm.setProgress(0.8);
 					}
 
