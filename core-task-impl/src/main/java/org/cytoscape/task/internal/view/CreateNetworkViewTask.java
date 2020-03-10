@@ -234,6 +234,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 			if (style != null) {
 				var vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
 				vmMgr.setVisualStyle(style, view);
+				style.apply(view);
 			}
 			
 			if (cancelled)
