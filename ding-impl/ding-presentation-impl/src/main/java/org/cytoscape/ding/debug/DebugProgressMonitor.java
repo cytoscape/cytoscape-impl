@@ -6,12 +6,12 @@ import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 public class DebugProgressMonitor implements ProgressMonitor {
 
 	private final ProgressMonitor delegate;
-	private final DebugCallback callback;
+	private final DebugProgressMonitorCallback callback;
 	private final DebugFrameType type;
 	
 	private long start;
 	
-	public DebugProgressMonitor(DebugFrameType type, ProgressMonitor delegate, DebugCallback callback) {
+	public DebugProgressMonitor(DebugFrameType type, ProgressMonitor delegate, DebugProgressMonitorCallback callback) {
 		this.type = type;
 		this.delegate = ProgressMonitor.notNull(delegate);
 		this.callback = callback;
@@ -20,9 +20,6 @@ public class DebugProgressMonitor implements ProgressMonitor {
 	@Override
 	public void start() {
 		start = System.currentTimeMillis();
-		if(callback != null) {
-			callback.start(type);
-		}
 		delegate.start();
 	}
 	
@@ -39,7 +36,7 @@ public class DebugProgressMonitor implements ProgressMonitor {
 			boolean cancelled = isCancelled();
 			int nodes = flags.getVisibleNodeCount();
 			int edges = flags.getEstimatedEdgeCount();
-			callback.done(type, cancelled, nodes, edges, time);
+			callback.addFrame(type, cancelled, nodes, edges, time);
 		}
 	}
 	

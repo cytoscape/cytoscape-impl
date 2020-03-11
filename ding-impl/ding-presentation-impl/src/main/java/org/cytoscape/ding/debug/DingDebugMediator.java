@@ -18,7 +18,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
-public class DingDebugMediator implements DebugCallback, TransformChangeListener, SetCurrentNetworkViewListener, SelectedNodesAndEdgesListener{
+public class DingDebugMediator implements DebugProgressMonitorCallback, TransformChangeListener, SetCurrentNetworkViewListener, SelectedNodesAndEdgesListener{
 
 	private final CyServiceRegistrar registrar;
 	private final DingDebugPanel debugPanel;
@@ -76,30 +76,23 @@ public class DingDebugMediator implements DebugCallback, TransformChangeListener
 				var y = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
 				var w = nodeView.getVisualProperty(BasicVisualLexicon.NODE_WIDTH);
 				var h = nodeView.getVisualProperty(BasicVisualLexicon.NODE_HEIGHT);
-				debugPanel.setSingleNode(x, y, w, h);
+				debugPanel.getNetworkInfoPanel().setSingleNode(x, y, w, h);
 				return;
 			}
 		} 
 		
-		debugPanel.setSelectedNodesInfo(nodeCount);
+		debugPanel.getNetworkInfoPanel().setSelectedNodesInfo(nodeCount);
 	}
 	
 
-
 	@Override
 	public void transformChanged() {
-		debugPanel.updateTransform(currentRE.getTransform());
-	}
-
-
-	@Override
-	public void start(DebugFrameType type) {
-		debugPanel.start(type);
+		debugPanel.getNetworkInfoPanel().updateTransform(currentRE.getTransform());
 	}
 
 	@Override
-	public void done(DebugFrameType type, boolean cancelled, int nodeCount, int edgeCountEstimate, long time) {
-		debugPanel.done(type, cancelled, nodeCount, edgeCountEstimate, time);
+	public void addFrame(DebugFrameType type, boolean cancelled, int nodeCount, int edgeCountEstimate, long time) {
+		debugPanel.addFrame(type, cancelled, nodeCount, edgeCountEstimate, time);
 		
 	}
 	

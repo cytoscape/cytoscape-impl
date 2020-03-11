@@ -10,6 +10,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 
+import org.cytoscape.util.swing.LookAndFeelUtil;
+
 @SuppressWarnings("serial")
 public class FramePanel extends JPanel {
 	
@@ -23,7 +25,10 @@ public class FramePanel extends JPanel {
 		model = new FramePanelTableModel(MAX_ITEMS);
 		table = new JTable(model);
 		JLabel label = new JLabel(title);
+		LookAndFeelUtil.makeSmall(label);
 		JScrollPane scrollPane = new JScrollPane(table);
+		
+		setOpaque(false);
 		
 		setLayout(new BorderLayout());
 		add(label, BorderLayout.NORTH);
@@ -89,7 +94,7 @@ public class FramePanel extends JPanel {
 			switch(col) {
 				case TIME_COL: return "Time (MS)";
 				case NODE_COL: return "Nodes";
-				case EDGE_COL: return "Edges (est)";
+				case EDGE_COL: return "Edges";
 			}
 			return null;
 		}
