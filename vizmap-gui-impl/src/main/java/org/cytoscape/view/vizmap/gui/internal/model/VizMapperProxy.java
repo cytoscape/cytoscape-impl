@@ -46,6 +46,7 @@ import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.events.SetCurrentVisualStyleEvent;
 import org.cytoscape.view.vizmap.events.SetCurrentVisualStyleListener;
 import org.cytoscape.view.vizmap.events.VisualStyleAboutToBeRemovedEvent;
@@ -94,6 +95,8 @@ public class VizMapperProxy extends Proxy
 	
 	private final SortedSet<VisualStyle> visualStyles;
 	private final ServicesUtil servicesUtil;
+	
+	private VisualStyle originalDefaultVisualStyle;
 
 	private volatile boolean cytoscapeStarted;
 	private volatile boolean loadingSession;
@@ -137,9 +140,14 @@ public class VizMapperProxy extends Proxy
 		
 		synchronized (lock) {
 			// Load the styles
-			final Set<VisualStyle> allStyles = getAllVisualStyles();
+			var allStyles = getAllVisualStyles();
 			
 			if (! (allStyles.isEmpty() && visualStyles.isEmpty())) {
+				// Save the original default style, because the values of the actual "default" style
+				// can change every time a new session is loaded or when the user explicitly changes them
+				var defStyle = servicesUtil.get(VisualMappingManager.class).getDefaultVisualStyle();
+				originalDefaultVisualStyle = servicesUtil.get(VisualStyleFactory.class).createVisualStyle(defStyle);
+				
 				visualStyles.clear();
 				visualStyles.addAll(allStyles);
 				updatedStyles = getVisualStyles();
@@ -163,6 +171,10 @@ public class VizMapperProxy extends Proxy
 			if (vs != null)
 				servicesUtil.get(VisualMappingManager.class).removeVisualStyle(vs);
 		}
+	}
+	
+	public VisualStyle getOriginalDefaultVisualStyle() {
+		return originalDefaultVisualStyle;
 	}
 	
 	public VisualStyle getDefaultVisualStyle() {
