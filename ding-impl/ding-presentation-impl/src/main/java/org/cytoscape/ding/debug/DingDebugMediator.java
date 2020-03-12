@@ -1,6 +1,7 @@
 package org.cytoscape.ding.debug;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
@@ -13,22 +14,28 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.events.SelectedNodesAndEdgesEvent;
 import org.cytoscape.model.events.SelectedNodesAndEdgesListener;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.PropertyUpdatedEvent;
+import org.cytoscape.property.PropertyUpdatedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
-public class DingDebugMediator implements DebugProgressMonitorCallback, TransformChangeListener, SetCurrentNetworkViewListener, SelectedNodesAndEdgesListener{
+public class DingDebugMediator implements DebugProgressMonitorCallback, TransformChangeListener, 
+	SetCurrentNetworkViewListener, SelectedNodesAndEdgesListener, PropertyUpdatedListener {
 
 	private final CyServiceRegistrar registrar;
+	private final CyProperty<Properties> cyProps;
 	private final DingDebugPanel debugPanel;
 	
 	private DRenderingEngine currentRE;
 	
 	
+	@SuppressWarnings("unchecked")
 	public DingDebugMediator(CyServiceRegistrar registrar) {
 		this.registrar = registrar;
-		this.debugPanel = new DingDebugPanel();
+		this.debugPanel = new DingDebugPanel(registrar);
+		this.cyProps = registrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 		registrar.registerService(debugPanel, CytoPanelComponent.class, new Properties());
 	}
 	
@@ -82,6 +89,13 @@ public class DingDebugMediator implements DebugProgressMonitorCallback, Transfor
 		} 
 		
 		debugPanel.getNetworkInfoPanel().setSelectedNodesInfo(nodeCount);
+	}
+	
+	@Override
+	public void handleEvent(PropertyUpdatedEvent e) {
+		if(Objects.equals(e.getSource(), cyProps)) {
+			debugPanel.getRenderSettingsPanel().update();
+		}
 	}
 	
 

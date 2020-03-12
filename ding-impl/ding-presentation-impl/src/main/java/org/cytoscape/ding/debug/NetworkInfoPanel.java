@@ -31,7 +31,10 @@ public class NetworkInfoPanel extends BasicCollapsiblePanel {
 	public NetworkInfoPanel(Supplier<DRenderingEngine> reSupplier) {
 		super("Network View and Transform");
 		this.reSupplier = reSupplier;
-		
+		createContents();
+	}
+	
+	private void createContents() {
 		networkNameLabel = new JLabel();
 		transformViewLabel = new JLabel();
 		transformCntrLabel = new JLabel();

@@ -12,6 +12,7 @@ import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 
 @SuppressWarnings("serial")
@@ -20,34 +21,35 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent {
 	private DRenderingEngine re;
 	
 	private NetworkInfoPanel networkInfoPanel;
+	private RenderSettingsPanel settingsPanel;
 	private IndividualFramesPanel framesPanel;
 	
 	
-	public DingDebugPanel() {
+	public DingDebugPanel(CyServiceRegistrar registrar) {
 		networkInfoPanel = new NetworkInfoPanel(() -> re);
 		networkInfoPanel.setCollapsed(false);
-		framesPanel = new IndividualFramesPanel();
-		framesPanel.setCollapsed(false);
 		
-		JPanel panel = new JPanel() {
-			@Override
-			public java.awt.Dimension getPreferredSize() {
-			    int h = super.getPreferredSize().height;
-			    int w = getParent().getSize().width;
-			    return new java.awt.Dimension(w, h);
-			}
-		};
+		settingsPanel = new RenderSettingsPanel(registrar);
+		settingsPanel.setCollapsed(false);
+		
+		framesPanel = new IndividualFramesPanel();
+		framesPanel.setCollapsed(true);
+		
+		
+		JPanel panel = new JPanel();
 		
 		GroupLayout layout = new GroupLayout(panel);
 		panel.setLayout(layout);
 		
 		layout.setVerticalGroup(layout.createSequentialGroup()
 			.addComponent(networkInfoPanel)
+			.addComponent(settingsPanel)
 			.addComponent(framesPanel)
 		);
 		
 		layout.setHorizontalGroup(layout.createParallelGroup()
 			.addComponent(networkInfoPanel)
+			.addComponent(settingsPanel)
 			.addComponent(framesPanel)
 		);
 
@@ -61,6 +63,14 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent {
 	
 	public NetworkInfoPanel getNetworkInfoPanel() {
 		return networkInfoPanel;
+	}
+	
+	public RenderSettingsPanel getRenderSettingsPanel() {
+		return settingsPanel;
+	}
+	
+	public IndividualFramesPanel getIndividualFramesPanel() {
+		return framesPanel;
 	}
 	
 	

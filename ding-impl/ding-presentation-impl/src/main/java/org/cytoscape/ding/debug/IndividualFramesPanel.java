@@ -23,7 +23,10 @@ public class IndividualFramesPanel extends BasicCollapsiblePanel {
 	
 	public IndividualFramesPanel() {
 		super("Individual Frames");
-		
+		createContents();
+	}
+	
+	private void createContents() {
 		fastPanel = new FramePanel("Main Fast (on EDT)");
 		slowPanel = new FramePanel("Main Slow (Async)");
 		fastBirdPanel = new FramePanel("Birds-Eye-View Fast (on EDT)");
