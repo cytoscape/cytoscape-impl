@@ -13,24 +13,24 @@ import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 @SuppressWarnings("serial")
-public class IndividualFramesPanel extends BasicCollapsiblePanel {
+public class FrameListPanel extends BasicCollapsiblePanel {
 
-	private FramePanel fastPanel;
-	private FramePanel slowPanel;
-	private FramePanel fastBirdPanel;
-	private FramePanel slowBirdPanel;
+	private FrameListTablePanel fastPanel;
+	private FrameListTablePanel slowPanel;
+	private FrameListTablePanel fastBirdPanel;
+	private FrameListTablePanel slowBirdPanel;
 	
 	
-	public IndividualFramesPanel() {
+	public FrameListPanel() {
 		super("Individual Frames");
 		createContents();
 	}
 	
 	private void createContents() {
-		fastPanel = new FramePanel("Main Fast (on EDT)");
-		slowPanel = new FramePanel("Main Slow (Async)");
-		fastBirdPanel = new FramePanel("Birds-Eye-View Fast (on EDT)");
-		slowBirdPanel = new FramePanel("Birds-Eye-View Slow (Async)");
+		fastPanel = new FrameListTablePanel("Main Fast (on EDT)");
+		slowPanel = new FrameListTablePanel("Main Slow (Async)");
+		fastBirdPanel = new FrameListTablePanel("Birds-Eye-View Fast (on EDT)");
+		slowBirdPanel = new FrameListTablePanel("Birds-Eye-View Slow (Async)");
 		
 		final int w = 200, h = 200;
 		fastPanel.setPreferredSize(new Dimension(w, h));
@@ -93,7 +93,7 @@ public class IndividualFramesPanel extends BasicCollapsiblePanel {
 	}
 	
 	
-	private FramePanel getPanel(DebugFrameType type) {
+	private FrameListTablePanel getPanel(DebugFrameType type) {
 		switch(type) {
 			case MAIN_ANNOTAITONS:
 			case MAIN_EDGES:
@@ -107,13 +107,8 @@ public class IndividualFramesPanel extends BasicCollapsiblePanel {
 	
 	
 	public void addFrame(DebugFrameType type, boolean cancelled, int nodeCount, int edgeCountEstimate, long time) {
-		DebugEntry entry = new DebugEntry(time, cancelled, type, nodeCount, edgeCountEstimate);
-//		int frameNumber = frameCount.merge(type, 0, (x,y) -> x + 1);
-//		if(logCheckbox.isSelected()) { 
-//			System.out.println(type + " " + frameNumber + " done (" + time + ")");
-//		}
 		ViewUtil.invokeOnEDT(() -> {
-			getPanel(type).addEntry(entry);
+			getPanel(type).addEntry(type, cancelled, nodeCount, edgeCountEstimate, time);
 		});
 	}
 

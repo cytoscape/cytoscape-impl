@@ -13,7 +13,7 @@ import javax.swing.table.AbstractTableModel;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 @SuppressWarnings("serial")
-public class FramePanel extends JPanel {
+public class FrameListTablePanel extends JPanel {
 	
 	private static final int MAX_ITEMS = 300;
 	
@@ -21,7 +21,7 @@ public class FramePanel extends JPanel {
 	private final FramePanelTableModel model;
 	
 	
-	public FramePanel(String title) {
+	public FrameListTablePanel(String title) {
 		model = new FramePanelTableModel(MAX_ITEMS);
 		table = new JTable(model);
 		JLabel label = new JLabel(title);
@@ -35,7 +35,8 @@ public class FramePanel extends JPanel {
 		add(scrollPane, BorderLayout.CENTER);
 	}
 	
-	public void addEntry(DebugEntry entry) {
+	public void addEntry(DebugFrameType type, boolean cancelled, int nodeCount, int edgeCountEstimate, long time) {
+		DebugEntry entry = new DebugEntry(time, cancelled, type, nodeCount, edgeCountEstimate);
 		model.add(entry);
 		int lastRow = model.getRowCount() - 1;
 		Rectangle cellRect = table.getCellRect(lastRow, 0, true);
@@ -44,6 +45,44 @@ public class FramePanel extends JPanel {
 	
 	public void clear() {
 		model.clear();
+	}
+	
+	
+	private class DebugEntry {
+
+		private final long time;
+		private final boolean cancelled;
+		private final DebugFrameType type;
+		private final int nodeCount;
+		private final int edgeCountEstimate;
+		
+		public DebugEntry(long frameTime, boolean cancelled, DebugFrameType type, int nodeCount, int edgeCountEstimate) {
+			this.time = frameTime;
+			this.cancelled = cancelled;
+			this.type = type;
+			this.nodeCount = nodeCount;
+			this.edgeCountEstimate = edgeCountEstimate;
+		}
+
+		public int getNodeCount() {
+			return nodeCount;
+		}
+
+		public int getEdgeCountEstimate() {
+			return edgeCountEstimate;
+		}
+		
+		public String getTimeMessage() {
+			if(type == DebugFrameType.MAIN_ANNOTAITONS)
+				return "(annotations) " + time;
+			else if(type == DebugFrameType.MAIN_EDGES)
+				return "(edges) " + time;
+			else if(cancelled)
+				return "(cancelled) " + time;
+			else
+				return "" + time;
+		}
+		
 	}
 	
 	

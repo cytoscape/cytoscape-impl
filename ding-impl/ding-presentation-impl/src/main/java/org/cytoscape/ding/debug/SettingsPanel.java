@@ -22,7 +22,7 @@ import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 @SuppressWarnings("serial")
-public class RenderSettingsPanel extends BasicCollapsiblePanel  {
+public class SettingsPanel extends BasicCollapsiblePanel  {
 
 	private final CyServiceRegistrar registrar;
 	private final CyProperty<Properties> cyProps;
@@ -37,7 +37,7 @@ public class RenderSettingsPanel extends BasicCollapsiblePanel  {
 	
 	
 	@SuppressWarnings("unchecked")
-	public RenderSettingsPanel(CyServiceRegistrar registrar) {
+	public SettingsPanel(CyServiceRegistrar registrar) {
 		super("Settings");
 		this.registrar = registrar;
 		this.cyProps = registrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");

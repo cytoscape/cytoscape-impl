@@ -21,18 +21,18 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent {
 	private DRenderingEngine re;
 	
 	private NetworkInfoPanel networkInfoPanel;
-	private RenderSettingsPanel settingsPanel;
-	private IndividualFramesPanel framesPanel;
+	private SettingsPanel settingsPanel;
+	private FrameListPanel framesPanel;
 	
 	
 	public DingDebugPanel(CyServiceRegistrar registrar) {
 		networkInfoPanel = new NetworkInfoPanel(() -> re);
 		networkInfoPanel.setCollapsed(false);
 		
-		settingsPanel = new RenderSettingsPanel(registrar);
+		settingsPanel = new SettingsPanel(registrar);
 		settingsPanel.setCollapsed(false);
 		
-		framesPanel = new IndividualFramesPanel();
+		framesPanel = new FrameListPanel();
 		framesPanel.setCollapsed(true);
 		
 		
@@ -65,11 +65,11 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent {
 		return networkInfoPanel;
 	}
 	
-	public RenderSettingsPanel getRenderSettingsPanel() {
+	public SettingsPanel getRenderSettingsPanel() {
 		return settingsPanel;
 	}
 	
-	public IndividualFramesPanel getIndividualFramesPanel() {
+	public FrameListPanel getIndividualFramesPanel() {
 		return framesPanel;
 	}
 	
