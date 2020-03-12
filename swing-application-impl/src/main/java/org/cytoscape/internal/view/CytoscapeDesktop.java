@@ -1361,7 +1361,7 @@ public class CytoscapeDesktop extends JFrame
 
 	private CytoPanelImpl getAutomationPanel() {
 		if (automationPanel == null) {
-			automationPanel = new CytoPanelImpl(BOTTOM, 4, HIDE, serviceRegistrar);
+			automationPanel = new CytoPanelImpl(BOTTOM, 4, MINIMIZE, serviceRegistrar);
 		}
 		
 		return automationPanel;
