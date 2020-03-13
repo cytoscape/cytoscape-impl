@@ -22,7 +22,8 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent {
 	
 	private NetworkInfoPanel networkInfoPanel;
 	private SettingsPanel settingsPanel;
-	private FrameListPanel framesPanel;
+	private FrameRatePanel frameRatePanel;
+	private FrameListPanel frameListPanel;
 	
 	
 	public DingDebugPanel(CyServiceRegistrar registrar) {
@@ -30,10 +31,13 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent {
 		networkInfoPanel.setCollapsed(false);
 		
 		settingsPanel = new SettingsPanel(registrar);
-		settingsPanel.setCollapsed(false);
+		settingsPanel.setCollapsed(true);
 		
-		framesPanel = new FrameListPanel();
-		framesPanel.setCollapsed(true);
+		frameRatePanel = new FrameRatePanel();
+		frameRatePanel.setCollapsed(false);
+		
+		frameListPanel = new FrameListPanel();
+		frameListPanel.setCollapsed(true);
 		
 		
 		JPanel panel = new JPanel();
@@ -43,14 +47,16 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent {
 		
 		layout.setVerticalGroup(layout.createSequentialGroup()
 			.addComponent(networkInfoPanel)
+			.addComponent(frameRatePanel)
 			.addComponent(settingsPanel)
-			.addComponent(framesPanel)
+			.addComponent(frameListPanel)
 		);
 		
 		layout.setHorizontalGroup(layout.createParallelGroup()
 			.addComponent(networkInfoPanel)
+			.addComponent(frameRatePanel)
 			.addComponent(settingsPanel)
-			.addComponent(framesPanel)
+			.addComponent(frameListPanel)
 		);
 
 		JScrollPane scrollPane = new JScrollPane(panel, 
@@ -65,18 +71,22 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent {
 		return networkInfoPanel;
 	}
 	
-	public SettingsPanel getRenderSettingsPanel() {
+	public SettingsPanel getSettingsPanel() {
 		return settingsPanel;
 	}
 	
-	public FrameListPanel getIndividualFramesPanel() {
-		return framesPanel;
+	public FrameListPanel getFrameListPanel() {
+		return frameListPanel;
+	}
+	
+	public FrameRatePanel getFrameRatePanel() {
+		return frameRatePanel;
 	}
 	
 	
 	public void clear() {
 		networkInfoPanel.clear();
-		framesPanel.clear();
+		frameListPanel.clear();
 	}
 	
 	public void setRenderingEngine(DRenderingEngine re) {
@@ -91,9 +101,8 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent {
 		}
 	}
 	
-	
-	public void addFrame(DebugFrameType type, boolean cancelled, int nodeCount, int edgeCountEstimate, long time) {
-		framesPanel.addFrame(type, cancelled, nodeCount, edgeCountEstimate, time);
+	public void addFrame(DebugFrameInfo frame) {
+		frameListPanel.addFrame(frame);
 	}
 	
 	@Override

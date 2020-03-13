@@ -2,18 +2,18 @@ package org.cytoscape.ding.impl.work;
 
 public class SubProgressMonitor implements ProgressMonitor {
 
-	private final ProgressMonitor wrapped;
+	private final ProgressMonitor parent;
 	private final double percentage; // eg 0.2 = 20 percent
 	private double currentProgress;
 	
-	SubProgressMonitor(ProgressMonitor wrapped, double percentage) {
-		this.wrapped = wrapped;
+	protected SubProgressMonitor(ProgressMonitor parent, double percentage) {
+		this.parent = parent;
 		this.percentage = percentage;
 	}
 	
 	@Override
 	public boolean isCancelled() {
-		return wrapped.isCancelled();
+		return parent.isCancelled();
 	}
 	
 	@Override
@@ -23,7 +23,7 @@ public class SubProgressMonitor implements ProgressMonitor {
 	@Override
 	public void addProgress(double progress) {
 		currentProgress += progress;
-		wrapped.addProgress(progress * percentage);
+		parent.addProgress(progress * percentage);
 	}
 
 	@Override

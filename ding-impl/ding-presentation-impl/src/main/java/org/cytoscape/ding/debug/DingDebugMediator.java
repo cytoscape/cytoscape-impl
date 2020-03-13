@@ -1,6 +1,7 @@
 package org.cytoscape.ding.debug;
 
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -29,6 +30,10 @@ public class DingDebugMediator implements DebugProgressMonitorCallback, Transfor
 	private final DingDebugPanel debugPanel;
 	
 	private DRenderingEngine currentRE;
+	
+	
+	private final LinkedList<DebugFrameInfo> frameList = new LinkedList<>();
+	
 	
 	
 	@SuppressWarnings("unchecked")
@@ -94,7 +99,7 @@ public class DingDebugMediator implements DebugProgressMonitorCallback, Transfor
 	@Override
 	public void handleEvent(PropertyUpdatedEvent e) {
 		if(Objects.equals(e.getSource(), cyProps)) {
-			debugPanel.getRenderSettingsPanel().update();
+			debugPanel.getSettingsPanel().update();
 		}
 	}
 	
@@ -105,8 +110,8 @@ public class DingDebugMediator implements DebugProgressMonitorCallback, Transfor
 	}
 
 	@Override
-	public void addFrame(DebugFrameType type, boolean cancelled, int nodeCount, int edgeCountEstimate, long time) {
-		debugPanel.addFrame(type, cancelled, nodeCount, edgeCountEstimate, time);
+	public void addFrame(DebugFrameInfo frame) {
+		debugPanel.addFrame(frame);
 		
 	}
 	

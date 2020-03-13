@@ -35,9 +35,8 @@ public class FrameListTablePanel extends JPanel {
 		add(scrollPane, BorderLayout.CENTER);
 	}
 	
-	public void addEntry(DebugFrameType type, boolean cancelled, int nodeCount, int edgeCountEstimate, long time) {
-		DebugEntry entry = new DebugEntry(time, cancelled, type, nodeCount, edgeCountEstimate);
-		model.add(entry);
+	public void addEntry(DebugFrameInfo frame) {
+		model.add(frame);
 		int lastRow = model.getRowCount() - 1;
 		Rectangle cellRect = table.getCellRect(lastRow, 0, true);
 		table.scrollRectToVisible(cellRect);
@@ -48,44 +47,6 @@ public class FrameListTablePanel extends JPanel {
 	}
 	
 	
-	private class DebugEntry {
-
-		private final long time;
-		private final boolean cancelled;
-		private final DebugFrameType type;
-		private final int nodeCount;
-		private final int edgeCountEstimate;
-		
-		public DebugEntry(long frameTime, boolean cancelled, DebugFrameType type, int nodeCount, int edgeCountEstimate) {
-			this.time = frameTime;
-			this.cancelled = cancelled;
-			this.type = type;
-			this.nodeCount = nodeCount;
-			this.edgeCountEstimate = edgeCountEstimate;
-		}
-
-		public int getNodeCount() {
-			return nodeCount;
-		}
-
-		public int getEdgeCountEstimate() {
-			return edgeCountEstimate;
-		}
-		
-		public String getTimeMessage() {
-			if(type == DebugFrameType.MAIN_ANNOTAITONS)
-				return "(annotations) " + time;
-			else if(type == DebugFrameType.MAIN_EDGES)
-				return "(edges) " + time;
-			else if(cancelled)
-				return "(cancelled) " + time;
-			else
-				return "" + time;
-		}
-		
-	}
-	
-	
 	private class FramePanelTableModel extends AbstractTableModel {
 		
 		private static final int NODE_COL = 0;
@@ -93,14 +54,14 @@ public class FrameListTablePanel extends JPanel {
 		private static final int TIME_COL = 2;
 
 		private final int maxSize;
-		private LinkedList<DebugEntry> list = new LinkedList<>();
+		private LinkedList<DebugFrameInfo> list = new LinkedList<>();
 		
 		
 		public FramePanelTableModel(int maxSize) {
 			this.maxSize = maxSize;
 		}
 		
-		public void add(DebugEntry entry) {
+		public void add(DebugFrameInfo entry) {
 			if(list.size() == maxSize) {
 				list.removeFirst();
 				fireTableRowsDeleted(0, 0);
@@ -140,7 +101,7 @@ public class FrameListTablePanel extends JPanel {
 
 		@Override
 		public Object getValueAt(int row, int col) {
-			DebugEntry entry = list.get(row);
+			DebugFrameInfo entry = list.get(row);
 			switch(col) {
 				case TIME_COL: return entry.getTimeMessage();
 				case NODE_COL: return entry.getNodeCount();

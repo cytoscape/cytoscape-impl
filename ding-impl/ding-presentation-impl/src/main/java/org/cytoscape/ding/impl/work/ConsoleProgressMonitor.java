@@ -21,8 +21,8 @@ public class ConsoleProgressMonitor implements ProgressMonitor {
 	}
 	
 	@Override
-	public void start() {
-		println("started");
+	public void start(String taskName) {
+		println("started " + taskName);
 	}
 	
 	@Override

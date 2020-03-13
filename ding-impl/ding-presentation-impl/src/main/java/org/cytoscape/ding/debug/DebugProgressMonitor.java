@@ -18,9 +18,9 @@ public class DebugProgressMonitor implements ProgressMonitor {
 	}
 
 	@Override
-	public void start() {
+	public void start(String taskName) {
 		start = System.currentTimeMillis();
-		delegate.start();
+		delegate.start(taskName);
 	}
 	
 	@Override
@@ -36,8 +36,14 @@ public class DebugProgressMonitor implements ProgressMonitor {
 			boolean cancelled = isCancelled();
 			int nodes = flags.getVisibleNodeCount();
 			int edges = flags.getEstimatedEdgeCount();
-			callback.addFrame(type, cancelled, nodes, edges, time);
+//			DebugFrameInfo debugFrameInfo = new DebugFrameInfo(type, startTime, endTime, cancelled, nodeCount, edgeCountEstimate)
+//			callback.addFrame(type, cancelled, nodes, edges, time);
 		}
+	}
+	
+	@Override
+	public ProgressMonitor createSubProgressMonitor(double percent) {
+		return new DebugSubProgressMonitor(this, percent);
 	}
 	
 	@Override

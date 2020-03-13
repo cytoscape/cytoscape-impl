@@ -76,7 +76,6 @@ public class FrameListPanel extends BasicCollapsiblePanel {
 			)
 			.addGroup(layout.createSequentialGroup()
 				.addComponent(clearButton)
-//				.addGap(0, Short.MAX_VALUE, Short.MAX_VALUE)
 			)
 		);
 		
@@ -106,9 +105,9 @@ public class FrameListPanel extends BasicCollapsiblePanel {
 	}
 	
 	
-	public void addFrame(DebugFrameType type, boolean cancelled, int nodeCount, int edgeCountEstimate, long time) {
+	public void addFrame(DebugFrameInfo frame) {
 		ViewUtil.invokeOnEDT(() -> {
-			getPanel(type).addEntry(type, cancelled, nodeCount, edgeCountEstimate, time);
+			getPanel(frame.getType()).addEntry(frame);
 		});
 	}
 

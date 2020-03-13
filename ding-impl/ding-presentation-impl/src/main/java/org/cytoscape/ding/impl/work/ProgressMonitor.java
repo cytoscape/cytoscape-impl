@@ -5,13 +5,14 @@ import java.util.List;
 
 public interface ProgressMonitor {
 	
+	
 	void cancel();
 	
 	boolean isCancelled();
 	
 	void addProgress(double progress);
 	
-	default void start() {};
+	default void start(String taskName) {};
 	
 	void done();
 	
@@ -28,9 +29,14 @@ public interface ProgressMonitor {
 		List<ProgressMonitor> monitors = new ArrayList<>(parts.length);
 		for(double part : parts) {
 			double percent = part / sum;
-			monitors.add(new SubProgressMonitor(this, percent));
+			ProgressMonitor subMonitor = createSubProgressMonitor(percent);
+			monitors.add(subMonitor);
 		}
 		return monitors;
+	}
+	
+	default ProgressMonitor createSubProgressMonitor(double percent) {
+		return new SubProgressMonitor(this, percent);
 	}
 	
 	static ProgressMonitor notNull(ProgressMonitor pm) {
