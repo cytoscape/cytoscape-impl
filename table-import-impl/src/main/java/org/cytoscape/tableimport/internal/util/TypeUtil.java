@@ -22,9 +22,6 @@ import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.TARGE
 import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.TARGET_ATTR;
 import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.TAXON;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.ParsePosition;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -247,34 +244,7 @@ public final class TypeUtil {
 		return types;
 	}
 	
-	public static AttributeDataType[] guessSheetDataTypes(final PreviewTableModel model, Character decimalSeparator) {
-		if(!model.hasPredefinedTypes()) {
-			return guessDataTypes(model, decimalSeparator);
-		}
-		
-		// TODO LIST?
-
-		final AttributeDataType[] dataTypes = new AttributeDataType[model.getColumnCount()];
-		for (int col = 0; col < model.getColumnCount(); col++) {
-			Class<?> predefinedClass = model.getPredefinedColumnClass(col);
-			
-			if(predefinedClass == Double.class) {
-				dataTypes[col] = TYPE_FLOATING;
-			} else if(predefinedClass == Long.class) {
-				dataTypes[col] = TYPE_LONG;
-			} else if(predefinedClass == Integer.class) {
-				dataTypes[col] = TYPE_INTEGER;
-			} else if(predefinedClass == Boolean.class) {
-				dataTypes[col] = TYPE_BOOLEAN;
-			} else {
-				dataTypes[col] = TYPE_STRING;
-			}
-		}
-		
-		return dataTypes;
-	}
-	
-	public static AttributeDataType[] guessDataTypes(final TableModel model, Character decimalSeparator) {
+	public static AttributeDataType[] guessDataTypes(final TableModel model) {
 		final AttributeDataType[] dataTypes = new AttributeDataType[model.getColumnCount()];
 		final int rowCount = Math.min(1000, model.getRowCount());
 		
@@ -302,7 +272,7 @@ public final class TypeUtil {
 						dt = TYPE_INTEGER;
 					else if (isLong(val))
 						dt = TYPE_LONG;
-					else if (isDouble(val, decimalSeparator))
+					else if (isDouble(val))
 						dt = TYPE_FLOATING;
 					else
 						dt = TYPE_STRING; // Defaults to String!
@@ -320,7 +290,7 @@ public final class TypeUtil {
 						if (!isInteger(val)) {
 							if (isLong(val))
 								dt = TYPE_LONG;
-							else if (isDouble(val, decimalSeparator))
+							else if (isDouble(val))
 								dt = TYPE_FLOATING;
 							else
 								dt = TYPE_STRING;
@@ -328,14 +298,14 @@ public final class TypeUtil {
 					} else if (dt == TYPE_LONG) {
 						// Make sure the other rows are also longs (no need to check for integers anymore)...
 						if (!isLong(val)) {
-							if (isDouble(val, decimalSeparator))
+							if (isDouble(val))
 								dt = TYPE_FLOATING;
 							else
 								dt = TYPE_STRING;
 						}
 					} else if (dt == TYPE_FLOATING) {
 						// Make sure the other rows are also doubles (no need to check for other numeric types)...
-						if (!isDouble(val, decimalSeparator))
+						if (!isDouble(val))
 							dt = TYPE_STRING;
 					}
 				}
@@ -578,27 +548,16 @@ public final class TypeUtil {
 		return false;
 	}
 	
-	private static boolean isDouble(String val, Character decimalSeparator) {
+	private static boolean isDouble(String val) {
 		if (val != null) {
 			val = val.trim();
 			
 			if (isNaN(val))
 				return true;
-//			try {
-//				Double.parseDouble(val);
-//			} catch (NumberFormatException e) {
-//				return false;
-//			}
-			DecimalFormatSymbols dfs = new DecimalFormatSymbols();
-			dfs.setDecimalSeparator(decimalSeparator.charValue());
-
-			DecimalFormat df = new DecimalFormat();
-			df.setDecimalFormatSymbols(dfs);
-			df.setGroupingUsed(false); // We don't use the grouping
-
-			ParsePosition parsePosition = new ParsePosition(0);
-			df.parse(val, parsePosition);
-			if(parsePosition.getIndex() != val.length()) {
+			
+			try {
+				Double.parseDouble(val);
+			} catch (NumberFormatException e) {
 				return false;
 			}
 			

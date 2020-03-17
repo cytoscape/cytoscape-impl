@@ -56,60 +56,12 @@ public class TypeUtilTest {
 				new String[]{ "Column 1", "Column 2", "Column 3", "Column 4" }
 		);
 		
-		final AttributeDataType[] types = TypeUtil.guessDataTypes(model, '.');
+		final AttributeDataType[] types = TypeUtil.guessDataTypes(model);
 		
 		assertEquals(AttributeDataType.TYPE_INTEGER, types[0]);
 		assertEquals(AttributeDataType.TYPE_FLOATING, types[1]);
 		assertEquals(AttributeDataType.TYPE_BOOLEAN, types[2]);
 		assertEquals(AttributeDataType.TYPE_STRING, types[3]);
-	}
-	
-	@Test
-	public void testGuessDataTypesWithDifferentDecimalSeparatorValues() {
-		DefaultTableModel model = new DefaultTableModel(
-				new String[][] {
-					{
-						"I am a sentence with a dot. I should be TYPE_STRING",
-						"I am a string with a comma, I should be TYPE_STRING",
-						"I am a string",
-						"1.5",
-						"2,7",
-						"3s0"
-					},
-					{
-						"1.3",
-						"2,2",
-						"7s5",
-						"2.0",
-						"0,49",
-						"9s99"
-					}
-				},
-				new String[] { "string_dot", "string_comma", "string_s", "dot", "comma", "s" }
-		);
-
-		final AttributeDataType[] types_comma = TypeUtil.guessDataTypes(model, ',');
-		final AttributeDataType[] types_dot = TypeUtil.guessDataTypes(model, '.');
-		final AttributeDataType[] types_s = TypeUtil.guessDataTypes(model, 's');
-
-		assertEquals(TYPE_FLOATING, types_comma[4]);
-		assertEquals(TYPE_FLOATING, types_dot[3]);
-		assertEquals(TYPE_FLOATING, types_s[5]);
-		
-		for(int i=0; i<3; ++i) {
-			assertEquals(TYPE_STRING, types_comma[i]);
-			assertEquals(TYPE_STRING, types_dot[i]);
-			assertEquals(TYPE_STRING, types_s[i]);
-		}
-
-		assertEquals(TYPE_STRING, types_comma[3]);
-		assertEquals(TYPE_STRING, types_comma[5]);
-
-		assertEquals(TYPE_STRING, types_dot[4]);
-		assertEquals(TYPE_STRING, types_dot[5]);
-
-		assertEquals(TYPE_STRING, types_s[3]);
-		assertEquals(TYPE_STRING, types_s[4]);
 	}
 	
 	@Test
@@ -124,7 +76,7 @@ public class TypeUtilTest {
 				new String[]{ "Column 1", "Column 2", "Column 3", "Column 4", "Column 5" }
 		);
 		
-		final AttributeDataType[] types = TypeUtil.guessDataTypes(model, '.');
+		final AttributeDataType[] types = TypeUtil.guessDataTypes(model);
 		
 		assertEquals(AttributeDataType.TYPE_STRING, types[0]);
 		assertEquals(AttributeDataType.TYPE_STRING, types[1]);

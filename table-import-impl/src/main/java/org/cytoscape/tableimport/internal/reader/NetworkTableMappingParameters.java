@@ -57,10 +57,9 @@ public class NetworkTableMappingParameters extends AbstractMappingParameters {
 			final Integer interaction,
 			final String defInteraction,
 			final int startNumber,
-			final String commentChar,
-	        Character decimalSeparator
+			final String commentChar
 	) throws Exception {
-		super(name, delimiters, listDelimiters, attributeNames , dataTypes, types, namespaces, startNumber, commentChar, decimalSeparator);
+		super(name, delimiters, listDelimiters, attributeNames , dataTypes, types, namespaces, startNumber, commentChar);
 
 		this.source = source;
 		this.target = target;

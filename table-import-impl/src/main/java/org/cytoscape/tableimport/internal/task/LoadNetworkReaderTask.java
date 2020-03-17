@@ -26,7 +26,6 @@ import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.AbstractConfigDirPropsReader;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.tableimport.internal.reader.AbstractMappingParameters;
 import org.cytoscape.tableimport.internal.reader.ExcelNetworkSheetReader;
 import org.cytoscape.tableimport.internal.reader.GraphReader;
 import org.cytoscape.tableimport.internal.reader.NetworkTableMappingParameters;
@@ -164,13 +163,6 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 					 context = "nongui")
 	public String columnTypeList;
 	
-	@Tunable(description="Decimal character used in the decimal format",
-			longDescription="Character that separates the integer-part (characteristic) and the fractional-part (mantissa) of a decimal number. The default value is the dot \".\"",
-			exampleStringValue=".",
-			context="nogui")
-	public String decimalSeparator;
-	private Character decSeparator;
-	
 	private NetworkTableMappingParameters ntmp;
 
 	public LoadNetworkReaderTask(TableImportContext tableImportContext, CyServiceRegistrar serviceRegistrar) {
@@ -234,12 +226,6 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		tm.setStatusMessage("Loading network...");
 		taskMonitor = tm;
 		
-		if(decimalSeparator == null || decimalSeparator.isEmpty()) {
-			decSeparator = AbstractMappingParameters.DEF_DECIMAL_SEPARATOR;
-		} else {
-			decSeparator = decimalSeparator.charAt(0);
-		}
-		
 		final CyNetworkReaderManager networkReaderManager = serviceRegistrar.getService(CyNetworkReaderManager.class);
 		
 		if (is != null)
@@ -279,8 +265,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 					new FileInputStream(tempFile),
 					delimiters.getSelectedValues(),
 					null,
-					startLoadRowTemp,
-					decSeparator
+					startLoadRowTemp
 			);
 			
 			int colCount = previewPanel.getPreviewTable().getColumnModel().getColumnCount();
@@ -416,7 +401,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			ntmp = new NetworkTableMappingParameters(networkName, delimiters.getSelectedValues(),
 					listDelimiters, attributeNames, dataTypesCopy, typesCopy, namespacesCopy,
 					indexColumnSourceInteraction, indexColumnTargetInteraction, indexColumnTypeInteraction,
-					defaultInteraction, startLoadRow, null, decSeparator);
+					defaultInteraction, startLoadRow, null);
 			
 			try {
 				if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||

@@ -18,7 +18,6 @@ import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.tableimport.internal.reader.AbstractMappingParameters;
 import org.cytoscape.tableimport.internal.reader.AttributeMappingParameters;
 import org.cytoscape.tableimport.internal.reader.DefaultAttributeTableReader;
 import org.cytoscape.tableimport.internal.reader.ExcelAttributeSheetReader;
@@ -113,12 +112,6 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 	         exampleStringValue="s,s,i",
 	         context="nongui")
 	public String dataTypeList;
-	
-	@Tunable(description="Decimal character used in the decimal format in text files",
-			longDescription="Character that separates the integer-part (characteristic) and the fractional-part (mantissa) of a decimal number. This can only be used with text files. The default value is the dot \".\"",
-			exampleStringValue=".",
-			context="nogui")
-	public Character decimalSeparator;
 	
 	private final TableImportContext tableImportContext;
 	private final CyServiceRegistrar serviceRegistrar;
@@ -241,8 +234,7 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 				isStart,
 				delimiters.getSelectedValues(),
 				null,
-				startLoadRowTemp,
-				decimalSeparator
+				startLoadRowTemp
 		);
 		
 		colCount = previewPanel.getPreviewTable().getColumnModel().getColumnCount();
@@ -331,7 +323,7 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 			keyColumnIndex--;
 
 		amp = new AttributeMappingParameters(sourceName, delimiters.getSelectedValues(), listDelimiters,
-				keyColumnIndex, attributeNames, dataTypesCopy, typesCopy, namespacesCopy, startLoadRow, null, decimalSeparator);
+				keyColumnIndex, attributeNames, dataTypesCopy, typesCopy, namespacesCopy, startLoadRow, null);
 		
 		if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||
 		    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) {

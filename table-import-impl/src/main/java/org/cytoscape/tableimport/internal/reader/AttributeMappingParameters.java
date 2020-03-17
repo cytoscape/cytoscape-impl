@@ -55,10 +55,9 @@ public class AttributeMappingParameters extends AbstractMappingParameters {
 			final String[] attrNames,
 			final AttributeDataType[] dataTypes,
 	        final SourceColumnSemantic[] types,
-	        final String[] namespaces,
-	        Character decimalSeparator
+	        final String[] namespaces
 	) throws Exception {
-		this(name, delimiters, listDelimiters, keyIndex, attrNames, dataTypes, types, namespaces, 0, null, decimalSeparator);
+		this(name, delimiters, listDelimiters, keyIndex, attrNames, dataTypes, types, namespaces, 0, null);
 	}
 	
 	public AttributeMappingParameters(
@@ -71,10 +70,9 @@ public class AttributeMappingParameters extends AbstractMappingParameters {
             final SourceColumnSemantic[] types,
             final String[] namespaces,
             final int startNumber,
-            final String commentChar,
-	        Character decimalSeparator
+            final String commentChar
     ) throws Exception {
-		super(name, delimiters, listDelimiters, attrNames, dataTypes, types, namespaces, startNumber, commentChar, decimalSeparator);
+		super(name, delimiters, listDelimiters, attrNames, dataTypes, types, namespaces, startNumber, commentChar);
 		
 		if (attrNames == null)
 			throw new Exception("attributeNames should not be null.");
