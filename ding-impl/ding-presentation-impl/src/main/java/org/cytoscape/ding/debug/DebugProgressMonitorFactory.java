@@ -10,7 +10,7 @@ public class DebugProgressMonitorFactory {
 		this.mediator = mediator;
 	}
 	
-	public DebugProgressMonitor create(DebugFrameType type, ProgressMonitor delegate) {
-		return new DebugProgressMonitor(type, delegate, mediator);
+	public DebugRootProgressMonitor create(DebugFrameType type, ProgressMonitor delegate) {
+		return new DebugRootProgressMonitor(type, delegate, mediator);
 	}
 }

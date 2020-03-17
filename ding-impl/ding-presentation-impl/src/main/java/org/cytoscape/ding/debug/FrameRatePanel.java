@@ -59,6 +59,9 @@ public class FrameRatePanel extends BasicCollapsiblePanel {
 	}
 	
 	
+	
+	
+	
 	private class FrameRateTableModel extends AbstractTableModel {
 		
 		@Override

@@ -132,7 +132,7 @@ public final class GraphRenderer {
 	
 	
 	
-	public static void renderEdges(ProgressMonitor progressMonitor, GraphGraphics grafx, CyNetworkViewSnapshot netView,
+	public static void renderEdges(ProgressMonitor pm, GraphGraphics grafx, CyNetworkViewSnapshot netView,
 			RenderDetailFlags flags, NodeDetails nodeDetails, EdgeDetails edgeDetails) {
 		
 		// Render the edges first.  No edge shall be rendered twice.  Render edge labels.  
@@ -162,12 +162,12 @@ public final class GraphRenderer {
 		else
 			nodeHits = netView.getSpacialIndex2D().queryOverlap(area.x, area.y, area.x + area.width, area.y + area.height); // MKTODO why are we querying twice?
 		
-		DiscreteProgressMonitor dpm = progressMonitor.toDiscrete(nodeHits.size());
+		DiscreteProgressMonitor dpm = pm.toDiscrete(nodeHits.size());
 		
 		if (flags.not(LOD_HIGH_DETAIL)) { // Low detail.
 
 			while (nodeHits.hasNext()) {
-				if(dpm.isCancelled()) {
+				if(pm.isCancelled()) {
 					return;
 				}
 				
@@ -202,7 +202,7 @@ public final class GraphRenderer {
 			}
 		} else { // High detail.
 			while (nodeHits.hasNext()) {
-				if(dpm.isCancelled()) {
+				if(pm.isCancelled()) {
 					return;
 				}
 				
@@ -212,7 +212,7 @@ public final class GraphRenderer {
 				final byte nodeShape = nodeDetails.getShape(node);
 				Iterable<View<CyEdge>> touchingEdges = netView.getAdjacentEdgeIterable(node);
 				for (View<CyEdge> edge : touchingEdges) {
-					if(dpm.isCancelled()) {
+					if(pm.isCancelled()) {
 						return;
 					}
 					if (!edgeDetails.isVisible(edge))
@@ -314,7 +314,7 @@ public final class GraphRenderer {
 						if (flags.has(LOD_EDGE_LABELS)) {
 							final int labelCount = edgeDetails.getLabelCount(edge);
 							for (int labelInx = 0; labelInx < labelCount; labelInx++) {
-								if(dpm.isCancelled()) {
+								if(pm.isCancelled()) {
 									return;
 								}
 								
@@ -463,7 +463,7 @@ public final class GraphRenderer {
 	}
 
 	
-	public static void renderNodes(ProgressMonitor progressMonitor, GraphGraphics grafx, CyNetworkViewSnapshot netView,
+	public static void renderNodes(ProgressMonitor pm, GraphGraphics grafx, CyNetworkViewSnapshot netView,
 			RenderDetailFlags flags, NodeDetails nodeDetails, EdgeDetails edgeDetails, Set<VisualPropertyDependency<?>> dependencies) {
 		
 		// Render nodes and labels.  A label is not necessarily on top of every
@@ -475,13 +475,13 @@ public final class GraphRenderer {
 		Rectangle2D.Float area = grafx.getTransform().getNetworkVisibleAreaNodeCoords();
 		SpacialIndex2DEnumerator<Long> nodeHits = netView.getSpacialIndex2D().queryOverlap(area.x, area.y, area.x + area.width, area.y + area.height);
 		
-		DiscreteProgressMonitor dpm = progressMonitor.toDiscrete(nodeHits.size());
+		DiscreteProgressMonitor dpm = pm.toDiscrete(nodeHits.size());
 				
 		if (flags.not(LOD_HIGH_DETAIL)) { // Low detail.
 			final int nodeHitCount = nodeHits.size();
 
 			for (int i = 0; i < nodeHitCount; i++) {
-				if(dpm.isCancelled())
+				if(pm.isCancelled())
 					return;
 				
 				final View<CyNode> node = netView.getNodeView( nodeHits.nextExtents(floatBuff1) );
@@ -494,7 +494,7 @@ public final class GraphRenderer {
 			}
 		} else { // High detail.
 			while (nodeHits.hasNext()) {
-				if(dpm.isCancelled())
+				if(pm.isCancelled())
 					return;
 				
 				final long node = nodeHits.nextExtents(floatBuff1);

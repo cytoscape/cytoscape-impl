@@ -32,7 +32,7 @@ public class DingDebugMediator implements DebugProgressMonitorCallback, Transfor
 	private DRenderingEngine currentRE;
 	
 	
-	private final LinkedList<DebugFrameInfo> frameList = new LinkedList<>();
+	private final LinkedList<DebugRootProgressMonitor> frameList = new LinkedList<>();
 	
 	
 	
@@ -110,7 +110,7 @@ public class DingDebugMediator implements DebugProgressMonitorCallback, Transfor
 	}
 
 	@Override
-	public void addFrame(DebugFrameInfo frame) {
+	public void addFrame(DebugRootProgressMonitor frame) {
 		debugPanel.addFrame(frame);
 		
 	}

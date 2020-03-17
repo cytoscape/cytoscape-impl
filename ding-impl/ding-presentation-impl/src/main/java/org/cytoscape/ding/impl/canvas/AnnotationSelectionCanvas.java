@@ -16,10 +16,13 @@ public class AnnotationSelectionCanvas<GP extends GraphicsProvider> extends Ding
 		this.re = re;
 	}
 	
+	@Override
+	public String getCanvasName() {
+		return null;
+	}
+	
 	public void paint(ProgressMonitor pm, RenderDetailFlags flags) {
 		if(!show)
-			return;
-		if(pm.isCancelled())
 			return;
 		
 		Graphics2D g = graphicsProvider.getGraphics();
@@ -29,7 +32,6 @@ public class AnnotationSelectionCanvas<GP extends GraphicsProvider> extends Ding
 		var selection = re.getCyAnnotator().getAnnotationSelection();
 		selection.paint(g);		
 		
-		pm.done();
 		g.dispose();
 	}
 

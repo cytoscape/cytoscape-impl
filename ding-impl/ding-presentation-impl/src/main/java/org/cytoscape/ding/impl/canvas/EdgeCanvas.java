@@ -14,6 +14,11 @@ public class EdgeCanvas<GP extends GraphicsProvider> extends DingCanvas<GP> {
 		super(graphics);
 		this.re = re;
 	}
+	
+	@Override
+	public String getCanvasName() {
+		return "Edges";
+	}
 
 	@Override
 	public void paint(ProgressMonitor pm, RenderDetailFlags flags) {
@@ -22,11 +27,6 @@ public class EdgeCanvas<GP extends GraphicsProvider> extends DingCanvas<GP> {
 		var edgeDetails = re.getEdgeDetails();
 		var nodeDetails = re.getNodeDetails();
 		
-		if(pm.isCancelled())
-			return;
-		
 		GraphRenderer.renderEdges(pm, graphics, netViewSnapshot, flags, nodeDetails, edgeDetails);
-		
-		pm.done();
 	}
 }

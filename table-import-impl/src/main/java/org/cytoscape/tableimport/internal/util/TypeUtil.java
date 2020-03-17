@@ -9,18 +9,7 @@ import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_STR
 import static org.cytoscape.tableimport.internal.util.ImportType.NETWORK_IMPORT;
 import static org.cytoscape.tableimport.internal.util.ImportType.ONTOLOGY_IMPORT;
 import static org.cytoscape.tableimport.internal.util.ImportType.TABLE_IMPORT;
-import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.ALIAS;
-import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.ATTR;
-import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.EDGE_ATTR;
-import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.INTERACTION;
-import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.KEY;
-import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.NONE;
-import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.ONTOLOGY;
-import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.SOURCE;
-import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.SOURCE_ATTR;
-import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.TARGET;
-import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.TARGET_ATTR;
-import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.TAXON;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.*;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -37,7 +26,6 @@ import javax.swing.table.TableModel;
 
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.tableimport.internal.ui.PreviewTablePanel;
 import org.cytoscape.tableimport.internal.ui.PreviewTablePanel.PreviewTableModel;
 
 /*
@@ -591,6 +579,7 @@ public final class TypeUtil {
 //			}
 			DecimalFormatSymbols dfs = new DecimalFormatSymbols();
 			dfs.setDecimalSeparator(decimalSeparator.charValue());
+			dfs.setExponentSeparator("E");
 
 			DecimalFormat df = new DecimalFormat();
 			df.setDecimalFormatSymbols(dfs);

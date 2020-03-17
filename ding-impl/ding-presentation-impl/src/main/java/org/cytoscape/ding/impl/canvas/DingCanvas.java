@@ -39,7 +39,9 @@ public abstract class DingCanvas<GP extends GraphicsProvider> {
 	}
 	
 	
-	public abstract void paint(ProgressMonitor pm, RenderDetailFlags flags); 
+	public abstract void paint(ProgressMonitor pm, RenderDetailFlags flags);
+	
+	public abstract String getCanvasName();
 	
 	
 	public GP getGraphicsProvier() {
@@ -52,7 +54,18 @@ public abstract class DingCanvas<GP extends GraphicsProvider> {
 	
 	public GP paintAndGet(ProgressMonitor pm, RenderDetailFlags flags) {
 		pm = ProgressMonitor.notNull(pm);
+		if(pm.isCancelled())
+			return graphicsProvider;
+		pm.start(getCanvasName());
 		paint(pm, flags);
+		pm.done();
+		return graphicsProvider;
+	}
+	
+	public GP getCurrent(ProgressMonitor pm) {
+		pm = ProgressMonitor.notNull(pm);
+		pm.start(getCanvasName());
+		pm.done();
 		return graphicsProvider;
 	}
 	

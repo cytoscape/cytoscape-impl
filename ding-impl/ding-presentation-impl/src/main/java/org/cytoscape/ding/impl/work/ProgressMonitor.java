@@ -16,6 +16,15 @@ public interface ProgressMonitor {
 	
 	void done();
 	
+	default ProgressMonitorCloseable task(String taskName) {
+		return new ProgressMonitorCloseable() {
+			{ start(taskName); }
+			@Override
+			public void close() {
+				done();
+			}
+		};
+	}
 	
 	default DiscreteProgressMonitor toDiscrete(int totalWork) {
 		return new DiscreteProgressMonitor(this, totalWork);

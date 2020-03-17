@@ -180,7 +180,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			private Timer timer = new Timer(300, null);
 			
 			@Override
-			public void start() {
+			public void start(String s) {
 				progressBar.setValue(0);
 				timer.setInitialDelay(300);
 				timer.setRepeats(false);

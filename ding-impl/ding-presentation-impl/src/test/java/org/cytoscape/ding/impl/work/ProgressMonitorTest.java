@@ -56,10 +56,10 @@ public class ProgressMonitorTest {
 		pm2.addWork(50);
 		assertEquals(0.5, pm.getProgress(), 0.0);
 		
-		pm1.done();
+		pm1.workFinished();
 		assertEquals(0.75, pm.getProgress(), 0.0);
 		
-		pm2.done();
+		pm2.workFinished();
 		assertEquals(1.0, pm.getProgress(), 0.0);
 	}
 }

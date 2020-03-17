@@ -53,17 +53,17 @@ public class AnnotationCanvas<GP extends GraphicsProvider> extends DingCanvas<GP
 		return canvasID;
 	}
 	
+	@Override
+	public String getCanvasName() {
+		return "Annotations " + canvasID.name().toLowerCase();
+	}
+	
 	public void setShowSelection(boolean showSelection) {
 		this.showSelection = showSelection;
 	}
 
 	@Override
 	public void paint(ProgressMonitor pm, RenderDetailFlags flags) {
-		// only paint if we have an image to paint on
-		// get image graphics
-		if(pm.isCancelled())
-			return;
-		
 		Graphics2D g = graphicsProvider.getGraphics();
 		if(g == null)
 			return;
@@ -77,7 +77,7 @@ public class AnnotationCanvas<GP extends GraphicsProvider> extends DingCanvas<GP
 		var dpm = pm.toDiscrete(annotations.size());
 		
 		for(DingAnnotation a : annotations) {
-			if(dpm.isCancelled()) {
+			if(pm.isCancelled()) {
 				return;
 			}
 			if(visibleArea.intersects(a.getBounds())) {
@@ -86,7 +86,6 @@ public class AnnotationCanvas<GP extends GraphicsProvider> extends DingCanvas<GP
 			dpm.increment();
 		}
 		
-		pm.done();
 		g.dispose();
 	}
 	

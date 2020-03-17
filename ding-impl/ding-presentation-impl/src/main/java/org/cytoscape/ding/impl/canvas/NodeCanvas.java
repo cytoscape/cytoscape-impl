@@ -49,6 +49,11 @@ public class NodeCanvas<GP extends GraphicsProvider> extends DingCanvas<GP> {
 		this.vmm = re.getServiceRegistrar().getService(VisualMappingManager.class);
 	}
 	
+	@Override
+	public String getCanvasName() {
+		return "Nodes";
+	}
+	
 	private Set<VisualPropertyDependency<?>> getVPDeps() {
 		CyNetworkView netView = re.getViewModel();
 		return vmm.getVisualStyle(netView).getAllVisualPropertyDependencies();
@@ -62,11 +67,6 @@ public class NodeCanvas<GP extends GraphicsProvider> extends DingCanvas<GP> {
 		var edgeDetails = re.getEdgeDetails();
 		var nodeDetails = re.getNodeDetails();
 		
-		if(pm.isCancelled())
-			return;
-		
 		GraphRenderer.renderNodes(pm, graphics, snapshot, flags, nodeDetails, edgeDetails, dependencies);
-		
-		pm.done();
 	}
 }

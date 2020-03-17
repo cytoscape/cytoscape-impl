@@ -15,7 +15,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Predicate;
 
-import org.cytoscape.ding.debug.DebugProgressMonitor;
+import org.cytoscape.ding.debug.DebugRootProgressMonitor;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
@@ -190,9 +190,9 @@ public class CompositeImageCanvas {
 		return paint(pm, c -> c == edgeCanvas);
 	}
 	
-	private Image paintImpl(ProgressMonitor pm, RenderDetailFlags flags, Predicate<DingCanvas<?>> layers) {
+	private Image paintImpl(ProgressMonitor pm, RenderDetailFlags flags, Predicate<DingCanvas<?>> layersToRepaint) {
 		var subPms = pm.split(weights);
-		pm.start();
+		pm.start("Frame"); // debug message
 		
 		Image composite = image.getImage();
 		fill(composite, bgColor);
@@ -202,10 +202,10 @@ public class CompositeImageCanvas {
 			var subPm = subPms.get(i);
 			
 			Image canvasImage;
-			if(layers == null || layers.test(canvas)) {
+			if(layersToRepaint == null || layersToRepaint.test(canvas)) {
 				canvasImage = canvas.paintAndGet(subPm, flags).getImage();
 			} else {
-				canvasImage = canvas.getGraphicsProvier().getImage();
+				canvasImage = canvas.getCurrent(subPm).getImage();
 			}
 				
 			if(canvasImage != null) {
@@ -213,8 +213,8 @@ public class CompositeImageCanvas {
 			}
 		}
 		
-		if(pm instanceof DebugProgressMonitor)
-			((DebugProgressMonitor)pm).done(flags);
+		if(pm instanceof DebugRootProgressMonitor)
+			((DebugRootProgressMonitor)pm).done(flags);
 		else
 			pm.done();
 		

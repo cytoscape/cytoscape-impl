@@ -34,6 +34,7 @@ import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.EquationCompiler;
@@ -60,8 +61,10 @@ public abstract class AbstractLineParser {
 					case TYPE_INTEGER:  return Integer.valueOf(s.trim());
 					case TYPE_LONG:     return Long.valueOf(s.trim());
 					case TYPE_FLOATING:
-						DecimalFormatSymbols dfs = new DecimalFormatSymbols();
+						Locale locale = Locale.US;
+						DecimalFormatSymbols dfs = new DecimalFormatSymbols(locale);
 						dfs.setDecimalSeparator(decimalSeparator.charValue());
+						dfs.setExponentSeparator("E");
 
 						DecimalFormat df = new DecimalFormat();
 						df.setDecimalFormatSymbols(dfs);
