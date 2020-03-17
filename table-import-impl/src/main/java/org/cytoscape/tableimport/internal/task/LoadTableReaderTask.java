@@ -201,10 +201,6 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 				try {
 					workbook = WorkbookFactory.create(isStart);
 					
-					// In case of an Excel sheet, the reader will use String.valueOf() to format numbers
-					// In this case, the decimal separator does not depend on the Locale
-					// It is the dot
-					decimalSeparator = '.';
 				} catch (InvalidFormatException e) {
 					e.printStackTrace();
 					throw new IllegalArgumentException("Could not read Excel file.  Maybe the file is broken?");
@@ -216,10 +212,6 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		} catch (Exception ioe) {
 			tm.showMessage(TaskMonitor.Level.ERROR, "Unable to read table: "+ioe.getMessage());
 			return;
-		}
-		
-		if(decimalSeparator == null) {
-			decimalSeparator = AbstractMappingParameters.DEF_DECIMAL_SEPARATOR;
 		}
 		
 		if (startLoadRow > 0)
