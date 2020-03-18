@@ -2,6 +2,7 @@ package org.cytoscape.ding.debug;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -12,7 +13,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.Timer;
-import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
 import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -22,9 +24,8 @@ public class FrameRatePanel extends BasicCollapsiblePanel {
 
 	private JLabel frameRateLabel;
 	private JTable table;
-	private FrameRateTableModel model;
 	
-	private LinkedList<DebugFrameInfo> frames = new LinkedList<>();
+	private LinkedList<DebugRootFrameInfo> frames = new LinkedList<>();
 	private Timer timer;
 	private long window = 5000; // five seconds
 	
@@ -39,12 +40,11 @@ public class FrameRatePanel extends BasicCollapsiblePanel {
 	private void createContents() {
 		frameRateLabel = new JLabel("Frame Rate: ");
 		LookAndFeelUtil.makeSmall(frameRateLabel);
-		model = new FrameRateTableModel();
-		table = new JTable(model);
+		table = new JTable();
 		table.setShowGrid(true);
 		
 		JScrollPane scrollPane = new JScrollPane(table);
-		scrollPane.setPreferredSize(new Dimension(300, 200));
+		scrollPane.setPreferredSize(new Dimension(400, 200));
 		
 		JPanel panel = new JPanel();
 		panel.setOpaque(false);
@@ -76,7 +76,7 @@ public class FrameRatePanel extends BasicCollapsiblePanel {
 	}
 	
 	
-	public void addFrame(DebugFrameInfo frame) {
+	public void addFrame(DebugRootFrameInfo frame) {
 		synchronized(frames) {
 			frames.addLast(frame);
 		}
@@ -89,22 +89,23 @@ public class FrameRatePanel extends BasicCollapsiblePanel {
 		long frameTime = 0;
 		int frameCount = 0;
 		
+		List<DebugFrameInfo> windowFrames = new ArrayList<>();
 		synchronized(frames) {
 			if(frames.isEmpty())
 				return;
-			
-			System.out.println("frames in list: " + frames.size());
 			
 			long endOfWindow = frames.getLast().getEndTime();
 			long startOfWindow = endOfWindow - window;
 			// MKTODO what if the last frame is larger than the window
 			
-			ListIterator<DebugFrameInfo> listIterator = frames.listIterator(frames.size());
+			ListIterator<DebugRootFrameInfo> listIterator = frames.listIterator(frames.size());
+			
 			while(listIterator.hasPrevious()) {
 				var frame = listIterator.previous();
 				if(frame.getStartTime() < startOfWindow) {
 					break;
 				}
+				windowFrames.add(frame);
 				frameTime += frame.getTime();
 				frameCount++;
 			}
@@ -112,64 +113,53 @@ public class FrameRatePanel extends BasicCollapsiblePanel {
 				listIterator.previous();
 				listIterator.remove();
 			}
-			
-			System.out.println("frames in list: " + frames);
 		}
 		updateFrameRateLabel(frameCount, frameTime);
+		DebugFrameInfo root = DebugFrameInfo.merge(windowFrames);
+		
+		TableModel model = createTabelModel(root);
+		table.setModel(model);
+		table.getColumnModel().getColumn(0).setPreferredWidth(200);
+		table.getColumnModel().getColumn(1).setPreferredWidth(100);
+		table.getColumnModel().getColumn(2).setPreferredWidth(100);
 	}
 	
 	
-	
-	private List<DebugRootProgressMonitor> pms = new LinkedList<>();
-	
-	private class InfoNode {
-		
-		long time;
-		
+	private static TableModel createTabelModel(DebugFrameInfo frame) {
+		String[] columnNames = {"Render", "Time/5000", "%"};
+		Object[][] data = flattenAndExtract(frame);
+		DefaultTableModel model = new DefaultTableModel(data, columnNames);
+		return model;
 	}
 	
+	private static Object[][] flattenAndExtract(DebugFrameInfo root) {
+		int rows = DebugUtil.countNodesInTree(root, t -> t.getSubFrames());
+		Object[][] data = new Object[rows][];
+		flattenAndExtract(0, 0, data, null, root);
+		return data;
+	}
 	
+	private static int flattenAndExtract(int i, int depth, Object[][] data, DebugFrameInfo parent, DebugFrameInfo frame) {
+		data[i] = getDataForRow(parent, frame, depth);
+		for(DebugFrameInfo child : frame.getSubFrames()) {
+			i = flattenAndExtract(++i, depth+1, data, frame, child);
+		}
+		return i;
+	}
 	
-	private class FrameRateTableModel extends AbstractTableModel {
+	private static Object[] getDataForRow(DebugFrameInfo parent, DebugFrameInfo frame, int depth) {
+		String indent = "  ".repeat(depth);
+		String name = indent + frame.getTask();
+		String time = indent + frame.getTime();
 		
-		@Override
-		public int getRowCount() {
-			return 2;
+		String percent;
+		if(parent == null) {
+			percent = indent + "100.0";
+		} else {
+			double val = ((double)frame.getTime() / (double)parent.getTime()) * 100.0;
+			percent = indent + String.format("%.1f", val);
 		}
-
-		@Override
-		public int getColumnCount() {
-			return 2;
-		}
-
-		@Override
-		public String getColumnName(int col) {
-			switch(col) {
-				case 0:  return "Render";
-				case 1:  return "%";
-				default: return null;
-			}
-		}
-		
-		@Override
-		public Class<?> getColumnClass(int col) {
-			return String.class;
-		}
-		
-		@Override
-		public Object getValueAt(int row, int col) {
-			if(col == 0) {
-				if(row == 0) {
-					return "Nodes:";
-				} else if(row == 1) {
-					return "Edges";
-				}
-				
-			} else if(col == 1) {
-				return "99%";
-			}
-			return null;
-		}
+		return new Object[] { name, time, percent };
 	}
 	
 

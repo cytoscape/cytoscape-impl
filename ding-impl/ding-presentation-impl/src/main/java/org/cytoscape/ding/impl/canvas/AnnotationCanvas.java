@@ -55,7 +55,7 @@ public class AnnotationCanvas<GP extends GraphicsProvider> extends DingCanvas<GP
 	
 	@Override
 	public String getCanvasName() {
-		return "Annotations " + canvasID.name().toLowerCase();
+		return "Annotation " + canvasID.name().toLowerCase();
 	}
 	
 	public void setShowSelection(boolean showSelection) {

@@ -13,10 +13,11 @@ public class DebugRootProgressMonitor implements DebugProgressMonitor {
 	private final DebugProgressMonitorCallback callback;
 	private final DebugFrameType type;
 	
-	private List<DebugProgressMonitor> subMonitors = Collections.emptyList();
+	private List<DebugSubProgressMonitor> subMonitors = Collections.emptyList();
 	
 	private long start, end;
 	private int  nodes, edges;
+	private String taskName;
 	
 	public DebugRootProgressMonitor(DebugFrameType type, ProgressMonitor delegate, DebugProgressMonitorCallback callback) {
 		this.type = type;
@@ -26,6 +27,7 @@ public class DebugRootProgressMonitor implements DebugProgressMonitor {
 
 	@Override
 	public void start(String taskName) {
+		this.taskName = taskName;
 		start = System.currentTimeMillis();
 		delegate.start(taskName);
 	}
@@ -40,13 +42,17 @@ public class DebugRootProgressMonitor implements DebugProgressMonitor {
 		nodes = flags.getVisibleNodeCount();
 		edges = flags.getEstimatedEdgeCount();
 		done();
-		callback.addFrame(DebugFrameInfo.fromProgressMonitor(this));
+		callback.addFrame(DebugRootFrameInfo.fromProgressMonitor(this));
 	}
 	
 	@Override
 	public <T> List<ProgressMonitor> split(double... parts) {
 		subMonitors = new ArrayList<>(parts.length);
 		return DebugProgressMonitor.super.split(parts);
+	}
+	
+	public String getTaskName() {
+		return taskName;
 	}
 	
 	@Override
@@ -72,7 +78,7 @@ public class DebugRootProgressMonitor implements DebugProgressMonitor {
 	}
 
 	@Override
-	public List<DebugProgressMonitor> getSubMonitors() {
+	public List<DebugSubProgressMonitor> getSubMonitors() {
 		return subMonitors;
 	}
 	

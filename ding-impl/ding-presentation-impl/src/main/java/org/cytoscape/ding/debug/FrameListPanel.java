@@ -105,7 +105,7 @@ public class FrameListPanel extends BasicCollapsiblePanel {
 	}
 	
 	
-	public void addFrame(DebugFrameInfo frame) {
+	public void addFrame(DebugRootFrameInfo frame) {
 		ViewUtil.invokeOnEDT(() -> {
 			getPanel(frame.getType()).addFrame(frame);
 		});

@@ -110,7 +110,7 @@ public class DingDebugMediator implements DebugProgressMonitorCallback, Transfor
 	}
 
 	@Override
-	public void addFrame(DebugFrameInfo frame) {
+	public void addFrame(DebugRootFrameInfo frame) {
 		debugPanel.getFrameListPanel().addFrame(frame);
 		debugPanel.getFrameRatePanel().addFrame(frame);
 	}

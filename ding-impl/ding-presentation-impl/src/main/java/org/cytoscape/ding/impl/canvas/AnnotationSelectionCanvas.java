@@ -18,7 +18,7 @@ public class AnnotationSelectionCanvas<GP extends GraphicsProvider> extends Ding
 	
 	@Override
 	public String getCanvasName() {
-		return null;
+		return "Annotation selection";
 	}
 	
 	public void paint(ProgressMonitor pm, RenderDetailFlags flags) {

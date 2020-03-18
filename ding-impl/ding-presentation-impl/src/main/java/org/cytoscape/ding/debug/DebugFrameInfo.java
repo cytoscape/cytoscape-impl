@@ -1,119 +1,62 @@
 package org.cytoscape.ding.debug;
 
+import static org.cytoscape.ding.debug.DebugUtil.map;
+import static org.cytoscape.ding.debug.DebugUtil.map2;
+import static org.cytoscape.ding.debug.DebugUtil.reduce;
+
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Objects;
 
 public class DebugFrameInfo {
-	
-	private static AtomicInteger frameCounter = new AtomicInteger();
+
+	private final String task;
+	private final long time;
 	
 	private final List<DebugFrameInfo> subFrames;
-	private final DebugFrameType type;
-	private final boolean cancelled;
-	private final long start;
-	private final long end;
-	private final int nodes;
-	private final int edges;
-	private final int frameNumber;
 	
-	
-	private DebugFrameInfo(DebugFrameType type, boolean cancelled, long start, long end, int nodes, int edges, List<DebugFrameInfo> subFrames) {
-		this.type = type;
-		this.cancelled = cancelled;
-		this.start = start;
-		this.end = end;
-		this.nodes = nodes;
-		this.edges = edges;
-		this.subFrames = subFrames;
-		this.frameNumber = frameCounter.incrementAndGet();
+	public DebugFrameInfo(String task, long time, List<DebugFrameInfo> subFrames) {
+		this.task = task == null ? "null" : task;
+		this.time = time;
+		this.subFrames = new ArrayList<>(subFrames);
 	}
 
+	public String getTask() {
+		return task;
+	}
+
+	public long getTime() {
+		return time;
+	}
 	
-	public List<DebugFrameInfo> getSubFrameInfo() {
+	public List<DebugFrameInfo> getSubFrames() {
 		return subFrames;
 	}
 	
-	public DebugFrameType getType() {
-		return type;
-	}
 	
-	public long getStartTime() {
-		return start;
-	}
-	
-	public long getEndTime() {
-		return end;
-	}
-	
-	public long getTime() {
-		return getEndTime() - getStartTime();
-	}
-
-	public int getNodeCount() {
-		return nodes;
-	}
-
-	public int getEdgeCountEstimate() {
-		return edges;
-	}
-	
-	public boolean isCancelled() {
-		return cancelled;
-	}
-	
-	public int getFrameNumber() {
-		return frameNumber;
-	}
-	
-	public String getTimeMessage() {
-		var time = getTime();
-		var type = getType();
-		var cancelled = isCancelled();
-		
-		if(type == DebugFrameType.MAIN_ANNOTAITONS)
-			return time + " (annotations)";
-		else if(type == DebugFrameType.MAIN_EDGES)
-			return time + " (edges)";
-		else if(cancelled)
-			return time + " (cancelled)";
-		else
-			return "" + time;
-	}
-	
-	
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("DebugFrameInfo [type=");
-		builder.append(type);
-		builder.append(", cancelled=");
-		builder.append(cancelled);
-		builder.append(", start=");
-		builder.append(start);
-		builder.append(", end=");
-		builder.append(end);
-		builder.append(", nodes=");
-		builder.append(nodes);
-		builder.append(", edges=");
-		builder.append(edges);
-		builder.append(", frameNumber=");
-		builder.append(frameNumber);
-		builder.append("]");
-		return builder.toString();
-	}
-
-
-	public static DebugFrameInfo fromProgressMonitor(DebugRootProgressMonitor pm) {
-		DebugFrameType type = pm.getType();
-		boolean cancelled = pm.isCancelled();
+	public static DebugFrameInfo fromSubPM(DebugSubProgressMonitor pm) {
 		long start = pm.getStartTime();
 		long end = pm.getEndTime();
-		int nodes = pm.getNodeCount();
-		int edges = pm.getEdgeCountEstimate();
-		List<DebugFrameInfo> subFrames = null;
+		String task = pm.getTaskName();
+		var subInfos = map(pm.getSubMonitors(), x -> fromSubPM(x));
+		return new DebugFrameInfo(task, end - start, subInfos);
+	}
+
+	
+	public DebugFrameInfo merge(DebugFrameInfo other) {
+		// For now, assume both sub frame lists have the exact same tasks
+		if(!Objects.equals(task, other.task))
+			throw new IllegalArgumentException("Cannot merge DebugFrameInfo, wrong tasks " + task + ", " + other.task);
+		if(subFrames.size() != other.subFrames.size())
+			throw new IllegalArgumentException("Cannot merge DebugFrameInfo, not same number of tasks");
 		
-		return new DebugFrameInfo(type, cancelled, start, end, nodes, edges, subFrames);
+		var mergedSubFrames = map2(subFrames, other.subFrames, DebugFrameInfo::merge);
+		return new DebugFrameInfo(task, time + other.time, mergedSubFrames);
 	}
 	
+	
+	public static DebugFrameInfo merge(List<DebugFrameInfo> list) {
+		return reduce(list, DebugFrameInfo::merge);
+	}
 	
 }

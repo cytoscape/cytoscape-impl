@@ -6,7 +6,7 @@ import org.cytoscape.ding.impl.work.ProgressMonitor;
 
 public interface DebugProgressMonitor extends ProgressMonitor {
 
-	List<DebugProgressMonitor> getSubMonitors();
+	List<DebugSubProgressMonitor> getSubMonitors();
 	
 	public long getStartTime();
 	

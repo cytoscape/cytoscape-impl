@@ -35,7 +35,7 @@ public class FrameListTablePanel extends JPanel {
 		add(scrollPane, BorderLayout.CENTER);
 	}
 	
-	public void addFrame(DebugFrameInfo frame) {
+	public void addFrame(DebugRootFrameInfo frame) {
 		model.add(frame);
 		int lastRow = model.getRowCount() - 1;
 		Rectangle cellRect = table.getCellRect(lastRow, 0, true);
@@ -54,14 +54,14 @@ public class FrameListTablePanel extends JPanel {
 		private static final int TIME_COL = 2;
 
 		private final int maxSize;
-		private LinkedList<DebugFrameInfo> list = new LinkedList<>();
+		private LinkedList<DebugRootFrameInfo> list = new LinkedList<>();
 		
 		
 		public FramePanelTableModel(int maxSize) {
 			this.maxSize = maxSize;
 		}
 		
-		public void add(DebugFrameInfo entry) {
+		public void add(DebugRootFrameInfo entry) {
 			if(list.size() == maxSize) {
 				list.removeFirst();
 				fireTableRowsDeleted(0, 0);

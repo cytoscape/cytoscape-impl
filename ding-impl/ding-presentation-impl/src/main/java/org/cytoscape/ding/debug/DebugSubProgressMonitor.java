@@ -9,9 +9,10 @@ import org.cytoscape.ding.impl.work.SubProgressMonitor;
 
 public class DebugSubProgressMonitor extends SubProgressMonitor implements DebugProgressMonitor {
 
-	private List<DebugProgressMonitor> subMonitors = Collections.emptyList();
+	private List<DebugSubProgressMonitor> subMonitors = Collections.emptyList();
 	
 	private long start, end;
+	private String taskName;
 	
 	protected DebugSubProgressMonitor(ProgressMonitor parent, double percent) {
 		super(parent, percent);
@@ -25,8 +26,13 @@ public class DebugSubProgressMonitor extends SubProgressMonitor implements Debug
 	
 	@Override
 	public void start(String taskName) {
+		this.taskName = taskName;
 		start = System.currentTimeMillis();
 		super.start(taskName);
+	}
+	
+	public String getTaskName() {
+		return taskName;
 	}
 	
 	@Override
@@ -43,7 +49,7 @@ public class DebugSubProgressMonitor extends SubProgressMonitor implements Debug
 	}
 	
 	@Override
-	public List<DebugProgressMonitor> getSubMonitors() {
+	public List<DebugSubProgressMonitor> getSubMonitors() {
 		return subMonitors;
 	}
 	
