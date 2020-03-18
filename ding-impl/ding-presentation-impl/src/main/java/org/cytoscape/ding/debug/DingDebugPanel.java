@@ -101,10 +101,6 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent {
 		}
 	}
 	
-	public void addFrame(DebugRootProgressMonitor frame) {
-		frameListPanel.addFrame(frame);
-	}
-	
 	@Override
 	public Component getComponent() {
 		return this;

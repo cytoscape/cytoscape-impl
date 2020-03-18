@@ -4,6 +4,7 @@ public class ConsoleProgressMonitor implements ProgressMonitor {
 
 	private final String name;
 	private boolean cancelled = false;
+	private boolean done = false;
 	private double currentProgress = 0.0;  // Maybe use DoubleAdder for real progressbar monitor
 	
 	public ConsoleProgressMonitor(String name) {
@@ -38,6 +39,7 @@ public class ConsoleProgressMonitor implements ProgressMonitor {
 	
 	@Override
 	public void done() {
+		done = true;
 		synchronized (this) {
 			currentProgress = 1.0;
 		}

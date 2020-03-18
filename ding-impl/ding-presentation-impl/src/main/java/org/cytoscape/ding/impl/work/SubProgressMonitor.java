@@ -26,9 +26,13 @@ public class SubProgressMonitor implements ProgressMonitor {
 		parent.addProgress(progress * percentage);
 	}
 
+	/**
+	 * This just completes the sub monitor, not the parent monitor.
+	 */
 	@Override
 	public void done() {
 		addProgress(1.0 - currentProgress);
 	}
+	
 
 }

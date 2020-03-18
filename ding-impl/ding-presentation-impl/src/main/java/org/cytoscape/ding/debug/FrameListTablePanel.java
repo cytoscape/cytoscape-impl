@@ -35,7 +35,7 @@ public class FrameListTablePanel extends JPanel {
 		add(scrollPane, BorderLayout.CENTER);
 	}
 	
-	public void addEntry(DebugRootProgressMonitor frame) {
+	public void addFrame(DebugFrameInfo frame) {
 		model.add(frame);
 		int lastRow = model.getRowCount() - 1;
 		Rectangle cellRect = table.getCellRect(lastRow, 0, true);
@@ -54,14 +54,14 @@ public class FrameListTablePanel extends JPanel {
 		private static final int TIME_COL = 2;
 
 		private final int maxSize;
-		private LinkedList<DebugRootProgressMonitor> list = new LinkedList<>();
+		private LinkedList<DebugFrameInfo> list = new LinkedList<>();
 		
 		
 		public FramePanelTableModel(int maxSize) {
 			this.maxSize = maxSize;
 		}
 		
-		public void add(DebugRootProgressMonitor entry) {
+		public void add(DebugFrameInfo entry) {
 			if(list.size() == maxSize) {
 				list.removeFirst();
 				fireTableRowsDeleted(0, 0);
@@ -101,7 +101,7 @@ public class FrameListTablePanel extends JPanel {
 
 		@Override
 		public Object getValueAt(int row, int col) {
-			DebugRootProgressMonitor entry = list.get(row);
+			var entry = list.get(row);
 			switch(col) {
 				case TIME_COL: return entry.getTimeMessage();
 				case NODE_COL: return entry.getNodeCount();

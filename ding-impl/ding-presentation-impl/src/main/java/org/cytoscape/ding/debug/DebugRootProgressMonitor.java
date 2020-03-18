@@ -40,7 +40,7 @@ public class DebugRootProgressMonitor implements DebugProgressMonitor {
 		nodes = flags.getVisibleNodeCount();
 		edges = flags.getEstimatedEdgeCount();
 		done();
-		callback.addFrame(this);
+		callback.addFrame(DebugFrameInfo.fromProgressMonitor(this));
 	}
 	
 	@Override
@@ -98,19 +98,5 @@ public class DebugRootProgressMonitor implements DebugProgressMonitor {
 		return end;
 	}
 	
-	public String getTimeMessage() {
-		var time = getTime();
-		var type = getType();
-		var cancelled = isCancelled();
-		
-		if(type == DebugFrameType.MAIN_ANNOTAITONS)
-			return "(annotations) " + time;
-		else if(type == DebugFrameType.MAIN_EDGES)
-			return "(edges) " + time;
-		else if(cancelled)
-			return "(cancelled) " + time;
-		else
-			return "" + time;
-	}
 	
 }

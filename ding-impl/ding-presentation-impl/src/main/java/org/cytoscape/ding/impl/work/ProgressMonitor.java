@@ -16,6 +16,7 @@ public interface ProgressMonitor {
 	
 	void done();
 	
+	
 	default ProgressMonitorCloseable task(String taskName) {
 		return new ProgressMonitorCloseable() {
 			{ start(taskName); }

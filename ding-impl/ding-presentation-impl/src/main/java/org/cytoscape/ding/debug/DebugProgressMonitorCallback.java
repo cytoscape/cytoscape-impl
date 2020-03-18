@@ -2,6 +2,6 @@ package org.cytoscape.ding.debug;
 
 public interface DebugProgressMonitorCallback {
 	
-	void addFrame(DebugRootProgressMonitor frameMonitor);
+	void addFrame(DebugFrameInfo frame);
 	
 }
