@@ -176,6 +176,7 @@ public class GenerateNetworkViewsTask extends AbstractTask implements Observable
 				style = vmManager.getVisualStyle(baseViewSet.iterator().next());
 			
 			vmManager.setVisualStyle(style, view);
+			style.apply(view);
 		}
 		
 		if (!view.isSet(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION)

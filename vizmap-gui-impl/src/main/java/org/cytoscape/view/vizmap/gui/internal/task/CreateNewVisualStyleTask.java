@@ -29,6 +29,7 @@ import java.io.IOException;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
+import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
@@ -92,8 +93,10 @@ public class CreateNewVisualStyleTask extends AbstractTask implements TunableVal
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	private void createVisualStyle() {
-		final VisualStyleFactory vsFactory = servicesUtil.get(VisualStyleFactory.class);
-		newStyle = vsFactory.createVisualStyle(vsName);
+		var vsFactory = servicesUtil.get(VisualStyleFactory.class);
+		var proxy = (VizMapperProxy) servicesUtil.getProxy(VizMapperProxy.NAME);
+		newStyle = vsFactory.createVisualStyle(proxy.getOriginalDefaultVisualStyle());
+		newStyle.setTitle(vsName);
 
 		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
 		

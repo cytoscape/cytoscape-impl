@@ -3,6 +3,7 @@ package org.cytoscape.view.vizmap.gui.internal.util;
 import java.util.Properties;
 
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.puremvc.java.multicore.interfaces.IProxy;
 import org.puremvc.java.multicore.patterns.facade.Facade;
 
 
@@ -77,5 +78,9 @@ public class ServicesUtil {
 	 */ 
 	public void sendNotification(final String notificationName) {
 		Facade.getInstance(facadeName).sendNotification(notificationName);
+	}
+	
+	public IProxy getProxy(String proxyName) {
+		return Facade.getInstance(facadeName).retrieveProxy(proxyName);
 	}
 }
