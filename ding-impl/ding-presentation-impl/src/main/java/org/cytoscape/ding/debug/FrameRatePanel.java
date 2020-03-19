@@ -27,7 +27,8 @@ public class FrameRatePanel extends BasicCollapsiblePanel {
 	
 	private LinkedList<DebugRootFrameInfo> frames = new LinkedList<>();
 	private Timer timer;
-	private long window = 5000; // five seconds
+	
+	private final long window = 5000; // five seconds
 	
 	public FrameRatePanel() {
 		super("Frame Rate");
@@ -70,7 +71,6 @@ public class FrameRatePanel extends BasicCollapsiblePanel {
 	}
 	
 	private void updateFrameRateLabel(int frameCount, long frameTime) {
-//		System.out.println("frameCount: " + frameCount + ", frameTime: " + frameTime);
 		double framesPerSecondRaw = (double)frameCount / ((double)frameTime / 1000.0);
 		frameRateLabel.setText(String.format("Frame Rate: %.2f per sec", framesPerSecondRaw));
 	}
@@ -78,7 +78,10 @@ public class FrameRatePanel extends BasicCollapsiblePanel {
 	
 	public void addFrame(DebugRootFrameInfo frame) {
 		synchronized(frames) {
-			frames.addLast(frame);
+			// MKTODO maybe there's a better way to handle cancelled frames
+			if(!frame.isCancelled()) {
+				frames.addLast(frame);
+			}
 		}
 		if(!timer.isRunning()) {
 			timer.start();
@@ -125,21 +128,26 @@ public class FrameRatePanel extends BasicCollapsiblePanel {
 	}
 	
 	
-	private static TableModel createTabelModel(DebugFrameInfo frame) {
-		String[] columnNames = {"Render", "Time/5000", "%"};
-		Object[][] data = flattenAndExtract(frame);
+	private TableModel createTabelModel(DebugFrameInfo frame) {
+		String[] columnNames = {"Render", "Time/" + window + "ms", "%"};
+		Object[][] data = computeFrameData(frame);
 		DefaultTableModel model = new DefaultTableModel(data, columnNames);
 		return model;
 	}
 	
-	private static Object[][] flattenAndExtract(DebugFrameInfo root) {
+	private Object[][] computeFrameData(DebugFrameInfo root) {
 		int rows = DebugUtil.countNodesInTree(root, t -> t.getSubFrames());
-		Object[][] data = new Object[rows][];
-		flattenAndExtract(0, 0, data, null, root);
+		Object[][] data = new Object[rows + 1][];
+		
+		double percent = ((double)(window - root.getTime()) / (double)window)  * 100.0;
+		String percentText = String.format("%.1f", percent);
+		
+		data[0] = new Object[] { "Idle", window - root.getTime(), percentText };
+		flattenAndExtract(1, 0, data, null, root);
 		return data;
 	}
 	
-	private static int flattenAndExtract(int i, int depth, Object[][] data, DebugFrameInfo parent, DebugFrameInfo frame) {
+	private int flattenAndExtract(int i, int depth, Object[][] data, DebugFrameInfo parent, DebugFrameInfo frame) {
 		data[i] = getDataForRow(parent, frame, depth);
 		for(DebugFrameInfo child : frame.getSubFrames()) {
 			i = flattenAndExtract(++i, depth+1, data, frame, child);
@@ -147,20 +155,20 @@ public class FrameRatePanel extends BasicCollapsiblePanel {
 		return i;
 	}
 	
-	private static Object[] getDataForRow(DebugFrameInfo parent, DebugFrameInfo frame, int depth) {
+	private Object[] getDataForRow(DebugFrameInfo parent, DebugFrameInfo frame, int depth) {
 		String indent = "  ".repeat(depth);
 		String name = indent + frame.getTask();
 		String time = indent + frame.getTime();
 		
-		String percent;
-		if(parent == null) {
-			percent = indent + "100.0";
+		double percent;
+		if(parent == null) { // root frame
+			percent = ((double)frame.getTime() / (double)window)  * 100.0;
 		} else {
-			double val = ((double)frame.getTime() / (double)parent.getTime()) * 100.0;
-			percent = indent + String.format("%.1f", val);
+			percent = ((double)frame.getTime() / (double)parent.getTime()) * 100.0;
 		}
-		return new Object[] { name, time, percent };
+		String percentText = indent + String.format("%.1f", percent);
+		
+		return new Object[] { name, time, percentText };
 	}
 	
-
 }

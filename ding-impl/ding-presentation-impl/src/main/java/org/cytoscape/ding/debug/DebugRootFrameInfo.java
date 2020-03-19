@@ -83,27 +83,6 @@ public class DebugRootFrameInfo extends DebugFrameInfo {
 	}
 	
 	
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("DebugFrameInfo [type=");
-		builder.append(type);
-		builder.append(", cancelled=");
-		builder.append(cancelled);
-		builder.append(", start=");
-		builder.append(getStartTime());
-		builder.append(", end=");
-		builder.append(getEndTime());
-		builder.append(", nodes=");
-		builder.append(nodes);
-		builder.append(", edges=");
-		builder.append(edges);
-		builder.append(", frameNumber=");
-		builder.append(frameNumber);
-		builder.append("]");
-		return builder.toString();
-	}
-
 
 	public static DebugRootFrameInfo fromProgressMonitor(DebugRootProgressMonitor pm) {
 		DebugFrameType type = pm.getType();

@@ -25,6 +25,11 @@ public class DebugFrameInfo {
 		return task;
 	}
 
+	@Override
+	public String toString() {
+		return task;
+	}
+	
 	public long getTime() {
 		return time;
 	}
@@ -50,7 +55,14 @@ public class DebugFrameInfo {
 		if(subFrames.size() != other.subFrames.size())
 			throw new IllegalArgumentException("Cannot merge DebugFrameInfo, not same number of tasks");
 		
-		var mergedSubFrames = map2(subFrames, other.subFrames, DebugFrameInfo::merge);
+		List<DebugFrameInfo> mergedSubFrames;
+		try {
+			mergedSubFrames = map2(subFrames, other.subFrames, DebugFrameInfo::merge);
+		} catch(IllegalArgumentException e) {
+			System.out.println("sub frames this :" + subFrames);
+			System.out.println("sub frames other:" + other.subFrames);
+			throw e;
+		}
 		return new DebugFrameInfo(task, time + other.time, mergedSubFrames);
 	}
 	

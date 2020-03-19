@@ -47,15 +47,16 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent {
 		
 		layout.setVerticalGroup(layout.createSequentialGroup()
 			.addComponent(networkInfoPanel)
-			.addComponent(frameRatePanel)
 			.addComponent(settingsPanel)
+			.addComponent(frameRatePanel)
 			.addComponent(frameListPanel)
+			.addGap(0, 500, Short.MAX_VALUE)
 		);
 		
 		layout.setHorizontalGroup(layout.createParallelGroup()
 			.addComponent(networkInfoPanel)
-			.addComponent(frameRatePanel)
 			.addComponent(settingsPanel)
+			.addComponent(frameRatePanel)
 			.addComponent(frameListPanel)
 		);
 
