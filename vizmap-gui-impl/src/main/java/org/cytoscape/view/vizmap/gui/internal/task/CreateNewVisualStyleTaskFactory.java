@@ -6,7 +6,7 @@ package org.cytoscape.view.vizmap.gui.internal.task;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -32,7 +32,7 @@ public final class CreateNewVisualStyleTaskFactory extends AbstractTaskFactory {
 
 	private final ServicesUtil servicesUtil;
 
-	public CreateNewVisualStyleTaskFactory(final ServicesUtil servicesUtil) {
+	public CreateNewVisualStyleTaskFactory(ServicesUtil servicesUtil) {
 		this.servicesUtil = servicesUtil;
 	}
 

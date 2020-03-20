@@ -70,7 +70,6 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
 import org.cytoscape.view.model.events.UpdateNetworkPresentationListener;
 import org.cytoscape.view.presentation.RenderingEngine;
-import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.DefaultVisualizableVisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
@@ -94,7 +93,6 @@ import org.cytoscape.view.vizmap.gui.internal.util.NotificationNames;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicePropertiesUtil;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheetItem.MessageType;
-import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMainPanel.VisualStyleDropDownButton;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor.ContinuousMappingEditorPanel;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor.EditorValueRangeTracer;
 import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
@@ -710,11 +708,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	private void updateVisualStyleList(final SortedSet<VisualStyle> styles, final boolean resetDefaultVisibleItems) {
 		attrProxy.setCurrentMappingType(null);
 		mappingFactoryProxy.setCurrentColumnName(null);
-		final RenderingEngineFactory<CyNetwork> engineFactory = vmProxy.getRenderingEngineFactory(previewNetView);
 		
 		invokeOnEDT(() -> {
 			ignoreVisualStyleSelectedEvents = true;
-			vizMapperMainPanel.updateVisualStyles(styles, previewNetView, engineFactory);
+			vizMapperMainPanel.updateVisualStyles(styles, previewNetView);
 			final VisualStyle vs = vmProxy.getCurrentVisualStyle();
 			selectCurrentVisualStyle(vs);
 			updateVisualPropertySheets(vs, resetDefaultVisibleItems);
