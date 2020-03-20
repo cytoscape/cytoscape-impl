@@ -3,7 +3,6 @@ package org.cytoscape.ding.impl.work;
 public class NoOutputProgressMonitor implements ProgressMonitor {
 
 	private boolean canceled;
-	private boolean done;
 	private double progress = 0.0;
 	
 	@Override
@@ -28,5 +27,9 @@ public class NoOutputProgressMonitor implements ProgressMonitor {
 	
 	public double getProgress() {
 		return progress;
+	}
+
+	@Override
+	public void start(String taskName) {
 	}
 }

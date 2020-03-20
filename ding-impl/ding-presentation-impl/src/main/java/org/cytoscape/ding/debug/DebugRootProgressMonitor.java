@@ -42,11 +42,13 @@ public class DebugRootProgressMonitor implements DebugProgressMonitor {
 		nodes = flags.getVisibleNodeCount();
 		edges = flags.getEstimatedEdgeCount();
 		done();
-		callback.addFrame(DebugRootFrameInfo.fromProgressMonitor(this));
+		if(callback != null) {
+			callback.addFrame(DebugRootFrameInfo.fromProgressMonitor(this));
+		}
 	}
 	
 	@Override
-	public <T> List<ProgressMonitor> split(double... parts) {
+	public List<ProgressMonitor> split(double ... parts) {
 		subMonitors = new ArrayList<>(parts.length);
 		return DebugProgressMonitor.super.split(parts);
 	}
@@ -94,14 +96,17 @@ public class DebugRootProgressMonitor implements DebugProgressMonitor {
 		return edges;
 	}
 	
-	@Override
 	public long getStartTime() {
 		return start;
 	}
 	
-	@Override
 	public long getEndTime() {
 		return end;
+	}
+
+	@Override
+	public long getTime() {
+		return end - start;
 	}
 	
 	

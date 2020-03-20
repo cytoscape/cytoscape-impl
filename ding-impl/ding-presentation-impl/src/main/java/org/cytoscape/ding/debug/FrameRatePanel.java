@@ -79,7 +79,7 @@ public class FrameRatePanel extends BasicCollapsiblePanel {
 	public void addFrame(DebugRootFrameInfo frame) {
 		synchronized(frames) {
 			// MKTODO maybe there's a better way to handle cancelled frames
-			if(!frame.isCancelled()) {
+			if(frame.getType() == DebugFrameType.MAIN_FAST && !frame.isCancelled()) {
 				frames.addLast(frame);
 			}
 		}
@@ -142,7 +142,7 @@ public class FrameRatePanel extends BasicCollapsiblePanel {
 		double percent = ((double)(window - root.getTime()) / (double)window)  * 100.0;
 		String percentText = String.format("%.1f", percent);
 		
-		data[0] = new Object[] { "Idle", window - root.getTime(), percentText };
+		data[0] = new Object[] { "Idle/Overhead", window - root.getTime(), percentText };
 		flattenAndExtract(1, 0, data, null, root);
 		return data;
 	}

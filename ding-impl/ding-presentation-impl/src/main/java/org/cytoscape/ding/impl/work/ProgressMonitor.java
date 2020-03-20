@@ -12,10 +12,17 @@ public interface ProgressMonitor {
 	
 	void addProgress(double progress);
 	
-	default void start(String taskName) {};
+	
+	void start(String taskName);
 	
 	void done();
 	
+	
+	
+	default void emptyTask(String taskName) {
+		start(taskName);
+		done();
+	}
 	
 	default ProgressMonitorCloseable task(String taskName) {
 		return new ProgressMonitorCloseable() {
@@ -31,7 +38,11 @@ public interface ProgressMonitor {
 		return new DiscreteProgressMonitor(this, totalWork);
 	}
 	
-	default <T> List<ProgressMonitor> split(double ... parts) {
+	static ProgressMonitor notNull(ProgressMonitor pm) {
+		return pm == null ? new NoOutputProgressMonitor() : pm;
+	}
+	
+	default public List<ProgressMonitor> split(double ... parts) {
 		double sum = 0.0;
 		for(double part : parts)
 			sum += part;
@@ -49,8 +60,5 @@ public interface ProgressMonitor {
 		return new SubProgressMonitor(this, percent);
 	}
 	
-	static ProgressMonitor notNull(ProgressMonitor pm) {
-		return pm == null ? new NoOutputProgressMonitor() : pm;
-	}
 	
 }

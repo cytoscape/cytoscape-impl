@@ -40,11 +40,10 @@ public class DebugFrameInfo {
 	
 	
 	public static DebugFrameInfo fromSubPM(DebugSubProgressMonitor pm) {
-		long start = pm.getStartTime();
-		long end = pm.getEndTime();
 		String task = pm.getTaskName();
+		long time = pm.getTime();
 		var subInfos = map(pm.getSubMonitors(), x -> fromSubPM(x));
-		return new DebugFrameInfo(task, end - start, subInfos);
+		return new DebugFrameInfo(task, time, subInfos);
 	}
 
 	

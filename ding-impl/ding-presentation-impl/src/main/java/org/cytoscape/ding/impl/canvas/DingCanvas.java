@@ -64,8 +64,7 @@ public abstract class DingCanvas<GP extends GraphicsProvider> {
 	
 	public GP getCurrent(ProgressMonitor pm) {
 		pm = ProgressMonitor.notNull(pm);
-		pm.start(getCanvasName());
-		pm.done();
+		pm.emptyTask(getCanvasName());
 		return graphicsProvider;
 	}
 	

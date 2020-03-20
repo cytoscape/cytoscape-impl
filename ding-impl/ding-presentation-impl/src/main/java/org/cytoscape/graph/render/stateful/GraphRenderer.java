@@ -475,10 +475,15 @@ public final class GraphRenderer {
 		Rectangle2D.Float area = grafx.getTransform().getNetworkVisibleAreaNodeCoords();
 		SpacialIndex2DEnumerator<Long> nodeHits = netView.getSpacialIndex2D().queryOverlap(area.x, area.y, area.x + area.width, area.y + area.height);
 		
-		DiscreteProgressMonitor dpm = pm.toDiscrete(nodeHits.size());
-				
 		if (flags.not(LOD_HIGH_DETAIL)) { // Low detail.
+			
+			List<ProgressMonitor> subPms = pm.split(1,0); // no labels at all, still need labelPm for debug panel
+			ProgressMonitor shapePm = subPms.get(0);
+			ProgressMonitor labelPm = subPms.get(1);
+			
+			shapePm.start("Shape");
 			final int nodeHitCount = nodeHits.size();
+			DiscreteProgressMonitor shapeDpm = shapePm.toDiscrete(nodeHitCount);
 
 			for (int i = 0; i < nodeHitCount; i++) {
 				if(pm.isCancelled())
@@ -490,9 +495,20 @@ public final class GraphRenderer {
 					grafx.drawNodeLow(floatBuff1[0], floatBuff1[1], floatBuff1[2],
 					                  floatBuff1[3], nodeDetails.getColorLowDetail(netView, node));
 				
-				dpm.increment();
+				shapeDpm.increment();
 			}
+			
+			shapePm.done();
+			labelPm.emptyTask("Label");
+			
 		} else { // High detail.
+			
+			List<ProgressMonitor> subPms = pm.split(1,2); // labels usually take longer
+			ProgressMonitor shapePm = subPms.get(0);
+			ProgressMonitor labelPm = subPms.get(1);
+			DiscreteProgressMonitor shapeDpm = shapePm.toDiscrete(nodeHits.size());
+			DiscreteProgressMonitor labelDpm = labelPm.toDiscrete(nodeHits.size());
+			
 			while (nodeHits.hasNext()) {
 				if(pm.isCancelled())
 					return;
@@ -500,8 +516,15 @@ public final class GraphRenderer {
 				final long node = nodeHits.nextExtents(floatBuff1);
 				final View<CyNode> cyNode = netView.getNodeView(node);
 
+				shapePm.start("Shape");
+				
 				renderNodeHigh(netView, grafx, cyNode, floatBuff1, doubleBuff1, doubleBuff2, nodeDetails, flags, dependencies);
 
+				shapeDpm.increment();
+				shapePm.done();
+				
+				labelPm.start("Label");
+				
 				// Take care of label rendering.
 				if (flags.has(LOD_NODE_LABELS)) { // Potential label rendering.
 
@@ -553,7 +576,9 @@ public final class GraphRenderer {
 						                                        flags.has(LOD_TEXT_AS_SHAPE));
 					}
 				}
-				dpm.increment();
+				
+				labelDpm.increment();
+				labelPm.done();
 			}
 		}
 	}

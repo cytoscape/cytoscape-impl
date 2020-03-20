@@ -8,12 +8,6 @@ public interface DebugProgressMonitor extends ProgressMonitor {
 
 	List<DebugSubProgressMonitor> getSubMonitors();
 	
-	public long getStartTime();
-	
-	public long getEndTime();
-	
-	default public long getTime() {
-		return getEndTime() - getStartTime();
-	}
+	long getTime();
 	
 }

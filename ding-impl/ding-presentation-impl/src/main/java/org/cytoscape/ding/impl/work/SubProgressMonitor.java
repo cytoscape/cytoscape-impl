@@ -4,7 +4,6 @@ public class SubProgressMonitor implements ProgressMonitor {
 
 	private final ProgressMonitor parent;
 	private final double percentage; // eg 0.2 = 20 percent
-	private double currentProgress;
 	
 	protected SubProgressMonitor(ProgressMonitor parent, double percentage) {
 		this.parent = parent;
@@ -22,17 +21,18 @@ public class SubProgressMonitor implements ProgressMonitor {
 
 	@Override
 	public void addProgress(double progress) {
-		currentProgress += progress;
 		parent.addProgress(progress * percentage);
 	}
 
+	@Override
+	public void start(String taskName) {
+	}
+	
 	/**
 	 * This just completes the sub monitor, not the parent monitor.
 	 */
 	@Override
 	public void done() {
-		addProgress(1.0 - currentProgress);
 	}
 	
-
 }

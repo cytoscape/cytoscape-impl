@@ -11,15 +11,16 @@ public class DebugSubProgressMonitor extends SubProgressMonitor implements Debug
 
 	private List<DebugSubProgressMonitor> subMonitors = Collections.emptyList();
 	
-	private long start, end;
 	private String taskName;
+	private long start;
+	private long time = 0;
 	
 	protected DebugSubProgressMonitor(ProgressMonitor parent, double percent) {
 		super(parent, percent);
 	}
 
 	@Override
-	public <T> List<ProgressMonitor> split(double... parts) {
+	public List<ProgressMonitor> split(double... parts) {
 		subMonitors = new ArrayList<>(parts.length);
 		return DebugProgressMonitor.super.split(parts);
 	}
@@ -28,7 +29,6 @@ public class DebugSubProgressMonitor extends SubProgressMonitor implements Debug
 	public void start(String taskName) {
 		this.taskName = taskName;
 		start = System.currentTimeMillis();
-		super.start(taskName);
 	}
 	
 	public String getTaskName() {
@@ -38,9 +38,16 @@ public class DebugSubProgressMonitor extends SubProgressMonitor implements Debug
 	@Override
 	public void done() {
 		super.done();
-		end = System.currentTimeMillis();
+		long end = System.currentTimeMillis();
+		time += end - start;
+		start = 0;
 	}
-
+	
+	@Override
+	public void emptyTask(String taskName) {
+		this.taskName = taskName;
+	}
+	
 	@Override
 	public ProgressMonitor createSubProgressMonitor(double percent) {
 		var sub = new DebugSubProgressMonitor(this, percent);
@@ -52,14 +59,9 @@ public class DebugSubProgressMonitor extends SubProgressMonitor implements Debug
 	public List<DebugSubProgressMonitor> getSubMonitors() {
 		return subMonitors;
 	}
-	
+
 	@Override
-	public long getStartTime() {
-		return start;
-	}
-	
-	@Override
-	public long getEndTime() {
-		return end;
+	public long getTime() {
+		return time;
 	}
 }

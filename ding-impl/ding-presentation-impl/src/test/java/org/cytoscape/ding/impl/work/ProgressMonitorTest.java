@@ -1,9 +1,13 @@
 package org.cytoscape.ding.impl.work;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
+import org.cytoscape.ding.debug.DebugFrameType;
+import org.cytoscape.ding.debug.DebugRootProgressMonitor;
+import org.cytoscape.ding.debug.DebugSubProgressMonitor;
 import org.junit.Test;
 
 public class ProgressMonitorTest {
@@ -19,10 +23,10 @@ public class ProgressMonitorTest {
 		pm2.addProgress(0.5);
 		assertEquals(0.5, pm.getProgress(), 0.0);
 		
-		pm1.done();
+		pm1.addProgress(0.5);
 		assertEquals(0.75, pm.getProgress(), 0.0);
 		
-		pm2.done();
+		pm2.addProgress(0.5);
 		assertEquals(1.0, pm.getProgress(), 0.0);
 	}
 	
@@ -38,10 +42,7 @@ public class ProgressMonitorTest {
 		pm2.addProgress(0.5);
 		assertEquals(0.5, pm.getProgress(), 0.0);
 		
-		pm1.done();
-		assertEquals(1.0, pm.getProgress(), 0.0);
-		
-		pm2.done();
+		pm1.addProgress(0.5);
 		assertEquals(1.0, pm.getProgress(), 0.0);
 	}
 	
@@ -61,5 +62,44 @@ public class ProgressMonitorTest {
 		
 		pm2.workFinished();
 		assertEquals(1.0, pm.getProgress(), 0.0);
+	}
+	
+	@Test
+	public void testDebugProgressMonitorSplitInterleaved() throws Exception {
+		NoOutputProgressMonitor nopm = new NoOutputProgressMonitor();
+		DebugRootProgressMonitor pm = new DebugRootProgressMonitor(DebugFrameType.MAIN_FAST, nopm, null);
+		List<ProgressMonitor> split = pm.split(1,1);
+		DebugSubProgressMonitor pm1 = (DebugSubProgressMonitor) split.get(0);
+		DebugSubProgressMonitor pm2 = (DebugSubProgressMonitor) split.get(1);
+		
+		pm1.start("A");
+		Thread.sleep(100);
+		pm1.addProgress(0.25);
+		pm1.done();
+		long pm1t1 = pm1.getTime();
+		assertTrue(pm1t1 > 0);
+		
+		pm2.start("B");
+		Thread.sleep(100);
+		pm2.addProgress(0.25);
+		pm2.done();
+		long pm2t1 = pm2.getTime();
+		assertTrue(pm2t1 > 0);
+		
+		pm1.start("A");
+		Thread.sleep(100);
+		pm1.addProgress(0.25);
+		pm1.done();
+		long pm1t2 = pm1.getTime();
+		assertTrue(pm1t2 > pm1t1);
+		
+		pm2.start("B");
+		Thread.sleep(100);
+		pm2.addProgress(0.25);
+		pm2.done();
+		long pm2t2 = pm2.getTime();
+		assertTrue(pm2t2 > pm2t1);
+		
+		assertEquals(0.5, nopm.getProgress(), 0.0);
 	}
 }

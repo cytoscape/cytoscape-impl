@@ -213,7 +213,7 @@ public class CompositeImageCanvas {
 			}
 		}
 		
-		if(pm instanceof DebugRootProgressMonitor)
+		if(pm instanceof DebugRootProgressMonitor) // MKTODO hackey, fix it
 			((DebugRootProgressMonitor)pm).done(flags);
 		else
 			pm.done();

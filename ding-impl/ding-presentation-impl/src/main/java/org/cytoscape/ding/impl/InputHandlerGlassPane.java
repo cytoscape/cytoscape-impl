@@ -172,6 +172,12 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
         return progressBar;
 	}
 	
+	
+	/**
+	 * The progress monitor returned by this method cannot be restarted. 
+	 * You can only call start() and then done() once on this object.
+	 * No effort is made to report erroneous use of the API, behavior under invalid usage is undefined.
+	 */
 	public ProgressMonitor createProgressMonitor() {
 		return new ProgressMonitor() {
 			
