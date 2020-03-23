@@ -16,6 +16,7 @@ import javax.swing.Timer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
+import org.cytoscape.ding.impl.canvas.AnnotationSelectionCanvas;
 import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
@@ -129,20 +130,20 @@ public class FrameRatePanel extends BasicCollapsiblePanel {
 	
 	
 	private TableModel createTabelModel(DebugFrameInfo frame) {
-		String[] columnNames = {"Render", "Time/" + window + "ms", "%"};
+		String[] columnNames = {"Render", "Time/" + window + "ms", "% rel", "% tot"};
 		Object[][] data = computeFrameData(frame);
 		DefaultTableModel model = new DefaultTableModel(data, columnNames);
 		return model;
 	}
 	
 	private Object[][] computeFrameData(DebugFrameInfo root) {
-		int rows = DebugUtil.countNodesInTree(root, t -> t.getSubFrames());
-		Object[][] data = new Object[rows + 1][];
+		int rows = DebugUtil.countNodesInTree((DebugFrameInfo)root, t -> t.getSubFrames());
+		Object[][] data = new Object[rows + 1 -1][]; // :) add a row for "idle", and remove annotation selection row
 		
 		double percent = ((double)(window - root.getTime()) / (double)window)  * 100.0;
 		String percentText = String.format("%.1f", percent);
 		
-		data[0] = new Object[] { "Idle/Overhead", window - root.getTime(), percentText };
+		data[0] = new Object[] { "Idle/Overhead", window - root.getTime(), percentText, percentText};
 		flattenAndExtract(1, 0, data, null, root);
 		return data;
 	}
@@ -150,7 +151,9 @@ public class FrameRatePanel extends BasicCollapsiblePanel {
 	private int flattenAndExtract(int i, int depth, Object[][] data, DebugFrameInfo parent, DebugFrameInfo frame) {
 		data[i] = getDataForRow(parent, frame, depth);
 		for(DebugFrameInfo child : frame.getSubFrames()) {
-			i = flattenAndExtract(++i, depth+1, data, frame, child);
+			if(!AnnotationSelectionCanvas.DEBUG_NAME.equals(child.getTask())) {
+				i = flattenAndExtract(++i, depth+1, data, frame, child);
+			}
 		}
 		return i;
 	}

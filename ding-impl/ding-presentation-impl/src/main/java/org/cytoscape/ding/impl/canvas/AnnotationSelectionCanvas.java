@@ -8,6 +8,8 @@ import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 
 public class AnnotationSelectionCanvas<GP extends GraphicsProvider> extends DingCanvas<GP> {
 
+	public static final String DEBUG_NAME = "Annotation sel";
+	
 	private final DRenderingEngine re;
 	private boolean show = true;
 	
@@ -17,8 +19,8 @@ public class AnnotationSelectionCanvas<GP extends GraphicsProvider> extends Ding
 	}
 	
 	@Override
-	public String getCanvasName() {
-		return "Annotation selection";
+	public String getCanvasDebugName() {
+		return DEBUG_NAME;
 	}
 	
 	public void paint(ProgressMonitor pm, RenderDetailFlags flags) {

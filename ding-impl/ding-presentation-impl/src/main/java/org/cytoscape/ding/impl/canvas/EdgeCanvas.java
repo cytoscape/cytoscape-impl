@@ -16,7 +16,7 @@ public class EdgeCanvas<GP extends GraphicsProvider> extends DingCanvas<GP> {
 	}
 	
 	@Override
-	public String getCanvasName() {
+	public String getCanvasDebugName() {
 		return "Edges";
 	}
 
