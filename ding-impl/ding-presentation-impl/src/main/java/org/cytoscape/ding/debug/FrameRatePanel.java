@@ -46,7 +46,7 @@ public class FrameRatePanel extends BasicCollapsiblePanel {
 		table.setShowGrid(true);
 		
 		JScrollPane scrollPane = new JScrollPane(table);
-		scrollPane.setPreferredSize(new Dimension(400, 200));
+		scrollPane.setPreferredSize(new Dimension(450, 200));
 		
 		JPanel panel = new JPanel();
 		panel.setOpaque(false);
@@ -123,14 +123,15 @@ public class FrameRatePanel extends BasicCollapsiblePanel {
 		
 		TableModel model = createTabelModel(root);
 		table.setModel(model);
-		table.getColumnModel().getColumn(0).setPreferredWidth(200);
+		table.getColumnModel().getColumn(0).setPreferredWidth(150);
 		table.getColumnModel().getColumn(1).setPreferredWidth(100);
 		table.getColumnModel().getColumn(2).setPreferredWidth(100);
+		table.getColumnModel().getColumn(3).setPreferredWidth(100);
 	}
 	
 	
 	private TableModel createTabelModel(DebugFrameInfo frame) {
-		String[] columnNames = {"Render", "Time/" + window + "ms", "% rel", "% tot"};
+		String[] columnNames = {"Render", "Time/" + window + "ms", "% rel", "% frame"};
 		Object[][] data = computeFrameData(frame);
 		DefaultTableModel model = new DefaultTableModel(data, columnNames);
 		return model;
@@ -143,35 +144,39 @@ public class FrameRatePanel extends BasicCollapsiblePanel {
 		double percent = ((double)(window - root.getTime()) / (double)window)  * 100.0;
 		String percentText = String.format("%.1f", percent);
 		
-		data[0] = new Object[] { "Idle/Overhead", window - root.getTime(), percentText, percentText};
-		flattenAndExtract(1, 0, data, null, root);
+		data[0] = new Object[] { "Idle/Overhead", window - root.getTime(), percentText, ""};
+		flattenAndExtract(1, 0, root.getTime(), data, null, root);
 		return data;
 	}
 	
-	private int flattenAndExtract(int i, int depth, Object[][] data, DebugFrameInfo parent, DebugFrameInfo frame) {
-		data[i] = getDataForRow(parent, frame, depth);
+	private int flattenAndExtract(int i, int depth, long frameTot, Object[][] data, DebugFrameInfo parent, DebugFrameInfo frame) {
+		data[i] = getDataForRow(parent, frame, depth, frameTot);
 		for(DebugFrameInfo child : frame.getSubFrames()) {
 			if(!AnnotationSelectionCanvas.DEBUG_NAME.equals(child.getTask())) {
-				i = flattenAndExtract(++i, depth+1, data, frame, child);
+				i = flattenAndExtract(++i, depth+1, frameTot, data, frame, child);
 			}
 		}
 		return i;
 	}
 	
-	private Object[] getDataForRow(DebugFrameInfo parent, DebugFrameInfo frame, int depth) {
+	private Object[] getDataForRow(DebugFrameInfo parent, DebugFrameInfo frame, int depth, long frameTot) {
 		String indent = "  ".repeat(depth);
 		String name = indent + frame.getTask();
 		String time = indent + frame.getTime();
 		
-		double percent;
-		if(parent == null) { // root frame
-			percent = ((double)frame.getTime() / (double)window)  * 100.0;
-		} else {
-			percent = ((double)frame.getTime() / (double)parent.getTime()) * 100.0;
-		}
-		String percentText = indent + String.format("%.1f", percent);
+		double percentFrame = ((double)frame.getTime() / (double)frameTot)  * 100.0;
 		
-		return new Object[] { name, time, percentText };
+		double percentRel;
+		if(parent == null) { // root frame
+			percentRel = ((double)frame.getTime() / (double)window)  * 100.0;;
+		} else {
+			percentRel = ((double)frame.getTime() / (double)parent.getTime()) * 100.0;
+		}
+		
+		String percentRelText = indent + String.format("%.1f", percentRel);
+		String percentFrameText = indent + String.format("%.1f", percentFrame);
+		
+		return new Object[] { name, time, percentRelText, percentFrameText };
 	}
 	
 }
