@@ -1,5 +1,14 @@
 package org.cytoscape.view.vizmap.gui.internal;
 
+import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_NETWORK_AND_VIEW;
+import static org.cytoscape.work.ServiceProperties.EDGE_EDIT_MENU;
+import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
+import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+import static org.cytoscape.work.ServiceProperties.TITLE;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
@@ -19,6 +28,7 @@ import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyValueEditor;
+import org.cytoscape.view.vizmap.gui.internal.action.ApplyVisualStyleAction;
 import org.cytoscape.view.vizmap.gui.internal.action.EditSelectedDiscreteValuesAction;
 import org.cytoscape.view.vizmap.gui.internal.action.RemoveSelectedDiscreteValuesAction;
 import org.cytoscape.view.vizmap.gui.internal.controller.StartupCommand;
@@ -68,7 +78,6 @@ import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.FontValueE
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.NumericValueEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.StringValueEditor;
 import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
-import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
 
@@ -149,10 +158,10 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			var factory = new ClearAllBendsForThisEdgeTaskFactory(servicesUtil);
 			var props = new Properties();
-			props.put(ServiceProperties.PREFERRED_MENU, ServiceProperties.EDGE_EDIT_MENU);
-			props.put(ServiceProperties.TITLE, "Clear All Bends For This Edge");
-			props.put(ServiceProperties.MENU_GRAVITY, "5.0");
-			props.put(ServiceProperties.INSERT_SEPARATOR_BEFORE, "true");
+			props.put(PREFERRED_MENU, EDGE_EDIT_MENU);
+			props.put(TITLE, "Clear All Bends For This Edge");
+			props.put(MENU_GRAVITY, "5.0");
+			props.put(INSERT_SEPARATOR_BEFORE, "true");
 			registerService(bc, factory, EdgeViewTaskFactory.class, props);
 		}
 
@@ -294,6 +303,18 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(ServicePropertiesUtil.TITLE, "Fit label width (only works with 'name' column to node size or width)");
 			props.setProperty(ServicePropertiesUtil.MENU_ID, "context");
 			registerService(bc, fitLabelMappingGenerator, DiscreteMappingGenerator.class, props);
+		}
+		
+		// Network Panel Context Menu
+		// -------------------------------------------------------------------------------------------------------------
+		{
+			var action = new ApplyVisualStyleAction(servicesUtil);
+			var props = new Properties();
+			props.setProperty(TITLE, ApplyVisualStyleAction.NAME);
+			props.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU, "true");
+			props.setProperty(MENU_GRAVITY, "6.999");
+			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
+			registerService(bc, action, CyAction.class, props);
 		}
 		
 		// Create the main GUI component

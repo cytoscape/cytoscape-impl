@@ -335,21 +335,15 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 	}
 
 	public void removeNetworkViewTaskFactory(NetworkViewTaskFactory factory, Map<?, ?> props) {
-		invokeOnEDT(() -> {
-			removeFactory(provisionerMap.remove(factory), false);
-		});
+		invokeOnEDT(() -> removeFactory(provisionerMap.remove(factory), false));
 	}
 	
 	public void addCyAction(CyAction action, Map<?, ?> props) {
-		invokeOnEDT(() -> {
-			netPopupActionMap.put(action, action);
-		});
+		invokeOnEDT(() -> netPopupActionMap.put(action, action));
 	}
 	
 	public void removeCyAction(CyAction action, Map<?, ?> props) {
-		invokeOnEDT(() -> {
-			netPopupActionMap.remove(action);
-		});
+		invokeOnEDT(() -> netPopupActionMap.remove(action));
 	}
 	
 	// // Private Methods // //

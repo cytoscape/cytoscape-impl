@@ -5,30 +5,43 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.Component;
+import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 
+import javax.swing.AbstractAction;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
+import javax.swing.JDialog;
 import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 
 import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.GravityTracker;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.MenuGravityTracker;
 import org.cytoscape.util.swing.PopupMenuGravityTracker;
 import org.cytoscape.util.swing.TextIcon;
@@ -79,6 +92,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	private JTabbedPane propertiesPn;
 	private final Map<Class<? extends CyIdentifiable>, VisualPropertySheet> vpSheetMap;
 	protected VisualStyleDropDownButton stylesBtn;
+	protected VisualStyleSelector styleSelector;
 	
 	/** Menu items under the options button */
 	private JPopupMenu mainMenu;
@@ -90,27 +104,25 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	private MenuGravityTracker editSubMenuGravityTracker;
 	private JMenu mapValueGeneratorsSubMenu;
 	
-	private final Map<String/*visual style name*/, JPanel> defViewPanelsMap;
-	
 	private TextIcon icon;
 	
 	private ServicesUtil servicesUtil;
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	/**
-	 * Create new instance of VizMapperMainPanel object. GUI layout is handled
-	 * by abstract class.
-	 */
-	public VizMapperMainPanel(final ServicesUtil servicesUtil) {
+	public VizMapperMainPanel(ServicesUtil servicesUtil) {
 		if (servicesUtil == null)
 			throw new IllegalArgumentException("'servicesUtil' must not be null");
 		
 		this.servicesUtil = servicesUtil;
 		
 		vpSheetMap = new HashMap<>();
-		defViewPanelsMap = new HashMap<>();
-
+		
+		// We need to build and keep this UI component here because of the API method getDefaultView(),
+		// so instead of creating this object only when needed (e.g. before showing the dialog),
+		// we keep it to store the panels for the rendered style previews
+		styleSelector = new VisualStyleSelector(servicesUtil);
+		
 		init();
 	}
 
@@ -165,7 +177,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	
 	@Override
 	public RenderingEngine<CyNetwork> getRenderingEngine() {
-		return getStylesBtn().getRenderingEngine(getSelectedVisualStyle());
+		return styleSelector.getRenderingEngine(getSelectedVisualStyle());
 	}
 	
 	/**
@@ -176,7 +188,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	@Override
 	@Deprecated
 	public Component getDefaultView(VisualStyle vs) {
-		return defViewPanelsMap.get(vs.getTitle());
+		return styleSelector.getDefaultView(vs);
 	}
 
 	@Override
@@ -186,7 +198,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	}
 	
 	public VisualStyle getSelectedVisualStyle() {
-		return getStylesBtn().getSelectedItem();
+		return styleSelector.getSelectedItem();
 	}
 	
 	public void setSelectedVisualStyle(final VisualStyle style) {
@@ -350,7 +362,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 
 	VisualStyleDropDownButton getStylesBtn() {
 		if (stylesBtn == null) {
-			stylesBtn = new VisualStyleDropDownButton(defViewPanelsMap, servicesUtil);
+			stylesBtn = new VisualStyleDropDownButton();
 			stylesBtn.setToolTipText("Current Style");
 		}
 		
@@ -359,7 +371,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	
 	DropDownMenuButton getOptionsBtn() {
 		if (optionsBtn == null) {
-			final IconManager iconManager = servicesUtil.get(IconManager.class);
+			var iconManager = servicesUtil.get(IconManager.class);
 			
 			optionsBtn = new DropDownMenuButton(getMainMenu(), false);
 			optionsBtn.setToolTipText("Options...");
@@ -436,5 +448,152 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		
 		if (insertSeparatorAfter)
 			gravityTracker.addMenuSeparator(gravity + .0001);
+	}
+	
+	// ==[ CLASSES ]====================================================================================================
+	
+	class VisualStyleDropDownButton extends DropDownMenuButton {
+
+		private JDialog dialog;
+		
+		private CloseDialogMenuListener closeDialogMenuListener;
+		
+		VisualStyleDropDownButton() {
+			super(true);
+			
+			closeDialogMenuListener = new CloseDialogMenuListener();
+			setHorizontalAlignment(LEFT);
+			
+			addActionListener(evt -> {
+				if (!styleSelector.isEmpty())
+					showDialog();
+			});
+			
+			styleSelector.addPropertyChangeListener("selectedItem", evt -> {
+				repaint();
+				disposeDialog();
+				firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+			});
+		}
+		
+		public void update(SortedSet<VisualStyle> styles, CyNetworkView previewNetView) {
+			styleSelector.update(styles, previewNetView);
+			setEnabled(!styleSelector.isEmpty());
+		}
+		
+		public void setSelectedItem(VisualStyle vs) {
+			styleSelector.setSelectedItem(vs);
+		}
+		
+		@Override
+		public void repaint() {
+			var selectedItem = styleSelector.getSelectedItem();
+			setText(selectedItem != null ? selectedItem.getTitle() : "");
+			super.repaint();
+		}
+		
+		private void showDialog() {
+			setEnabled(false); // Disable the button to prevent accidental repeated clicks
+			disposeDialog(); // Just to make sure there will never be more than one dialog
+			
+			dialog = new JDialog(SwingUtilities.getWindowAncestor(VisualStyleDropDownButton.this),
+					ModalityType.MODELESS);
+			dialog.setUndecorated(true);
+			dialog.setBackground(styleSelector.getBackground());
+			
+			dialog.addWindowListener(new WindowAdapter() {
+				@Override
+				public void windowDeactivated(WindowEvent e) {
+					disposeDialog();
+				}
+				@Override
+				public void windowClosed(WindowEvent e) {
+					onDialogDisposed();
+				
+					if (LookAndFeelUtil.isAquaLAF())
+						removeMenuListeners();
+				}
+			});
+			
+			// Opening a Mac/Aqua menu does not trigger a Window Deactivated event on the Style dialog!
+			if (LookAndFeelUtil.isAquaLAF())
+				addMenuListeners();
+			
+			var scr = new JScrollPane(styleSelector);
+			scr.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+			
+			var layout = new GroupLayout(dialog.getContentPane());
+			dialog.getContentPane().setLayout(layout);
+			layout.setAutoCreateGaps(false);
+			layout.setAutoCreateContainerGaps(false);
+			
+			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addComponent(scr, 500, DEFAULT_SIZE, 1060)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(scr, DEFAULT_SIZE, DEFAULT_SIZE, 660)
+			);
+			
+			LookAndFeelUtil.setDefaultOkCancelKeyStrokes(dialog.getRootPane(), null, new AbstractAction() {
+				@Override
+				public void actionPerformed(ActionEvent evt) {
+					disposeDialog();
+				}
+			});
+			
+			var pt = getLocationOnScreen(); 
+			dialog.setLocation(pt.x, pt.y);
+			dialog.pack();
+			dialog.setVisible(true);
+			dialog.requestFocus();
+		}
+
+		private void disposeDialog() {
+			if (dialog != null)
+				dialog.dispose();
+		}
+
+		private void onDialogDisposed() {
+			if (dialog != null)
+				dialog = null;
+			
+			setEnabled(!styleSelector.isEmpty()); // Re-enable the Styles button
+		}
+		
+		private void addMenuListeners() {
+			final JMenuBar menuBar = servicesUtil.get(CySwingApplication.class).getJMenuBar();
+			
+			if (menuBar != null) {
+				for (int i = 0; i < menuBar.getMenuCount(); i++)
+					menuBar.getMenu(i).addMenuListener(closeDialogMenuListener);
+			}
+		}
+		
+		private void removeMenuListeners() {
+			final JMenuBar menuBar = servicesUtil.get(CySwingApplication.class).getJMenuBar();
+			
+			if (menuBar != null) {
+				for (int i = 0; i < menuBar.getMenuCount(); i++)
+					menuBar.getMenu(i).removeMenuListener(closeDialogMenuListener);
+			}
+		}
+		
+		private class CloseDialogMenuListener implements MenuListener {
+
+			@Override
+			public void menuSelected(MenuEvent e) {
+				disposeDialog();
+			}
+
+			@Override
+			public void menuDeselected(MenuEvent e) {
+				// Ignore...
+			}
+
+			@Override
+			public void menuCanceled(MenuEvent e) {
+				// Ignore...
+			}
+		}
 	}
 }
