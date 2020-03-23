@@ -48,7 +48,7 @@ public class DebugRootProgressMonitor implements DebugProgressMonitor {
 	}
 	
 	@Override
-	public List<ProgressMonitor> split(double ... parts) {
+	public ProgressMonitor[] split(double ... parts) {
 		subMonitors = new ArrayList<>(parts.length);
 		return DebugProgressMonitor.super.split(parts);
 	}

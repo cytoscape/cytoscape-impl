@@ -162,10 +162,16 @@ public final class GraphRenderer {
 		else
 			nodeHits = netView.getSpacialIndex2D().queryOverlap(area.x, area.y, area.x + area.width, area.y + area.height); // MKTODO why are we querying twice?
 		
-		DiscreteProgressMonitor dpm = pm.toDiscrete(nodeHits.size());
 		
 		if (flags.not(LOD_HIGH_DETAIL)) { // Low detail.
 
+			ProgressMonitor[] subPms = pm.split(1,0); // no labels at all, still need labelPm for debug panel
+			ProgressMonitor shapePm = subPms[0];
+			ProgressMonitor labelPm = subPms[1];
+			
+			shapePm.start("Line");
+			DiscreteProgressMonitor shapeDpm = shapePm.toDiscrete(nodeHits.size());
+			
 			while (nodeHits.hasNext()) {
 				if(pm.isCancelled()) {
 					return;
@@ -198,14 +204,25 @@ public final class GraphRenderer {
 				}
 				nodeBuff.put(nodeSuid);
 				
-				dpm.increment();
+				shapeDpm.increment();
 			}
+			
+			shapePm.done();
+			labelPm.emptyTask("Label");
+			
+			
 		} else { // High detail.
+			
+			ProgressMonitor[] subPms = pm.split(1,1); // labels usually take longer
+			ProgressMonitor shapePm = subPms[0];
+			ProgressMonitor labelPm = subPms[1];
+			DiscreteProgressMonitor shapeDpm = shapePm.toDiscrete(nodeHits.size());
+			DiscreteProgressMonitor labelDpm = labelPm.toDiscrete(nodeHits.size());
+			
 			while (nodeHits.hasNext()) {
-				if(pm.isCancelled()) {
+				if(pm.isCancelled())
 					return;
-				}
-				
+					
 				final long nodeSuid = nodeHits.nextExtents(floatBuff1);
 				
 				final View<CyNode> node = netView.getNodeView(nodeSuid);
@@ -224,7 +241,9 @@ public final class GraphRenderer {
 					final View<CyNode> otherCyNode = netView.getNodeView(otherNode);
 
 					if (nodeBuff.get(otherNode) < 0) { // Has not yet been rendered.
-
+						
+						shapePm.start("Line");
+						
 						if (!netView.getSpacialIndex2D().get(otherNode, floatBuff2))
 							continue;
 							// throw new IllegalStateException("nodePositions not recognizing node that exists in graph: "+otherCyNode.toString());
@@ -310,6 +329,10 @@ public final class GraphRenderer {
 							}
 						}
 
+						shapePm.done();
+						
+						labelPm.start("Label");
+						
 						// Take care of label rendering.
 						if (flags.has(LOD_EDGE_LABELS)) {
 							final int labelCount = edgeDetails.getLabelCount(edge);
@@ -453,11 +476,14 @@ public final class GraphRenderer {
 								                                        flags.has(LOD_TEXT_AS_SHAPE));
 							}
 						}
+						
+						labelPm.done();
 					}
 				}
 
 				nodeBuff.put(nodeSuid);
-				dpm.increment();
+				shapeDpm.increment();
+				labelDpm.increment();
 			}
 		}
 	}
@@ -477,9 +503,9 @@ public final class GraphRenderer {
 		
 		if (flags.not(LOD_HIGH_DETAIL)) { // Low detail.
 			
-			List<ProgressMonitor> subPms = pm.split(1,0); // no labels at all, still need labelPm for debug panel
-			ProgressMonitor shapePm = subPms.get(0);
-			ProgressMonitor labelPm = subPms.get(1);
+			ProgressMonitor[] subPms = pm.split(1,0); // no labels at all, still need labelPm for debug panel
+			ProgressMonitor shapePm = subPms[0];
+			ProgressMonitor labelPm = subPms[1];
 			
 			shapePm.start("Shape");
 			final int nodeHitCount = nodeHits.size();
@@ -503,9 +529,9 @@ public final class GraphRenderer {
 			
 		} else { // High detail.
 			
-			List<ProgressMonitor> subPms = pm.split(1,2); // labels usually take longer
-			ProgressMonitor shapePm = subPms.get(0);
-			ProgressMonitor labelPm = subPms.get(1);
+			ProgressMonitor[] subPms = pm.split(1,2); // labels usually take longer
+			ProgressMonitor shapePm = subPms[0];
+			ProgressMonitor labelPm = subPms[1];
 			DiscreteProgressMonitor shapeDpm = shapePm.toDiscrete(nodeHits.size());
 			DiscreteProgressMonitor labelDpm = labelPm.toDiscrete(nodeHits.size());
 			

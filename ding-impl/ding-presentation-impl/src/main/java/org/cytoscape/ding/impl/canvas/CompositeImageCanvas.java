@@ -199,7 +199,7 @@ public class CompositeImageCanvas {
 		
 		for(int i = 0; i < canvasList.size(); i++) {
 			var canvas = canvasList.get(i);
-			var subPm = subPms.get(i);
+			var subPm = subPms[i];
 			
 			Image canvasImage;
 			if(layersToRepaint == null || layersToRepaint.test(canvas)) {

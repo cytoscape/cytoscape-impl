@@ -3,8 +3,6 @@ package org.cytoscape.ding.impl.work;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.util.List;
-
 import org.cytoscape.ding.debug.DebugFrameType;
 import org.cytoscape.ding.debug.DebugRootProgressMonitor;
 import org.cytoscape.ding.debug.DebugSubProgressMonitor;
@@ -15,9 +13,9 @@ public class ProgressMonitorTest {
 	@Test
 	public void testProgressMonitorSplit() {
 		NoOutputProgressMonitor pm = new NoOutputProgressMonitor();
-		List<ProgressMonitor> split = pm.split(1,1);
-		ProgressMonitor pm1 = split.get(0);
-		ProgressMonitor pm2 = split.get(1);
+		ProgressMonitor[] split = pm.split(1,1);
+		ProgressMonitor pm1 = split[0];
+		ProgressMonitor pm2 = split[1];
 		
 		pm1.addProgress(0.5);
 		pm2.addProgress(0.5);
@@ -34,9 +32,9 @@ public class ProgressMonitorTest {
 	@Test
 	public void testProgressMonitorZero() {
 		NoOutputProgressMonitor pm = new NoOutputProgressMonitor();
-		List<ProgressMonitor> split = pm.split(1,0);
-		ProgressMonitor pm1 = split.get(0);
-		ProgressMonitor pm2 = split.get(1);
+		ProgressMonitor[] split = pm.split(1,0);
+		ProgressMonitor pm1 = split[0];
+		ProgressMonitor pm2 = split[1];
 		
 		pm1.addProgress(0.5);
 		pm2.addProgress(0.5);
@@ -49,9 +47,9 @@ public class ProgressMonitorTest {
 	@Test
 	public void testProgressMonitorSplitDiscrete() {
 		NoOutputProgressMonitor pm = new NoOutputProgressMonitor();
-		List<ProgressMonitor> split = pm.split(1,1);
-		DiscreteProgressMonitor pm1 = split.get(0).toDiscrete(100);
-		DiscreteProgressMonitor pm2 = split.get(1).toDiscrete(100);
+		ProgressMonitor[] split = pm.split(1,1);
+		DiscreteProgressMonitor pm1 = split[0].toDiscrete(100);
+		DiscreteProgressMonitor pm2 = split[1].toDiscrete(100);
 		
 		pm1.addWork(50);
 		pm2.addWork(50);
@@ -68,9 +66,9 @@ public class ProgressMonitorTest {
 	public void testDebugProgressMonitorSplitInterleaved() throws Exception {
 		NoOutputProgressMonitor nopm = new NoOutputProgressMonitor();
 		DebugRootProgressMonitor pm = new DebugRootProgressMonitor(DebugFrameType.MAIN_FAST, nopm, null);
-		List<ProgressMonitor> split = pm.split(1,1);
-		DebugSubProgressMonitor pm1 = (DebugSubProgressMonitor) split.get(0);
-		DebugSubProgressMonitor pm2 = (DebugSubProgressMonitor) split.get(1);
+		ProgressMonitor[] split = pm.split(1,1);
+		DebugSubProgressMonitor pm1 = (DebugSubProgressMonitor) split[0];
+		DebugSubProgressMonitor pm2 = (DebugSubProgressMonitor) split[1];
 		
 		pm1.start("A");
 		Thread.sleep(100);

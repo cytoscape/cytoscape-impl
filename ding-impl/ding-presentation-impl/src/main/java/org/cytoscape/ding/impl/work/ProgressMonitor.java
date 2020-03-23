@@ -1,8 +1,5 @@
 package org.cytoscape.ding.impl.work;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public interface ProgressMonitor {
 	
 	
@@ -42,16 +39,15 @@ public interface ProgressMonitor {
 		return pm == null ? new NoOutputProgressMonitor() : pm;
 	}
 	
-	default public List<ProgressMonitor> split(double ... parts) {
+	default public ProgressMonitor[] split(double ... parts) {
 		double sum = 0.0;
 		for(double part : parts)
 			sum += part;
 		
-		List<ProgressMonitor> monitors = new ArrayList<>(parts.length);
-		for(double part : parts) {
-			double percent = part / sum;
-			ProgressMonitor subMonitor = createSubProgressMonitor(percent);
-			monitors.add(subMonitor);
+		ProgressMonitor[] monitors = new ProgressMonitor[parts.length];
+		for(int i = 0; i < parts.length; i++) {
+			double percent = parts[i] / sum;
+			monitors[i] = createSubProgressMonitor(percent);
 		}
 		return monitors;
 	}
