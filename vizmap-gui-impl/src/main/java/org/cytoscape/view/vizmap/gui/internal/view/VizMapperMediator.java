@@ -1,7 +1,5 @@
 package org.cytoscape.view.vizmap.gui.internal.view;
 
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_NETWORK_VIEW_CHANGED;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_VISUAL_STYLE_CHANGED;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_ADDED;
@@ -50,10 +48,8 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.events.ColumnCreatedEvent;
 import org.cytoscape.model.events.ColumnCreatedListener;
 import org.cytoscape.model.events.ColumnDeletedEvent;
@@ -63,7 +59,6 @@ import org.cytoscape.model.events.ColumnNameChangedListener;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
@@ -152,7 +147,6 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	
 	private VisualPropertySheetItem<?> curVpSheetItem;
 	private VizMapperProperty<?, ?, ?> curVizMapperProperty;
-	private CyNetworkView previewNetView;
 	private String curRendererId;
 	
 	private final ServicesUtil servicesUtil;
@@ -531,34 +525,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	}
 	
 	private void initView() {
-		createPreviewNetworkView();
 		servicesUtil.registerAllServices(vizMapperMainPanel, new Properties());
 		addViewListeners();
-	}
-	
-	private void createPreviewNetworkView() {
-		// Create dummy view first
-		final CyNetwork net = servicesUtil.get(CyNetworkFactory.class)
-				.createNetworkWithPrivateTables(SavePolicy.DO_NOT_SAVE);
-		final CyNode source = net.addNode();
-		final CyNode target = net.addNode();
-
-		net.getRow(source).set(CyNetwork.NAME, "Source");
-		net.getRow(target).set(CyNetwork.NAME, "Target");
-
-		final CyEdge edge = net.addEdge(source, target, true);
-		net.getRow(edge).set(CyNetwork.NAME, "Source (interaction) Target");
-
-		net.getRow(net).set(CyNetwork.NAME, "Default Appearance");
-		final CyNetworkView view = servicesUtil.get(CyNetworkViewFactory.class).createNetworkView(net);
-
-		// Set node locations
-		view.getNodeView(source).setVisualProperty(NODE_X_LOCATION, 0d);
-		view.getNodeView(source).setVisualProperty(NODE_Y_LOCATION, 0d);
-		view.getNodeView(target).setVisualProperty(NODE_X_LOCATION, 150d);
-		view.getNodeView(target).setVisualProperty(NODE_Y_LOCATION, 20d);
-		
-		previewNetView = view;
 	}
 	
 	private void addViewListeners() {
@@ -711,7 +679,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		
 		invokeOnEDT(() -> {
 			ignoreVisualStyleSelectedEvents = true;
-			vizMapperMainPanel.updateVisualStyles(styles, previewNetView);
+			vizMapperMainPanel.updateVisualStyles(styles);
 			final VisualStyle vs = vmProxy.getCurrentVisualStyle();
 			selectCurrentVisualStyle(vs);
 			updateVisualPropertySheets(vs, resetDefaultVisibleItems);

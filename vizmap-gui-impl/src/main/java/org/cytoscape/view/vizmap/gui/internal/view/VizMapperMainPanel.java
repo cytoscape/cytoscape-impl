@@ -45,7 +45,6 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.MenuGravityTracker;
 import org.cytoscape.util.swing.PopupMenuGravityTracker;
 import org.cytoscape.util.swing.TextIcon;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.DefaultViewEditor;
@@ -244,8 +243,8 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		}
 	}
 	
-	public void updateVisualStyles(SortedSet<VisualStyle> styles, CyNetworkView previewNetView) {
-		getStylesBtn().update(styles, previewNetView);
+	public void updateVisualStyles(SortedSet<VisualStyle> styles) {
+		getStylesBtn().update(styles);
 	}
 	
 	public void hideSelectedItems() {
@@ -476,8 +475,8 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			});
 		}
 		
-		public void update(SortedSet<VisualStyle> styles, CyNetworkView previewNetView) {
-			styleSelector.update(styles, previewNetView);
+		public void update(SortedSet<VisualStyle> styles) {
+			styleSelector.update(styles);
 			setEnabled(!styleSelector.isEmpty());
 		}
 		

@@ -1,5 +1,8 @@
 package org.cytoscape.view.vizmap.gui.internal.view;
 
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
@@ -23,7 +26,10 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.SavePolicy;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -75,7 +81,7 @@ public class VisualStyleSelector extends JPanel {
 	private final Map<VisualStyle, JPanel> vsPanelMap;
 	private final Map<String, RenderingEngine<CyNetwork>> engineMap;
 	
-	private CyNetworkView previewNetView;
+	private final CyNetworkView previewNetView;
 	private final Map<String/*visual style name*/, JPanel> defViewPanelsMap;
 	private final ServicesUtil servicesUtil;
 	
@@ -95,12 +101,13 @@ public class VisualStyleSelector extends JPanel {
 		SEL_FG_COLOR = UIManager.getColor("Table.focusCellForeground");
 		BORDER_COLOR = UIManager.getColor("Separator.foreground");
 		
+		previewNetView = createPreviewNetworkView();
+		
 		setBackground(BG_COLOR);
 		setKeyBindings(this);
 	}
 	
-	public void update(SortedSet<VisualStyle> styles, CyNetworkView previewNetView) {
-		this.previewNetView = previewNetView;
+	public void update(SortedSet<VisualStyle> styles) {
 		this.styles.clear();
 		this.vsPanelMap.clear();
 		
@@ -130,6 +137,7 @@ public class VisualStyleSelector extends JPanel {
 		if (vs == null || (styles != null && styles.contains(vs) && !vs.equals(selectedItem))) {
 			var oldStyle = selectedItem;
 			selectedItem = vs;
+			setFocus(selectedItem);
 			repaint();
 			firePropertyChange("selectedItem", oldStyle, vs);
 		}
@@ -149,6 +157,22 @@ public class VisualStyleSelector extends JPanel {
 	
 	public boolean isEmpty() {
 		return styles.isEmpty();
+	}
+	
+	public void dispose() {
+		selectedItem = null;
+		focusedItem = null;
+		
+		try {
+			styles.clear();
+			vsPanelMap.clear();
+			engineMap.clear();
+			defViewPanelsMap.clear();
+			
+			previewNetView.dispose();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private void createPreviewRenderingEngines() {
@@ -235,7 +259,7 @@ public class VisualStyleSelector extends JPanel {
 	
 	private void setFocus(int index) {
 		if (index > -1 && index < styles.size()) {
-			final VisualStyle vs = styles.get(index);
+			var vs = styles.get(index);
 			setFocus(vs);
 		}
 	}
@@ -275,6 +299,30 @@ public class VisualStyleSelector extends JPanel {
 				label.setForeground(FG_COLOR);
 			}
 		}
+	}
+	
+	private CyNetworkView createPreviewNetworkView() {
+		// Create dummy view first
+		var net = servicesUtil.get(CyNetworkFactory.class).createNetworkWithPrivateTables(SavePolicy.DO_NOT_SAVE);
+		var source = net.addNode();
+		var target = net.addNode();
+
+		net.getRow(source).set(CyNetwork.NAME, "Source");
+		net.getRow(target).set(CyNetwork.NAME, "Target");
+
+		var edge = net.addEdge(source, target, true);
+		net.getRow(edge).set(CyNetwork.NAME, "Source (interaction) Target");
+
+		net.getRow(net).set(CyNetwork.NAME, "Default Appearance");
+		var view = servicesUtil.get(CyNetworkViewFactory.class).createNetworkView(net);
+
+		// Set node locations
+		view.getNodeView(source).setVisualProperty(NODE_X_LOCATION, 0d);
+		view.getNodeView(source).setVisualProperty(NODE_Y_LOCATION, 0d);
+		view.getNodeView(target).setVisualProperty(NODE_X_LOCATION, 150d);
+		view.getNodeView(target).setVisualProperty(NODE_Y_LOCATION, 20d);
+		
+		return view;
 	}
 	
 	private void setKeyBindings(JPanel panel) {
