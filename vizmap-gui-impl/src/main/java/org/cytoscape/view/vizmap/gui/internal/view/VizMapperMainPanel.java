@@ -26,7 +26,6 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
@@ -334,7 +333,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			getStylesBtn().setPreferredSize(
 					new Dimension(getStylesBtn().getPreferredSize().width, getOptionsBtn().getPreferredSize().height));
 			
-			final GroupLayout layout = new GroupLayout(stylesPnl);
+			var layout = new GroupLayout(stylesPnl);
 			stylesPnl.setLayout(layout);
 			layout.setAutoCreateGaps(!isAquaLAF());
 			
@@ -518,19 +517,16 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			if (LookAndFeelUtil.isAquaLAF())
 				addMenuListeners();
 			
-			var scr = new JScrollPane(styleSelector);
-			scr.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-			
 			var layout = new GroupLayout(dialog.getContentPane());
 			dialog.getContentPane().setLayout(layout);
 			layout.setAutoCreateGaps(false);
 			layout.setAutoCreateContainerGaps(false);
 			
 			layout.setHorizontalGroup(layout.createSequentialGroup()
-					.addComponent(scr, 500, DEFAULT_SIZE, 1060)
+					.addComponent(styleSelector, 500, DEFAULT_SIZE, 1060)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
-					.addComponent(scr, DEFAULT_SIZE, DEFAULT_SIZE, 660)
+					.addComponent(styleSelector, DEFAULT_SIZE, DEFAULT_SIZE, 660)
 			);
 			
 			LookAndFeelUtil.setDefaultOkCancelKeyStrokes(dialog.getRootPane(), null, new AbstractAction() {
@@ -548,8 +544,10 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		}
 
 		private void disposeDialog() {
-			if (dialog != null)
+			if (dialog != null) {
 				dialog.dispose();
+				styleSelector.resetFilter();
+			}
 		}
 
 		private void onDialogDisposed() {

@@ -1,5 +1,7 @@
 package org.cytoscape.view.vizmap.gui.internal.view;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
 
@@ -17,14 +19,21 @@ import java.util.SortedSet;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
+import org.cytoscape.event.DebounceTimer;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.SavePolicy;
@@ -72,11 +81,17 @@ public class VisualStyleSelector extends JPanel {
 	final Color SEL_FG_COLOR;
 	final Color BORDER_COLOR;
 	
-	private int cols;
+	private JTextField searchTextField;
+	private JPanel gridPanel;
+	private JScrollPane gridsScrollPane;
+	
+	private int cols = MAX_COLUMNS; // Make it fixed for now
 	
 	private LinkedList<VisualStyle> styles;
 	private VisualStyle selectedItem;
 	private VisualStyle focusedItem;
+	
+	private String titleFilter = "";
 	
 	private final Map<VisualStyle, JPanel> vsPanelMap;
 	private final Map<String, RenderingEngine<CyNetwork>> engineMap;
@@ -103,9 +118,17 @@ public class VisualStyleSelector extends JPanel {
 		
 		previewNetView = createPreviewNetworkView();
 		
-		setBackground(BG_COLOR);
+		init();
+		
 		setKeyBindings(this);
+		setKeyBindings(getGridPanel());
 	}
+	
+	@Override
+    public void addNotify() {
+    	super.addNotify();
+    	getSearchTextField().requestFocusInWindow();
+    }
 	
 	public void update(SortedSet<VisualStyle> styles) {
 		this.styles.clear();
@@ -116,16 +139,15 @@ public class VisualStyleSelector extends JPanel {
 		
 		createPreviewRenderingEngines();
 		
-		cols = MAX_COLUMNS;
-		removeAll();
+		getGridPanel().removeAll();
 		
 		var layout = new GridLayout(0, cols);
-		setLayout(layout);
+		getGridPanel().setLayout(layout);
 		
 		if (styles != null) {
 			for (var vs : styles) {
 				var itemPnl = createItem(vs);
-				add(itemPnl);
+				getGridPanel().add(itemPnl);
 			}
 		}
 		
@@ -159,6 +181,10 @@ public class VisualStyleSelector extends JPanel {
 		return styles.isEmpty();
 	}
 	
+	public void resetFilter() {
+		getSearchTextField().setText("");
+	}
+	
 	public void dispose() {
 		selectedItem = null;
 		focusedItem = null;
@@ -172,6 +198,85 @@ public class VisualStyleSelector extends JPanel {
 			previewNetView.dispose();
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+	}
+	
+	private void init() {
+		var layout = new GroupLayout(this);
+		setLayout(layout);
+		layout.setAutoCreateGaps(false);
+		layout.setAutoCreateContainerGaps(false);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER)
+				.addComponent(getSearchTextField(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getGridsScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(getSearchTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(getGridsScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+	}
+	
+	JTextField getSearchTextField() {
+		if (searchTextField == null) {
+			searchTextField = new JTextField();
+			searchTextField.putClientProperty("JTextField.variant", "search"); // Aqua LAF only
+			searchTextField.setToolTipText("Search by style name...");
+			
+			var debouncer = new DebounceTimer(250);
+			
+			searchTextField.getDocument().addDocumentListener(new DocumentListener() {
+				@Override
+				public void insertUpdate(DocumentEvent evt) {
+					updateTitleFilter();
+				}
+				@Override
+				public void removeUpdate(DocumentEvent evt) {
+					updateTitleFilter();
+				}
+				@Override
+				public void changedUpdate(DocumentEvent evt) {
+					// Ignore...
+				}
+				private void updateTitleFilter() {
+					debouncer.debounce(() -> setTitleFilter(searchTextField.getText()));
+				}
+			});
+		}
+		
+		return searchTextField;
+	}
+	
+	JPanel getGridPanel() {
+		if (gridPanel == null) {
+			gridPanel = new JPanel();
+			gridPanel.setBackground(BG_COLOR);
+			gridPanel.setLayout(new GridLayout(0, cols));
+			gridPanel.setFocusable(true);
+		}
+		
+		return gridPanel;
+	}
+	
+	JScrollPane getGridsScrollPane() {
+		if (gridsScrollPane == null) {
+			gridsScrollPane = new JScrollPane(getGridPanel());
+			gridsScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+			gridsScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		}
+		
+		return gridsScrollPane;
+	}
+	
+	private void setTitleFilter(String s) {
+		if (s == null)
+			s = "";
+		
+		s = s.trim().toLowerCase();
+		
+		if (!s.equals(titleFilter)) {
+			titleFilter = s;
+			filterStyles();
 		}
 	}
 	
@@ -240,7 +345,7 @@ public class VisualStyleSelector extends JPanel {
 				var iconLbl = new JLabel(icon);
 				iconLbl.setOpaque(true);
 				var bgPaint = vs.getDefaultValue(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT);
-				var bgColor = bgPaint instanceof Color ? (Color)bgPaint : BG_COLOR;
+				var bgColor = bgPaint instanceof Color ? (Color) bgPaint : BG_COLOR;
 				iconLbl.setBackground(bgColor);
 				
 				panel.add(iconLbl, BorderLayout.CENTER);
@@ -250,6 +355,29 @@ public class VisualStyleSelector extends JPanel {
 		vsPanelMap.put(vs, panel);
 		
 		return panel;
+	}
+	
+	private void filterStyles() {
+		getGridPanel().removeAll();
+		
+		// TODO fix this hack
+		gridPanel = null;
+		getGridsScrollPane().setViewportView(getGridPanel());
+		
+		// TODO Check if it will mess up the style order!!!
+		for (var entry : vsPanelMap.entrySet()) {
+			var style = entry.getKey();
+			
+			if (titleFilter == null || titleFilter.isBlank() || style.getTitle().toLowerCase().contains(titleFilter)) {
+				var itemPnl = entry.getValue();
+				getGridPanel().add(itemPnl);
+			}
+		}
+		
+		getGridPanel().invalidate();
+		getGridPanel().repaint();
+		
+		firePropertyChange("filterChanged", false, true);
 	}
 	
 	private void setFocus(VisualStyle vs) {
@@ -376,7 +504,7 @@ public class VisualStyleSelector extends JPanel {
 				} else if (cmd.equals(VK_UP)) {
 					newIdx = idx - cols < 0 ? idx : idx - cols;
 				} else if (cmd.equals(VK_DOWN)) {
-					final boolean sameRow = Math.ceil(size/(double)cols) == Math.ceil((idx+1)/(double)cols);
+					final boolean sameRow = Math.ceil(size / (double) cols) == Math.ceil((idx + 1) / (double) cols);
 					newIdx = sameRow ? idx : Math.min(size - 1, idx + cols);
 				}
 				

@@ -15,7 +15,6 @@ import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JDialog;
-import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.PopupMenuEvent;
 
@@ -121,9 +120,6 @@ public class ApplyVisualStyleAction extends AbstractCyAction {
 		styleSelector.update(styles);
 		styleSelector.setSelectedItem(oldValue);
 		
-		var scr = new JScrollPane(styleSelector);
-		scr.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		
 		var cancelBtn = new JButton(new AbstractAction("Cancel") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -157,17 +153,16 @@ public class ApplyVisualStyleAction extends AbstractCyAction {
 		layout.setAutoCreateContainerGaps(true);
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER)
-				.addComponent(scr, 500, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(styleSelector, 500, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(okCancelPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addComponent(scr, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(styleSelector, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(okCancelPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
 		
 		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(dialog.getRootPane(), okBtn.getAction(), cancelBtn.getAction());
 		dialog.getRootPane().setDefaultButton(okBtn);
-		okBtn.requestFocusInWindow();
 		
 		dialog.pack();
 		dialog.setLocationRelativeTo(null);
