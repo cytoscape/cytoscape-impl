@@ -29,6 +29,10 @@ public class FrameRatePanel extends BasicCollapsiblePanel {
 	private LinkedList<DebugRootFrameInfo> frames = new LinkedList<>();
 	private Timer timer;
 	
+	private DebugFrameInfo root;
+	private int lastProcessFrameNumber = 0;
+	private double lastFrameRate = 0;
+	
 	private final long window = 5000; // five seconds
 	
 	public FrameRatePanel() {
@@ -71,9 +75,12 @@ public class FrameRatePanel extends BasicCollapsiblePanel {
 		content.add(BorderLayout.WEST, panel);
 	}
 	
-	private void updateFrameRateLabel(int frameCount, long frameTime) {
-		double framesPerSecondRaw = (double)frameCount / ((double)frameTime / 1000.0);
-		frameRateLabel.setText(String.format("Frame Rate: %.2f per sec", framesPerSecondRaw));
+	private double calcFrameRate(int frameCount, long frameTime) {
+		return (double)frameCount / ((double)frameTime / 1000.0);
+	}
+	
+	private void updateFrameRateLabel(double frameRate) {
+		frameRateLabel.setText(String.format("Frame Rate: %.2f per sec", frameRate));
 	}
 	
 	
@@ -90,37 +97,44 @@ public class FrameRatePanel extends BasicCollapsiblePanel {
 	}
 	
 	private void updateFrameRate() {
-		long frameTime = 0;
-		int frameCount = 0;
-		
 		List<DebugFrameInfo> windowFrames = new ArrayList<>();
 		synchronized(frames) {
 			if(frames.isEmpty())
 				return;
 			
-			long endOfWindow = frames.getLast().getEndTime();
-			long startOfWindow = endOfWindow - window;
-			// MKTODO what if the last frame is larger than the window
-			
-			ListIterator<DebugRootFrameInfo> listIterator = frames.listIterator(frames.size());
-			
-			while(listIterator.hasPrevious()) {
-				var frame = listIterator.previous();
-				if(frame.getStartTime() < startOfWindow) {
-					break;
+			int currentFrameNumber = frames.getLast().getFrameNumber();
+			if(lastProcessFrameNumber == 0 || currentFrameNumber != lastProcessFrameNumber) {
+				lastProcessFrameNumber = currentFrameNumber;
+				
+				long endOfWindow = frames.getLast().getEndTime();
+				long startOfWindow = endOfWindow - window;
+				// MKTODO what if the last frame is larger than the window
+				
+				long frameTime = 0;
+				int frameCount = 0;
+				
+				ListIterator<DebugRootFrameInfo> listIterator = frames.listIterator(frames.size());
+				
+				while(listIterator.hasPrevious()) {
+					var frame = listIterator.previous();
+					if(frame.getStartTime() < startOfWindow) {
+						break;
+					}
+					windowFrames.add(frame);
+					frameTime += frame.getTime();
+					frameCount++;
 				}
-				windowFrames.add(frame);
-				frameTime += frame.getTime();
-				frameCount++;
-			}
-			while(listIterator.hasPrevious()) {
-				listIterator.previous();
-				listIterator.remove();
+				while(listIterator.hasPrevious()) {
+					listIterator.previous();
+					listIterator.remove();
+				}
+				
+				root = DebugFrameInfo.merge(windowFrames);
+				lastFrameRate = calcFrameRate(frameCount, frameTime);
 			}
 		}
-		updateFrameRateLabel(frameCount, frameTime);
-		DebugFrameInfo root = DebugFrameInfo.merge(windowFrames);
 		
+		updateFrameRateLabel(lastFrameRate);
 		TableModel model = createTabelModel(root);
 		table.setModel(model);
 		table.getColumnModel().getColumn(0).setPreferredWidth(150);
