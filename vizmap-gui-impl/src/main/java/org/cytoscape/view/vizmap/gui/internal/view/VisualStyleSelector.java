@@ -7,7 +7,9 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -28,6 +30,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
@@ -73,7 +76,8 @@ import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 public class VisualStyleSelector extends JPanel {
 
 	private final int ITEM_WIDTH = 120;
-	private final int MAX_COLUMNS = 3;
+	private final int ITEM_BORDER_WIDTH = 3;
+	private final int PREF_COLUMNS = 3;
 	
 	final Color BG_COLOR;
 	final Color FG_COLOR;
@@ -82,12 +86,16 @@ public class VisualStyleSelector extends JPanel {
 	final Color BORDER_COLOR;
 	
 	private JTextField searchTextField;
-	private JPanel gridPanel;
+	private GridPanel gridPanel;
 	private JScrollPane gridsScrollPane;
 	
-	private int cols = MAX_COLUMNS; // Make it fixed for now
+	private int cols;
 	
-	private LinkedList<VisualStyle> styles;
+	/** Should store all styles in the current session */
+	private LinkedList<VisualStyle> allStyles;
+	/** Store filtered in styles; can be null */
+	private LinkedList<VisualStyle> filteredStyles;
+	
 	private VisualStyle selectedItem;
 	private VisualStyle focusedItem;
 	
@@ -105,13 +113,13 @@ public class VisualStyleSelector extends JPanel {
 
 		this.servicesUtil = servicesUtil;
 		
-		styles = new LinkedList<>();
+		allStyles = new LinkedList<>();
 		vsPanelMap = new HashMap<>();
 		engineMap = new HashMap<>();
 		defViewPanelsMap = new HashMap<>();
 		
-		BG_COLOR = UIManager.getColor("TextField.background");
-		FG_COLOR = UIManager.getColor("TextField.foreground");
+		BG_COLOR = UIManager.getColor("Table.background");
+		FG_COLOR = UIManager.getColor("Table.foreground");
 		SEL_BG_COLOR = UIManager.getColor("Table.focusCellBackground");
 		SEL_FG_COLOR = UIManager.getColor("Table.focusCellForeground");
 		BORDER_COLOR = UIManager.getColor("Separator.foreground");
@@ -131,32 +139,21 @@ public class VisualStyleSelector extends JPanel {
     }
 	
 	public void update(SortedSet<VisualStyle> styles) {
-		this.styles.clear();
-		this.vsPanelMap.clear();
+		allStyles.clear();
+		vsPanelMap.clear();
 		
 		if (styles != null)
-			this.styles.addAll(styles);
+			allStyles.addAll(styles);
 		
 		createPreviewRenderingEngines();
-		
-		getGridPanel().removeAll();
-		
-		var layout = new GridLayout(0, cols);
-		getGridPanel().setLayout(layout);
-		
-		if (styles != null) {
-			for (var vs : styles) {
-				var itemPnl = createItem(vs);
-				getGridPanel().add(itemPnl);
-			}
-		}
+		updateGridPanel();
 		
 		setFocus(selectedItem);
-		setEnabled(!this.styles.isEmpty());
+		setEnabled(!isEmpty());
 	}
 	
 	public void setSelectedItem(VisualStyle vs) {
-		if (vs == null || (styles != null && styles.contains(vs) && !vs.equals(selectedItem))) {
+		if (vs == null || (allStyles != null && allStyles.contains(vs) && !vs.equals(selectedItem))) {
 			var oldStyle = selectedItem;
 			selectedItem = vs;
 			setFocus(selectedItem);
@@ -178,7 +175,7 @@ public class VisualStyleSelector extends JPanel {
 	}
 	
 	public boolean isEmpty() {
-		return styles.isEmpty();
+		return allStyles == null || allStyles.isEmpty();
 	}
 	
 	public void resetFilter() {
@@ -190,7 +187,8 @@ public class VisualStyleSelector extends JPanel {
 		focusedItem = null;
 		
 		try {
-			styles.clear();
+			allStyles.clear();
+			filteredStyles = null;
 			vsPanelMap.clear();
 			engineMap.clear();
 			defViewPanelsMap.clear();
@@ -249,10 +247,8 @@ public class VisualStyleSelector extends JPanel {
 	
 	JPanel getGridPanel() {
 		if (gridPanel == null) {
-			gridPanel = new JPanel();
+			gridPanel = new GridPanel();
 			gridPanel.setBackground(BG_COLOR);
-			gridPanel.setLayout(new GridLayout(0, cols));
-			gridPanel.setFocusable(true);
 		}
 		
 		return gridPanel;
@@ -263,6 +259,8 @@ public class VisualStyleSelector extends JPanel {
 			gridsScrollPane = new JScrollPane(getGridPanel());
 			gridsScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 			gridsScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			gridsScrollPane.setBackground(BG_COLOR);
+			gridsScrollPane.getViewport().setBackground(BG_COLOR);
 		}
 		
 		return gridsScrollPane;
@@ -281,14 +279,14 @@ public class VisualStyleSelector extends JPanel {
 	}
 	
 	private void createPreviewRenderingEngines() {
-		if (styles != null && previewNetView != null) {
+		if (allStyles != null && previewNetView != null) {
 			defViewPanelsMap.clear();
 			engineMap.clear();
 			
 			var vmProxy = (VizMapperProxy) servicesUtil.getProxy(VizMapperProxy.NAME);
 			var engineFactory = vmProxy.getRenderingEngineFactory(previewNetView);
 			
-			for (var vs : styles) {
+			for (var vs : allStyles) {
 				var p = new JPanel();
 				defViewPanelsMap.put(vs.getTitle(), p);
 				
@@ -298,9 +296,10 @@ public class VisualStyleSelector extends JPanel {
 		}
 	}
 	
-	private JPanel createItem(final VisualStyle vs) {
+	private JPanel createItem(VisualStyle vs) {
 		var panel = new JPanel(new BorderLayout());
 		panel.setBackground(BG_COLOR);
+		panel.setFocusable(true);
 		
 		// Text label
 		var lbl = new JLabel(vs.getTitle());
@@ -321,11 +320,11 @@ public class VisualStyleSelector extends JPanel {
 		// Events
 		panel.addMouseListener(new MouseAdapter() {
 			@Override
-			public void mouseEntered(final MouseEvent e) {
+			public void mouseEntered(MouseEvent e) {
 				setFocus(vs);
 			}
 			@Override
-			public void mouseClicked(final MouseEvent e) {
+			public void mouseClicked(MouseEvent e) {
 				setSelectedItem(focusedItem);
 			}
 		});
@@ -358,21 +357,16 @@ public class VisualStyleSelector extends JPanel {
 	}
 	
 	private void filterStyles() {
-		getGridPanel().removeAll();
+		filteredStyles = titleFilter == null || titleFilter.isBlank() ? null : new LinkedList<>();
 		
-		// TODO fix this hack
-		gridPanel = null;
-		getGridsScrollPane().setViewportView(getGridPanel());
-		
-		// TODO Check if it will mess up the style order!!!
-		for (var entry : vsPanelMap.entrySet()) {
-			var style = entry.getKey();
-			
-			if (titleFilter == null || titleFilter.isBlank() || style.getTitle().toLowerCase().contains(titleFilter)) {
-				var itemPnl = entry.getValue();
-				getGridPanel().add(itemPnl);
+		if (filteredStyles != null) {
+			for (var vs : allStyles) {
+				if (vs.getTitle().toLowerCase().contains(titleFilter))
+					filteredStyles.add(vs);
 			}
 		}
+		
+		updateGridPanel();
 		
 		getGridPanel().invalidate();
 		getGridPanel().repaint();
@@ -386,10 +380,57 @@ public class VisualStyleSelector extends JPanel {
 	}
 	
 	private void setFocus(int index) {
+		var styles = filteredStyles != null ? filteredStyles : allStyles;
+		
 		if (index > -1 && index < styles.size()) {
 			var vs = styles.get(index);
 			setFocus(vs);
 		}
+	}
+	
+	private void updateGridPanel() {
+		getGridPanel().removeAll();
+		var styles = filteredStyles != null ? filteredStyles : allStyles;
+		
+		if (styles.isEmpty())
+			return;
+		
+		var itemWidth = ITEM_WIDTH + 2 * ITEM_BORDER_WIDTH;
+		var size = getGridPanel().getSize();
+		var width = size != null ? size.width : 0;
+		cols = width <= 0 ? PREF_COLUMNS : calculateColumns(itemWidth, width);
+		
+		var rows = calculateRows(styles.size(), cols);
+		
+		getGridPanel().setLayout(new GridLayout(rows, cols));
+		
+		for (var vs : styles) {
+			var itemPnl = vsPanelMap.get(vs);
+			
+			if (itemPnl == null) {
+				itemPnl = createItem(vs);
+//				setSelectionKeyBindings(itemPnl);
+			}
+			
+			if (!isFilteredOut(vs))
+				getGridPanel().add(itemPnl);
+		}
+		
+		if (styles.size() < cols) {
+			var diff = cols - styles.size();
+			
+			for (int i = 0; i < diff; i++) {
+				var filler = new JPanel();
+				filler.setBackground(BG_COLOR);
+				getGridPanel().add(filler);
+			}
+		}
+		
+		getGridPanel().updateUI();
+	}
+	
+	private boolean isFilteredOut(VisualStyle vs) {
+		return false;
 	}
 	
 	private void updateItems() {
@@ -398,20 +439,25 @@ public class VisualStyleSelector extends JPanel {
 	}
 
 	private void updateItem(JPanel panel, VisualStyle vs) {
+		var w = 1;
+		
 		if (vs.equals(focusedItem)) {
 			var border = BorderFactory.createCompoundBorder(
-					BorderFactory.createEmptyBorder(1,  1,  1,  1),
-					BorderFactory.createLineBorder(SEL_BG_COLOR, 2));
+					BorderFactory.createEmptyBorder(w,  w,  w,  w),
+					BorderFactory.createLineBorder(SEL_BG_COLOR, ITEM_BORDER_WIDTH - w));
 			panel.setBorder(border);
 		} else if (vs.equals(selectedItem)) {
 			var border = BorderFactory.createCompoundBorder(
-					BorderFactory.createEmptyBorder(1,  1,  1,  1),
-					BorderFactory.createLineBorder(SEL_BG_COLOR, 2));
+					BorderFactory.createEmptyBorder(w,  w,  w,  w),
+					BorderFactory.createLineBorder(SEL_BG_COLOR, ITEM_BORDER_WIDTH - w));
 			panel.setBorder(border);
 		} else {
+			// not selected and not focused...
+			w = ITEM_BORDER_WIDTH - w; // invert...
+			
 			var border = BorderFactory.createCompoundBorder(
-					BorderFactory.createEmptyBorder(2,  2,  2,  2),
-					BorderFactory.createLineBorder(BORDER_COLOR, 1));
+					BorderFactory.createEmptyBorder(w,  w,  w,  w),
+					BorderFactory.createLineBorder(BORDER_COLOR, ITEM_BORDER_WIDTH - w));
 			panel.setBorder(border);
 		}
 		
@@ -427,6 +473,14 @@ public class VisualStyleSelector extends JPanel {
 				label.setForeground(FG_COLOR);
 			}
 		}
+	}
+	
+	private static int calculateColumns(int itemWidth, int gridWidth) {
+		return itemWidth > 0 ? Math.floorDiv(gridWidth, itemWidth) : 0;
+	}
+	
+	private static int calculateRows(int total, int cols) {
+		return (int) Math.round(Math.ceil((float)total / (float)cols));
 	}
 	
 	private CyNetworkView createPreviewNetworkView() {
@@ -472,6 +526,61 @@ public class VisualStyleSelector extends JPanel {
 		actionMap.put(KeyAction.VK_SPACE, new KeyAction(KeyAction.VK_SPACE));
 	}
 
+	private class GridPanel extends JPanel implements Scrollable {
+
+		@Override
+		public Dimension getPreferredScrollableViewportSize() {
+			return getPreferredSize();
+		}
+
+		@Override
+		public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+			return 10;
+		}
+
+		@Override
+		public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+			return ((orientation == SwingConstants.VERTICAL) ? visibleRect.height : visibleRect.width) - 10;
+		}
+
+		@Override
+		public boolean getScrollableTracksViewportWidth() {
+			return true;
+		}
+
+		@Override
+		public boolean getScrollableTracksViewportHeight() {
+			return defViewPanelsMap == null || defViewPanelsMap.isEmpty();
+		}
+	}
+
+// TODO
+//	private class KeyAction extends AbstractAction {
+//
+//		final static String VK_CTRL_A = "VK_CTRL_A";
+//		final static String VK_CTRL_SHIFT_A = "VK_CTRL_SHIFT_A";
+//		
+//		KeyAction(final String actionCommand) {
+//			putValue(ACTION_COMMAND_KEY, actionCommand);
+//		}
+//
+//		@Override
+//		public void actionPerformed(final ActionEvent e) {
+//			final Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+//			
+//			if (focusOwner instanceof JTextComponent || focusOwner instanceof JTable ||
+//					!NetworkViewGrid.this.isVisible() || isEmpty())
+//				return; // We don't want to steal the key event from these components
+//			
+//			final String cmd = e.getActionCommand();
+//			
+//			if (cmd.equals(VK_CTRL_A))
+//				selectAll();
+//			else if (cmd.equals(VK_CTRL_SHIFT_A))
+//				deselectAll();
+//		}
+//	}
+	
 	private class KeyAction extends AbstractAction {
 
 		final static String VK_LEFT = "VK_LEFT";
@@ -491,10 +600,10 @@ public class VisualStyleSelector extends JPanel {
 			
 			if (cmd.equals(VK_ENTER) || cmd.equals(VK_SPACE)) {
 				setSelectedItem(focusedItem);
-			} else if (!styles.isEmpty()) {
-				final VisualStyle vs = focusedItem != null ? focusedItem : styles.getFirst();
-				final int size = styles.size();
-				final int idx = styles.indexOf(vs);
+			} else if (!allStyles.isEmpty()) {
+				final VisualStyle vs = focusedItem != null ? focusedItem : allStyles.getFirst();
+				final int size = allStyles.size();
+				final int idx = allStyles.indexOf(vs);
 				int newIdx = idx;
 				
 				if (cmd.equals(VK_RIGHT)) {
