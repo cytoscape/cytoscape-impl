@@ -87,7 +87,7 @@ public class VisualStyleSelector extends JPanel {
 	
 	private JTextField searchTextField;
 	private GridPanel gridPanel;
-	private JScrollPane gridsScrollPane;
+	private JScrollPane gridScrollPane;
 	
 	private int cols;
 	
@@ -207,11 +207,11 @@ public class VisualStyleSelector extends JPanel {
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER)
 				.addComponent(getSearchTextField(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(getGridsScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getGridScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addComponent(getSearchTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				.addComponent(getGridsScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getGridScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 		);
 	}
 	
@@ -254,16 +254,16 @@ public class VisualStyleSelector extends JPanel {
 		return gridPanel;
 	}
 	
-	JScrollPane getGridsScrollPane() {
-		if (gridsScrollPane == null) {
-			gridsScrollPane = new JScrollPane(getGridPanel());
-			gridsScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-			gridsScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-			gridsScrollPane.setBackground(BG_COLOR);
-			gridsScrollPane.getViewport().setBackground(BG_COLOR);
+	JScrollPane getGridScrollPane() {
+		if (gridScrollPane == null) {
+			gridScrollPane = new JScrollPane(getGridPanel());
+			gridScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+			gridScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			gridScrollPane.setBackground(BG_COLOR);
+			gridScrollPane.getViewport().setBackground(BG_COLOR);
 		}
 		
-		return gridsScrollPane;
+		return gridScrollPane;
 	}
 	
 	private void setTitleFilter(String s) {
@@ -416,14 +416,12 @@ public class VisualStyleSelector extends JPanel {
 				getGridPanel().add(itemPnl);
 		}
 		
-		if (styles.size() < cols) {
-			var diff = cols - styles.size();
+		var diff = (cols * rows) - styles.size();
 			
-			for (int i = 0; i < diff; i++) {
-				var filler = new JPanel();
-				filler.setBackground(BG_COLOR);
-				getGridPanel().add(filler);
-			}
+		for (int i = 0; i < diff; i++) {
+			var filler = new JPanel();
+			filler.setBackground(BG_COLOR);
+			getGridPanel().add(filler);
 		}
 		
 		getGridPanel().updateUI();
