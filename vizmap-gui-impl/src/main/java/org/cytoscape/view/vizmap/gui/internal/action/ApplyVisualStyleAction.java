@@ -65,9 +65,10 @@ public class ApplyVisualStyleAction extends AbstractCyAction {
 	private boolean cancelled;
 	private final ServicesUtil servicesUtil;
 	
-	public ApplyVisualStyleAction(ServicesUtil servicesUtil) {
+	public ApplyVisualStyleAction(float gravity, ServicesUtil servicesUtil) {
 		super(NAME);
 		this.servicesUtil = servicesUtil;
+		setMenuGravity(gravity);
 	}
 
 	@Override

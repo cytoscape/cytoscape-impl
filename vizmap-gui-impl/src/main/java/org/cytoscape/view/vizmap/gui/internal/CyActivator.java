@@ -308,11 +308,10 @@ public class CyActivator extends AbstractCyActivator {
 		// Network Panel Context Menu
 		// -------------------------------------------------------------------------------------------------------------
 		{
-			var action = new ApplyVisualStyleAction(servicesUtil);
+			var action = new ApplyVisualStyleAction(6.999f, servicesUtil);
 			var props = new Properties();
 			props.setProperty(TITLE, ApplyVisualStyleAction.NAME);
 			props.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU, "true");
-			props.setProperty(MENU_GRAVITY, "6.999");
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			registerService(bc, action, CyAction.class, props);
 		}
