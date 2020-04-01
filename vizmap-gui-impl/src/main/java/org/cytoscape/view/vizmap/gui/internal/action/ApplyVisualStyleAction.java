@@ -116,9 +116,8 @@ public class ApplyVisualStyleAction extends AbstractCyAction {
 		var styles = vmProxy.getVisualStyles();
 		var oldValue = getCommonVisualStyle(views);
 		
-		var styleSelector = new VisualStyleSelector(servicesUtil);
-		styleSelector.update(styles);
-		styleSelector.setSelectedItem(oldValue);
+		var styleSelector = new VisualStyleSelector(3, 0, servicesUtil);
+		styleSelector.update(styles, oldValue);
 		
 		var cancelBtn = new JButton(new AbstractAction("Cancel") {
 			@Override
@@ -140,7 +139,7 @@ public class ApplyVisualStyleAction extends AbstractCyAction {
 		// I'm only checking whether or not a style has been selected in order to enable the button
 		okBtn.setEnabled(oldValue != null);
 		
-		styleSelector.addPropertyChangeListener("selectedItem", e -> {
+		styleSelector.addPropertyChangeListener("selectedStyle", e -> {
 			var newValue = (VisualStyle) e.getNewValue();
 			okBtn.setEnabled(newValue != null/* && !newValue.equals(oldValue)*/);
 		});
@@ -168,7 +167,7 @@ public class ApplyVisualStyleAction extends AbstractCyAction {
 		dialog.setLocationRelativeTo(null);
 		dialog.setVisible(true);
 		
-		var selectedStyle = cancelled ? null : styleSelector.getSelectedItem();
+		var selectedStyle = cancelled ? null : styleSelector.getSelectedStyle();
 		styleSelector.dispose();
 		
 		return selectedStyle;

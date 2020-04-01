@@ -108,7 +108,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		// We need to build and keep this UI component here because of the API method getDefaultView(),
 		// so instead of creating this object only when needed (e.g. before showing the popup),
 		// we keep it to store the panels for the rendered style previews
-		styleSelector = new VisualStyleSelector(servicesUtil);
+		styleSelector = new VisualStyleSelector(3, 3, servicesUtil);
 		
 		init();
 	}
@@ -185,7 +185,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	}
 	
 	public VisualStyle getSelectedVisualStyle() {
-		return styleSelector.getSelectedItem();
+		return styleSelector.getSelectedStyle();
 	}
 	
 	public void setSelectedVisualStyle(final VisualStyle style) {
@@ -231,8 +231,8 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		}
 	}
 	
-	public void updateVisualStyles(SortedSet<VisualStyle> styles) {
-		getStylesBtn().update(styles);
+	public void updateVisualStyles(SortedSet<VisualStyle> styles, VisualStyle selectedStyle) {
+		getStylesBtn().update(styles, selectedStyle);
 	}
 	
 	public void hideSelectedItems() {
@@ -453,25 +453,25 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 					showDialog();
 			});
 			
-			styleSelector.addPropertyChangeListener("selectedItem", evt -> {
+			styleSelector.addPropertyChangeListener("selectedStyle", evt -> {
 				repaint();
 				disposePopup();
 				firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
 			});
 		}
 		
-		public void update(SortedSet<VisualStyle> styles) {
-			styleSelector.update(styles);
+		public void update(SortedSet<VisualStyle> styles, VisualStyle selectedStyle) {
+			styleSelector.update(styles, selectedStyle);
 			setEnabled(!styleSelector.isEmpty());
 		}
 		
 		public void setSelectedItem(VisualStyle vs) {
-			styleSelector.setSelectedItem(vs);
+			styleSelector.setSelectedStyle(vs);
 		}
 		
 		@Override
 		public void repaint() {
-			var selectedItem = styleSelector.getSelectedItem();
+			var selectedItem = styleSelector.getSelectedStyle();
 			setText(selectedItem != null ? selectedItem.getTitle() : "");
 			super.repaint();
 		}
@@ -495,7 +495,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			layout.setAutoCreateContainerGaps(false);
 			
 			layout.setHorizontalGroup(layout.createSequentialGroup()
-					.addComponent(styleSelector, 500, DEFAULT_SIZE, 1060)
+					.addComponent(styleSelector, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addComponent(styleSelector, DEFAULT_SIZE, DEFAULT_SIZE, 660)

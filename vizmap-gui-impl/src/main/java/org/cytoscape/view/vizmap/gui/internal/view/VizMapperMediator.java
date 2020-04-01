@@ -532,7 +532,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	private void addViewListeners() {
 		// Switching the current Visual Style
 		var stylesBtn = vizMapperMainPanel.getStylesBtn();
-		stylesBtn.addPropertyChangeListener("selectedItem", evt -> onSelectedVisualStyleChanged(evt));
+		stylesBtn.addPropertyChangeListener("selectedStyle", evt -> onSelectedVisualStyleChanged(evt));
 	}
 	
 	private void addViewListeners(final VisualPropertySheet vpSheet) {
@@ -679,8 +679,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		
 		invokeOnEDT(() -> {
 			ignoreVisualStyleSelectedEvents = true;
-			vizMapperMainPanel.updateVisualStyles(styles);
 			final VisualStyle vs = vmProxy.getCurrentVisualStyle();
+			vizMapperMainPanel.updateVisualStyles(styles, vs);
 			selectCurrentVisualStyle(vs);
 			updateVisualPropertySheets(vs, resetDefaultVisibleItems);
 			ignoreVisualStyleSelectedEvents = false;
