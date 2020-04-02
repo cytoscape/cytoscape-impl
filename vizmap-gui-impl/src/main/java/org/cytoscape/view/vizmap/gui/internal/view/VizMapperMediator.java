@@ -444,12 +444,9 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		final AbstractCyAction action = new AbstractCyAction(config, taskFactory) {
 			@Override
 			public void actionPerformed(final ActionEvent e) {
-				new Thread() {
-					@Override
-					public void run() {
-						servicesUtil.get(DialogTaskManager.class).execute(taskFactory.createTaskIterator());
-					};
-				}.start();
+				new Thread(() -> {
+					servicesUtil.get(DialogTaskManager.class).execute(taskFactory.createTaskIterator());
+				}).start();
 			}
 		};
 		

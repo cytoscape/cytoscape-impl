@@ -972,8 +972,8 @@ public class NetworkViewMainPanel extends JPanel {
         @Override
         public void eventDispatched(AWTEvent event) {
             if (event.getID() == MouseEvent.MOUSE_PRESSED && event instanceof MouseEvent) {
-				final KeyboardFocusManager keyboardFocusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
-				final Window window = keyboardFocusManager.getActiveWindow();
+				var keyboardFocusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+				var window = keyboardFocusManager.getActiveWindow();
 				
 				if (!(window instanceof NetworkViewFrame || window instanceof CySwingApplication))
 					return;
@@ -1006,7 +1006,7 @@ public class NetworkViewMainPanel extends JPanel {
 				
 				// Detect if a new view container received the mouse pressed event.
 				// If so, it must request focus.
-                final Set<Component> targets = new HashSet<>();
+                var targets = new HashSet<Component>();
                 
                 // Find the view container to be verified
                 if (window instanceof NetworkViewFrame) {
@@ -1015,14 +1015,14 @@ public class NetworkViewMainPanel extends JPanel {
                 	final Component currentCard = getCurrentCard();
                 	
                 	if (currentCard instanceof NetworkViewContainer) {
-                		final NetworkViewContainer vc = (NetworkViewContainer) currentCard;
+                		var vc = (NetworkViewContainer) currentCard;
                 		targets.add(vc.getContentPane());
                 	} else if (currentCard instanceof NetworkViewComparisonPanel) {
                 		// Get the view component which is not in focus
-                		final NetworkViewComparisonPanel cp = (NetworkViewComparisonPanel) currentCard;
-                		final NetworkViewContainer currentContainer = cp.getCurrentContainer();
+                		var cp = (NetworkViewComparisonPanel) currentCard;
+                		var currentContainer = cp.getCurrentContainer();
                 		
-                		for (NetworkViewContainer vc : cp.getAllContainers()) {
+                		for (var vc : cp.getAllContainers()) {
                 			if (vc != currentContainer)
                 				targets.add(vc.getContentPane());
                 		}
