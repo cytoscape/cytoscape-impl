@@ -16,10 +16,13 @@ import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -66,7 +69,11 @@ import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
+import org.cytoscape.view.vizmap.gui.internal.task.RenameVisualStyleTask;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TunableSetter;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 /*
  * #%L
@@ -125,6 +132,9 @@ public class VisualStyleSelector extends JPanel {
 	private final int minColumns;
 	private final int maxColumns;
 	
+	private boolean editMode;
+	private boolean editingTitle;
+	
 	private final Map<String, RenderingEngine<CyNetwork>> engineMap;
 	
 	private final CyNetworkView previewNetView;
@@ -137,10 +147,15 @@ public class VisualStyleSelector extends JPanel {
 	 * @param servicesUtil
 	 */
 	public VisualStyleSelector(int minColumns, int maxColumns, ServicesUtil servicesUtil) {
+		this(minColumns, maxColumns, false, servicesUtil);
+	}
+	
+	public VisualStyleSelector(int minColumns, int maxColumns, boolean editMode, ServicesUtil servicesUtil) {
 		super(true);
 
 		this.minColumns = Math.max(1, minColumns); // at least 1 column
 		this.maxColumns = Math.max(0, maxColumns); // avoid negatives!
+		this.editMode = editMode;
 		this.servicesUtil = servicesUtil;
 		
 		allStyles = new LinkedList<>();
@@ -688,15 +703,93 @@ public class VisualStyleSelector extends JPanel {
 			item.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseEntered(MouseEvent e) {
-					item.requestFocusInWindow();
+					if (!editingTitle)
+						item.requestFocusInWindow();
 				}
 				@Override
 				public void mouseClicked(MouseEvent e) {
+					item.requestFocusInWindow();
 					setSelectedValue(style, true);
+				}
+			});
+			item.getTitleTextField().addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					if (editMode && e.getClickCount() == 2)
+						editTitleStart(item);
+					else if (e.getClickCount() == 1)
+						setSelectedValue(style, true);
 				}
 			});
 			
 			return item;
+		}
+		
+		void editTitleStart(StylePanel item) {
+			editingTitle = true;
+			var oldValue = item.getTitleTextField().getText().trim();
+			
+			item.getTitleTextField().setFocusable(true);
+			item.getTitleTextField().setEditable(true);
+			item.getTitleTextField().requestFocusInWindow();
+			item.getTitleTextField().selectAll();
+			
+			item.getTitleTextField().addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent evt) {
+					editTitleCommit(item, oldValue);
+					item.getTitleTextField().removeActionListener(this);
+				}
+			});
+			item.getTitleTextField().addFocusListener(new FocusAdapter() {
+				@Override
+				public void focusLost(FocusEvent evt) {
+					editTitleCommit(item, oldValue);
+					item.getTitleTextField().removeFocusListener(this);
+				}
+			});
+			item.getTitleTextField().addKeyListener(new KeyAdapter() {
+				@Override
+				public void keyPressed(KeyEvent e) {
+					if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+						editTitleCancel(item, oldValue);
+						item.getTitleTextField().removeKeyListener(this);
+						e.consume(); // Prevent any dialog that contains this component from closing
+					}
+				}
+			});
+		}
+		
+		void editTitleCommit(StylePanel item, String oldValue) {
+			var newValue = item.getTitleTextField().getText().trim();
+			
+			if (newValue.isEmpty() || newValue.equals(oldValue)) {
+				editTitleCancel(item, oldValue);
+				return;
+			}
+			
+			editTitleEnd(item);
+			
+			var task = new RenameVisualStyleTask(item.getStyle(), servicesUtil);
+			var map = new HashMap<String, Object>();
+			map.put("vsName", newValue);
+			var taskIterator = servicesUtil.get(TunableSetter.class).createTaskIterator(new TaskIterator(task), map);
+			
+			new Thread(() -> {
+				servicesUtil.get(DialogTaskManager.class).execute(taskIterator);
+			}).start();
+		}
+		
+		void editTitleCancel(StylePanel item, String oldValue) {
+			item.getTitleTextField().setText(oldValue);
+			editTitleEnd(item);
+		}
+		
+		void editTitleEnd(StylePanel item) {
+			item.getTitleTextField().setEditable(false);
+			item.requestFocusInWindow();
+			item.getTitleTextField().setFocusable(false);
+			editingTitle = false;
 		}
 
 		private class ListSelectionHandler implements ListSelectionListener, Serializable {
@@ -840,7 +933,7 @@ public class VisualStyleSelector extends JPanel {
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER)
 					.addComponent(getImageLabel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(getTitleTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getTitleTextField(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addComponent(getImageLabel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)

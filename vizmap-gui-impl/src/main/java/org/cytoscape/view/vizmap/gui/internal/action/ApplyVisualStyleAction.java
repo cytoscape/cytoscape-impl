@@ -117,7 +117,7 @@ public class ApplyVisualStyleAction extends AbstractCyAction {
 		var styles = vmProxy.getVisualStyles();
 		var oldValue = getCommonVisualStyle(views);
 		
-		var styleSelector = new VisualStyleSelector(3, 0, servicesUtil);
+		var styleSelector = new VisualStyleSelector(3, 0, true, servicesUtil);
 		styleSelector.update(styles, oldValue);
 		
 		var cancelBtn = new JButton(new AbstractAction("Cancel") {
