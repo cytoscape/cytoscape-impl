@@ -96,6 +96,8 @@ public class CytoscapeToolBar extends JToolBar {
 	private List<Object> orderedList;
 	private Map<Object, Float> componentGravity;
 	private HashSet<String> stopList = new HashSet<>();
+	
+	private final PopupMouseListener popupMouseListener;
 
 	private CyServiceRegistrar serviceRegistrar;
 	
@@ -111,137 +113,14 @@ public class CytoscapeToolBar extends JToolBar {
 				BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground")),
 				BorderFactory.createEmptyBorder(0, 10, 0, 10)
 		));
-		buildPopup();
-//		createCustomToolbar();
+		
+		// Add listener that opens the tool bar customization popup
+		popupMouseListener = new PopupMouseListener();
+		addMouseListener(popupMouseListener);
+		
 		readStopList();
 	}
 	
-	private void buildPopup() {
-		addMouseListener(new MouseAdapter() {
-			@Override
-			public void mousePressed(MouseEvent e) {
-				showPopup(e);
-			}
-			@Override
-			public void mouseReleased(MouseEvent e) {
-				showPopup(e);
-			}
-			private void showPopup(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					var popup = new JPopupMenu();
-					
-					var menuItem = new JMenuItem("Show All");
-					popup.add(menuItem);
-					menuItem.addActionListener(ev -> {
-						showAll();
-						resave();
-					});
-					
-					menuItem = new JMenuItem("Hide All");
-					popup.add(menuItem);
-					popup.addSeparator();
-					menuItem.addActionListener(ev -> {
-						hideAll();
-						resave();
-					});
-					
-					for (var comp : getComponents()) {
-						if (comp instanceof AbstractButton) {
-							var button = (AbstractButton) comp;
-							String tip = button.getToolTipText();
-							
-							if (tip == null || tip.isEmpty())
-								continue;
-							
-							var mi = new JCheckBoxMenuItem();
-							mi.setText(tip);
-							mi.setState(button.isVisible());
-							
-							var icon = button.getIcon();
-							
-							if (icon instanceof ImageIcon) {
-								if (icon.getIconWidth() > ICON_WIDTH || icon.getIconHeight() > ICON_HEIGHT)
-									icon = IconManager.resizeIcon(icon, Math.min(ICON_WIDTH, ICON_HEIGHT));
-								
-								int originalWidth = icon.getIconWidth();
-								
-								icon = new ImageIcon(((ImageIcon) icon).getImage()) {
-									@Override
-									public int getIconWidth() { // To align the menu texts
-										return ICON_WIDTH;
-									}
-									@Override
-									public synchronized void paintIcon(Component c, Graphics g, int x, int y) {
-										// Center the icon horizontally
-										g.translate((getIconWidth() - originalWidth) / 2, 0);
-										super.paintIcon(c, g, x, y);
-									}
-								};
-							}
-							
-							mi.setIcon(icon);
-							mi.setPreferredSize(new Dimension(
-									mi.getPreferredSize().width,
-									Math.max(ICON_WIDTH, mi.getPreferredSize().height)
-							));
-							mi.addActionListener(ev -> {
-								button.setVisible(!button.isVisible());
-								updateSeparators();
-								resave();
-							});
-							popup.add(mi);
-						}
-					}
-					
-					// Calculate max number of visible menu items before scrolling
-					var window = SwingUtilities.getWindowAncestor(CytoscapeToolBar.this);
-					
-					if (window != null) {
-						var gc = window.getGraphicsConfiguration();
-						int sh = ViewUtil.getEffectiveScreenArea(gc).height;
-						int ph = popup.getPreferredSize().height;
-						
-						if (ph > sh) {
-							int h = 0;
-							
-							// Creates another MenuScroller to get the size of the added scroll buttons
-							MenuScroller tmpScroller = MenuScroller.setScrollerFor(new JPopupMenu(), 1);
-							h += tmpScroller.getUpItem().getPreferredSize().height;
-							h += tmpScroller.getDownItem().getPreferredSize().height;
-							tmpScroller.dispose();
-							int sepIdx = -1;
-							
-							for (int count = 0; count <  popup.getComponentCount(); count++) {
-								Component comp = popup.getComponent(count);
-								
-								if (comp instanceof JSeparator)
-									sepIdx = count;
-								else
-									h += comp.getPreferredSize().height;
-								
-								if (h > sh) {
-									if (sepIdx >= 0)
-										popup.remove(sepIdx);
-									
-									MenuScroller.setScrollerFor(
-											popup,
-											Math.max(1, count - 2/*make sure it fits*/ - 2/*ignore 'Show/Hide All'*/),
-											125,
-											2, // (always show 'Show/Hide All' items on top)
-											0
-									);
-									break;
-								}
-							}
-						}
-					}
-					
-					popup.show(e.getComponent(), e.getX(), e.getY());
-				}
-			}
-		});
-	}
-
 	private void resave() {
 		List<String> hidden = new ArrayList<>();
 		
@@ -287,7 +166,10 @@ public class CytoscapeToolBar extends JToolBar {
 			insertSepAfter = ((AbstractCyAction) action).insertToolbarSeparatorAfter();
 		}
 
-		var actionButton = new ActionButton(createToolBarButton(action), insertSepBefore, insertSepAfter);
+		var button = createToolBarButton(action);
+		button.addMouseListener(popupMouseListener);
+		
+		var actionButton = new ActionButton(button, insertSepBefore, insertSepAfter);
 		
 		componentGravity.put(actionButton, action.getToolbarGravity());
 		actionButtonMap.put(action, actionButton);
@@ -578,100 +460,133 @@ public class CytoscapeToolBar extends JToolBar {
 		}
 	}
 	
-//		public void createCustomToolbar() {
-//			//get the file
-//			// this doesn't work: ??  "~/CytoscapeConfiguration/toolbar.custom"
-////			String configFilename = "/Users/adamtreister/CytoscapeConfiguration/toolbar.custom";
-//			System.out.println("createCustomToolbar leaves early");
-//			if (System.currentTimeMillis() > 1) return;
-//			
-//			List<String> lines;
-//			try {
-//				CyApplicationConfiguration cyApplicationConfiguration = registrar.getService(CyApplicationConfiguration.class);
-//				if (cyApplicationConfiguration == null)
-//					System.out.println("cyApplicationConfiguration not found");
-//
-//				File configDirectory = cyApplicationConfiguration.getConfigurationDirectoryLocation();
-//				File configFile = null;
-//				if (configDirectory.exists())
-//					configFile = new File(configDirectory.toPath()  + "/toolbar.custom");
-//				lines = Files.readAllLines(configFile.toPath(), Charset.defaultCharset() );
-//			} catch (IOException e) {
-//				// file not found: there's no customization, just return
-//				System.out.println(e.getMessage());
-//				return;
-//			}
-//			
-//			System.out.println("createCustomToolbar");
-//			System.out.println("read " + lines.size() + " lines");
-//
-//			for (CyAction a : getAllToolBarActions())
-//				removeAction(a);
-//			boolean lastItemWasSeparator = false;
-//			for (String line : lines)
-//			{
-////				System.out.println(line);
-//				if (line.trim().isEmpty()) continue;
-//				if (line.trim().charAt(0) == '/' && !lastItemWasSeparator)
-//				{
-//					addSeparator();
-//					lastItemWasSeparator = true;
-//				}
-//				else
-//				{
-//					CyAction action = parseLine( line);	
-//					System.out.println("action = " + action);
-//					if (action != null)
-//					{	
-//						addAction(action);
-//						lastItemWasSeparator = false;
-//
-//					}
-//					
-//				}
-//			}
-//		}
-//		
-//		private CyAction parseLine(String line) {
-//			String cmdName = line.substring(0, line.indexOf(' '));
-//			String displayName =  getBetween(line, '"','"');
-//			String gravity =  getBetween(line, '[',']');
-//			double weight = 0;
-//			try
-//			{
-//				weight = Double.parseDouble(gravity);
-//			}
-//			catch (NumberFormatException ex)
-//			{
-//				weight = -1;
-//			}
-//			String iconName = getBetween(line, '{','}');
-//			System.out.println("adding button: " + cmdName + " " +  displayName + " " +  gravity + " " + iconName);
-//			return lookupAction(cmdName);
-//		}
-//		
-//		private CyAction lookupAction(String className) {
-//			Class<?> actionClass;
-//			CyAction action = null;
-//			
-//			try {
-//				actionClass = Class.forName(className);
-//				action = (CyAction) registrar.getService(actionClass);
-//			} catch (Exception e) {	}
-//			return action;
-//		}
-//
-//		String getBetween(String src, char start, char end) {
-//			int startIdx = src.indexOf(start);
-//			int endIdx = src.indexOf(end, startIdx+1);
-//			if (startIdx >= 0 && endIdx > startIdx)
-//			{
-//				String s =  src.substring(startIdx + 1, endIdx);
-//				return s.trim();
-//		
-//			}
-//			return "";
-//		}
+	private class PopupMouseListener extends MouseAdapter {
+		
+		@Override
+		public void mousePressed(MouseEvent e) {
+			showPopup(e);
+		}
+		
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			showPopup(e);
+		}
+		
+		private void showPopup(MouseEvent e) {
+			if (!e.isPopupTrigger())
+				return;
+			
+			var popup = new JPopupMenu();
+			
+			var menuItem = new JMenuItem("Show All");
+			popup.add(menuItem);
+			menuItem.addActionListener(ev -> {
+				showAll();
+				resave();
+			});
+			
+			menuItem = new JMenuItem("Hide All");
+			popup.add(menuItem);
+			popup.addSeparator();
+			menuItem.addActionListener(ev -> {
+				hideAll();
+				resave();
+			});
+			
+			for (var comp : getComponents()) {
+				if (comp instanceof AbstractButton) {
+					var button = (AbstractButton) comp;
+					String tip = button.getToolTipText();
+					
+					if (tip == null || tip.isEmpty())
+						continue;
+					
+					var mi = new JCheckBoxMenuItem();
+					mi.setText(tip);
+					mi.setState(button.isVisible());
+					
+					var icon = button.getIcon();
+					
+					if (icon instanceof ImageIcon) {
+						if (icon.getIconWidth() > ICON_WIDTH || icon.getIconHeight() > ICON_HEIGHT)
+							icon = IconManager.resizeIcon(icon, Math.min(ICON_WIDTH, ICON_HEIGHT));
+						
+						int originalWidth = icon.getIconWidth();
+						
+						icon = new ImageIcon(((ImageIcon) icon).getImage()) {
+							@Override
+							public int getIconWidth() { // To align the menu texts
+								return ICON_WIDTH;
+							}
+							@Override
+							public synchronized void paintIcon(Component c, Graphics g, int x, int y) {
+								// Center the icon horizontally
+								g.translate((getIconWidth() - originalWidth) / 2, 0);
+								super.paintIcon(c, g, x, y);
+							}
+						};
+					}
+					
+					mi.setIcon(icon);
+					mi.setPreferredSize(new Dimension(
+							mi.getPreferredSize().width,
+							Math.max(ICON_WIDTH, mi.getPreferredSize().height)
+					));
+					mi.addActionListener(ev -> {
+						button.setVisible(!button.isVisible());
+						updateSeparators();
+						resave();
+					});
+					popup.add(mi);
+				}
+			}
+			
+			// Calculate max number of visible menu items before scrolling
+			var window = SwingUtilities.getWindowAncestor(CytoscapeToolBar.this);
+			
+			if (window != null) {
+				var gc = window.getGraphicsConfiguration();
+				int sh = ViewUtil.getEffectiveScreenArea(gc).height;
+				int ph = popup.getPreferredSize().height;
+				
+				if (ph > sh) {
+					int h = 0;
+					
+					// Creates another MenuScroller to get the size of the added scroll buttons
+					MenuScroller tmpScroller = MenuScroller.setScrollerFor(new JPopupMenu(), 1);
+					h += tmpScroller.getUpItem().getPreferredSize().height;
+					h += tmpScroller.getDownItem().getPreferredSize().height;
+					tmpScroller.dispose();
+					int sepIdx = -1;
+					
+					for (int count = 0; count <  popup.getComponentCount(); count++) {
+						Component comp = popup.getComponent(count);
+						
+						if (comp instanceof JSeparator)
+							sepIdx = count;
+						else
+							h += comp.getPreferredSize().height;
+						
+						if (h > sh) {
+							if (sepIdx >= 0)
+								popup.remove(sepIdx);
+							
+							MenuScroller.setScrollerFor(
+									popup,
+									Math.max(1, count - 2/*make sure it fits*/ - 2/*ignore 'Show/Hide All'*/),
+									125,
+									2, // (always show 'Show/Hide All' items on top)
+									0
+							);
+							break;
+						}
+					}
+				}
+			}
+			
+			popup.show(e.getComponent(), e.getX(), e.getY());
+		}
+	}
 	
 	private static class ActionButton {
 		
