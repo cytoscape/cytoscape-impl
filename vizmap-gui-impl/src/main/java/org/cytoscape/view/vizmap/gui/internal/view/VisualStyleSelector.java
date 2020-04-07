@@ -28,8 +28,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -42,12 +44,14 @@ import javax.swing.DefaultListSelectionModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.Scrollable;
@@ -62,13 +66,16 @@ import org.cytoscape.event.DebounceTimer;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.SavePolicy;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
+import org.cytoscape.view.vizmap.gui.internal.task.RemoveVisualStylesTask;
 import org.cytoscape.view.vizmap.gui.internal.task.RenameVisualStyleTask;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.work.TaskIterator;
@@ -116,7 +123,10 @@ public class VisualStyleSelector extends JPanel {
 	final Color FOCUS_OVERLAY_COLOR;
 	final Color BORDER_COLOR;
 	
-	private JTextField searchTextField;
+	// Edit Mode buttons:
+	private JButton removeStylesBtn;
+	
+	private JTextField searchTxtFld;
 	private StyleGrid styleGrid;
 	private JScrollPane gridScrollPane;
 	
@@ -134,6 +144,9 @@ public class VisualStyleSelector extends JPanel {
 	
 	private boolean editMode;
 	private boolean editingTitle;
+	
+	private int selectionHead;
+	private int selectionTail;
 	
 	private final Map<String, RenderingEngine<CyNetwork>> engineMap;
 	
@@ -173,12 +186,33 @@ public class VisualStyleSelector extends JPanel {
 		previewNetView = createPreviewNetworkView();
 		
 		init();
+		update();
+	}
+	
+	public boolean isEditMode() {
+		return editMode;
+	}
+	
+	public void setEditMode(boolean editMode) {
+		if (editMode != this.editMode) {
+			this.editMode = editMode;
+			update();
+		}
+	}
+	
+	@Override
+	public void setEnabled(boolean enabled) {
+		super.setEnabled(enabled);
+		
+		getSearchTxtFld().setEnabled(enabled);
+		getRemoveStylesBtn().setEnabled(enabled);
+		getStyleGrid().setEnabled(enabled);
 	}
 	
 	@Override
     public void addNotify() {
     	super.addNotify();
-    	getSearchTextField().requestFocusInWindow();
+    	getSearchTxtFld().requestFocusInWindow();
     }
 	
 	public void update(SortedSet<VisualStyle> styles, VisualStyle currentStyle) {
@@ -191,7 +225,7 @@ public class VisualStyleSelector extends JPanel {
 		filterStyles();
 		
 		getStyleGrid().setSelectedValue(currentStyle, getStyleGrid().isShowing());
-		setEnabled(!isEmpty());
+		update();
 	}
 	
 	public void setSelectedStyle(VisualStyle style) {
@@ -200,6 +234,11 @@ public class VisualStyleSelector extends JPanel {
 	
 	public VisualStyle getSelectedStyle() {
 		return getStyleGrid().getSelectedValue();
+	}
+	
+	public boolean isSelected(VisualStyle style) {
+		var index = getStyleGrid().indexOf(style);
+		return getStyleGrid().getSelectionModel().isSelectedIndex(index);
 	}
 	
 	public JPanel getDefaultView(VisualStyle vs) {
@@ -215,7 +254,7 @@ public class VisualStyleSelector extends JPanel {
 	}
 	
 	public void resetFilter() {
-		getSearchTextField().setText("");
+		getSearchTxtFld().setText("");
 	}
 	
 	public void dispose() {
@@ -238,24 +277,31 @@ public class VisualStyleSelector extends JPanel {
 		layout.setAutoCreateContainerGaps(false);
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER)
-				.addComponent(getSearchTextField(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addGroup(layout.createSequentialGroup()
+						.addComponent(getSearchTxtFld(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addPreferredGap(ComponentPlacement.UNRELATED)
+						.addComponent(getRemoveStylesBtn())
+				)
 				.addComponent(getGridScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addComponent(getSearchTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER)
+						.addComponent(getSearchTxtFld(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getRemoveStylesBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
 				.addComponent(getGridScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 		);
 	}
 	
-	JTextField getSearchTextField() {
-		if (searchTextField == null) {
-			searchTextField = new JTextField();
-			searchTextField.putClientProperty("JTextField.variant", "search"); // Aqua LAF only
-			searchTextField.setToolTipText("Search by style name...");
+	JTextField getSearchTxtFld() {
+		if (searchTxtFld == null) {
+			searchTxtFld = new JTextField();
+			searchTxtFld.putClientProperty("JTextField.variant", "search"); // Aqua LAF only
+			searchTxtFld.setToolTipText("Search by style name...");
 			
 			var debouncer = new DebounceTimer(250);
 			
-			searchTextField.getDocument().addDocumentListener(new DocumentListener() {
+			searchTxtFld.getDocument().addDocumentListener(new DocumentListener() {
 				@Override
 				public void insertUpdate(DocumentEvent evt) {
 					updateTitleFilter();
@@ -269,14 +315,34 @@ public class VisualStyleSelector extends JPanel {
 					// Ignore...
 				}
 				private void updateTitleFilter() {
-					debouncer.debounce(() -> setTitleFilter(searchTextField.getText()));
+					debouncer.debounce(() -> setTitleFilter(searchTxtFld.getText()));
 				}
 			});
 		}
 		
-		return searchTextField;
+		return searchTxtFld;
 	}
 	
+	JButton getRemoveStylesBtn() {
+		if (removeStylesBtn == null) {
+			removeStylesBtn = createToolBarButton(IconManager.ICON_TRASH_O, "Remove Selected Styles");
+			removeStylesBtn.addActionListener(evt -> {
+				var styles = new LinkedHashSet<>(getStyleGrid().getSelectedValuesList());
+				var task = new RemoveVisualStylesTask(styles, servicesUtil);
+				
+				new Thread(() -> {
+					// TODO Move to a mediator (?)
+					servicesUtil.get(DialogTaskManager.class).execute(new TaskIterator(task));
+					
+					var vmProxy = (VizMapperProxy) servicesUtil.getProxy(VizMapperProxy.NAME);
+					update(vmProxy.getVisualStyles(), vmProxy.getCurrentVisualStyle());
+				}).start();
+			});
+		}
+		
+		return removeStylesBtn;
+	}
+
 	StyleGrid getStyleGrid() {
 		if (styleGrid == null) {
 			styleGrid = new StyleGrid(allStyles);
@@ -285,6 +351,8 @@ public class VisualStyleSelector extends JPanel {
 				if (evt.getValueIsAdjusting())
 					return;
 				
+				updateToolBarButtons();
+				repaint();
 				firePropertyChange("selectedStyle", null, styleGrid.getSelectedValue());
 			});
 		}
@@ -306,6 +374,13 @@ public class VisualStyleSelector extends JPanel {
 				@Override
 				public void componentResized(ComponentEvent evt) {
 					debouncer.debounce(() -> getStyleGrid().update());
+				}
+			});
+			gridScrollPane.getViewport().addMouseListener(new MouseAdapter() {
+				@Override
+				public void mousePressed(MouseEvent evt) {
+					if (isEditMode() && !evt.isShiftDown()) // Deselect all items
+						getStyleGrid().clearSelection();
 				}
 			});
 		}
@@ -371,6 +446,39 @@ public class VisualStyleSelector extends JPanel {
 	
 	private int calculateRows(int total, int cols) {
 		return (int) Math.round(Math.ceil((float)total / (float)cols));
+	}
+	
+	private JButton createToolBarButton(String iconText, String tooltipText) {
+		var btn = new JButton(iconText);
+		btn.setToolTipText(tooltipText);
+		btn.setBorderPainted(false);
+		btn.setContentAreaFilled(false);
+		btn.setOpaque(false);
+		btn.setFocusable(false);
+		btn.setFont(servicesUtil.get(IconManager.class).getIconFont(18.0f));
+		btn.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+		
+		return btn;
+	}
+	
+	private void update() {
+		setEnabled(!isEmpty());
+		getRemoveStylesBtn().setVisible(isEditMode());
+		updateToolBarButtons();
+		getStyleGrid().getSelectionModel().setSelectionMode(
+				isEditMode() ? ListSelectionModel.MULTIPLE_INTERVAL_SELECTION : ListSelectionModel.SINGLE_SELECTION);
+	}
+
+	private void updateToolBarButtons() {
+		if (isEnabled() && isEditMode()) {
+			var selValues = getStyleGrid().getSelectedValuesList();
+			var selCount = selValues.size();
+			var vmMgr = servicesUtil.get(VisualMappingManager.class);
+			var defStyle = vmMgr.getDefaultVisualStyle();
+			
+			getRemoveStylesBtn().setEnabled(selCount > 1
+					|| (selCount == 1 && !defStyle.equals(selValues.iterator().next())));
+		}
 	}
 	
 	private CyNetworkView createPreviewNetworkView() {
@@ -443,6 +551,14 @@ public class VisualStyleSelector extends JPanel {
 			return getModel().getSize() == 0;
 		}
 		
+		@Override
+		public void repaint() {
+			for (var item : vsPanelMap.values())
+				item.repaint();
+			
+			super.repaint();
+		}
+		
 		StylePanel getItem(VisualStyle style) {
 			return vsPanelMap.get(style);
 		}
@@ -498,13 +614,39 @@ public class VisualStyleSelector extends JPanel {
 				if (i >= 0 && shouldScroll)
 					ensureIndexIsVisible(i);
 			}
-			
-			repaint();
 		}
 		
+		List<VisualStyle> getSelectedValuesList() {
+			var dm = getModel();
+			var sm = getSelectionModel();
+			int[] selectedIndices = sm.getSelectedIndices();
+
+			if (selectedIndices.length > 0) {
+				int size = dm.getSize();
+				
+				if (selectedIndices[0] >= size)
+					return Collections.emptyList();
+				
+				var selectedItems = new ArrayList<VisualStyle>();
+				
+				for (int i : selectedIndices) {
+					if (i >= size)
+						break;
+					
+					selectedItems.add(dm.getElementAt(i));
+				}
+				
+				return selectedItems;
+			}
+			
+			return Collections.emptyList();
+		}
+
 		void clearSelection() {
-	        getSelectionModel().clearSelection();
-	    }
+			getSelectionModel().clearSelection();
+			selectionHead = -1;
+			selectionTail = -1;
+		}
 		
 		/**
 	     * Selects a single cell. Does nothing if the given index is greater
@@ -541,6 +683,18 @@ public class VisualStyleSelector extends JPanel {
 		ListSelectionModel getSelectionModel() {
 	        return selectionModel;
 	    }
+		
+		void setSelectionInterval(int anchor, int lead) {
+			getSelectionModel().setSelectionInterval(anchor, lead);
+		}
+
+		void addSelectionInterval(int anchor, int lead) {
+			getSelectionModel().addSelectionInterval(anchor, lead);
+		}
+
+		void removeSelectionInterval(int index0, int index1) {
+			getSelectionModel().removeSelectionInterval(index0, index1);
+		}
 		
 		void setSelectionModel(ListSelectionModel selectionModel) {
 	        if (selectionModel == null)
@@ -684,9 +838,16 @@ public class VisualStyleSelector extends JPanel {
 					var diff = (cols * rows) - dm.getSize();
 						
 					for (int i = 0; i < diff; i++) {
-						var filler = new JPanel();
-						filler.setBackground(BG_COLOR);
-						this.add(filler);
+						var fillPnl = new JPanel();
+						fillPnl.setBackground(BG_COLOR);
+						fillPnl.addMouseListener(new MouseAdapter() {
+							@Override
+							public void mousePressed(MouseEvent evt) {
+								if (isEditMode() && !evt.isShiftDown()) // Deselect all items
+									clearSelection();
+							}
+						});
+						this.add(fillPnl);
 					}
 				}
 				
@@ -702,29 +863,128 @@ public class VisualStyleSelector extends JPanel {
 			// Events
 			item.addMouseListener(new MouseAdapter() {
 				@Override
-				public void mouseEntered(MouseEvent e) {
-					if (!editingTitle)
+				public void mouseEntered(MouseEvent evt) {
+					if (isEnabled() && !editingTitle)
 						item.requestFocusInWindow();
 				}
 				@Override
-				public void mouseClicked(MouseEvent e) {
-					item.requestFocusInWindow();
-					setSelectedValue(style, true);
+				public void mousePressed(MouseEvent evt) {
+					if (isEnabled())
+						onMousePressedItem(evt, item);
 				}
 			});
 			item.getTitleTextField().addMouseListener(new MouseAdapter() {
 				@Override
-				public void mouseClicked(MouseEvent e) {
-					if (editMode && e.getClickCount() == 2)
-						editTitleStart(item);
-					else if (e.getClickCount() == 1)
-						setSelectedValue(style, true);
+				public void mousePressed(MouseEvent evt) {
+					if (isEnabled())
+						onMousePressedItem(evt, item);
+				}
+				@Override
+				public void mouseClicked(MouseEvent evt) {
+					if (isEnabled()) {
+						if (isEditMode() && evt.getClickCount() == 2)
+							editTitleStart(item);
+					}
 				}
 			});
 			
 			return item;
 		}
 		
+		private void onMousePressedItem(MouseEvent evt, StylePanel item) {
+			item.requestFocusInWindow();
+			
+			if (isEditMode()) {
+				int index = indexOf(item.style);
+				boolean selected = isSelected(item.style);
+				var sm = getSelectionModel();
+				
+				if (evt.isPopupTrigger()) {
+					// RIGHT-CLICK...
+					selectionHead = index;
+				} else {
+					// LEFT-CLICK...
+					var isMac = LookAndFeelUtil.isMac();
+					
+					if ((isMac && evt.isMetaDown()) || (!isMac && evt.isControlDown())) {
+						// CMD or CTRL key pressed...
+						toggleSelection(item);
+						// Find new selection range head
+						selectionHead = selected ? index : findNextSelectionHead(selectionHead);
+					} else if (evt.isShiftDown()) {
+						// SHIFT key pressed...
+						if (selectionHead >= 0 && selectionHead != index && sm.isSelectedIndex(selectionHead)) {
+							// First deselect previous range, if there is a tail
+							if (selectionTail >= 0)
+								changeRangeSelection(selectionHead, selectionTail, false);
+							// Now select the new range
+							changeRangeSelection(selectionHead, (selectionTail = index), true);
+						} else if (!selected) {
+							addSelectionInterval(index, index);
+						}
+					} else {
+						setSelectedValue(item.getStyle(), false);
+					}
+					
+					if (sm.getSelectedItemsCount() == 1)
+						selectionHead = index;
+				}
+			} else {
+				setSelectedValue(item.getStyle(), false);
+			}
+			
+			item.repaint();
+		}
+		
+		private void toggleSelection(StylePanel item) {
+			var index = indexOf(item.style);
+			
+			if (isSelectedIndex(index))
+				removeSelectionInterval(index, index);
+			else
+				addSelectionInterval(index, index);
+		}
+		
+		private void changeRangeSelection(int index0, int index1, boolean select) {
+			if (select)
+				addSelectionInterval(index0, index1);
+			else
+				removeSelectionInterval(index0, index1);
+		}
+		
+		private int findNextSelectionHead(int fromIndex) {
+			int head = -1;
+			
+			if (fromIndex >= 0) {
+				var dm = getModel();
+				int total = dm.getSize();
+				
+				// Try with the tail subset first (go down)...
+				for (int i = fromIndex; i < total; i++) {
+					var nextItem = dm.getElementAt(i);
+					
+					if (isSelected(nextItem)) {
+						head = i;
+						break;
+					}
+				}
+				
+				if (head == -1) {
+					// Try with the head subset  (go up)...
+					for (int i = fromIndex; i <= 0; i--) {
+						var nextItem = dm.getElementAt(i);
+						
+						if (isSelected(nextItem)) {
+							head = i;
+							break;
+						}
+					}
+				}
+			}
+			
+			return head;
+		}
+
 		void editTitleStart(StylePanel item) {
 			editingTitle = true;
 			var oldValue = item.getTitleTextField().getText().trim();
@@ -750,11 +1010,11 @@ public class VisualStyleSelector extends JPanel {
 			});
 			item.getTitleTextField().addKeyListener(new KeyAdapter() {
 				@Override
-				public void keyPressed(KeyEvent e) {
-					if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+				public void keyPressed(KeyEvent evt) {
+					if (evt.getKeyCode() == KeyEvent.VK_ESCAPE) {
 						editTitleCancel(item, oldValue);
 						item.getTitleTextField().removeKeyListener(this);
-						e.consume(); // Prevent any dialog that contains this component from closing
+						evt.consume(); // Prevent any dialog that contains this component from closing
 					}
 				}
 			});
@@ -833,8 +1093,8 @@ public class VisualStyleSelector extends JPanel {
 			}
 
 			@Override
-			public void actionPerformed(final ActionEvent e) {
-				var cmd = e.getActionCommand();
+			public void actionPerformed(ActionEvent evt) {
+				var cmd = evt.getActionCommand();
 				var focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
 				var focusedItem = focusOwner instanceof StylePanel ? (StylePanel) focusOwner : null;
 				var dm = StyleGrid.this.getModel();
@@ -996,11 +1256,11 @@ public class VisualStyleSelector extends JPanel {
 			int h = this.getHeight();
 			int arc = 10;
 
-			boolean current = style.equals(VisualStyleSelector.this.getSelectedStyle());
+			boolean selected = isSelected(style);
 			boolean focusOwner = this.isFocusOwner();
 			
 			// Add a colored border if it is the current style
-			if (current) {
+			if (selected) {
 				g2d.setColor(SEL_BG_COLOR);
 				g2d.setStroke(new BasicStroke(2 * ITEM_BORDER_WIDTH));
 				g2d.drawRoundRect(ITEM_MARGIN, ITEM_MARGIN, w - 2 * ITEM_MARGIN, h - 2 * ITEM_MARGIN, arc, arc);
@@ -1028,7 +1288,7 @@ public class VisualStyleSelector extends JPanel {
 			return style.getTitle();
 		}
 	}
-	
+
 // TODO
 //	private class KeyAction extends AbstractAction {
 //

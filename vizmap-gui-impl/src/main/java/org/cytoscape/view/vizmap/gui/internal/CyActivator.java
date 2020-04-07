@@ -47,8 +47,8 @@ import org.cytoscape.view.vizmap.gui.internal.task.CreateNewVisualStyleTaskFacto
 import org.cytoscape.view.vizmap.gui.internal.task.MakeVisualStylesDefaultTask;
 import org.cytoscape.view.vizmap.gui.internal.task.MakeVisualStylesDefaultTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.RemoveVisualMappingsTaskFactory;
-import org.cytoscape.view.vizmap.gui.internal.task.RemoveVisualStyleTask;
-import org.cytoscape.view.vizmap.gui.internal.task.RemoveVisualStyleTaskFactory;
+import org.cytoscape.view.vizmap.gui.internal.task.RemoveVisualStylesTask;
+import org.cytoscape.view.vizmap.gui.internal.task.RemoveVisualStylesTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.RenameVisualStyleTask;
 import org.cytoscape.view.vizmap.gui.internal.task.RenameVisualStyleTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicePropertiesUtil;
@@ -218,10 +218,10 @@ public class CyActivator extends AbstractCyActivator {
 			registerAllServices(bc, factory, props);
 		}
 		{
-			var factory = new RemoveVisualStyleTaskFactory(servicesUtil);
+			var factory = new RemoveVisualStylesTaskFactory(servicesUtil);
 			var props = new Properties();
 			props.setProperty(ServicePropertiesUtil.SERVICE_TYPE, "vizmapUI");
-			props.setProperty(ServicePropertiesUtil.TITLE, RemoveVisualStyleTask.TITLE);
+			props.setProperty(ServicePropertiesUtil.TITLE, RemoveVisualStylesTask.TITLE);
 			props.setProperty(ServicePropertiesUtil.MENU_ID, ServicePropertiesUtil.MAIN_MENU);
 			props.setProperty(ServicePropertiesUtil.GRAVITY, "4.0");
 			registerAllServices(bc, factory, props);
