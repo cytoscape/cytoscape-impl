@@ -117,7 +117,7 @@ public class ApplyVisualStyleAction extends AbstractCyAction {
 		var styles = vmProxy.getVisualStyles();
 		var oldValue = getCommonVisualStyle(views);
 		
-		var styleSelector = new VisualStyleSelector(3, 0, true, servicesUtil);
+		var styleSelector = new VisualStyleSelector(3, 0, false, servicesUtil);
 		styleSelector.update(styles, oldValue);
 		
 		var cancelBtn = new JButton(new AbstractAction("Cancel") {
@@ -141,8 +141,7 @@ public class ApplyVisualStyleAction extends AbstractCyAction {
 		okBtn.setEnabled(oldValue != null);
 		
 		styleSelector.addPropertyChangeListener("selectedStyle", e -> {
-			var newValue = (VisualStyle) e.getNewValue();
-			okBtn.setEnabled(newValue != null/* && !newValue.equals(oldValue)*/);
+			okBtn.setEnabled(styleSelector.getSelectionCount() == 1);
 		});
 		
 		var okCancelPanel = LookAndFeelUtil.createOkCancelPanel(okBtn, cancelBtn);

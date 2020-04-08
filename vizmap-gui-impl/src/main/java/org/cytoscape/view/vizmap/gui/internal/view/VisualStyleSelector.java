@@ -2,6 +2,10 @@ package org.cytoscape.view.vizmap.gui.internal.view;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE_O;
+import static org.cytoscape.util.swing.IconManager.ICON_ELLIPSIS_V;
+import static org.cytoscape.util.swing.IconManager.ICON_SQUARE_O;
+import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
 import static org.cytoscape.view.vizmap.gui.internal.util.ViewUtil.invokeOnEDT;
@@ -22,6 +26,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -50,6 +55,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListModel;
@@ -72,13 +78,15 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
 import org.cytoscape.view.vizmap.gui.internal.task.RemoveVisualStylesTask;
 import org.cytoscape.view.vizmap.gui.internal.task.RenameVisualStyleTask;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.cytoscape.work.FinishStatus;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.TunableSetter;
 import org.cytoscape.work.swing.DialogTaskManager;
 
@@ -123,12 +131,15 @@ public class VisualStyleSelector extends JPanel {
 	final Color FOCUS_OVERLAY_COLOR;
 	final Color BORDER_COLOR;
 	
-	// Edit Mode buttons:
-	private JButton removeStylesBtn;
-	
 	private JTextField searchTxtFld;
 	private StyleGrid styleGrid;
 	private JScrollPane gridScrollPane;
+	
+	private JToggleButton editBtn;
+	private JPanel toolBarPanel;
+	private JButton selectAllBtn;
+	private JButton selectNoneBtn;
+	private JButton removeStylesBtn;
 	
 	private int cols;
 	
@@ -197,6 +208,7 @@ public class VisualStyleSelector extends JPanel {
 		if (editMode != this.editMode) {
 			this.editMode = editMode;
 			update();
+			firePropertyChange("editMode", !editMode, editMode);
 		}
 	}
 	
@@ -205,6 +217,9 @@ public class VisualStyleSelector extends JPanel {
 		super.setEnabled(enabled);
 		
 		getSearchTxtFld().setEnabled(enabled);
+		getEditBtn().setEnabled(enabled);
+		getSelectAllBtn().setEnabled(enabled);
+		getSelectNoneBtn().setEnabled(enabled);
 		getRemoveStylesBtn().setEnabled(enabled);
 		getStyleGrid().setEnabled(enabled);
 	}
@@ -232,8 +247,23 @@ public class VisualStyleSelector extends JPanel {
 		getStyleGrid().setSelectedValue(style, getStyleGrid().isShowing());
 	}
 	
+	/**
+	 * It this is on edit mode (see {@link #isEditMode()}),
+	 * you probably want to use {@link #getSelectedStyleList()} instead.
+	 */
 	public VisualStyle getSelectedStyle() {
 		return getStyleGrid().getSelectedValue();
+	}
+	
+	/**
+	 * Returns the selected styles. Use this one instead of {@link #getSelectedStyle()} when on edit mode.
+	 */
+	public List<VisualStyle> getSelectedStyleList() {
+		return getStyleGrid().getSelectedValuesList();
+	}
+	
+	public int getSelectionCount() {
+		return getStyleGrid().getSelectionModel().getSelectedItemsCount();
 	}
 	
 	public boolean isSelected(VisualStyle style) {
@@ -276,19 +306,23 @@ public class VisualStyleSelector extends JPanel {
 		layout.setAutoCreateGaps(false);
 		layout.setAutoCreateContainerGaps(false);
 		
+		int btnSize = getEditBtn().getPreferredSize().height;
+		
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER)
 				.addGroup(layout.createSequentialGroup()
 						.addComponent(getSearchTxtFld(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-						.addPreferredGap(ComponentPlacement.UNRELATED)
-						.addComponent(getRemoveStylesBtn())
+						.addComponent(getToolBarPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getEditBtn(), btnSize, btnSize, btnSize)
 				)
 				.addComponent(getGridScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addGroup(layout.createParallelGroup(Alignment.CENTER)
 						.addComponent(getSearchTxtFld(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(getRemoveStylesBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getToolBarPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getEditBtn(), btnSize, btnSize, btnSize)
 				)
+				.addPreferredGap(ComponentPlacement.RELATED)
 				.addComponent(getGridScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 		);
 	}
@@ -323,19 +357,85 @@ public class VisualStyleSelector extends JPanel {
 		return searchTxtFld;
 	}
 	
+	JToggleButton getEditBtn() {
+		if (editBtn == null) {
+			editBtn = new JToggleButton(ICON_ELLIPSIS_V);
+			editBtn.setFont(servicesUtil.get(IconManager.class).getIconFont(14.0f));
+			editBtn.setHorizontalAlignment(SwingConstants.CENTER);
+			editBtn.setVerticalAlignment(SwingConstants.CENTER);
+			editBtn.setToolTipText("Edit...");
+			editBtn.addActionListener(evt -> setEditMode(editBtn.isSelected()));
+		}
+		
+		return editBtn;
+	}
+	
+	JPanel getToolBarPanel() {
+		if (toolBarPanel == null) {
+			toolBarPanel = new JPanel();
+			
+			var layout = new GroupLayout(toolBarPanel);
+			toolBarPanel.setLayout(layout);
+			layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+			layout.setAutoCreateContainerGaps(false);
+			
+			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addContainerGap()
+					.addComponent(getSelectAllBtn())
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(getSelectNoneBtn())
+					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addComponent(getRemoveStylesBtn())
+					.addContainerGap()
+			);
+			layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER)
+					.addComponent(getSelectAllBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getSelectNoneBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getRemoveStylesBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
+		}
+		
+		return toolBarPanel;
+	}
+	
+	JButton getSelectAllBtn() {
+		if (selectAllBtn == null) {
+			selectAllBtn = createToolBarButton(ICON_CHECK_SQUARE_O + ICON_CHECK_SQUARE_O, "Select All", 14.0f);
+			selectAllBtn.addActionListener(evt -> getStyleGrid().selectAll());
+		}
+		
+		return selectAllBtn;
+	}
+	
+	JButton getSelectNoneBtn() {
+		if (selectNoneBtn == null) {
+			selectNoneBtn = createToolBarButton(ICON_SQUARE_O + ICON_SQUARE_O, "Select None", 14.0f);
+			selectNoneBtn.addActionListener(evt -> getStyleGrid().deselectAll());
+		}
+		
+		return selectNoneBtn;
+	}
+	
 	JButton getRemoveStylesBtn() {
 		if (removeStylesBtn == null) {
-			removeStylesBtn = createToolBarButton(IconManager.ICON_TRASH_O, "Remove Selected Styles");
+			removeStylesBtn = createToolBarButton(ICON_TRASH_O, "Remove Selected Styles", 18.0f);
 			removeStylesBtn.addActionListener(evt -> {
 				var styles = new LinkedHashSet<>(getStyleGrid().getSelectedValuesList());
 				var task = new RemoveVisualStylesTask(styles, servicesUtil);
 				
 				new Thread(() -> {
 					// TODO Move to a mediator (?)
-					servicesUtil.get(DialogTaskManager.class).execute(new TaskIterator(task));
-					
-					var vmProxy = (VizMapperProxy) servicesUtil.getProxy(VizMapperProxy.NAME);
-					update(vmProxy.getVisualStyles(), vmProxy.getCurrentVisualStyle());
+					servicesUtil.get(DialogTaskManager.class).execute(new TaskIterator(task), new TaskObserver() {
+						@Override
+						public void taskFinished(ObservableTask task) {
+							// Ignore...
+						}
+						@Override
+						public void allFinished(FinishStatus finishStatus) {
+							var vmProxy = getProxy();
+							update(vmProxy.getVisualStyles(), vmProxy.getCurrentVisualStyle());
+						}
+					});
 				}).start();
 			});
 		}
@@ -380,7 +480,7 @@ public class VisualStyleSelector extends JPanel {
 				@Override
 				public void mousePressed(MouseEvent evt) {
 					if (isEditMode() && !evt.isShiftDown()) // Deselect all items
-						getStyleGrid().clearSelection();
+						getStyleGrid().deselectAll();
 				}
 			});
 		}
@@ -448,14 +548,16 @@ public class VisualStyleSelector extends JPanel {
 		return (int) Math.round(Math.ceil((float)total / (float)cols));
 	}
 	
-	private JButton createToolBarButton(String iconText, String tooltipText) {
+	private JButton createToolBarButton(String iconText, String tooltipText, float size) {
 		var btn = new JButton(iconText);
 		btn.setToolTipText(tooltipText);
+		btn.setHorizontalAlignment(SwingConstants.CENTER);
+		btn.setVerticalAlignment(SwingConstants.CENTER);
 		btn.setBorderPainted(false);
 		btn.setContentAreaFilled(false);
 		btn.setOpaque(false);
 		btn.setFocusable(false);
-		btn.setFont(servicesUtil.get(IconManager.class).getIconFont(18.0f));
+		btn.setFont(servicesUtil.get(IconManager.class).getIconFont(size));
 		btn.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
 		
 		return btn;
@@ -463,19 +565,24 @@ public class VisualStyleSelector extends JPanel {
 	
 	private void update() {
 		setEnabled(!isEmpty());
-		getRemoveStylesBtn().setVisible(isEditMode());
-		updateToolBarButtons();
+		getEditBtn().setSelected(isEditMode());
+		getToolBarPanel().setVisible(isEditMode());
+		
 		getStyleGrid().getSelectionModel().setSelectionMode(
 				isEditMode() ? ListSelectionModel.MULTIPLE_INTERVAL_SELECTION : ListSelectionModel.SINGLE_SELECTION);
+		
+		updateToolBarButtons();
 	}
 
 	private void updateToolBarButtons() {
 		if (isEnabled() && isEditMode()) {
 			var selValues = getStyleGrid().getSelectedValuesList();
-			var selCount = selValues.size();
-			var vmMgr = servicesUtil.get(VisualMappingManager.class);
-			var defStyle = vmMgr.getDefaultVisualStyle();
+			int selCount = selValues.size();
+			int total =  getStyleGrid().getModel().getSize();
+			var defStyle = getProxy().getDefaultVisualStyle();
 			
+			getSelectAllBtn().setEnabled(selCount < total);
+			getSelectNoneBtn().setEnabled(selCount > 0);
 			getRemoveStylesBtn().setEnabled(selCount > 1
 					|| (selCount == 1 && !defStyle.equals(selValues.iterator().next())));
 		}
@@ -504,6 +611,12 @@ public class VisualStyleSelector extends JPanel {
 		
 		return view;
 	}
+	
+	private VizMapperProxy getProxy() {
+		return (VizMapperProxy) servicesUtil.getProxy(VizMapperProxy.NAME);
+	}
+	
+	// ==[ CLASSES ]====================================================================================================
 	
 	/**
 	 * Some methods were copied from the JList implementation.
@@ -606,7 +719,7 @@ public class VisualStyleSelector extends JPanel {
 		
 		void setSelectedValue(VisualStyle style, boolean shouldScroll) {
 			if (style == null) {
-				clearSelection();
+				deselectAll();
 			} else if (!style.equals(getSelectedValue())) {
 				int i = indexOf(style);
 				setSelectedIndex(i);
@@ -642,7 +755,15 @@ public class VisualStyleSelector extends JPanel {
 			return Collections.emptyList();
 		}
 
-		void clearSelection() {
+		void selectAll() {
+			if (getModel().getSize() >= 0) {
+				getSelectionModel().setSelectionInterval(0, getModel().getSize() - 1);
+				selectionHead = -1;
+				selectionTail = -1;
+			}
+		}
+		
+		void deselectAll() {
 			getSelectionModel().clearSelection();
 			selectionHead = -1;
 			selectionTail = -1;
@@ -723,7 +844,7 @@ public class VisualStyleSelector extends JPanel {
 			var oldValue = dataModel;
 			dataModel = model;
 			firePropertyChange("model", oldValue, dataModel);
-			clearSelection();
+			deselectAll();
 			update();
 		}
 		
@@ -844,7 +965,7 @@ public class VisualStyleSelector extends JPanel {
 							@Override
 							public void mousePressed(MouseEvent evt) {
 								if (isEditMode() && !evt.isShiftDown()) // Deselect all items
-									clearSelection();
+									deselectAll();
 							}
 						});
 						this.add(fillPnl);
@@ -1063,6 +1184,7 @@ public class VisualStyleSelector extends JPanel {
 		private void setKeyBindings() {
 			var actionMap = this.getActionMap();
 			var inputMap = this.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+			int ctrl = LookAndFeelUtil.isMac() ? InputEvent.META_DOWN_MASK : InputEvent.CTRL_DOWN_MASK;
 
 			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), KeyAction.VK_LEFT);
 			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), KeyAction.VK_RIGHT);
@@ -1070,6 +1192,8 @@ public class VisualStyleSelector extends JPanel {
 			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), KeyAction.VK_DOWN);
 			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), KeyAction.VK_ENTER);
 			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), KeyAction.VK_SPACE);
+			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, ctrl), KeyAction.VK_CTRL_A);
+			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, ctrl + InputEvent.SHIFT_DOWN_MASK), KeyAction.VK_CTRL_SHIFT_A);
 			
 			actionMap.put(KeyAction.VK_LEFT, new KeyAction(KeyAction.VK_LEFT));
 			actionMap.put(KeyAction.VK_RIGHT, new KeyAction(KeyAction.VK_RIGHT));
@@ -1077,6 +1201,8 @@ public class VisualStyleSelector extends JPanel {
 			actionMap.put(KeyAction.VK_DOWN, new KeyAction(KeyAction.VK_DOWN));
 			actionMap.put(KeyAction.VK_ENTER, new KeyAction(KeyAction.VK_ENTER));
 			actionMap.put(KeyAction.VK_SPACE, new KeyAction(KeyAction.VK_SPACE));
+			actionMap.put(KeyAction.VK_CTRL_A, new KeyAction(KeyAction.VK_CTRL_A));
+			actionMap.put(KeyAction.VK_CTRL_SHIFT_A, new KeyAction(KeyAction.VK_CTRL_SHIFT_A));
 		}
 		
 		private class KeyAction extends AbstractAction {
@@ -1087,6 +1213,8 @@ public class VisualStyleSelector extends JPanel {
 			final static String VK_DOWN = "VK_DOWN";
 			final static String VK_ENTER = "VK_ENTER";
 			final static String VK_SPACE = "VK_SPACE";
+			final static String VK_CTRL_A = "VK_CTRL_A";
+			final static String VK_CTRL_SHIFT_A = "VK_CTRL_SHIFT_A";
 			
 			KeyAction(final String actionCommand) {
 				putValue(ACTION_COMMAND_KEY, actionCommand);
@@ -1117,6 +1245,12 @@ public class VisualStyleSelector extends JPanel {
 					} else if (cmd.equals(VK_DOWN)) {
 						final boolean sameRow = Math.ceil(size / (double) cols) == Math.ceil((idx + 1) / (double) cols);
 						newIdx = sameRow ? idx : Math.min(size - 1, idx + cols);
+					} else if (cmd.equals(VK_CTRL_A)) {
+						if (isEditMode())
+							selectAll();
+					} else if (cmd.equals(VK_CTRL_SHIFT_A)) {
+						if (isEditMode())
+							deselectAll();
 					}
 					
 					if (newIdx != idx)
