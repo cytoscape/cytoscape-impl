@@ -1,4 +1,4 @@
-package org.cytoscape.view.model.internal.model;
+package org.cytoscape.view.model.internal.network;
 
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_CENTER_X_LOCATION;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION;
@@ -7,7 +7,7 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWOR
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.model.internal.CyNetworkViewFactoryConfigImpl;
+import org.cytoscape.view.model.internal.base.VPStore;
 
 import io.vavr.collection.HashSet;
 import io.vavr.collection.Set;
@@ -19,7 +19,8 @@ public class VPNetworkStore extends VPStore {
 		NETWORK_CENTER_X_LOCATION, NETWORK_CENTER_Y_LOCATION, NETWORK_SCALE_FACTOR
 	);
 	
-	// Special case network visual properties that get updated a lot. This is an optimization.
+	// Special case network visual properties that get updated a lot. 
+	// Storing them as fields instead of looking them up in a Map is an optimization.
 	private double networkCenterXLocation = NETWORK_CENTER_X_LOCATION.getDefault();
 	private double networkCenterYLocation = NETWORK_CENTER_Y_LOCATION.getDefault();
 	private double networkScaleFactor     = NETWORK_SCALE_FACTOR.getDefault();

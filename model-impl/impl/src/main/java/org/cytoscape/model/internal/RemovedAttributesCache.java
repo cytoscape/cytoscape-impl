@@ -51,13 +51,17 @@ public class RemovedAttributesCache {
 	private static class CachedRow implements CyRow {
 		
 		private final Map<String,Object> values;
+		private final Long suid;
 		
-		public CachedRow(Map<String,Object> values) {
-			this.values = new HashMap<>(values);
-		}
 		
 		public CachedRow(CyRow row) {
-			this(row.getAllValues());
+			this.suid = row.getSUID();
+			this.values = new HashMap<>(row.getAllValues());
+		}
+		
+		@Override
+		public Long getSUID() {
+			return suid;
 		}
 		
 		@Override

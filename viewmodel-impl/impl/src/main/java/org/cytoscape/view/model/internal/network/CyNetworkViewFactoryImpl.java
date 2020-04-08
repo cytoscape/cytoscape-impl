@@ -1,4 +1,4 @@
-package org.cytoscape.view.model.internal.model;
+package org.cytoscape.view.model.internal.network;
 
 import java.util.Properties;
 
@@ -12,7 +12,6 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewListener;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.model.internal.CyNetworkViewFactoryConfigImpl;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 

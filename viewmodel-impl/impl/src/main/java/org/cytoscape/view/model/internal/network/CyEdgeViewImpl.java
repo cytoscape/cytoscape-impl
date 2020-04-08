@@ -1,6 +1,11 @@
-package org.cytoscape.view.model.internal.model;
+package org.cytoscape.view.model.internal.network;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.internal.base.CyViewBase;
+import org.cytoscape.view.model.internal.base.VPStore;
+import org.cytoscape.view.model.internal.base.ViewLock;
 
 public class CyEdgeViewImpl extends CyViewBase<CyEdge> {
 
@@ -19,7 +24,12 @@ public class CyEdgeViewImpl extends CyViewBase<CyEdge> {
 	}
 	
 	@Override
-	public CyNetworkViewImpl getNetworkView() {
+	public void setDirty() {
+		parent.setDirty();
+	}
+	
+	@Override
+	public CyNetworkViewImpl getParentViewModel() {
 		return parent;
 	}
 
@@ -37,12 +47,22 @@ public class CyEdgeViewImpl extends CyViewBase<CyEdge> {
 
 	@Override
 	public VPStore getVPStore() {
-		return getNetworkView().edgeVPs;
+		return parent.edgeVPs;
 	}
 
 	@Override
 	public ViewLock getLock() {
-		return getNetworkView().edgeLock;
+		return parent.edgeLock;
+	}
+
+	@Override
+	public CyEventHelper getEventHelper() {
+		return parent.getEventHelper();
+	}
+
+	@Override
+	public VisualLexicon getVisualLexicon() {
+		return parent.getVisualLexicon();
 	}
 	
 }

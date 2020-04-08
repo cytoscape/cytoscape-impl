@@ -1,4 +1,4 @@
-package org.cytoscape.view.model.internal.model.snapshot;
+package org.cytoscape.view.model.internal.network.snapshot;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,12 +15,12 @@ import org.cytoscape.view.model.SnapshotNodeInfo;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.model.internal.model.CyEdgeViewImpl;
-import org.cytoscape.view.model.internal.model.CyNetworkViewImpl;
-import org.cytoscape.view.model.internal.model.CyNodeViewImpl;
-import org.cytoscape.view.model.internal.model.VPNetworkStore;
-import org.cytoscape.view.model.internal.model.VPStore;
-import org.cytoscape.view.model.internal.model.spacial.SimpleSpacialIndex2DSnapshotImpl;
+import org.cytoscape.view.model.internal.base.VPStore;
+import org.cytoscape.view.model.internal.network.CyEdgeViewImpl;
+import org.cytoscape.view.model.internal.network.CyNetworkViewImpl;
+import org.cytoscape.view.model.internal.network.CyNodeViewImpl;
+import org.cytoscape.view.model.internal.network.VPNetworkStore;
+import org.cytoscape.view.model.internal.network.spacial.SimpleSpacialIndex2DSnapshotImpl;
 import org.cytoscape.view.model.spacial.SpacialIndex2D;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 

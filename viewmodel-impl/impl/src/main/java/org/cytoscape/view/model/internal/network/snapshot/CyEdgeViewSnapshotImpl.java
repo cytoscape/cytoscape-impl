@@ -1,11 +1,11 @@
-package org.cytoscape.view.model.internal.model.snapshot;
+package org.cytoscape.view.model.internal.network.snapshot;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.SnapshotEdgeInfo;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.model.internal.model.CyEdgeViewImpl;
-import org.cytoscape.view.model.internal.model.VPStore;
+import org.cytoscape.view.model.internal.base.VPStore;
+import org.cytoscape.view.model.internal.network.CyEdgeViewImpl;
 
 public class CyEdgeViewSnapshotImpl extends CyViewSnapshotBase<CyEdge> implements SnapshotEdgeInfo {
 	

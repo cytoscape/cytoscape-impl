@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.SUIDFactory;
 import org.cytoscape.model.VirtualColumnInfo;
 
 
@@ -42,6 +43,7 @@ final class CyColumnImpl implements CyColumn {
 	private final boolean isPrimaryKey;
 	private final boolean isImmutable;
 	private final Object defaultValue;
+	private final Long suid = Long.valueOf(SUIDFactory.getNextSUID());
 
 	CyColumnImpl(final CyTableImpl table, final String columnName, final Class<?> columnType,
 		     final Class<?> listElementType, final VirtualColumnInfo virtualInfo,
@@ -63,6 +65,11 @@ final class CyColumnImpl implements CyColumn {
 		this.defaultValue    = defaultValue;
 	}
 
+	@Override
+	public Long getSUID() {
+		return suid;
+	}
+	
 	@Override
 	public CyTable getTable() { return table; }
 

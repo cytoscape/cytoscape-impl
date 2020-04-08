@@ -6,7 +6,7 @@ import static org.mockito.Mockito.when;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.NetworkTestSupport;
-import org.cytoscape.view.model.internal.CyNetworkViewManagerImpl;
+import org.cytoscape.view.model.internal.network.CyNetworkViewManagerImpl;
 import org.junit.After;
 import org.junit.Before;
 

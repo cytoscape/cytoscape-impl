@@ -1,4 +1,4 @@
-package org.cytoscape.view.model.internal;
+package org.cytoscape.view.model.internal.network;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -12,10 +12,10 @@ import java.util.function.Predicate;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.CyNetworkViewFactoryConfig;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.model.internal.base.VPStoreViewConfig;
 
-public class CyNetworkViewFactoryConfigImpl implements CyNetworkViewFactoryConfig {
+public class CyNetworkViewFactoryConfigImpl implements VPStoreViewConfig {
 	
 	private final Set<VisualProperty<?>> noClearVPs = new HashSet<>();
 	private final Map<VisualProperty<?>,Set<Object>> vpToKey = new HashMap<>();
@@ -48,26 +48,33 @@ public class CyNetworkViewFactoryConfigImpl implements CyNetworkViewFactoryConfi
 		noClearVPs.add(vp);
 	}
 	
+	@Override
 	public boolean isTrackedKey(Object key) {
 		return predicates.containsKey(key);
 	}
 
+	@Override
 	public Set<VisualProperty<?>> getNoClearVPs() {
 		return noClearVPs;
 	}
 	
+	@Override
 	public Set<Object> getTrackingKeys(VisualProperty<?> vp) {
 		return vpToKey.getOrDefault(vp, Collections.emptySet());
 	}
 	
+	@Override
 	public boolean isTracked(VisualProperty<?> vp) {
 		return vpToKey.containsKey(vp);
 	}
 	
+	@SuppressWarnings("rawtypes")
+	@Override
 	public Predicate getPredicate(Object key) {
 		return predicates.get(key);
 	}
 
+	@Override
 	public Collection<VisualProperty<?>> getTrackedVPs(Class<?> type) {
 		if(CyNode.class.equals(type))
 			return nodeVPs;

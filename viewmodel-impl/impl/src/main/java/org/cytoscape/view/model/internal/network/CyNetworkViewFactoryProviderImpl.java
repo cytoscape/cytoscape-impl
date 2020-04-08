@@ -1,4 +1,4 @@
-package org.cytoscape.view.model.internal;
+package org.cytoscape.view.model.internal.network;
 
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SELECTED;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_VISIBLE;
@@ -15,7 +15,6 @@ import org.cytoscape.view.model.CyNetworkViewFactoryConfig;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewFactoryProvider;
 import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.model.internal.model.CyNetworkViewFactoryImpl;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 

@@ -258,6 +258,11 @@ public abstract class AbstractTableFacade implements CyTable {
 		}
 
 		@Override
+		public Long getSUID() {
+			return actualRow.getSUID();
+		}
+		
+		@Override
 		public void set(final String attributeName, final Object value) {
 			if ( value != null && attributeName != null && attributeName.equals("edges.SUID") ) {
 				System.out.println("facade set (" + Long.toString(actualRow.get("SUID",Long.class)) + " - " + table.getTitle() + ") " + attributeName + " " + value.toString());
@@ -336,6 +341,11 @@ public abstract class AbstractTableFacade implements CyTable {
 			this.actualColumn = actualColumn;
 		}
 
+		@Override
+		public Long getSUID() {
+			return actualColumn.getSUID();
+		}
+		
 		@Override
 		public String getName() {
 			return actualColumn.getName();

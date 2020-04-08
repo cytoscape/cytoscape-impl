@@ -6,7 +6,7 @@ import static org.mockito.Mockito.withSettings;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.model.internal.CyNetworkViewFactoryProviderImpl;
+import org.cytoscape.view.model.internal.network.CyNetworkViewFactoryProviderImpl;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NullVisualProperty;
 

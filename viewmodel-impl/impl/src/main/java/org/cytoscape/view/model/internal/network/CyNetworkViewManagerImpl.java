@@ -1,4 +1,4 @@
-package org.cytoscape.view.model.internal;
+package org.cytoscape.view.model.internal.network;
 
 import java.util.Collection;
 import java.util.HashSet;

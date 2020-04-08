@@ -1,12 +1,12 @@
-package org.cytoscape.view.model.internal.model;
+package org.cytoscape.view.model.internal.base;
 
 import java.util.Collection;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.model.internal.CyNetworkViewFactoryConfigImpl;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 import io.vavr.collection.HashMap;
@@ -24,15 +24,15 @@ public class VPStore {
 	private Map<Long,Map<VisualProperty<?>,Object>> directLocks = HashMap.empty();
 	private Map<VisualProperty<?>,Object> defaultValues = HashMap.empty();
 	
-	private final CyNetworkViewFactoryConfigImpl config;
+	private final VPStoreViewConfig config;
 	private final Class<?> type;
 	private Map<Object,Set<Long>> tracked = HashMap.empty();
 	
 	
-	public VPStore(Class<?> type, VisualLexicon visualLexicon, CyNetworkViewFactoryConfigImpl config) {
+	public VPStore(Class<?> type, VisualLexicon visualLexicon, VPStoreViewConfig config) {
 		this.type = type;
 		this.visualLexicon = visualLexicon;
-		this.config = config == null ? new CyNetworkViewFactoryConfigImpl() : config;
+		this.config = config == null ? new NullViewConfigImpl() : config;
 	}
 	
 	protected VPStore(VPStore other) {
@@ -50,7 +50,7 @@ public class VPStore {
 		return new VPStore(this);
 	}
 	
-	public CyNetworkViewFactoryConfigImpl getConfig() {
+	public VPStoreViewConfig getConfig() {
 		return config;
 	}
 	
@@ -189,7 +189,7 @@ public class VPStore {
 		}
 	}
 	
-	protected void updateTrackedVP(Long suid, VisualProperty<?> vp) {
+	public void updateTrackedVP(Long suid, VisualProperty<?> vp) {
 		Collection<Object> keys = config.getTrackingKeys(vp);
 		if(keys.isEmpty())
 			return;
@@ -198,7 +198,10 @@ public class VPStore {
 		var value = getVisualProperty(suid, vp);
 		for(var key : keys) {
 			Set<Long> suids = tracked.getOrElse(key, HashSet.empty());
-			boolean track = config.getPredicate(key).test(value);
+			@SuppressWarnings("rawtypes")
+			Predicate predicate = config.getPredicate(key);
+			@SuppressWarnings("unchecked")
+			boolean track = predicate != null && predicate.test(value);
 			if(track) {
 				tracked = tracked.put(key, suids.add(suid));
 			} else if(!suids.isEmpty()) {

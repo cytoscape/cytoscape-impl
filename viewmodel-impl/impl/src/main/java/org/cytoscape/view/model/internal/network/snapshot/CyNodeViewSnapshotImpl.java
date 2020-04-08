@@ -1,9 +1,9 @@
-package org.cytoscape.view.model.internal.model.snapshot;
+package org.cytoscape.view.model.internal.network.snapshot;
 
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.SnapshotNodeInfo;
-import org.cytoscape.view.model.internal.model.CyNodeViewImpl;
-import org.cytoscape.view.model.internal.model.VPStore;
+import org.cytoscape.view.model.internal.base.VPStore;
+import org.cytoscape.view.model.internal.network.CyNodeViewImpl;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 public class CyNodeViewSnapshotImpl extends CyViewSnapshotBase<CyNode> implements SnapshotNodeInfo {

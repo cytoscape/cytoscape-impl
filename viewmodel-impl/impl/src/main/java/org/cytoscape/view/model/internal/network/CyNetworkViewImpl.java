@@ -1,4 +1,4 @@
-package org.cytoscape.view.model.internal.model;
+package org.cytoscape.view.model.internal.network;
 
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_HEIGHT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_VISIBLE;
@@ -23,13 +23,13 @@ import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.model.events.AboutToRemoveEdgeViewsEvent;
-import org.cytoscape.view.model.events.AboutToRemoveNodeViewsEvent;
 import org.cytoscape.view.model.events.AddedEdgeViewsEvent;
 import org.cytoscape.view.model.events.AddedNodeViewsEvent;
 import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
-import org.cytoscape.view.model.internal.CyNetworkViewFactoryConfigImpl;
-import org.cytoscape.view.model.internal.model.snapshot.CyNetworkViewSnapshotImpl;
+import org.cytoscape.view.model.internal.base.CyViewBase;
+import org.cytoscape.view.model.internal.base.VPStore;
+import org.cytoscape.view.model.internal.base.ViewLock;
+import org.cytoscape.view.model.internal.network.snapshot.CyNetworkViewSnapshotImpl;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 import io.vavr.Tuple2;
@@ -77,7 +77,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		this.rendererId = rendererId;
 		this.visualLexicon = visualLexicon;
 		
-		this.netLock  = new ViewLock(null);
+		this.netLock  = new ViewLock();
 		this.nodeLock = new ViewLock(netLock);
 		this.edgeLock = new ViewLock(netLock);
 		
@@ -117,7 +117,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	}
 	
 	@Override
-	public CyNetworkViewImpl getNetworkView() {
+	public CyNetworkViewImpl getParentViewModel() {
 		return this;
 	}
 	
@@ -191,7 +191,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 				View<CyNode> nodeView = dataSuidToNode.getOrElse(model.getSUID(), null);
 				if(nodeView != null) {
 					// this is non-blocking, so its ok to call in the synchronized block
-					eventHelper.addEventPayload(this, nodeView, AboutToRemoveNodeViewsEvent.class);
+//					eventHelper.addEventPayload(this, nodeView, AboutToRemoveNodeViewsEvent.class);
 					
 					dataSuidToNode = dataSuidToNode.remove(model.getSUID());
 					viewSuidToNode = viewSuidToNode.remove(nodeView.getSUID());
@@ -215,7 +215,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 			CyEdgeViewImpl edgeView = dataSuidToEdge.getOrElse(model.getSUID(), null);
 			if(edgeView != null) {
 				// this is non-blocking, so its ok to call in the synchronized block
-				eventHelper.addEventPayload(this, edgeView, AboutToRemoveEdgeViewsEvent.class);
+//				eventHelper.addEventPayload(this, edgeView, AboutToRemoveEdgeViewsEvent.class);
 				
 				dataSuidToEdge = dataSuidToEdge.remove(model.getSUID());
 				viewSuidToEdge = viewSuidToEdge.remove(edgeView.getSUID());
@@ -340,20 +340,20 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	
 	
 	@Override
-	public <T, V extends T> void setViewDefault(VisualProperty<? extends T> vp, V value) {
+	public <T, V extends T> void setViewDefault(VisualProperty<? extends T> vp, V defaultValue) {
 		if(vp.shouldIgnoreDefault())
 			return;
 		
 		if(vp.getTargetDataType().equals(CyNode.class)) {
 			synchronized(nodeLock) {
-				nodeVPs.setViewDefault(vp, value);
+				nodeVPs.setViewDefault(vp, defaultValue);
 				if(nodeVPs.getConfig().isTracked(vp)) {
 					netVPs.updateTrackedVP(getSUID(), vp);
 				}
 			}
 		} else if(vp.getTargetDataType().equals(CyEdge.class)) {
 			synchronized(edgeLock) {
-				edgeVPs.setViewDefault(vp, value);
+				edgeVPs.setViewDefault(vp, defaultValue);
 				if(edgeVPs.getConfig().isTracked(vp)) {
 					for(Tuple2<Long,?> t : viewSuidToEdge) {
 						edgeVPs.updateTrackedVP(t._1, vp);
@@ -361,15 +361,15 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 				}
 				// This is hard-coded to mimic legacy Ding behaviour to prevent some build tests from failing.
 				if(vp == BasicVisualLexicon.EDGE_STROKE_SELECTED_PAINT) {
-					setViewDefault(BasicVisualLexicon.EDGE_SELECTED_PAINT, value);
+					setViewDefault(BasicVisualLexicon.EDGE_SELECTED_PAINT, defaultValue);
 				}
 				else if(vp == BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT) {
-					setViewDefault(BasicVisualLexicon.EDGE_UNSELECTED_PAINT, value);
+					setViewDefault(BasicVisualLexicon.EDGE_UNSELECTED_PAINT, defaultValue);
 				}
 			}
 		} else if(vp.getTargetDataType().equals(CyNetwork.class)) {
 			synchronized(netLock) {
-				netVPs.setViewDefault(vp, value);
+				netVPs.setViewDefault(vp, defaultValue);
 				if(netVPs.getConfig().isTracked(vp)) {
 					for(Tuple2<Long,?> t : viewSuidToNode) {
 						nodeVPs.updateTrackedVP(t._1, vp);

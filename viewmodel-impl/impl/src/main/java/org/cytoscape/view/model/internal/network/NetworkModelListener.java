@@ -1,4 +1,4 @@
-package org.cytoscape.view.model.internal.model;
+package org.cytoscape.view.model.internal.network;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;

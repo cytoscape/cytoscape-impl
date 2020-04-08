@@ -125,7 +125,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		this.primaryKeyType = primaryKeyType;
 		this.pub = pub;
 		this.isImmutable = !isMutable;
-		this.suid = Long.valueOf(SUIDFactory.getNextSUID());
+		this.suid = SUIDFactory.getNextSUID();
 		this.eventHelper = eventHelper;
 		this.columnFactory = columnFactory;
 		this.interpreter = interpreter;
@@ -1169,9 +1169,15 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	
 	private final class InternalRow implements CyRow {
 		private final Object key;
+		private final Long suid = SUIDFactory.getNextSUID();
 
 		InternalRow(final Object key) {
 			this.key = key;
+		}
+		
+		@Override
+		public Long getSUID() {
+			return suid;
 		}
 
 		@Override

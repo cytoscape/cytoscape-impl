@@ -1,4 +1,4 @@
-package org.cytoscape.view.model.internal.model.spacial;
+package org.cytoscape.view.model.internal.network.spacial;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,8 +8,8 @@ import java.util.List;
 
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.model.internal.model.snapshot.CyNetworkViewSnapshotImpl;
-import org.cytoscape.view.model.internal.model.snapshot.CyNodeViewSnapshotImpl;
+import org.cytoscape.view.model.internal.network.snapshot.CyNetworkViewSnapshotImpl;
+import org.cytoscape.view.model.internal.network.snapshot.CyNodeViewSnapshotImpl;
 import org.cytoscape.view.model.spacial.SpacialIndex2D;
 import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
 

@@ -1,10 +1,12 @@
-package org.cytoscape.view.model.internal.model;
+package org.cytoscape.view.model.internal.base;
 
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.SUIDFactory;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.events.ViewChangeRecord;
@@ -27,9 +29,12 @@ public abstract class CyViewBase<M> implements View<M> {
 	 * We want to keep the size of these objects as small as possible.
 	 * Look up these values using abstract methods, rather than store them as fields.
 	 */
-	public abstract CyNetworkViewImpl getNetworkView();
+	public abstract View<?> getParentViewModel();
 	public abstract VPStore getVPStore();
 	public abstract ViewLock getLock();
+	public abstract CyEventHelper getEventHelper();
+	public abstract VisualLexicon getVisualLexicon();
+	public void setDirty() { }
 	
 	
 	@Override
@@ -44,9 +49,8 @@ public abstract class CyViewBase<M> implements View<M> {
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private <T, V extends T> void fireViewChangedEvent(VisualProperty<? extends T> vp, V value, boolean lockedValue) {
-		CyNetworkViewImpl networkView = getNetworkView();
 		ViewChangeRecord record = new ViewChangeRecord<>(this, vp, value, lockedValue);
-		networkView.getEventHelper().addEventPayload(networkView, record, ViewChangedEvent.class);
+		getEventHelper().addEventPayload(getParentViewModel(), record, ViewChangedEvent.class);
 	}
 	
 	@Override
@@ -56,7 +60,7 @@ public abstract class CyViewBase<M> implements View<M> {
 			boolean changed = getVPStore().setVisualProperty(suid, vp, value);
 			if(changed) {
 				if(lock.isUpdateDirty())
-					getNetworkView().setDirty();
+					setDirty();
 				boolean locked = getVPStore().isValueLocked(suid, vp);
 				if(!locked) {
 					// If the value is overridden by a lock then the value returned 
@@ -75,7 +79,7 @@ public abstract class CyViewBase<M> implements View<M> {
 				viewConsumer.accept(this)
 			);
 			if(setDirty && lock.isUpdateDirty()) {
-				getNetworkView().setDirty();
+				setDirty();
 			}
 		}
 	}
@@ -103,9 +107,9 @@ public abstract class CyViewBase<M> implements View<M> {
 			boolean changed = getVPStore().setLockedValue(suid, vp, value);
 			if(changed) {
 				if(lock.isUpdateDirty())
-					getNetworkView().setDirty();
+					setDirty();
 			
-				VisualLexiconNode visualLexiconNode = getNetworkView().getVisualLexicon().getVisualLexiconNode(vp);
+				VisualLexiconNode visualLexiconNode = getVisualLexicon().getVisualLexiconNode(vp);
 				if(visualLexiconNode.getChildren().isEmpty()) {
 					// much more common case, might as well optimize for it
 					fireViewChangedEvent(vp, value, true);

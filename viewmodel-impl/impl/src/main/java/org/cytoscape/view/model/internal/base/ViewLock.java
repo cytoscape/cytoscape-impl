@@ -1,4 +1,4 @@
-package org.cytoscape.view.model.internal.model;
+package org.cytoscape.view.model.internal.base;
 
 /**
  * A lock object with some extra fields.
@@ -8,6 +8,10 @@ public class ViewLock {
 
 	private int updateDirty = 0;
 	private final ViewLock parent;
+	
+	public ViewLock() {
+		this(null);
+	}
 	
 	public ViewLock(ViewLock parent) {
 		this.parent = parent;

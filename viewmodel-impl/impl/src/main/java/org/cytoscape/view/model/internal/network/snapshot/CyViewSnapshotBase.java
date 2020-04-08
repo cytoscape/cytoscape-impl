@@ -1,11 +1,11 @@
-package org.cytoscape.view.model.internal.model.snapshot;
+package org.cytoscape.view.model.internal.network.snapshot;
 
 import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.model.internal.model.VPStore;
+import org.cytoscape.view.model.internal.base.VPStore;
 
 import io.vavr.collection.Map;
 

@@ -29,9 +29,9 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.view.model.events.ViewChangedEvent;
-import org.cytoscape.view.model.internal.model.CyNetworkViewImpl;
-import org.cytoscape.view.model.internal.model.CyNodeViewImpl;
-import org.cytoscape.view.model.internal.model.VPStore;
+import org.cytoscape.view.model.internal.base.VPStore;
+import org.cytoscape.view.model.internal.network.CyNetworkViewImpl;
+import org.cytoscape.view.model.internal.network.CyNodeViewImpl;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.junit.Test;
 
