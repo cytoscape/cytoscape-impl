@@ -51,6 +51,7 @@
 		<module>swing-application-impl</module>
 		<module>table-browser-impl</module>
 		<module>table-import-impl</module>
+		<module>table-presentation-impl</module>
 		<module>viewmodel-impl</module>
 		<module>vizmap-gui-core-impl</module>
 		<module>vizmap-gui-impl</module>
