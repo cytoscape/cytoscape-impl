@@ -1,4 +1,4 @@
-package org.cytoscape.view.model;
+package org.cytoscape.view.model.network;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -6,6 +6,8 @@ import static org.mockito.Mockito.when;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.view.model.AbstractCyNetworkViewManagerTest;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.internal.network.CyNetworkViewManagerImpl;
 import org.junit.After;
 import org.junit.Before;

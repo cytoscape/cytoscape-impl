@@ -1,4 +1,4 @@
-package org.cytoscape.view.model;
+package org.cytoscape.view.model.network;
 
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_PAINT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_BACKGROUND_PAINT;
@@ -12,6 +12,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.internal.network.CyNetworkViewImpl;
 import org.junit.Test;
 

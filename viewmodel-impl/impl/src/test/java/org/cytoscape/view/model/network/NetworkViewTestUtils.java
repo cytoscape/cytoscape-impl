@@ -1,4 +1,4 @@
-package org.cytoscape.view.model;
+package org.cytoscape.view.model.network;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -21,6 +21,12 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewFactoryConfig;
+import org.cytoscape.view.model.CyNetworkViewSnapshot;
+import org.cytoscape.view.model.NullDataType;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.internal.network.CyNetworkViewFactoryConfigImpl;
 import org.cytoscape.view.model.internal.network.CyNetworkViewFactoryProviderImpl;
 import org.cytoscape.view.model.internal.network.CyNetworkViewImpl;

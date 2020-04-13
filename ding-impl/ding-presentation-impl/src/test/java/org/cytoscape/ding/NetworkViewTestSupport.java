@@ -8,7 +8,7 @@ import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewFactoryProvider;
-import org.cytoscape.view.model.NetworkViewFactoryTestSupport;
+import org.cytoscape.view.model.network.NetworkViewFactoryTestSupport;
 
 /*
  * #%L

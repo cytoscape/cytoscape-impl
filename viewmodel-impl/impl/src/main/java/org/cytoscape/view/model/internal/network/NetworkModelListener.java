@@ -27,19 +27,14 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 public class NetworkModelListener implements AddedNodesListener, AddedEdgesListener, 
 									AboutToRemoveNodesListener, AboutToRemoveEdgesListener, RowsSetListener {
 
-	private final CyServiceRegistrar registrar;
 	private final CyNetworkViewImpl networkView;
-	
+	private final CyEventHelper eventHelper;
 	
 	public NetworkModelListener(CyNetworkViewImpl networkView, CyServiceRegistrar registrar) {
 		this.networkView = networkView;
-		this.registrar = registrar;
+		this.eventHelper = registrar.getService(CyEventHelper.class);
 	}
 	
-	
-	private CyEventHelper getEventHelper() {
-		return registrar.getService(CyEventHelper.class);
-	}
 	
 	/**
 	 * Note, we are NOT relying on SelectEdgeViewUpdater and SelectNodeViewUpdater to forward selection events.
@@ -81,7 +76,7 @@ public class NetworkModelListener implements AddedNodesListener, AddedEdgesListe
 		for(CyNode node : e.getPayloadCollection()) {
 			View<CyNode> view = networkView.addNode(node);
 			if(view != null) {
-				getEventHelper().addEventPayload(networkView, view, AddedNodeViewsEvent.class);
+				eventHelper.addEventPayload(networkView, view, AddedNodeViewsEvent.class);
 			}
 		}
 	}
@@ -94,7 +89,7 @@ public class NetworkModelListener implements AddedNodesListener, AddedEdgesListe
 		for(CyEdge edge : e.getPayloadCollection()) {
 			View<CyEdge> view = networkView.addEdge(edge);
 			if(view != null) {
-				getEventHelper().addEventPayload(networkView, view, AddedEdgeViewsEvent.class);
+				eventHelper.addEventPayload(networkView, view, AddedEdgeViewsEvent.class);
 			}
 		}
 
@@ -105,9 +100,10 @@ public class NetworkModelListener implements AddedNodesListener, AddedEdgesListe
 		if(networkView.getModel() != e.getSource())
 			return;
 
+		// MKTODO does this make sense? how can "AboutToRemove" events be payload events?
 		for(CyNode node : e.getNodes()) {
 			View<CyNode> view = networkView.removeNode(node);
-			getEventHelper().addEventPayload(networkView, view, AboutToRemoveNodeViewsEvent.class);
+			eventHelper.addEventPayload(networkView, view, AboutToRemoveNodeViewsEvent.class);
 		}
 	}
 	
@@ -118,7 +114,7 @@ public class NetworkModelListener implements AddedNodesListener, AddedEdgesListe
 
 		for(CyEdge edge : e.getEdges()) {
 			View<CyEdge> view = networkView.removeEdge(edge);
-			getEventHelper().addEventPayload(networkView, view, AboutToRemoveEdgeViewsEvent.class);
+			eventHelper.addEventPayload(networkView, view, AboutToRemoveEdgeViewsEvent.class);
 		}
 	}
 	

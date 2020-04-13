@@ -1,4 +1,4 @@
-package org.cytoscape.view.model;
+package org.cytoscape.view.model.network;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -6,6 +6,11 @@ import static org.mockito.Mockito.withSettings;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewFactoryProvider;
+import org.cytoscape.view.model.NullDataType;
+import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.internal.network.CyNetworkViewFactoryProviderImpl;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NullVisualProperty;

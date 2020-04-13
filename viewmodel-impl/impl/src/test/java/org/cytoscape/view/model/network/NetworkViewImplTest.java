@@ -1,6 +1,6 @@
-package org.cytoscape.view.model;
+package org.cytoscape.view.model.network;
 
-import static org.cytoscape.view.model.NetworkViewTestUtils.asSuidSet;
+import static org.cytoscape.view.model.network.NetworkViewTestUtils.asSuidSet;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -28,6 +28,9 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.view.model.CyNetworkViewSnapshot;
+import org.cytoscape.view.model.SnapshotEdgeInfo;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.events.ViewChangedEvent;
 import org.cytoscape.view.model.internal.base.VPStore;
 import org.cytoscape.view.model.internal.network.CyNetworkViewImpl;
