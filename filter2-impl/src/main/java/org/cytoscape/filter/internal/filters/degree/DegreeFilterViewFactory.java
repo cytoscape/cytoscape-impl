@@ -55,7 +55,9 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 	@Override
 	public JComponent createView(Transformer<?, ?> transformer) {
 		DegreeFilter filter = (DegreeFilter) transformer;
-		filter.setEdgeType(Type.ANY);
+		if(filter.getEdgeType() == null) {
+			filter.setEdgeType(Type.ANY);
+		}
 		Controller controller = new Controller(filter);
 		View view = new View(controller);
 		modelMonitor.registerDegreeFilterView(view, controller);
