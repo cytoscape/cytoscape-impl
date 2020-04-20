@@ -119,17 +119,15 @@ public class FormulaBuilderDialog extends JDialog {
 	private ApplicationDomain applicationDomain;
 	private Stack<Integer> undoStack;
 	private final EquationCompiler compiler;
-	private final BrowserTable table;
-	private final BrowserTableModel tableModel;
+	private final TableRenderer tableRenderer;
 	private final String targetAttrName;
 
-	public FormulaBuilderDialog(final EquationCompiler compiler, final BrowserTable table, final Frame parent,
+	public FormulaBuilderDialog(final EquationCompiler compiler, final TableRenderer tableRenderer, final Frame parent,
 			final String targetAttrName) {
 		super(parent, "Create Function For: " + targetAttrName, ModalityType.APPLICATION_MODAL);
 
 		this.compiler = compiler;
-		this.table = table;
-		this.tableModel = (BrowserTableModel) table.getModel();
+		this.tableRenderer = tableRenderer;
 		this.targetAttrName = targetAttrName;
 		this.leadingArgs = new ArrayList<>();
 		this.applicationDomain = ApplicationDomain.CURRENT_CELL;
@@ -470,9 +468,9 @@ public class FormulaBuilderDialog extends JDialog {
 	private JComboBox<ApplicationDomain> getApplyToComboBox() {
 		if (applyToComboBox == null) {
 			applyToComboBox = new JComboBox<>();
-			final int selectedCellRow = table.getSelectedRow();
+			var selectedRows = tableRenderer.getRenderingEngine().getSelectedRows();
 			
-			if (selectedCellRow >= 0)
+			if (!selectedRows.isEmpty())
 				applyToComboBox.addItem(ApplicationDomain.CURRENT_CELL);
 			
 			if (attributesContainBooleanSelected())
@@ -541,7 +539,7 @@ public class FormulaBuilderDialog extends JDialog {
 	 *  @returns the type of the attribute "attribName" translated into the language of attribute equations or null
 	 */
 	private Class<?> getAttributeType(final String attribName) {
-		return tableModel.getDataTable().getColumn(attribName).getType();
+		return tableRenderer.getDataTable().getColumn(attribName).getType();
 	}
 
 	private boolean returnTypeIsCompatible(final Class<?> requiredType, final Class<?> returnType) {
@@ -578,10 +576,8 @@ public class FormulaBuilderDialog extends JDialog {
 	}
 
 	private boolean attributesContainBooleanSelected() {
-		final CyColumn selectedColumn =
-			tableModel.getDataTable().getColumn(CyNetwork.SELECTED);
-		return selectedColumn != null
-		       && selectedColumn.getType() == Boolean.class;
+		final CyColumn selectedColumn = tableRenderer.getDataTable().getColumn(CyNetwork.SELECTED);
+		return selectedColumn != null && selectedColumn.getType() == Boolean.class;
 	}
 
 	/**
@@ -590,7 +586,7 @@ public class FormulaBuilderDialog extends JDialog {
 	 */
 	private Class<?> expressionIsValid(final List<Class<?>> validArgTypes, final String expression) {
 		final Map<String, Class<?>> attribNamesAndTypes = new HashMap<String, Class<?>>();
-		for (final CyColumn column : tableModel.getDataTable().getColumns())
+		for (final CyColumn column : tableRenderer.getDataTable().getColumns())
 			attribNamesAndTypes.put(column.getName(), column.getType());
 
 		final EquationParser parser = compiler.getParser();
@@ -644,7 +640,7 @@ public class FormulaBuilderDialog extends JDialog {
 		getAttribNamesComboBox().removeAllItems();
 		final List<Class<?>> possibleArgTypes = getPossibleNextArgumentTypes();
 		final ArrayList<String> possibleAttribNames = new ArrayList<String>(20);
-		final Collection<CyColumn> columns = tableModel.getDataTable().getColumns();
+		final Collection<CyColumn> columns = tableRenderer.getDataTable().getColumns();
 		
 		for (final CyColumn column : columns) {
 			if (isTypeCompatible(possibleArgTypes, column.getType()))
@@ -706,7 +702,7 @@ public class FormulaBuilderDialog extends JDialog {
 			}
 		} else if (columnName != null) {
 			formula.append(EquationUtil.attribNameAsReference(columnName));
-			final CyColumn column = tableModel.getDataTable().getColumn(columnName);
+			final CyColumn column = tableRenderer.getDataTable().getColumn(columnName);
 			leadingArgs.add(column.getType());
 		}
 
@@ -756,6 +752,7 @@ public class FormulaBuilderDialog extends JDialog {
 		if (formula.charAt(formula.length() - 1) != ')')
 			formula = formula + ")";
 
+		
 		final int cellColum = table.convertColumnIndexToModel( table.getSelectedColumn());
 		
 		final String attribName = tableModel.getColumnName(cellColum);
@@ -768,12 +765,11 @@ public class FormulaBuilderDialog extends JDialog {
 		
 		switch (applicationDomain) {
 		case CURRENT_CELL:
-			final int cellRow = table.convertRowIndexToModel( table.getSelectedRow());
+			final int cellRow = table.convertRowIndexToModel(table.getSelectedRow());
 			tableModel.setValueAt(formula, cellRow, cellColum);
 			break;
 		case CURRENT_SELECTION:
-			final Collection<CyRow> selectedRows =
-				tableModel.getDataTable().getMatchingRows(CyNetwork.SELECTED, true);
+			final Collection<CyRow> selectedRows = tableModel.getDataTable().getMatchingRows(CyNetwork.SELECTED, true);
 			for (final CyRow selectedRow : selectedRows) {
 				if (!setAttribute(selectedRow, attribName, equation, errorMessage))
 					return false;

@@ -64,10 +64,9 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 
 	public GlobalTableBrowser(
 			final String tabTitle,
-			final CyServiceRegistrar serviceRegistrar,
-			final PopupMenuHelper popupMenuHelper
+			final CyServiceRegistrar serviceRegistrar
 	) {
-		super(tabTitle, serviceRegistrar, popupMenuHelper);
+		super(tabTitle, serviceRegistrar);
 		
 		tableChooser = new GlobalTableChooser();
 		tableChooser.addActionListener(this);

@@ -33,8 +33,10 @@ import org.cytoscape.view.model.CyNetworkViewFactoryProvider;
 import org.cytoscape.view.model.internal.network.CyNetworkViewFactoryProviderImpl;
 import org.cytoscape.view.model.internal.network.CyNetworkViewManagerImpl;
 import org.cytoscape.view.model.internal.table.CyTableViewFactoryImpl;
+import org.cytoscape.view.model.internal.table.CyTableViewFactoryProviderImpl;
 import org.cytoscape.view.model.internal.table.CyTableViewManagerImpl;
 import org.cytoscape.view.model.table.CyTableViewFactory;
+import org.cytoscape.view.model.table.CyTableViewFactoryProvider;
 import org.cytoscape.view.model.table.CyTableViewManager;
 import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
 import org.osgi.framework.BundleContext;
@@ -72,6 +74,9 @@ public class CyActivator extends AbstractCyActivator {
 		// The table renderer should provide the table view factory
 		CyTableViewFactory tableViewFactory = new CyTableViewFactoryImpl(registrar, BasicTableVisualLexicon.getInstance(), "TABLE");
 		registerService(bc, tableViewFactory, CyTableViewFactory.class);
+		
+		CyTableViewFactoryProvider tableViewFactoryProvider = new CyTableViewFactoryProviderImpl(registrar);
+		registerService(bc, tableViewFactoryProvider, CyTableViewFactoryProvider.class);
 	}
 	
 }

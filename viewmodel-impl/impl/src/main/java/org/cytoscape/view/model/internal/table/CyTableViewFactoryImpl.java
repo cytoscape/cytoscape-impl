@@ -23,7 +23,8 @@ public class CyTableViewFactoryImpl implements CyTableViewFactory {
 	
 	@Override
 	public CyTableView createTableView(CyTable table) {
-		CyTableViewImpl tableView = new CyTableViewImpl(registrar, table, visualLexicon, rendererId);
+		CyTableViewImpl tableView = createTableViewImpl(table);
+		listenForModelChanges(tableView);
 		return tableView;
 	}
 	

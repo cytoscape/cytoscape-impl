@@ -81,10 +81,9 @@ public class DefaultTableBrowser extends AbstractTableBrowser
 	public DefaultTableBrowser(
 			final String tabTitle,
 			final Class<? extends CyIdentifiable> objType,
-			final CyServiceRegistrar serviceRegistrar,
-			final PopupMenuHelper popupMenuHelper
+			final CyServiceRegistrar serviceRegistrar
 	) {
-		super(tabTitle, serviceRegistrar, popupMenuHelper);
+		super(tabTitle, serviceRegistrar);
 		this.objType = objType;
 
 		createPopupMenu();

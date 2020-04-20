@@ -1,5 +1,7 @@
  package org.cytoscape.view.model.internal.table;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.cytoscape.event.CyEventHelper;
@@ -130,7 +132,16 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView 
 	public View<CyColumn> getColumnView(CyColumn column) {
 		return dataSuidToCol.getOrElse(column.getSUID(), null);
 	}
-
+	
+	@Override
+	public Collection<View<CyColumn>> getColumnViews() {
+		// The asJava() method returns a collection that is unbearably slow, so we create our own collection instead.
+		java.util.List<View<CyColumn>> colList = new ArrayList<>();
+		for(var col : dataSuidToCol.values()) {
+			colList.add(col);
+		}
+		return colList;
+	}
 	
 	public View<CyRow> addRow(CyRow model) {
 		if(dataSuidToRow.containsKey(model.getSUID()))

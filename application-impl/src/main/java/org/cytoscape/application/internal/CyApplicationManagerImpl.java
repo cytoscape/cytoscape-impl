@@ -16,6 +16,7 @@ import java.util.Set;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.NetworkViewRenderer;
+import org.cytoscape.application.TableViewRenderer;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentRenderingEngineEvent;
@@ -75,23 +76,25 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	private static final String LAST_DIRECTORY = "directory.last";
 	
-	private CyNetwork currentNetwork;
-	private CyNetworkView currentNetworkView;
-	private RenderingEngine<CyNetwork> currentRenderingEngine;
-	private CyTable currentTable;
-	private final List<CyNetworkView> selectedNetworkViews;
-	private Map<String, NetworkViewRenderer> renderers;
-	
 	private final CyServiceRegistrar serviceRegistrar;
 	private final Object lock = new Object();
+	
+	
+	private CyNetwork currentNetwork;
+	private CyNetworkView currentNetworkView;
+	private CyTable currentTable;
+	
+	private RenderingEngine<CyNetwork> currentNetworkRenderingEngine;
+	private final List<CyNetworkView> selectedNetworkViews = new LinkedList<>();
+	private Map<String,NetworkViewRenderer> networkRenderers = new LinkedHashMap<>();
+	private NetworkViewRenderer defaultNetworkRenderer;
+	
+	private Map<String,TableViewRenderer> tableRenderers = new LinkedHashMap<>();
+	private TableViewRenderer defaultTableRenderer;
+	
 
-	private NetworkViewRenderer defaultRenderer;
-
-	public CyApplicationManagerImpl(final CyServiceRegistrar serviceRegistrar) {
+	public CyApplicationManagerImpl(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
-		
-		selectedNetworkViews = new LinkedList<>();
-		renderers = new LinkedHashMap<>() ;
 	}
 
 	@Override
@@ -135,7 +138,7 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 		final RenderingEngine<?> renderingEngine = event.getRenderingEngine();
 		
 		synchronized (lock) {
-			if (renderingEngine == currentRenderingEngine)
+			if (renderingEngine == currentNetworkRenderingEngine)
 				setCurrentRenderingEngine(null);
 		}
 	}
@@ -278,7 +281,7 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	@Override
 	public RenderingEngine<CyNetwork> getCurrentRenderingEngine() {
 		synchronized (lock) {
-			return currentRenderingEngine;
+			return currentNetworkRenderingEngine;
 		}
 	}
 
@@ -286,20 +289,27 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	public void setCurrentRenderingEngine(RenderingEngine<CyNetwork> engine) {
 		boolean changed;
 		synchronized (lock) {
-			changed = (engine == null && currentRenderingEngine != null)
-					  || (engine != null && !engine.equals(currentRenderingEngine));
+			changed = (engine == null && currentNetworkRenderingEngine != null)
+					  || (engine != null && !engine.equals(currentNetworkRenderingEngine));
 			
-			this.currentRenderingEngine = engine;
+			this.currentNetworkRenderingEngine = engine;
 		}
 		
 		if (changed)
-			fireEvents(Collections.singletonList(new SetCurrentRenderingEngineEvent(this, currentRenderingEngine)));
+			fireEvents(Collections.singletonList(new SetCurrentRenderingEngineEvent(this, currentNetworkRenderingEngine)));
+	}
+	
+	@Override
+	public TableViewRenderer getTableViewRenderer(final String rendererId) {
+		synchronized (lock) {
+			return tableRenderers.get(rendererId);
+		}
 	}
 
 	@Override
 	public NetworkViewRenderer getNetworkViewRenderer(final String rendererId) {
 		synchronized (lock) {
-			return renderers.get(rendererId);
+			return networkRenderers.get(rendererId);
 		}
 	}
 
@@ -363,16 +373,32 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 
 	public void addNetworkViewRenderer(NetworkViewRenderer renderer, Map<?, ?> properties) {
 		synchronized (lock) {
-			renderers.put(renderer.getId(), renderer);
+			networkRenderers.put(renderer.getId(), renderer);
 		}
 	}
 
 	public void removeNetworkViewRenderer(NetworkViewRenderer renderer, Map<?, ?> properties) {
 		synchronized (lock) {
-			renderers.remove(renderer.getId());
+			networkRenderers.remove(renderer.getId());
 			
-			if (defaultRenderer == renderer) {
-				defaultRenderer = null;
+			if (defaultNetworkRenderer == renderer) {
+				defaultNetworkRenderer = null;
+			}
+		}
+	}
+	
+	public void addTableViewRenderer(TableViewRenderer renderer, Map<?, ?> properties) {
+		synchronized (lock) {
+			tableRenderers.put(renderer.getId(), renderer);
+		}
+	}
+
+	public void removeTableViewRenderer(TableViewRenderer renderer, Map<?, ?> properties) {
+		synchronized (lock) {
+			tableRenderers.remove(renderer.getId());
+			
+			if (defaultTableRenderer == renderer) {
+				defaultTableRenderer = null;
 			}
 		}
 	}
@@ -380,30 +406,56 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	@Override
 	public NetworkViewRenderer getDefaultNetworkViewRenderer() {
 		synchronized (lock) {
-			if (defaultRenderer != null)
-				return defaultRenderer;
-			
-			if (renderers.isEmpty())
-				return null;
-			
-			// Since renderers is a LinkedHashSet, the iterator gives back entries in insertion order.
-			defaultRenderer = renderers.entrySet().iterator().next().getValue();
-			
-			return defaultRenderer;
+			if (defaultNetworkRenderer == null) {
+				if (networkRenderers.isEmpty()) {
+					return null;
+				}
+				// Since renderers is a LinkedHashSet, the iterator gives back entries in insertion order.
+				defaultNetworkRenderer = networkRenderers.entrySet().iterator().next().getValue();
+			}
+			return defaultNetworkRenderer;
 		}
 	}
 	
 	@Override
 	public void setDefaultNetworkViewRenderer(NetworkViewRenderer renderer) {
 		synchronized (lock) {
-			defaultRenderer = renderer;
+			defaultNetworkRenderer = renderer;
+		}
+	}
+	
+	@Override
+	public void setDefaultTableViewRenderer(TableViewRenderer renderer) {
+		synchronized (lock) {
+			defaultTableRenderer = renderer;
+		}
+	}
+	
+	@Override
+	public TableViewRenderer getDefaultTableViewRenderer() {
+		synchronized (lock) {
+			if (defaultTableRenderer == null) {
+				if (tableRenderers.isEmpty()) {
+					return null;
+				}
+				// Since renderers is a LinkedHashSet, the iterator gives back entries in insertion order.
+				defaultTableRenderer = tableRenderers.entrySet().iterator().next().getValue();
+			}
+			return defaultTableRenderer;
+		}
+	}
+	
+	@Override
+	public Set<TableViewRenderer> getTableViewRendererSet() {
+		synchronized (lock) {
+			return new LinkedHashSet<>(tableRenderers.values());
 		}
 	}
 	
 	@Override
 	public Set<NetworkViewRenderer> getNetworkViewRendererSet() {
 		synchronized (lock) {
-			return new LinkedHashSet<>(renderers.values());
+			return new LinkedHashSet<>(networkRenderers.values());
 		}
 	}
 	
