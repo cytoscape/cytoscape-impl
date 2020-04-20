@@ -236,15 +236,10 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 	}
 	
 	@Override
-	public void addNamedTransformers(final TransformerPanel panel, final NamedTransformer<CyNetwork, CyIdentifiable>... namedTransformers) {
+	public void addNamedTransformer(TransformerPanel panel, NamedTransformer<CyNetwork, CyIdentifiable> namedTransformer, boolean strictName) {
 		if (!SwingUtilities.isEventDispatchThread()) {
 			try {
-				SwingUtilities.invokeAndWait(new Runnable() {
-					@Override
-					public void run() {
-						addNamedTransformers(panel, namedTransformers);
-					}
-				});
+				SwingUtilities.invokeAndWait(() -> addNamedTransformer(panel, namedTransformer, strictName));
 			} catch (InterruptedException e) {
 				logger.error("An unexpected error occurred", e);
 			} catch (InvocationTargetException e) {
@@ -253,26 +248,33 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 			return;
 		}
 		
-		for (NamedTransformer<CyNetwork, CyIdentifiable> namedTransformer : namedTransformers) {
-			int validated = 0;
-			for (Transformer<CyNetwork, CyIdentifiable> transformer : namedTransformer.getTransformers()) {
-				if (!(transformer instanceof Filter)) {
-					validated++;
-				}
-			}
-			if (validated == 0) {
-				continue;
-			}
-			
-			String name = findUniqueName(namedTransformer.getName());
-			TransformerElement element = addNewElement(name);
-			for (Transformer<CyNetwork, CyIdentifiable> transformer: namedTransformer.getTransformers()) {
-				if (transformer instanceof Filter) {
-					continue;
-				}
-				element.getChain().add(transformer);
+		int validated = 0;
+		for (Transformer<CyNetwork, CyIdentifiable> transformer : namedTransformer.getTransformers()) {
+			if (!(transformer instanceof Filter)) {
+				validated++;
 			}
 		}
+		if (validated == 0) {
+			return;
+		}
+		
+		String name;
+		if(strictName)
+			name = namedTransformer.getName();
+		else
+			name = findUniqueName(namedTransformer.getName());
+		
+		if(getElementByName(name) != null)
+			throw new IllegalArgumentException("Transformer with name '" + name + "' already exists.");
+		
+		TransformerElement element = addNewElement(name);
+		for (Transformer<CyNetwork, CyIdentifiable> transformer: namedTransformer.getTransformers()) {
+			if (transformer instanceof Filter) {
+				continue;
+			}
+			element.getChain().add(transformer);
+		}
+		
 		TransformerElement selected = (TransformerElement) namedElementComboBoxModel.getSelectedItem();
 		if (selected == null) {
 			return;
