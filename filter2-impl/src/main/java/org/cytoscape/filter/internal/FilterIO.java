@@ -62,7 +62,9 @@ public class FilterIO {
 			transformers = (NamedTransformer<CyNetwork, CyIdentifiable>[]) reader.read(stream);
 		}
 		AbstractPanelController controller = panel.getController();
-		controller.addNamedTransformers(panel, transformers);
+		for(var t : transformers) {
+			controller.addNamedTransformer(panel, t, false);
+		}
 	}
 
 	public void writeFilters(File file, NamedTransformer<CyNetwork, CyIdentifiable>[] namedTransformers) throws IOException {

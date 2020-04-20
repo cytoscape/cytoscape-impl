@@ -273,7 +273,7 @@ public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPa
 	@SuppressWarnings("unchecked")
 	@Override
 	public void addNamedTransformer(NamedTransformer<CyNetwork, CyIdentifiable> transformer) {
-		controller.addNamedTransformers(this, transformer);
+		controller.addNamedTransformer(this, transformer, true);
 	}
 	
 	@SuppressWarnings("unchecked")

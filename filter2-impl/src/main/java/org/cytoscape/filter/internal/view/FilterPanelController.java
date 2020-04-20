@@ -214,15 +214,10 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 	}
 	
 	@Override
-	public void addNamedTransformers(final FilterPanel panel, @SuppressWarnings("unchecked") final NamedTransformer<CyNetwork, CyIdentifiable>... namedTransformers) {
+	public void addNamedTransformer(final FilterPanel panel, NamedTransformer<CyNetwork,CyIdentifiable> namedTransformer, boolean strictName) {
 		if (!SwingUtilities.isEventDispatchThread()) {
 			try {
-				SwingUtilities.invokeAndWait(new Runnable() {
-					@Override
-					public void run() {
-						addNamedTransformers(panel, namedTransformers);
-					}
-				});
+				SwingUtilities.invokeAndWait(() -> addNamedTransformer(panel, namedTransformer, strictName));
 			} catch (InterruptedException e) {
 				logger.error("An unexpected error occurred", e);
 			} catch (InvocationTargetException e) {
@@ -231,31 +226,38 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 			return;
 		}
 		
-		for (NamedTransformer<CyNetwork, CyIdentifiable> namedTransformer : namedTransformers) {
-			int validated = 0;
-			for (Transformer<CyNetwork, CyIdentifiable> transformer : namedTransformer.getTransformers()) {
-				if (transformer instanceof Filter) {
-					validated++;
-				}
+		int validated = 0;
+		for (Transformer<CyNetwork, CyIdentifiable> transformer : namedTransformer.getTransformers()) {
+			if (transformer instanceof Filter) {
+				validated++;
 			}
-			if (validated == 0) {
-				continue;
-			}
+		}
+		if (validated == 0) {
+			return;
+		}
+		
+		String name;
+		if(strictName)
+			name = namedTransformer.getName();
+		else
+			name = findUniqueName(namedTransformer.getName());
+		
+		if(getElementByName(name) != null)
+			throw new IllegalArgumentException("Filter with name '" + name + "' already exists.");
 			
-			String name = findUniqueName(namedTransformer.getName());
-			FilterElement element = addNewElement(name);
-			List<Transformer<CyNetwork, CyIdentifiable>> transformers = namedTransformer.getTransformers();
-			if (transformers.size() == 1) {
-				Transformer<CyNetwork, CyIdentifiable> first = transformers.get(0);
-				if (first instanceof CompositeFilter) {
-					addCompositeFilter(element, (CompositeFilter<CyNetwork, CyIdentifiable>) first);
-				} else {
-					addTransformers(element, transformers);
-				}
+		FilterElement element = addNewElement(name);
+		List<Transformer<CyNetwork, CyIdentifiable>> transformers = namedTransformer.getTransformers();
+		if (transformers.size() == 1) {
+			Transformer<CyNetwork, CyIdentifiable> first = transformers.get(0);
+			if (first instanceof CompositeFilter) {
+				addCompositeFilter(element, (CompositeFilter<CyNetwork, CyIdentifiable>) first);
 			} else {
 				addTransformers(element, transformers);
 			}
+		} else {
+			addTransformers(element, transformers);
 		}
+		
 		FilterElement selected = (FilterElement) namedElementComboBoxModel.getSelectedItem();
 		if (selected == null) {
 			return;
