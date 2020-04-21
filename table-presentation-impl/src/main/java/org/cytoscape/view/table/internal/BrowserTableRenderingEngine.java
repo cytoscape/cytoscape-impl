@@ -51,7 +51,7 @@ public class BrowserTableRenderingEngine implements TableRenderingEngine {
 	private BrowserTable createBrowserTable() {
 		var compiler = registrar.getService(EquationCompiler.class);
 		var browserTable = new BrowserTable(compiler, popupMenuHelper, registrar);
-		var model = new BrowserTableModel(tableView.getModel(), null, compiler); // why does it need the element type? 
+		var model = new BrowserTableModel(tableView.getModel(), tableView.getTableType(), compiler); // why does it need the element type? 
 		browserTable.setModel(model);
 		
 		//move and hide SUID and selected by default
