@@ -183,11 +183,6 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	}
 	
 	@Override
-	public BrowserTableModel getModel() {
-		return (BrowserTableModel) super.getModel();
-	}
-	
-	@Override
 	public synchronized void addMouseListener(final MouseListener listener) {
 		// Hack to prevent selected rows from being deselected when the user
 		// CONTROL-clicks one of those rows on Mac (popup trigger).

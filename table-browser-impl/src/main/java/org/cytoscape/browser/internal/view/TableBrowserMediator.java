@@ -126,22 +126,21 @@ public class TableBrowserMediator implements SetCurrentNetworkListener, CytoPane
 		CyTable table = column.getTable();
 		
 		invokeOnEDTAndWait(() -> {
-			BrowserTable browserTable = getBrowserTable(table);
-			
+			TableRenderer browserTable = getTableRenderer(table);
 			if (browserTable != null)
-				browserTable.hideColumn(column.getName());
+				browserTable.setColumnVisible(column.getName(), false);
 		});
 	}
 
-	private BrowserTable getBrowserTable(CyTable table) {
-		if (nodeTableBrowser.getBrowserTable(table) != null)
-			return nodeTableBrowser.getBrowserTable(table);
-		if (edgeTableBrowser.getBrowserTable(table) != null)
-			return edgeTableBrowser.getBrowserTable(table);
-		if (networkTableBrowser.getBrowserTable(table) != null)
-			return networkTableBrowser.getBrowserTable(table);
-		if (globalTableBrowser.getBrowserTable(table) != null)
-			return globalTableBrowser.getBrowserTable(table);
+	private TableRenderer getTableRenderer(CyTable table) {
+		if (nodeTableBrowser.getTableRenderer(table) != null)
+			return nodeTableBrowser.getTableRenderer(table);
+		if (edgeTableBrowser.getTableRenderer(table) != null)
+			return edgeTableBrowser.getTableRenderer(table);
+		if (networkTableBrowser.getTableRenderer(table) != null)
+			return networkTableBrowser.getTableRenderer(table);
+		if (globalTableBrowser.getTableRenderer(table) != null)
+			return globalTableBrowser.getTableRenderer(table);
 		
 		return null;
 	}

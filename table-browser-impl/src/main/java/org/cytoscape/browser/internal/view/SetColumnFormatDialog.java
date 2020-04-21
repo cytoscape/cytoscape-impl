@@ -49,11 +49,6 @@ import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.plaf.basic.BasicIconFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -63,10 +58,18 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.plaf.basic.BasicIconFactory;
 
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
 
 @SuppressWarnings("serial")
 public class SetColumnFormatDialog extends JDialog {
@@ -89,21 +92,21 @@ public class SetColumnFormatDialog extends JDialog {
 	private int decimalPlaces = 4;
 	private boolean scientificNotation = false;
 
-	private final BrowserTableModel tableModel;
-	private final BrowserTableColumnModel tableColumnModel;
+	private final TableRenderer tableRenderer;
 	private final String targetAttrName;
 	private final CyProperty<Properties> props;
 
 	@SuppressWarnings("unchecked")
-	public SetColumnFormatDialog(final BrowserTable table, final Frame parent, final String targetAttrName,
+	public SetColumnFormatDialog(final TableRenderer tableRenderer, final Frame parent, final String targetAttrName,
 			CyServiceRegistrar serviceRegistrar) {
 		super(parent, "Set Column Format for: " + targetAttrName, ModalityType.APPLICATION_MODAL);
 		this.props = serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 		this.targetAttrName = targetAttrName;
-		this.tableModel = (BrowserTableModel) table.getModel();
-		tableColumnModel = (BrowserTableColumnModel) table.getColumnModel();
+		this.tableRenderer = tableRenderer;
 
-		loadFormat(tableColumnModel.getColumnFormat(targetAttrName));
+		View<CyColumn> colView = tableRenderer.getTableView().getColumnView(targetAttrName);
+		String format = colView.getVisualProperty(BasicTableVisualLexicon.COLUMN_FORMAT);
+		loadFormat(format);
 		initComponents();
 	}
 
@@ -298,7 +301,7 @@ public class SetColumnFormatDialog extends JDialog {
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					tableColumnModel.setColumnFormat(targetAttrName, null);
+//					tableColumnModel.setColumnFormat(targetAttrName, null);
 					dispose();
 				}
 			});
@@ -316,7 +319,7 @@ public class SetColumnFormatDialog extends JDialog {
 				public void actionPerformed(ActionEvent e) {
 					if (getFormatExampleLabel() != null) {
 						props.getProperties().setProperty(FLOAT_FORMAT_PROPERTY, getFormatEntry().getText());
-						tableModel.fireTableDataChanged();
+//						tableModel.fireTableDataChanged();
 					}
 				}
 			});
@@ -333,7 +336,7 @@ public class SetColumnFormatDialog extends JDialog {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					props.getProperties().remove(FLOAT_FORMAT_PROPERTY);
-					tableModel.fireTableDataChanged();
+//					tableModel.fireTableDataChanged();
 				}
 			});
 		}
@@ -481,13 +484,14 @@ public class SetColumnFormatDialog extends JDialog {
 	}
 
 	private boolean updateCells() {
-		String format = getFormatEntry().getText();
-		if (format.isEmpty())
-			format = null;
-		boolean complete = tableColumnModel.setColumnFormat(targetAttrName, format);
-		if (complete)
-			tableModel.fireTableDataChanged();
-		return complete;
+//		String format = getFormatEntry().getText();
+//		if (format.isEmpty())
+//			format = null;
+//		boolean complete = tableColumnModel.setColumnFormat(targetAttrName, format);
+//		if (complete)
+//			tableModel.fireTableDataChanged();
+//		return complete;
+		return true;
 	}
 
 }

@@ -189,7 +189,7 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 //			updateEnableState(comp);
 	}
 	
-//	protected void updateEnableState(final JComponent comp) {
+	protected void updateEnableState(final JComponent comp) {
 //		if (comp == null)
 //			return;
 //		
@@ -223,7 +223,7 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 //		// Unfortunately this is necessary on Nimbus!
 //		if (comp instanceof AbstractButton && LookAndFeelUtil.isNimbusLAF())
 //			comp.setForeground(UIManager.getColor(enabled ? "Button.foreground" : "Button.disabledForeground"));
-//	}
+	}
 	
 	private void initializeGUI() {
 		setLayout(new BorderLayout());

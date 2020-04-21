@@ -1,5 +1,11 @@
 package org.cytoscape.view.table.internal.impl;
 
+import java.util.Enumeration;
+import java.util.IllegalFormatException;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Vector;
+
 /*
  * #%L
  * Cytoscape Table Browser Impl (table-browser-impl)
@@ -23,13 +29,8 @@ package org.cytoscape.view.table.internal.impl;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import javax.swing.table.*;
-import java.util.Vector;
-import java.util.Enumeration;
-import java.util.IllegalFormatException;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import javax.swing.table.DefaultTableColumnModel;
+import javax.swing.table.TableColumn;
 
 /**
  * <code>BrowserTableColumnModel</code> extends the DefaultTableColumnModel . It
@@ -136,8 +137,7 @@ public class BrowserTableColumnModel extends DefaultTableColumnModel {
 		int noColumns = allTableColumns.size();
 
 		for (int columnIndex = 0; columnIndex < noColumns; ++columnIndex) {
-			TableColumn visibleColumn = (columnIndex < tableColumns.size() ? (TableColumn) tableColumns.get(columnIndex)
-					: null);
+			TableColumn visibleColumn = (columnIndex < tableColumns.size() ? (TableColumn) tableColumns.get(columnIndex) : null);
 			TableColumn invisibleColumn = (TableColumn) allTableColumns.get(columnIndex);
 
 			if (visibleColumn != invisibleColumn) {

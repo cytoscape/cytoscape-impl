@@ -12,6 +12,7 @@ import java.util.Properties;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
+import javax.swing.table.TableModel;
 
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.model.CyColumn;
@@ -50,7 +51,7 @@ public class BrowserTableRenderingEngine implements TableRenderingEngine {
 	private BrowserTable createBrowserTable() {
 		var compiler = registrar.getService(EquationCompiler.class);
 		var browserTable = new BrowserTable(compiler, popupMenuHelper, registrar);
-		var model = new BrowserTableModel(tableView, null, compiler); // why does it need the element type? 
+		var model = new BrowserTableModel(tableView.getModel(), null, compiler); // why does it need the element type? 
 		browserTable.setModel(model);
 		
 		//move and hide SUID and selected by default
@@ -75,18 +76,24 @@ public class BrowserTableRenderingEngine implements TableRenderingEngine {
 			browserTable.getDropTarget().setActive(false);
 		
 		ColumnResizer.adjustColumnPreferredWidths(browserTable, false);
+		
+		return browserTable;
 	}
 	
 	@Override
 	public Collection<View<CyRow>> getSelectedRows() {
 		int selectedRow = browserTable.getSelectedRow();
 		if(selectedRow >= 0) {
-			CyRow row = browserTable.getModel().getCyRow(selectedRow);
-			View<CyRow> rowView = tableView.getRowView(row);
-			return Collections.singletonList(rowView);
-		} else {
-			return Collections.emptyList();
+			TableModel model = browserTable.getModel();
+			if(model instanceof BrowserTableModel) {
+				CyRow row = ((BrowserTableModel)model).getCyRow(selectedRow);
+				View<CyRow> rowView = tableView.getRowView(row);
+				if(rowView != null) {
+					return Collections.singletonList(rowView);
+				}
+			}
 		}
+		return Collections.emptyList();
 	}
 
 	@Override

@@ -1,5 +1,7 @@
 package org.cytoscape.browser.internal.task;
 
+import org.cytoscape.browser.internal.util.TableBrowserUtil;
+
 /*
  * #%L
  * Cytoscape Table Browser Impl (table-browser-impl)
@@ -24,7 +26,6 @@ package org.cytoscape.browser.internal.task;
  * #L%
  */
 
-import org.cytoscape.browser.internal.util.TableBrowserUtil;
 import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.model.CyColumn;

@@ -173,35 +173,35 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 	
 	@Override
 	public void handleEvent(final RowsSetEvent e) {
-		BrowserTable table = getCurrentBrowserTable();
-		
-		if (table == null)
-			return;
-		
-		BrowserTableModel model = (BrowserTableModel) table.getModel();
-		CyTable dataTable = model.getDataTable();
-
-		if (e.getSource() != dataTable)
-			return;
-		
-		synchronized (this) {
-			model.fireTableDataChanged();
-		}
+//		BrowserTable table = getCurrentBrowserTable();
+//		
+//		if (table == null)
+//			return;
+//		
+//		BrowserTableModel model = (BrowserTableModel) table.getModel();
+//		CyTable dataTable = model.getDataTable();
+//
+//		if (e.getSource() != dataTable)
+//			return;
+//		
+//		synchronized (this) {
+//			model.fireTableDataChanged();
+//		}
 	}
 	
 	@Override
 	public void handleEvent(final RowsDeletedEvent e) {
-		BrowserTable table = getCurrentBrowserTable();
-		if (table == null)
-			return;
-		BrowserTableModel model = (BrowserTableModel) table.getModel();
-		CyTable dataTable = model.getDataTable();
-
-		if (e.getSource() != dataTable)
-			return;		
-		synchronized (this) {
-				model.fireTableDataChanged();
-		}
+//		BrowserTable table = getCurrentBrowserTable();
+//		if (table == null)
+//			return;
+//		BrowserTableModel model = (BrowserTableModel) table.getModel();
+//		CyTable dataTable = model.getDataTable();
+//
+//		if (e.getSource() != dataTable)
+//			return;		
+//		synchronized (this) {
+//				model.fireTableDataChanged();
+//		}
 	}
 	
 	private class GlobalTableChooser extends JComboBox<CyTable> {

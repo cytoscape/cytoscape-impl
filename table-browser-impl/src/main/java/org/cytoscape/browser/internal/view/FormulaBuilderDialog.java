@@ -751,32 +751,30 @@ public class FormulaBuilderDialog extends JDialog {
 		
 		if (formula.charAt(formula.length() - 1) != ')')
 			formula = formula + ")";
-
 		
-		final int cellColum = table.convertColumnIndexToModel( table.getSelectedColumn());
+		final String attribName = tableRenderer.getRenderingEngine().getSelectedColumn().getModel().getName();
+		final CyTable attribs = tableRenderer.getDataTable();
 		
-		final String attribName = tableModel.getColumnName(cellColum);
-		final CyTable attribs = tableModel.getDataTable();
-
 		final Equation equation = compileEquation(attribs, attribName, formula, errorMessage);
 		
 		if (equation == null)
 			return false;
 		
 		switch (applicationDomain) {
-		case CURRENT_CELL:
-			final int cellRow = table.convertRowIndexToModel(table.getSelectedRow());
-			tableModel.setValueAt(formula, cellRow, cellColum);
-			break;
+		case CURRENT_CELL: {
+			CyRow row = tableRenderer.getRenderingEngine().getSelectedRows().iterator().next().getModel();
+			CyColumn col = tableRenderer.getRenderingEngine().getSelectedColumn().getModel();
+			row.set(col.getName(), formula);
+		}	break;
 		case CURRENT_SELECTION:
-			final Collection<CyRow> selectedRows = tableModel.getDataTable().getMatchingRows(CyNetwork.SELECTED, true);
+			final Collection<CyRow> selectedRows = tableRenderer.getDataTable().getMatchingRows(CyNetwork.SELECTED, true);
 			for (final CyRow selectedRow : selectedRows) {
 				if (!setAttribute(selectedRow, attribName, equation, errorMessage))
 					return false;
 			}
 			break;
 		case ENTIRE_ATTRIBUTE:
-			final List<CyRow> rows = tableModel.getDataTable().getAllRows();
+			final List<CyRow> rows = tableRenderer.getDataTable().getAllRows();
 			for (final CyRow row : rows) {
 				if (!setAttribute(row, attribName, equation, errorMessage))
 					return false;
