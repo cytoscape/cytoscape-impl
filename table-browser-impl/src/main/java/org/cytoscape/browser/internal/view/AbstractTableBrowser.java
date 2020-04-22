@@ -19,6 +19,7 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -41,8 +42,9 @@ import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.TableViewRenderer;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.browser.internal.io.TableColumnStat;
 import org.cytoscape.browser.internal.io.TableColumnStatFileIO;
-import org.cytoscape.browser.internal.util.TableColumnStat;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.property.CyProperty;
@@ -54,6 +56,9 @@ import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.read.LoadTableFileTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.table.CyTableView;
+import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskObserver;
@@ -371,6 +376,7 @@ public abstract class AbstractTableBrowser extends JPanel
 		return "AbstractTableBrowser [tabTitle=" + tabTitle + ", currentTable=" + currentTable + "]";
 	}
 	
+	// We have to keep this for backwards compatibility
 	@Override
 	public void handleEvent(SessionLoadedEvent e) {
 		Map<String, TableColumnStat> tscMap = TableColumnStatFileIO.read(e, appFileName);
@@ -384,50 +390,52 @@ public abstract class AbstractTableBrowser extends JPanel
 			if (!tscMap.containsKey(table.getTitle()))
 				continue;
 			
-//			final TableColumnStat tcs = tscMap.get(table.getTitle());
-//			
-//			final BrowserTable browserTable = getBrowserTable(table);
-//			BrowserTableModel model = (BrowserTableModel) browserTable.getModel();
-//			final BrowserTableColumnModel colM = (BrowserTableColumnModel)browserTable.getColumnModel();
-//			colM.setAllColumnsVisible();
-//			final List<String> orderedCols = tcs.getOrderedCol();
-//			
-//			for (int i = 0; i < orderedCols.size(); i++) {
-//				final String colName = orderedCols.get(i);
-//				colM.moveColumn(browserTable.convertColumnIndexToView(model.mapColumnNameToColumnIndex(colName)), i);
-//			}
-//			
-//			browserTable.setVisibleAttributeNames(tcs.getVisibleCols());
+			TableColumnStat tcs = tscMap.get(table.getTitle());
+			TableRenderer renderer = getTableRenderer(table);
+			CyTableView tableView = renderer.getTableView();
+			
+			List<String> orderedCols = tcs.getOrderedCol();
+			List<String> visibleCols = tcs.getVisibleCols(); // MKTODO this should be a Set
+			
+			for (int i = 0; i < orderedCols.size(); i++) {
+				String colName = orderedCols.get(i);
+				View<CyColumn> colView = tableView.getColumnView(colName);
+				colView.setVisualProperty(BasicTableVisualLexicon.COLUMN_GRAVITY, i);
+				colView.setVisualProperty(BasicTableVisualLexicon.COLUMN_VISIBLE, visibleCols.contains(colName));
+			}
 		}
 	}
 
-	// MKTODO We should use the vizmap style of saving VisualProperties to the session
 	@Override
 	public void handleEvent(SessionAboutToBeSavedEvent e) {
-//		Map<CyTable, BrowserTable>  browserTables = getAllBrowserTablesMap();
-//		List<TableColumnStat> tableColumnStatList = new ArrayList<>();
-//
-//		for (CyTable table : browserTables.keySet()){
-//			TableColumnStat tcs = new TableColumnStat(table.getTitle());
-//
-//			BrowserTable browserTable = browserTables.get(table);
-//			BrowserTableModel model = (BrowserTableModel) browserTable.getModel();
-//			BrowserTableColumnModel colM = (BrowserTableColumnModel) browserTable.getColumnModel();
-//			List<String> visAttrs = browserTable.getVisibleAttributeNames();
-//			colM.setAllColumnsVisible();
-//			Collection<String> attrs =  model.getAllAttributeNames();
-//
-//			for (String name: attrs){
-//				int viewIndex = browserTable.convertColumnIndexToView(model.mapColumnNameToColumnIndex(name));
-//				tcs.addColumnStat(name, viewIndex,  visAttrs.contains(name));			
-//			}
-//
-//			browserTable.setVisibleAttributeNames(visAttrs);
-//			tableColumnStatList.add(tcs);
-//		}
-//		
-//		TableColumnStatFileIO.write(tableColumnStatList, e, appFileName );	
+		Map<CyTable,TableRenderer> tableRendererMap = getTableRenderersMap();
+		List<TableColumnStat> tableColumnStatList = new ArrayList<>();
+
+		for (CyTable table : tableRendererMap.keySet()){
+			TableColumnStat tcs = new TableColumnStat(table.getTitle());
+			
+			TableRenderer renderer = getTableRenderer(table);
+			CyTableView tableView = renderer.getTableView();
+			
+			List<View<CyColumn>> sortedColViews = new ArrayList<>(tableView.getColumnViews());
+			sortedColViews.sort((cv1,cv2) -> {
+				double grav1 = cv1.getVisualProperty(BasicTableVisualLexicon.COLUMN_GRAVITY);
+				double grav2 = cv2.getVisualProperty(BasicTableVisualLexicon.COLUMN_GRAVITY);
+				return Double.compare(grav1, grav2);
+			});
+			
+			for(int i = 0; i < sortedColViews.size(); i++) {
+				View<CyColumn> colView = sortedColViews.get(i);
+				boolean vis = colView.getVisualProperty(BasicTableVisualLexicon.COLUMN_VISIBLE);
+				tcs.addColumnStat(colView.getModel().getName(), i, vis);
+			}
+
+			tableColumnStatList.add(tcs);
+		}
+		
+		TableColumnStatFileIO.write(tableColumnStatList, e, appFileName );	
 	}
+	
 	
 	@SuppressWarnings("unchecked")
 	protected boolean showPrivateTables() {

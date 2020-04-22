@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.application.CyUserLog;
-import org.cytoscape.browser.internal.util.TableColumnStat;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
 import org.cytoscape.session.events.SessionLoadedEvent;

@@ -1,4 +1,4 @@
-package org.cytoscape.browser.internal.util;
+package org.cytoscape.browser.internal.io;
 
 /*
  * #%L
