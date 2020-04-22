@@ -26,6 +26,8 @@ import org.cytoscape.model.events.RowsDeletedEvent;
 import org.cytoscape.model.events.RowsDeletedListener;
 import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
 import org.cytoscape.model.events.TableAboutToBeDeletedListener;
+import org.cytoscape.view.presentation.property.table.TableMode;
+import org.cytoscape.view.presentation.property.table.TableModeVisualProperty;
 import org.cytoscape.view.table.internal.util.TableBrowserUtil;
 import org.cytoscape.view.table.internal.util.ValidatedObjectAndEditString;
 
@@ -59,7 +61,25 @@ public final class BrowserTableModel extends AbstractTableModel
 	public static enum ViewMode {
 		ALL,
 		SELECTED,
-		AUTO
+		AUTO;
+		
+		// MKTODO should probably refactor this class to remove ViewMode and use TableMode directly
+		public static ViewMode fromVisualPropertyValue(TableMode tableMode) {
+			if(tableMode == TableModeVisualProperty.ALL)
+				return ALL;
+			else if(tableMode == TableModeVisualProperty.SELECTED)
+				return SELECTED;
+			else
+				return AUTO;
+		}
+		
+		public TableMode toVisualPropertyValue() {
+			switch(this) {
+				case ALL: return TableModeVisualProperty.ALL;
+				case SELECTED: return TableModeVisualProperty.SELECTED;
+				default: return TableModeVisualProperty.AUTO;
+			}
+		}
 	}
 
 	private static final long serialVersionUID = -517521404005631245L;
@@ -413,7 +433,7 @@ public final class BrowserTableModel extends AbstractTableModel
 	 * 
 	 * @param viewMode
 	 */
-	void setViewMode(ViewMode viewMode) {
+	public void setViewMode(ViewMode viewMode) {
 		selectedRows = null;
 		final CyColumn selectedColumn = dataTable.getColumn(CyNetwork.SELECTED);
 		
@@ -423,7 +443,7 @@ public final class BrowserTableModel extends AbstractTableModel
 			this.viewMode = ViewMode.ALL;
 	}
 
-	void updateViewMode() {
+	public void updateViewMode() {
 		fireTableDataChanged();
 	}
 

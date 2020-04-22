@@ -6,8 +6,10 @@ import java.awt.Image;
 import java.awt.print.Printable;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -17,6 +19,7 @@ import javax.swing.table.TableModel;
 
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
@@ -31,9 +34,11 @@ import org.cytoscape.view.model.table.CyColumnView;
 import org.cytoscape.view.model.table.CyTableView;
 import org.cytoscape.view.presentation.TableRenderingEngine;
 import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
+import org.cytoscape.view.presentation.property.table.TableMode;
 import org.cytoscape.view.table.internal.impl.BrowserTable;
 import org.cytoscape.view.table.internal.impl.BrowserTableColumnModel;
 import org.cytoscape.view.table.internal.impl.BrowserTableModel;
+import org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode;
 import org.cytoscape.view.table.internal.impl.PopupMenuHelper;
 
 public class BrowserTableRenderingEngine implements TableRenderingEngine, TableViewChangedListener {
@@ -59,10 +64,6 @@ public class BrowserTableRenderingEngine implements TableRenderingEngine, TableV
 		var compiler = registrar.getService(EquationCompiler.class);
 		var browserTable = new BrowserTable(compiler, popupMenuHelper, registrar);
 		var model = new BrowserTableModel(tableView.getModel(), tableView.getTableType(), compiler); // why does it need the element type? 
-		
-		// MKTODO rework how these listeners work
-//		serviceRegistrar.registerAllServices(browserTable, new Properties());
-//		serviceRegistrar.registerAllServices(model, new Properties());
 		
 		browserTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		browserTable.setModel(model);
@@ -102,13 +103,25 @@ public class BrowserTableRenderingEngine implements TableRenderingEngine, TableV
 		component.setLayout(new BorderLayout());
 		component.add(scrollPane);
 		
-		
-		registrar.registerService(this, TableViewChangedListener.class, new Properties());
-		System.out.println("BrowserTableRenderingEngine.install()");
+		registerServices();
 	}
+	
 	
 	@Override
 	public void dispose() {
+		unregisterServices();
+	}
+	
+	
+	private void registerServices() {
+		registrar.registerAllServices(browserTable, new Properties());
+		registrar.registerAllServices(browserTable.getModel(), new Properties());
+		registrar.registerService(this, TableViewChangedListener.class, new Properties());
+	}
+	
+	private void unregisterServices() {
+		registrar.unregisterAllServices(browserTable);
+		registrar.unregisterAllServices(browserTable.getModel());
 		registrar.unregisterService(this, TableViewChangedListener.class);
 	}
 	
@@ -117,19 +130,50 @@ public class BrowserTableRenderingEngine implements TableRenderingEngine, TableV
 	public void handleEvent(TableViewChangedEvent<?> e) {
 		if(e.getSource() != tableView)
 			return;
+		
 		for(var record : e.getPayloadCollection()) {
+			VisualProperty<?> vp = record.getVisualProperty();
+			
 			if(record.getView().getModel() instanceof CyColumn) {
 				CyColumnView colView = (CyColumnView) record.getView();
-				
-				if(record.getVisualProperty() == BasicTableVisualLexicon.COLUMN_VISIBLE) {
-					System.out.println("BrowserTableRenderingEngine.handleEvent() COLUMN_VISIBLE=" + record.getValue());
+				if(vp == BasicTableVisualLexicon.COLUMN_VISIBLE) {
 					boolean visible = Boolean.TRUE.equals(record.getValue());
 					browserTable.setColumnVisibility(colView.getModel().getName(), visible);
 				}
+				
+			} else if(record.getView().getModel() instanceof CyTable) {
+				if(vp == BasicTableVisualLexicon.TABLE_VIEW_MODE) {
+					changeSelectionMode((TableMode)record.getValue());
+				}
 			}
 		}
-		
 	}
+	
+	
+	// MKTODO this needs to go in the renderer
+	private void changeSelectionMode(TableMode tableMode) {
+		BrowserTableModel model = (BrowserTableModel) browserTable.getModel();
+		
+		ViewMode viewMode = ViewMode.fromVisualPropertyValue(tableMode);
+		model.setViewMode(viewMode);
+		model.updateViewMode();
+		
+		if (viewMode == ViewMode.ALL && browserTable.getColumn(CyNetwork.SELECTED) != null) {
+			// Show the current selected rows
+			final Set<Long> suidSelected = new HashSet<>();
+			final Set<Long> suidUnselected = new HashSet<>();
+			final Collection<CyRow> selectedRows = tableView.getModel().getMatchingRows(CyNetwork.SELECTED, Boolean.TRUE);
+	
+			for (final CyRow row : selectedRows) {
+				suidSelected.add(row.get(CyIdentifiable.SUID, Long.class));
+			}
+	
+			if (!suidSelected.isEmpty())
+				browserTable.changeRowSelection(suidSelected, suidUnselected);
+		}
+	}
+	
+	
 	
 	@Override
 	public Collection<View<CyRow>> getSelectedRows() {

@@ -66,10 +66,6 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.events.ColumnCreatedEvent;
-import org.cytoscape.model.events.ColumnCreatedListener;
-import org.cytoscape.model.events.ColumnDeletedEvent;
-import org.cytoscape.model.events.ColumnDeletedListener;
 import org.cytoscape.model.events.ColumnNameChangedEvent;
 import org.cytoscape.model.events.ColumnNameChangedListener;
 import org.cytoscape.model.events.RowSetRecord;
@@ -78,6 +74,10 @@ import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.events.AboutToRemoveColumnViewEvent;
+import org.cytoscape.view.model.events.AboutToRemoveColumnViewListener;
+import org.cytoscape.view.model.events.AddedColumnViewEvent;
+import org.cytoscape.view.model.events.AddedColumnViewListener;
 import org.cytoscape.view.table.internal.util.TableBrowserUtil;
 import org.cytoscape.view.table.internal.util.ValidatedObjectAndEditString;
 import org.slf4j.Logger;
@@ -109,7 +109,7 @@ import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("serial")
 public class BrowserTable extends JTable implements MouseListener, ActionListener, MouseMotionListener,
-													 ColumnCreatedListener, ColumnDeletedListener,
+													 AboutToRemoveColumnViewListener, AddedColumnViewListener,
 													 ColumnNameChangedListener, RowsSetListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
@@ -518,7 +518,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	}
 
 	@Override
-	public void handleEvent(final ColumnCreatedEvent e) {
+	public void handleEvent(final AddedColumnViewEvent e) {
 		BrowserTableModel model = (BrowserTableModel) getModel();
 		CyTable dataTable = model.getDataTable();
 		
@@ -529,17 +529,18 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		
 		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) getColumnModel();
 
-		model.addColumn(e.getColumnName());
+		CyColumn col = e.getColumnView().getModel();
+		model.addColumn(col.getName());
 		
 		int colIndex = columnModel.getColumnCount(false);
 		TableColumn newCol = new TableColumn(colIndex);
-		newCol.setHeaderValue(e.getColumnName());
+		newCol.setHeaderValue(col.getName());
 		newCol.setHeaderRenderer(new BrowserTableHeaderRenderer(serviceRegistrar));
 		addColumn(newCol);
 	}
 
 	@Override
-	public void handleEvent(final ColumnDeletedEvent e) {
+	public void handleEvent(final AboutToRemoveColumnViewEvent e) {
 		BrowserTableModel model = (BrowserTableModel) getModel();
 		CyTable dataTable = model.getDataTable();
 		
@@ -549,7 +550,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		model.fireTableStructureChanged();
 
 		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) getColumnModel();
-		final String columnName = e.getColumnName();
+		final String columnName = e.getColumnView().getModel().getName();
 		boolean columnFound = false;
 		int removedColIndex = -1;
 		
@@ -890,7 +891,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		changeRowSelection(suidSelected, suidUnselected);
 	}
 
-	protected void changeRowSelection(final Set<Long> suidSelected, final Set<Long> suidUnselected) {
+	public void changeRowSelection(final Set<Long> suidSelected, final Set<Long> suidUnselected) {
 		final BrowserTableModel model = (BrowserTableModel) getModel();
 		final CyTable dataTable = model.getDataTable();
 		final String pKeyName = dataTable.getPrimaryKey().getName();
