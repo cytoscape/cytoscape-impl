@@ -453,7 +453,9 @@ public class VisualStyleSelector extends JPanel {
 				
 				updateToolBarButtons();
 				repaint();
-				firePropertyChange("selectedStyle", null, styleGrid.getSelectedValue());
+				
+				if (!isEditMode())
+					firePropertyChange("selectedStyle", null, styleGrid.getSelectedValue());
 			});
 		}
 		
@@ -539,7 +541,9 @@ public class VisualStyleSelector extends JPanel {
 	}
 	
 	private int calculateColumns(int itemWidth, int gridWidth) {
-		var cols = itemWidth > 0 ? Math.floorDiv(gridWidth, itemWidth) : 0;
+		System.out.println("\t-- " + gridWidth);
+		var cols = itemWidth > 0 ? Math.floorDiv(gridWidth, itemWidth) : 1;
+		cols = Math.max(cols, 1);
 		
 		return Math.max(cols, maxColumns);
 	}
@@ -641,7 +645,8 @@ public class VisualStyleSelector extends JPanel {
 		
 		@Override
 		public Dimension getPreferredScrollableViewportSize() {
-			return getPreferredSize();
+			System.out.println("\t> cols|model: " + cols + " :: " + getModel().getSize());
+			return getModel().getSize() == 0 ? getMinimumSize() : getPreferredSize();
 		}
 
 		@Override
@@ -656,7 +661,7 @@ public class VisualStyleSelector extends JPanel {
 
 		@Override
 		public boolean getScrollableTracksViewportWidth() {
-			return true;
+			return cols > 0;
 		}
 
 		@Override
@@ -932,6 +937,7 @@ public class VisualStyleSelector extends JPanel {
 				
 				if (dm.getSize() > 0) {
 					var size = this.getParent() != null ? this.getParent().getSize() : null;
+					System.out.println("\n. size: " + size);
 					
 					if (size != null) {
 						var itemWidth = IMAGE_WIDTH + 2 * ITEM_BORDER_WIDTH + 2 * ITEM_MARGIN + 2 * ITEM_PAD;
@@ -940,6 +946,7 @@ public class VisualStyleSelector extends JPanel {
 					} else {
 						cols = minColumns;
 					}
+					System.out.println("\t.. cols: " + cols);
 					
 					var rows = calculateRows(dm.getSize(), cols);
 		

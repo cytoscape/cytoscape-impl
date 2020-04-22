@@ -108,7 +108,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		// We need to build and keep this UI component here because of the API method getDefaultView(),
 		// so instead of creating this object only when needed (e.g. before showing the popup),
 		// we keep it to store the panels for the rendered style previews
-		styleSelector = new VisualStyleSelector(3, 3, servicesUtil);
+		styleSelector = new VisualStyleSelector(2, 0, servicesUtil);
 		
 		init();
 	}
@@ -454,7 +454,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			});
 			
 			styleSelector.addPropertyChangeListener("selectedStyle", evt -> {
-				repaint();
+				update();
 				disposePopup();
 				firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
 			});
@@ -467,13 +467,18 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		
 		public void setSelectedItem(VisualStyle vs) {
 			styleSelector.setSelectedStyle(vs);
+			
+			if (styleSelector.isEditMode())
+				update(vs);
 		}
 		
-		@Override
-		public void repaint() {
-			var selectedItem = styleSelector.getSelectedStyle();
-			setText(selectedItem != null ? selectedItem.getTitle() : "");
-			super.repaint();
+		public void update() {
+			update(styleSelector.getSelectedStyle());
+		}
+		
+		private void update(VisualStyle selectedStyle) {
+			setText(selectedStyle != null ? selectedStyle.getTitle() : "");
+			repaint();
 		}
 		
 		private void showDialog() {
@@ -501,6 +506,9 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 					.addComponent(styleSelector, DEFAULT_SIZE, DEFAULT_SIZE, 660)
 			);
 			
+			if (getSize() != null && getSize().width > 0)
+				popup.setPreferredSize(new Dimension(getSize().width, popup.getPreferredSize().height));
+			
 			popup.pack();
 			popup.show(VisualStyleDropDownButton.this, 0, 0);
 			popup.requestFocus();
@@ -509,6 +517,8 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		private void disposePopup() {
 			if (popup != null)
 				popup.setVisible(false);
+			
+			styleSelector.setEditMode(false);
 		}
 
 		private void onPopupDisposed() {

@@ -264,7 +264,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				updateItemsStatus();
 			}
 		} else if (id.equals(VISUAL_STYLE_NAME_CHANGED)) {
-			vizMapperMainPanel.getStylesBtn().repaint();
+			vizMapperMainPanel.getStylesBtn().update();
 		}
 	}
 
@@ -684,9 +684,9 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		});
 	}
 	
-	private void selectCurrentVisualStyle(final VisualStyle vs) {
+	private void selectCurrentVisualStyle(VisualStyle vs) {
 		invokeOnEDT(() -> {
-			final VisualStyle selectedVs = vizMapperMainPanel.getSelectedVisualStyle();
+			var selectedVs = vizMapperMainPanel.getSelectedVisualStyle();
 
 			// Switching styles.  Need to reset the range tracer
 			ContinuousMappingEditorPanel.setTracer(new EditorValueRangeTracer(servicesUtil));
