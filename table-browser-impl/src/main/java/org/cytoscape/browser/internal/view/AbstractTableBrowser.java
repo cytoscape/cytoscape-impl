@@ -285,6 +285,9 @@ public abstract class AbstractTableBrowser extends JPanel
 		if (tableRenderer != null) {
 			mainPane.removeAll();
 			mainPane.add(tableRenderer.getComponent(), BorderLayout.CENTER);
+			mainPane.revalidate();
+			mainPane.validate();
+			mainPane.repaint();
 		} else {
 			showDropPanel();
 			repaint();
