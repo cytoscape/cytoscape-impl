@@ -129,6 +129,8 @@ public abstract class AbstractTableBrowser extends JPanel
 			final String tabTitle,
 			final CyServiceRegistrar serviceRegistrar
 	) {
+		System.out.println("AbstractTableBrowser() created " + tabTitle);
+		
 		this.serviceRegistrar = serviceRegistrar;
 		this.tabTitle = tabTitle;
 		
@@ -379,6 +381,8 @@ public abstract class AbstractTableBrowser extends JPanel
 	// We have to keep this for backwards compatibility
 	@Override
 	public void handleEvent(SessionLoadedEvent e) {
+		System.out.println("AbstractTableBrowser.handleEvent(SessionLoadedEvent)");
+		
 		Map<String, TableColumnStat> tscMap = TableColumnStatFileIO.read(e, appFileName);
 		
 		if (tscMap == null || tscMap.isEmpty())
@@ -408,6 +412,8 @@ public abstract class AbstractTableBrowser extends JPanel
 
 	@Override
 	public void handleEvent(SessionAboutToBeSavedEvent e) {
+		System.out.println("AbstractTableBrowser.handleEvent(SessionAboutToBeSavedEvent)");
+		
 		Map<CyTable,TableRenderer> tableRendererMap = getTableRenderersMap();
 		List<TableColumnStat> tableColumnStatList = new ArrayList<>();
 

@@ -12,6 +12,7 @@ import java.util.Properties;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.table.TableModel;
 
 import org.cytoscape.equations.EquationCompiler;
@@ -24,14 +25,18 @@ import org.cytoscape.util.swing.ColumnResizer;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.model.events.TableViewChangedEvent;
+import org.cytoscape.view.model.events.TableViewChangedListener;
+import org.cytoscape.view.model.table.CyColumnView;
 import org.cytoscape.view.model.table.CyTableView;
 import org.cytoscape.view.presentation.TableRenderingEngine;
+import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
 import org.cytoscape.view.table.internal.impl.BrowserTable;
 import org.cytoscape.view.table.internal.impl.BrowserTableColumnModel;
 import org.cytoscape.view.table.internal.impl.BrowserTableModel;
 import org.cytoscape.view.table.internal.impl.PopupMenuHelper;
 
-public class BrowserTableRenderingEngine implements TableRenderingEngine {
+public class BrowserTableRenderingEngine implements TableRenderingEngine, TableViewChangedListener {
 	
 	private final CyTableView tableView;
 	private final VisualLexicon lexicon;
@@ -42,6 +47,8 @@ public class BrowserTableRenderingEngine implements TableRenderingEngine {
 	
 	
 	public BrowserTableRenderingEngine(CyTableView tableView, VisualLexicon lexicon, PopupMenuHelper popupMenuHelper, CyServiceRegistrar registrar) {
+		System.out.println("BrowserTableRenderingEngine() created " + tableView.getModel().getTitle());
+		
 		this.tableView = tableView;
 		this.lexicon = lexicon;
 		this.popupMenuHelper = popupMenuHelper;
@@ -52,6 +59,12 @@ public class BrowserTableRenderingEngine implements TableRenderingEngine {
 		var compiler = registrar.getService(EquationCompiler.class);
 		var browserTable = new BrowserTable(compiler, popupMenuHelper, registrar);
 		var model = new BrowserTableModel(tableView.getModel(), tableView.getTableType(), compiler); // why does it need the element type? 
+		
+		// MKTODO rework how these listeners work
+//		serviceRegistrar.registerAllServices(browserTable, new Properties());
+//		serviceRegistrar.registerAllServices(model, new Properties());
+		
+		browserTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		browserTable.setModel(model);
 		
 		//move and hide SUID and selected by default
@@ -60,12 +73,10 @@ public class BrowserTableRenderingEngine implements TableRenderingEngine {
 		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) browserTable.getColumnModel();
 		
 		if (attrList.contains(CyNetwork.SUID))
-			columnModel.moveColumn(browserTable.convertColumnIndexToView(
-					model.mapColumnNameToColumnIndex(CyNetwork.SUID)), 0);
+			columnModel.moveColumn(browserTable.convertColumnIndexToView(model.mapColumnNameToColumnIndex(CyNetwork.SUID)), 0);
 		
 		if (attrList.contains(CyNetwork.SELECTED))
-			columnModel.moveColumn(browserTable.convertColumnIndexToView(
-					model.mapColumnNameToColumnIndex(CyNetwork.SELECTED)), 1);
+			columnModel.moveColumn(browserTable.convertColumnIndexToView(model.mapColumnNameToColumnIndex(CyNetwork.SELECTED)), 1);
 		
 		attrList.remove(CyNetwork.SUID);
 		attrList.remove(CyNetwork.SELECTED);
@@ -78,6 +89,46 @@ public class BrowserTableRenderingEngine implements TableRenderingEngine {
 		ColumnResizer.adjustColumnPreferredWidths(browserTable, false);
 		
 		return browserTable;
+	}
+	
+	
+	public void install(JComponent component) {
+		// MKTODO there's more to it than this, there's a bunch of swing listeners to register and stuff
+		this.browserTable = createBrowserTable();
+		
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setViewportView(browserTable);
+		
+		component.setLayout(new BorderLayout());
+		component.add(scrollPane);
+		
+		
+		registrar.registerService(this, TableViewChangedListener.class, new Properties());
+		System.out.println("BrowserTableRenderingEngine.install()");
+	}
+	
+	@Override
+	public void dispose() {
+		registrar.unregisterService(this, TableViewChangedListener.class);
+	}
+	
+	
+	@Override
+	public void handleEvent(TableViewChangedEvent<?> e) {
+		if(e.getSource() != tableView)
+			return;
+		for(var record : e.getPayloadCollection()) {
+			if(record.getView().getModel() instanceof CyColumn) {
+				CyColumnView colView = (CyColumnView) record.getView();
+				
+				if(record.getVisualProperty() == BasicTableVisualLexicon.COLUMN_VISIBLE) {
+					System.out.println("BrowserTableRenderingEngine.handleEvent() COLUMN_VISIBLE=" + record.getValue());
+					boolean visible = Boolean.TRUE.equals(record.getValue());
+					browserTable.setColumnVisibility(colView.getModel().getName(), visible);
+				}
+			}
+		}
+		
 	}
 	
 	@Override
@@ -108,17 +159,6 @@ public class BrowserTableRenderingEngine implements TableRenderingEngine {
 		return null;
 	}
 	
-	public void install(JComponent component) {
-		// MKTODO there's more to it than this, there's a bunch of swing listeners to register and stuff
-		this.browserTable = createBrowserTable();
-		
-		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setViewportView(browserTable);
-		
-		component.setLayout(new BorderLayout());
-		component.add(scrollPane);
-	}
-	
 	@Override
 	public View<CyTable> getViewModel() {
 		return tableView;
@@ -130,10 +170,6 @@ public class BrowserTableRenderingEngine implements TableRenderingEngine {
 	}
 
 	
-	@Override
-	public void dispose() {
-	}
-
 	@Override
 	public VisualLexicon getVisualLexicon() {
 		return lexicon;

@@ -479,6 +479,9 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		// Don't fire this, it will reset all the columns based on model
 		// fireTableStructureChanged();
 	}
+	
+	
+	
 
 	public List<String> getVisibleAttributeNames() {
 		var model = (BrowserTableModel) getModel();
@@ -500,7 +503,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		return columnModel.isColumnVisible(column);
 	}
 	
-	public void hideColumn(String columnName) {
+	public void setColumnVisibility(String columnName, boolean visible) {
 		var model = (BrowserTableModel) getModel();
 		var columnModel = (BrowserTableColumnModel) getColumnModel();
 		
@@ -508,7 +511,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			if (name.equals(columnName)) {
 				int col = model.mapColumnNameToColumnIndex(name);
 				TableColumn column = columnModel.getColumnByModelIndex(col);
-				columnModel.setColumnVisible(column, false);
+				columnModel.setColumnVisible(column, visible);
 				break;
 			}
 		}
