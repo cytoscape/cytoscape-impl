@@ -2,12 +2,12 @@ package org.cytoscape.view.model.internal.table;
 
 import java.util.function.Function;
 
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.model.events.TableViewChangedEvent;
+import org.cytoscape.view.model.events.ViewChangeRecord;
 import org.cytoscape.view.model.internal.base.CyViewBase;
 import org.cytoscape.view.model.internal.base.VPStore;
 import org.cytoscape.view.model.internal.base.ViewLock;
@@ -23,11 +23,6 @@ public class CyColumnViewImpl extends CyViewBase<CyColumn> implements CyColumnVi
 	}
 
 	@Override
-	public View<?> getParentViewModel() {
-		return parent;
-	}
-
-	@Override
 	public VPStore getVPStore() {
 		return parent.columnVPs;
 	}
@@ -35,11 +30,6 @@ public class CyColumnViewImpl extends CyViewBase<CyColumn> implements CyColumnVi
 	@Override
 	public ViewLock getLock() {
 		return parent.columnLock;
-	}
-
-	@Override
-	public CyEventHelper getEventHelper() {
-		return parent.getEventHelper();
 	}
 
 	@Override
@@ -57,4 +47,10 @@ public class CyColumnViewImpl extends CyViewBase<CyColumn> implements CyColumnVi
 		return (Function<CyRow,T>) getVisualProperty(vp);
 	}
 
+	@SuppressWarnings("unchecked")
+	@Override
+	protected void fireViewChangedEvent(VisualProperty<?> vp, Object value, boolean lockedValue) {
+		var record = new ViewChangeRecord<>(this, vp, value, lockedValue);
+		parent.getEventHelper().addEventPayload(parent, record, TableViewChangedEvent.class);
+	}
 }

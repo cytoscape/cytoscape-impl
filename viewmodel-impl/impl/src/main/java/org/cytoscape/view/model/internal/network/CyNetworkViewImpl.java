@@ -26,6 +26,8 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.events.AddedEdgeViewsEvent;
 import org.cytoscape.view.model.events.AddedNodeViewsEvent;
 import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
+import org.cytoscape.view.model.events.ViewChangeRecord;
+import org.cytoscape.view.model.events.ViewChangedEvent;
 import org.cytoscape.view.model.internal.base.CyViewBase;
 import org.cytoscape.view.model.internal.base.VPStore;
 import org.cytoscape.view.model.internal.base.ViewLock;
@@ -114,11 +116,6 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 				}
 			}
 		}
-	}
-	
-	@Override
-	public CyNetworkViewImpl getParentViewModel() {
-		return this;
 	}
 	
 	@Override
@@ -427,5 +424,12 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		for(CyNetworkViewListener listener : listeners) {
 			listener.handleDispose();
 		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	protected void fireViewChangedEvent(VisualProperty<?> vp, Object value, boolean lockedValue) {
+		var record = new ViewChangeRecord<>(this, vp, value, lockedValue);
+		getEventHelper().addEventPayload(this, record, ViewChangedEvent.class);
 	}
 }

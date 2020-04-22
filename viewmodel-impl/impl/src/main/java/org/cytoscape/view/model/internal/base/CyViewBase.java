@@ -3,14 +3,11 @@ package org.cytoscape.view.model.internal.base;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.SUIDFactory;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.model.events.ViewChangeRecord;
-import org.cytoscape.view.model.events.ViewChangedEvent;
 
 import io.vavr.collection.Set;
 
@@ -23,18 +20,17 @@ public abstract class CyViewBase<M> implements View<M> {
 		this.model = Objects.requireNonNull(model);
 		this.suid = SUIDFactory.getNextSUID();
 	}
-	
-	/**
-	 * There could potentially be millions of these objects on the heap.
-	 * We want to keep the size of these objects as small as possible.
-	 * Look up these values using abstract methods, rather than store them as fields.
-	 */
-	public abstract View<?> getParentViewModel();
+
 	public abstract VPStore getVPStore();
 	public abstract ViewLock getLock();
-	public abstract CyEventHelper getEventHelper();
 	public abstract VisualLexicon getVisualLexicon();
-	public void setDirty() { }
+	
+	protected abstract void fireViewChangedEvent(VisualProperty<?> vp, Object value, boolean lockedValue);
+	
+	
+	// Subclasses may override this
+	public void setDirty() { 
+	}
 	
 	
 	@Override
@@ -45,12 +41,6 @@ public abstract class CyViewBase<M> implements View<M> {
 	@Override
 	public M getModel() {
 		return model;
-	}
-	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private <T, V extends T> void fireViewChangedEvent(VisualProperty<? extends T> vp, V value, boolean lockedValue) {
-		ViewChangeRecord record = new ViewChangeRecord<>(this, vp, value, lockedValue);
-		getEventHelper().addEventPayload(getParentViewModel(), record, ViewChangedEvent.class);
 	}
 	
 	@Override

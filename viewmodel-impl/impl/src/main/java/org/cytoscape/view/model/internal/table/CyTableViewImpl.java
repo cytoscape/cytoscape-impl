@@ -13,6 +13,8 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.model.events.TableViewChangedEvent;
+import org.cytoscape.view.model.events.ViewChangeRecord;
 import org.cytoscape.view.model.internal.base.CyViewBase;
 import org.cytoscape.view.model.internal.base.VPStore;
 import org.cytoscape.view.model.internal.base.ViewLock;
@@ -75,19 +77,13 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView 
 		return rendererId;
 	}
 	
-	@Override
-	public Class<? extends CyIdentifiable> getTableType() {
-		return tableType;
-	}
-
-	@Override
-	public View<?> getParentViewModel() {
-		return this;
+	public CyEventHelper getEventHelper() {
+		return eventHelper;
 	}
 	
 	@Override
-	public CyEventHelper getEventHelper() {
-		return eventHelper;
+	public Class<? extends CyIdentifiable> getTableType() {
+		return tableType;
 	}
 
 	@Override
@@ -218,6 +214,13 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView 
 			}
 		}
 	}
-
+	
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	protected void fireViewChangedEvent(VisualProperty<?> vp, Object value, boolean lockedValue) {
+		var record = new ViewChangeRecord<>(this, vp, value, lockedValue);
+		eventHelper.addEventPayload(this, record, TableViewChangedEvent.class);
+	}
 
 }
