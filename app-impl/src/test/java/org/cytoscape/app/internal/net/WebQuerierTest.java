@@ -51,7 +51,10 @@ public class WebQuerierTest {
 		
 		assertTrue(WebQuerier.compareVersions("3.0", "3.0.0") == 0);
 		assertTrue(WebQuerier.compareVersions("3.1", "3.0.0") < 0);
-
+		assertTrue(WebQuerier.compareVersions("3.10.0", "3.1.0") < 0);
+		assertTrue(WebQuerier.compareVersions("3.10", "3.1.0") < 0);
+		assertTrue(WebQuerier.compareVersions("3.10.0", "3.1") < 0);
+		
 		assertTrue(WebQuerier.compareVersions("3", "3.0.0") == 0);
 		
 		assertTrue(WebQuerier.compareVersions("1.7", "3.0.0.alpha9-SNAPSHOT") > 0);
