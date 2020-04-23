@@ -68,6 +68,37 @@ public class OpenBrowserImpl implements OpenBrowser {
 	}
 
 	/**
+	 * Opens the specified URL in CyBrowser or the default desktop browser
+	 * depending on the useCyBrowser argument.
+	 *
+	 * @param url the URL to open
+	 * @param useCyBrowser if false, do not use CyBrowser
+	 * @return true if the URL opens successfully.
+	 */
+	@Override
+	public boolean openURL(final String url, boolean useCyBrowser) {
+		URI uri = null;
+		try {
+			uri = new URI(url);
+		} catch (URISyntaxException e) {
+			throw new IllegalArgumentException("URL has an incorrect format: " + url);
+		}
+		if (useCyBrowser) {
+			if (openURLWithCyBrowser(url, new HashMap<>()))
+				return true;
+		} else {
+			if (openURLWithDesktop(uri)) {
+				return true;
+			} else if (openURLWithDefault(url)) {
+				return true;
+			}
+		}
+		logger.warn("Cytoscape was unable to open your web browser.. "
+				+ "\nPlease copy the following URL and paste it into your browser: " + url);
+		return false;
+	}
+
+	/**
 	 * Opens the specified URL in the system default web browser.
 	 *
 	 * @return true if the URL opens successfully.
@@ -87,15 +118,8 @@ public class OpenBrowserImpl implements OpenBrowser {
 		if (openURLWithDesktop(uri)) {
 			return true;
 		} else {
-			// See if the override browser works
-			String defBrowser = props.getProperty(DEF_WEB_BROWSER_PROP_NAME);
-
-			if (defBrowser != null && openURLWithBrowser(url, defBrowser))
+			if (openURLWithDefault(url)) {
 				return true;
-
-			for (final String browser : BROWSERS) {
-				if (openURLWithBrowser(url, browser))
-					return true;
 			}
 		}
 
@@ -115,6 +139,20 @@ public class OpenBrowserImpl implements OpenBrowser {
 			logger.warn("Failed to launch browser through java.awt.Desktop.browse(): " + e.getMessage());
 			return false;
 		}
+	}
+
+	private boolean openURLWithDefault(final String url) {
+		// See if the override browser works
+		String defBrowser = props.getProperty(DEF_WEB_BROWSER_PROP_NAME);
+
+		if (defBrowser != null && openURLWithBrowser(url, defBrowser))
+			return true;
+
+		for (final String browser : BROWSERS) {
+			if (openURLWithBrowser(url, browser))
+				return true;
+		}
+		return false;
 	}
 
 	private boolean openURLWithBrowser(final String url, final String browser) {
