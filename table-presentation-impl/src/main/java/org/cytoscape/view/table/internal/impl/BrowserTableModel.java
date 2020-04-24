@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -26,6 +27,7 @@ import org.cytoscape.model.events.RowsDeletedEvent;
 import org.cytoscape.model.events.RowsDeletedListener;
 import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
 import org.cytoscape.model.events.TableAboutToBeDeletedListener;
+import org.cytoscape.view.model.table.CyTableView;
 import org.cytoscape.view.presentation.property.table.TableMode;
 import org.cytoscape.view.presentation.property.table.TableModeVisualProperty;
 import org.cytoscape.view.table.internal.util.TableBrowserUtil;
@@ -84,6 +86,7 @@ public final class BrowserTableModel extends AbstractTableModel
 
 	private static final long serialVersionUID = -517521404005631245L;
 
+	private final CyTableView tableView;
 	private final CyTable dataTable;
 	private final Class<? extends CyIdentifiable> tableType;
 	private final EquationCompiler compiler;
@@ -99,14 +102,12 @@ public final class BrowserTableModel extends AbstractTableModel
 
 	private ReadWriteLock lock;
 
-	public BrowserTableModel(CyTable dataTable, Class<? extends CyIdentifiable> tableType, EquationCompiler compiler) {
-		if (dataTable == null)
-			throw new IllegalArgumentException("'dataTable' must not be null");
-		
-		this.dataTable = dataTable;
+	public BrowserTableModel(CyTableView tableView, EquationCompiler compiler) {
+		this.tableView = Objects.requireNonNull(tableView, "'tableView' must not be null");
+		this.dataTable = tableView.getModel();
 		this.compiler = compiler;
 		this.viewMode = ViewMode.ALL; 
-		this.tableType = tableType;
+		this.tableType = tableView.getTableType();
 
 		attrNames = getAttributeNames(dataTable);
 		lock = new ReentrantReadWriteLock();
@@ -130,6 +131,10 @@ public final class BrowserTableModel extends AbstractTableModel
 		return names;
 	}
 
+	public CyTableView getTableView() {
+		return tableView;
+	}
+	
 	public CyTable getDataTable() {
 		return dataTable;
 	}

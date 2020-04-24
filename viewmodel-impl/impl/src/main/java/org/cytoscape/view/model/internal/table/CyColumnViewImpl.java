@@ -38,19 +38,25 @@ public class CyColumnViewImpl extends CyViewBase<CyColumn> implements CyColumnVi
 	}
 
 	@Override
-	public <T, V extends T> void setVisualProperty(VisualProperty<? extends T> vp, Function<CyRow,T> mapping) {
+	public <T> void setCellVisualProperty(VisualProperty<? extends T> vp, Function<CyRow,T> mapping) {
 		setVisualProperty(vp, (Object)mapping);
 	}
 	
 	@SuppressWarnings("unchecked")
-	public <T> Function<CyRow,T> getVisualPropertyCellFunction(VisualProperty<T> vp) {
-		return (Function<CyRow,T>) getVisualProperty(vp);
+	@Override
+	public <T> Function<CyRow, T> getCellVisualProperty(VisualProperty<? extends T> vp) {
+		T v = getVisualProperty(vp);
+		if(v instanceof Function)
+			return (Function<CyRow,T>) v;
+		else
+			return (row) -> v;
 	}
-
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void fireViewChangedEvent(VisualProperty<?> vp, Object value, boolean lockedValue) {
 		var record = new ViewChangeRecord<>(this, vp, value, lockedValue);
 		parent.getEventHelper().addEventPayload(parent, record, TableViewChangedEvent.class);
 	}
+	
 }

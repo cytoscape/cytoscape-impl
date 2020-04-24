@@ -32,13 +32,26 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.JTable;
+
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.view.model.table.CyTableView;
+import org.cytoscape.view.table.internal.impl.BrowserTable;
+import org.cytoscape.view.table.internal.impl.BrowserTableModel;
 
 public final class TableBrowserUtil {
 
 	private static final int EOF = -1;
 
+	
+	public static CyTableView getTableView(JTable table) {
+		BrowserTable browserTable = (BrowserTable) table;
+		BrowserTableModel model = (BrowserTableModel) browserTable.getModel();
+		return model.getTableView();
+	}
+	
+	
 	/**
 	 *  Creates a Map with the CyColumn names and their types as mapped to the types used by attribute equations.
 	 *  Types (and associated names) not used by attribute equations are omitted.

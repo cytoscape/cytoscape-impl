@@ -169,14 +169,12 @@ public class PopupMenuHelper {
 				
 				try {
 					var pasteValue = (String) clipboard.getData(DataFlavor.stringFlavor);
-					List<Object> parsedData = TableBrowserUtil.parseCellInput(column.getTable(), columnName,
-							pasteValue);
+					List<Object> parsedData = TableBrowserUtil.parseCellInput(column.getTable(), columnName, pasteValue);
 
 					if (parsedData.get(0) != null)
 						sourceRow.set(columnName, parsedData.get(0));
 					else
-						JOptionPane.showMessageDialog(null, parsedData.get(1), "Invalid Value",
-								JOptionPane.ERROR_MESSAGE);
+						JOptionPane.showMessageDialog(null, parsedData.get(1), "Invalid Value", JOptionPane.ERROR_MESSAGE);
 				} catch (UnsupportedFlavorException | IOException ex) {
 					JOptionPane.showMessageDialog(null, ex.getMessage(), "Invalid Value", JOptionPane.ERROR_MESSAGE);
 					logger.warn("Error pasting cell value", ex);

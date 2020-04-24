@@ -1,9 +1,12 @@
 package org.cytoscape.view.table.internal.impl;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Paint;
 import java.util.Properties;
+import java.util.function.Function;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -13,10 +16,15 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.table.TableCellRenderer;
 
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.model.table.CyColumnView;
+import org.cytoscape.view.model.table.CyTableView;
+import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
 import org.cytoscape.view.table.internal.util.ValidatedObjectAndEditString;
 
 /*
@@ -74,10 +82,10 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 
 		setBorder(border);
 	}
+	
 
 	@Override
-	public Component getTableCellRendererComponent(final JTable table, final Object value, final boolean isSelected,
-			final boolean hasFocus, final int row, final int column) {
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int rowIndex, int colIndex) {
 		final ValidatedObjectAndEditString objEditStr = (ValidatedObjectAndEditString) value;
 		final Object validatedObj = objEditStr != null ? objEditStr.getValidatedObject() : null;
 
@@ -86,7 +94,27 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 		else
 			setFont(defaultFont);
 
-		setBackground(UIManager.getColor("Table.background"));
+		BrowserTable browserTable = (BrowserTable) table;
+		BrowserTableModel model = (BrowserTableModel) browserTable.getModel();
+		CyTableView tableView = model.getTableView();
+		CyColumn col = model.getColumnByModelIndex(browserTable.convertColumnIndexToModel(colIndex));
+		CyRow row = model.getCyRow(browserTable.convertRowIndexToModel(rowIndex));
+		
+		CyColumnView colView = (CyColumnView) tableView.getColumnView(col);
+		
+		// Apply background VP
+		Function<CyRow,Paint> cellPaintMapping = colView.getCellVisualProperty(BasicTableVisualLexicon.CELL_BACKGROUND_PAINT);
+		
+		Color background = UIManager.getColor("Table.background");
+		if(cellPaintMapping != null) {
+			Paint vpValue = cellPaintMapping.apply(row);
+			if(vpValue instanceof Color) {
+				background = (Color) vpValue;
+			}
+		}
+		setBackground(background);
+		
+		
 		setIcon(objEditStr != null && objEditStr.isEquation() ? EQUATION_ICON : null);
 		setVerticalTextPosition(JLabel.CENTER);
 		setHorizontalTextPosition(JLabel.CENTER);
@@ -110,9 +138,9 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 			else if (validatedObj instanceof Boolean)
 				displayText = validatedObj == Boolean.TRUE ? IconManager.ICON_CHECK_SQUARE : IconManager.ICON_SQUARE_O;
 			else if (validatedObj instanceof Double) {
-				final BrowserTableColumnModel model = (BrowserTableColumnModel) table.getColumnModel();
-				final String colName = table.getColumnName(column);
-				String formatStr = model.getColumnFormat(colName);
+				final BrowserTableColumnModel columModel = (BrowserTableColumnModel) table.getColumnModel();
+				final String colName = table.getColumnName(colIndex);
+				String formatStr = columModel.getColumnFormat(colName);
 
 				// MKTODO make column format a VisualProperty
 //				if (formatStr == null)
@@ -134,18 +162,16 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 
 		// If selected, return
 		if (isSelected) {
-			if (table.getSelectedColumn() == column && table.getSelectedRow() == row) { // Selected
-																						// cell
+			if (table.getSelectedColumn() == colIndex && table.getSelectedRow() == rowIndex) { // Selected
 				setBackground(UIManager.getColor("Table.focusCellBackground"));
 				setForeground(UIManager.getColor("Table.focusCellForeground"));
 			} else {
-				setForeground(
-						isError ? LookAndFeelUtil.getErrorColor() : UIManager.getColor("Table.selectionForeground"));
+				setForeground( isError ? LookAndFeelUtil.getErrorColor() : UIManager.getColor("Table.selectionForeground"));
 				setBackground(UIManager.getColor("Table.selectionBackground"));
 			}
 		} else {
 			// If non-editable, grey it out.
-			if (table.getModel() instanceof BrowserTableModel && !table.isCellEditable(0, column))
+			if (table.getModel() instanceof BrowserTableModel && !table.isCellEditable(0, colIndex))
 				setForeground(UIManager.getColor("TextField.inactiveForeground"));
 			else
 				setForeground(isError ? LookAndFeelUtil.getErrorColor() : UIManager.getColor("Table.foreground"));

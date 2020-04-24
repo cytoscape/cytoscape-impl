@@ -63,7 +63,7 @@ public class BrowserTableRenderingEngine implements TableRenderingEngine, TableV
 	private BrowserTable createBrowserTable() {
 		var compiler = registrar.getService(EquationCompiler.class);
 		var browserTable = new BrowserTable(compiler, popupMenuHelper, registrar);
-		var model = new BrowserTableModel(tableView.getModel(), tableView.getTableType(), compiler); // why does it need the element type? 
+		var model = new BrowserTableModel(tableView, compiler); // why does it need the element type? 
 		
 		browserTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		browserTable.setModel(model);
@@ -139,8 +139,9 @@ public class BrowserTableRenderingEngine implements TableRenderingEngine, TableV
 				if(vp == BasicTableVisualLexicon.COLUMN_VISIBLE) {
 					boolean visible = Boolean.TRUE.equals(record.getValue());
 					browserTable.setColumnVisibility(colView.getModel().getName(), visible);
+				} else if(vp == BasicTableVisualLexicon.CELL_BACKGROUND_PAINT) {
+					browserTable.repaint();
 				}
-				
 			} else if(record.getView().getModel() instanceof CyTable) {
 				if(vp == BasicTableVisualLexicon.TABLE_VIEW_MODE) {
 					changeSelectionMode((TableMode)record.getValue());
