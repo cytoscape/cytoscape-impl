@@ -4,6 +4,7 @@ import java.util.Properties;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.VisualLexicon;
@@ -34,6 +35,9 @@ public class CyTableViewFactoryImpl implements CyTableViewFactory {
 		CyTableViewImpl tableView = new CyTableViewImpl(registrar, table, visualLexicon, rendererId, tableType);
 		for(CyColumn col : table.getColumns()) {
 			tableView.addColumn(col);
+		}
+		for(CyRow row : table.getAllRows()) {
+			tableView.addRow(row);
 		}
 		return tableView;
 	}

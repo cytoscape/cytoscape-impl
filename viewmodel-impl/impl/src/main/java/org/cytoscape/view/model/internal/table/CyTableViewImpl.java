@@ -153,6 +153,17 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView 
 		return colList;
 	}
 	
+	
+	@Override
+	public Collection<View<CyRow>> getRowViews() {
+		// The asJava() method returns a collection that is unbearably slow, so we create our own collection instead.
+		java.util.List<View<CyRow>> rowList = new ArrayList<>();
+		for(var row : dataSuidToRow.values()) {
+			rowList.add(row);
+		}
+		return rowList;
+	}
+	
 	public View<CyRow> addRow(CyRow model) {
 		if(dataSuidToRow.containsKey(model.getSUID()))
 			return null;
