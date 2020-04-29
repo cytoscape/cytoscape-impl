@@ -3,12 +3,13 @@ package org.cytoscape.view.vizmap.gui.internal.view;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE_O;
-import static org.cytoscape.util.swing.IconManager.ICON_ELLIPSIS_V;
+import static org.cytoscape.util.swing.IconManager.ICON_EDIT;
+import static org.cytoscape.util.swing.IconManager.ICON_SHARE_ALT_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_SQUARE_O;
 import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
-import static org.cytoscape.view.vizmap.gui.internal.util.ViewUtil.invokeOnEDT;
+import static org.cytoscape.view.vizmap.gui.internal.view.util.ViewUtil.invokeOnEDT;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -40,6 +41,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.SortedSet;
 
 import javax.swing.AbstractAction;
@@ -83,6 +85,8 @@ import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
 import org.cytoscape.view.vizmap.gui.internal.task.RemoveVisualStylesTask;
 import org.cytoscape.view.vizmap.gui.internal.task.RenameVisualStyleTask;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.cytoscape.view.vizmap.gui.internal.view.util.SimpleToolBarToggleButton;
+import org.cytoscape.view.vizmap.gui.internal.view.util.ViewUtil;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
@@ -139,6 +143,7 @@ public class VisualStyleSelector extends JPanel {
 	private JPanel toolBarPanel;
 	private JButton selectAllBtn;
 	private JButton selectNoneBtn;
+	private JToggleButton filterAppliedBtn;
 	private JButton removeStylesBtn;
 	
 	private int cols;
@@ -149,6 +154,8 @@ public class VisualStyleSelector extends JPanel {
 	private LinkedList<VisualStyle> filteredStyles;
 	
 	private String titleFilter = "";
+	/** If true, only styles that are applied to at least one view are filtered in */
+	private boolean appliedFilter;
 	
 	private final int minColumns;
 	private final int maxColumns;
@@ -160,6 +167,8 @@ public class VisualStyleSelector extends JPanel {
 	private int selectionTail;
 	
 	private final Map<String, RenderingEngine<CyNetwork>> engineMap;
+	
+	private VisualStyle selectedStyle;
 	
 	private final CyNetworkView previewNetView;
 	private final Map<String/*visual style name*/, JPanel> defViewPanelsMap;
@@ -244,7 +253,12 @@ public class VisualStyleSelector extends JPanel {
 	}
 	
 	public void setSelectedStyle(VisualStyle style) {
-		getStyleGrid().setSelectedValue(style, getStyleGrid().isShowing());
+		if (!Objects.equals(selectedStyle, style)) {
+			var oldValue = selectedStyle;
+			selectedStyle = style;
+			getStyleGrid().setSelectedValue(style, getStyleGrid().isShowing());
+			firePropertyChange("selectedStyle", oldValue, selectedStyle);
+		}
 	}
 	
 	/**
@@ -252,7 +266,7 @@ public class VisualStyleSelector extends JPanel {
 	 * you probably want to use {@link #getSelectedStyleList()} instead.
 	 */
 	public VisualStyle getSelectedStyle() {
-		return getStyleGrid().getSelectedValue();
+		return selectedStyle;
 	}
 	
 	/**
@@ -285,6 +299,9 @@ public class VisualStyleSelector extends JPanel {
 	
 	public void resetFilter() {
 		getSearchTxtFld().setText("");
+		
+		if (getFilterAppliedBtn().isSelected())
+			getFilterAppliedBtn().doClick();
 	}
 	
 	public void dispose() {
@@ -311,6 +328,8 @@ public class VisualStyleSelector extends JPanel {
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER)
 				.addGroup(layout.createSequentialGroup()
 						.addComponent(getSearchTxtFld(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(getFilterAppliedBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addPreferredGap(ComponentPlacement.UNRELATED)
 						.addComponent(getToolBarPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(getEditBtn(), btnSize, btnSize, btnSize)
 				)
@@ -319,6 +338,7 @@ public class VisualStyleSelector extends JPanel {
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addGroup(layout.createParallelGroup(Alignment.CENTER)
 						.addComponent(getSearchTxtFld(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getFilterAppliedBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(getToolBarPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(getEditBtn(), btnSize, btnSize, btnSize)
 				)
@@ -359,11 +379,7 @@ public class VisualStyleSelector extends JPanel {
 	
 	JToggleButton getEditBtn() {
 		if (editBtn == null) {
-			editBtn = new JToggleButton(ICON_ELLIPSIS_V);
-			editBtn.setFont(servicesUtil.get(IconManager.class).getIconFont(14.0f));
-			editBtn.setHorizontalAlignment(SwingConstants.CENTER);
-			editBtn.setVerticalAlignment(SwingConstants.CENTER);
-			editBtn.setToolTipText("Edit...");
+			editBtn = createToolBarToggleButton(ICON_EDIT, "Edit...", 16.0f);
 			editBtn.addActionListener(evt -> setEditMode(editBtn.isSelected()));
 		}
 		
@@ -382,9 +398,8 @@ public class VisualStyleSelector extends JPanel {
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addContainerGap()
 					.addComponent(getSelectAllBtn())
-					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(getSelectNoneBtn())
-					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(getRemoveStylesBtn())
 					.addContainerGap()
 			);
@@ -414,6 +429,15 @@ public class VisualStyleSelector extends JPanel {
 		}
 		
 		return selectNoneBtn;
+	}
+	
+	JToggleButton getFilterAppliedBtn() {
+		if (filterAppliedBtn == null) {
+			filterAppliedBtn = createToolBarToggleButton(ICON_SHARE_ALT_SQUARE, "Only Applied Styles", 16.0f);
+			filterAppliedBtn.addActionListener(evt -> setAppliedFilter(filterAppliedBtn.isSelected()));
+		}
+		
+		return filterAppliedBtn;
 	}
 	
 	JButton getRemoveStylesBtn() {
@@ -455,7 +479,7 @@ public class VisualStyleSelector extends JPanel {
 				repaint();
 				
 				if (!isEditMode())
-					firePropertyChange("selectedStyle", null, styleGrid.getSelectedValue());
+					setSelectedStyle(styleGrid.getSelectedValue());
 			});
 		}
 		
@@ -504,6 +528,15 @@ public class VisualStyleSelector extends JPanel {
 		});
 	}
 	
+	public void setAppliedFilter(boolean b) {
+		invokeOnEDT(() -> {
+			if (b != appliedFilter) {
+				appliedFilter = b;
+				filterStyles();
+			}
+		});
+	}
+	
 	private void createPreviewRenderingEngines() {
 		defViewPanelsMap.clear();
 		engineMap.clear();
@@ -525,10 +558,15 @@ public class VisualStyleSelector extends JPanel {
 	private void filterStyles() {
 		filteredStyles = titleFilter == null || titleFilter.isBlank() ? null : new LinkedList<>();
 		
+		if (filteredStyles == null)
+			filteredStyles = !appliedFilter ? null : new LinkedList<>();
+		
 		if (filteredStyles != null) {
 			for (var vs : allStyles) {
-				if (vs.getTitle().toLowerCase().contains(titleFilter))
-					filteredStyles.add(vs);
+				if (vs.getTitle().toLowerCase().contains(titleFilter)) {
+					if (!appliedFilter || getProxy().countNetworkViewsWithStyle(vs) > 0)
+						filteredStyles.add(vs);
+				}
 			}
 		}
 		
@@ -555,14 +593,15 @@ public class VisualStyleSelector extends JPanel {
 	private JButton createToolBarButton(String iconText, String tooltipText, float size) {
 		var btn = new JButton(iconText);
 		btn.setToolTipText(tooltipText);
-		btn.setHorizontalAlignment(SwingConstants.CENTER);
-		btn.setVerticalAlignment(SwingConstants.CENTER);
-		btn.setBorderPainted(false);
-		btn.setContentAreaFilled(false);
-		btn.setOpaque(false);
-		btn.setFocusable(false);
-		btn.setFont(servicesUtil.get(IconManager.class).getIconFont(size));
-		btn.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+		ViewUtil.styleToolBarButton(btn, servicesUtil.get(IconManager.class).getIconFont(size), 2, 0);
+		
+		return btn;
+	}
+	
+	private JToggleButton createToolBarToggleButton(String iconText, String tooltipText, float size) {
+		var btn = new SimpleToolBarToggleButton(iconText);
+		btn.setToolTipText(tooltipText);
+		ViewUtil.styleToolBarButton(btn, servicesUtil.get(IconManager.class).getIconFont(size), 2, 0);
 		
 		return btn;
 	}
@@ -1114,6 +1153,9 @@ public class VisualStyleSelector extends JPanel {
 		}
 
 		void editTitleStart(StylePanel item) {
+			if (getProxy().isDefaultStyle(item.getStyle()))
+				return;
+			
 			editingTitle = true;
 			var oldValue = item.getTitleTextField().getText().trim();
 			
@@ -1373,7 +1415,18 @@ public class VisualStyleSelector extends JPanel {
 		
 		JTextField getTitleTextField() {
 			if (titleTextField == null) {
-				titleTextField = new JTextField(style.getTitle());
+				titleTextField = new JTextField(style.getTitle()) {
+					@Override
+					public String getToolTipText(MouseEvent evt) {
+						boolean isDefault = getProxy().isDefaultStyle(getStyle());
+						
+					    return "<html><p style='text-align: center;'>" +
+								"<b>" + style.getTitle() + "</b>" +
+								(isEditMode() && !isDefault ? "<br>(double-click to rename...)" : "") +
+								"</p></html>";
+					}
+				};
+				titleTextField.setToolTipText(style.getTitle()); // Otherwise our getToolTipText() won't be called!
 				titleTextField.setHorizontalAlignment(SwingConstants.CENTER);
 				titleTextField.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
 				titleTextField.setBackground(BG_COLOR);

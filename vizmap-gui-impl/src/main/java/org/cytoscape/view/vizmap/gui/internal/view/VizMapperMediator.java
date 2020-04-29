@@ -7,8 +7,8 @@ import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISU
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_REMOVED;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_SET_CHANGED;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_UPDATED;
-import static org.cytoscape.view.vizmap.gui.internal.util.ViewUtil.invokeOnEDT;
-import static org.cytoscape.view.vizmap.gui.internal.util.ViewUtil.invokeOnEDTAndWait;
+import static org.cytoscape.view.vizmap.gui.internal.view.util.ViewUtil.invokeOnEDT;
+import static org.cytoscape.view.vizmap.gui.internal.view.util.ViewUtil.invokeOnEDTAndWait;
 
 import java.awt.Component;
 import java.awt.Dimension;

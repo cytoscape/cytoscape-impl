@@ -7,7 +7,7 @@ import javax.swing.JOptionPane;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyValueEditor;
-import org.cytoscape.view.vizmap.gui.internal.util.ViewUtil;
+import org.cytoscape.view.vizmap.gui.internal.view.util.ViewUtil;
 
 /*
  * #%L
