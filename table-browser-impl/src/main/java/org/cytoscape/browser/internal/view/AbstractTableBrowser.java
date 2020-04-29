@@ -17,7 +17,6 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,9 +56,7 @@ import org.cytoscape.task.read.LoadTableFileTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.model.table.CyTableView;
 import org.cytoscape.view.model.table.CyTableViewManager;
-import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskObserver;
@@ -96,8 +93,7 @@ import org.slf4j.LoggerFactory;
  */
 @SuppressWarnings("serial")
 public abstract class AbstractTableBrowser extends JPanel
-										   implements CytoPanelComponent2, ActionListener, SessionLoadedListener,
-										   			  SessionAboutToBeSavedListener{
+										   implements CytoPanelComponent2, SessionLoadedListener, SessionAboutToBeSavedListener{
 
 	private final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
@@ -106,7 +102,6 @@ public abstract class AbstractTableBrowser extends JPanel
 	
 	private TableBrowserToolBar toolBar;
 	private JPanel dropPanel;
-//	private final JScrollPane scrollPane = new JScrollPane();
 	
 	private final JPanel mainPane = new JPanel();
 	
@@ -130,8 +125,6 @@ public abstract class AbstractTableBrowser extends JPanel
 			final String tabTitle,
 			final CyServiceRegistrar serviceRegistrar
 	) {
-		System.out.println("AbstractTableBrowser() created " + tabTitle);
-		
 		this.serviceRegistrar = serviceRegistrar;
 		this.tabTitle = tabTitle;
 		
@@ -197,13 +190,9 @@ public abstract class AbstractTableBrowser extends JPanel
 		if (renderer == null)
 			return;
 		
-		// MKTODO make sure this still works
-//		table.setVisible(false);
-//		
-//		TableModel model = table.getModel();
-//		serviceRegistrar.unregisterAllServices(table);
-//		serviceRegistrar.unregisterAllServices(model);
-//		
+		var tableViewManager = serviceRegistrar.getService(CyTableViewManager.class);
+		tableViewManager.destroyTableView(renderer.getTableView());
+		
 		renderer.dispose();
 		
 		if (currentTable == cyTable) {
@@ -313,15 +302,16 @@ public abstract class AbstractTableBrowser extends JPanel
 
 	private TableRenderer createTableRenderer() {
 		var applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
-		var tableViewManager = serviceRegistrar.getService(CyTableViewManager.class);
+		var tableViewManager   = serviceRegistrar.getService(CyTableViewManager.class);
 		
 		JComponent container = new JPanel();
 		
-		// MKTODO add ability to choose renderer
+		// MKTODO add ability to choose rendering engine is there is more than one
 		var tableViewRenderer = applicationManager.getDefaultTableViewRenderer();
 		
 		var tableViewFactory = tableViewRenderer.getTableViewFactory();
 		var renderingEngineFactory = tableViewRenderer.getRenderingEngineFactory(TableViewRenderer.DEFAULT_CONTEXT);
+		
 		var tableView = tableViewFactory.createTableView(currentTable, currentTableType);
 		var renderingEngine = renderingEngineFactory.createRenderingEngine(container, tableView);
 		
@@ -329,44 +319,11 @@ public abstract class AbstractTableBrowser extends JPanel
 		
 		tableViewManager.addTableView(tableView);
 		
-//		
-//		browserTable = new BrowserTable(compiler, popupMenuHelper, serviceRegistrar);
-//		BrowserTableModel model = new BrowserTableModel(currentTable, currentTableType, compiler);
-//		browserTable.setModel(model);
-		
 		synchronized (lock) {
 			tableRenderers.put(currentTable, tableRenderer);
 		}
 		
-//		serviceRegistrar.registerAllServices(browserTable, new Properties());
-//		serviceRegistrar.registerAllServices(model, new Properties());
-//		browserTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-//		browserTable.setModel(model);
-		
-//		//move and hide SUID and selected by default
-//		final List<String> attrList = model.getAllAttributeNames();
-//
-//		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) browserTable.getColumnModel();
-//		
-//		if (attrList.contains(CyNetwork.SUID))
-//			columnModel.moveColumn(browserTable.convertColumnIndexToView(
-//					model.mapColumnNameToColumnIndex(CyNetwork.SUID)), 0);
-//		
-//		if (attrList.contains(CyNetwork.SELECTED))
-//			columnModel.moveColumn(browserTable.convertColumnIndexToView(
-//					model.mapColumnNameToColumnIndex(CyNetwork.SELECTED)), 1);
-//		
-//		attrList.remove(CyNetwork.SUID);
-//		attrList.remove(CyNetwork.SELECTED);
-//		browserTable.setVisibleAttributeNames(attrList);
-//		
-//		// So the drop event can go straight through the table to the drop target associated with this panel
-//		if (browserTable.getDropTarget() != null)
-//			browserTable.getDropTarget().setActive(false);
-//		
-//		ColumnResizer.adjustColumnPreferredWidths(browserTable, false);
 		update();
-		
 		return tableRenderer;
 	}
 	
@@ -388,8 +345,6 @@ public abstract class AbstractTableBrowser extends JPanel
 	// We have to keep this for backwards compatibility
 	@Override
 	public void handleEvent(SessionLoadedEvent e) {
-		System.out.println("AbstractTableBrowser.handleEvent(SessionLoadedEvent)");
-		
 		Map<String, TableColumnStat> tscMap = TableColumnStatFileIO.read(e, appFileName);
 		
 		if (tscMap == null || tscMap.isEmpty())
@@ -403,24 +358,20 @@ public abstract class AbstractTableBrowser extends JPanel
 			
 			TableColumnStat tcs = tscMap.get(table.getTitle());
 			TableRenderer renderer = getTableRenderer(table);
-			CyTableView tableView = renderer.getTableView();
 			
 			List<String> orderedCols = tcs.getOrderedCol();
 			List<String> visibleCols = tcs.getVisibleCols(); // MKTODO this should be a Set
 			
 			for (int i = 0; i < orderedCols.size(); i++) {
 				String colName = orderedCols.get(i);
-				View<CyColumn> colView = tableView.getColumnView(colName);
-				colView.setVisualProperty(BasicTableVisualLexicon.COLUMN_GRAVITY, i);
-				colView.setVisualProperty(BasicTableVisualLexicon.COLUMN_VISIBLE, visibleCols.contains(colName));
+				renderer.setColumnGravity(colName, i);
+				renderer.setColumnVisible(colName, visibleCols.contains(colName));
 			}
 		}
 	}
 
 	@Override
 	public void handleEvent(SessionAboutToBeSavedEvent e) {
-		System.out.println("AbstractTableBrowser.handleEvent(SessionAboutToBeSavedEvent)");
-		
 		Map<CyTable,TableRenderer> tableRendererMap = getTableRenderersMap();
 		List<TableColumnStat> tableColumnStatList = new ArrayList<>();
 
@@ -428,33 +379,23 @@ public abstract class AbstractTableBrowser extends JPanel
 			TableColumnStat tcs = new TableColumnStat(table.getTitle());
 			
 			TableRenderer renderer = getTableRenderer(table);
-			CyTableView tableView = renderer.getTableView();
 			
-			List<View<CyColumn>> sortedColViews = new ArrayList<>(tableView.getColumnViews());
-			sortedColViews.sort((cv1,cv2) -> {
-				double grav1 = cv1.getVisualProperty(BasicTableVisualLexicon.COLUMN_GRAVITY);
-				double grav2 = cv2.getVisualProperty(BasicTableVisualLexicon.COLUMN_GRAVITY);
-				return Double.compare(grav1, grav2);
-			});
-			
+			var sortedColViews = renderer.getColumnViewsSortedByGravity();
 			for(int i = 0; i < sortedColViews.size(); i++) {
 				View<CyColumn> colView = sortedColViews.get(i);
-				boolean vis = colView.getVisualProperty(BasicTableVisualLexicon.COLUMN_VISIBLE);
+				boolean vis = renderer.getColumnVisible(colView);
 				tcs.addColumnStat(colView.getModel().getName(), i, vis);
 			}
 
 			tableColumnStatList.add(tcs);
 		}
-		
 		TableColumnStatFileIO.write(tableColumnStatList, e, appFileName );	
 	}
 	
 	
 	@SuppressWarnings("unchecked")
 	protected boolean showPrivateTables() {
-		final CyProperty<Properties> cyProp =
-				serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
-		
+		CyProperty<Properties> cyProp = serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 		return cyProp != null && "true".equalsIgnoreCase(cyProp.getProperties().getProperty("showPrivateTables"));
 	}
 	

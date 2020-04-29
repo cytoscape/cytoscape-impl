@@ -4,7 +4,6 @@ import static org.cytoscape.browser.internal.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.browser.internal.util.ViewUtil.invokeOnEDTAndWait;
 
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -37,8 +36,6 @@ import org.cytoscape.model.events.TableAddedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
-import org.cytoscape.view.model.table.CyTableView;
-import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
 import org.cytoscape.view.presentation.property.table.TableMode;
 import org.cytoscape.view.presentation.property.table.TableModeVisualProperty;
 
@@ -75,7 +72,6 @@ public class DefaultTableBrowser extends AbstractTableBrowser
 	
 	private final Class<? extends CyIdentifiable> objType;
 
-//	private BrowserTableModel.ViewMode rowSelectionMode = BrowserTableModel.ViewMode.AUTO;
 	private boolean ignoreSetCurrentTable = true;
 	
 	public DefaultTableBrowser(
@@ -92,7 +88,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser
 		setToolBar(toolBar);
 		
 		toolBar.getSelectionModeButton().addActionListener(e -> {
-			DefaultTableBrowser.this.actionPerformed(e);
+			setCurrentTable();
 			displayMode.show(toolBar.getSelectionModeButton(), 0, toolBar.getSelectionModeButton().getHeight());
 		});
 	}
@@ -105,15 +101,13 @@ public class DefaultTableBrowser extends AbstractTableBrowser
 	private TableMode getTableMode() {
 		TableRenderer renderer = getCurrentRenderer();
 		if(renderer == null)
-			return BasicTableVisualLexicon.TABLE_VIEW_MODE.getDefault();
-		CyTableView tableView = renderer.getTableView();
-		return tableView.getVisualProperty(BasicTableVisualLexicon.TABLE_VIEW_MODE);
+			return TableRenderer.getDefaultTableMode();
+		return renderer.getTableMode();
 	}
 	
 	private void setTableMode(TableMode mode) {
 		TableRenderer renderer = getCurrentRenderer();
-		CyTableView tableView = renderer.getTableView();
-		tableView.setVisualProperty(BasicTableVisualLexicon.TABLE_VIEW_MODE, mode);
+		renderer.setTableMode(mode);
 	}
 	
 	@Override
@@ -150,7 +144,6 @@ public class DefaultTableBrowser extends AbstractTableBrowser
 
 		displayAuto.addActionListener(e -> {
 			setTableMode(TableModeVisualProperty.AUTO);
-//			changeSelectionMode();
 			displayAuto.setSelected(true);
 			displayAll.setSelected(false);
 			displaySelect.setSelected(false);
@@ -158,7 +151,6 @@ public class DefaultTableBrowser extends AbstractTableBrowser
 		
 		displayAll.addActionListener(e -> {
 			setTableMode(TableModeVisualProperty.ALL);
-//			changeSelectionMode();
 			displayAuto.setSelected(false);
 			displayAll.setSelected(true);
 			displaySelect.setSelected(false);
@@ -166,7 +158,6 @@ public class DefaultTableBrowser extends AbstractTableBrowser
 		
 		displaySelect.addActionListener(e -> {
 			setTableMode(TableModeVisualProperty.SELECTED);
-//			changeSelectionMode();
 			displayAuto.setSelected(false);
 			displayAll.setSelected(false);
 			displaySelect.setSelected(true);
@@ -177,34 +168,8 @@ public class DefaultTableBrowser extends AbstractTableBrowser
 		displayMode.add(displaySelect);
 	}
 
-	// MKTODO this needs to go in the renderer
-	private void changeSelectionMode() {
-//		final BrowserTable browserTable = getCurrentRenderer();
-//		
-//		if (browserTable == null)
-//			return;
-//		
-//		final BrowserTableModel model = (BrowserTableModel) browserTable.getModel();
-//		model.setViewMode(rowSelectionMode);
-//		model.updateViewMode();
-//		
-//		if (rowSelectionMode == ViewMode.ALL && currentTable.getColumn(CyNetwork.SELECTED) != null) {
-//			// Show the current selected rows
-//			final Set<Long> suidSelected = new HashSet<>();
-//			final Set<Long> suidUnselected = new HashSet<>();
-//			final Collection<CyRow> selectedRows = currentTable.getMatchingRows(CyNetwork.SELECTED, Boolean.TRUE);
-//	
-//			for (final CyRow row : selectedRows) {
-//				suidSelected.add(row.get(CyIdentifiable.SUID, Long.class));
-//			}
-//	
-//			if (!suidSelected.isEmpty())
-//				browserTable.changeRowSelection(suidSelected, suidUnselected);
-//		}
-	}
 	
-	@Override
-	public void actionPerformed(final ActionEvent e) {
+	public void setCurrentTable() {
 		if (!ignoreSetCurrentTable) {
 			final CyTable table = (CyTable) getTableChooser().getSelectedItem();
 			currentTable = table;
@@ -219,7 +184,6 @@ public class DefaultTableBrowser extends AbstractTableBrowser
 			}
 			
 			showSelectedTable();
-			changeSelectionMode();
 		}
 	}
 
@@ -305,14 +269,13 @@ public class DefaultTableBrowser extends AbstractTableBrowser
 		}
 		
 		showSelectedTable();
-		changeSelectionMode();
 	}
 	
 	private JComboBox<CyTable> getTableChooser() {
 		if (tableChooser == null) {
 			tableChooser = new JComboBox<>(new DefaultComboBoxModel<CyTable>());
 			tableChooser.setRenderer(new TableChooserCellRenderer());
-			tableChooser.addActionListener(this);
+			tableChooser.addActionListener(e -> setCurrentTable());
 			final Dimension d = new Dimension(SELECTOR_WIDTH, tableChooser.getPreferredSize().height);
 			tableChooser.setMaximumSize(d);
 			tableChooser.setMinimumSize(d);
@@ -359,7 +322,6 @@ public class DefaultTableBrowser extends AbstractTableBrowser
 					tables.add(tbl);
 			}
 		}
-		
 		return tables;
 	}
 }

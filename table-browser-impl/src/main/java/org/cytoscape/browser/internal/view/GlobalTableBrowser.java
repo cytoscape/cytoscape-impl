@@ -3,7 +3,6 @@ package org.cytoscape.browser.internal.view;
 import static org.cytoscape.browser.internal.util.ViewUtil.invokeOnEDT;
 
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -19,10 +18,6 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.events.RowsDeletedEvent;
-import org.cytoscape.model.events.RowsDeletedListener;
-import org.cytoscape.model.events.RowsSetEvent;
-import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
 import org.cytoscape.model.events.TableAboutToBeDeletedListener;
 import org.cytoscape.model.events.TableAddedEvent;
@@ -57,7 +52,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 
 @SuppressWarnings("serial")
 public class GlobalTableBrowser extends AbstractTableBrowser 
-                                implements TableAboutToBeDeletedListener, RowsDeletedListener, RowsSetListener, 
+                                implements TableAboutToBeDeletedListener,
                                            TableAddedListener, TablePrivacyChangedListener {
 
 	private final GlobalTableChooser tableChooser;
@@ -69,7 +64,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 		super(tabTitle, serviceRegistrar);
 		
 		tableChooser = new GlobalTableChooser();
-		tableChooser.addActionListener(this);
+		tableChooser.addActionListener(e -> setCurrentTable());
 		final Dimension d = new Dimension(SELECTOR_WIDTH, tableChooser.getPreferredSize().height);
 		tableChooser.setMaximumSize(d);
 		tableChooser.setMinimumSize(d);
@@ -86,10 +81,8 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 		return "org.cytoscape.UnassignedTables";
 	}
 	
-	@Override
-	public void actionPerformed(final ActionEvent e) {
+	public void setCurrentTable() {
 		final CyTable table = (CyTable) tableChooser.getSelectedItem();
-		
 		if (table == currentTable || table == null)
 			return;
 
@@ -169,39 +162,6 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 		}
 		
 		serviceRegistrar.getService(CyApplicationManager.class).setCurrentTable(currentTable);
-	}
-	
-	@Override
-	public void handleEvent(final RowsSetEvent e) {
-//		BrowserTable table = getCurrentBrowserTable();
-//		
-//		if (table == null)
-//			return;
-//		
-//		BrowserTableModel model = (BrowserTableModel) table.getModel();
-//		CyTable dataTable = model.getDataTable();
-//
-//		if (e.getSource() != dataTable)
-//			return;
-//		
-//		synchronized (this) {
-//			model.fireTableDataChanged();
-//		}
-	}
-	
-	@Override
-	public void handleEvent(final RowsDeletedEvent e) {
-//		BrowserTable table = getCurrentBrowserTable();
-//		if (table == null)
-//			return;
-//		BrowserTableModel model = (BrowserTableModel) table.getModel();
-//		CyTable dataTable = model.getDataTable();
-//
-//		if (e.getSource() != dataTable)
-//			return;		
-//		synchronized (this) {
-//				model.fireTableDataChanged();
-//		}
 	}
 	
 	private class GlobalTableChooser extends JComboBox<CyTable> {
