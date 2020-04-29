@@ -205,7 +205,7 @@ public class BrowserTableRenderingEngine implements TableRenderingEngine, TableV
 	}
 	
 	@Override
-	public View<CyTable> getViewModel() {
+	public CyTableView getViewModel() {
 		return tableView;
 	}
 	
