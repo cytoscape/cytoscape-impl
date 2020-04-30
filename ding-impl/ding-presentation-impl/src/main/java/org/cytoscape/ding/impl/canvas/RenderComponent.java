@@ -8,6 +8,7 @@ import java.awt.Image;
 import java.awt.Paint;
 
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 
 import org.cytoscape.ding.debug.DebugFrameType;
 import org.cytoscape.ding.debug.DebugProgressMonitorFactory;
@@ -73,7 +74,10 @@ public abstract class RenderComponent extends JComponent {
 			}
 		}
 		
-		updateView(UpdateType.ALL_FULL);
+		// Avoid deadlock if an App calls pack() or something similar from a Task.
+		if(SwingUtilities.isEventDispatchThread()) {
+			updateView(UpdateType.ALL_FULL);
+		}
 	}
 	
 	public boolean isInitialized() {

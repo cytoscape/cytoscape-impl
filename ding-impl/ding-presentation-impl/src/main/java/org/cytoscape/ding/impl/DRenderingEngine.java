@@ -281,11 +281,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		contentChanged = false;
 	}
 	
-	private void updateModelAndView() {
-		updateModel();
-		updateView(UpdateType.ALL_FULL);
-	}
-	
 	
 	public void updateView(UpdateType updateType) {
 		renderComponent.updateView(updateType);
@@ -481,16 +476,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 				}
 			});
 		}
-		
-		// MKTODO is this necessary, the timer will check the dirty flag
-		updateModelAndView();
 	}
-	
-	@Override
-	public void handleUpdateView() {
-		updateModelAndView();
-	}
-	
 	
 	public void zoom(int ticks) {
 		if(getViewModelSnapshot().isValueLocked(BasicVisualLexicon.NETWORK_SCALE_FACTOR))
@@ -600,8 +586,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 				netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, yCenter);
 			}
 		});
-			
-		updateModelAndView();
 	}
 
 	
