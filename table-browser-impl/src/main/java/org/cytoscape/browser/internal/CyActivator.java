@@ -2,7 +2,6 @@ package org.cytoscape.browser.internal;
 
 import static org.cytoscape.work.ServiceProperties.TITLE;
 
-import java.awt.event.ActionListener;
 import java.util.Properties;
 
 import org.cytoscape.application.events.SetCurrentNetworkListener;
@@ -16,8 +15,6 @@ import org.cytoscape.browser.internal.view.TableBrowserMediator;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.events.RowsDeletedListener;
-import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.model.events.TableAboutToBeDeletedListener;
 import org.cytoscape.model.events.TableAddedListener;
 import org.cytoscape.model.events.TablePrivacyChangedListener;
@@ -57,7 +54,6 @@ public class CyActivator extends AbstractCyActivator {
 	@Override
 	public void start(BundleContext bc) {
 		var serviceRegistrar = getService(bc, CyServiceRegistrar.class);
-//		var popupMenuHelper = new PopupMenuHelper(serviceRegistrar);
 		
 		var nodeTableBrowser = new DefaultTableBrowser("Node Table", CyNode.class, serviceRegistrar);
 		var edgeTableBrowser = new DefaultTableBrowser("Edge Table", CyEdge.class, serviceRegistrar);
@@ -68,18 +64,12 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, edgeTableBrowser);
 		registerAllServices(bc, networkTableBrowser);
 
-		registerService(bc, globalTableBrowser, ActionListener.class);
 		registerService(bc, globalTableBrowser, SessionLoadedListener.class);
 		registerService(bc, globalTableBrowser, SessionAboutToBeSavedListener.class);
 		registerService(bc, globalTableBrowser, TableAboutToBeDeletedListener.class);
 		registerService(bc, globalTableBrowser, TableAddedListener.class);
 		registerService(bc, globalTableBrowser, TablePrivacyChangedListener.class);
-		registerService(bc, globalTableBrowser, RowsSetListener.class);
-		registerService(bc, globalTableBrowser, RowsDeletedListener.class);
 
-//		registerServiceListener(bc, popupMenuHelper::addTableColumnTaskFactory, popupMenuHelper::removeTableColumnTaskFactory, TableColumnTaskFactory.class);
-//		registerServiceListener(bc, popupMenuHelper::addTableCellTaskFactory, popupMenuHelper::removeTableCellTaskFactory, TableCellTaskFactory.class);
-		
 		{
 			var factory = new ClearAllErrorsTaskFactory(serviceRegistrar);
 			var props = new Properties();

@@ -20,6 +20,7 @@ import org.cytoscape.view.model.internal.base.VPStore;
 import org.cytoscape.view.model.internal.base.ViewLock;
 import org.cytoscape.view.model.table.CyTableView;
 
+import io.vavr.Tuple2;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
 
@@ -122,15 +123,14 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView 
 			viewSuidToCol = viewSuidToCol.put(view.getSUID(),  view);
 		}
 		
-//		eventHelper.addEventPayload(this, view, AddedNodeViewsEvent.class);
 		return view;
 	}
 	
-	public View<CyColumn> removeColumn(CyColumn model) {
+	public View<CyColumn> removeColumn(Long dataSuid) {
 		synchronized (columnLock) {
-			View<CyColumn> colView = dataSuidToCol.getOrElse(model.getSUID(), null);
+			View<CyColumn> colView = dataSuidToCol.getOrElse(dataSuid, null);
 			if(colView != null) {
-				dataSuidToCol = dataSuidToCol.remove(model.getSUID());
+				dataSuidToCol = dataSuidToCol.remove(dataSuid);
 				viewSuidToCol = viewSuidToCol.remove(colView.getSUID());
 				columnVPs.remove(colView.getSUID());
 			}
@@ -141,6 +141,22 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView 
 	@Override
 	public View<CyColumn> getColumnView(CyColumn column) {
 		return dataSuidToCol.getOrElse(column.getSUID(), null);
+	}
+	
+	public View<CyColumn> getColumnViewByDataSuid(Long suid) {
+		return dataSuidToCol.getOrElse(suid, null);
+	}
+	
+	public View<CyColumn> getColumnViewByName(String name) {
+		// can't use CyTable.getColumn(name) because the column may already have been deleted
+		for(Tuple2<Long,CyColumnViewImpl> entry : dataSuidToCol) {
+			CyColumnViewImpl col = entry._2();
+			String colName = col.getModel().getName();
+			if(colName != null && colName.equals(name)) {
+				return col;
+			}
+		}
+		return null;
 	}
 	
 	@Override

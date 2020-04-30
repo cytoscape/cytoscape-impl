@@ -51,14 +51,20 @@ public class TableModelListener implements ColumnCreatedListener, ColumnDeletedL
 		if(tableView.getModel() != e.getSource())
 			return;
 
-		CyTable table = e.getSource();
-		CyColumn column = table.getColumn(e.getColumnName());
-
-		if(column != null) {
-			View<CyColumn> view = tableView.getColumnView(column);
+		// SUID was added to API recently, we must accept that it could be null for backwards compatibility
+		Long suid = e.getSUID();
+		if(suid != null) {
+			View<CyColumn> view = tableView.getColumnViewByDataSuid(suid);
 			if(view != null) {
 				eventHelper.fireEvent(new AboutToRemoveColumnViewEvent(tableView, view));
-				tableView.removeColumn(column);
+				tableView.removeColumn(suid);
+			}
+		} else {
+			String name = e.getColumnName();
+			View<CyColumn> view = tableView.getColumnViewByName(name);
+			if(view != null) {
+				eventHelper.fireEvent(new AboutToRemoveColumnViewEvent(tableView, view));
+				tableView.removeColumn(view.getModel().getSUID());
 			}
 		}
 	}
