@@ -46,6 +46,10 @@ public class TableRenderer implements CyDisposable {
 
 	public void setColumnVisible(String name, boolean visible) {
 		View<CyColumn> colView = getTableView().getColumnView(name);
+		setColumnVisible(colView, visible);
+	}
+	
+	public static void setColumnVisible(View<CyColumn> colView, boolean visible) {
 		if(colView != null) {
 			colView.setVisualProperty(BasicTableVisualLexicon.COLUMN_VISIBLE, visible);
 		}

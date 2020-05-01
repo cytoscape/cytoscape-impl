@@ -34,6 +34,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
@@ -47,6 +48,7 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTable.Mutability;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -54,6 +56,7 @@ import org.cytoscape.task.destroy.DeleteTableTaskFactory;
 import org.cytoscape.task.read.LoadTableFileTaskFactory;
 import org.cytoscape.task.write.ExportTableTaskFactory;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -86,7 +89,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
  * Toolbar for the Browser.  All buttons related to this should be placed here.
  */
 @SuppressWarnings("serial")
-public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
+public class TableBrowserToolBar extends JPanel {
 	
 	public static final float ICON_FONT_SIZE = 22.0f;
 
@@ -111,15 +114,12 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 	private JButton exportButton;
 	
 	private final JComboBox<CyTable> tableChooser;
-
-//	private AttributeListModel attrListModel;
-	
 	private final List<JComponent> components;
-	
 	private final Class<? extends CyIdentifiable> objType;
 
 	private final CyServiceRegistrar serviceRegistrar;
 	private final IconManager iconMgr;
+	
 
 	public TableBrowserToolBar(
 			final CyServiceRegistrar serviceRegistrar,
@@ -128,19 +128,14 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 	) {
 		this.components = new ArrayList<>();
 		this.tableChooser = tableChooser;
-//		this.attrListModel = new AttributeListModel(null);
 		this.objType = objType;
 		this.serviceRegistrar = serviceRegistrar;
 		this.iconMgr = serviceRegistrar.getService(IconManager.class);
-		
-//		serviceRegistrar.registerAllServices(attrListModel, new Properties());
-
 		initializeGUI();
 	}
 
 	public void setTableRenderer(TableRenderer tableRenderer) {
 		this.tableRenderer = tableRenderer;
-//		attrListModel.setBrowserTableModel(browserTableModel);
 		updateEnableState();
 		
 		// MKTODO this needs to happen via VisualProperty events
@@ -156,73 +151,40 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 //		}
 	}
 
-	@Override
-	public void popupMenuCanceled(PopupMenuEvent e) {
-		// Do nothing
-	}
-	
-	@Override
-	public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-		// Update actual table
-		try {
-			final Set<String> visibleAttributes = getColumnSelector().getSelectedColumnNames();
-			Collection<View<CyColumn>> columnViews = tableRenderer.getTableView().getColumnViews();
-			
-			for(View<CyColumn> columnView : columnViews) {
-				boolean visible = visibleAttributes.contains(columnView.getModel().getName());
-				columnView.setVisualProperty(BasicTableVisualLexicon.COLUMN_VISIBLE, visible);
-			}
-			
-//			browserTable.setVisibleAttributeNames(visibleAttributes);
-//			updateEnableState();
-		} catch (Exception ex) {
-		}
-	}
-
-	@Override
-	public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-		// Do nothing
-	}
 	
 	protected void updateEnableState() {
-//		for (final JComponent comp : components)
-//			updateEnableState(comp);
+		components.forEach(this::updateEnableState);
 	}
 	
-	protected void updateEnableState(final JComponent comp) {
-//		if (comp == null)
-//			return;
-//		
-//		boolean enabled = false;
-//		
-//		if (browserTableModel != null) {
-//			final CyTable attrs = browserTableModel.getDataTable();
-//			
-//			if (comp == deleteTableButton) {
-//				enabled = browserTableModel.getDataTable().getMutability() == Mutability.MUTABLE;
-//			} else if (comp == deleteColumnsButton) {
-//				for (final CyColumn column : attrs.getColumns()) {
-//					if (!column.isImmutable()) {
-//						enabled = true;
-//						break;
-//					}
-//				}
-//			} else if (comp == fnBuilderButton) {
+	protected void updateEnableState(JComponent comp) {
+		if (comp == null)
+			return;
+		
+		boolean enabled = false;
+		
+		if(tableRenderer != null) {
+			if (comp == deleteTableButton) {
+				enabled = tableRenderer.getDataTable().getMutability() == Mutability.MUTABLE;
+			} else if (comp == deleteColumnsButton) {
+				enabled = tableRenderer.getDataTable().getColumns().stream().anyMatch(col -> !col.isImmutable());
+			} else if (comp == fnBuilderButton) {
+				// MKTODO how to get this information from the renderer?
+				enabled = true;
 //				final int row = browserTable.getSelectedRow();
 //				final int column = browserTable.getSelectedColumn();
 //				enabled = row >=0 && column >= 0 && browserTableModel.isCellEditable(row, column);
-//			} else if (comp == tableChooser) {
-//				enabled = tableChooser.getItemCount() > 0;
-//			} else {
-//				enabled = true;
-//			}
-//		}
-//		
-//		comp.setEnabled(enabled);
-//		
-//		// Unfortunately this is necessary on Nimbus!
-//		if (comp instanceof AbstractButton && LookAndFeelUtil.isNimbusLAF())
-//			comp.setForeground(UIManager.getColor(enabled ? "Button.foreground" : "Button.disabledForeground"));
+			} else if (comp == tableChooser) {
+				enabled = tableChooser.getItemCount() > 0;
+			} else {
+				enabled = true;
+			}
+		}
+		
+		comp.setEnabled(enabled);
+		
+		// Unfortunately this is necessary on Nimbus!
+		if (comp instanceof AbstractButton && LookAndFeelUtil.isNimbusLAF())
+			comp.setForeground(UIManager.getColor(enabled ? "Button.foreground" : "Button.disabledForeground"));
 	}
 	
 	private void initializeGUI() {
@@ -280,7 +242,7 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 		if (columnSelectorPopupMenu == null) {
 			columnSelectorPopupMenu = new JPopupMenu();
 			columnSelectorPopupMenu.add(getColumnSelector());
-			columnSelectorPopupMenu.addPopupMenuListener(this);
+			columnSelectorPopupMenu.addPopupMenuListener(new MenuListener());
 			columnSelectorPopupMenu.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent e) {
@@ -290,9 +252,31 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 				}
 			});
 		}
-
 		return columnSelectorPopupMenu;
 	}
+	
+	private class MenuListener implements PopupMenuListener {
+		@Override
+		public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+			// Update actual table
+			try {
+				final Set<String> visibleAttributes = getColumnSelector().getSelectedColumnNames();
+				Collection<View<CyColumn>> columnViews = tableRenderer.getTableView().getColumnViews();
+				
+				for(View<CyColumn> columnView : columnViews) {
+					boolean visible = visibleAttributes.contains(columnView.getModel().getName());
+					TableRenderer.setColumnVisible(columnView, visible);
+				}
+				
+				updateEnableState();
+			} catch (Exception ex) { }
+		}
+		@Override
+		public void popupMenuWillBecomeVisible(PopupMenuEvent e) { }
+		@Override
+		public void popupMenuCanceled(PopupMenuEvent e) { }
+	}
+	
 	
 	private CyColumnSelector getColumnSelector() {
 		if (columnSelector == null) {
