@@ -25,7 +25,7 @@ public class NullViewConfigImpl implements VPStoreViewConfig {
 
 	@Override
 	public Collection<VisualProperty<?>> getTrackedVPs(Class<?> type) {
-		return null;
+		return Collections.emptyList();
 	}
 
 	@SuppressWarnings("rawtypes")

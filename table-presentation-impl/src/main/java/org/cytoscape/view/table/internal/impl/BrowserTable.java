@@ -78,6 +78,7 @@ import org.cytoscape.view.model.events.AboutToRemoveColumnViewEvent;
 import org.cytoscape.view.model.events.AboutToRemoveColumnViewListener;
 import org.cytoscape.view.model.events.AddedColumnViewEvent;
 import org.cytoscape.view.model.events.AddedColumnViewListener;
+import org.cytoscape.view.model.table.CyTableView;
 import org.cytoscape.view.table.internal.util.TableBrowserUtil;
 import org.cytoscape.view.table.internal.util.ValidatedObjectAndEditString;
 import org.slf4j.Logger;
@@ -520,9 +521,9 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	@Override
 	public void handleEvent(final AddedColumnViewEvent e) {
 		BrowserTableModel model = (BrowserTableModel) getModel();
-		CyTable dataTable = model.getDataTable();
+		CyTableView tableView = model.getTableView();
 		
-		if (e.getSource() != dataTable)
+		if (e.getSource() != tableView)
 			return;
 
 		model.fireTableStructureChanged();
@@ -542,9 +543,9 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	@Override
 	public void handleEvent(final AboutToRemoveColumnViewEvent e) {
 		BrowserTableModel model = (BrowserTableModel) getModel();
-		CyTable dataTable = model.getDataTable();
+		CyTableView tableView = model.getTableView();
 		
-		if (e.getSource() != dataTable)
+		if (e.getSource() != tableView)
 			return;
 
 		model.fireTableStructureChanged();
