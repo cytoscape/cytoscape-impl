@@ -64,12 +64,9 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.basic.BasicIconFactory;
 
-import org.cytoscape.model.CyColumn;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
 
 @SuppressWarnings("serial")
 public class SetColumnFormatDialog extends JDialog {
@@ -97,15 +94,13 @@ public class SetColumnFormatDialog extends JDialog {
 	private final CyProperty<Properties> props;
 
 	@SuppressWarnings("unchecked")
-	public SetColumnFormatDialog(final TableRenderer tableRenderer, final Frame parent, final String targetAttrName,
-			CyServiceRegistrar serviceRegistrar) {
+	public SetColumnFormatDialog(TableRenderer tableRenderer, Frame parent, String targetAttrName, CyServiceRegistrar serviceRegistrar) {
 		super(parent, "Set Column Format for: " + targetAttrName, ModalityType.APPLICATION_MODAL);
 		this.props = serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 		this.targetAttrName = targetAttrName;
 		this.tableRenderer = tableRenderer;
 
-		View<CyColumn> colView = tableRenderer.getTableView().getColumnView(targetAttrName);
-		String format = colView.getVisualProperty(BasicTableVisualLexicon.COLUMN_FORMAT);
+		String format = tableRenderer.getColumnFormat(targetAttrName);
 		loadFormat(format);
 		initComponents();
 	}
@@ -421,8 +416,8 @@ public class SetColumnFormatDialog extends JDialog {
 			okButton = new JButton(new AbstractAction("Apply") {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					if (updateCells())
-						dispose();
+					updateCells();
+					dispose();
 				}
 			});
 		}
@@ -483,15 +478,11 @@ public class SetColumnFormatDialog extends JDialog {
 		pack();
 	}
 
-	private boolean updateCells() {
-//		String format = getFormatEntry().getText();
-//		if (format.isEmpty())
-//			format = null;
-//		boolean complete = tableColumnModel.setColumnFormat(targetAttrName, format);
-//		if (complete)
-//			tableModel.fireTableDataChanged();
-//		return complete;
-		return true;
+	private void updateCells() {
+		String format = getFormatEntry().getText();
+		if (format.isEmpty())
+			format = null;
+		tableRenderer.setColumnFormat(targetAttrName, format);
 	}
 
 }

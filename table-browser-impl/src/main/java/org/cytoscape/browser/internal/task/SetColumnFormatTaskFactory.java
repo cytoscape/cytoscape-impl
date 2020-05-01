@@ -33,12 +33,13 @@ import org.cytoscape.work.TaskIterator;
 public final class SetColumnFormatTaskFactory extends AbstractTableColumnTaskFactory {
 	
 	private CyServiceRegistrar serviceRegistrar;
-	public SetColumnFormatTaskFactory(final CyServiceRegistrar serviceRegistrar) {
+	
+	public SetColumnFormatTaskFactory(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
-	public TaskIterator createTaskIterator(final CyColumn column) {
+	public TaskIterator createTaskIterator(CyColumn column) {
 		if (column == null)
 			throw new IllegalStateException("you forgot to set the CyColumn on this task factory.");
 		
@@ -46,7 +47,7 @@ public final class SetColumnFormatTaskFactory extends AbstractTableColumnTaskFac
 	}
 
 	@Override
-	public boolean isReady(final CyColumn column) {
+	public boolean isReady(CyColumn column) {
 		return column.getType() == Double.class || column.getType() == Float.class || column.getType() == Long.class;
 	}
 }

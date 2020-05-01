@@ -90,6 +90,16 @@ public class TableRenderer implements CyDisposable {
 		return BasicTableVisualLexicon.TABLE_VIEW_MODE.getDefault();
 	}
 	
+	public String getColumnFormat(String name) {
+		View<CyColumn> colView = getTableView().getColumnView(name);
+		return colView.getVisualProperty(BasicTableVisualLexicon.COLUMN_FORMAT);
+	}
+	public void setColumnFormat(String name, String format) {
+		View<CyColumn> colView = getTableView().getColumnView(name);
+		if(colView != null) {
+			colView.setVisualProperty(BasicTableVisualLexicon.COLUMN_FORMAT, format);
+		}		
+	}
 	
 
 	@Override
@@ -101,4 +111,5 @@ public class TableRenderer implements CyDisposable {
 			renderingEngine = null;
 		}
 	}
+	
 }
