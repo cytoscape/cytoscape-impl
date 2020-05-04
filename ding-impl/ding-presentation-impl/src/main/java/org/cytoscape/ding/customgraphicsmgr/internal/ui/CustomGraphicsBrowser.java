@@ -25,7 +25,7 @@ import org.jdesktop.swingx.JXList;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -95,10 +95,9 @@ public class CustomGraphicsBrowser extends JXList implements CustomGraphicsLibra
 	}
 
 	private void addCustomGraphics(final String urlStr) {
-		CyCustomGraphics<?> cg = null;
-		
 		try {
-			cg = new URLImageCustomGraphics<>(pool.getNextAvailableID(), urlStr);
+			var cg = new URLImageCustomGraphics(pool.getNextAvailableID(), urlStr);
+			
 			if (cg != null) {
 				pool.addCustomGraphics(cg, new URL(urlStr));
 				model.addElement(cg);
@@ -119,12 +118,11 @@ public class CustomGraphicsBrowser extends JXList implements CustomGraphicsLibra
 			
 			try {
 				if (trans.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+					var fileList = (List<File>) trans.getTransferData(DataFlavor.javaFileListFlavor);
 
-					final List<File> fileList = (List<File>) trans.getTransferData(DataFlavor.javaFileListFlavor);
-
-					for (File file : fileList) {
+					for (File file : fileList)
 						addCustomGraphics(file.toURI().toURL().toString());
-					}
+					
 					gotData = true;
 				} else if (trans.isDataFlavorSupported(urlFlavor)) {
 					URL url = (URL) trans.getTransferData(urlFlavor);

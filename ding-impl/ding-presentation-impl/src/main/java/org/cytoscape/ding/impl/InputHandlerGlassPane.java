@@ -582,6 +582,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		public void mouseClicked(MouseEvent e) {
 			if(isDoubleLeftClick(e)) {
 				NetworkPicker picker = re.getPicker();
+				
 				if(annotationSelectionEnabled()) {
 					DingAnnotation annotation = picker.getAnnotationAt(e.getPoint());
 					if(annotation != null) {
@@ -591,12 +592,30 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 					}
 				}
 				
-				// MKTODO this is a hack to get groups to expand/collapse on double click
-				View<CyNode> node = picker.getNodeAt(e.getPoint());
-				if(node != null) {
-					popupMenuHelper.createNodeViewMenu(node, e.getX(), e.getY(), PopupMenuHelper.ACTION_OPEN);
-				}
+				showContextMenu(e.getPoint());
+				e.consume();
 			}
+		}
+		
+		private void showContextMenu(Point p) {
+			NetworkPicker picker = re.getPicker();
+			// This also causes groups to expand/collapse on double click
+			View<CyNode> node = picker.getNodeAt(p);
+			if(node != null) {
+				popupMenuHelper.createNodeViewMenu(node, p.x, p.y, PopupMenuHelper.ACTION_OPEN);
+				return;
+			}
+			
+			View<CyEdge> edge = picker.getEdgeAt(p);
+			if(edge != null) {
+				popupMenuHelper.createEdgeViewMenu(edge, p.x, p.y, PopupMenuHelper.ACTION_OPEN);
+				return;
+			}
+			
+			Point2D nodePt = re.getTransform().getNodeCoordinates(p);
+			Point xformPt = new Point();
+			xformPt.setLocation(nodePt.getX(), nodePt.getY());
+			popupMenuHelper.createNetworkViewMenu(p, xformPt, PopupMenuHelper.ACTION_OPEN);
 		}
 		
 		private void editAnnotation(DingAnnotation annotation, Point p) {

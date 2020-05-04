@@ -45,6 +45,6 @@ public class HelpVideosTask extends AbstractTask {
 		final OpenBrowser openBrowser = serviceRegistrar.getService(OpenBrowser.class);
 		final CyVersion cyVersion = serviceRegistrar.getService(CyVersion.class);
 		
-		openBrowser.openURL(VIDEOS_URL);
+		openBrowser.openURL(VIDEOS_URL, false);
 	}
 }

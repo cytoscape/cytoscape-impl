@@ -70,7 +70,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -225,9 +225,6 @@ public final class CustomGraphicsManagerImpl
 		return values;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.cytoscape.ding.customgraphicsmgr.internal.CGM#getAllPersistantCustomGraphics()
-	 */
 	@Override
 	public Collection<CyCustomGraphics> getAllPersistantCustomGraphics() {
 		Set<CyCustomGraphics> cgSet = new HashSet<>();
@@ -235,7 +232,7 @@ public final class CustomGraphicsManagerImpl
 		for (CyCustomGraphics cg: getAllCustomGraphics()) {
 			// Currently, we only export URLImageCustomGraphics to the session file.  This may change in the future...
 			if (cg instanceof URLImageCustomGraphics) {
-				URLImageCustomGraphics<?> urlCG = (URLImageCustomGraphics<?>) cg;
+				URLImageCustomGraphics urlCG = (URLImageCustomGraphics) cg;
 				
 				// Don't serialize bundle-generated graphics
 				if (urlCG.getSourceURL() != null && urlCG.getSourceURL().toString().startsWith("bundle:"))

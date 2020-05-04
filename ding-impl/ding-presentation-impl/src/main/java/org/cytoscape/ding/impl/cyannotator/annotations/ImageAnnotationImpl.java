@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -112,7 +112,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		this.height = image.getHeight();
 		this.url = url;
 		final Long id = customGraphicsManager.getNextAvailableID();
-		this.cg = new URLImageCustomGraphics<>(id, url.toString(), image);
+		this.cg = new URLImageCustomGraphics(id, url.toString(), image);
 		customGraphicsManager.addCustomGraphics(cg, url);
 		customGraphicsManager.setUsedInCurrentSession(cg, true);
 		name = getDefaultName();

@@ -243,7 +243,6 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		handleElementSelected(panel);
 	}
 	
-	@SuppressWarnings("unchecked")
 	protected void handleElementSelected(V panel) {
 		T selected = (T) namedElementComboBoxModel.getSelectedItem();
 		if (selected == null) {
@@ -631,7 +630,7 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	
 	public abstract void unregisterView(JComponent elementView);
 	
-	public abstract void addNamedTransformers(V view, @SuppressWarnings("unchecked") NamedTransformer<CyNetwork, CyIdentifiable>... transformers);
+	public abstract void addNamedTransformer(V view, NamedTransformer<CyNetwork, CyIdentifiable> transformer, boolean strictName);
 	
 	public abstract NamedTransformer<CyNetwork, CyIdentifiable>[] getNamedTransformers();
 	
