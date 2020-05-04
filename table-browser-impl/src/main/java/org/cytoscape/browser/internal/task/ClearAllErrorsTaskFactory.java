@@ -40,30 +40,28 @@ public final class ClearAllErrorsTaskFactory extends AbstractTableColumnTaskFact
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public ClearAllErrorsTaskFactory(final CyServiceRegistrar serviceRegistrar) {
+	public ClearAllErrorsTaskFactory(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
-	public TaskIterator createTaskIterator(final CyColumn column) {
+	public TaskIterator createTaskIterator(CyColumn column) {
 		if (column == null)
 			throw new IllegalStateException("you forgot to set the CyColumn on this task factory.");
-		
 		return new TaskIterator(new ClearAllErrorsTask(column, serviceRegistrar));
 	}
 
 	@Override
-	public boolean isReady(final CyColumn column) {
-		final CyTable table = column.getTable();
-		final EquationCompiler compiler = serviceRegistrar.getService(EquationCompiler.class);
+	public boolean isReady(CyColumn column) {
+		CyTable table = column.getTable();
+		EquationCompiler compiler = serviceRegistrar.getService(EquationCompiler.class);
 				
 		for (CyRow row : table.getAllRows()) {
-			final Object raw = row.getRaw(column.getName());
+			Object raw = row.getRaw(column.getName());
 			
 			if (raw instanceof Equation) {
-				final Equation eq = (Equation) raw;
-				final boolean success =
-						compiler.compile(eq.toString(), TableBrowserUtil.getAttNameToTypeMap(table, null));
+				Equation eq = (Equation) raw;
+				boolean success = compiler.compile(eq.toString(), TableBrowserUtil.getAttNameToTypeMap(table, null));
 				//TODO: success is incorrectly set to yes on broken equations [=ABS(String)]
 				if (!success || row.get(column.getName(), column.getType()) == null)
 					return true;
