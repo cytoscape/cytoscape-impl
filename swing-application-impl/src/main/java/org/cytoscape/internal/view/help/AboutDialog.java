@@ -3,15 +3,21 @@ package org.cytoscape.internal.view.help;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
-import java.awt.Cursor;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
+import java.io.BufferedInputStream;
+import java.io.StringReader;
 import java.net.URL;
+import java.util.Scanner;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.ImageIcon;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -28,6 +34,8 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.OpenBrowser;
 
+import com.kitfox.svg.SVGUniverse;
+
 
 /*
  * #%L
@@ -35,7 +43,7 @@ import org.cytoscape.util.swing.OpenBrowser;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -136,9 +144,52 @@ public class AboutDialog extends JDialog {
 		
 		private JLabel getAboutLabel() {
 			if (aboutLabel == null) {
-				ImageIcon aboutIcon = new ImageIcon(getClass().getResource("/images/about.png"));
-				aboutLabel = new JLabel(aboutIcon);
-				aboutLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+				try (var scan = new Scanner(new BufferedInputStream(getClass().getResourceAsStream("/images/about.svg")))) {
+					var sb = new StringBuilder();
+					
+					while (scan.hasNextLine()) {
+			            sb.append(scan.nextLine());
+			            sb.append("\n");
+			        }
+					
+					var universe = new SVGUniverse();
+					var is = new StringReader(sb.toString());
+					var uri = universe.loadSVG(is, "about");
+					var diagram = universe.getDiagram(uri);
+					diagram.setIgnoringClipHeuristic(true);
+					
+					var icon = new Icon() {
+						
+						@Override
+						public void paintIcon(Component c, Graphics g, int x, int y) {
+							var g2 = (Graphics2D) g.create();
+							g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+							g2.translate(x, y);
+							
+							try {
+								diagram.render(g2);
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+							
+							g2.dispose();
+						}
+						
+						@Override
+						public int getIconWidth() {
+							return (int) diagram.getWidth();
+						}
+						
+						@Override
+						public int getIconHeight() {
+							return (int) diagram.getHeight();
+						}
+					};
+					
+					aboutLabel = new JLabel(icon);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 			
 			return aboutLabel;
