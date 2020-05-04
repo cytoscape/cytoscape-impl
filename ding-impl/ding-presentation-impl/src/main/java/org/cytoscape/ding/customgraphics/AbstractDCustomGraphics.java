@@ -1,12 +1,26 @@
 package org.cytoscape.ding.customgraphics;
 
+import java.awt.Image;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,22 +37,6 @@ package org.cytoscape.ding.customgraphics;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import java.awt.Image;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import org.cytoscape.model.CyIdentifiable;
-
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
-import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 
 public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer> 
 	                    implements CyCustomGraphics<T>, Taggable {
@@ -60,28 +58,26 @@ public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer>
 	protected int width = 50;
 	protected int height = 50;
 	
-	protected CyCustomGraphicsFactory factory;
+	protected CyCustomGraphicsFactory<?> factory;
 
 	//protected ObjectPosition position;
 
 	// For tags
 	protected final SortedSet<String> tags;
 	
-	
 	/**
-	 * Create new object for a given ID.
-	 * Used when restoring session.
+	 * Create new object for a given ID. Used when restoring session.
 	 * 
 	 * @param id
 	 * @param displayName
 	 */
-	public AbstractDCustomGraphics(final Long id, final String displayName) {
+	public AbstractDCustomGraphics(Long id, String displayName) {
 		this.id = id;
 		
-		this.layers = new ArrayList<T>();
+		this.layers = new ArrayList<>();
 		this.displayName = displayName;
 
-		this.tags = new TreeSet<String>();
+		this.tags = new TreeSet<>();
 		//this.position = new ObjectPositionImpl();
 	}
 	
@@ -130,8 +126,11 @@ public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer>
 		this.displayName = displayName;
 	}
 
-	@Override abstract public Image getRenderedImage();
-	@Override abstract public String toString();
+	@Override
+	abstract public Image getRenderedImage();
+
+	@Override
+	abstract public String toString();
 
 	@Override
 	public Collection<String> getTags() {
@@ -144,22 +143,23 @@ public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer>
 	// This will be used prop file.
 	protected String makeSerializableString(String name) {
 		String tagStr = "";
+
 		// Build tags as a string
 		if (tags.size() != 0) {
-			final StringBuilder builder = new StringBuilder();
+			var builder = new StringBuilder();
+
 			for (String tag : tags)
 				builder.append(tag + LIST_DELIMITER);
+
 			String temp = builder.toString();
 			tagStr = temp.substring(0, temp.length() - 1);
 		}
 
-		if (name == null) {
+		if (name == null)
 			name = displayName;
-		}
-		if (name.contains(",")) {
-			// Replace delimiter
+		
+		if (name.contains(",")) // Replace delimiter
 			name = name.replace(",", "___");
-		}
 
 		return getTypeName() + DELIMITER + this.getIdentifier() + DELIMITER + name + DELIMITER + tagStr;
 	}
@@ -177,5 +177,4 @@ public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer>
 	public float getFitRatio() {
 		return fitRatio;
 	}
-
 }

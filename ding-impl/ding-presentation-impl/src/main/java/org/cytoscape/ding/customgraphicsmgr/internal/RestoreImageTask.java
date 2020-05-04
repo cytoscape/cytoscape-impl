@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -140,8 +140,7 @@ public class RestoreImageTask implements Task {
 			final String dispNameString = parts[parts.length-1];
 			
 			if (this.manager.getCustomGraphicsBySourceURL(imageURL) == null && !names.contains(dispNameString)) {
-				final CyCustomGraphics<?> cg = new URLImageCustomGraphics<>(manager.getNextAvailableID(),
-						imageURL.toString());
+				var cg = new URLImageCustomGraphics(manager.getNextAvailableID(), imageURL.toString());
 				
 				if (cg != null) {
 					manager.addCustomGraphics(cg, imageURL);
@@ -224,7 +223,7 @@ public class RestoreImageTask implements Task {
 					if (image == null)
 						continue;
 
-					final CyCustomGraphics<?> cg = new URLImageCustomGraphics<>(fIdMap.get(f), fMap.get(f), image);
+					var cg = new URLImageCustomGraphics(fIdMap.get(f), fMap.get(f), image);
 					
 					if (cg instanceof Taggable && metatagMap.get(f) != null)
 						((Taggable) cg).getTags().addAll(metatagMap.get(f));

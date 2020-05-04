@@ -222,8 +222,8 @@ public class CustomGraphicsManagerDialog extends JDialog {
 			processFiles(chooser.getSelectedFiles());
 	}
 
-	private void processFiles(final File[] files) {
-		for (final File file : files) {
+	private void processFiles(File[] files) {
+		for (var file : files) {
 			BufferedImage img = null;
 			
 			if (file.isFile()) {
@@ -236,8 +236,8 @@ public class CustomGraphicsManagerDialog extends JDialog {
 			}
 
 			if (img != null) {
-				final CyCustomGraphics<?> cg = new URLImageCustomGraphics<>(manager.getNextAvailableID(), file.toString(),
-						img);
+				var cg = new URLImageCustomGraphics(manager.getNextAvailableID(), file.toString(), img);
+				
 				try {
 					manager.addCustomGraphics(cg, file.toURI().toURL());
 				} catch (MalformedURLException e) {
@@ -251,10 +251,10 @@ public class CustomGraphicsManagerDialog extends JDialog {
 	}
 
 	private void deleteButtonActionPerformed(ActionEvent evt) {
-		final Object[] toBeRemoved = browser.getSelectedValues();
+		Object[] toBeRemoved = browser.getSelectedValues();
 		
 		for (Object g: toBeRemoved) {
-			final CyCustomGraphics<?> cg = (CyCustomGraphics<?>) g;
+			var cg = (CyCustomGraphics<?>) g;
 			
 			if (!manager.isUsedInCurrentSession(cg)) {
 				browser.removeCustomGraphics(cg);
