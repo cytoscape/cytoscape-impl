@@ -362,8 +362,13 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		}
 		
 		if (networksPresent) {
-			final TableType tableType = tableImportContext.getTableType();
+			TableType tableType = tableImportContext.getTableType();
 			final List<TableType> options = new ArrayList<>();
+
+			if (tableType == null) {
+				tableImportContext.setTableType(TableType.NODE_ATTR);
+				tableType = tableImportContext.getTableType();
+			}
 			
 			for (TableType type : TableType.values())
 				options.add(type);
@@ -374,6 +379,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			dataTypeTargetForNetworkList = new ListSingleSelection<>(options);
 			
 			if (tableType == null) {
+				System.out.println("tableType is null!");
 				getWhereImportTable().setSelectedValue(UNASSIGNED_TABLE);
 			} else {
 				dataTypeTargetForNetworkCollection.setSelectedValue(tableType);
