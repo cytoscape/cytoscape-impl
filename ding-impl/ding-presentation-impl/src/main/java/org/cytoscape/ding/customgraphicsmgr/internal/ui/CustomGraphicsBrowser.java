@@ -8,12 +8,11 @@ import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDropEvent;
 import java.io.File;
 import java.net.URL;
-import java.util.Collection;
 import java.util.List;
 
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
-import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
+import org.cytoscape.ding.customgraphics.bitmap.URLBitmapCustomGraphics;
 import org.cytoscape.ding.customgraphicsmgr.internal.event.CustomGraphicsLibraryUpdatedEvent;
 import org.cytoscape.ding.customgraphicsmgr.internal.event.CustomGraphicsLibraryUpdatedListener;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
@@ -63,7 +62,7 @@ public class CustomGraphicsBrowser extends JXList implements CustomGraphicsLibra
 		}
 	}
 
-	public CustomGraphicsBrowser(final CustomGraphicsManager manager) {
+	public CustomGraphicsBrowser(CustomGraphicsManager manager) {
 		pool = manager;
 
 		initComponents();
@@ -78,7 +77,7 @@ public class CustomGraphicsBrowser extends JXList implements CustomGraphicsLibra
 		this.setDropTarget(new URLDropTarget());
 	}
 
-	public void removeCustomGraphics(final CyCustomGraphics<?> cg) {
+	public void removeCustomGraphics(CyCustomGraphics<?> cg) {
 		model.removeElement(cg);
 	}
 
@@ -86,20 +85,21 @@ public class CustomGraphicsBrowser extends JXList implements CustomGraphicsLibra
 	 * Add on-memory images to Model.
 	 */
 	private void addAllImages() {
-		final Collection<CyCustomGraphics> graphics = pool.getAllCustomGraphics();
+		var graphics = pool.getAllCustomGraphics();
 
-		for (CyCustomGraphics<?> cg : graphics) {
+		for (var cg : graphics) {
 			if (cg instanceof NullCustomGraphics == false)
 				model.addElement(cg);
 		}
 	}
 
-	private void addCustomGraphics(final String urlStr) {
+	private void addCustomGraphics(String urlStr) {
 		try {
-			var cg = new URLImageCustomGraphics(pool.getNextAvailableID(), urlStr);
+			var url = new URL(urlStr);
+			var cg = new URLBitmapCustomGraphics(pool.getNextAvailableID(), url);
 			
 			if (cg != null) {
-				pool.addCustomGraphics(cg, new URL(urlStr));
+				pool.addCustomGraphics(cg, url);
 				model.addElement(cg);
 			}
 		} catch (Exception e) {
@@ -112,7 +112,7 @@ public class CustomGraphicsBrowser extends JXList implements CustomGraphicsLibra
 		@Override
 		public void drop(DropTargetDropEvent dtde) {
 			dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
-			final Transferable trans = dtde.getTransferable();
+			var trans = dtde.getTransferable();
 			// dumpDataFlavors(trans);
 			boolean gotData = false;
 			
@@ -120,19 +120,19 @@ public class CustomGraphicsBrowser extends JXList implements CustomGraphicsLibra
 				if (trans.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
 					var fileList = (List<File>) trans.getTransferData(DataFlavor.javaFileListFlavor);
 
-					for (File file : fileList)
+					for (var file : fileList)
 						addCustomGraphics(file.toURI().toURL().toString());
 					
 					gotData = true;
 				} else if (trans.isDataFlavorSupported(urlFlavor)) {
-					URL url = (URL) trans.getTransferData(urlFlavor);
+					var url = (URL) trans.getTransferData(urlFlavor);
 					// Add image
 					addCustomGraphics(url.toString());
 					gotData = true;
 				} else if (trans.isDataFlavorSupported(DataFlavor.stringFlavor)) {
-					String s = (String) trans.getTransferData(DataFlavor.stringFlavor);
+					var s = (String) trans.getTransferData(DataFlavor.stringFlavor);
 
-					URL url = new URL(s);
+					var url = new URL(s);
 					addCustomGraphics(url.toString());
 					gotData = true;
 				}
@@ -145,10 +145,10 @@ public class CustomGraphicsBrowser extends JXList implements CustomGraphicsLibra
 
 		// This is for debugging
 		private void dumpDataFlavors(Transferable trans) {
-			DataFlavor[] flavors = trans.getTransferDataFlavors();
-			for (int i = 0; i < flavors.length; i++) {
+			var flavors = trans.getTransferDataFlavors();
+			
+			for (int i = 0; i < flavors.length; i++)
 				System.out.println("*** " + i + ": " + flavors[i]);
-			}
 		}
 	}
 	

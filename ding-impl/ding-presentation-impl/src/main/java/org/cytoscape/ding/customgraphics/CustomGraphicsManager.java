@@ -16,7 +16,7 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -34,10 +34,11 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
  * #L%
  */
 
+@SuppressWarnings("rawtypes")
 public interface CustomGraphicsManager {
 
-	void addCustomGraphicsFactory(CyCustomGraphicsFactory factory, Map props);
-	void removeCustomGraphicsFactory(CyCustomGraphicsFactory factory, Map props);
+	void addCustomGraphicsFactory(CyCustomGraphicsFactory factory, Map<?, ?> props);
+	void removeCustomGraphicsFactory(CyCustomGraphicsFactory factory, Map<?, ?> props);
 	CyCustomGraphicsFactory getCustomGraphicsFactory(Class<? extends CyCustomGraphics> cls);
 	CyCustomGraphicsFactory getCustomGraphicsFactory(String className);
 	Collection<CyCustomGraphicsFactory> getAllCustomGraphicsFactories();
@@ -55,8 +56,8 @@ public interface CustomGraphicsManager {
 	
 	Properties getMetadata();
 	
-	boolean isUsedInCurrentSession(final CyCustomGraphics graphics);
-	void setUsedInCurrentSession(final CyCustomGraphics graphics, final Boolean isUsed);
+	boolean isUsedInCurrentSession(CyCustomGraphics graphics);
+	void setUsedInCurrentSession(CyCustomGraphics graphics, Boolean isUsed);
 	
 	void removeAllCustomGraphics();
 	void removeCustomGraphics(Long id);

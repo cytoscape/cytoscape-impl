@@ -1,12 +1,25 @@
 package org.cytoscape.ding.impl.editor;
 
+import java.awt.Component;
+
+import javax.swing.ImageIcon;
+import javax.swing.JTable;
+import javax.swing.SwingConstants;
+
+import org.cytoscape.ding.customgraphics.bitmap.URLVectorCustomGraphics;
+import org.cytoscape.ding.internal.util.IconUtil;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+
+import com.kitfox.svg.app.beans.SVGIcon;
+import com.l2fprod.common.swing.renderer.DefaultCellRenderer;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,25 +37,15 @@ package org.cytoscape.ding.impl.editor;
  * #L%
  */
 
-import java.awt.Component;
-import java.awt.Image;
-
-import javax.swing.ImageIcon;
-import javax.swing.JTable;
-import javax.swing.SwingConstants;
-
-import org.cytoscape.ding.internal.util.IconUtil;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-
-import com.l2fprod.common.swing.renderer.DefaultCellRenderer;
-
+@SuppressWarnings("serial")
 public class CyCustomGraphicsCellRenderer extends DefaultCellRenderer {
 
-	private static final long serialVersionUID = 6576024925259156805L;
-
+	private final int WIDTH = 20;
+	private final int HEIGHT = 20;
+	
 	@Override
-	public Component getTableCellRendererComponent(final JTable table, final Object value, final boolean isSelected,
-			final boolean hasFocus, final int row, final int column) {
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+			int row, int column) {
 		if (isSelected) {
 			setBackground(table.getSelectionBackground());
 			setForeground(table.getSelectionForeground());
@@ -52,9 +55,17 @@ public class CyCustomGraphicsCellRenderer extends DefaultCellRenderer {
 		}
 		
 		if (value instanceof CyCustomGraphics) {
-			final CyCustomGraphics<?> cg = (CyCustomGraphics<?>) value;
-			final Image img = cg.getRenderedImage();
-			setIcon(img != null ? IconUtil.resizeIcon(new ImageIcon(img), 20, 20) : null);
+			var cg = (CyCustomGraphics<?>) value;
+			
+			if (cg instanceof URLVectorCustomGraphics) {
+				var url = ((URLVectorCustomGraphics) cg).getSourceURL();
+				var icon = new SVGIcon();
+				icon.setSvgResourcePath(url.getPath());
+				setIcon(icon);
+			} else {
+				var img = cg.getRenderedImage();
+				setIcon(img != null ? IconUtil.resizeIcon(new ImageIcon(img), WIDTH, HEIGHT) : null);
+			}
 			
 			setText(cg.getDisplayName());
 			setHorizontalTextPosition(SwingConstants.RIGHT);

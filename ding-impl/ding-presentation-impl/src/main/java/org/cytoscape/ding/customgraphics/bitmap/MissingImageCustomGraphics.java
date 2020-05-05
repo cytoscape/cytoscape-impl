@@ -34,7 +34,7 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
  * #L%
  */
 
-public class MissingImageCustomGraphics extends URLImageCustomGraphics {
+public class MissingImageCustomGraphics extends URLBitmapCustomGraphics {
 
 	private CyCustomGraphics actualCustomGraphics;
 	private final String serializationString;
@@ -43,9 +43,9 @@ public class MissingImageCustomGraphics extends URLImageCustomGraphics {
 			String serializationString,
 			Long id,
 			String name,
-			URLImageCustomGraphicsFactory factory
+			AbstractURLImageCGFactory factory
 	) throws IOException {
-		super(id, name, URLImageCustomGraphics.DEF_IMAGE);
+		super(id, name, URLBitmapCustomGraphics.DEF_IMAGE);
 		this.serializationString = serializationString;
 		this.factory = factory;
 	}
@@ -169,8 +169,8 @@ public class MissingImageCustomGraphics extends URLImageCustomGraphics {
 	
 	@Override
 	public Image resetImage() {
-		if (actualCustomGraphics instanceof URLImageCustomGraphics)
-			return ((URLImageCustomGraphics)actualCustomGraphics).resetImage();
+		if (actualCustomGraphics instanceof URLBitmapCustomGraphics)
+			return ((URLBitmapCustomGraphics)actualCustomGraphics).resetImage();
 		
 		return super.resetImage();
 	}
@@ -185,7 +185,7 @@ public class MissingImageCustomGraphics extends URLImageCustomGraphics {
 	
 	@Override
 	protected String getTypeName() {
-		return URLImageCustomGraphics.class.getCanonicalName();
+		return URLBitmapCustomGraphics.class.getCanonicalName();
 	}
 	
 	@Override

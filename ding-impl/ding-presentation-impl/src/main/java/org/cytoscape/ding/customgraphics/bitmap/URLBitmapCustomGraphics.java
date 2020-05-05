@@ -4,12 +4,10 @@ import java.awt.Image;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.imageio.ImageIO;
 
-import org.cytoscape.ding.customgraphics.AbstractDCustomGraphics;
 import org.cytoscape.ding.customgraphics.ImageUtil;
 import org.cytoscape.ding.customgraphics.paint.TexturePaintFactory;
 import org.cytoscape.view.presentation.customgraphics.ImageCustomGraphicLayer;
@@ -38,49 +36,38 @@ import org.cytoscape.view.presentation.customgraphics.ImageCustomGraphicLayer;
  * #L%
  */
 
-public class URLImageCustomGraphics extends AbstractDCustomGraphics<ImageCustomGraphicLayer> {
+public class URLBitmapCustomGraphics extends AbstractURLImageCustomGraphics<ImageCustomGraphicLayer> {
 
+	private static final String DEF_TAG = "bitmap image";
 	private static final String DEF_IMAGE_FILE = "images/no_image.png";
+
+	private BufferedImage originalImage;
+	private BufferedImage scaledImage;
 	
-	protected static BufferedImage DEF_IMAGE;
+	static BufferedImage DEF_IMAGE;
 	
 	static {
 		try {
-			DEF_IMAGE = ImageIO.read(URLImageCustomGraphics.class.getClassLoader().getResource(DEF_IMAGE_FILE));
+			DEF_IMAGE = ImageIO.read(URLBitmapCustomGraphics.class.getClassLoader().getResource(DEF_IMAGE_FILE));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
-	private static final String DEF_TAG = "bitmap image";
-	private static final float DEF_FIT_RATIO = 1.0f;
 
-	private BufferedImage originalImage;
-	private BufferedImage scaledImage;
-
-	private URL sourceUrl;	
-	
-	public URLImageCustomGraphics(Long id, String url) throws IOException {
+	public URLBitmapCustomGraphics(Long id, URL url) {
 		super(id, url);
-		fitRatio = DEF_FIT_RATIO;
-		
-		// Special case.  We include a number of images as part of our bundles.  The
-		// resulting URL's are not really helpful, so we need to massage the displayName here.
-		if (displayName.startsWith("bundle:")) {
-			int index = displayName.lastIndexOf("/");
-			displayName = displayName.substring(index+1);
-		}
 		
 		tags.add(DEF_TAG);
-		createImage(url);
+		createImage();
 		buildCustomGraphics(originalImage);
 	}
 
 	/**
 	 * @param name display name of this object. NOT UNIQUE!
 	 * @param img
+	 * @throws IOException 
 	 */
-	public URLImageCustomGraphics(Long id, String name, BufferedImage img) {
+	public URLBitmapCustomGraphics(Long id, String name, BufferedImage img) {
 		super(id, name);
 
 		if (img == null)
@@ -111,16 +98,10 @@ public class URLImageCustomGraphics extends AbstractDCustomGraphics<ImageCustomG
 		layers.add(cg);
 	}
 
-	private void createImage(String url) throws MalformedURLException {
-		if (url == null)
-			throw new IllegalStateException("URL string cannot be null.");
-
-		var imageLocation = new URL(url);
-		sourceUrl = imageLocation;
-
+	private void createImage() {
 		try {
-			originalImage = ImageIO.read(imageLocation);
-		} catch (IOException e) {
+			originalImage = ImageIO.read(getSourceURL());
+		} catch (Exception e) {
 			originalImage = DEF_IMAGE;
 		}
 
@@ -166,28 +147,5 @@ public class URLImageCustomGraphics extends AbstractDCustomGraphics<ImageCustomG
 		buildCustomGraphics(originalImage);
 		
 		return originalImage;
-	}
-
-	public URL getSourceURL() {
-		return this.sourceUrl;
-	}
-
-	@Override
-	public String toSerializableString() {
-		if (sourceUrl != null)
-			return makeSerializableString(sourceUrl.toString());
-
-		return makeSerializableString(displayName);
-	}
-
-	@Override
-	public String toString() {
-		if (this.sourceUrl == null && displayName == null)
-			return "Empty image";
-		
-		if (this.sourceUrl != null && !this.sourceUrl.toString().startsWith("bundle"))
-			return "Image: " + this.sourceUrl.toString();
-
-		return "Image: " + displayName;
 	}
 }

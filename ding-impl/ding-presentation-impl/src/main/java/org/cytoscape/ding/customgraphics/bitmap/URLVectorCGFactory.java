@@ -1,7 +1,9 @@
-package org.cytoscape.ding.customgraphicsmgr.internal;
+package org.cytoscape.ding.customgraphics.bitmap;
 
-import java.util.Comparator;
+import java.io.IOException;
+import java.net.URL;
 
+import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 
 /*
@@ -29,21 +31,36 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
  */
 
 @SuppressWarnings("rawtypes")
-public class CGComparator implements Comparator<CyCustomGraphics> {
-	
-	@Override
-	public int compare(CyCustomGraphics o1, CyCustomGraphics o2) {
-		var class1 = o1.getClass().getCanonicalName();
-		var class2 = o2.getClass().getCanonicalName();
-		
-		if (!class1.equals(class2))
-			return class1.compareTo(class2);
+public class URLVectorCGFactory extends AbstractURLImageCGFactory {
 
-		return o1.getDisplayName().compareTo(o2.getDisplayName());
+	public URLVectorCGFactory(CustomGraphicsManager manager) {
+		super(manager);
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		return false;
+	public boolean supportsMime(String mimeType) {
+		return "image/svg+xml".equals(mimeType);
+	}
+	
+	@Override
+	public CyCustomGraphics<?> getInstance(String input) {
+		try {
+			var url = new URL(input);
+			var cg = manager.getCustomGraphicsBySourceURL(url);
+	
+			if (cg == null) {
+				var id = manager.getNextAvailableID();
+				cg = new URLVectorCustomGraphics(id, input);
+				manager.addCustomGraphics(cg, url);
+			}
+	
+			return cg;
+		} catch (IOException e) {
+			return null;
+		}
+	}
+	
+	public Class<? extends CyCustomGraphics> getSupportedClass() {
+		return URLVectorCustomGraphics.class;
 	}
 }

@@ -5,8 +5,6 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import java.awt.Image;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Collection;
 
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
@@ -23,7 +21,7 @@ import javax.swing.event.ListSelectionListener;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.customgraphics.Taggable;
-import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
+import org.cytoscape.ding.customgraphics.bitmap.URLBitmapCustomGraphics;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.jdesktop.swingx.JXImageView;
@@ -52,9 +50,8 @@ import org.jdesktop.swingx.JXImageView;
  * #L%
  */
 
+@SuppressWarnings("serial")
 public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionListener {
-
-	private static final long serialVersionUID = -412539582192509545L;
 
 	private static final String TAG_DELIMITER = ",";
 	
@@ -71,12 +68,11 @@ public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionLi
 	private JTextField widthTextField;
     private JButton searchButton;
 	
-	private CyCustomGraphics cg;
+	private CyCustomGraphics<?> cg;
 	
 	private final CyApplicationManager appManager;
 
-	/** Creates new form CustomGraphicsDetailPanel */
-	public CustomGraphicsDetailPanel(final CyApplicationManager appManager) {
+	public CustomGraphicsDetailPanel(CyApplicationManager appManager) {
 		this.appManager = appManager;
 		initComponents();
 	}
@@ -95,28 +91,17 @@ public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionLi
         resetButton = new JButton();
         searchButton = new JButton();
 
-        this.setBorder(LookAndFeelUtil.createTitledBorder("Image"));
+        setBorder(LookAndFeelUtil.createTitledBorder("Image"));
         imageViewPanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
         
         nameLabel.setText("Name:");
         tagLabel.setText("Tags:");
 
-        nameTextField.addActionListener(new ActionListener() {
-        	@Override
-            public void actionPerformed(ActionEvent evt) {
-                nameTextFieldActionPerformed(evt);
-            }
-        });
-
-        tagTextField.addActionListener(new ActionListener() {
-        	@Override
-            public void actionPerformed(ActionEvent evt) {
-                tagsTextFieldActionPerformed(evt);
-            }
-        });
+        nameTextField.addActionListener(evt -> nameTextFieldActionPerformed(evt));
+        tagTextField.addActionListener(evt -> tagsTextFieldActionPerformed(evt));
 
         // Just to make the border visible
-        final GroupLayout imageViewPanelLayout = new GroupLayout(imageViewPanel);
+        var imageViewPanelLayout = new GroupLayout(imageViewPanel);
         imageViewPanel.setLayout(imageViewPanelLayout);
         imageViewPanelLayout.setHorizontalGroup(imageViewPanelLayout.createParallelGroup(Alignment.LEADING)
             .addGap(0, 1, Short.MAX_VALUE)
@@ -127,53 +112,28 @@ public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionLi
 
         widthLabel.setText("Width:");
 
-        widthTextField.addActionListener(new ActionListener() {
-        	@Override
-            public void actionPerformed(ActionEvent evt) {
-                widthTextFieldActionPerformed(evt);
-            }
-        });
+        widthTextField.addActionListener(evt -> widthTextFieldActionPerformed(evt));
 
         heightLabel.setText("Height:");
 
         lockCheckBox.setSelected(true);
         lockCheckBox.setText("Aspect Ratio");
-        lockCheckBox.addActionListener(new ActionListener() {
-        	@Override
-            public void actionPerformed(ActionEvent evt) {
-                //lockCheckBoxActionPerformed(evt);
-            }
-        });
+        //lockCheckBox.addActionListener(evt -> lockCheckBoxActionPerformed(evt));
 
-        heightTextField.addActionListener(new ActionListener() {
-        	@Override
-            public void actionPerformed(ActionEvent evt) {
-                heightTextFieldActionPerformed(evt);
-            }
-        });
+        heightTextField.addActionListener(evt -> heightTextFieldActionPerformed(evt));
 
         resetButton.setText("Original");
-        resetButton.addActionListener(new ActionListener() {
-        	@Override
-            public void actionPerformed(ActionEvent evt) {
-                resetButtonActionPerformed(evt);
-            }
-        });
+        resetButton.addActionListener(evt -> resetButtonActionPerformed(evt));
 
         searchButton.setText("Search");
         searchButton.setToolTipText("This function is not implemented yet.");
         searchButton.setEnabled(false);
-        searchButton.addActionListener(new ActionListener() {
-        	@Override
-            public void actionPerformed(ActionEvent evt) {
-                optionButtonActionPerformed(evt);
-            }
-        });
+        searchButton.addActionListener(evt -> optionButtonActionPerformed(evt));
 
-        final JLabel imgViewLbl = new JLabel("Actual Size View:");
+        var imgViewLbl = new JLabel("Actual Size View:");
         
-        final GroupLayout layout = new GroupLayout(this);
-        this.setLayout(layout);
+        var layout = new GroupLayout(this);
+        setLayout(layout);
         layout.setAutoCreateContainerGaps(true);
         layout.setAutoCreateGaps(true);
         
@@ -227,7 +187,8 @@ public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionLi
 	}
 
 	private void nameTextFieldActionPerformed(ActionEvent evt) {
-		final String newName = this.nameTextField.getText();
+		var newName = nameTextField.getText();
+		
 		if (newName != null && newName.trim().length() != 0 && cg != null)
 			cg.setDisplayName(this.nameTextField.getText());
 	}
@@ -237,17 +198,20 @@ public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionLi
 		if (cg == null || cg.getRenderedImage() == null)
 			return;
 
-		if (cg instanceof URLImageCustomGraphics) {
-			final Image image = ((URLImageCustomGraphics) cg).resetImage();
+		if (cg instanceof URLBitmapCustomGraphics) {
+			var image = ((URLBitmapCustomGraphics) cg).resetImage();
 			imageViewPanel.setImage(image);
-			final int w = image.getWidth(null);
-			final int h = image.getHeight(null);
+			int w = image.getWidth(null);
+			int h = image.getHeight(null);
 			widthTextField.setText(Integer.toString(w));
 			heightTextField.setText(Integer.toString(h));
 			cg.setWidth(w);
 			cg.setHeight(h);
 			
-			appManager.getCurrentNetworkView().updateView();
+			var netView = appManager.getCurrentNetworkView();
+			
+			if (netView != null)
+				netView.updateView();
 		}
 	}
 
@@ -260,34 +224,36 @@ public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionLi
 	}
 
 	private void resizeImage(boolean isWidth) {
-		final String width = widthTextField.getText();
-		final String height = heightTextField.getText();
-
-
-		final Image currentImage = cg.getRenderedImage();
+		var width = widthTextField.getText();
+		var height = heightTextField.getText();
+		var currentImage = cg.getRenderedImage();
+		
 		if (currentImage == null)
 			return;
 
-		final boolean lock = this.lockCheckBox.isSelected();
+		boolean lock = lockCheckBox.isSelected();
 
-		final int currentW = currentImage.getWidth(null);
-		final int currentH = currentImage.getHeight(null);
+		int currentW = currentImage.getWidth(null);
+		int currentH = currentImage.getHeight(null);
 
-		Integer w;
-		Integer h;
+		Integer w = null;
+		Integer h = null;
+		
 		try {
 			w = Integer.parseInt(width);
 			h = Integer.parseInt(height);
 		} catch (NumberFormatException e) {
 			// back to current size
-			this.widthTextField.setText(Integer.toString(currentW));
-			this.heightTextField.setText(Integer.toString(currentH));
+			widthTextField.setText(Integer.toString(currentW));
+			heightTextField.setText(Integer.toString(currentH));
+			
 			return;
 		}
 
 		float ratio;
 		int converted;
-		if (lock == false) {
+		
+		if (!lock) {
 			cg.setWidth(w);
 			cg.setHeight(h);
 			imageViewPanel.setImage(cg.getRenderedImage());
@@ -306,17 +272,23 @@ public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionLi
 			imageViewPanel.setImage(cg.getRenderedImage());
 			widthTextField.setText(Integer.toString(converted));
 		}
-		appManager.getCurrentNetworkView().updateView();
+		
+		var netView = appManager.getCurrentNetworkView();
+		
+		if (netView != null)
+			netView.updateView();
 	}
 
 	private void tagsTextFieldActionPerformed(ActionEvent evt) {
-		final String tagStr = this.tagTextField.getText();
-		if(tagStr != null && tagStr.trim().length() != 0) {
-			if(cg instanceof Taggable) {
-				final String[] tags = tagStr.split(TAG_DELIMITER);
-				for(String tag:tags)
-					((Taggable) cg).getTags().add(tag.trim());
-			}			
+		var tagStr = this.tagTextField.getText();
+		
+		if (tagStr != null && !tagStr.isBlank()) {
+			if (cg instanceof Taggable) {
+				var tags = tagStr.split(TAG_DELIMITER);
+				
+				for (var t : tags)
+					((Taggable) cg).getTags().add(t.trim());
+			}
 		}
 	}
 	
@@ -325,17 +297,15 @@ public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionLi
 	
     @Override
 	public void valueChanged(ListSelectionEvent e) {
-
 		if (!(e.getSource() instanceof CustomGraphicsBrowser)
 				|| e.getValueIsAdjusting())
 			return;
 
-		final CustomGraphicsBrowser browser = (CustomGraphicsBrowser) e
-				.getSource();
-
-		cg = (CyCustomGraphics) browser.getSelectedValue();
-		if(cg == null) {
-			imageViewPanel.setImage((Image)null);
+		var browser = (CustomGraphicsBrowser) e.getSource();
+		cg = (CyCustomGraphics<?>) browser.getSelectedValue();
+		
+		if (cg == null) {
+			imageViewPanel.setImage((Image) null);
 			heightTextField.setText(null);
 			widthTextField.setText(null);
 			nameTextField.setText(null);
@@ -343,8 +313,8 @@ public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionLi
 			tagTextField.setText(null);
 			return;
 		}
-			
-		final Image img = cg.getRenderedImage();
+
+		var img = cg.getRenderedImage();
 
 		// Set up detail panel
 		imageViewPanel.setImage(img);
@@ -352,17 +322,21 @@ public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionLi
 		widthTextField.setText(Integer.toString(img.getWidth(null)));
 		nameTextField.setText(cg.getDisplayName());
 		nameTextField.setToolTipText(cg.getDisplayName());
-		if(cg instanceof Taggable) {
-			final Collection<String> tags = ((Taggable) cg).getTags();
-			final int tagCount = tags.size();
+		
+		if (cg instanceof Taggable) {
+			var tags = ((Taggable) cg).getTags();
+			int tagCount = tags.size();
 			int counter = 0;
-			final StringBuilder tagBuilder = new StringBuilder();
-			for(String tag: tags) {
-				tagBuilder.append(tag);
+			var tagBuilder = new StringBuilder();
+			
+			for (var t : tags) {
+				tagBuilder.append(t);
 				counter++;
-				if(tagCount != counter)
+				
+				if (tagCount != counter)
 					tagBuilder.append(", ");
 			}
+			
 			tagTextField.setText(tagBuilder.toString());
 			tagTextField.setToolTipText(tagBuilder.toString());
 		}

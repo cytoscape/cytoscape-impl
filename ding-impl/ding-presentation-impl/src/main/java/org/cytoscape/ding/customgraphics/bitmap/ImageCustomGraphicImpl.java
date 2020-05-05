@@ -1,12 +1,21 @@
 package org.cytoscape.ding.customgraphics.bitmap;
 
+import java.awt.Shape;
+import java.awt.TexturePaint;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
+
+import org.cytoscape.ding.customgraphics.paint.TexturePaintFactory;
+import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
+import org.cytoscape.view.presentation.customgraphics.ImageCustomGraphicLayer;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,15 +33,6 @@ package org.cytoscape.ding.customgraphics.bitmap;
  * #L%
  */
 
-import java.awt.Shape;
-import java.awt.TexturePaint;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Rectangle2D;
-
-import org.cytoscape.ding.customgraphics.paint.TexturePaintFactory;
-import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
-import org.cytoscape.view.presentation.customgraphics.ImageCustomGraphicLayer;
-
 public class ImageCustomGraphicImpl implements ImageCustomGraphicLayer {
 	
 	private Rectangle2D bounds;
@@ -43,7 +43,10 @@ public class ImageCustomGraphicImpl implements ImageCustomGraphicLayer {
 		this.pf = factory;
 	}
 
-	public Rectangle2D getBounds2D() { return bounds; }
+	@Override
+	public Rectangle2D getBounds2D() {
+		return bounds;
+	}
 
 	// TODO: at some point, we should just bring all of the TexturePaintFactory
 	// stuff into here....

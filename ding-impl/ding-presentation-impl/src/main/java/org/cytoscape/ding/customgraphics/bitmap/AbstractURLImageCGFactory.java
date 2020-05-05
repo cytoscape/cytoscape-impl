@@ -34,17 +34,14 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
-@SuppressWarnings("rawtypes")
-public class URLImageCustomGraphicsFactory implements CyCustomGraphicsFactory {
+public abstract class AbstractURLImageCGFactory implements CyCustomGraphicsFactory {
 
-	private static final Class<? extends CyCustomGraphics> TARGET_CLASS = URLImageCustomGraphics.class;
-	private String entry[];
-
-	private final CustomGraphicsManager manager;
+	protected String entry[];
+	protected final CustomGraphicsManager manager;
 	
-	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
+	static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
-	public URLImageCustomGraphicsFactory(final CustomGraphicsManager manager) {
+	public AbstractURLImageCGFactory(CustomGraphicsManager manager) {
 		this.manager = manager;
 	}
 
@@ -53,62 +50,48 @@ public class URLImageCustomGraphicsFactory implements CyCustomGraphicsFactory {
 		return "image";
 	}
 
-	@Override
-	public boolean supportsMime(String mimeType) {
-		if (mimeType.equals("image/bmp"))
-			return true;
-		if (mimeType.equals("image/x-windows-bmp"))
-			return true;
-		if (mimeType.equals("image/gif"))
-			return true;
-		if (mimeType.equals("image/jpeg"))
-			return true;
-		if (mimeType.equals("image/png"))
-			return true;
-		if (mimeType.equals("image/vnd.wap.wbmp"))
-			return true;
-		return false;
-	}
-	
 	/**
 	 * Generate Custom Graphics object from a string.
 	 * <p>
 	 * There are two types of valid string:
 	 * <ul>
 	 * <li>Image URL only - This will be used in Passthrough mapper.
-	 * <li>Output of toSerializableString method of URLImageCustomGraphics
+	 * <li>Output of toSerializableString method of URLBitmapCustomGraphics
 	 * </ul>
 	 */
 	@Override
 	public CyCustomGraphics<?> parseSerializableString(String entryStr) {
 		// Check this is URL or not
-		if (entryStr == null) return null;
-		if (!validate(entryStr)) return null;
-
-		final String imageName = entry[0];
-		final String sourceURL = entry[1];
+		if (entryStr == null)
+			return null;
+		if (!validate(entryStr))
+			return null;
+	
+		var imageName = entry[0];
+		var sourceURL = entry[1];
 		
 		// Try using the URL first
 		if (sourceURL != null) {
 			try {
-				URL url = new URL(sourceURL);
-				CyCustomGraphics<?> cg = manager.getCustomGraphicsBySourceURL(url);
+				var url = new URL(sourceURL);
+				var cg = manager.getCustomGraphicsBySourceURL(url);
 				cg.setDisplayName(entry[1]);
+				
 				return cg;
 			} catch (Exception e) {
 				// This just means that "sourceURL" is malformed.  That may be OK.
 			}
 		}
 		
-		final Long imageId = Long.parseLong(imageName);
-		CyCustomGraphics<?> cg = manager.getCustomGraphicsByID(imageId);
+		var id = Long.parseLong(imageName);
+		var cg = manager.getCustomGraphicsByID(id);
 		
 		if (cg == null) {
 			// Can't find image, maybe because it has not been added to the manager yet,
 			// so create a special "missing image" graphics that stores the original raw value.
 			// Cytoscape can then try to reload this missing custom graphics later.
 			try {
-				cg = new MissingImageCustomGraphics(entryStr, imageId, sourceURL, this);
+				cg = new MissingImageCustomGraphics(entryStr, id, sourceURL, this);
 				manager.addMissingImageCustomGraphics((MissingImageCustomGraphics)cg);
 			} catch (IOException e) {
 				logger.error("Cannot create MissingImageCustomGraphics object", e);
@@ -125,29 +108,7 @@ public class URLImageCustomGraphicsFactory implements CyCustomGraphicsFactory {
 		return getInstance(url.toString());
 	}
 
-	@Override
-	public CyCustomGraphics<?> getInstance(String input) {
-		try {
-			URL url = new URL(input);
-			CyCustomGraphics<?> cg = manager.getCustomGraphicsBySourceURL(url);
-
-			if (cg == null) {
-				Long id = manager.getNextAvailableID();
-				cg = new URLImageCustomGraphics(id, input);
-				manager.addCustomGraphics(cg, url);
-			}
-
-			return cg;
-		} catch (IOException e) {
-			return null;
-		}
-	}
-
-	public Class<? extends CyCustomGraphics> getSupportedClass() {
-		return TARGET_CLASS;
-	}
-
-	private boolean validate(final String entryStr) {
+	protected boolean validate(String entryStr) {
 		entry = entryStr.split(",");
 		
 		if (entry == null || entry.length < 2)

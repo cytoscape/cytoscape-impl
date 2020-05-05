@@ -9,12 +9,10 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
@@ -28,7 +26,7 @@ import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.customgraphics.AbstractDCustomGraphics;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.Taggable;
-import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
+import org.cytoscape.ding.customgraphics.bitmap.URLBitmapCustomGraphics;
 import org.cytoscape.ding.customgraphics.vector.GradientOvalLayer;
 import org.cytoscape.ding.customgraphics.vector.GradientRoundRectangleLayer;
 import org.cytoscape.ding.customgraphicsmgr.internal.event.CustomGraphicsLibraryUpdatedEvent;
@@ -135,15 +133,15 @@ public class RestoreImageTask implements Task {
 		for (CyCustomGraphics<?> cg : allGraphics)
 			names.add(cg.getDisplayName());
 		
-		for (final URL imageURL : defaultImageURLs) {
-			final String[] parts = imageURL.getFile().split("/");
+		for (var url : defaultImageURLs) {
+			final String[] parts = url.getFile().split("/");
 			final String dispNameString = parts[parts.length-1];
 			
-			if (this.manager.getCustomGraphicsBySourceURL(imageURL) == null && !names.contains(dispNameString)) {
-				var cg = new URLImageCustomGraphics(manager.getNextAvailableID(), imageURL.toString());
+			if (this.manager.getCustomGraphicsBySourceURL(url) == null && !names.contains(dispNameString)) {
+				var cg = new URLBitmapCustomGraphics(manager.getNextAvailableID(), url);
 				
 				if (cg != null) {
-					manager.addCustomGraphics(cg, imageURL);
+					manager.addCustomGraphics(cg, url);
 					cg.setDisplayName(dispNameString);
 				}
 			}
@@ -151,14 +149,14 @@ public class RestoreImageTask implements Task {
 	}
 
 	private void restoreImages() {
-		final CompletionService<BufferedImage> cs = new ExecutorCompletionService<BufferedImage>(imageLoaderService);
+		var cs = new ExecutorCompletionService<BufferedImage>(imageLoaderService);
 
 		imageHomeDirectory.mkdir();
 
 		long startTime = System.currentTimeMillis();
 
 		// Load metadata first.
-		final Properties prop = new Properties();
+		var prop = new Properties();
 		
 		try {
 			prop.load(new FileInputStream(new File(imageHomeDirectory, METADATA_FILE)));
@@ -170,66 +168,74 @@ public class RestoreImageTask implements Task {
 		}
 
 		if (this.imageHomeDirectory != null && imageHomeDirectory.isDirectory()) {
-			final File[] imageFiles = imageHomeDirectory.listFiles();
-			final Map<Future<BufferedImage>, String> fMap = new HashMap<>();
-			final Map<Future<BufferedImage>, Long> fIdMap = new HashMap<>();
-			final Map<Future<BufferedImage>, Set<String>> metatagMap = new HashMap<>();
+			var imageFiles = imageHomeDirectory.listFiles();
+			var fMap = new HashMap<Future<BufferedImage>, String>();
+			var fIdMap = new HashMap<Future<BufferedImage>, Long>();
+			var metatagMap = new HashMap<Future<BufferedImage>, Set<String>>();
 			
-			final Set<File> validFiles = new HashSet<>();
+			var validFiles = new HashSet<File>();
 			
 			try {
-				for (File file : imageFiles) {
+				for (var file : imageFiles) {
 					if (file.toString().endsWith(IMAGE_EXT) == false)
 						continue;
 
-					final String fileName = file.getName();
-					final String key = fileName.split("\\.")[0];
-					final String value = prop.getProperty(key);
+					var fileName = file.getName();
+					var key = fileName.split("\\.")[0];
+					var value = prop.getProperty(key);
 					
 					// Filter unnecessary files.
-					if(value == null || value.contains("URLImageCustomGraphics") == false)
+					if (value == null || value.contains("URLBitmapCustomGraphics") == false)
 						continue;
 					
-					final String[] imageProps = value.split(",");
+					var imageProps = value.split(",");
+					
 					if (imageProps == null || imageProps.length < 2)
 						continue;
 
-					String name = imageProps[2];
+					var name = imageProps[2];
+					
 					if (name.contains("___"))
 						name = name.replace("___", ",");
 
-					Future<BufferedImage> f = cs.submit(new LoadImageTask(file.toURI().toURL()));
+					var future = cs.submit(new LoadImageTask(file.toURI().toURL()));
 					validFiles.add(file);
-					fMap.put(f, name);
-					fIdMap.put(f, Long.parseLong(imageProps[1]));
+					fMap.put(future, name);
+					fIdMap.put(future, Long.parseLong(imageProps[1]));
 
 					String tagStr = null;
+					
 					if (imageProps.length > 3) {
 						tagStr = imageProps[3];
-						final Set<String> tags = new TreeSet<>();
-						String[] tagParts = tagStr.split("\\" + AbstractDCustomGraphics.LIST_DELIMITER);
-						for (String tag : tagParts)
+						var tags = new TreeSet<String>();
+						var tagParts = tagStr.split("\\" + AbstractDCustomGraphics.LIST_DELIMITER);
+						
+						for (var tag : tagParts)
 							tags.add(tag.trim());
 
-						metatagMap.put(f, tags);
+						metatagMap.put(future, tags);
 					}
 				}
-				for (File file : validFiles) {
-					if (file.toString().endsWith(IMAGE_EXT) == false)
+				
+				for (var file : validFiles) {
+					if (!file.toString().endsWith(IMAGE_EXT))
 						continue;
 					
-					final Future<BufferedImage> f = cs.take();
-					final BufferedImage image = f.get();
+					var future = cs.take();
+					var image = future.get();
+					
 					if (image == null)
 						continue;
-
-					var cg = new URLImageCustomGraphics(fIdMap.get(f), fMap.get(f), image);
 					
-					if (cg instanceof Taggable && metatagMap.get(f) != null)
-						((Taggable) cg).getTags().addAll(metatagMap.get(f));
+					// TODO SVG
+					var cg = new URLBitmapCustomGraphics(fIdMap.get(future), fMap.get(future), image);
+					
+					if (cg instanceof Taggable && metatagMap.get(future) != null)
+						((Taggable) cg).getTags().addAll(metatagMap.get(future));
 
 					try {
-						final URL source = new URL(fMap.get(f));
+						var source = new URL(fMap.get(future));
+						
 						if (source != null)
 							manager.addCustomGraphics(cg, source);
 					} catch (MalformedURLException me) {
@@ -266,7 +272,7 @@ public class RestoreImageTask implements Task {
 
 		private final URL imageURL;
 
-		public LoadImageTask(final URL imageURL) {
+		public LoadImageTask(URL imageURL) {
 			this.imageURL = imageURL;
 		}
 

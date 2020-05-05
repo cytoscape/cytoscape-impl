@@ -1,12 +1,22 @@
 package org.cytoscape.ding.customgraphicsmgr.internal.ui;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+import javax.swing.AbstractListModel;
+
+import org.cytoscape.ding.customgraphicsmgr.internal.CGComparator;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,38 +34,24 @@ package org.cytoscape.ding.customgraphicsmgr.internal.ui;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-
-import java.util.List;
-
-import javax.swing.AbstractListModel;
-
-import org.cytoscape.ding.customgraphicsmgr.internal.CGComparator;
-
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-
 /**
  * Extend the default list model by insuring that the items in the list
  * are sorted by type, then by displayName....
- * 
  */
-public class CustomGraphicsListModel extends AbstractListModel {
-	private List<String> classList;
+@SuppressWarnings({ "serial", "rawtypes" })
+public class CustomGraphicsListModel extends AbstractListModel<CyCustomGraphics> {
+	
 	private List<CyCustomGraphics> graphics;
-	private Comparator comp;
+	private Comparator<CyCustomGraphics> comp;
 
 	public CustomGraphicsListModel() {
-		super();
-		graphics = new ArrayList<CyCustomGraphics>();
+		graphics = new ArrayList<>();
 		comp = new CGComparator();
 	}
 
 	public void addElement(CyCustomGraphics cg) {
 		graphics.add(cg);
 		Collections.sort(graphics, comp);
-		// printList();
 		fireContentsChanged(this, 0, graphics.size());
 	}
 
@@ -67,7 +63,6 @@ public class CustomGraphicsListModel extends AbstractListModel {
 	public void removeAllElements() {
 		graphics.clear();
 		fireContentsChanged(this, 0, graphics.size());
-		
 	}
 
 	public void clear() {
@@ -75,17 +70,13 @@ public class CustomGraphicsListModel extends AbstractListModel {
 		fireContentsChanged(this, 0, graphics.size());
 	}
 
+	@Override
 	public int getSize() {
 		return graphics.size();
 	}
 
-	public Object getElementAt(int index) {
+	@Override
+	public CyCustomGraphics getElementAt(int index) {
 		return graphics.get(index);
-	}
-
-	private void printList() {
-		for (CyCustomGraphics cg: graphics) {
-			System.out.println(cg.getClass().getCanonicalName()+": "+cg.getDisplayName());
-		}
 	}
 }

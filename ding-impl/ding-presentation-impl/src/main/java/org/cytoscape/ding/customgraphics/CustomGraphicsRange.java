@@ -15,7 +15,7 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -58,7 +58,7 @@ public class CustomGraphicsRange extends DiscreteRange<CyCustomGraphics>  {
 
 	@Override
 	public Set<CyCustomGraphics> values() {
-		Set<CyCustomGraphics> sortedSet = new TreeSet<>(new CGComparator());
+		var sortedSet = new TreeSet<>(new CGComparator());
 		sortedSet.addAll(manager.getAllCustomGraphics());
 		
 		return sortedSet;

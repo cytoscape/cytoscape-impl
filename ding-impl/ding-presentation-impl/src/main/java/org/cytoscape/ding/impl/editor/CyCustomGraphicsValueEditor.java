@@ -57,7 +57,7 @@ import org.cytoscape.view.vizmap.gui.editor.VisualPropertyValueEditor;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -348,7 +348,7 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 		}
 		
 		public void updateList() {
-			final Collection<CyCustomGraphics> newValues = customGraphicsMgr.getAllCustomGraphics();
+			var newValues = customGraphicsMgr.getAllCustomGraphics();
 			getGraphicsList().setListItems(newValues, oldCustomGraphics);
 		}
 		
