@@ -10,7 +10,7 @@ import org.cytoscape.model.CyDisposable;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.table.CyTableView;
-import org.cytoscape.view.presentation.TableRenderingEngine;
+import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
 import org.cytoscape.view.presentation.property.table.TableMode;
 
@@ -20,15 +20,15 @@ import org.cytoscape.view.presentation.property.table.TableMode;
  */
 public class TableRenderer implements CyDisposable {
 
-	private TableRenderingEngine renderingEngine;
+	private RenderingEngine<CyTable> renderingEngine;
 	private JComponent component;
 	
-	public TableRenderer(TableRenderingEngine renderingEngine, JComponent component) {
+	public TableRenderer(RenderingEngine<CyTable> renderingEngine, JComponent component) {
 		this.renderingEngine = renderingEngine;
 		this.component = component;
 	}
 
-	public TableRenderingEngine getRenderingEngine() {
+	public RenderingEngine<CyTable> getRenderingEngine() {
 		return renderingEngine;
 	}
 
@@ -37,7 +37,7 @@ public class TableRenderer implements CyDisposable {
 	}
 	
 	public CyTableView getTableView() {
-		return renderingEngine.getViewModel();
+		return (CyTableView) renderingEngine.getViewModel();
 	}
 
 	public CyTable getDataTable() {

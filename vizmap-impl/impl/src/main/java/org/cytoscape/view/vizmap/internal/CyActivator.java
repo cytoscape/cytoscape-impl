@@ -68,11 +68,13 @@ public class CyActivator extends AbstractCyActivator {
 			registerServiceListener(bc, pmFactory::addValueTranslator, pmFactory::removeValueTranslator, ValueTranslator.class);
 		}
 		
-		final VisualStyleFactoryImpl visualStyleFactory = new VisualStyleFactoryImpl(serviceRegistrar, pmFactory);
+		VisualStyleFactoryImpl visualStyleFactory = new VisualStyleFactoryImpl(serviceRegistrar, pmFactory);
 		registerService(bc, visualStyleFactory, VisualStyleFactory.class);
 		
-		final VisualMappingManagerImpl visualMappingManager = new VisualMappingManagerImpl(visualStyleFactory, serviceRegistrar);
+		NetworkVisualMappingManagerImpl visualMappingManager = new NetworkVisualMappingManagerImpl(visualStyleFactory, serviceRegistrar);
 		registerAllServices(bc, visualMappingManager);
-
+		
+		TableVisualMappingManagerImpl tableMappingManager = new TableVisualMappingManagerImpl(visualStyleFactory, serviceRegistrar);
+		registerAllServices(bc, tableMappingManager);
 	}
 }

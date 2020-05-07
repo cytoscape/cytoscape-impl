@@ -57,6 +57,7 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.table.CyTableViewManager;
+import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskObserver;
@@ -302,7 +303,8 @@ public abstract class AbstractTableBrowser extends JPanel
 
 	private TableRenderer createTableRenderer() {
 		var applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
-		var tableViewManager   = serviceRegistrar.getService(CyTableViewManager.class);
+		var tableViewManager = serviceRegistrar.getService(CyTableViewManager.class);
+		var renderingEngineManager = serviceRegistrar.getService(RenderingEngineManager.class);
 		
 		JComponent container = new JPanel();
 		
@@ -314,6 +316,7 @@ public abstract class AbstractTableBrowser extends JPanel
 		
 		var tableView = tableViewFactory.createTableView(currentTable, currentTableType);
 		var renderingEngine = renderingEngineFactory.createRenderingEngine(container, tableView);
+		renderingEngineManager.addRenderingEngine(renderingEngine);
 		
 		var tableRenderer = new TableRenderer(renderingEngine, container);
 		

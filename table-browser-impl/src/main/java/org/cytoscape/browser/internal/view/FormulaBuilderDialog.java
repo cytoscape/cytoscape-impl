@@ -467,25 +467,25 @@ public class FormulaBuilderDialog extends JDialog {
 	
 	private JComboBox<ApplicationDomain> getApplyToComboBox() {
 		if (applyToComboBox == null) {
-			applyToComboBox = new JComboBox<>();
-			var selectedRows = tableRenderer.getRenderingEngine().getSelectedRows();
-			
-			if (!selectedRows.isEmpty())
-				applyToComboBox.addItem(ApplicationDomain.CURRENT_CELL);
-			
-			if (attributesContainBooleanSelected())
-				applyToComboBox.addItem(ApplicationDomain.CURRENT_SELECTION);
-			
-			applyToComboBox.addItem(ApplicationDomain.ENTIRE_ATTRIBUTE);
-
-			applyToComboBox.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					applicationDomain = (ApplicationDomain) applyToComboBox.getSelectedItem();
-				}
-			});
-			applyToComboBox.setEditable(false);
-			applyToComboBox.setEnabled(false);
+//			applyToComboBox = new JComboBox<>();
+//			var selectedRows = tableRenderer.getRenderingEngine().getSelectedRows();
+//			
+//			if (!selectedRows.isEmpty())
+//				applyToComboBox.addItem(ApplicationDomain.CURRENT_CELL);
+//			
+//			if (attributesContainBooleanSelected())
+//				applyToComboBox.addItem(ApplicationDomain.CURRENT_SELECTION);
+//			
+//			applyToComboBox.addItem(ApplicationDomain.ENTIRE_ATTRIBUTE);
+//
+//			applyToComboBox.addActionListener(new ActionListener() {
+//				@Override
+//				public void actionPerformed(ActionEvent e) {
+//					applicationDomain = (ApplicationDomain) applyToComboBox.getSelectedItem();
+//				}
+//			});
+//			applyToComboBox.setEditable(false);
+//			applyToComboBox.setEnabled(false);
 		}
 		
 		return applyToComboBox;
@@ -747,42 +747,42 @@ public class FormulaBuilderDialog extends JDialog {
 	}
 
 	private boolean updateCells(final StringBuilder errorMessage) {
-		String formula = getFormulaTextField().getText();
-		
-		if (formula.charAt(formula.length() - 1) != ')')
-			formula = formula + ")";
-		
-		final String attribName = tableRenderer.getRenderingEngine().getSelectedColumn().getModel().getName();
-		final CyTable attribs = tableRenderer.getDataTable();
-		
-		final Equation equation = compileEquation(attribs, attribName, formula, errorMessage);
-		
-		if (equation == null)
-			return false;
-		
-		switch (applicationDomain) {
-		case CURRENT_CELL: {
-			CyRow row = tableRenderer.getRenderingEngine().getSelectedRows().iterator().next().getModel();
-			CyColumn col = tableRenderer.getRenderingEngine().getSelectedColumn().getModel();
-			row.set(col.getName(), formula);
-		}	break;
-		case CURRENT_SELECTION:
-			final Collection<CyRow> selectedRows = tableRenderer.getDataTable().getMatchingRows(CyNetwork.SELECTED, true);
-			for (final CyRow selectedRow : selectedRows) {
-				if (!setAttribute(selectedRow, attribName, equation, errorMessage))
-					return false;
-			}
-			break;
-		case ENTIRE_ATTRIBUTE:
-			final List<CyRow> rows = tableRenderer.getDataTable().getAllRows();
-			for (final CyRow row : rows) {
-				if (!setAttribute(row, attribName, equation, errorMessage))
-					return false;
-			}
-			break;
-		default:
-			throw new IllegalStateException("unknown application domain: " + applicationDomain + ".");
-		}
+//		String formula = getFormulaTextField().getText();
+//		
+//		if (formula.charAt(formula.length() - 1) != ')')
+//			formula = formula + ")";
+//		
+//		final String attribName = tableRenderer.getRenderingEngine().getSelectedColumn().getModel().getName();
+//		final CyTable attribs = tableRenderer.getDataTable();
+//		
+//		final Equation equation = compileEquation(attribs, attribName, formula, errorMessage);
+//		
+//		if (equation == null)
+//			return false;
+//		
+//		switch (applicationDomain) {
+//		case CURRENT_CELL: {
+//			CyRow row = tableRenderer.getRenderingEngine().getSelectedRows().iterator().next().getModel();
+//			CyColumn col = tableRenderer.getRenderingEngine().getSelectedColumn().getModel();
+//			row.set(col.getName(), formula);
+//		}	break;
+//		case CURRENT_SELECTION:
+//			final Collection<CyRow> selectedRows = tableRenderer.getDataTable().getMatchingRows(CyNetwork.SELECTED, true);
+//			for (final CyRow selectedRow : selectedRows) {
+//				if (!setAttribute(selectedRow, attribName, equation, errorMessage))
+//					return false;
+//			}
+//			break;
+//		case ENTIRE_ATTRIBUTE:
+//			final List<CyRow> rows = tableRenderer.getDataTable().getAllRows();
+//			for (final CyRow row : rows) {
+//				if (!setAttribute(row, attribName, equation, errorMessage))
+//					return false;
+//			}
+//			break;
+//		default:
+//			throw new IllegalStateException("unknown application domain: " + applicationDomain + ".");
+//		}
 
 		return true;
 	}

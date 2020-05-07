@@ -1,13 +1,14 @@
 package org.cytoscape.view.table.internal;
 
 import org.cytoscape.application.TableViewRenderer;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.table.CyTableViewFactory;
-import org.cytoscape.view.presentation.TableRenderingEngineFactory;
+import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
 import org.cytoscape.view.table.internal.impl.PopupMenuHelper;
 
-public class BrowserTableRenderer implements TableViewRenderer {
+public class TableViewRendererImpl implements TableViewRenderer {
 
 	public static final String ID = "org.cytoscape.view.table.renderer";
 	public static final String DISPLAY_NAME = "Cytoscape Table Browser";
@@ -17,7 +18,7 @@ public class BrowserTableRenderer implements TableViewRenderer {
 	private final BasicTableVisualLexicon lexicon;
 	private final PopupMenuHelper popupMenuHelper;
 	
-	public BrowserTableRenderer(CyServiceRegistrar registrar, CyTableViewFactory tableViewFactory, BasicTableVisualLexicon lexicon, PopupMenuHelper popupMenuHelper) {
+	public TableViewRendererImpl(CyServiceRegistrar registrar, CyTableViewFactory tableViewFactory, BasicTableVisualLexicon lexicon, PopupMenuHelper popupMenuHelper) {
 		this.registrar = registrar;
 		this.tableViewFactory = tableViewFactory;
 		this.lexicon = lexicon;
@@ -25,9 +26,9 @@ public class BrowserTableRenderer implements TableViewRenderer {
 	}
 
 	@Override
-	public TableRenderingEngineFactory getRenderingEngineFactory(String contextId) {
+	public RenderingEngineFactory<CyTable> getRenderingEngineFactory(String contextId) {
 		if(TableViewRenderer.DEFAULT_CONTEXT.equals(contextId)) {
-			return new BrowserTableRenderingEngineFactory(registrar, popupMenuHelper, lexicon);
+			return new TableRenderingEngineFactoryImpl(registrar, popupMenuHelper, lexicon);
 		}
 		return null;
 	}

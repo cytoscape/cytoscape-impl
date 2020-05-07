@@ -1,5 +1,7 @@
 package org.cytoscape.view.vizmap.gui.internal;
 
+import static org.cytoscape.work.ServiceProperties.TITLE;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
@@ -9,6 +11,7 @@ import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.EdgeViewTaskFactory;
+import org.cytoscape.task.TableColumnTaskFactory;
 import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.color.Palette;
 import org.cytoscape.util.color.PaletteProvider;
@@ -68,6 +71,7 @@ import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.CyColorCho
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.FontValueEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.NumericValueEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.StringValueEditor;
+import org.cytoscape.view.vizmap.gui.internal.view.table.TableStyleDialogTaskFactory;
 import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
@@ -230,6 +234,13 @@ public class CyActivator extends AbstractCyActivator {
 		createLegendTaskFactoryProps.setProperty(ServicePropertiesUtil.INSERT_SEPARATOR_BEFORE, "true");
 		registerAllServices(bc, createLegendTaskFactory, createLegendTaskFactoryProps);
 
+		{
+			var factory = new TableStyleDialogTaskFactory(serviceRegistrar);
+			var props = new Properties();
+			props.setProperty(TITLE, "Open Table Style Dialog");
+			registerService(bc, factory, TableColumnTaskFactory.class, props);
+		}
+		
 		// Visual Styles Panel Context Menu
 		// -------------------------------------------------------------------------------------------------------------
 		// Edit sub-menu

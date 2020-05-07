@@ -33,9 +33,9 @@ public class CyActivator extends AbstractCyActivator {
 		BasicTableVisualLexicon lexicon = BasicTableVisualLexicon.getInstance();
 		
 		CyTableViewFactoryProvider tableViewFactoryFactory = getService(bc, CyTableViewFactoryProvider.class);
-		CyTableViewFactory tableViewFactory = tableViewFactoryFactory.createTableViewFactory(lexicon, BrowserTableRenderer.ID);
+		CyTableViewFactory tableViewFactory = tableViewFactoryFactory.createTableViewFactory(lexicon, TableViewRendererImpl.ID);
 		
-		BrowserTableRenderer renderer = new BrowserTableRenderer(registrar, tableViewFactory, lexicon, popupMenuHelper);
+		TableViewRendererImpl renderer = new TableViewRendererImpl(registrar, tableViewFactory, lexicon, popupMenuHelper);
 		registerService(bc, renderer, TableViewRenderer.class);
 	}
 

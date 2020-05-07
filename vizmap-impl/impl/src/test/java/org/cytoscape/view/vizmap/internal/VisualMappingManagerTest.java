@@ -33,7 +33,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.vizmap.AbstractVisualMappingManagerTest;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
-import org.cytoscape.view.vizmap.internal.VisualMappingManagerImpl;
+import org.cytoscape.view.vizmap.internal.NetworkVisualMappingManagerImpl;
 import org.junit.After;
 import org.junit.Before;
 
@@ -43,13 +43,13 @@ public class VisualMappingManagerTest extends AbstractVisualMappingManagerTest {
 	public void setUp() throws Exception {
 		final VisualStyleFactory factory = mock(VisualStyleFactory.class);
 		final VisualStyle dummyDefaultStyle = mock(VisualStyle.class);
-		when(factory.createVisualStyle(VisualMappingManagerImpl.DEFAULT_STYLE_NAME)).thenReturn(dummyDefaultStyle);
+		when(factory.createVisualStyle(NetworkVisualMappingManagerImpl.DEFAULT_STYLE_NAME)).thenReturn(dummyDefaultStyle);
 		
 		final CyEventHelper eventHelper = mock(CyEventHelper.class);
 		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
 		
-		vmm = new VisualMappingManagerImpl(factory, serviceRegistrar);
+		vmm = new NetworkVisualMappingManagerImpl(factory, serviceRegistrar);
 	}
 
 	@After

@@ -1,6 +1,5 @@
 package org.cytoscape.view.vizmap.internal;
 
-import java.awt.Color;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -11,20 +10,10 @@ import java.util.WeakHashMap;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.NetworkViewRenderer;
-import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
-import org.cytoscape.application.events.SetCurrentNetworkViewListener;
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
-import org.cytoscape.view.vizmap.events.SetCurrentVisualStyleEvent;
-import org.cytoscape.view.vizmap.events.VisualStyleAboutToBeRemovedEvent;
-import org.cytoscape.view.vizmap.events.VisualStyleAddedEvent;
-import org.cytoscape.view.vizmap.events.VisualStyleSetEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,87 +41,69 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
-public class VisualMappingManagerImpl implements VisualMappingManager, SetCurrentNetworkViewListener {
+public abstract class AbstractVisualMappingManager<V> {
 	
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	// title for the default visual style.
 	public static final String DEFAULT_STYLE_NAME = "default";
 	
-	// Default Style
-	private static final Color NETWORK_COLOR = Color.WHITE;
-	private static final Color NODE_COLOR = new Color(0x4F, 0x94, 0xCD);
-	private static final Color NODE_LABEL_COLOR = Color.BLACK;
-	private static final Color EDGE_COLOR = new Color(50, 50, 50);
-	private static final Double EDGE_WIDTH = 2d;
-	private static final Double NODE_WIDTH = 35d;
-	private static final Double NODE_HEIGHT = 35d;
-	private static final Color EDGE_LABEL_COLOR = Color.BLACK;
-
 	private VisualStyle defaultStyle;
 	private volatile VisualStyle currentStyle;
 
-	private final Map<CyNetworkView, VisualStyle> network2VisualStyleMap;
+	private final Map<V, VisualStyle> view2VisualStyleMap;
 	private final Set<VisualStyle> visualStyles;
 
 	private final CyServiceRegistrar serviceRegistrar;
 	
 	private final Object lock = new Object();
 
-	public VisualMappingManagerImpl(final VisualStyleFactory factory, final CyServiceRegistrar serviceRegistrar) {
+	
+	public AbstractVisualMappingManager(final VisualStyleFactory factory, final CyServiceRegistrar serviceRegistrar) {
 		if (serviceRegistrar == null)
 			throw new NullPointerException("'serviceRegistrar' cannot be null");
 
 		this.serviceRegistrar = serviceRegistrar;
 
 		visualStyles = new HashSet<>();
-		network2VisualStyleMap = new WeakHashMap<>();
+		view2VisualStyleMap = new WeakHashMap<>();
 
 		this.defaultStyle = buildGlobalDefaultStyle(factory);
 		this.visualStyles.add(defaultStyle);
 		this.currentStyle = defaultStyle;
 	}
 	
-	private VisualStyle buildGlobalDefaultStyle(final VisualStyleFactory factory) {
-		final VisualStyle defStyle = factory.createVisualStyle(DEFAULT_STYLE_NAME);
-		
-		defStyle.setDefaultValue(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT, NETWORK_COLOR);
-		defStyle.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, NODE_COLOR);
-		defStyle.setDefaultValue(BasicVisualLexicon.NODE_LABEL_COLOR, NODE_LABEL_COLOR);
-		defStyle.setDefaultValue(BasicVisualLexicon.NODE_WIDTH, NODE_WIDTH);
-		defStyle.setDefaultValue(BasicVisualLexicon.NODE_HEIGHT, NODE_HEIGHT);
-		defStyle.setDefaultValue(BasicVisualLexicon.EDGE_WIDTH, EDGE_WIDTH);
-		defStyle.setDefaultValue(BasicVisualLexicon.EDGE_PAINT, EDGE_COLOR);
-		defStyle.setDefaultValue(BasicVisualLexicon.EDGE_LABEL_COLOR, EDGE_LABEL_COLOR);
-		
-		return defStyle;
-	}
+	protected abstract VisualStyle buildGlobalDefaultStyle(final VisualStyleFactory factory);
+	protected abstract V getCurrentView();
+	protected abstract void fireChangeEvent(VisualStyle vs, V view);
+	protected abstract void fireAddEvent(VisualStyle vs);
+	protected abstract void fireRemoveEvent(VisualStyle vs);
+	protected abstract void fireSetCurrentEvent(VisualStyle vs);
+	
+	
 
 	/**
 	 * Returns an associated Visual Style for the View Model.
 	 */
-	@Override
-	public VisualStyle getVisualStyle(CyNetworkView nv) {
+	public VisualStyle getVisualStyle(V nv) {
 		if (nv == null) {
-			logger.warn("Attempting to get the visual style for a null network view; " + 
-			            "returning the default visual style.");
+			logger.warn("Attempting to get the visual style for a null network view; returning the default visual style.");
 			return getDefaultVisualStyle();	
 		}
 
 		synchronized (lock) {
-			VisualStyle style = network2VisualStyleMap.get(nv);
+			VisualStyle style = view2VisualStyleMap.get(nv);
 			// Not registered yet. Provide default style.
 			if (style == null) {
 				style = getDefaultVisualStyle();
-				network2VisualStyleMap.put(nv, style);
+				view2VisualStyleMap.put(nv, style);
 			}
 		
 			return style;
 		}
 	}
 
-	@Override
-	public void setVisualStyle(final VisualStyle vs, final CyNetworkView nv) {
+	public void setVisualStyle(final VisualStyle vs, final V nv) {
 		if (nv == null)
 			throw new NullPointerException("Network view is null.");
 
@@ -140,9 +111,9 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 
 		synchronized (lock) {
 			if (vs == null) {
-				changed = network2VisualStyleMap.remove(nv) != null;
+				changed = view2VisualStyleMap.remove(nv) != null;
 			} else {
-				final VisualStyle previousStyle = network2VisualStyleMap.put(nv, vs);
+				final VisualStyle previousStyle = view2VisualStyleMap.put(nv, vs);
 				changed = !vs.equals(previousStyle);
 			}
 	
@@ -151,11 +122,8 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 		}
 		
 		if (changed) {
-			final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
-			eventHelper.fireEvent(new VisualStyleSetEvent(this, vs, nv));
-			final CyApplicationManager appManager = serviceRegistrar.getService(CyApplicationManager.class);
-		
-			if (appManager != null && nv.equals(appManager.getCurrentNetworkView()))
+			fireChangeEvent(vs, nv);
+			if (nv.equals(getCurrentView()))
 				setCurrentVisualStyle(vs);
 		}
 	}
@@ -163,7 +131,6 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 	/**
 	 * Remove a {@linkplain VisualStyle} from this manager. This will be called through OSGi service mechanism.
 	 */
-	@Override
 	public void removeVisualStyle(VisualStyle vs) {
 		if (vs == null)
 			throw new NullPointerException("Visual Style is null.");
@@ -172,8 +139,7 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 
 		logger.info("Visual Style about to be removed from VMM: " + vs.getTitle());
 		
-		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
-		eventHelper.fireEvent(new VisualStyleAboutToBeRemovedEvent(this, vs));
+		fireRemoveEvent(vs);
 		
 		synchronized (lock) {
 			visualStyles.remove(vs);
@@ -184,16 +150,16 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 			setCurrentVisualStyle(getDefaultVisualStyle());
 		
 		// Use default for all views using this vs.
-		HashSet<CyNetworkView> viewsToUpdate = new HashSet<>();
+		HashSet<V> viewsToUpdate = new HashSet<>();
 		synchronized (lock) {
-			if (network2VisualStyleMap.values().contains(vs)) {
-				for (final CyNetworkView view : network2VisualStyleMap.keySet()) {
-					if (network2VisualStyleMap.get(view).equals(vs))
+			if (view2VisualStyleMap.values().contains(vs)) {
+				for (final V view : view2VisualStyleMap.keySet()) {
+					if (view2VisualStyleMap.get(view).equals(vs))
 						viewsToUpdate.add(view);
 				}
 			}
 		}		
-		for (CyNetworkView view : viewsToUpdate) {
+		for (V view : viewsToUpdate) {
 			setVisualStyle(defaultStyle, view);
 		}
 		logger.info("Total Number of VS in VMM after remove = " + visualStyles.size());
@@ -204,7 +170,6 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 	 * 
 	 * @param vs new Visual Style to be added.
 	 */
-	@Override
 	public void addVisualStyle(final VisualStyle vs) {
 		if (vs == null) {
 			logger.warn("Tried to add null to VMM.");
@@ -227,8 +192,7 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 		if (vs.getTitle() != null && vs.getTitle().equals(DEFAULT_STYLE_NAME))
 			defaultStyle = vs;
 
-		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
-		eventHelper.fireEvent(new VisualStyleAddedEvent(this, vs));
+		fireAddEvent(vs);
 	}
 
 	private String getSuggestedTitle(String title) {
@@ -236,7 +200,7 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 		String suggesteTitle = title;
 
 		while (true) {
-			suggesteTitle = title + "_" + (new Integer(i).toString());
+			suggesteTitle = title + "_" + Integer.toString(i);
 			boolean duplicated = false;
 
 			Iterator<VisualStyle> it = this.getAllVisualStyles().iterator();
@@ -279,14 +243,12 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 		return false;
 	}
 
-	@Override
 	public Set<VisualStyle> getAllVisualStyles() {
 		synchronized (lock) {
 			return new HashSet<>(visualStyles);
 		}
 	}
 
-	@Override
 	public VisualStyle getDefaultVisualStyle() {
 		if (defaultStyle == null)
 			throw new IllegalStateException("No rendering engine is available, and cannot create default style.");
@@ -294,7 +256,6 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 		return defaultStyle;
 	}
 
-	@Override
 	public Set<VisualLexicon> getAllVisualLexicon() {
 		final Set<VisualLexicon> set = new LinkedHashSet<>();
 		final CyApplicationManager appManager = serviceRegistrar.getService(CyApplicationManager.class);
@@ -310,25 +271,11 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 		return set;
 	}
 
-	@Override
 	public VisualStyle getCurrentVisualStyle() {
 		return currentStyle;
 	}
 
-	@Override
-	public void handleEvent(SetCurrentNetworkViewEvent e) {
-		final CyNetworkView view = e.getNetworkView();
 
-		if (view == null)
-			return;
-
-		final VisualStyle newStyle = this.getVisualStyle(view);
-
-		if (newStyle != null)
-			setCurrentVisualStyle(newStyle);
-	}
-
-	@Override
 	public void setCurrentVisualStyle(VisualStyle newStyle) {
 		if (newStyle == null)
 			newStyle = defaultStyle;
@@ -337,8 +284,7 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 		this.currentStyle = newStyle;
 		
 		if (changed) {
-			final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
-			eventHelper.fireEvent(new SetCurrentVisualStyleEvent(this, currentStyle));
+			fireSetCurrentEvent(currentStyle);
 		}
 	}
 }

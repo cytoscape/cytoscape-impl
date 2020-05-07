@@ -19,6 +19,7 @@ import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.ColumnResizer;
 import org.cytoscape.view.model.View;
@@ -26,13 +27,14 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.events.TableViewChangedListener;
 import org.cytoscape.view.model.table.CyTableView;
-import org.cytoscape.view.presentation.TableRenderingEngine;
+import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.table.internal.impl.BrowserTable;
 import org.cytoscape.view.table.internal.impl.BrowserTableColumnModel;
 import org.cytoscape.view.table.internal.impl.BrowserTableModel;
 import org.cytoscape.view.table.internal.impl.PopupMenuHelper;
+import org.cytoscape.view.table.internal.impl.icon.VisualPropertyIconFactory;
 
-public class BrowserTableRenderingEngine implements TableRenderingEngine {
+public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 	
 	private final CyTableView tableView;
 	private final VisualLexicon lexicon;
@@ -43,7 +45,7 @@ public class BrowserTableRenderingEngine implements TableRenderingEngine {
 	private VisualPropertyChangeListener vpChangeListener;
 	
 	
-	public BrowserTableRenderingEngine(CyTableView tableView, VisualLexicon lexicon, PopupMenuHelper popupMenuHelper, CyServiceRegistrar registrar) {
+	public TableRenderingEngineImpl(CyTableView tableView, VisualLexicon lexicon, PopupMenuHelper popupMenuHelper, CyServiceRegistrar registrar) {
 		this.tableView = tableView;
 		this.lexicon = lexicon;
 		this.popupMenuHelper = popupMenuHelper;
@@ -116,8 +118,7 @@ public class BrowserTableRenderingEngine implements TableRenderingEngine {
 		registrar.unregisterService(vpChangeListener, TableViewChangedListener.class);
 	}
 	
-	
-	@Override
+	// MKTODO is this needed?
 	public Collection<View<CyRow>> getSelectedRows() {
 		int selectedRow = browserTable.getSelectedRow();
 		if(selectedRow >= 0) {
@@ -133,7 +134,7 @@ public class BrowserTableRenderingEngine implements TableRenderingEngine {
 		return Collections.emptyList();
 	}
 
-	@Override
+	// MKTODO is this needed?
 	public View<CyColumn> getSelectedColumn() {
 		int selectedColumn = browserTable.getSelectedColumn();
 		if(selectedColumn >= 0) {
@@ -152,7 +153,7 @@ public class BrowserTableRenderingEngine implements TableRenderingEngine {
 	
 	@Override
 	public String getRendererId() {
-		return BrowserTableRenderer.ID;
+		return TableViewRendererImpl.ID;
 	}
 
 	
@@ -178,7 +179,7 @@ public class BrowserTableRenderingEngine implements TableRenderingEngine {
 
 	@Override
 	public <V> Icon createIcon(VisualProperty<V> vp, V value, int width, int height) {
-		return null;
+		return VisualPropertyIconFactory.createIcon(value, width, height);
 	}
 
 	@Override
