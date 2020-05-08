@@ -29,6 +29,7 @@ import org.cytoscape.view.vizmap.events.VisualPropertyDependencyChangedEvent;
 import org.cytoscape.view.vizmap.events.VisualPropertyDependencyChangedListener;
 import org.cytoscape.view.vizmap.events.VisualStyleChangeRecord;
 import org.cytoscape.view.vizmap.events.VisualStyleChangedEvent;
+import org.cytoscape.view.vizmap.events.VisualStyleChangedListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,9 +96,9 @@ public class VisualStyleImpl
 		final ApplyToNodeHandler applyToNodeHandler = new ApplyToNodeHandler(this, serviceRegistrar);
 		final ApplyToEdgeHandler applyToEdgeHandler = new ApplyToEdgeHandler(this, serviceRegistrar);
 		
-		serviceRegistrar.registerAllServices(applyToNetworkHandler, new Properties());
-		serviceRegistrar.registerAllServices(applyToNodeHandler, new Properties());
-		serviceRegistrar.registerAllServices(applyToEdgeHandler, new Properties());
+		serviceRegistrar.registerService(applyToNetworkHandler, VisualStyleChangedListener.class, new Properties());
+		serviceRegistrar.registerService(applyToNodeHandler, VisualStyleChangedListener.class, new Properties());
+		serviceRegistrar.registerService(applyToEdgeHandler, VisualStyleChangedListener.class, new Properties());
 		
 		applyHandlersMap = new HashMap<>();
 		applyHandlersMap.put(CyNetwork.class, applyToNetworkHandler);
@@ -107,8 +108,7 @@ public class VisualStyleImpl
 		dependencies = new HashSet<>();
 
 		// Listening to dependencies
-		serviceRegistrar.registerServiceListener(this, "registerDependencyFactory", "unregisterDependencyFactory",
-				VisualPropertyDependencyFactory.class);
+		serviceRegistrar.registerServiceListener(this, "registerDependencyFactory", "unregisterDependencyFactory", VisualPropertyDependencyFactory.class);
 		serviceRegistrar.registerService(this, VisualMappingFunctionChangedListener.class, new Properties());
 		serviceRegistrar.registerService(this, VisualPropertyDependencyChangedListener.class, new Properties());
 	}
