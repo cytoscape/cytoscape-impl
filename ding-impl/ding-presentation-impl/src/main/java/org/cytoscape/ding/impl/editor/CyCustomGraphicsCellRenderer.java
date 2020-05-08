@@ -6,7 +6,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 
-import org.cytoscape.ding.customgraphics.bitmap.URLVectorCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.URLVectorCustomGraphics;
 import org.cytoscape.ding.internal.util.IconUtil;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 

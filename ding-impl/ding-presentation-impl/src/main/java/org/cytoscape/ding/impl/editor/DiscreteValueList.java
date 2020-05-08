@@ -4,8 +4,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Font;
-import java.awt.Image;
-import java.lang.reflect.Method;
 import java.text.Collator;
 import java.util.Collection;
 import java.util.Collections;
@@ -21,7 +19,6 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -29,12 +26,9 @@ import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.SortOrder;
 import javax.swing.UIManager;
-import javax.swing.border.Border;
 
-import org.cytoscape.ding.internal.util.IconUtil;
-import org.cytoscape.model.CyNetwork;
+import org.cytoscape.ding.icon.VisualPropertyIconFactory;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.LineType;
@@ -48,7 +42,7 @@ import org.jdesktop.swingx.JXList;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -76,19 +70,18 @@ public class DiscreteValueList<T> extends JXList {
 	private final VisualProperty<T> vp;
 	private final Set<T> values;
 	private final Map<T, Icon> iconMap;
-	private final DefaultListModel model;
+	private final DefaultListModel<T> model;
 	
 	private final DefaultViewPanel defViewPanel;
 
-	@SuppressWarnings("rawtypes")
-	DiscreteValueList(final Class<T> type, final VisualProperty<T> vp, final DefaultViewPanel defViewPanel) {
+	DiscreteValueList(Class<T> type, VisualProperty<T> vp, DefaultViewPanel defViewPanel) {
 		this.type = type;
 		this.vp = vp;
 		this.defViewPanel = defViewPanel;
 		this.values = Collections.synchronizedSet(new LinkedHashSet<>());
 		iconMap = new HashMap<>();
 		
-		setModel(model = new DefaultListModel());
+		setModel(model = new DefaultListModel<>());
 		setCellRenderer(new IconCellRenderer());
 		
 		setAutoCreateRowSorter(true);
@@ -96,7 +89,7 @@ public class DiscreteValueList<T> extends JXList {
 		setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		setCursor(new Cursor(Cursor.HAND_CURSOR));
 		
-		final Collator collator = Collator.getInstance(Locale.getDefault());
+		var collator = Collator.getInstance(Locale.getDefault());
 		
 		setComparator(new Comparator<T>() {
 			@Override
@@ -113,40 +106,34 @@ public class DiscreteValueList<T> extends JXList {
 	
 	/**
 	 * Use current renderer to create icons.
-	 * @param values
 	 */
-	@SuppressWarnings("rawtypes")
-	private void renderIcons(final Set<T> values) {
+	private void renderIcons(Set<T> values) {
 		if (type == Font.class)
 			return;
 		
 		iconMap.clear();
 		
-		final RenderingEngine<CyNetwork> engine = defViewPanel != null ? defViewPanel.getRenderingEngine() : null;
+		var engine = defViewPanel != null ? defViewPanel.getRenderingEngine() : null;
 		
 		// Current engine is not ready yet.
 		if (engine != null) {
 			synchronized (values) {
-				for (T value: values) {
+				for (T val : values) {
 					Icon icon = null;
 					
-					if (value instanceof CyCustomGraphics) {
-						final Image img = ((CyCustomGraphics)value).getRenderedImage();
-						
-						if (img != null)
-							icon = IconUtil.resizeIcon(new ImageIcon(img), getIconWidth(), getIconHeight());
-					} else if (vp != null) {
-						icon = engine.createIcon(vp, value, getIconWidth(), getIconHeight());
-					}
+					if (val instanceof CyCustomGraphics)
+						icon = VisualPropertyIconFactory.createIcon(val, getIconWidth(), getIconHeight());
+					else if (vp != null)
+						icon = engine.createIcon(vp, val, getIconWidth(), getIconHeight());
 					
 					if (icon != null)
-						iconMap.put(value, icon);
+						iconMap.put(val, icon);
 				}
 			}
 		}
 	}
 	
-	protected void setListItems(final Collection<T> newValues, final T selectedValue) {
+	protected void setListItems(Collection<T> newValues, T selectedValue) {
 		synchronized (values) {
 			values.clear();
 			
@@ -158,7 +145,7 @@ public class DiscreteValueList<T> extends JXList {
 		model.removeAllElements();
 		
 		synchronized (values) {
-			for (final T key : values)
+			for (T key : values)
 				model.addElement(key);
 		}
 
@@ -187,7 +174,7 @@ public class DiscreteValueList<T> extends JXList {
 		return iconHeight;
 	}
 	
-	private final class IconCellRenderer extends JPanel implements ListCellRenderer {
+	private final class IconCellRenderer extends JPanel implements ListCellRenderer<T> {
 		
 		private final Color BG_COLOR = UIManager.getColor("Table.background");
 		private final Color FG_COLOR = UIManager.getColor("Table.foreground");
@@ -200,32 +187,34 @@ public class DiscreteValueList<T> extends JXList {
 
 		@Override
 		@SuppressWarnings({ "unchecked", "rawtypes" })
-		public Component getListCellRendererComponent(final JList list,
-													  final Object value,
-													  final int index,
-													  final boolean isSelected,
-													  final boolean cellHasFocus) {
+		public Component getListCellRendererComponent(
+				JList list,
+				Object value,
+				int index,
+				boolean isSelected,
+				boolean cellHasFocus
+		) {
 			removeAll();
 			
 			setBackground(isSelected ? SELECTED_BG_COLOR : BG_COLOR);
 			setForeground(isSelected ? SELECTED_FG_COLOR : FG_COLOR);
 			
-			final Border border = BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground"));
-			final Border paddingBorder = BorderFactory.createEmptyBorder(4, 4, 4, 4);
+			var border = BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground"));
+			var paddingBorder = BorderFactory.createEmptyBorder(4, 4, 4, 4);
 			setBorder(BorderFactory.createCompoundBorder(border, paddingBorder));
 			
 			setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 			
-			final Icon icon = iconMap.get(value);
+			var icon = iconMap.get(value);
 			
 			if (icon != null) {
-				final JLabel iconLbl = new JLabel(iconMap.get(value));
+				var iconLbl = new JLabel(iconMap.get(value));
 				iconLbl.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 				add(iconLbl);
 				add(Box.createHorizontalStrut(20));
 			}
 			
-			final JLabel textLbl = new JLabel(getLabel((T)value));
+			var textLbl = new JLabel(getLabel((T)value));
 			
 			if (value instanceof Font)
 				textLbl.setFont(((Font) value).deriveFont(14.0f));
@@ -237,18 +226,18 @@ public class DiscreteValueList<T> extends JXList {
 		}
 	}
 	
-	private String getLabel(final T value) {
+	private String getLabel(T value) {
 		String text = null;
 		
 		// Use reflection to check existence of "getDisplayName" method
-		final Class<? extends Object> valueClass = value.getClass();
+		var valueClass = value.getClass();
 		
 		if (value instanceof Font) {
-			text  = ((Font)value).getFontName();
+			text = ((Font) value).getFontName();
 		} else {
 			try {
-				final Method displayMethod = valueClass.getMethod("getDisplayName", (Class<?>)null);
-				final Object returnVal = displayMethod.invoke(value, (Class<?>)null);
+				var displayMethod = valueClass.getMethod("getDisplayName", (Class<?>) null);
+				var returnVal = displayMethod.invoke(value, (Class<?>)null);
 				
 				if (returnVal != null)
 					text = returnVal.toString();

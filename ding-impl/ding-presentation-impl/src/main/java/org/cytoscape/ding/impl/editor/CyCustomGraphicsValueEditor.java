@@ -317,22 +317,21 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 		private DiscreteValueList<CyCustomGraphics<?>> graphicsList;
 		
 		public GraphicsPanel() {
-			final JScrollPane scrollPane = new JScrollPane();
+			var scrollPane = new JScrollPane();
 			scrollPane.setViewportView(getGraphicsList());
 			
-			final JButton openImgMgrBtn = new JButton(new AbstractAction("Open Image Manager...") {
+			var openImgMgrBtn = new JButton(new AbstractAction("Open Image Manager...") {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					final Window owner = SwingUtilities.getWindowAncestor(GraphicsPanel.this);
-					final CustomGraphicsManagerDialog dialog = 
-							new CustomGraphicsManagerDialog(owner, customGraphicsMgr, browser, serviceRegistrar);
+					var owner = SwingUtilities.getWindowAncestor(GraphicsPanel.this);
+					var dialog = new CustomGraphicsManagerDialog(owner, customGraphicsMgr, browser, serviceRegistrar);
 					dialog.setVisible(true);
 					
 					updateList();
 				}
 			});
 			
-			final GroupLayout layout = new GroupLayout(this);
+			var layout = new GroupLayout(this);
 			this.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
 			layout.setAutoCreateGaps(true);
@@ -358,15 +357,14 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 		
 		private DiscreteValueList getGraphicsList() {
 			if (graphicsList == null) {
-				DefaultViewPanel defViewPanel = serviceRegistrar.getService(DefaultViewPanel.class);
+				var defViewPanel = serviceRegistrar.getService(DefaultViewPanel.class);
 				
 				graphicsList = new DiscreteValueList(CyCustomGraphics.class, null, defViewPanel);
 				graphicsList.addMouseListener(new MouseAdapter() {
 					@Override
-					public void mouseClicked(final MouseEvent evt) {
-						if (evt.getClickCount() == 2) {
+					public void mouseClicked(MouseEvent evt) {
+						if (evt.getClickCount() == 2)
 							getApplyBtn().doClick();
-						}
 					}
 				});
 			}

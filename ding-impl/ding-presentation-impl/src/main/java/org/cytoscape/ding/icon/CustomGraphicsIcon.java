@@ -1,12 +1,22 @@
 package org.cytoscape.ding.icon;
 
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+
+import org.cytoscape.ding.customgraphics.image.URLVectorCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,38 +34,35 @@ package org.cytoscape.ding.icon;
  * #L%
  */
 
-import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.RenderingHints;
-
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-
+@SuppressWarnings("serial")
 public class CustomGraphicsIcon extends VisualPropertyIcon<CyCustomGraphics<?>> {
 
-	private static final long serialVersionUID = -216647303312376087L;
-	
-	
-	public CustomGraphicsIcon(final CyCustomGraphics<?> value, int width, int height, String name) {
+	public CustomGraphicsIcon(CyCustomGraphics<?> value, int width, int height, String name) {
 		super(value, width, height, name);
-		Image img = value.getRenderedImage();
+		var img = value.getRenderedImage();
 		
 		if (img != null)
-			this.setImage(img);
+			setImage(img);
 	}
 	
 	@Override
 	public void paintIcon(Component c, Graphics g, int x, int y) {
-		final Graphics2D g2d = (Graphics2D) g;
-
-		// AA on
-		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		Image img = this.getImage();
+		var g2 = (Graphics2D) g.create();
+		var cg = getValue();
 		
-		if (img != null) {
-			img = img.getScaledInstance(width, height, Image.SCALE_AREA_AVERAGING);
-			g2d.drawImage(img, x, y, width, height, c);
+		if (cg instanceof URLVectorCustomGraphics) {
+			((URLVectorCustomGraphics) cg).draw(g2, new Rectangle(x, y, width, height));
+		} else {
+			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			
+			var img = getImage();
+			
+			if (img != null) {
+				img = img.getScaledInstance(width, height, Image.SCALE_AREA_AVERAGING);
+				g2.drawImage(img, x, y, width, height, c);
+			}
 		}
+		
+		g2.dispose();
 	}
 }

@@ -47,7 +47,7 @@ public class SaveGraphicsToSessionTaskFactory extends AbstractTaskFactory {
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new PersistImageTask(location, manager), new SaveGraphicsToSessionTask(location, e));
+		return new TaskIterator(new SaveUserImagesTask(location, manager), new SaveGraphicsToSessionTask(location, e));
 	}
 
 }

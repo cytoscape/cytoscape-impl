@@ -2,10 +2,9 @@ package org.cytoscape.ding.customgraphicsmgr.internal;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
-import org.cytoscape.work.Task;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
 /*
@@ -14,7 +13,7 @@ import org.cytoscape.work.TaskMonitor;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -32,31 +31,27 @@ import org.cytoscape.work.TaskMonitor;
  * #L%
  */
 
-public class SaveGraphicsToSessionTask implements Task {
+public class SaveGraphicsToSessionTask extends AbstractTask {
 	
 	private static final String APP_NAME = "org.cytoscape.ding.customgraphicsmgr";
-	
+
 	private final File imageHomeDirectory;
 	private final SessionAboutToBeSavedEvent e;
-	
-	SaveGraphicsToSessionTask(final File imageHomeDirectory, final SessionAboutToBeSavedEvent e) {
+
+	SaveGraphicsToSessionTask(File imageHomeDirectory, SessionAboutToBeSavedEvent e) {
 		this.imageHomeDirectory = imageHomeDirectory;
 		this.e = e;
 	}
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
+	public void run(TaskMonitor tm) throws Exception {
 		// Add it to the apps list
-		final List<File> fileList = new ArrayList<>();
-		final String[] fileArray = imageHomeDirectory.list();
-		
-		for (final String file : fileArray)
+		var fileList = new ArrayList<File>();
+		var fileArray = imageHomeDirectory.list();
+
+		for (var file : fileArray)
 			fileList.add(new File(imageHomeDirectory, file));
 
 		e.addAppFiles(APP_NAME, fileList);
-	}
-
-	@Override
-	public void cancel() {
 	}
 }

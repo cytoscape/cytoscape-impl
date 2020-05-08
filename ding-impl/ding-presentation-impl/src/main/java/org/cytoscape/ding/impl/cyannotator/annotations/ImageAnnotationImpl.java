@@ -21,11 +21,11 @@ import java.util.Map;
 import javax.swing.JDialog;
 
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.ding.customgraphics.ImageUtil;
-import org.cytoscape.ding.customgraphics.bitmap.URLBitmapCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.URLBitmapCustomGraphics;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ImageAnnotationDialog;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
+import org.cytoscape.ding.internal.util.ImageUtil;
 import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.ImageAnnotation;

@@ -1,4 +1,4 @@
-package org.cytoscape.ding.customgraphics.bitmap;
+package org.cytoscape.ding.customgraphics.image;
 
 import java.io.IOException;
 import java.net.URL;

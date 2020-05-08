@@ -29,9 +29,9 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.ding.customgraphics.bitmap.AbstractURLImageCustomGraphics;
-import org.cytoscape.ding.customgraphics.bitmap.URLBitmapCustomGraphics;
-import org.cytoscape.ding.customgraphics.bitmap.URLVectorCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.AbstractURLImageCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.URLBitmapCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.URLVectorCustomGraphics;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -69,6 +69,9 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 public class CustomGraphicsManagerDialog extends JDialog {
 
+	private static final String IMG_FILES_DESCRIPTION = "Image file (PNG, GIF, JPEG or SVG)";
+	private static final String[] IMG_EXTENSIONS = { "jpg", "jpeg", "png", "gif", "svg" };
+	
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	private JButton addButton;
@@ -213,7 +216,7 @@ public class CustomGraphicsManagerDialog extends JDialog {
 		// Add a directory
 		var chooser = new JFileChooser();
 		
-		var filter = new FileNameExtensionFilter("Image file (PNG, GIF, JPEG or SVG)", "jpg", "jpeg", "png", "gif", "svg");
+		var filter = new FileNameExtensionFilter(IMG_FILES_DESCRIPTION, IMG_EXTENSIONS);
 		chooser.setDialogTitle("Select Image Files");
 		chooser.setMultiSelectionEnabled(true);
 		chooser.setFileFilter(filter);
@@ -261,7 +264,7 @@ public class CustomGraphicsManagerDialog extends JDialog {
 	}
 
 	private void deleteButtonActionPerformed(ActionEvent evt) {
-		Object[] toBeRemoved = browser.getSelectedValues();
+		var toBeRemoved = browser.getSelectedValues();
 		
 		for (var obj : toBeRemoved) {
 			var cg = (CyCustomGraphics<?>) obj;

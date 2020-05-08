@@ -1,4 +1,4 @@
-package org.cytoscape.ding.customgraphics.bitmap;
+package org.cytoscape.ding.customgraphics.image;
 
 import java.net.URL;
 
@@ -29,7 +29,8 @@ import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
  * #L%
  */
 
-public abstract class AbstractURLImageCustomGraphics<T extends CustomGraphicLayer> extends AbstractDCustomGraphics<CustomGraphicLayer> {
+public abstract class AbstractURLImageCustomGraphics<T extends CustomGraphicLayer>
+		extends AbstractDCustomGraphics<T> {
 
 	static final float DEF_FIT_RATIO = 1.0f;
 	

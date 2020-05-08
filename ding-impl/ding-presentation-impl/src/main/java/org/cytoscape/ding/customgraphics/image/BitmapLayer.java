@@ -1,4 +1,4 @@
-package org.cytoscape.ding.customgraphics.bitmap;
+package org.cytoscape.ding.customgraphics.image;
 
 import java.awt.Shape;
 import java.awt.TexturePaint;
@@ -33,12 +33,12 @@ import org.cytoscape.view.presentation.customgraphics.ImageCustomGraphicLayer;
  * #L%
  */
 
-public class ImageCustomGraphicImpl implements ImageCustomGraphicLayer {
+public class BitmapLayer implements ImageCustomGraphicLayer {
 	
 	private Rectangle2D bounds;
 	private TexturePaintFactory pf;
 
-	public ImageCustomGraphicImpl(Rectangle2D bounds, TexturePaintFactory factory) {
+	public BitmapLayer(Rectangle2D bounds, TexturePaintFactory factory) {
 		this.bounds = bounds;
 		this.pf = factory;
 	}
@@ -58,6 +58,6 @@ public class ImageCustomGraphicImpl implements ImageCustomGraphicLayer {
 	@Override
 	public CustomGraphicLayer transform(AffineTransform xform) {
 		Shape s = xform.createTransformedShape(bounds);
-		return new ImageCustomGraphicImpl(s.getBounds2D(), pf);
+		return new BitmapLayer(s.getBounds2D(), pf);
 	}
 }

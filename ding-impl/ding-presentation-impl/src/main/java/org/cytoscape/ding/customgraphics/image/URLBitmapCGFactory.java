@@ -1,7 +1,8 @@
-package org.cytoscape.ding.customgraphics.bitmap;
+package org.cytoscape.ding.customgraphics.image;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
@@ -30,16 +31,24 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
  * #L%
  */
 
-@SuppressWarnings("rawtypes")
-public class URLVectorCGFactory extends AbstractURLImageCGFactory {
+public class URLBitmapCGFactory extends AbstractURLImageCGFactory {
 
-	public URLVectorCGFactory(CustomGraphicsManager manager) {
+	private final List<String> MIME_TYPES = List.of(
+			"image/bmp",
+			"image/x-windows-bmp",
+			"image/gif",
+			"image/jpeg",
+			"image/png",
+			"image/vnd.wap.wbmp"
+	);
+	
+	public URLBitmapCGFactory(CustomGraphicsManager manager) {
 		super(manager);
 	}
 
 	@Override
 	public boolean supportsMime(String mimeType) {
-		return "image/svg+xml".equals(mimeType);
+		return MIME_TYPES.contains(mimeType);
 	}
 	
 	@Override
@@ -50,7 +59,7 @@ public class URLVectorCGFactory extends AbstractURLImageCGFactory {
 	
 			if (cg == null) {
 				var id = manager.getNextAvailableID();
-				cg = new URLVectorCustomGraphics(id, input);
+				cg = new URLBitmapCustomGraphics(id, url);
 				manager.addCustomGraphics(cg, url);
 			}
 	
@@ -61,6 +70,6 @@ public class URLVectorCGFactory extends AbstractURLImageCGFactory {
 	}
 	
 	public Class<? extends CyCustomGraphics> getSupportedClass() {
-		return URLVectorCustomGraphics.class;
+		return URLBitmapCustomGraphics.class;
 	}
 }

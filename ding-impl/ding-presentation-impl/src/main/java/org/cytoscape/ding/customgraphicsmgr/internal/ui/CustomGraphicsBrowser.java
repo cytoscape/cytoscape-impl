@@ -12,7 +12,7 @@ import java.util.List;
 
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
-import org.cytoscape.ding.customgraphics.bitmap.URLBitmapCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.URLBitmapCustomGraphics;
 import org.cytoscape.ding.customgraphicsmgr.internal.event.CustomGraphicsLibraryUpdatedEvent;
 import org.cytoscape.ding.customgraphicsmgr.internal.event.CustomGraphicsLibraryUpdatedListener;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;

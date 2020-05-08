@@ -157,6 +157,8 @@ public final class ViewUtil {
 			default:         return null;
 		}
 	}
+	
 	private ViewUtil() {
+		// restrict instantiation
 	}
 }

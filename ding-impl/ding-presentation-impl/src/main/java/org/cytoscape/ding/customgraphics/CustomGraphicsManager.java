@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.SortedSet;
 
-import org.cytoscape.ding.customgraphics.bitmap.MissingImageCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.MissingImageCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 

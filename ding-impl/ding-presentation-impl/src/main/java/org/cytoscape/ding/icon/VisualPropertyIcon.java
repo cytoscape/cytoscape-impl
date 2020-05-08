@@ -1,12 +1,16 @@
 package org.cytoscape.ding.icon;
 
+import java.awt.Color;
+
+import javax.swing.ImageIcon;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,20 +28,13 @@ package org.cytoscape.ding.icon;
  * #L%
  */
 
-import java.awt.Color;
-
-import javax.swing.ImageIcon;
-
 /**
  * 
  * Icon created from Shape object passed from rendering engine.<br>
  * 
  * This icon is scalable (vector image).
- * 
  * Actual paint method is defined in child classes.
- * 
  * This is an immutable object.
- * 
  */
 public abstract class VisualPropertyIcon<T> extends ImageIcon {
 
@@ -56,26 +53,13 @@ public abstract class VisualPropertyIcon<T> extends ImageIcon {
 	final protected T value;
 	final protected String name;
 
-	protected int leftPad = 0;
-	protected int bottomPad = 0;
+	protected int leftPad;
+	protected int bottomPad;
 
-	/**
-	 * Constructor with full parameter set.
-	 * 
-	 * @param shape
-	 * @param width
-	 * @param height
-	 * @param name
-	 * @param color
-	 */
-	public VisualPropertyIcon(final T value, final int width,
-			final int height, final String name) {
-
+	public VisualPropertyIcon(T value, int width, int height, String name) {
 		// Validate parameters
 		if (value == null)
-			throw new NullPointerException("Value parameter is null.");
-		if (name == null)
-			throw new NullPointerException("Name parameter is null.");
+			throw new IllegalArgumentException("'value' must not be null.");
 		if (width <= 0 || height <= 0)
 			throw new IllegalArgumentException(
 					"Width and height should be positive integers: (w, h) = (" + width + ", " + height + ")");
@@ -88,29 +72,22 @@ public abstract class VisualPropertyIcon<T> extends ImageIcon {
 		this.color = DEFAULT_ICON_COLOR;
 	}
 
-	
 	public T getValue() {
 		return value;
 	}
 
-	/**
-	 * Get height of icon. This implements Icon interface.
-	 */
 	@Override
 	public int getIconHeight() {
 		return height;
 	}
 
-	/**
-	 * Get width of icon. This implements Icon interface.
-	 */
 	@Override
 	public int getIconWidth() {
 		return width;
 	}
-
+	
 	/**
-	 * Get human-readable name of this icon.
+	 * Get human-readable name of this icon. May be null.
 	 * 
 	 * @return
 	 */
@@ -129,20 +106,11 @@ public abstract class VisualPropertyIcon<T> extends ImageIcon {
 
 	/**
 	 * Insert space on the left.
-	 * 
-	 * @param pad
-	 *            DOCUMENT ME!
 	 */
 	public void setLeftPadding(int pad) {
 		this.leftPad = pad;
 	}
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param pad
-	 *            DOCUMENT ME!
-	 */
 	public void setBottomPadding(int pad) {
 		this.bottomPad = pad;
 	}

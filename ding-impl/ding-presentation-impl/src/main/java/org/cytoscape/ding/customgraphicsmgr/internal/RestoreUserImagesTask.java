@@ -1,12 +1,13 @@
 package org.cytoscape.ding.customgraphicsmgr.internal;
 
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Properties;
@@ -26,13 +27,13 @@ import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.customgraphics.AbstractDCustomGraphics;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.Taggable;
-import org.cytoscape.ding.customgraphics.bitmap.URLBitmapCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.URLBitmapCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.URLVectorCustomGraphics;
 import org.cytoscape.ding.customgraphics.vector.GradientOvalLayer;
 import org.cytoscape.ding.customgraphics.vector.GradientRoundRectangleLayer;
 import org.cytoscape.ding.customgraphicsmgr.internal.event.CustomGraphicsLibraryUpdatedEvent;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
@@ -62,10 +63,8 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
-public class RestoreImageTask implements Task {
+public class RestoreUserImagesTask implements Task {
 
-	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
-	
 	private final CustomGraphicsManager manager;
 
 	private final ExecutorService imageLoaderService;
@@ -81,22 +80,29 @@ public class RestoreImageTask implements Task {
 	private final CyServiceRegistrar serviceRegistrar;
 	
 	// For image I/O, PNG is used as bitmap image format.
-	private static final String IMAGE_EXT = "png";
+	private static final String PNG_EXT = ".png";
+	private static final String SVG_EXT = ".svg";
 
 	// Default vectors
 	private static final Set<Class<?>> DEF_VECTORS = new HashSet<>();
 	private static final Set<String> DEF_VECTORS_NAMES = new HashSet<>();
+	
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	static {
 		DEF_VECTORS.add(GradientRoundRectangleLayer.class);
 		DEF_VECTORS.add(GradientOvalLayer.class);
 		
-		for (Class<?> cls : DEF_VECTORS)
+		for (var cls : DEF_VECTORS)
 			DEF_VECTORS_NAMES.add(cls.getName());
 	}
 	
-	RestoreImageTask(final Set<URL> defaultImageURLs, final File imageLocaiton, 
-	                 final CustomGraphicsManager manager, final CyServiceRegistrar serviceRegistrar) {
+	public RestoreUserImagesTask(
+			Set<URL> defaultImageURLs,
+			File imageLocaiton,
+			CustomGraphicsManager manager,
+			CyServiceRegistrar serviceRegistrar
+	) {
 		this.manager = manager;
 		this.serviceRegistrar = serviceRegistrar;
 
@@ -106,14 +112,13 @@ public class RestoreImageTask implements Task {
 		this.defaultImageURLs = defaultImageURLs;
 	}
 
-
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {		
-		taskMonitor.setTitle("Load Image Library");
-		taskMonitor.setStatusMessage("Loading image library from local disk...");
-		taskMonitor.setProgress(0.0);
+	public void run(TaskMonitor tm) throws Exception {		
+		tm.setTitle("Load Image Library");
+		tm.setStatusMessage("Loading image library from local disk...");
+		tm.setProgress(0.0);
 
-		final long startTime = System.currentTimeMillis();
+		long startTime = System.currentTimeMillis();
 
 		restoreImages();
 		restoreSampleImages();
@@ -127,19 +132,19 @@ public class RestoreImageTask implements Task {
 	
 	private void restoreSampleImages() throws IOException {
 		// Filter by display name
-		final Collection<CyCustomGraphics> allGraphics = manager.getAllCustomGraphics();
-		final Set<String> names = new HashSet<>();
+		var allGraphics = manager.getAllCustomGraphics();
+		var names = new HashSet<String>();
 
-		for (CyCustomGraphics<?> cg : allGraphics)
+		for (var cg : allGraphics)
 			names.add(cg.getDisplayName());
 		
 		for (var url : defaultImageURLs) {
-			final String[] parts = url.getFile().split("/");
-			final String dispNameString = parts[parts.length-1];
-			
-			if (this.manager.getCustomGraphicsBySourceURL(url) == null && !names.contains(dispNameString)) {
+			var parts = url.getFile().split("/");
+			var dispNameString = parts[parts.length - 1];
+
+			if (manager.getCustomGraphicsBySourceURL(url) == null && !names.contains(dispNameString)) {
 				var cg = new URLBitmapCustomGraphics(manager.getNextAvailableID(), url);
-				
+
 				if (cg != null) {
 					manager.addCustomGraphics(cg, url);
 					cg.setDisplayName(dispNameString);
@@ -149,8 +154,7 @@ public class RestoreImageTask implements Task {
 	}
 
 	private void restoreImages() {
-		var cs = new ExecutorCompletionService<BufferedImage>(imageLoaderService);
-
+		var cs = new ExecutorCompletionService(imageLoaderService);
 		imageHomeDirectory.mkdir();
 
 		long startTime = System.currentTimeMillis();
@@ -167,17 +171,17 @@ public class RestoreImageTask implements Task {
 			return;
 		}
 
-		if (this.imageHomeDirectory != null && imageHomeDirectory.isDirectory()) {
+		if (imageHomeDirectory != null && imageHomeDirectory.isDirectory()) {
 			var imageFiles = imageHomeDirectory.listFiles();
-			var fMap = new HashMap<Future<BufferedImage>, String>();
-			var fIdMap = new HashMap<Future<BufferedImage>, Long>();
-			var metatagMap = new HashMap<Future<BufferedImage>, Set<String>>();
+			var fMap = new HashMap<Future<?>, String>();
+			var fIdMap = new HashMap<Future<?>, Long>();
+			var metatagMap = new HashMap<Future<?>, Set<String>>();
 			
 			var validFiles = new HashSet<File>();
 			
 			try {
 				for (var file : imageFiles) {
-					if (file.toString().endsWith(IMAGE_EXT) == false)
+					if (!isSupportedImageFile(file))
 						continue;
 
 					var fileName = file.getName();
@@ -185,7 +189,9 @@ public class RestoreImageTask implements Task {
 					var value = prop.getProperty(key);
 					
 					// Filter unnecessary files.
-					if (value == null || value.contains("URLBitmapCustomGraphics") == false)
+					if (value == null ||
+							(!value.contains(URLBitmapCustomGraphics.SERIALIZABLE_NAME)
+									&& !value.contains(URLVectorCustomGraphics.SERIALIZABLE_NAME)))
 						continue;
 					
 					var imageProps = value.split(",");
@@ -198,7 +204,10 @@ public class RestoreImageTask implements Task {
 					if (name.contains("___"))
 						name = name.replace("___", ",");
 
-					var future = cs.submit(new LoadImageTask(file.toURI().toURL()));
+					var url = file.toURI().toURL();
+					var task = isPNG(file) ? new LoadPNGImageTask(url) : new LoadSVGImageTask(url);
+					var future = cs.submit(task);
+					
 					validFiles.add(file);
 					fMap.put(future, name);
 					fIdMap.put(future, Long.parseLong(imageProps[1]));
@@ -218,7 +227,7 @@ public class RestoreImageTask implements Task {
 				}
 				
 				for (var file : validFiles) {
-					if (!file.toString().endsWith(IMAGE_EXT))
+					if (!isSupportedImageFile(file))
 						continue;
 					
 					var future = cs.take();
@@ -227,8 +236,9 @@ public class RestoreImageTask implements Task {
 					if (image == null)
 						continue;
 					
-					// TODO SVG
-					var cg = new URLBitmapCustomGraphics(fIdMap.get(future), fMap.get(future), image);
+					var cg = isPNG(file) ?
+							new URLBitmapCustomGraphics(fIdMap.get(future), fMap.get(future), (BufferedImage) image) :
+							new URLVectorCustomGraphics(fIdMap.get(future), fMap.get(future), (String) image);
 					
 					if (cg instanceof Taggable && metatagMap.get(future) != null)
 						((Taggable) cg).getTags().addAll(metatagMap.get(future));
@@ -268,20 +278,65 @@ public class RestoreImageTask implements Task {
 	public void cancel() {
 	}
 
-	private final class LoadImageTask implements Callable<BufferedImage> {
+	private boolean isSupportedImageFile(File file) {
+		return isPNG(file) || isSVG(file);
+	}
+	
+	private boolean isPNG(File file) {
+		var name = file.getName().toLowerCase();
+		
+		return name.endsWith(PNG_EXT);
+	}
+	
+	private boolean isSVG(File file) {
+		var name = file.getName().toLowerCase();
+		
+		return name.endsWith(SVG_EXT);
+	}
+	
+	private final class LoadPNGImageTask implements Callable<BufferedImage> {
 
-		private final URL imageURL;
+		private final URL url;
 
-		public LoadImageTask(URL imageURL) {
-			this.imageURL = imageURL;
+		public LoadPNGImageTask(URL url) {
+			this.url = url;
 		}
 
 		@Override
 		public BufferedImage call() throws Exception {
-			if (imageURL == null)
+			if (url == null)
 				throw new IllegalStateException("URL string cannot be null.");
 
-			return ImageIO.read(imageURL);
+			return ImageIO.read(url);
+		}
+	}
+	
+	private final class LoadSVGImageTask implements Callable<String> {
+		
+		private final URL url;
+		
+		public LoadSVGImageTask(URL url) {
+			this.url = url;
+		}
+		
+		@Override
+		public String call() throws Exception {
+			if (url == null)
+				throw new IllegalStateException("URL string cannot be null.");
+			
+		    try (var reader = new BufferedReader(new InputStreamReader(url.openStream()))) {
+			    var sb = new StringBuilder();
+			    String line;
+				
+				while ((line = reader.readLine()) != null) {
+		            sb.append(line);
+		            sb.append("\n");
+		        }
+				
+				return sb.toString();
+		    } catch (Exception e) {
+		    	throw e;
+		    }
 		}
 	}
 }

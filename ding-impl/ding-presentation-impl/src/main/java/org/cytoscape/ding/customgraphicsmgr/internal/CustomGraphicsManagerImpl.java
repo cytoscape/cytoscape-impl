@@ -31,8 +31,8 @@ import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.IDGenerator;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
-import org.cytoscape.ding.customgraphics.bitmap.AbstractURLImageCustomGraphics;
-import org.cytoscape.ding.customgraphics.bitmap.MissingImageCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.AbstractURLImageCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.MissingImageCustomGraphics;
 import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
@@ -117,7 +117,7 @@ public final class CustomGraphicsManagerImpl
 		this.imageHomeDirectory = new File(config.getConfigurationDirectoryLocation(), IMAGE_DIR_NAME);
 
 		// Restore Custom Graphics from the directory.
-		var taskFactory = new RestoreImageTaskFactory(defaultImageURLs, imageHomeDirectory, this, serviceRegistrar);
+		var taskFactory = new RestoreUserImagesTaskFactory(defaultImageURLs, imageHomeDirectory, this, serviceRegistrar);
 		serviceRegistrar.getService(DialogTaskManager.class).execute(taskFactory.createTaskIterator());
 		
 		instance = this;
@@ -173,7 +173,7 @@ public final class CustomGraphicsManagerImpl
 			sourceMap.put(source, graphics.getIdentifier());
 
 		graphicsMap.put(graphics.getIdentifier(), graphics);
-		this.isUsedCustomGraphics.put(graphics, false);
+		isUsedCustomGraphics.put(graphics, false);
 	}
 
 	@Override
@@ -182,7 +182,7 @@ public final class CustomGraphicsManagerImpl
 		
 		if (cg != null && cg != NullCustomGraphics.getNullObject()) {
 			graphicsMap.remove(id);
-			this.isUsedCustomGraphics.remove(cg);
+			isUsedCustomGraphics.remove(cg);
 		}
 	}
 
@@ -289,7 +289,7 @@ public final class CustomGraphicsManagerImpl
 		logger.info("Start Saving images to: " + imageHomeDirectory);
 
 		// Create Task
-		var factory = new PersistImageTaskFactory(imageHomeDirectory, this);
+		var factory = new SaveUserImagesTaskFactory(imageHomeDirectory, this);
 
 		try {
 			// FIXME how this section can wait until everything is done?
@@ -328,7 +328,7 @@ public final class CustomGraphicsManagerImpl
 				if (files != null && files.size() != 0) {
 					// get parent directory
 					var parent = files.get(0).getParentFile();
-					var taskFactory = new RestoreImageTaskFactory(new HashSet<>(), parent, this, serviceRegistrar);
+					var taskFactory = new RestoreUserImagesTaskFactory(new HashSet<>(), parent, this, serviceRegistrar);
 					var loadImagesIterator = taskFactory.createTaskIterator();
 					
 					var dingRenderer = serviceRegistrar.getService(DingRenderer.class);

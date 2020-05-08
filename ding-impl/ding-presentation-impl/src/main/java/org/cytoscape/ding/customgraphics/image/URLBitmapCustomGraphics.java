@@ -1,4 +1,4 @@
-package org.cytoscape.ding.customgraphics.bitmap;
+package org.cytoscape.ding.customgraphics.image;
 
 import java.awt.Image;
 import java.awt.geom.Rectangle2D;
@@ -8,9 +8,8 @@ import java.net.URL;
 
 import javax.imageio.ImageIO;
 
-import org.cytoscape.ding.customgraphics.ImageUtil;
 import org.cytoscape.ding.customgraphics.paint.TexturePaintFactory;
-import org.cytoscape.view.presentation.customgraphics.ImageCustomGraphicLayer;
+import org.cytoscape.ding.internal.util.ImageUtil;
 
 /*
  * #%L
@@ -36,8 +35,10 @@ import org.cytoscape.view.presentation.customgraphics.ImageCustomGraphicLayer;
  * #L%
  */
 
-public class URLBitmapCustomGraphics extends AbstractURLImageCustomGraphics<ImageCustomGraphicLayer> {
+public class URLBitmapCustomGraphics extends AbstractURLImageCustomGraphics<BitmapLayer> {
 
+	public static final String SERIALIZABLE_NAME = "URLBitmapCustomGraphics";
+	
 	private static final String DEF_TAG = "bitmap image";
 	private static final String DEF_IMAGE_FILE = "images/no_image.png";
 
@@ -85,6 +86,28 @@ public class URLBitmapCustomGraphics extends AbstractURLImageCustomGraphics<Imag
 		buildCustomGraphics(originalImage);
 	}
 
+	@Override
+	public Image getRenderedImage() {
+		if (width == originalImage.getWidth() && height == originalImage.getHeight())
+			return originalImage;
+
+		if (scaledImage == null || scaledImage.getWidth() != width || scaledImage.getHeight() != height)
+			resizeImage(width, height);
+		
+		return scaledImage;
+	}
+
+	public Image resetImage() {
+		if (scaledImage != null) {
+			scaledImage.flush();
+			scaledImage = null;
+		}
+		
+		buildCustomGraphics(originalImage);
+		
+		return originalImage;
+	}
+	
 	private void buildCustomGraphics(BufferedImage targetImg) {
 		layers.clear();
 
@@ -94,7 +117,7 @@ public class URLBitmapCustomGraphics extends AbstractURLImageCustomGraphics<Imag
 		var bound = new Rectangle2D.Double(-width / 2, -height / 2, width, height);
 		var paintFactory = new TexturePaintFactory(targetImg);
 
-		var cg = new ImageCustomGraphicImpl(bound, paintFactory);
+		var cg = new BitmapLayer(bound, paintFactory);
 		layers.add(cg);
 	}
 
@@ -108,20 +131,7 @@ public class URLBitmapCustomGraphics extends AbstractURLImageCustomGraphics<Imag
 		if (originalImage == null)
 			originalImage = DEF_IMAGE;
 	}
-
-	@Override
-	public Image getRenderedImage() {
-		if (width == originalImage.getWidth() && height == originalImage.getHeight())
-			return originalImage;
-
-		if (scaledImage == null)
-			resizeImage(width, height);
-		else if (scaledImage.getWidth() != width || scaledImage.getHeight() != height)
-			resizeImage(width, height);
-
-		return scaledImage;
-	}
-
+	
 	private Image resizeImage(int width, int height) {
 		var img = originalImage.getScaledInstance(width, height, Image.SCALE_AREA_AVERAGING);
 		
@@ -136,16 +146,5 @@ public class URLBitmapCustomGraphics extends AbstractURLImageCustomGraphics<Imag
 		buildCustomGraphics(scaledImage);
 		
 		return scaledImage;
-	}
-
-	public Image resetImage() {
-		if (scaledImage != null) {
-			scaledImage.flush();
-			scaledImage = null;
-		}
-		
-		buildCustomGraphics(originalImage);
-		
-		return originalImage;
 	}
 }

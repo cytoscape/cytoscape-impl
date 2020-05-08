@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -16,9 +15,7 @@ import javax.swing.JPopupMenu.Separator;
 import javax.swing.ListCellRenderer;
 import javax.swing.border.Border;
 
-import org.cytoscape.ding.customgraphics.CustomGraphicsUtil;
-import org.cytoscape.ding.customgraphics.bitmap.URLVectorCustomGraphics;
-import org.cytoscape.ding.internal.util.SVGIcon;
+import org.cytoscape.ding.icon.VisualPropertyIconFactory;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 
 /*
@@ -116,22 +113,9 @@ public class CustomGraphicsCellRenderer extends JPanel implements ListCellRender
 			iconLbl.setHorizontalAlignment(JLabel.CENTER);
 			iconLbl.setOpaque(true);
 			iconLbl.setBackground(BG_COLOR);
-			
-			if (cg instanceof URLVectorCustomGraphics) {
-				var svg = ((URLVectorCustomGraphics) cg).getSVG();
-				var icon = new SVGIcon(svg, ICON_SIZE, ICON_SIZE);
-				iconLbl.setIcon(icon);
-			} else {
-				var image = cg.getRenderedImage();
 				
-				if (image != null) {
-					if (image.getHeight(null) >= ICON_SIZE || image.getWidth(null) >= 200)
-						image = CustomGraphicsUtil.getResizedImage(image, null, ICON_SIZE, true);
-					
-					var icon = new ImageIcon(image);
-					iconLbl.setIcon(icon);
-				}
-			}
+			var icon = VisualPropertyIconFactory.createIcon(cg, ICON_SIZE, ICON_SIZE);
+			iconLbl.setIcon(icon);
 			
 			add(iconLbl, BorderLayout.CENTER);
 			add(nameLbl, BorderLayout.SOUTH);

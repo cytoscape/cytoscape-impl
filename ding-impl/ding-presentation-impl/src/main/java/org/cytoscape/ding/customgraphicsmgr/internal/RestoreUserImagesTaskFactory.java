@@ -33,15 +33,19 @@ import org.cytoscape.work.TaskIterator;
  * #L%
  */
 
-public class RestoreImageTaskFactory extends AbstractTaskFactory {
+public class RestoreUserImagesTaskFactory extends AbstractTaskFactory {
 
 	private final CustomGraphicsManager manager;
 	private final File imageLocation;
 	private final CyServiceRegistrar serviceRegistrar;
 	private final Set<URL> defaultImageURLs;
 
-	RestoreImageTaskFactory(final Set<URL> defaultImageURLs, final File imageLocation,
-			final CustomGraphicsManager manager, final CyServiceRegistrar serviceRegistrar) {
+	public RestoreUserImagesTaskFactory(
+			Set<URL> defaultImageURLs,
+			File imageLocation,
+			CustomGraphicsManager manager,
+			CyServiceRegistrar serviceRegistrar
+	) {
 		this.manager = manager;
 		this.serviceRegistrar = serviceRegistrar;
 		this.imageLocation = imageLocation;
@@ -50,9 +54,7 @@ public class RestoreImageTaskFactory extends AbstractTaskFactory {
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		final RestoreImageTask firstTask = new RestoreImageTask(defaultImageURLs, imageLocation, manager,
-				serviceRegistrar);
-		final TaskIterator itr = new TaskIterator(firstTask);
+		var itr = new TaskIterator(new RestoreUserImagesTask(defaultImageURLs, imageLocation, manager, serviceRegistrar));
 
 		return itr;
 	}
