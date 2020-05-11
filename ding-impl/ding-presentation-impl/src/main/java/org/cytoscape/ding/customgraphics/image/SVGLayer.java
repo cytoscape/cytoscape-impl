@@ -59,7 +59,6 @@ public class SVGLayer implements Cy2DGraphicLayer {
 		diagram.setIgnoringClipHeuristic(true);
 		
 		bounds = scaledBounds = new Rectangle2D.Float(0, 0, diagram.getWidth(), diagram.getHeight());
-		System.out.println("\n== " + bounds);
 	}
 
 	@Override
@@ -163,9 +162,16 @@ public class SVGLayer implements Cy2DGraphicLayer {
 	}
 	
 	public BufferedImage createImage(Rectangle2D r) {
-		var image = new BufferedImage((int) r.getWidth(), (int) r.getHeight(), BufferedImage.TYPE_INT_ARGB);
+		var x = r.getX();
+		var y = r.getY();
+		var w = (int) r.getWidth();
+		var h = (int) r.getHeight();
+		var b = new Rectangle2D.Double(x + w / 2.0, y + h / 2.0, w, h);
+		
+		var image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
 		var g2 = (Graphics2D) image.getGraphics();
-		draw(g2, r, bounds, null, null);
+		
+		draw(g2, r, b, null, null);
 		
         return image;
 	}
