@@ -50,11 +50,12 @@ public class URLVectorCGFactory extends AbstractURLImageCGFactory {
 	
 			if (cg == null) {
 				var id = manager.getNextAvailableID();
-				cg = new URLVectorCustomGraphics(id, input);
+				cg = new URLVectorCustomGraphics(id, url);
 				manager.addCustomGraphics(cg, url);
 			}
-	
-			return cg;
+			
+			// Always return a new copy
+			return new URLVectorCustomGraphics(cg.getIdentifier(), url);
 		} catch (IOException e) {
 			return null;
 		}

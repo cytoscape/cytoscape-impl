@@ -1,11 +1,17 @@
 package org.cytoscape.ding.customgraphics.image;
 
-import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.Collections;
+import java.util.List;
+
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 
 /*
  * #%L
@@ -42,12 +48,13 @@ public class URLVectorCustomGraphics extends AbstractURLImageCustomGraphics<SVGL
 	private static final String DEF_SVG = "TODO"; // TODO
 	
 	private String svg;
+	/** Layer used only to draw rendered images */
+	private SVGLayer renderedImageLayer;
 	
-	public URLVectorCustomGraphics(Long id, String url) throws IOException {
+	public URLVectorCustomGraphics(Long id, URL url) throws IOException {
 		super(id, url);
 		
 		tags.add(DEF_TAG);
-		buildCustomGraphics();
 	}
 	
 	public URLVectorCustomGraphics(Long id, String name, String svg) throws IOException {
@@ -58,56 +65,59 @@ public class URLVectorCustomGraphics extends AbstractURLImageCustomGraphics<SVGL
 		
 		this.svg = svg;
 		tags.add(DEF_TAG);
-		layers.add(new SVGLayer(svg));
+	}
+	
+	@Override
+	public List<SVGLayer> getLayers(CyNetworkView networkView, View<? extends CyIdentifiable> graphObject) {
+		// IMPORTANT:
+		//    We cannot return the cached layer here, or CustomGraphicsPositionCalculator will apply
+		//    a position transformation repeatedly on the same layer, which will end up moving the image
+		//    farther from the node on every repaint.
+		var cg = createLayer();
+		
+		return layers = Collections.singletonList(cg);
 	}
 
 	@Override
 	public Image getRenderedImage() {
-		if (!layers.isEmpty())
-			return ((SVGLayer) layers.get(0)).createImage(new Rectangle(width, height));
+		if (renderedImageLayer == null)
+			renderedImageLayer = createLayer();
 		
-		return null;
-	}
-	
-	/**
-	 * Useful to draw to icons, components, etc.
-	 */
-	public void draw(Graphics2D g, Rectangle rect) {
-		for (var cgl : layers)
-			cgl.draw(g, rect, rect);
+		return renderedImageLayer.createImage(new Rectangle(width, height));
 	}
 	
 	public String getSVG() {
 		return svg;
 	}
 	
-	private void buildCustomGraphics() {
-		layers.clear();
-		
-		try {
-			var sourceUrl = getSourceURL();
-			
-			try (var in = new BufferedReader(new InputStreamReader(sourceUrl.openStream()))) {
-				var sb = new StringBuilder();
-				String line = null;
+	private SVGLayer createLayer() {
+		if (svg == null) {
+			try {
+				var sourceUrl = getSourceURL();
 				
-				while ((line = in.readLine()) != null) {
-		            sb.append(line);
-		            sb.append("\n");
-		        }
-				
-				svg = sb.toString();
+				try (var in = new BufferedReader(new InputStreamReader(sourceUrl.openStream()))) {
+					var sb = new StringBuilder();
+					String line = null;
+					
+					while ((line = in.readLine()) != null) {
+			            sb.append(line);
+			            sb.append("\n");
+			        }
+					
+					svg = sb.toString();
+				} catch (Exception e) {
+					svg = DEF_SVG;
+				}
 			} catch (Exception e) {
 				svg = DEF_SVG;
 			}
-		} catch (Exception e) {
-			svg = DEF_SVG;
+			
+			if (svg == null)
+				svg = DEF_SVG;
 		}
 		
-		if (svg == null)
-			svg = DEF_SVG;
-		
 		var cg = new SVGLayer(svg);
-		layers.add(cg);
+		
+		return cg;
 	}
 }

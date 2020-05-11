@@ -135,8 +135,7 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 
 	@Override
 	public CustomGraphicLayer transform(AffineTransform xform) {
-		Shape s = xform.createTransformedShape(bounds);
-		bounds = s.getBounds2D();
+		bounds = xform.createTransformedShape(bounds).getBounds2D();
 		
 		return this;
 	}

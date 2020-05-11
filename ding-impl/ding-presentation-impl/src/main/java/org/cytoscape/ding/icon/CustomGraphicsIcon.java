@@ -4,10 +4,13 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.geom.Rectangle2D;
+import java.util.List;
 
+import org.cytoscape.ding.customgraphics.image.SVGLayer;
 import org.cytoscape.ding.customgraphics.image.URLVectorCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.Cy2DGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 
 /*
@@ -37,6 +40,8 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 @SuppressWarnings("serial")
 public class CustomGraphicsIcon extends VisualPropertyIcon<CyCustomGraphics<?>> {
 
+	private List<? extends Cy2DGraphicLayer> cy2DLayers;
+	
 	public CustomGraphicsIcon(CyCustomGraphics<?> value, int width, int height, String name) {
 		super(value, width, height, name);
 		var img = value.getRenderedImage();
@@ -47,11 +52,24 @@ public class CustomGraphicsIcon extends VisualPropertyIcon<CyCustomGraphics<?>> 
 	
 	@Override
 	public void paintIcon(Component c, Graphics g, int x, int y) {
+		if (width <= 0 || height <= 0)
+			return;
+		
 		var g2 = (Graphics2D) g.create();
 		var cg = getValue();
 		
 		if (cg instanceof URLVectorCustomGraphics) {
-			((URLVectorCustomGraphics) cg).draw(g2, new Rectangle(x, y, width, height));
+			if (cy2DLayers == null)
+				cy2DLayers = ((URLVectorCustomGraphics) cg).getLayers(null, null);
+			
+			var rect = new Rectangle2D.Float(x + width / 2.0f, y + height / 2.0f, width, height);
+			
+			for (var cgl : cy2DLayers) {
+				// Much easier to use the SVGLayer draw method than have calculate and apply
+				// the same scale factor and translation transform already done by the layer!
+				if (cgl instanceof SVGLayer)
+					((SVGLayer) cgl).draw(g2, rect, rect, null, null);
+			}
 		} else {
 			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			
