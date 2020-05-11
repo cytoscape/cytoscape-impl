@@ -46,11 +46,8 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.view.vizmap.events.VisualStyleChangedEvent;
-import org.cytoscape.view.vizmap.events.VisualStyleChangedListener;
 
-public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements ApplyHandler<T>,
-																				VisualStyleChangedListener {
+public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements ApplyHandler<T> {
 
 	protected final VisualStyle style;
 	protected final CyServiceRegistrar serviceRegistrar;
@@ -84,8 +81,7 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 		dependencyChildren = new ConcurrentHashMap<VisualProperty<?>, Set<VisualPropertyDependency<?>>>(16, 0.75f, 2);
 	}
 
-	@Override
-	public void handleEvent(final VisualStyleChangedEvent e) {
+	public void setUpdateDependencyMaps() {
 		updateDependencyMaps = true;
 	}
 
