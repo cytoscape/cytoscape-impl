@@ -1,4 +1,4 @@
-package org.cytoscape.browser.internal.view;
+package org.cytoscape.browser.internal.format;
 
 /*
  * #%L
@@ -64,6 +64,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.basic.BasicIconFactory;
 
+import org.cytoscape.browser.internal.view.TableRenderer;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;

@@ -16,6 +16,7 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 import org.cytoscape.application.swing.CyColumnPresentationManager;
 import org.cytoscape.model.CyColumn;
@@ -41,8 +42,6 @@ public class ColumnStyleDialog extends JDialog {
 	private final CyTableView tableView;
 	private final RenderingEngine<CyTable> renderingEngine;
 	
-//	private CyColumnComboBox targetColumnCombo;
-	
 	@SuppressWarnings("unchecked")
 	public ColumnStyleDialog(CyColumn column, CyServiceRegistrar registrar) {
 		this.registrar = registrar;
@@ -58,13 +57,13 @@ public class ColumnStyleDialog extends JDialog {
 		tableView = tableViewManager.getTableView(table);
 		columnView = (CyColumnView) tableView.getColumnView(column);
 		
-		// get the visual lexicon
-		// MKTODO we should probably have a TableRenderingEngineManager to get the actual rendering engine directly
+		// get the rendering engine
 		RenderingEngineManager renderingEngineManager = registrar.getService(RenderingEngineManager.class);
 		renderingEngine = (RenderingEngine<CyTable>) renderingEngineManager.getRenderingEngines(tableView).iterator().next();
 		
 		createContents();
 	}
+	
 	
 	private void createContents() {
 		JPanel targetColPanel = createTargetColumnPanel();
@@ -77,15 +76,6 @@ public class ColumnStyleDialog extends JDialog {
 		add(stylePanel, BorderLayout.CENTER);
 	}
 	
-//	private CyColumnComboBox getTargetColumnCombo() {
-//		if (targetColumnCombo == null) {
-//			CyColumnPresentationManager presetationManager = registrar.getService(CyColumnPresentationManager.class);
-//			presetationManager.
-//			targetColumnCombo = new CyColumnComboBox(presetationManager, table.getColumns());
-//			targetColumnCombo.setSelectedItem(column);
-//		}
-//		return targetColumnCombo;
-//	}
 	
 	private JPanel createTargetColumnPanel() {
 		JPanel panel = new JPanel();
@@ -113,36 +103,36 @@ public class ColumnStyleDialog extends JDialog {
 	}
 
 	private JPanel createVPPanel() {
-		JPanel panel = new JPanel();
-		
 		DefaultListModel<VisualProperty<?>> model = new DefaultListModel<>();
-		JList<VisualProperty<?>> jlist = new JList<>(model);
-		jlist.setCellRenderer(new VPListCellRenderer());
+		JList<VisualProperty<?>> vpList = new JList<>(model);
+		vpList.setCellRenderer(new VPListCellRenderer());
 		
+		addVpsToList(model, BasicTableVisualLexicon.CELL);
+		addVpsToList(model, BasicTableVisualLexicon.COLUMN);
+		
+		JScrollPane scrollPane = new JScrollPane(vpList);
+		JPanel panel = new JPanel(new BorderLayout());
+		panel.add(scrollPane, BorderLayout.CENTER);
+		return panel;
+	}
+	
+	private void addVpsToList(DefaultListModel<VisualProperty<?>> model, VisualProperty<?> rootVp) {
 		VisualLexicon lexicon = renderingEngine.getVisualLexicon();
-		Collection<VisualProperty<?>> cellVPs = lexicon.getAllDescendants(BasicTableVisualLexicon.CELL);
-		for(VisualProperty<?> vp : cellVPs) {
+		Collection<VisualProperty<?>> vps = lexicon.getAllDescendants(rootVp);
+		for(VisualProperty<?> vp : vps) {
 			if(lexicon.isSupported(vp)) {
 				model.addElement(vp);
 			}
 		}
-		
-		return panel;
 	}
 	
 	private class VPListCellRenderer extends DefaultListCellRenderer {
-		
-		
 		
 		@Override
 		public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean focus) {
 			super.getListCellRendererComponent(list, value, index, isSelected, focus);
 			VisualProperty vp = (VisualProperty) value;
-			
-//			var vpValue = columnView.get
-//			renderingEngine.createIcon(vp, value, width, height)
-//			
-			
+			setText(vp.getDisplayName());
 			return this;
 		}
 	}
