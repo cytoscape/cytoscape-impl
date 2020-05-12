@@ -38,8 +38,7 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
  * #L%
  */
 
-public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer> 
-	                    implements CyCustomGraphics<T>, Taggable {
+public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer> implements CyCustomGraphics<T>, Taggable {
 
 	protected static final String DELIMITER = ",";
 	public static final String LIST_DELIMITER = "|";
@@ -137,9 +136,6 @@ public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer>
 		return tags;
 	}
 
-	@Override
-	abstract public String toSerializableString();
-
 	// This will be used prop file.
 	protected String makeSerializableString(String name) {
 		String tagStr = "";
@@ -161,11 +157,14 @@ public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer>
 		if (name.contains(",")) // Replace delimiter
 			name = name.replace(",", "___");
 
-		return getTypeName() + DELIMITER + this.getIdentifier() + DELIMITER + name + DELIMITER + tagStr;
+		return getTypeFullName() + DELIMITER + getIdentifier() + DELIMITER + name + DELIMITER + tagStr;
 	}
 	
-	protected String getTypeName() {
-		return this.getClass().getCanonicalName();
+	/**
+	 * The fully-qualified name of the Custom Graphics implementation.
+	 */
+	public String getTypeFullName() {
+		return getClass().getCanonicalName();
 	}
 	
 	@Override

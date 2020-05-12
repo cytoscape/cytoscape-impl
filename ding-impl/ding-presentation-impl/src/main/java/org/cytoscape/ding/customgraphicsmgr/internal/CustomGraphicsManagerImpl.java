@@ -117,7 +117,7 @@ public final class CustomGraphicsManagerImpl
 		this.imageHomeDirectory = new File(config.getConfigurationDirectoryLocation(), IMAGE_DIR_NAME);
 
 		// Restore Custom Graphics from the directory.
-		var taskFactory = new RestoreUserImagesTaskFactory(defaultImageURLs, imageHomeDirectory, this, serviceRegistrar);
+		var taskFactory = new RestoreImagesTaskFactory(defaultImageURLs, imageHomeDirectory, this, serviceRegistrar);
 		serviceRegistrar.getService(DialogTaskManager.class).execute(taskFactory.createTaskIterator());
 		
 		instance = this;
@@ -328,7 +328,7 @@ public final class CustomGraphicsManagerImpl
 				if (files != null && files.size() != 0) {
 					// get parent directory
 					var parent = files.get(0).getParentFile();
-					var taskFactory = new RestoreUserImagesTaskFactory(new HashSet<>(), parent, this, serviceRegistrar);
+					var taskFactory = new RestoreImagesTaskFactory(new HashSet<>(), parent, this, serviceRegistrar);
 					var loadImagesIterator = taskFactory.createTaskIterator();
 					
 					var dingRenderer = serviceRegistrar.getService(DingRenderer.class);

@@ -15,7 +15,7 @@ import org.cytoscape.work.TaskIterator;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -33,14 +33,14 @@ import org.cytoscape.work.TaskIterator;
  * #L%
  */
 
-public class RestoreUserImagesTaskFactory extends AbstractTaskFactory {
+public class RestoreImagesTaskFactory extends AbstractTaskFactory {
 
 	private final CustomGraphicsManager manager;
 	private final File imageLocation;
 	private final CyServiceRegistrar serviceRegistrar;
 	private final Set<URL> defaultImageURLs;
 
-	public RestoreUserImagesTaskFactory(
+	public RestoreImagesTaskFactory(
 			Set<URL> defaultImageURLs,
 			File imageLocation,
 			CustomGraphicsManager manager,
@@ -54,8 +54,6 @@ public class RestoreUserImagesTaskFactory extends AbstractTaskFactory {
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		var itr = new TaskIterator(new RestoreUserImagesTask(defaultImageURLs, imageLocation, manager, serviceRegistrar));
-
-		return itr;
+		return new TaskIterator(new RestoreImagesTask(defaultImageURLs, imageLocation, manager, serviceRegistrar));
 	}
 }

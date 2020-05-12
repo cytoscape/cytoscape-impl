@@ -63,7 +63,7 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
-public class RestoreUserImagesTask implements Task {
+public class RestoreImagesTask implements Task {
 
 	private final CustomGraphicsManager manager;
 
@@ -97,7 +97,7 @@ public class RestoreUserImagesTask implements Task {
 			DEF_VECTORS_NAMES.add(cls.getName());
 	}
 	
-	public RestoreUserImagesTask(
+	public RestoreImagesTask(
 			Set<URL> defaultImageURLs,
 			File imageLocaiton,
 			CustomGraphicsManager manager,
@@ -190,8 +190,8 @@ public class RestoreUserImagesTask implements Task {
 					
 					// Filter unnecessary files.
 					if (value == null ||
-							(!value.contains(URLBitmapCustomGraphics.SERIALIZABLE_NAME)
-									&& !value.contains(URLVectorCustomGraphics.SERIALIZABLE_NAME)))
+							(!value.contains(URLBitmapCustomGraphics.TYPE_NAME)
+									&& !value.contains(URLVectorCustomGraphics.TYPE_NAME)))
 						continue;
 					
 					var imageProps = value.split(",");

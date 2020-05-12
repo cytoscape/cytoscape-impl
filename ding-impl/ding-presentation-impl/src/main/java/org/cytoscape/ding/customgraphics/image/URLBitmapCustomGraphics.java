@@ -37,7 +37,10 @@ import org.cytoscape.ding.internal.util.ImageUtil;
 
 public class URLBitmapCustomGraphics extends AbstractURLImageCustomGraphics<BitmapLayer> {
 
-	public static final String SERIALIZABLE_NAME = "URLBitmapCustomGraphics";
+	// DO NOT change, or you can break saving/restoring image_metadata.props!
+	public static final String TYPE_NAMESPACE = "org.cytoscape.ding.customgraphics.bitmap";
+	// DO NOT change, or you can break saving/restoring image_metadata.props!
+	public static final String TYPE_NAME = "URLImageCustomGraphics";
 	
 	private static final String DEF_TAG = "bitmap image";
 	private static final String DEF_IMAGE_FILE = "images/no_image.png";
@@ -84,6 +87,18 @@ public class URLBitmapCustomGraphics extends AbstractURLImageCustomGraphics<Bitm
 		tags.add(DEF_TAG);
 		this.originalImage = img;
 		buildCustomGraphics(originalImage);
+	}
+	
+	@Override
+	public String getTypeNamespace() {
+		// This way, we can refactor this class package without breaking the serialization and backwards compatibility.
+		return TYPE_NAMESPACE;
+	}
+	
+	@Override
+	public String getTypeName() {
+		// This way, we can refactor this class package without breaking the serialization and backwards compatibility.
+		return TYPE_NAME;
 	}
 
 	@Override

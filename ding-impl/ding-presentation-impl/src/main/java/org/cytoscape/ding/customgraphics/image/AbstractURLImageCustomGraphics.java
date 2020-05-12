@@ -29,9 +29,8 @@ import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
  * #L%
  */
 
-public abstract class AbstractURLImageCustomGraphics<T extends CustomGraphicLayer>
-		extends AbstractDCustomGraphics<T> {
-
+public abstract class AbstractURLImageCustomGraphics<T extends CustomGraphicLayer> extends AbstractDCustomGraphics<T> {
+	
 	static final float DEF_FIT_RATIO = 1.0f;
 	
 	private URL sourceUrl;
@@ -74,5 +73,17 @@ public abstract class AbstractURLImageCustomGraphics<T extends CustomGraphicLaye
 			return "Image: " + sourceUrl.toString();
 
 		return "Image: " + displayName;
+	}
+	
+	/** Used to create the serializable key. */
+	public abstract String getTypeNamespace();
+	
+	/** The short name of the implementation. Used to create the serializable key. */
+	public abstract String getTypeName();
+	
+	/** Used to create the serializable key. Includes the namespace given by {@link #getTypeNamespace()} */
+	@Override
+	public String getTypeFullName() {
+		return getTypeNamespace() + "." + getTypeName();
 	}
 }

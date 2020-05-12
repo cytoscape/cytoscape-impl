@@ -42,7 +42,10 @@ import org.cytoscape.view.model.View;
  */
 public class URLVectorCustomGraphics extends AbstractURLImageCustomGraphics<SVGLayer> {
 
-	public static final String SERIALIZABLE_NAME = "URLVectorCustomGraphics";
+	// DO NOT change, or you can break saving/restoring image_metadata.props!
+	public static final String TYPE_NAMESPACE = "org.cytoscape.ding.customgraphics.image";
+	// DO NOT change, or you can break saving/restoring image_metadata.props!
+	public static final String TYPE_NAME = "URLVectorCustomGraphics";
 	
 	private static final String DEF_TAG = "vector image";
 	private static final String DEF_SVG = "TODO"; // TODO
@@ -65,6 +68,18 @@ public class URLVectorCustomGraphics extends AbstractURLImageCustomGraphics<SVGL
 		
 		this.svg = svg;
 		tags.add(DEF_TAG);
+	}
+	
+	@Override
+	public String getTypeNamespace() {
+		// This way, we can refactor this class package without breaking the serialization and backwards compatibility.
+		return TYPE_NAMESPACE;
+	}
+	
+	@Override
+	public String getTypeName() {
+		// This way, we can refactor this class package without breaking the serialization and backwards compatibility.
+		return TYPE_NAME;
 	}
 	
 	@Override

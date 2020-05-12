@@ -184,11 +184,6 @@ public class MissingImageCustomGraphics extends URLBitmapCustomGraphics {
 	}
 	
 	@Override
-	protected String getTypeName() {
-		return URLBitmapCustomGraphics.class.getCanonicalName();
-	}
-	
-	@Override
 	public String toString() {
 		if (actualCustomGraphics != null)
 			return actualCustomGraphics.toString();
