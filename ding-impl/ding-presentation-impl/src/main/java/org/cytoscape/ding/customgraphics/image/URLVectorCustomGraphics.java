@@ -6,7 +6,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.Collections;
 import java.util.List;
 
 import org.cytoscape.model.CyIdentifiable;
@@ -84,13 +83,10 @@ public class URLVectorCustomGraphics extends AbstractURLImageCustomGraphics<SVGL
 	
 	@Override
 	public List<SVGLayer> getLayers(CyNetworkView networkView, View<? extends CyIdentifiable> graphObject) {
-		// IMPORTANT:
-		//    We cannot return the cached layer here, or CustomGraphicsPositionCalculator will apply
-		//    a position transformation repeatedly on the same layer, which will end up moving the image
-		//    farther from the node on every repaint.
-		var cg = createLayer();
-		
-		return layers = Collections.singletonList(cg);
+		if (layers.isEmpty())
+			layers.add(createLayer());
+
+		return layers;
 	}
 
 	@Override

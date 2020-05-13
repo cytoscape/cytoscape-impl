@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,7 +14,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -179,68 +179,73 @@ public class RestoreImagesTask implements Task {
 			
 			var validFiles = new HashSet<File>();
 			
-			try {
-				for (var file : imageFiles) {
-					if (!isSupportedImageFile(file))
-						continue;
+			for (var file : imageFiles) {
+				if (!isSupportedImageFile(file))
+					continue;
 
-					var fileName = file.getName();
-					var key = fileName.split("\\.")[0];
-					var value = prop.getProperty(key);
-					
-					// Filter unnecessary files.
-					if (value == null ||
-							(!value.contains(URLBitmapCustomGraphics.TYPE_NAME)
-									&& !value.contains(URLVectorCustomGraphics.TYPE_NAME)))
-						continue;
-					
-					var imageProps = value.split(",");
-					
-					if (imageProps == null || imageProps.length < 2)
-						continue;
+				var fileName = file.getName();
+				var key = fileName.split("\\.")[0];
+				var value = prop.getProperty(key);
+				
+				// Filter unnecessary files.
+				if (value == null ||
+						(!value.contains(URLBitmapCustomGraphics.TYPE_NAME)
+								&& !value.contains(URLVectorCustomGraphics.TYPE_NAME)))
+					continue;
+				
+				var imageProps = value.split(",");
+				
+				if (imageProps == null || imageProps.length < 2)
+					continue;
 
-					var name = imageProps[2];
-					
-					if (name.contains("___"))
-						name = name.replace("___", ",");
+				var name = imageProps[2];
+				
+				if (name.contains("___"))
+					name = name.replace("___", ",");
 
-					var url = file.toURI().toURL();
-					var task = isPNG(file) ? new LoadPNGImageTask(url) : new LoadSVGImageTask(url);
-					var future = cs.submit(task);
-					
-					validFiles.add(file);
-					nameMap.put(future, name);
-					idMap.put(future, Long.parseLong(imageProps[1]));
-					urlMap.put(future, url);
-
-					String tagStr = null;
-					
-					if (imageProps.length > 3) {
-						tagStr = imageProps[3];
-						var tags = new TreeSet<String>();
-						var tagParts = tagStr.split("\\" + AbstractDCustomGraphics.LIST_DELIMITER);
-						
-						for (var tag : tagParts)
-							tags.add(tag.trim());
-
-						tagMap.put(future, tags);
-					}
+				URL url = null;
+				
+				try {
+					url = file.toURI().toURL();
+				} catch (MalformedURLException e) {
+					logger.error("Cannot create URL from image file " + file, e);
+					continue;
 				}
 				
-				for (var file : validFiles) {
-					if (!isSupportedImageFile(file))
-						continue;
+				var task = isPNG(file) ? new LoadPNGImageTask(url) : new LoadSVGImageTask(url);
+				var future = cs.submit(task);
+				
+				validFiles.add(file);
+				nameMap.put(future, name);
+				idMap.put(future, Long.parseLong(imageProps[1]));
+				urlMap.put(future, url);
+
+				String tagStr = null;
+				
+				if (imageProps.length > 3) {
+					tagStr = imageProps[3];
+					var tags = new TreeSet<String>();
+					var tagParts = tagStr.split("\\" + AbstractDCustomGraphics.LIST_DELIMITER);
 					
+					for (var tag : tagParts)
+						tags.add(tag.trim());
+
+					tagMap.put(future, tags);
+				}
+			}
+			
+			for (var entry : urlMap.entrySet()) {
+				try {
 					var future = cs.take();
 					var image = future.get();
-					
-					if (image == null)
+
+					if (!(image instanceof BufferedImage || image instanceof String))
 						continue;
-					
-					var cg = isPNG(file) ?
-							new URLBitmapCustomGraphics(idMap.get(future), nameMap.get(future), (BufferedImage) image) :
-							new URLVectorCustomGraphics(idMap.get(future), nameMap.get(future), (String) image);
-					
+
+					var cg = image instanceof BufferedImage
+							? new URLBitmapCustomGraphics(idMap.get(future), nameMap.get(future), (BufferedImage) image)
+							: new URLVectorCustomGraphics(idMap.get(future), nameMap.get(future), (String) image);
+
 					if (cg instanceof Taggable && tagMap.get(future) != null)
 						((Taggable) cg).getTags().addAll(tagMap.get(future));
 
@@ -248,13 +253,9 @@ public class RestoreImagesTask implements Task {
 					
 					if (url != null)
 						manager.addCustomGraphics(cg, url);
+				} catch (Exception e) {
+					logger.error("Cannot load image file " + entry.getValue(), e);
 				}
-			} catch (IOException ioe) {
-				ioe.printStackTrace();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			} catch (ExecutionException e) {
-				e.printStackTrace();
 			}
 		}
 

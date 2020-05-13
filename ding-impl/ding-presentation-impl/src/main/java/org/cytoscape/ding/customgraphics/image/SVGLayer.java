@@ -16,6 +16,7 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.Cy2DGraphicLayer;
 
+import com.kitfox.svg.SVGDiagram;
 import com.kitfox.svg.SVGUniverse;
 
 /*
@@ -48,33 +49,48 @@ public class SVGLayer implements Cy2DGraphicLayer {
 	private Rectangle2D scaledBounds;
 	private BufferedImage img;
 	private TexturePaint paint;
-	private String svg;
+	
+	private final String svg;
+	private final SVGDiagram diagram;
 	
 	public SVGLayer(String svg) {
 		this.svg = svg;
+		
 		var universe = new SVGUniverse();
 		var is = new StringReader(svg);
 		var uri = universe.loadSVG(is, "about");
-		var diagram = universe.getDiagram(uri);
+		diagram = universe.getDiagram(uri);
 		diagram.setIgnoringClipHeuristic(true);
 		
 		bounds = scaledBounds = new Rectangle2D.Float(0, 0, diagram.getWidth(), diagram.getHeight());
 	}
+	
+	/**
+	 * Use this constructor to create an instance that reuses an SVGDiagram but uses a transformed bounds,
+	 * which should improve the overall performance.
+	 */
+	private SVGLayer(
+			String svg,
+			SVGDiagram diagram,
+			Rectangle2D bounds,
+			Rectangle2D scaledBounds
+	) {
+		this.svg = svg;
+		this.diagram = diagram;
+		this.bounds = bounds;
+		this.scaledBounds = scaledBounds;
+	}
 
 	@Override
 	public Rectangle2D getBounds2D() {
-		// IMPORTANT: If we decide that the CG must cache the SVG layer, we must reset the bounds x/y to 0
-		// before returning it here, otherwise CustomGraphicsPositionCalculator will add a position transformation
-		// repeatedly on these x/y values, which may move the image to an incorrect position.
-		//     e.g. return new Rectangle2D.Double(0, 0, bounds.getWidth(), bounds.getHeight());
 		return bounds;
 	}
 
 	@Override
 	public CustomGraphicLayer transform(AffineTransform xform) {
-		bounds = xform.createTransformedShape(bounds).getBounds2D();
+		var newBounds = xform.createTransformedShape(bounds).getBounds2D();
 		
-		return this;
+		return new SVGLayer(svg, diagram, newBounds, scaledBounds);
 	}
 
 	@Override
@@ -89,12 +105,6 @@ public class SVGLayer implements Cy2DGraphicLayer {
 			CyNetworkView networkView,
 			View<? extends CyIdentifiable> view
 	) {
-		var universe = new SVGUniverse();
-		var is = new StringReader(svg);
-		var uri = universe.loadSVG(is, "about");
-		var diagram = universe.getDiagram(uri);
-		diagram.setIgnoringClipHeuristic(true);
-		
 		// Bounds dimensions
 		var x = bounds.getX();
 		var y = bounds.getY();
