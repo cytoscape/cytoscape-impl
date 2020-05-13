@@ -97,7 +97,7 @@ public final class CustomGraphicsManagerImpl
 
 	// Null Object
 	private final File imageHomeDirectory;
-	private final Map<CyCustomGraphics, Boolean> isUsedCustomGraphics;
+	private final Map<Long, Boolean> isUsedCustomGraphics;
 	private final Map<String, CyCustomGraphicsFactory> factoryMap;
 	private final Map<CyCustomGraphicsFactory, Map<?, ?>> factoryPropsMap;
 	private final CyServiceRegistrar serviceRegistrar;
@@ -173,7 +173,7 @@ public final class CustomGraphicsManagerImpl
 			sourceMap.put(source, graphics.getIdentifier());
 
 		graphicsMap.put(graphics.getIdentifier(), graphics);
-		isUsedCustomGraphics.put(graphics, false);
+		isUsedCustomGraphics.put(graphics.getIdentifier(), false);
 	}
 
 	@Override
@@ -182,7 +182,7 @@ public final class CustomGraphicsManagerImpl
 		
 		if (cg != null && cg != NullCustomGraphics.getNullObject()) {
 			graphicsMap.remove(id);
-			isUsedCustomGraphics.remove(cg);
+			isUsedCustomGraphics.remove(id);
 		}
 	}
 
@@ -263,11 +263,11 @@ public final class CustomGraphicsManagerImpl
 	}
 
 	@Override
-	public boolean isUsedInCurrentSession(CyCustomGraphics graphics) {
-		if (graphics == null || this.isUsedCustomGraphics.containsKey(graphics) == false)
+	public boolean isUsedInCurrentSession(final CyCustomGraphics graphics) {
+		if (graphics == null || !isUsedCustomGraphics.containsKey(graphics.getIdentifier()))
 			return false;
 
-		return isUsedCustomGraphics.get(graphics);
+		return isUsedCustomGraphics.get(graphics.getIdentifier());
 	}
 
 	@Override
@@ -275,12 +275,12 @@ public final class CustomGraphicsManagerImpl
 		if (isUsed == null || graphics == null)
 			return;
 
-		if (this.isUsedCustomGraphics.containsKey(graphics) == false) {
+		if (!isUsedCustomGraphics.containsKey(graphics.getIdentifier())) {
 			// Just ignore.
 			return;
 		}
 
-		this.isUsedCustomGraphics.put(graphics, isUsed);
+		isUsedCustomGraphics.put(graphics.getIdentifier(), isUsed);
 	}
 
 	@Override

@@ -478,6 +478,13 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		}
 	}
 	
+	@Override
+	public void handleUpdateView() {
+		updateModel();
+		updateView(UpdateType.ALL_FULL);
+	}
+	
+	
 	public void zoom(int ticks) {
 		if(getViewModelSnapshot().isValueLocked(BasicVisualLexicon.NETWORK_SCALE_FACTOR))
 			return;
