@@ -57,7 +57,7 @@ public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer> impl
 	protected int width = 50;
 	protected int height = 50;
 	
-	protected CyCustomGraphicsFactory<?> factory;
+	protected CyCustomGraphicsFactory<T> factory;
 
 	//protected ObjectPosition position;
 

@@ -92,7 +92,7 @@ public abstract class AbstractURLImageCGFactory implements CyCustomGraphicsFacto
 			// Cytoscape can then try to reload this missing custom graphics later.
 			try {
 				cg = new MissingImageCustomGraphics(entryStr, id, sourceURL, this);
-				manager.addMissingImageCustomGraphics((MissingImageCustomGraphics)cg);
+				manager.addMissingImageCustomGraphics((MissingImageCustomGraphics) cg);
 			} catch (IOException e) {
 				logger.error("Cannot create MissingImageCustomGraphics object", e);
 			}

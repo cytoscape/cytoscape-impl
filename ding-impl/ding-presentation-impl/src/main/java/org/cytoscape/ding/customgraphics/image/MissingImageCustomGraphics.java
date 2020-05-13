@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.cytoscape.ding.customgraphics.Taggable;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
@@ -36,7 +37,7 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 
 public class MissingImageCustomGraphics extends URLBitmapCustomGraphics {
 
-	private CyCustomGraphics actualCustomGraphics;
+	private CyCustomGraphics<BitmapLayer> actualCustomGraphics;
 	private final String serializationString;
 	
 	public MissingImageCustomGraphics(
@@ -54,7 +55,7 @@ public class MissingImageCustomGraphics extends URLBitmapCustomGraphics {
 		return actualCustomGraphics == null;
 	}
 	
-	public CyCustomGraphics reloadImage() {
+	public CyCustomGraphics<?> reloadImage() {
 		var cg = factory.parseSerializableString(serializationString);
 		
 		if (cg != null && cg instanceof MissingImageCustomGraphics == false)
@@ -160,7 +161,7 @@ public class MissingImageCustomGraphics extends URLBitmapCustomGraphics {
 	}
 	
 	@Override
-	public List getLayers(CyNetworkView networkView, View graphObject) {
+	public List<BitmapLayer> getLayers(CyNetworkView networkView, View<? extends CyIdentifiable> graphObject) {
 		if (actualCustomGraphics != null)
 			return actualCustomGraphics.getLayers(networkView, graphObject);
 		
@@ -170,7 +171,7 @@ public class MissingImageCustomGraphics extends URLBitmapCustomGraphics {
 	@Override
 	public Image resetImage() {
 		if (actualCustomGraphics instanceof URLBitmapCustomGraphics)
-			return ((URLBitmapCustomGraphics)actualCustomGraphics).resetImage();
+			return ((URLBitmapCustomGraphics) actualCustomGraphics).resetImage();
 		
 		return super.resetImage();
 	}
@@ -191,7 +192,7 @@ public class MissingImageCustomGraphics extends URLBitmapCustomGraphics {
 		return super.toString();
 	}
 	
-	public CyCustomGraphics getActualCustomGraphics() {
+	public CyCustomGraphics<?> getActualCustomGraphics() {
 		return actualCustomGraphics;
 	}
 }
