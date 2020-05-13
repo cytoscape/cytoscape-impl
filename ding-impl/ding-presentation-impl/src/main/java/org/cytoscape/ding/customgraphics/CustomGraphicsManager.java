@@ -36,6 +36,14 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 
 @SuppressWarnings("rawtypes")
 public interface CustomGraphicsManager {
+	
+	/**
+	 * Use this as a property key to override the default behavior of using the factory's supported class name
+	 * (see {@link CyCustomGraphicsFactory#getSupportedClass()}) as the key when registering a 
+	 * {@link CyCustomGraphicsFactory} through {@link #addCustomGraphicsFactory(CyCustomGraphicsFactory, Map)}.
+	 * The property value must also be a String.
+	 */
+	static final String SUPPORTED_CLASS_ID = "SUPPORTED_CLASS_ID";
 
 	void addCustomGraphicsFactory(CyCustomGraphicsFactory factory, Map<?, ?> props);
 	void removeCustomGraphicsFactory(CyCustomGraphicsFactory factory, Map<?, ?> props);

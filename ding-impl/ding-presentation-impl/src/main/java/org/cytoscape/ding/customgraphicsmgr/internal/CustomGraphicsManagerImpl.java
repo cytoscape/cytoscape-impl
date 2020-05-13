@@ -132,7 +132,12 @@ public final class CustomGraphicsManagerImpl
 		if (factory == null)
 			return;
 		
-		factoryMap.put(factory.getSupportedClass().getName(), factory);
+		var key = (String) props.get(SUPPORTED_CLASS_ID);
+		
+		if (key == null)
+			key = factory.getSupportedClass().getName();
+		
+		factoryMap.put(key, factory);
 		factoryPropsMap.put(factory, props);
 	}
 
@@ -141,7 +146,15 @@ public final class CustomGraphicsManagerImpl
 		if (factory == null)
 			return;
 		
-		factoryMap.remove(factory.getSupportedClass().getName());
+		var iter = factoryMap.entrySet().iterator();
+		
+		while (iter.hasNext()) {
+			var entry = iter.next();
+			
+			if (factory.equals(entry.getValue()))
+				iter.remove();
+		}
+		
 		factoryPropsMap.remove(factory);
 	}
 

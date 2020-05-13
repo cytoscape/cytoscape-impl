@@ -53,8 +53,8 @@ public class URLVectorCustomGraphics extends AbstractURLImageCustomGraphics<SVGL
 	/** Layer used only to draw rendered images */
 	private SVGLayer renderedImageLayer;
 	
-	public URLVectorCustomGraphics(Long id, URL url) throws IOException {
-		super(id, url);
+	public URLVectorCustomGraphics(Long id, String name, URL url) throws IOException {
+		super(id, name, url);
 		
 		tags.add(DEF_TAG);
 	}

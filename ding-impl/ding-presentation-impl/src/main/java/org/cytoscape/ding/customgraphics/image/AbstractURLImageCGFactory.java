@@ -107,6 +107,12 @@ public abstract class AbstractURLImageCGFactory implements CyCustomGraphicsFacto
 	public CyCustomGraphics<?> getInstance(URL url) {
 		return getInstance(url.toString());
 	}
+	
+	/**
+	 * Use this method instead of {@link #getSupportedClass()} whenever possible, otherwise if the class name of the
+	 * supported custom graphics is changed, this factory will no longer be located by the manager.
+	 */
+	public abstract String getSupportedClassId();
 
 	protected boolean validate(String entryStr) {
 		entry = entryStr.split(",");

@@ -58,8 +58,8 @@ public class URLBitmapCustomGraphics extends AbstractURLImageCustomGraphics<Bitm
 		}
 	}
 
-	public URLBitmapCustomGraphics(Long id, URL url) {
-		super(id, url);
+	public URLBitmapCustomGraphics(Long id, String name, URL url) {
+		super(id, name, url);
 		
 		tags.add(DEF_TAG);
 		createImage();

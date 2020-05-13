@@ -96,7 +96,7 @@ public class CustomGraphicsBrowser extends JXList implements CustomGraphicsLibra
 	private void addCustomGraphics(String urlStr) {
 		try {
 			var url = new URL(urlStr);
-			var cg = new URLBitmapCustomGraphics(pool.getNextAvailableID(), url);
+			var cg = new URLBitmapCustomGraphics(pool.getNextAvailableID(), urlStr, url);
 			
 			if (cg != null) {
 				pool.addCustomGraphics(cg, url);

@@ -1,7 +1,6 @@
 
 package org.cytoscape.ding.impl.visualproperty;
 
-import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.CustomGraphicsRange;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics2ManagerImpl;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
@@ -10,8 +9,6 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.AbstractVisualProperty;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 
 /*
  * #%L
@@ -19,7 +16,7 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -40,16 +37,18 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 @SuppressWarnings("rawtypes")
 public class CustomGraphicsVisualProperty extends AbstractVisualProperty<CyCustomGraphics> {
 	
-	public CustomGraphicsVisualProperty(final CyCustomGraphics<CustomGraphicLayer> defaultValue,
-										final CustomGraphicsRange customGraphicsRange, 
-	                                    final String id,
-	                                    final String displayName, 
-	                                    final Class<? extends CyIdentifiable> targetObjectDataType) {
+	public CustomGraphicsVisualProperty(
+			CyCustomGraphics<CustomGraphicLayer> defaultValue,
+			CustomGraphicsRange customGraphicsRange,
+			String id,
+			String displayName, 
+			Class<? extends CyIdentifiable> targetObjectDataType
+	) {
 		super(defaultValue, customGraphicsRange, id, displayName, targetObjectDataType);
 	}
 
 	@Override
-	public String toSerializableString(final CyCustomGraphics value) {
+	public String toSerializableString(CyCustomGraphics value) {
 		return value.toSerializableString();
 	}
 
@@ -63,27 +62,23 @@ public class CustomGraphicsVisualProperty extends AbstractVisualProperty<CyCusto
 		if (value != null
 				&& !NullCustomGraphics.getNullObject().toString().equals(value)
 				&& !value.contains("NullCustomGraphics")) {
-			String[] parts = value.split(":");
+			var parts = value.split(":");
 			int offset = value.indexOf(":"); // Skip over the chart/gradient factory id
 			
 			// First check if it's a CyCustomGraphics2
-			// ------------------------------
+			// ---------------------------------------
 			// This is hack, but we've got no other way to get our hands on the
 			// CyCustomGraphics2Manager this way, because the DVisualLexicon is created statically
-			final CyCustomGraphics2ManagerImpl cfMgr = CyCustomGraphics2ManagerImpl.getInstance();
-			final CyCustomGraphics2Factory<? extends CustomGraphicLayer> chartFactory = cfMgr.getCyCustomGraphics2Factory(parts[0]);
+			var cg2Mgr = CyCustomGraphics2ManagerImpl.getInstance();
+			var chartFactory = cg2Mgr.getCyCustomGraphics2Factory(parts[0]);
 			
 			if (chartFactory != null) {
 				cg = (CyCustomGraphics<CustomGraphicLayer>) chartFactory.getInstance(value.substring(offset + 1));
 			} else {
-				// Then check if it's a CyCustomGraphics2
-				// -------------------------------
-				final CyCustomGraphics2ManagerImpl cgMgr = CyCustomGraphics2ManagerImpl.getInstance();
-				final CyCustomGraphics2Factory<? extends CustomGraphicLayer> gradFactory = cgMgr.getCyCustomGraphics2Factory(parts[0]);
+				var gradFactory = cg2Mgr.getCyCustomGraphics2Factory(parts[0]);
 				
 				if (gradFactory != null)
 					cg = (CyCustomGraphics<CustomGraphicLayer>) gradFactory.getInstance(value.substring(offset + 1));
-				
 			}
 			
 			if (cg == null) {
@@ -91,10 +86,10 @@ public class CustomGraphicsVisualProperty extends AbstractVisualProperty<CyCusto
 				// -------------------------------------------------
 				// This is hack, but we've got no other way to get our hands on the
 				// CyCustomGraphicsManager since the DVisualLexicon is created statically
-				final CustomGraphicsManager cgMgr = CustomGraphicsManagerImpl.getInstance();
+				var cgMgr = CustomGraphicsManagerImpl.getInstance();
 				
 				parts = value.split(",");
-				final CyCustomGraphicsFactory factory = cgMgr.getCustomGraphicsFactory(parts[0]);
+				var factory = cgMgr.getCustomGraphicsFactory(parts[0]);
 				
 				if (factory != null) {
 					// Skip over the class name

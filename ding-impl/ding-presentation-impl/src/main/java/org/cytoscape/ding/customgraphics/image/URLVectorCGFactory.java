@@ -33,6 +33,9 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 @SuppressWarnings("rawtypes")
 public class URLVectorCGFactory extends AbstractURLImageCGFactory {
 
+	public static final String SUPPORTED_CLASS_ID =
+			URLVectorCustomGraphics.TYPE_NAMESPACE + "." + URLVectorCustomGraphics.TYPE_NAME;
+	
 	public URLVectorCGFactory(CustomGraphicsManager manager) {
 		super(manager);
 	}
@@ -50,18 +53,25 @@ public class URLVectorCGFactory extends AbstractURLImageCGFactory {
 	
 			if (cg == null) {
 				var id = manager.getNextAvailableID();
-				cg = new URLVectorCustomGraphics(id, url);
+				cg = new URLVectorCustomGraphics(id, input, url);
 				manager.addCustomGraphics(cg, url);
 			}
 			
-			// Always return a new copy
-			return new URLVectorCustomGraphics(cg.getIdentifier(), url);
+			return cg;
 		} catch (IOException e) {
 			return null;
 		}
 	}
 	
+	@Deprecated
+	@Override
 	public Class<? extends CyCustomGraphics> getSupportedClass() {
+		// TODO I think we shgould deprecate this class in the API as well and replace it with getSupportedClassId()
 		return URLVectorCustomGraphics.class;
+	}
+	
+	@Override
+	public String getSupportedClassId() {
+		return SUPPORTED_CLASS_ID;
 	}
 }

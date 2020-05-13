@@ -139,14 +139,14 @@ public class RestoreImagesTask implements Task {
 		
 		for (var url : defaultImageURLs) {
 			var parts = url.getFile().split("/");
-			var dispNameString = parts[parts.length - 1];
+			var displayName = parts[parts.length - 1];
 
-			if (manager.getCustomGraphicsBySourceURL(url) == null && !names.contains(dispNameString)) {
-				var cg = new URLBitmapCustomGraphics(manager.getNextAvailableID(), url);
+			if (manager.getCustomGraphicsBySourceURL(url) == null && !names.contains(displayName)) {
+				var cg = new URLBitmapCustomGraphics(manager.getNextAvailableID(), displayName, url);
 
 				if (cg != null) {
 					manager.addCustomGraphics(cg, url);
-					cg.setDisplayName(dispNameString);
+					cg.setDisplayName(displayName);
 				}
 			}
 		}

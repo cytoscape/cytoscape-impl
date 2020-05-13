@@ -33,6 +33,9 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 
 public class URLBitmapCGFactory extends AbstractURLImageCGFactory {
 
+	public static final String SUPPORTED_CLASS_ID =
+			URLBitmapCustomGraphics.TYPE_NAMESPACE + "." + URLBitmapCustomGraphics.TYPE_NAME;
+	
 	private final List<String> MIME_TYPES = List.of(
 			"image/bmp",
 			"image/x-windows-bmp",
@@ -59,7 +62,7 @@ public class URLBitmapCGFactory extends AbstractURLImageCGFactory {
 	
 			if (cg == null) {
 				var id = manager.getNextAvailableID();
-				cg = new URLBitmapCustomGraphics(id, url);
+				cg = new URLBitmapCustomGraphics(id, input, url);
 				manager.addCustomGraphics(cg, url);
 			}
 	
@@ -69,7 +72,15 @@ public class URLBitmapCGFactory extends AbstractURLImageCGFactory {
 		}
 	}
 	
+	@Deprecated
+	@Override
 	public Class<? extends CyCustomGraphics> getSupportedClass() {
+		// TODO I think we shgould deprecate this class in the API as well and replace it with getSupportedClassId()
 		return URLBitmapCustomGraphics.class;
+	}
+	
+	@Override
+	public String getSupportedClassId() {
+		return SUPPORTED_CLASS_ID;
 	}
 }

@@ -39,8 +39,8 @@ public abstract class AbstractURLImageCustomGraphics<T extends CustomGraphicLaye
 		super(id, displayName);
 	}
 	
-	protected AbstractURLImageCustomGraphics(Long id, URL url) {
-		this(id, url.toString());
+	protected AbstractURLImageCustomGraphics(Long id, String displayName, URL url) {
+		this(id, displayName);
 		sourceUrl = url;
 		fitRatio = DEF_FIT_RATIO;
 		
