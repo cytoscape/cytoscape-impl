@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -173,9 +172,10 @@ public class RestoreImagesTask implements Task {
 
 		if (imageHomeDirectory != null && imageHomeDirectory.isDirectory()) {
 			var imageFiles = imageHomeDirectory.listFiles();
-			var fMap = new HashMap<Future<?>, String>();
-			var fIdMap = new HashMap<Future<?>, Long>();
-			var metatagMap = new HashMap<Future<?>, Set<String>>();
+			var nameMap = new HashMap<Future<?>, String>();
+			var idMap = new HashMap<Future<?>, Long>();
+			var urlMap = new HashMap<Future<?>, URL>();
+			var tagMap = new HashMap<Future<?>, Set<String>>();
 			
 			var validFiles = new HashSet<File>();
 			
@@ -209,8 +209,9 @@ public class RestoreImagesTask implements Task {
 					var future = cs.submit(task);
 					
 					validFiles.add(file);
-					fMap.put(future, name);
-					fIdMap.put(future, Long.parseLong(imageProps[1]));
+					nameMap.put(future, name);
+					idMap.put(future, Long.parseLong(imageProps[1]));
+					urlMap.put(future, url);
 
 					String tagStr = null;
 					
@@ -222,7 +223,7 @@ public class RestoreImagesTask implements Task {
 						for (var tag : tagParts)
 							tags.add(tag.trim());
 
-						metatagMap.put(future, tags);
+						tagMap.put(future, tags);
 					}
 				}
 				
@@ -237,20 +238,16 @@ public class RestoreImagesTask implements Task {
 						continue;
 					
 					var cg = isPNG(file) ?
-							new URLBitmapCustomGraphics(fIdMap.get(future), fMap.get(future), (BufferedImage) image) :
-							new URLVectorCustomGraphics(fIdMap.get(future), fMap.get(future), (String) image);
+							new URLBitmapCustomGraphics(idMap.get(future), nameMap.get(future), (BufferedImage) image) :
+							new URLVectorCustomGraphics(idMap.get(future), nameMap.get(future), (String) image);
 					
-					if (cg instanceof Taggable && metatagMap.get(future) != null)
-						((Taggable) cg).getTags().addAll(metatagMap.get(future));
+					if (cg instanceof Taggable && tagMap.get(future) != null)
+						((Taggable) cg).getTags().addAll(tagMap.get(future));
 
-					try {
-						var source = new URL(fMap.get(future));
-						
-						if (source != null)
-							manager.addCustomGraphics(cg, source);
-					} catch (MalformedURLException me) {
-						manager.addCustomGraphics(cg, null);
-					}
+					var url = urlMap.get(future);
+					
+					if (url != null)
+						manager.addCustomGraphics(cg, url);
 				}
 			} catch (IOException ioe) {
 				ioe.printStackTrace();
@@ -299,14 +296,14 @@ public class RestoreImagesTask implements Task {
 		private final URL url;
 
 		public LoadPNGImageTask(URL url) {
+			if (url == null)
+				throw new IllegalStateException("URL string cannot be null.");
+			
 			this.url = url;
 		}
 
 		@Override
 		public BufferedImage call() throws Exception {
-			if (url == null)
-				throw new IllegalStateException("URL string cannot be null.");
-
 			return ImageIO.read(url);
 		}
 	}
@@ -316,14 +313,14 @@ public class RestoreImagesTask implements Task {
 		private final URL url;
 		
 		public LoadSVGImageTask(URL url) {
+			if (url == null)
+				throw new IllegalStateException("URL string cannot be null.");
+			
 			this.url = url;
 		}
 		
 		@Override
 		public String call() throws Exception {
-			if (url == null)
-				throw new IllegalStateException("URL string cannot be null.");
-			
 		    try (var reader = new BufferedReader(new InputStreamReader(url.openStream()))) {
 			    var sb = new StringBuilder();
 			    String line;
