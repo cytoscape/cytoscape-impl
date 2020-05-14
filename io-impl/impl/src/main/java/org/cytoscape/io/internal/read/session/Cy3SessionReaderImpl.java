@@ -306,6 +306,10 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			String filename = matcher.group(1);
 			filenameTableMap.put(filename, table);
 			builderFilenameMap.put(builder, filename);
+
+			// Add the SUID for this table
+			Long tableSUID = Long.parseLong(matcher.group(2));
+			suidUpdater.addSUIDMapping(tableSUID, table.getSUID());
 			
 			// Look for SUID-type columns--only global tables now
 			suidUpdater.addTable(table);
