@@ -93,7 +93,7 @@ public final class CustomGraphicsManagerImpl
 	// URL to hash code map. For images associated with URL.
 	protected final Map<URL, Long> sourceMap = new ConcurrentHashMap<>(16, 0.75f, 2);
 	
-	private final Set<MissingImageCustomGraphics> missingImageCustomGraphicsSet = new HashSet<>();
+	private final Set<MissingImageCustomGraphics<?>> missingImageCustomGraphicsSet = new HashSet<>();
 
 	// Null Object
 	private final File imageHomeDirectory;
@@ -371,13 +371,13 @@ public final class CustomGraphicsManagerImpl
 	}
 
 	@Override
-	public void addMissingImageCustomGraphics(MissingImageCustomGraphics cg) {
+	public void addMissingImageCustomGraphics(MissingImageCustomGraphics<?> cg) {
 		missingImageCustomGraphicsSet.add(cg);
 	}
 
 	@Override
-	public Collection<MissingImageCustomGraphics> reloadMissingImageCustomGraphics() {
-		var reloadedSet = new HashSet<MissingImageCustomGraphics>();
+	public Collection<MissingImageCustomGraphics<?>> reloadMissingImageCustomGraphics() {
+		var reloadedSet = new HashSet<MissingImageCustomGraphics<?>>();
 		
 		for (var mcg : missingImageCustomGraphicsSet) {
 			var cg = mcg.reloadImage();

@@ -43,7 +43,7 @@ public class URLBitmapCustomGraphics extends AbstractURLImageCustomGraphics<Bitm
 	public static final String TYPE_NAME = "URLImageCustomGraphics";
 	
 	private static final String DEF_TAG = "bitmap image";
-	private static final String DEF_IMAGE_FILE = "images/no_image.png";
+	private static final String DEF_IMAGE_FILE = "/images/no_image.png";
 
 	private BufferedImage originalImage;
 	private BufferedImage scaledImage;

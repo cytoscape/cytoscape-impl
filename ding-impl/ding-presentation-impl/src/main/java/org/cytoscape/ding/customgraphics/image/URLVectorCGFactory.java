@@ -30,8 +30,7 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
  * #L%
  */
 
-@SuppressWarnings("rawtypes")
-public class URLVectorCGFactory extends AbstractURLImageCGFactory {
+public class URLVectorCGFactory extends AbstractURLImageCGFactory<SVGLayer> {
 
 	public static final String SUPPORTED_CLASS_ID =
 			URLVectorCustomGraphics.TYPE_NAMESPACE + "." + URLVectorCustomGraphics.TYPE_NAME;
@@ -46,27 +45,39 @@ public class URLVectorCGFactory extends AbstractURLImageCGFactory {
 	}
 	
 	@Override
-	public CyCustomGraphics<?> getInstance(String input) {
+	public URLVectorCustomGraphics getInstance(String input) {
 		try {
 			var url = new URL(input);
 			var cg = manager.getCustomGraphicsBySourceURL(url);
 	
-			if (cg == null) {
+			if (cg instanceof URLVectorCustomGraphics == false) {
 				var id = manager.getNextAvailableID();
 				cg = new URLVectorCustomGraphics(id, input, url);
 				manager.addCustomGraphics(cg, url);
 			}
 			
-			return cg;
+			return (URLVectorCustomGraphics) cg;
 		} catch (IOException e) {
 			return null;
 		}
 	}
 	
-	@Deprecated
 	@Override
-	public Class<? extends CyCustomGraphics> getSupportedClass() {
-		// TODO I think we shgould deprecate this class in the API as well and replace it with getSupportedClassId()
+	protected URLVectorCustomGraphics createMissingImageCustomGraphics(String entryStr, long id, String sourceURL) {
+		try {
+			var cg = new MissingVectorImageCustomGraphics(entryStr, id, sourceURL, this);
+			manager.addMissingImageCustomGraphics(cg);
+			
+			return cg;
+		} catch (IOException e) {
+			logger.error("Cannot create MissingVectorImageCustomGraphics object", e);
+		}
+		
+		return null;
+	}
+	
+	@Override
+	public Class<? extends CyCustomGraphics<?>> getSupportedClass() {
 		return URLVectorCustomGraphics.class;
 	}
 	

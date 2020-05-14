@@ -31,7 +31,7 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
  * #L%
  */
 
-public class URLBitmapCGFactory extends AbstractURLImageCGFactory {
+public class URLBitmapCGFactory extends AbstractURLImageCGFactory<BitmapLayer> {
 
 	public static final String SUPPORTED_CLASS_ID =
 			URLBitmapCustomGraphics.TYPE_NAMESPACE + "." + URLBitmapCustomGraphics.TYPE_NAME;
@@ -55,27 +55,40 @@ public class URLBitmapCGFactory extends AbstractURLImageCGFactory {
 	}
 	
 	@Override
-	public CyCustomGraphics<?> getInstance(String input) {
+	public URLBitmapCustomGraphics getInstance(String input) {
 		try {
 			var url = new URL(input);
 			var cg = manager.getCustomGraphicsBySourceURL(url);
 	
-			if (cg == null) {
+			if (cg instanceof URLBitmapCustomGraphics == false) {
 				var id = manager.getNextAvailableID();
 				cg = new URLBitmapCustomGraphics(id, input, url);
 				manager.addCustomGraphics(cg, url);
 			}
 	
-			return cg;
+			return (URLBitmapCustomGraphics) cg;
 		} catch (IOException e) {
 			return null;
 		}
 	}
 	
-	@Deprecated
 	@Override
-	public Class<? extends CyCustomGraphics> getSupportedClass() {
-		// TODO I think we shgould deprecate this class in the API as well and replace it with getSupportedClassId()
+	protected URLBitmapCustomGraphics createMissingImageCustomGraphics(String entryStr, long id,
+			String sourceURL) {
+		try {
+			var cg = new MissingBitmapImageCustomGraphics(entryStr, id, sourceURL, this);
+			manager.addMissingImageCustomGraphics(cg);
+			
+			return cg;
+		} catch (IOException e) {
+			logger.error("Cannot create MissingBitmapImageCustomGraphics object", e);
+		}
+		
+		return null;
+	}
+	
+	@Override
+	public Class<? extends CyCustomGraphics<?>> getSupportedClass() {
 		return URLBitmapCustomGraphics.class;
 	}
 	

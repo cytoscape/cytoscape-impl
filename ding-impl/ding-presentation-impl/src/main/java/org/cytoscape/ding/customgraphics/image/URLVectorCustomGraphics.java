@@ -2,11 +2,13 @@ package org.cytoscape.ding.customgraphics.image;
 
 import java.awt.Image;
 import java.awt.Rectangle;
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.List;
+import java.util.Scanner;
 
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.CyNetworkView;
@@ -47,11 +49,29 @@ public class URLVectorCustomGraphics extends AbstractURLImageCustomGraphics<SVGL
 	public static final String TYPE_NAME = "URLVectorCustomGraphics";
 	
 	private static final String DEF_TAG = "vector image";
-	private static final String DEF_SVG = "TODO"; // TODO
+	private static final String DEF_IMAGE_FILE = "/images/no_image.svg";
 	
 	private String svg;
 	/** Layer used only to draw rendered images */
 	private SVGLayer renderedImageLayer;
+	
+	static String DEF_IMAGE;
+	
+	static {
+		try (var scan = new Scanner(new BufferedInputStream(
+				URLVectorCustomGraphics.class.getResourceAsStream(DEF_IMAGE_FILE)))) {
+			var sb = new StringBuilder();
+
+			while (scan.hasNextLine()) {
+				sb.append(scan.nextLine());
+				sb.append("\n");
+			}
+			
+			DEF_IMAGE = sb.toString();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	
 	public URLVectorCustomGraphics(Long id, String name, URL url) throws IOException {
 		super(id, name, url);
@@ -117,14 +137,14 @@ public class URLVectorCustomGraphics extends AbstractURLImageCustomGraphics<SVGL
 					
 					svg = sb.toString();
 				} catch (Exception e) {
-					svg = DEF_SVG;
+					svg = DEF_IMAGE;
 				}
 			} catch (Exception e) {
-				svg = DEF_SVG;
+				svg = DEF_IMAGE;
 			}
 			
 			if (svg == null)
-				svg = DEF_SVG;
+				svg = DEF_IMAGE;
 		}
 		
 		var cg = new SVGLayer(svg);

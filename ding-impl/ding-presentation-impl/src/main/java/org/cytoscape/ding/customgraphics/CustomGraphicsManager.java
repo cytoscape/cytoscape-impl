@@ -76,6 +76,6 @@ public interface CustomGraphicsManager {
 	 */
 	Long getNextAvailableID();
 	
-	void addMissingImageCustomGraphics(MissingImageCustomGraphics cg);
-	Collection<MissingImageCustomGraphics> reloadMissingImageCustomGraphics();
+	void addMissingImageCustomGraphics(MissingImageCustomGraphics<?> cg);
+	Collection<MissingImageCustomGraphics<?>> reloadMissingImageCustomGraphics();
 }

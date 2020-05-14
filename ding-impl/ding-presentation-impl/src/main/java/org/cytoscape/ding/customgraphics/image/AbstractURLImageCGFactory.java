@@ -1,10 +1,10 @@
 package org.cytoscape.ding.customgraphics.image;
 
-import java.io.IOException;
 import java.net.URL;
 
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
+import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 import org.slf4j.Logger;
@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
-public abstract class AbstractURLImageCGFactory implements CyCustomGraphicsFactory {
+public abstract class AbstractURLImageCGFactory<T extends CustomGraphicLayer> implements CyCustomGraphicsFactory<T> {
 
 	protected String entry[];
 	protected final CustomGraphicsManager manager;
@@ -60,7 +60,7 @@ public abstract class AbstractURLImageCGFactory implements CyCustomGraphicsFacto
 	 * </ul>
 	 */
 	@Override
-	public CyCustomGraphics<?> parseSerializableString(String entryStr) {
+	public CyCustomGraphics<T> parseSerializableString(String entryStr) {
 		// Check this is URL or not
 		if (entryStr == null)
 			return null;
@@ -86,17 +86,11 @@ public abstract class AbstractURLImageCGFactory implements CyCustomGraphicsFacto
 		var id = Long.parseLong(imageName);
 		var cg = manager.getCustomGraphicsByID(id);
 		
-		if (cg == null) {
-			// Can't find image, maybe because it has not been added to the manager yet,
-			// so create a special "missing image" graphics that stores the original raw value.
-			// Cytoscape can then try to reload this missing custom graphics later.
-			try {
-				cg = new MissingImageCustomGraphics(entryStr, id, sourceURL, this);
-				manager.addMissingImageCustomGraphics((MissingImageCustomGraphics) cg);
-			} catch (IOException e) {
-				logger.error("Cannot create MissingImageCustomGraphics object", e);
-			}
-		}
+		// Can't find image, maybe because it has not been added to the manager yet,
+		// so create a special "missing image" graphics that stores the original raw value.
+		// Cytoscape can then try to reload this missing custom graphics later.
+		if (cg == null)
+			cg = createMissingImageCustomGraphics(entryStr, id, sourceURL);
 		
 		cg.setDisplayName(entry[1]);
 		
@@ -104,9 +98,11 @@ public abstract class AbstractURLImageCGFactory implements CyCustomGraphicsFacto
 	}
 
 	@Override
-	public CyCustomGraphics<?> getInstance(URL url) {
+	public CyCustomGraphics<T> getInstance(URL url) {
 		return getInstance(url.toString());
 	}
+	
+	protected abstract CyCustomGraphics<T> createMissingImageCustomGraphics(String entryStr, long id, String sourceURL);
 	
 	/**
 	 * Use this method instead of {@link #getSupportedClass()} whenever possible, otherwise if the class name of the
