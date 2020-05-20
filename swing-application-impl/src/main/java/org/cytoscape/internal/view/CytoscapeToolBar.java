@@ -1,5 +1,8 @@
 package org.cytoscape.internal.view;
 
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
+
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -62,7 +65,7 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -92,21 +95,17 @@ public class CytoscapeToolBar extends ToolbarWithOverflow {
 	
 	private static final String STOPLIST_FILENAME = "toolbar.stoplist";
 	
-	private Map<CyAction, ActionButton> actionButtonMap;
-	private List<Object> orderedList;
-	private Map<Object, Float> componentGravity;
+	private List<ToolBarItem> orderedItems;
+	private Map<CyAction, ToolBarItem> actionMap;
 	private HashSet<String> stopList = new HashSet<>();
-	
+
 	private final PopupMouseListener popupMouseListener;
 
-	private CyServiceRegistrar serviceRegistrar;
-	
 	public CytoscapeToolBar(CyServiceRegistrar serviceRegistrar) {
-		super("Cytoscape Tools");
-		actionButtonMap = new HashMap<>();
-		componentGravity = new HashMap<>();
-		orderedList = new ArrayList<>();
-		this.serviceRegistrar = serviceRegistrar;
+		super("Cytoscape Tools", serviceRegistrar);
+		
+		actionMap = new HashMap<>();
+		orderedItems = new ArrayList<>();
 		
 		setFloatable(false);
 		setBorder(BorderFactory.createCompoundBorder(
@@ -121,22 +120,6 @@ public class CytoscapeToolBar extends ToolbarWithOverflow {
 		readStopList();
 	}
 	
-	private void resave() {
-		List<String> hidden = new ArrayList<>();
-		
-		for (var comp : getComponents()) {
-			if (comp instanceof AbstractButton) {
-				if (!comp.isVisible()) {
-					var button = (AbstractButton) comp;
-					var name = ((CyAction) button.getAction()).getName();
-					hidden.add(name);
-				}
-			}
-		}
-		
-		writeStopList(hidden);
-	}
-
 	@Override
 	public Component add(Component comp) {
 		if (stopList.contains(comp.getName()))
@@ -147,7 +130,7 @@ public class CytoscapeToolBar extends ToolbarWithOverflow {
 	
 	/**
 	 * If the given Action has an absent or false inToolBar property, return;
-	 * otherwise delegate to addAction( String, Action ) with the value of its
+	 * otherwise toolBarComponent to addAction( String, Action ) with the value of its
 	 * gravity property.
 	 */
 	public boolean addAction(CyAction action) {
@@ -155,74 +138,86 @@ public class CytoscapeToolBar extends ToolbarWithOverflow {
 			return false;
 	
 		// At present we allow an Action to be in this tool bar only once.
-		if (actionButtonMap.containsKey(action))
+		if (actionMap.containsKey(action))
 			return false;
 
-		boolean insertSepBefore = false;
-		boolean insertSepAfter = false;
+		boolean sepBefore = false;
+		boolean sepAfter = false;
 		
 		if (action instanceof AbstractCyAction) {
-			insertSepBefore = ((AbstractCyAction) action).insertToolbarSeparatorBefore();
-			insertSepAfter = ((AbstractCyAction) action).insertToolbarSeparatorAfter();
+			sepBefore = ((AbstractCyAction) action).insertToolbarSeparatorBefore();
+			sepAfter = ((AbstractCyAction) action).insertToolbarSeparatorAfter();
 		}
 
 		var button = createToolBarButton(action);
 		button.addMouseListener(popupMouseListener);
 		
-		var actionButton = new ActionButton(button, insertSepBefore, insertSepAfter);
+		float gravity = action.getToolbarGravity();
 		
-		componentGravity.put(actionButton, action.getToolbarGravity());
-		actionButtonMap.put(action, actionButton);
-		int addIndex = getInsertLocation(action.getToolbarGravity());
-		orderedList.add(addIndex, actionButton);
+		var tbc = new ToolBarItem(button, gravity, sepBefore, sepAfter);
+		
+		actionMap.put(action, tbc);
+		int index = getInsertLocation(gravity);
+		orderedItems.add(index, tbc);
 		
 		if (stopList.contains(action.getName()))
-			actionButton.component.setVisible(false);
+			tbc.getComponent().setVisible(false);
 
 		update();
 
 		return true;
 	}
+	
+	public void addToolBarComponent(ToolBarComponent tbc, Map<?, ?> props) {
+		boolean sepBefore = "true".equals(props.get(INSERT_SEPARATOR_BEFORE));
+		boolean sepAfter = "true".equals(props.get(INSERT_SEPARATOR_AFTER));
+		int index = getInsertLocation(tbc.getToolBarGravity());
+		
+		orderedItems.add(index, new ToolBarItem(tbc, sepBefore, sepAfter));
+		
+		update();
+	}
+	
+	public void removeToolBarComponent(ToolBarComponent tbc) {
+		if (tbc != null) {
+			var iter = orderedItems.iterator();
+			
+			while (iter.hasNext()) {
+				var item = iter.next();
+				
+				if (tbc.equals(item.getToolBarComponent()))
+					iter.remove();
+			}
+			
+			var c = tbc.getComponent();
+			
+			if (c != null) {
+				remove(c);
+				repaint();
+			}
+		}
+	}
 
 	public void showAll() {
-		for (Object o : orderedList) {
-			if (o instanceof Component)
-				((Component) o).setVisible(true);
-			if (o instanceof ActionButton)
-				((ActionButton) o).component.setVisible(true);
+		for (var item : orderedItems) {
+			var c = item.getComponent();
+			
+			if (c != null)
+				c.setVisible(true);
 		}
 		
 		updateSeparators();
 	}
 
 	public void hideAll() {
-		for (Object o : orderedList) {
-			if (o instanceof Component)
-				((Component) o).setVisible(false);
-			if (o instanceof ActionButton)
-				((ActionButton) o).component.setVisible(false);
+		for (var item : orderedItems) {
+			var c = item.getComponent();
+			
+			if (c != null)
+				c.setVisible(false);
 		}
 		
 		updateSeparators();
-	}
-
-	public void addSeparator(float gravity) {
-		Float key = new Float(gravity);
-		componentGravity.put(key, gravity);
-		int addInd = getInsertLocation(gravity);
-		orderedList.add(addInd, key);
-	}
-
-	private int getInsertLocation(float newGravity) {
-		for (int i = 0; i < orderedList.size(); i++) {
-			Object item = orderedList.get(i);
-			Float gravity = componentGravity.get(item);
-			
-			if (gravity != null && newGravity < gravity)
-				return i;
-		}
-		
-		return orderedList.size();
 	}
 
 	/**
@@ -230,12 +225,12 @@ public class CytoscapeToolBar extends ToolbarWithOverflow {
 	 * otherwise if there's a button for the action, remove it.
 	 */
 	public boolean removeAction(CyAction action) {
-		ActionButton button = actionButtonMap.remove(action);
+		var item = actionMap.remove(action);
 
-		if (button == null)
+		if (item == null)
 			return false;
 
-		orderedList.remove(button);
+		orderedItems.remove(item);
 		update();
 
 		return true;
@@ -245,23 +240,7 @@ public class CytoscapeToolBar extends ToolbarWithOverflow {
 	 * Used by toolbar updater to keep things properly enabled/disabled.
 	 */
 	Collection<CyAction> getAllToolBarActions() {
-		return actionButtonMap.keySet();
-	}
-	
-	public void addToolBarComponent(ToolBarComponent tbc){		
-		componentGravity.put(tbc,tbc.getToolBarGravity());
-		int addInd = getInsertLocation(tbc.getToolBarGravity());
-		orderedList.add(addInd, tbc);
-		update();
-	}
-
-	public void removeToolBarComponent(ToolBarComponent tbc){
-		if (tbc != null){
-			this.componentGravity.remove(tbc);
-			this.orderedList.remove(tbc);
-			this.remove(tbc.getComponent());
-			this.repaint();
-		}	
+		return actionMap.keySet();
 	}
 	
 	public static AbstractButton createToolBarButton(CyAction action) {
@@ -345,23 +324,21 @@ public class CytoscapeToolBar extends ToolbarWithOverflow {
 		// Remove and add everything again
 		removeAll();
 		
-		for (Object o : orderedList) {
-			if (o instanceof AbstractButton) {
-				add((AbstractButton) o);
-			} else if (o instanceof Float) {
+		for (var item : orderedItems) {
+			var c = item.getComponent();
+			
+			if (c != null) {
+				ToolBarItem ab = (ToolBarItem) item;
+				
+				if (ab.isSeparatorBefore())
+					addSeparator();
+				
+				add(c);
+				
+				if (ab.isSeparatorAfter())
+					addSeparator();
+			} else if (item.isSeparator()) {
 				addSeparator();
-			} else if (o instanceof ToolBarComponent) {
-				add(((ToolBarComponent) o).getComponent());
-			} else if (o instanceof ActionButton) {
-				ActionButton ab = (ActionButton) o;
-				
-				if (ab.separatorBefore)
-					addSeparator();
-				
-				add(ab.component);
-				
-				if (ab.separatorAfter)
-					addSeparator();
 			}
 		}
 		
@@ -369,6 +346,39 @@ public class CytoscapeToolBar extends ToolbarWithOverflow {
 		updateSeparators();
 	}
 
+	private void resave() {
+		var hidden = new ArrayList<String>();
+		
+		for (var c : getComponents()) {
+			if (c instanceof AbstractButton) {
+				if (!c.isVisible()) {
+					var button = (AbstractButton) c;
+					var name = ((CyAction) button.getAction()).getName();
+					hidden.add(name);
+				}
+			}
+		}
+		
+		writeStopList(hidden);
+	}
+	
+	private int getInsertLocation(float newGravity) {
+		for (int i = 0; i < orderedItems.size(); i++) {
+			var item = orderedItems.get(i);
+			float gravity = item.getGravity();
+			
+			if (gravity >= 0 && newGravity < gravity)
+				return i;
+		}
+		
+		return orderedItems.size();
+	}
+	
+	void addSeparator(float gravity) {
+		int index = getInsertLocation(gravity);
+		orderedItems.add(index, new ToolBarItem(gravity));
+	}
+	
 	private void updateSeparators() {
 		// Pretend we start with a separator, because we don't want any separator as the first component
 		boolean lastIsSep = true;
@@ -588,16 +598,71 @@ public class CytoscapeToolBar extends ToolbarWithOverflow {
 		}
 	}
 	
-	private static class ActionButton {
+	private static class ToolBarItem {
 		
-		final AbstractButton component;
-		final boolean separatorBefore;
-		final boolean separatorAfter;
+		private final ToolBarComponent toolBarComponent;
+		private final Component component;
+		private final boolean separator;
+		private final boolean separatorBefore;
+		private final boolean separatorAfter;
+		private float gravity = -1.0f;
 		
-		public ActionButton(AbstractButton button, boolean separatorBefore, boolean separatorAfter) {
-			this.component = button;
+		public ToolBarItem(
+				Component comp,
+				float gravity,
+				boolean separatorBefore,
+				boolean separatorAfter
+		) {
+			this.toolBarComponent = null;
+			this.component = comp;
+			this.separator = false;
+			this.gravity = gravity;
 			this.separatorBefore = separatorBefore;
 			this.separatorAfter = separatorAfter;
+		}
+		
+		public ToolBarItem(ToolBarComponent toolBarComponent, boolean separatorBefore, boolean separatorAfter) {
+			this.toolBarComponent = toolBarComponent;
+			this.component = null;
+			this.separator = false;
+			this.separatorBefore = separatorBefore;
+			this.separatorAfter = separatorAfter;
+		}
+		
+		/**
+		 * Use this constructor to create an object that represents a separator.
+		 */
+		public ToolBarItem(float gravity) {
+			this.toolBarComponent = null;
+			this.component = null;
+			this.separator = true;
+			this.gravity = gravity;
+			this.separatorBefore = false;
+			this.separatorAfter = false;
+		}
+
+		public ToolBarComponent getToolBarComponent() {
+			return toolBarComponent;
+		}
+		
+		public Component getComponent() {
+			return toolBarComponent != null ? toolBarComponent.getComponent() : component;
+		}
+		
+		public float getGravity() {
+			return toolBarComponent != null ? toolBarComponent.getToolBarGravity() : gravity;
+		}
+		
+		public boolean isSeparatorBefore() {
+			return separatorBefore;
+		}
+		
+		public boolean isSeparatorAfter() {
+			return separatorAfter;
+		}
+		
+		private boolean isSeparator() {
+			return separator;
 		}
 	}
 }

@@ -11,7 +11,6 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -26,7 +25,7 @@ import org.cytoscape.application.swing.CyAction;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -91,7 +90,7 @@ public class CytoscapeMenus {
 		menuBar.addSeparator("Help", 2.0);
 		menuBar.addSeparator("Help", 6.0);
 		menuBar.addSeparator("Help", 9.0);
-
+		
 		toolBar.addSeparator(2.0f);
 		toolBar.addSeparator(3.0f);
 		toolBar.addSeparator(4.0f);
@@ -118,30 +117,30 @@ public class CytoscapeMenus {
 
 	public JToolBar createViewFrameToolBar() {
 		JToolBar viewToolBar = null;
-		final int total = toolBar.getComponentCount();
+		int total = toolBar.getComponentCount();
 		boolean addSeparator = false;
 		int buttonsAfterSeparator = 0;
 		
 		for (int i = 0; i < total; i++) {
 			final Component c = toolBar.getComponent(i);
 			
-			if (c instanceof JButton && ((JButton)c).getAction() instanceof CyAction) {
-				final JButton btn = ((JButton)c);
-				final CyAction action = (CyAction) btn.getAction();
-				
+			if (c instanceof JButton && ((JButton) c).getAction() instanceof CyAction) {
+				var btn = ((JButton) c);
+				var action = (CyAction) btn.getAction();
+
 				if (viewFrameActions.contains(action)) {
 					if (viewToolBar == null) {
 						viewToolBar = new JToolBar();
 						viewToolBar.setBorder(toolBar.getBorder());
 					}
-					
+
 					if (addSeparator) {
 						viewToolBar.addSeparator();
 						addSeparator = false;
 						buttonsAfterSeparator = 0;
 					}
-					
-					final AbstractButton newBtn = CytoscapeToolBar.createToolBarButton(action);
+
+					var newBtn = CytoscapeToolBar.createToolBarButton(action);
 					viewToolBar.add(newBtn);
 					buttonsAfterSeparator++;
 				}
@@ -184,31 +183,31 @@ public class CytoscapeMenus {
 
 	public void setMenuBarVisible(final boolean b) {
 		if (menuBar != null) {
-			final int menuCount = menuBar.getMenuCount();
+			int menuCount = menuBar.getMenuCount();
 
 			for (int i = 0; i < menuCount - 1; i++) {
-				final JMenu menu = menuBar.getMenu(i);
+				var menu = menuBar.getMenu(i);
 
 				if (menu != null && menu.isVisible() != b)
 					menu.setVisible(b);
 			}
 		}
 	}
-	
+
 	public JMenuBar createDummyMenuBar() {
-		final JMenuBar dummy = new JMenuBar();
-		
+		var dummy = new JMenuBar();
+
 		if (menuBar != null) {
-			final int menuCount = menuBar.getMenuCount();
-			
+			int menuCount = menuBar.getMenuCount();
+
 			for (int i = 0; i < menuCount; i++) {
-				final JMenu menu = menuBar.getMenu(i);
-				
+				var menu = menuBar.getMenu(i);
+
 				if (menu != null)
 					dummy.add(new JMenu(menu.getText()));
 			}
 		}
-		
+
 		return dummy;
 	}
 }

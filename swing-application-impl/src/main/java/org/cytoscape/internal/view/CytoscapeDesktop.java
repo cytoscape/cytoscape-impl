@@ -620,7 +620,7 @@ public class CytoscapeDesktop extends JFrame
 
 	public void addToolBarComponent(ToolBarComponent tp, Map<?, ?> props) {
 		invokeOnEDTAndWait(() -> {
-			((CytoscapeToolBar) cyMenus.getJToolBar()).addToolBarComponent(tp);
+			((CytoscapeToolBar) cyMenus.getJToolBar()).addToolBarComponent(tp, props);
 		});
 	}
 
