@@ -120,7 +120,8 @@ public class ColumnValueTunable {
 
 		boolean inList = false;
 		String listString = "";
-		String[] v1 = values.split(",");
+		// String[] v1 = values.split(",");
+		String[] v1 = DataUtils.getCSV(values);
 		for (String v: v1) {
 			v = v.trim();
 			if (inList) {

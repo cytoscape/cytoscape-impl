@@ -105,7 +105,7 @@ public final class CustomGraphicsManagerImpl
 
 	// Null Object
 	private final File imageHomeDirectory;
-	private final Map<CyCustomGraphics, Boolean> isUsedCustomGraphics;
+	private final Map<Long, Boolean> isUsedCustomGraphics;
 	private final Map<String, CyCustomGraphicsFactory> factoryMap;
 	private final Map<CyCustomGraphicsFactory, Map> factoryPropsMap;
 	private final CyServiceRegistrar serviceRegistrar;
@@ -181,7 +181,7 @@ public final class CustomGraphicsManagerImpl
 			sourceMap.put(source, graphics.getIdentifier());
 
 		graphicsMap.put(graphics.getIdentifier(), graphics);
-		this.isUsedCustomGraphics.put(graphics, false);
+		this.isUsedCustomGraphics.put(graphics.getIdentifier(), false);
 	}
 
 	@Override
@@ -190,7 +190,7 @@ public final class CustomGraphicsManagerImpl
 		
 		if (cg != null && cg != NullCustomGraphics.getNullObject()) {
 			graphicsMap.remove(id);
-			this.isUsedCustomGraphics.remove(cg);
+			this.isUsedCustomGraphics.remove(id);
 		}
 	}
 
@@ -266,15 +266,16 @@ public final class CustomGraphicsManagerImpl
 
 	@Override
 	public SortedSet<Long> getIDSet() {
+		System.out.println("CustomGraphicsManagerImpl.getIDSet: : " + java.util.Arrays.asList());
 		return new TreeSet<Long>(graphicsMap.keySet());
 	}
 
 	@Override
 	public boolean isUsedInCurrentSession(final CyCustomGraphics graphics) {
-		if (graphics == null || this.isUsedCustomGraphics.containsKey(graphics) == false)
+		if (graphics == null || this.isUsedCustomGraphics.containsKey(graphics.getIdentifier()) == false)
 			return false;
 
-		return isUsedCustomGraphics.get(graphics);
+		return isUsedCustomGraphics.get(graphics.getIdentifier());
 	}
 
 	@Override
@@ -282,12 +283,12 @@ public final class CustomGraphicsManagerImpl
 		if (isUsed == null || graphics == null)
 			return;
 
-		if (this.isUsedCustomGraphics.containsKey(graphics) == false) {
+		if (this.isUsedCustomGraphics.containsKey(graphics.getIdentifier()) == false) {
 			// Just ignore.
 			return;
 		}
 
-		this.isUsedCustomGraphics.put(graphics, isUsed);
+		this.isUsedCustomGraphics.put(graphics.getIdentifier(), isUsed);
 	}
 
 	@Override

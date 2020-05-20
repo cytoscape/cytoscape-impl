@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.model.CyNode;
-import org.cytoscape.view.layout.AbstractPartitionLayoutTask;
+import org.cytoscape.view.layout.AbstractParallelPartitionLayoutTask;
 import org.cytoscape.view.layout.LayoutEdge;
 import org.cytoscape.view.layout.LayoutNode;
 import org.cytoscape.view.layout.LayoutPartition;
@@ -51,9 +51,9 @@ import prefuse.util.force.StateMonitor;
  * 
  * @see <a href="http://prefuse.org">Prefuse web site</a>
  */
-public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
+public class ForceDirectedLayoutTask extends AbstractParallelPartitionLayoutTask {
 
-	private ForceSimulator m_fsim;
+	// private ForceSimulator m_fsim;
 	private ForceDirectedLayout.Integrators integrator;
 	private final ForceDirectedLayoutContext context;
 	private final StateMonitor monitor;
@@ -80,10 +80,10 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 
 		monitor = new StateMonitor();
 		
-		m_fsim = new ForceSimulator(monitor);
-		m_fsim.addForce(new NBodyForce(monitor));
-		m_fsim.addForce(new SpringForce());
-		m_fsim.addForce(new DragForce());
+		// m_fsim = new ForceSimulator(monitor);
+		// m_fsim.addForce(new NBodyForce(monitor));
+		// m_fsim.addForce(new SpringForce());
+		// m_fsim.addForce(new DragForce());
 	}
 	
 	@Override
@@ -93,9 +93,14 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 
 	@Override
 	public void layoutPartition(LayoutPartition part) {
-		if (taskMonitor != null)
-			taskMonitor.setStatusMessage("Partition " + part.getPartitionNumber() + ": Initializing...");
+		// if (taskMonitor != null)
+		// 	taskMonitor.setStatusMessage("Partition " + part.getPartitionNumber() + ": Initializing...");
 		
+		ForceSimulator m_fsim = new ForceSimulator(monitor);
+		m_fsim.addForce(new NBodyForce(monitor));
+		m_fsim.addForce(new SpringForce());
+		m_fsim.addForce(new DragForce());
+
 		// Calculate our edge weights
 		part.calculateEdgeWeights();
 		
@@ -141,38 +146,38 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 			ForceItem f1 = forceItems.get(n1);
 			LayoutNode n2 = e.getTarget();
 			ForceItem f2 = forceItems.get(n2);
-			
+
 			if (f1 == null || f2 == null)
 				continue;
-			
+
 			m_fsim.addSpring(f1, f2, getSpringCoefficient(e), getSpringLength(e));
 		}
 
 		// perform layout
 		long timestep = 1000L;
-		
+
 		for (int i = 0; i < context.numIterations; i++) {
 			if (cancelled)
 				return;
-			
-			if (taskMonitor != null)
-				taskMonitor.setStatusMessage(
-						"Partition " + part.getPartitionNumber() + ": Iteration " + (i + 1)
-						+ " of " + context.numIterations + "...");
-			
+
+			// if (taskMonitor != null)
+			// 	taskMonitor.setStatusMessage(
+			// 			"Partition " + part.getPartitionNumber() + ": Iteration " + (i + 1)
+			// 			+ " of " + context.numIterations + "...");
+
 			timestep *= (1.0 - i / (double) context.numIterations);
 			long step = timestep + 50;
 			m_fsim.runSimulator(step);
-			setTaskStatus((int) (((double) i / (double) context.numIterations) * 90. + 5));
+			// setTaskStatus((int) (((double) i / (double) context.numIterations) * 90. + 5));
 		}
 
 		// update positions
 		part.resetNodes(); // reset the nodes so we get the new average location
-		
+
 		for (LayoutNode ln : part.getNodeList()) {
 			if (cancelled)
 				return;
-			
+
 			if (!ln.isLocked()) {
 				ForceItem fitem = forceItems.get(ln);
 				ln.setX(fitem.location[0]);

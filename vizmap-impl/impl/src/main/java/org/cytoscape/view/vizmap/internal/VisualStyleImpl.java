@@ -63,56 +63,46 @@ public class VisualStyleImpl
 
 	private static final String DEFAULT_TITLE = "?";
 
-	private final Map<VisualProperty<?>, VisualMappingFunction<?, ?>> mappings;
-	private final Map<VisualProperty<?>, Object> styleDefaults;
+	private final Map<VisualProperty<?>, VisualMappingFunction<?, ?>> mappings = new HashMap<>();
+	private final Map<VisualProperty<?>, Object> styleDefaults = new HashMap<>();
 
-	private final Map<Class<? extends CyIdentifiable>, ApplyHandler> applyHandlersMap;
+	private final ApplyToNetworkHandler applyToNetworkHandler;
+	private final ApplyToNodeHandler applyToNodeHandler;
+	private final ApplyToEdgeHandler applyToEdgeHandler;
 
 	private String title;
 	private final CyEventHelper eventHelper;
 
-	private final Set<VisualPropertyDependency<?>> dependencies;
+	private final Set<VisualPropertyDependency<?>> dependencies = new HashSet<>();
 
 	private final Object lock = new Object();
 	
-	/**
-	 * @param title Title of the new Visual Style
-	 * @param lexManager
-	 */
+
 	public VisualStyleImpl(final String title, final CyServiceRegistrar serviceRegistrar) {
- 		if (title == null)
-			this.title = DEFAULT_TITLE;
-		else
-			this.title = title;
+		this.title = title == null ? DEFAULT_TITLE : title;
+		this.eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 
-		this.eventHelper = serviceRegistrar.getService(CyEventHelper.class);;
-
-		mappings = new HashMap<>();
-		styleDefaults = new HashMap<>();
-
-		// Init Apply handlers for node, egde and network.
-		final ApplyToNetworkHandler applyToNetworkHandler = new ApplyToNetworkHandler(this, serviceRegistrar);
-		final ApplyToNodeHandler applyToNodeHandler = new ApplyToNodeHandler(this, serviceRegistrar);
-		final ApplyToEdgeHandler applyToEdgeHandler = new ApplyToEdgeHandler(this, serviceRegistrar);
+		applyToNetworkHandler = new ApplyToNetworkHandler(this, serviceRegistrar);
+		applyToNodeHandler = new ApplyToNodeHandler(this, serviceRegistrar);
+		applyToEdgeHandler = new ApplyToEdgeHandler(this, serviceRegistrar);
 		
-		serviceRegistrar.registerAllServices(applyToNetworkHandler, new Properties());
-		serviceRegistrar.registerAllServices(applyToNodeHandler, new Properties());
-		serviceRegistrar.registerAllServices(applyToEdgeHandler, new Properties());
-		
-		applyHandlersMap = new HashMap<>();
-		applyHandlersMap.put(CyNetwork.class, applyToNetworkHandler);
-		applyHandlersMap.put(CyNode.class, applyToNodeHandler);
-		applyHandlersMap.put(CyEdge.class, applyToEdgeHandler);
-
-		dependencies = new HashSet<>();
-
 		// Listening to dependencies
-		serviceRegistrar.registerServiceListener(this, "registerDependencyFactory", "unregisterDependencyFactory",
-				VisualPropertyDependencyFactory.class);
+		serviceRegistrar.registerServiceListener(this, "registerDependencyFactory", "unregisterDependencyFactory", VisualPropertyDependencyFactory.class);
 		serviceRegistrar.registerService(this, VisualMappingFunctionChangedListener.class, new Properties());
 		serviceRegistrar.registerService(this, VisualPropertyDependencyChangedListener.class, new Properties());
 	}
-
+	
+	private void setUpdateDependencyMaps() {
+		applyToNetworkHandler.setUpdateDependencyMaps();
+		applyToNodeHandler.setUpdateDependencyMaps();
+		applyToEdgeHandler.setUpdateDependencyMaps();
+	}
+	
+	private void fireVisualStyleChange() {
+		setUpdateDependencyMaps();
+		eventHelper.addEventPayload(this, new VisualStyleChangeRecord(), VisualStyleChangedEvent.class);
+	}
+	
 	@Override
 	public void addVisualMappingFunction(final VisualMappingFunction<?, ?> mapping) {
 		boolean changed = false;
@@ -133,7 +123,7 @@ public class VisualStyleImpl
 				mappings.put(mapping.getVisualProperty(), mapping);
 			}
 			
-			eventHelper.addEventPayload(this, new VisualStyleChangeRecord(), VisualStyleChangedEvent.class);
+			fireVisualStyleChange();
 		}
 	}
 
@@ -155,7 +145,7 @@ public class VisualStyleImpl
 		}
 		
 		if (changed)
-			eventHelper.addEventPayload(this, new VisualStyleChangeRecord(), VisualStyleChangedEvent.class);
+			fireVisualStyleChange();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -177,19 +167,13 @@ public class VisualStyleImpl
 		}
 		
 		if (changed)
-			eventHelper.addEventPayload(this, new VisualStyleChangeRecord(), VisualStyleChangedEvent.class);
+			fireVisualStyleChange();
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	public void apply(final CyNetworkView networkView) {
-		// This is always safe.
-		final ApplyHandler<CyNetwork> networkViewHandler;
-		synchronized (lock) {
-			networkViewHandler = applyHandlersMap.get(CyNetwork.class);
-		}
 		eventHelper.flushPayloadEvents();
-		networkViewHandler.apply(null, networkView);
+		applyToNetworkHandler.apply(null, networkView);
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -203,11 +187,13 @@ public class VisualStyleImpl
 		ApplyHandler handler = null;
 
 		synchronized (lock) {
-			for (final Class<?> viewType : applyHandlersMap.keySet()) {
-				if (viewType.isAssignableFrom(view.getModel().getClass())) {
-					handler = applyHandlersMap.get(viewType);
-					break;
-				}
+			var viewClass = view.getModel().getClass();
+			if(CyNetwork.class.isAssignableFrom(viewClass)) {
+				handler = applyToNetworkHandler;
+			} else if(CyNode.class.isAssignableFrom(viewClass)) {
+				handler = applyToNodeHandler;
+			} else if(CyEdge.class.isAssignableFrom(viewClass)) {
+				handler = applyToEdgeHandler;
 			}
 		}
 
@@ -261,7 +247,7 @@ public class VisualStyleImpl
 		
 		if (changed) {
 			dependency.setEventHelper(eventHelper);
-			eventHelper.addEventPayload(this, new VisualStyleChangeRecord(), VisualStyleChangedEvent.class);
+			fireVisualStyleChange();
 		}
 	}
 
@@ -274,7 +260,7 @@ public class VisualStyleImpl
 		}
 		
 		if (changed)
-			eventHelper.addEventPayload(this, new VisualStyleChangeRecord(), VisualStyleChangedEvent.class);
+			fireVisualStyleChange();
 	}
 
 	public void registerDependencyFactory(VisualPropertyDependencyFactory<?> dependencyFactory, Map<?, ?> props) {
@@ -298,7 +284,7 @@ public class VisualStyleImpl
 		}
 		
 		if (hasMapping)
-			eventHelper.addEventPayload(this, new VisualStyleChangeRecord(), VisualStyleChangedEvent.class);
+			fireVisualStyleChange();
 	}
 
 	@Override
@@ -306,6 +292,6 @@ public class VisualStyleImpl
 		final VisualPropertyDependency<?> dep = e.getSource();
 		
 		if (dependencies.contains(dep))
-			eventHelper.addEventPayload(this, new VisualStyleChangeRecord(), VisualStyleChangedEvent.class);
+			fireVisualStyleChange();
 	}
 }
