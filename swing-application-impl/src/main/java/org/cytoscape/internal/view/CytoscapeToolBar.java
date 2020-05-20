@@ -40,7 +40,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JToggleButton;
-import javax.swing.JToolBar;
 import javax.swing.JToolTip;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -50,6 +49,7 @@ import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.internal.view.util.MenuScroller;
+import org.cytoscape.internal.view.util.ToolbarWithOverflow;
 import org.cytoscape.internal.view.util.ViewUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.CyToolTip;
@@ -84,7 +84,7 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
  * Implementation of Toolbar on the Cytoscape Desktop application.
  */
 @SuppressWarnings("serial")
-public class CytoscapeToolBar extends JToolBar {
+public class CytoscapeToolBar extends ToolbarWithOverflow {
 	
 	public static int ICON_WIDTH = 32;
 	public static int ICON_HEIGHT = 32;
