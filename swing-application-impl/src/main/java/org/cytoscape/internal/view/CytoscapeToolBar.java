@@ -1,5 +1,7 @@
 package org.cytoscape.internal.view;
 
+import static org.cytoscape.util.swing.IconManager.ICON_ANGLE_DOUBLE_DOWN;
+import static org.cytoscape.util.swing.IconManager.ICON_ANGLE_DOUBLE_RIGHT;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
 
@@ -9,6 +11,10 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.awt.event.AWTEventListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.FilteredImageSource;
@@ -43,21 +49,24 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JToggleButton;
+import javax.swing.JToolBar;
 import javax.swing.JToolTip;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.internal.view.util.MenuScroller;
-import org.cytoscape.internal.view.util.ToolbarWithOverflow;
 import org.cytoscape.internal.view.util.ViewUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.CyToolTip;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.util.swing.TextIcon;
 
 /*
  * #%L
@@ -84,25 +93,45 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
  */
 
 /**
- * Implementation of Toolbar on the Cytoscape Desktop application.
+ * Implementation of toolbar on the Cytoscape Desktop application that creates buttons for registered
+ * toolbar {@link CyAction}s and {@link ToolBarComponent}s.
+ * <br>
+ * It also adds an overflow button when the toolbar becomes too small to show all the available actions.
+ * This feature was adapted from org.openide.awt.ToolbarWithOverflow, used by NetBeans.
  */
 @SuppressWarnings("serial")
-public class CytoscapeToolBar extends ToolbarWithOverflow {
+public class CytoscapeToolBar extends JToolBar {
 	
 	public static int ICON_WIDTH = 32;
 	public static int ICON_HEIGHT = 32;
 	private static int BUTTON_BORDER_SIZE = 2;
 	
 	private static final String STOPLIST_FILENAME = "toolbar.stoplist";
+	private static final String PROP_DRAGGER = "_toolbar_dragger_"; // NOI18N
 	
 	private List<ToolBarItem> orderedItems;
 	private Map<CyAction, ToolBarItem> actionMap;
 	private HashSet<String> stopList = new HashSet<>();
 
+	private final JPopupMenu prefPopup;
 	private final PopupMouseListener popupMouseListener;
-
+	
+	private JButton overflowButton;
+	private final JPopupMenu overflowPopup;
+	private final JToolBar overflowToolBar;
+	
+	/** So the popup can be hidden when clicking the overflow button again */
+	private long lastTimeOverflowPopupClosed;
+	
+	private AWTEventListener awtEventListener;
+	private ComponentAdapter componentAdapter;
+	
+	protected final CyServiceRegistrar serviceRegistrar;
+	
 	public CytoscapeToolBar(CyServiceRegistrar serviceRegistrar) {
-		super("Cytoscape Tools", serviceRegistrar);
+		super("Cytoscape Tools");
+		
+		this.serviceRegistrar = serviceRegistrar;
 		
 		actionMap = new HashMap<>();
 		orderedItems = new ArrayList<>();
@@ -114,9 +143,37 @@ public class CytoscapeToolBar extends ToolbarWithOverflow {
 		));
 		
 		// Add listener that opens the tool bar customization popup
+		prefPopup = new JPopupMenu();
 		popupMouseListener = new PopupMouseListener();
 		addMouseListener(popupMouseListener);
 		
+		// Initialize overflow feature
+		overflowPopup = new JPopupMenu();
+		overflowPopup.setBorderPainted(false);
+		overflowPopup.setBorder(BorderFactory.createEmptyBorder());
+		
+		overflowPopup.addPopupMenuListener(new PopupMenuListener() {
+			@Override
+			public void popupMenuWillBecomeInvisible(PopupMenuEvent evt) {
+				lastTimeOverflowPopupClosed = System.currentTimeMillis();
+			}
+			@Override
+			public void popupMenuWillBecomeVisible(PopupMenuEvent evt) {
+				// Ignore...
+			}
+			@Override
+			public void popupMenuCanceled(PopupMenuEvent evt) {
+				// Ignore...
+			}
+		});
+		
+		setupOverflowButton();
+		
+		overflowToolBar = new JToolBar("overflowToolBar", getOrientation() == HORIZONTAL ? VERTICAL : HORIZONTAL);
+		overflowToolBar.setFloatable(false);
+		overflowToolBar.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground"), 1));
+		
+		// Read list of hidden components
 		readStopList();
 	}
 	
@@ -126,6 +183,79 @@ public class CytoscapeToolBar extends ToolbarWithOverflow {
 			comp.setVisible(false);
 		
 		return super.add(comp);
+	}
+	
+	@Override
+	public void removeAll() {
+		super.removeAll();
+		overflowToolBar.removeAll();
+	}
+	
+	@Override
+	public void addNotify() {
+		super.addNotify();
+		
+		addComponentListener(getComponentListener());
+	}
+
+	@Override
+	public void removeNotify() {
+		super.removeNotify();
+		
+		if (componentAdapter != null)
+			removeComponentListener(componentAdapter);
+		
+		if (awtEventListener != null)
+			Toolkit.getDefaultToolkit().removeAWTEventListener(awtEventListener);
+	}
+	
+	@Override
+	public Dimension getPreferredSize() {
+		var comps = getAllComponents();
+		var insets = getInsets();
+		int width = null == insets ? 0 : insets.left + insets.right;
+		int height = null == insets ? 0 : insets.top + insets.bottom;
+		
+		for (int i = 0; i < comps.length; i++) {
+			var c = comps[i];
+			
+			if (!c.isVisible())
+				continue;
+			
+			width += getOrientation() == HORIZONTAL ? c.getPreferredSize().width : c.getPreferredSize().height;
+			height = Math.max(height,
+					(getOrientation() == HORIZONTAL
+							? (c.getPreferredSize().height + (insets == null ? 0 : insets.top + insets.bottom))
+							: (c.getPreferredSize().width) + (insets == null ? 0 : insets.left + insets.right)));
+		}
+			
+		if (overflowToolBar.getComponentCount() > 0)
+			width += getOrientation() == HORIZONTAL ? overflowButton.getPreferredSize().width
+					: overflowButton.getPreferredSize().height;
+		
+		var dim = getOrientation() == HORIZONTAL ? new Dimension(width, height) : new Dimension(height, width);
+		
+		return dim;
+	}
+
+	@Override
+	public void setOrientation(int o) {
+		super.setOrientation(o);
+		
+		if (serviceRegistrar != null) // Have we been initialized yet?
+			setupOverflowButton();
+	}
+
+	@Override
+	public void validate() {
+		int visibleButtons = computeVisibleButtons();
+		
+		if (visibleButtons == -1)
+			handleOverflowRemoval();
+		else
+			handleOverflowAddittion(visibleButtons);
+		
+		super.validate();
 	}
 	
 	/**
@@ -399,13 +529,12 @@ public class CytoscapeToolBar extends ToolbarWithOverflow {
 		List<String> lines = null;
 		
 		try {
-			CyApplicationConfiguration cyApplicationConfiguration = serviceRegistrar
-					.getService(CyApplicationConfiguration.class);
+			var applicationConfig = serviceRegistrar.getService(CyApplicationConfiguration.class);
 			
-			if (cyApplicationConfiguration == null)
+			if (applicationConfig == null)
 				return;
 
-			File configDirectory = cyApplicationConfiguration.getConfigurationDirectoryLocation();
+			File configDirectory = applicationConfig.getConfigurationDirectoryLocation();
 			File configFile = null;
 			
 			if (configDirectory.exists()) {
@@ -470,35 +599,212 @@ public class CytoscapeToolBar extends ToolbarWithOverflow {
 		}
 	}
 	
+	private ComponentListener getComponentListener() {
+		if (componentAdapter == null) {
+			componentAdapter = new ComponentAdapter() {
+				@Override
+				public void componentResized(ComponentEvent evt) {
+					maybeAddOverflow();
+					
+					if (overflowPopup != null && overflowPopup.isShowing())
+						overflowPopup.setVisible(false);
+				}
+			};
+		}
+		
+		return componentAdapter;
+	}
+
+	private void setupOverflowButton() {
+		if (overflowPopup != null && overflowPopup.isShowing())
+			overflowPopup.setVisible(false);
+		
+		var iconManager = serviceRegistrar.getService(IconManager.class);
+		var iconText = getOrientation() == HORIZONTAL ? ICON_ANGLE_DOUBLE_DOWN : ICON_ANGLE_DOUBLE_RIGHT;
+		var icon = new TextIcon(iconText, iconManager.getIconFont(16.0f), 24, 24);
+
+		overflowButton = new JButton(icon);
+		overflowButton.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 4));
+		overflowButton.setFocusable(false);
+
+		overflowButton.addActionListener(evt -> {
+			if ((System.currentTimeMillis() - lastTimeOverflowPopupClosed) > 250)
+				displayOverflow();
+		});
+	}
+		
+	private void displayOverflow() {
+		if (!overflowButton.isShowing())
+			return;
+		
+		if (overflowPopup.isVisible()) {
+			int x = getOrientation() == HORIZONTAL
+					? overflowButton.getLocationOnScreen().x
+					: overflowButton.getLocationOnScreen().x + overflowButton.getWidth();
+			int y = getOrientation() == HORIZONTAL
+					? overflowButton.getLocationOnScreen().y + overflowButton.getHeight()
+					: overflowButton.getLocationOnScreen().y;
+			
+			overflowPopup.setLocation(x, y);
+		} else {
+			int x = getOrientation() == HORIZONTAL ? 0 : overflowButton.getWidth();
+			int y = getOrientation() == HORIZONTAL ? overflowButton.getHeight() : 0;
+			
+			overflowPopup.show(overflowButton, x, y);
+		}
+	}
+
+	/**
+	 * Determines if an overflow button should be added to or removed from the toolbar.
+	 */
+	private void maybeAddOverflow() {
+		validate();
+		repaint();
+	}
+
+	private int computeVisibleButtons() {
+		if (isShowing()) {
+			int w = getOrientation() == HORIZONTAL ? overflowButton.getIcon().getIconWidth() + 4
+					: getWidth() - getInsets().left - getInsets().right;
+			int h = getOrientation() == HORIZONTAL ? getHeight() - getInsets().top - getInsets().bottom
+					: overflowButton.getIcon().getIconHeight() + 4;
+			overflowButton.setMaximumSize(new Dimension(w, h));
+			overflowButton.setMinimumSize(new Dimension(w, h));
+			overflowButton.setPreferredSize(new Dimension(w, h));
+		}
+		
+		var comps = getAllComponents();
+		int sizeSoFar = 0;
+		int maxSize = getOrientation() == HORIZONTAL ? getWidth() : getHeight();
+		int overflowButtonSize = getOrientation() == HORIZONTAL ? overflowButton.getPreferredSize().width
+				: overflowButton.getPreferredSize().height;
+		int showingButtons = 0; // all that return true from isVisible()
+		int visibleButtons = 0; // all visible that fit into the given space (maxSize)
+		var insets = getInsets();
+		
+		if (null != insets)
+			sizeSoFar = getOrientation() == HORIZONTAL ? insets.left + insets.right : insets.top + insets.bottom;
+		
+		for (int i = 0; i < comps.length; i++) {
+			var c = comps[i];
+			
+			if (!c.isVisible())
+				continue;
+			
+			if (showingButtons == visibleButtons) {
+				int size = getOrientation() == HORIZONTAL ? c.getPreferredSize().width : c.getPreferredSize().height;
+				
+				if (sizeSoFar + size <= maxSize) {
+					sizeSoFar += size;
+					visibleButtons++;
+				}
+			}
+			
+			showingButtons++;
+		}
+		
+		if (visibleButtons < showingButtons && visibleButtons > 0 && sizeSoFar + overflowButtonSize > maxSize)
+			visibleButtons--; // overflow button needed but would not have enough space, remove one more button
+		
+		if (visibleButtons == 0 && comps.length > 0 && comps[0] instanceof JComponent
+				&& Boolean.TRUE.equals(((JComponent) comps[0]).getClientProperty(PROP_DRAGGER)))
+			visibleButtons = 1; // always include the dragger if present
+		
+		if (visibleButtons == showingButtons)
+			visibleButtons = -1;
+		
+		return visibleButtons;
+	}
+
+	private void handleOverflowAddittion(int visibleButtons) {
+		var comps = getAllComponents();
+		removeAll();
+		overflowToolBar.setOrientation(getOrientation() == HORIZONTAL ? VERTICAL : HORIZONTAL);
+		overflowPopup.removeAll();
+
+		for (var c : comps) {
+			if (visibleButtons > 0) {
+				add(c);
+
+				if (c.isVisible())
+					visibleButtons--;
+			} else {
+				overflowToolBar.add(c);
+			}
+		}
+		
+		overflowPopup.add(overflowToolBar);
+		add(overflowButton);
+	}
+
+	private void handleOverflowRemoval() {
+		if (overflowToolBar.getComponents().length > 0) {
+			remove(overflowButton);
+			
+			for (var c : overflowToolBar.getComponents())
+				add(c);
+			
+			overflowToolBar.removeAll();
+			overflowPopup.removeAll();
+		}
+	}
+
+	private Component[] getAllComponents() {
+		final Component[] toolbarComps;
+		var overflowComps = overflowToolBar.getComponents();
+		
+		if (overflowComps.length == 0) {
+			toolbarComps = getComponents();
+		} else {
+			if (getComponentCount() > 0) {
+				toolbarComps = new Component[getComponents().length - 1];
+				System.arraycopy(getComponents(), 0, toolbarComps, 0, toolbarComps.length);
+			} else {
+				toolbarComps = new Component[0];
+			}
+		}
+		
+		var comps = new Component[toolbarComps.length + overflowComps.length];
+		System.arraycopy(toolbarComps, 0, comps, 0, toolbarComps.length);
+		System.arraycopy(overflowComps, 0, comps, toolbarComps.length, overflowComps.length);
+		
+		return comps;
+	}
+	
+	private boolean isOverflowAllowed(Component comp) {
+		// We only want to overflow buttons, not more complex components, such as a search text field, for instance
+		return comp.isVisible() && comp instanceof AbstractButton;
+	}
+	
 	private class PopupMouseListener extends MouseAdapter {
 		
 		@Override
-		public void mousePressed(MouseEvent e) {
-			showPopup(e);
+		public void mousePressed(MouseEvent evt) {
+			showPopup(evt);
 		}
 		
 		@Override
-		public void mouseReleased(MouseEvent e) {
-			showPopup(e);
+		public void mouseReleased(MouseEvent evt) {
+			showPopup(evt);
 		}
 		
-		private void showPopup(MouseEvent e) {
-			if (!e.isPopupTrigger())
+		private void showPopup(MouseEvent evt) {
+			if (!evt.isPopupTrigger())
 				return;
 			
-			var popup = new JPopupMenu();
+			prefPopup.removeAll();
 			
 			var menuItem = new JMenuItem("Show All");
-			popup.add(menuItem);
-			menuItem.addActionListener(ev -> {
+			prefPopup.add(menuItem);
+			menuItem.addActionListener(e -> {
 				showAll();
 				resave();
 			});
 			
 			menuItem = new JMenuItem("Hide All");
-			popup.add(menuItem);
-			popup.addSeparator();
-			menuItem.addActionListener(ev -> {
+			prefPopup.add(menuItem);
+			prefPopup.addSeparator();
+			menuItem.addActionListener(e -> {
 				hideAll();
 				resave();
 			});
@@ -547,7 +853,7 @@ public class CytoscapeToolBar extends ToolbarWithOverflow {
 						updateSeparators();
 						resave();
 					});
-					popup.add(mi);
+					prefPopup.add(mi);
 				}
 			}
 			
@@ -557,7 +863,7 @@ public class CytoscapeToolBar extends ToolbarWithOverflow {
 			if (window != null) {
 				var gc = window.getGraphicsConfiguration();
 				int sh = ViewUtil.getEffectiveScreenArea(gc).height;
-				int ph = popup.getPreferredSize().height;
+				int ph = prefPopup.getPreferredSize().height;
 				
 				if (ph > sh) {
 					int h = 0;
@@ -569,8 +875,8 @@ public class CytoscapeToolBar extends ToolbarWithOverflow {
 					tmpScroller.dispose();
 					int sepIdx = -1;
 					
-					for (int count = 0; count <  popup.getComponentCount(); count++) {
-						Component comp = popup.getComponent(count);
+					for (int count = 0; count <  prefPopup.getComponentCount(); count++) {
+						Component comp = prefPopup.getComponent(count);
 						
 						if (comp instanceof JSeparator)
 							sepIdx = count;
@@ -579,10 +885,10 @@ public class CytoscapeToolBar extends ToolbarWithOverflow {
 						
 						if (h > sh) {
 							if (sepIdx >= 0)
-								popup.remove(sepIdx);
+								prefPopup.remove(sepIdx);
 							
 							MenuScroller.setScrollerFor(
-									popup,
+									prefPopup,
 									Math.max(1, count - 2/*make sure it fits*/ - 2/*ignore 'Show/Hide All'*/),
 									125,
 									2, // (always show 'Show/Hide All' items on top)
@@ -594,7 +900,7 @@ public class CytoscapeToolBar extends ToolbarWithOverflow {
 				}
 			}
 			
-			popup.show(e.getComponent(), e.getX(), e.getY());
+			prefPopup.show(evt.getComponent(), evt.getX(), evt.getY());
 		}
 	}
 	
