@@ -1,6 +1,8 @@
 package org.cytoscape.app.internal.util;
 
 import java.awt.Component;
+import java.awt.Dialog;
+import java.awt.Frame;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -16,7 +18,7 @@ import org.cytoscape.application.swing.CySwingApplication;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2008 - 2019 The Cytoscape Consortium
+ * Copyright (C) 2008 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -127,7 +129,8 @@ public class AppUtil {
 			window = SwingUtilities.getWindowAncestor((Component) evt.getSource());
 		}
 		
-		if (window == null)
+		// Prevents "java.lang.IllegalArgumentException: Wrong parent window" from java.awt.Dialog
+		if (window == null || !(window instanceof Frame || window instanceof Dialog))
 			window = swingApplication.getJFrame();
 		
 		return window;
