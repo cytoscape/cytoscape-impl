@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -107,7 +108,6 @@ public class CytoscapeToolBar extends JToolBar {
 	private static int BUTTON_BORDER_SIZE = 2;
 	
 	private static final String STOPLIST_FILENAME = "toolbar.stoplist";
-	private static final String PROP_DRAGGER = "_toolbar_dragger_"; // NOI18N
 	
 	private List<ToolBarItem> orderedItems;
 	private Map<CyAction, ToolBarItem> actionMap;
@@ -122,6 +122,8 @@ public class CytoscapeToolBar extends JToolBar {
 	
 	/** So the popup can be hidden when clicking the overflow button again */
 	private long lastTimeOverflowPopupClosed;
+	
+	private boolean isAdjusting;
 	
 	private AWTEventListener awtEventListener;
 	private ComponentAdapter componentAdapter;
@@ -183,6 +185,21 @@ public class CytoscapeToolBar extends JToolBar {
 			comp.setVisible(false);
 		
 		return super.add(comp);
+	}
+	
+	@Override
+	public void addSeparator() {
+		// Hide previous duplicated separator, if there is one
+		int n = getComponentCount();
+		
+		if (n > 1) {
+			var previous = getComponent(n - 1);
+			
+			if (previous instanceof JSeparator)
+				previous.setVisible(false);
+		}
+		
+		super.addSeparator();
 	}
 	
 	@Override
@@ -248,13 +265,16 @@ public class CytoscapeToolBar extends JToolBar {
 
 	@Override
 	public void validate() {
-		int visibleButtons = computeVisibleButtons();
-		
-		if (visibleButtons == -1)
-			handleOverflowRemoval();
-		else
-			handleOverflowAddittion(visibleButtons);
-		
+		if (!isAdjusting) {
+			var visibleComps = new LinkedList<Component>();
+			var totalVisible = computeVisibleComponents(visibleComps);
+	
+			if (totalVisible == -1)
+				handleOverflowRemoval();
+			else
+				handleOverflowAddittion(visibleComps);
+		}
+
 		super.validate();
 	}
 	
@@ -287,7 +307,7 @@ public class CytoscapeToolBar extends JToolBar {
 		var tbc = new ToolBarItem(button, gravity, sepBefore, sepAfter);
 		
 		actionMap.put(action, tbc);
-		int index = getInsertLocation(gravity);
+		int index = indexOf(gravity);
 		orderedItems.add(index, tbc);
 		
 		if (stopList.contains(action.getName()))
@@ -301,7 +321,7 @@ public class CytoscapeToolBar extends JToolBar {
 	public void addToolBarComponent(ToolBarComponent tbc, Map<?, ?> props) {
 		boolean sepBefore = "true".equals(props.get(INSERT_SEPARATOR_BEFORE));
 		boolean sepAfter = "true".equals(props.get(INSERT_SEPARATOR_AFTER));
-		int index = getInsertLocation(tbc.getToolBarGravity());
+		int index = indexOf(tbc.getToolBarGravity());
 		
 		orderedItems.add(index, new ToolBarItem(tbc, sepBefore, sepAfter));
 		
@@ -329,25 +349,39 @@ public class CytoscapeToolBar extends JToolBar {
 	}
 
 	public void showAll() {
-		for (var item : orderedItems) {
-			var c = item.getComponent();
-			
-			if (c != null)
-				c.setVisible(true);
+		isAdjusting = true;
+
+		try {
+			for (var item : orderedItems) {
+				var c = item.getComponent();
+
+				if (c != null)
+					c.setVisible(true);
+			}
+		} finally {
+			isAdjusting = false;
+			validate();
 		}
-		
-		updateSeparators();
+
+		updateSeparators(this);
 	}
 
 	public void hideAll() {
-		for (var item : orderedItems) {
-			var c = item.getComponent();
-			
-			if (c != null)
-				c.setVisible(false);
+		isAdjusting = true;
+
+		try {
+			for (var item : orderedItems) {
+				var c = item.getComponent();
+
+				if (c != null && isOverflowAllowed(c))
+					c.setVisible(false);
+			}
+		} finally {
+			isAdjusting = false;
+			validate();
 		}
-		
-		updateSeparators();
+
+		updateSeparators(this);
 	}
 
 	/**
@@ -451,29 +485,37 @@ public class CytoscapeToolBar extends JToolBar {
 	}
 	
 	private void update() {
-		// Remove and add everything again
-		removeAll();
+		isAdjusting = true;
 		
-		for (var item : orderedItems) {
-			var c = item.getComponent();
+		try {
+			// Remove and add everything again
+			removeAll();
 			
-			if (c != null) {
-				ToolBarItem ab = (ToolBarItem) item;
+			for (var item : orderedItems) {
+				var c = item.getComponent();
 				
-				if (ab.isSeparatorBefore())
+				if (c != null)
+					add(this, c, item.isSeparatorBefore(), item.isSeparatorAfter());
+				else if (item.isSeparator())
 					addSeparator();
-				
-				add(c);
-				
-				if (ab.isSeparatorAfter())
-					addSeparator();
-			} else if (item.isSeparator()) {
-				addSeparator();
 			}
+			
+			// Hide duplicate separators
+			updateSeparators(this);
+		} finally {
+			isAdjusting = false;
+			validate();
 		}
+	}
+
+	private void add(JToolBar toolBar, Component c, boolean sepBefore, boolean sepAfter) {
+		if (sepBefore)
+			toolBar.addSeparator();
 		
-		// Hide duplicate separators
-		updateSeparators();
+		toolBar.add(c);
+		
+		if (sepAfter)
+			toolBar.addSeparator();
 	}
 
 	private void resave() {
@@ -492,7 +534,7 @@ public class CytoscapeToolBar extends JToolBar {
 		writeStopList(hidden);
 	}
 	
-	private int getInsertLocation(float newGravity) {
+	private int indexOf(float newGravity) {
 		for (int i = 0; i < orderedItems.size(); i++) {
 			var item = orderedItems.get(i);
 			float gravity = item.getGravity();
@@ -505,23 +547,39 @@ public class CytoscapeToolBar extends JToolBar {
 	}
 	
 	void addSeparator(float gravity) {
-		int index = getInsertLocation(gravity);
+		int index = indexOf(gravity);
 		orderedItems.add(index, new ToolBarItem(gravity));
 	}
 	
-	private void updateSeparators() {
+	private void updateSeparators(JToolBar toolBar) {
+		if (toolBar == this)
+			isAdjusting = true;
+			
 		// Pretend we start with a separator, because we don't want any separator as the first component
 		boolean lastIsSep = true;
+		boolean changed = false;
 		
-		for (Component c : getComponents()) {
-			if (c instanceof JSeparator)
-				c.setVisible(!lastIsSep);
-			
-			if (c.isVisible())
-				lastIsSep = c instanceof JSeparator;
+		try {
+			for (var c : toolBar.getComponents()) {
+				if (c instanceof JSeparator) {
+					var oldVisible = c.isVisible();
+					c.setVisible(!lastIsSep);
+					
+					if (oldVisible != c.isVisible())
+						changed = true;
+				}
+				
+				if (c.isVisible())
+					lastIsSep = c instanceof JSeparator;
+			}
+		} finally {
+			if (toolBar == this) {
+				isAdjusting = false;
+
+				if (changed)
+					toolBar.validate();
+			}
 		}
-		
-		validate();
 	}
 	
 	private void readStopList() {
@@ -662,7 +720,9 @@ public class CytoscapeToolBar extends JToolBar {
 		repaint();
 	}
 
-	private int computeVisibleButtons() {
+	private int computeVisibleComponents(LinkedList<Component> visibleComps) {
+		updateSeparators(this);
+		
 		if (isShowing()) {
 			int w = getOrientation() == HORIZONTAL ? overflowButton.getIcon().getIconWidth() + 4
 					: getWidth() - getInsets().left - getInsets().right;
@@ -678,74 +738,97 @@ public class CytoscapeToolBar extends JToolBar {
 		int maxSize = getOrientation() == HORIZONTAL ? getWidth() : getHeight();
 		int overflowButtonSize = getOrientation() == HORIZONTAL ? overflowButton.getPreferredSize().width
 				: overflowButton.getPreferredSize().height;
-		int showingButtons = 0; // all that return true from isVisible()
-		int visibleButtons = 0; // all visible that fit into the given space (maxSize)
+		int totalShowing = 0; // all that return true from isVisible()
+		int totalVisible = 0; // all visible that fit into the given space (maxSize)
 		var insets = getInsets();
 		
-		if (null != insets)
+		if (insets != null)
 			sizeSoFar = getOrientation() == HORIZONTAL ? insets.left + insets.right : insets.top + insets.bottom;
 		
-		for (int i = 0; i < comps.length; i++) {
-			var c = comps[i];
-			
+		for (var c : comps) {
 			if (!c.isVisible())
 				continue;
 			
-			if (showingButtons == visibleButtons) {
-				int size = getOrientation() == HORIZONTAL ? c.getPreferredSize().width : c.getPreferredSize().height;
-				
-				if (sizeSoFar + size <= maxSize) {
-					sizeSoFar += size;
-					visibleButtons++;
-				}
+			var compSize = c.getPreferredSize();
+			int size = getOrientation() == HORIZONTAL ? compSize.width : compSize.height;
+			
+			if (!isOverflowAllowed(c) || (totalShowing == totalVisible && sizeSoFar + size <= maxSize)) {
+				visibleComps.add(c);
+				totalVisible++;
+				sizeSoFar += size;
 			}
 			
-			showingButtons++;
+			totalShowing++;
 		}
 		
-		if (visibleButtons < showingButtons && visibleButtons > 0 && sizeSoFar + overflowButtonSize > maxSize)
-			visibleButtons--; // overflow button needed but would not have enough space, remove one more button
-		
-		if (visibleButtons == 0 && comps.length > 0 && comps[0] instanceof JComponent
-				&& Boolean.TRUE.equals(((JComponent) comps[0]).getClientProperty(PROP_DRAGGER)))
-			visibleButtons = 1; // always include the dragger if present
-		
-		if (visibleButtons == showingButtons)
-			visibleButtons = -1;
-		
-		return visibleButtons;
-	}
-
-	private void handleOverflowAddittion(int visibleButtons) {
-		var comps = getAllComponents();
-		removeAll();
-		overflowToolBar.setOrientation(getOrientation() == HORIZONTAL ? VERTICAL : HORIZONTAL);
-		overflowPopup.removeAll();
-
-		for (var c : comps) {
-			if (visibleButtons > 0) {
-				add(c);
-
-				if (c.isVisible())
-					visibleButtons--;
-			} else {
-				overflowToolBar.add(c);
+		if (totalVisible < totalShowing) {
+			// Overflow button needed but would not have enough space, remove one more item
+			var iter = visibleComps.descendingIterator();
+			
+			while (iter.hasNext() && totalVisible > 0 && sizeSoFar + overflowButtonSize > maxSize) {
+			    var c = iter.next();
+			    
+			    if (isOverflowAllowed(c)) {
+			    	var compSize = c.getPreferredSize();
+					int size = getOrientation() == HORIZONTAL ? compSize.width : compSize.height;
+					sizeSoFar -= size;
+			    	
+			    	iter.remove();
+			    	totalVisible--;
+			    }
 			}
 		}
 		
-		overflowPopup.add(overflowToolBar);
-		add(overflowButton);
+		if (totalVisible == totalShowing)
+			totalVisible = -1;
+		
+		return totalVisible;
+	}
+
+	private void handleOverflowAddittion(List<Component> visibleComps) {
+		isAdjusting = true;
+		
+		try {
+			removeAll();
+			overflowToolBar.setOrientation(getOrientation() == HORIZONTAL ? VERTICAL : HORIZONTAL);
+			overflowPopup.removeAll();
+	
+			for (var item : orderedItems) {
+				if (item.isSeparator()) {
+					addSeparator();
+					continue;
+				}
+				
+				var c = item.getComponent();
+				
+				if (c == null)
+					continue;
+				
+				if (!c.isVisible() || visibleComps.contains(c))
+					add(this, c, item.isSeparatorBefore(), item.isSeparatorAfter());
+				else
+					add(overflowToolBar, c, item.isSeparatorBefore(), item.isSeparatorAfter());
+			}
+			
+			overflowPopup.add(overflowToolBar);
+			add(overflowButton);
+			
+			validate();
+			updateSeparators(overflowToolBar);
+		} finally {
+			isAdjusting = false;
+		}
 	}
 
 	private void handleOverflowRemoval() {
-		if (overflowToolBar.getComponents().length > 0) {
+		var comps = overflowToolBar.getComponents();
+		
+		if (comps.length > 0) {
 			remove(overflowButton);
-			
-			for (var c : overflowToolBar.getComponents())
-				add(c);
-			
 			overflowToolBar.removeAll();
 			overflowPopup.removeAll();
+			
+			update();
 		}
 	}
 
@@ -773,7 +856,7 @@ public class CytoscapeToolBar extends JToolBar {
 	
 	private boolean isOverflowAllowed(Component comp) {
 		// We only want to overflow buttons, not more complex components, such as a search text field, for instance
-		return comp.isVisible() && comp instanceof AbstractButton;
+		return comp instanceof AbstractButton || comp instanceof JSeparator;
 	}
 	
 	private class PopupMouseListener extends MouseAdapter {
@@ -790,6 +873,12 @@ public class CytoscapeToolBar extends JToolBar {
 		
 		private void showPopup(MouseEvent evt) {
 			if (!evt.isPopupTrigger())
+				return;
+			
+			var source = evt.getComponent();
+			
+			// Do not show this popup on top of the overflow popup!
+			if (source != null && overflowToolBar.getComponentIndex(source) >= 0)
 				return;
 			
 			prefPopup.removeAll();
@@ -809,7 +898,9 @@ public class CytoscapeToolBar extends JToolBar {
 				resave();
 			});
 			
-			for (var comp : getComponents()) {
+			for (var item : orderedItems) {
+				var comp = item.getComponent();
+				
 				if (comp instanceof AbstractButton) {
 					var button = (AbstractButton) comp;
 					String tip = button.getToolTipText();
@@ -850,7 +941,7 @@ public class CytoscapeToolBar extends JToolBar {
 					));
 					mi.addActionListener(ev -> {
 						button.setVisible(!button.isVisible());
-						updateSeparators();
+						updateSeparators(CytoscapeToolBar.this);
 						resave();
 					});
 					prefPopup.add(mi);
@@ -900,7 +991,7 @@ public class CytoscapeToolBar extends JToolBar {
 				}
 			}
 			
-			prefPopup.show(evt.getComponent(), evt.getX(), evt.getY());
+			prefPopup.show(source, evt.getX(), evt.getY());
 		}
 	}
 	
