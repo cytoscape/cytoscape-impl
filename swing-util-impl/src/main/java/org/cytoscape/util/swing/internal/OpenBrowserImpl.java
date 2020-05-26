@@ -1,6 +1,9 @@
 package org.cytoscape.util.swing.internal;
 
 import java.awt.Desktop;
+import java.awt.Dialog;
+import java.awt.Dialog.ModalityType;
+import java.awt.Window;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -54,7 +57,6 @@ public class OpenBrowserImpl implements OpenBrowser {
 	private AvailableCommands availableCommands;
 	private CommandExecutorTaskFactory taskFactory;
 	private SynchronousTaskManager<?> taskManager;
-	private Properties props;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -111,16 +113,28 @@ public class OpenBrowserImpl implements OpenBrowser {
 		} catch (URISyntaxException e) {
 			throw new IllegalArgumentException("URL has an incorrect format: " + url);
 		}
-
-		if (openURLWithCyBrowser(url, new HashMap<>()))
-			return true;
-
-		if (openURLWithDesktop(uri)) {
-			return true;
-		} else {
-			if (openURLWithDefault(url)) {
+		
+		if (isDialogBlocking()) {
+			// Try to open with the default OS browser first,
+			// because a modal dialog would block the CyBrowser window...
+			if (openURLWithDefault(url))
 				return true;
-			}
+			
+			if (openURLWithDesktop(uri))
+				return true;
+			
+			if (openURLWithCyBrowser(url, new HashMap<>()))
+				return true;
+		} else {
+			// No blocking dialog open? Then this is the preferred sequence...
+			if (openURLWithCyBrowser(url, new HashMap<>()))
+				return true;
+
+			if (openURLWithDesktop(uri))
+				return true;
+		
+			if (openURLWithDefault(url))
+				return true;
 		}
 
 		logger.warn("Cytoscape was unable to open your web browser.. "
@@ -143,15 +157,24 @@ public class OpenBrowserImpl implements OpenBrowser {
 
 	private boolean openURLWithDefault(final String url) {
 		// See if the override browser works
-		String defBrowser = props.getProperty(DEF_WEB_BROWSER_PROP_NAME);
+		var defBrowser = getProperty(DEF_WEB_BROWSER_PROP_NAME);
 
-		if (defBrowser != null && openURLWithBrowser(url, defBrowser))
-			return true;
-
-		for (final String browser : BROWSERS) {
-			if (openURLWithBrowser(url, browser))
+		try {
+			if (defBrowser != null && openURLWithBrowser(url, defBrowser))
 				return true;
+		} catch (Exception e) {
+			// Ignore...
 		}
+
+		for (var browser : BROWSERS) {
+			try {
+				if (openURLWithBrowser(url, browser))
+					return true;
+			} catch (Exception e) {
+				// Ignore...
+			}
+		}
+
 		return false;
 	}
 
@@ -173,12 +196,9 @@ public class OpenBrowserImpl implements OpenBrowser {
 			availableCommands = serviceRegistrar.getService(AvailableCommands.class);
 			taskFactory = serviceRegistrar.getService(CommandExecutorTaskFactory.class);
 			taskManager = serviceRegistrar.getService(SynchronousTaskManager.class);
-			CyProperty<Properties> cyProps = serviceRegistrar.getService(CyProperty.class,
-					"(cyPropertyName=cytoscape3.props)");
-			props = cyProps.getProperties();
 		}
 
-		String useCyBrowser = props.getProperty(USE_CYBROWSER);
+		var useCyBrowser = getProperty(USE_CYBROWSER);
 		
 		if (useCyBrowser != null && !Boolean.parseBoolean(useCyBrowser))
 			return false;
@@ -202,5 +222,33 @@ public class OpenBrowserImpl implements OpenBrowser {
 		}
 		
 		return true;
+	}
+	
+	private boolean isDialogBlocking() {
+		boolean blocking = false;
+		var windows = Window.getWindows();
+		
+		for (var w : windows) {
+			if (!w.isShowing())
+				continue;
+			
+			if (w instanceof Dialog) {
+				var modalityType = ((Dialog) w).getModalityType();
+				
+				if (modalityType == ModalityType.APPLICATION_MODAL || modalityType == ModalityType.TOOLKIT_MODAL) {
+					blocking = true;
+					break;
+				}
+			}
+		}
+		
+		return blocking;
+	}
+	
+	private String getProperty(String key) {
+		var cyProps = serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+		var props = (Properties) cyProps.getProperties();
+
+		return props.getProperty(key);
 	}
 }
