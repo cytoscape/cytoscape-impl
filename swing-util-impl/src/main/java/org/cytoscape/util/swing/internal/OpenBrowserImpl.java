@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -19,7 +18,6 @@ import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.SynchronousTaskManager;
-import org.cytoscape.work.TaskIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +27,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -69,25 +67,31 @@ public class OpenBrowserImpl implements OpenBrowser {
 	 * @return true if the URL opens successfully.
 	 */
 	@Override
-	public boolean openURL(final String url, boolean useCyBrowser) {
+	public boolean openURL(String url, boolean useCyBrowser) {
 		URI uri = null;
+		
 		try {
 			uri = new URI(url);
 		} catch (URISyntaxException e) {
 			throw new IllegalArgumentException("URL has an incorrect format: " + url);
 		}
+		
 		if (useCyBrowser) {
 			if (openURLWithCyBrowser(url, new HashMap<>()))
 				return true;
 		} else {
-			if (openURLWithDesktop(uri)) {
+			if (openURLWithDesktop(uri))
 				return true;
-			} else if (openURLWithDefault(url)) {
+			
+			if (openURLWithDefault(url))
 				return true;
-			}
 		}
-		logger.warn("Cytoscape was unable to open your web browser.. "
-				+ "\nPlease copy the following URL and paste it into your browser: " + url);
+		
+		logger.warn(
+				"Cytoscape was unable to open your web browser... "
+				+ "\nPlease copy the following URL and paste it into your browser: " + url
+		);
+		
 		return false;
 	}
 
@@ -97,8 +101,9 @@ public class OpenBrowserImpl implements OpenBrowser {
 	 * @return true if the URL opens successfully.
 	 */
 	@Override
-	public boolean openURL(final String url) {
+	public boolean openURL(String url) {
 		URI uri = null;
+		
 		try {
 			uri = new URI(url);
 		} catch (URISyntaxException e) {
@@ -128,12 +133,15 @@ public class OpenBrowserImpl implements OpenBrowser {
 				return true;
 		}
 
-		logger.warn("Cytoscape was unable to open your web browser.. "
-				+ "\nPlease copy the following URL and paste it into your browser: " + url);
+		logger.warn(
+				"Cytoscape was unable to open your web browser... "
+				+ "\nPlease copy the following URL and paste it into your browser: " + url
+		);
+		
 		return false;
 	}
 
-	private boolean openURLWithDesktop(final URI uri) {
+	private boolean openURLWithDesktop(URI uri) {
 		if (!Desktop.isDesktopSupported())
 			return false;
 
@@ -141,12 +149,12 @@ public class OpenBrowserImpl implements OpenBrowser {
 			Desktop.getDesktop().browse(uri);
 			return true;
 		} catch (IOException e) {
-			logger.warn("Failed to launch browser through java.awt.Desktop.browse(): " + e.getMessage());
+			logger.warn("Failed to launch web browser through java.awt.Desktop.browse(): " + e.getMessage());
 			return false;
 		}
 	}
 
-	private boolean openURLWithDefault(final String url) {
+	private boolean openURLWithDefault(String url) {
 		// See if the override browser works
 		var defBrowser = getProperty(DEF_WEB_BROWSER_PROP_NAME);
 
@@ -169,8 +177,8 @@ public class OpenBrowserImpl implements OpenBrowser {
 		return false;
 	}
 
-	private boolean openURLWithBrowser(final String url, final String browser) {
-		final ProcessBuilder builder = new ProcessBuilder(browser, url);
+	private boolean openURLWithBrowser(String url, String browser) {
+		var builder = new ProcessBuilder(browser, url);
 		
 		try {
 			builder.start();
