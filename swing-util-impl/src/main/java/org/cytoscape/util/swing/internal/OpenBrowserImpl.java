@@ -49,24 +49,15 @@ import org.slf4j.LoggerFactory;
 
 public class OpenBrowserImpl implements OpenBrowser {
 
-	private final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
-	
 	private static String[] BROWSERS =
         { "xdg-open", "htmlview", "firefox", "mozilla", "konqueror", "chrome", "chromium" };
 	
-	private AvailableCommands availableCommands;
-	private CommandExecutorTaskFactory taskFactory;
-	private SynchronousTaskManager<?> taskManager;
+	private final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public OpenBrowserImpl(final CyServiceRegistrar registrar) {
+	public OpenBrowserImpl(CyServiceRegistrar registrar) {
 		this.serviceRegistrar = registrar;
-		/*
-		CyProperty<Properties> cyProps =
-          serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
-    props = cyProps.getProperties();
-		*/
 	}
 
 	/**
@@ -190,20 +181,14 @@ public class OpenBrowserImpl implements OpenBrowser {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	private boolean openURLWithCyBrowser(final String url, Map<String, Object> extraArgs) {
-		if (availableCommands == null) {
-			availableCommands = serviceRegistrar.getService(AvailableCommands.class);
-			taskFactory = serviceRegistrar.getService(CommandExecutorTaskFactory.class);
-			taskManager = serviceRegistrar.getService(SynchronousTaskManager.class);
-		}
-
+	private boolean openURLWithCyBrowser(String url, Map<String, Object> extraArgs) {
 		var useCyBrowser = getProperty(USE_CYBROWSER);
 		
 		if (useCyBrowser != null && !Boolean.parseBoolean(useCyBrowser))
 			return false;
 
-		List<String> args = availableCommands.getArguments("cybrowser", "dialog");
+		var availableCommands = serviceRegistrar.getService(AvailableCommands.class);
+		var args = availableCommands.getArguments("cybrowser", "dialog");
 		
 		if (args == null || args.size() == 0)
 			return false;
@@ -213,9 +198,11 @@ public class OpenBrowserImpl implements OpenBrowser {
 
 		extraArgs.put("url", url);
 
-		TaskIterator ti = taskFactory.createTaskIterator("cybrowser", "dialog", extraArgs, null);
+		var taskFactory = serviceRegistrar.getService(CommandExecutorTaskFactory.class);
+		var ti = taskFactory.createTaskIterator("cybrowser", "dialog", extraArgs, null);
 		
 		try {
+			var taskManager = serviceRegistrar.getService(SynchronousTaskManager.class);
 			taskManager.execute(ti);
 		} catch (Exception e) {
 			return false;
