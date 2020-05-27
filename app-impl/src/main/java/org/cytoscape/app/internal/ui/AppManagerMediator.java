@@ -1,6 +1,5 @@
 package org.cytoscape.app.internal.ui;
 
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -20,7 +19,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2008 - 2019 The Cytoscape Consortium
+ * Copyright (C) 2008 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -71,9 +70,9 @@ public class AppManagerMediator implements CyShutdownListener {
 	public void showAppManager(boolean goToUpdates, ActionEvent evt) {
 		// Create and display the App Manager dialog
 		if (dialog == null) {
-			final CySwingApplication swingApplication = serviceRegistrar.getService(CySwingApplication.class);
+			var swingApplication = serviceRegistrar.getService(CySwingApplication.class);
 			
-			final Window owner = AppUtil.getWindowAncestor(evt, swingApplication);
+			var owner = AppUtil.getWindowAncestor(evt, swingApplication);
 			dialog = new AppManagerDialog(owner, appManager, downloadSitesManager, updateManager, serviceRegistrar);
 			dialog.addWindowListener(new WindowAdapter() {
 				@Override

@@ -6,7 +6,7 @@ package org.cytoscape.view.vizmap.gui.internal.action;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -42,10 +42,9 @@ import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMainPanel;
 /**
  * Action class to process commands.
  */
+@SuppressWarnings("serial")
 public abstract class AbstractVizMapperAction extends AbstractCyAction {
 
-	private static final long serialVersionUID = 2123044076909272338L;
-	
 	protected DefaultViewEditor defViewEditor;
 	protected VisualMappingManager vmm;
 
