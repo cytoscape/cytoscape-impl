@@ -534,37 +534,39 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	@Override
 	public void handleFitSelected() {
 		eventHelper.flushPayloadEvents();
+		// Its not common for fitSelected() to be called immediately after creating a network 
+		// like it is for fitContent(), so we won't worry about setting an initialized callback.
 		
-		CyNetworkViewSnapshot netViewSnapshot = getViewModelSnapshot();
+		// make sure we use the latest snapshot, don't wait for timer to check dirty flag
+		CyNetworkViewSnapshot netViewSnapshot = getViewModel().createSnapshot();
+		
 		SpacialIndex2D<Long> spacial = netViewSnapshot.getSpacialIndex2D();
 		Collection<View<CyNode>> selectedElms = netViewSnapshot.getTrackedNodes(DingNetworkViewFactory.SELECTED_NODES);
 		if(selectedElms.isEmpty())
 			return;
 		
-		float[] extentsBuff = new float[4];
+		float[] extents = new float[4];
 
-		float xMin = Float.POSITIVE_INFINITY;
-		float yMin = Float.POSITIVE_INFINITY;
-		float xMax = Float.NEGATIVE_INFINITY;
-		float yMax = Float.NEGATIVE_INFINITY;
+		float xMin = Float.POSITIVE_INFINITY, yMin = Float.POSITIVE_INFINITY;
+		float xMax = Float.NEGATIVE_INFINITY, yMax = Float.NEGATIVE_INFINITY;
 
 		View<CyNode> leftMost = null;
 		View<CyNode> rightMost = null;
 
 		for(View<CyNode> nodeView : selectedElms) {
-			spacial.get(nodeView.getSUID(), extentsBuff);
-			if (extentsBuff[0] < xMin) {
-				xMin = extentsBuff[0];
+			spacial.get(nodeView.getSUID(), extents);
+			if (extents[SpacialIndex2D.X_MIN] < xMin) {
+				xMin = extents[SpacialIndex2D.X_MIN];
 				leftMost = nodeView;
 			}
 
-			if (extentsBuff[2] > xMax) {
-				xMax = extentsBuff[2];
+			if (extents[SpacialIndex2D.X_MAX] > xMax) {
+				xMax = extents[SpacialIndex2D.X_MAX];
 				rightMost = nodeView;
 			}
 
-			yMin = Math.min(yMin, extentsBuff[1]);
-			yMax = Math.max(yMax, extentsBuff[3]);
+			yMin = Math.min(yMin, extents[SpacialIndex2D.Y_MIN]);
+			yMax = Math.max(yMax, extents[SpacialIndex2D.Y_MAX]);
 		}
 
 		float xMinF = xMin - (getLabelWidth(leftMost) / 2);
@@ -572,8 +574,9 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		float yMaxF = yMax;
 		float yMinF = yMin;
 
+		NetworkTransform transform = renderComponent.getTransform();
+		
 		netViewSnapshot.getMutableNetworkView().batch(netView -> {
-			NetworkTransform transform = renderComponent.getTransform();
 			if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)) {
 				double zoom = Math.min(((double) transform.getWidth()) / (((double) xMaxF) - ((double) xMinF)),
 						((double) transform.getHeight()) / (((double) yMaxF) - ((double) yMinF)));
