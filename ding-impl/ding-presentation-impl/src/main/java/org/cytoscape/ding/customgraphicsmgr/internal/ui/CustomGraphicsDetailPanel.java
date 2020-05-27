@@ -26,7 +26,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.ding.customgraphics.Taggable;
 import org.cytoscape.ding.customgraphics.image.BitmapCustomGraphics;
 import org.cytoscape.ding.customgraphics.image.SVGCustomGraphics;
 import org.cytoscape.ding.icon.VisualPropertyIconFactory;
@@ -61,14 +60,11 @@ import org.jdesktop.swingx.JXImageView;
 @SuppressWarnings("serial")
 public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionListener {
 
-	private static final String TAG_DELIMITER = ",";
-	
 	private JTextField heightTextField;
 	private CGImageView imageViewPanel;
 	private JCheckBox lockCheckBox;
 	private JTextField nameTextField;
 	private JButton resetButton;
-	private JTextField tagTextField;
 	private JTextField widthTextField;
 	
 	private CyCustomGraphics<?> cg;
@@ -84,7 +80,6 @@ public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionLi
 		setBorder(LookAndFeelUtil.createTitledBorder("Image"));
 		
         var nameLabel = new JLabel("Name:");
-        var tagsLabel = new JLabel("Tags:");
         var imgViewLabel = new JLabel("Actual Size View:");
         var widthLabel = new JLabel("Width:");
         var heightLabel = new JLabel("Height:");
@@ -96,14 +91,8 @@ public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionLi
         
         layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
         		.addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addComponent(tagsLabel)
-                            .addComponent(nameLabel)
-                        )
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING, true)
-                            .addComponent(getNameTextField(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(getTagTextField(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-                        )
+                        .addComponent(nameLabel)
+                        .addComponent(getNameTextField(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
                 )
                 .addComponent(imgViewLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
         		.addComponent(getImageViewPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -122,10 +111,6 @@ public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionLi
                 .addGroup(layout.createParallelGroup(Alignment.CENTER, false)
                         .addComponent(nameLabel)
                         .addComponent(getNameTextField())
-                )
-                .addGroup(layout.createParallelGroup(Alignment.CENTER, false)
-                        .addComponent(tagsLabel)
-                        .addComponent(getTagTextField())
                 )
                 .addComponent(imgViewLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
                 .addComponent(getImageViewPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -154,26 +139,6 @@ public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionLi
 		return nameTextField;
 	}
 
-	JTextField getTagTextField() {
-		if (tagTextField == null) {
-			tagTextField = new JTextField();
-			tagTextField.addActionListener(evt -> {
-				var tagStr = this.tagTextField.getText();
-				
-				if (tagStr != null && !tagStr.isBlank()) {
-					if (cg instanceof Taggable) {
-						var tags = tagStr.split(TAG_DELIMITER);
-						
-						for (var t : tags)
-							((Taggable) cg).getTags().add(t.trim());
-					}
-				}
-			});
-		}
-
-		return tagTextField;
-	}
-	
 	JTextField getWidthTextField() {
 		if (widthTextField == null) {
 			widthTextField = new JTextField();
@@ -322,7 +287,6 @@ public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionLi
 		
 		getNameTextField().setText(null);
 		getNameTextField().setToolTipText(null);
-		getTagTextField().setText(null);
 		getHeightTextField().setText(null);
 		getWidthTextField().setText(null);
 		
@@ -337,25 +301,6 @@ public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionLi
 		// Update name
 		getNameTextField().setText(cg.getDisplayName());
 		getNameTextField().setToolTipText(cg.getDisplayName());
-		
-		// Update tags
-		if (cg instanceof Taggable) {
-			var tags = ((Taggable) cg).getTags();
-			int tagCount = tags.size();
-			int counter = 0;
-			var tagBuilder = new StringBuilder();
-			
-			for (var t : tags) {
-				tagBuilder.append(t);
-				counter++;
-				
-				if (tagCount != counter)
-					tagBuilder.append(", ");
-			}
-			
-			getTagTextField().setText(tagBuilder.toString());
-			getTagTextField().setToolTipText(tagBuilder.toString());
-		}
 		
 		// Disable resize components if it's a vector image
 		boolean isBitmap = cg instanceof BitmapCustomGraphics;
