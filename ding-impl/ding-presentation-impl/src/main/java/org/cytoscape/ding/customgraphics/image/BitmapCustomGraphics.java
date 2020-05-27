@@ -35,7 +35,7 @@ import org.cytoscape.ding.internal.util.ImageUtil;
  * #L%
  */
 
-public class URLBitmapCustomGraphics extends AbstractURLImageCustomGraphics<BitmapLayer> {
+public class BitmapCustomGraphics extends AbstractURLImageCustomGraphics<BitmapLayer> {
 
 	// DO NOT change, or you can break saving/restoring image_metadata.props!
 	public static final String TYPE_NAMESPACE = "org.cytoscape.ding.customgraphics.bitmap";
@@ -52,13 +52,13 @@ public class URLBitmapCustomGraphics extends AbstractURLImageCustomGraphics<Bitm
 	
 	static {
 		try {
-			DEF_IMAGE = ImageIO.read(URLBitmapCustomGraphics.class.getClassLoader().getResource(DEF_IMAGE_FILE));
+			DEF_IMAGE = ImageIO.read(BitmapCustomGraphics.class.getClassLoader().getResource(DEF_IMAGE_FILE));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	public URLBitmapCustomGraphics(Long id, String name, URL url) {
+	public BitmapCustomGraphics(Long id, String name, URL url) {
 		super(id, name, url);
 		
 		tags.add(DEF_TAG);
@@ -71,7 +71,7 @@ public class URLBitmapCustomGraphics extends AbstractURLImageCustomGraphics<Bitm
 	 * @param img
 	 * @throws IOException 
 	 */
-	public URLBitmapCustomGraphics(Long id, String name, BufferedImage img) {
+	public BitmapCustomGraphics(Long id, String name, BufferedImage img) {
 		super(id, name);
 
 		if (img == null)

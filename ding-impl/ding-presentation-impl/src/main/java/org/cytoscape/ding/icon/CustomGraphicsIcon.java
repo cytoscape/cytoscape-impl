@@ -9,7 +9,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.List;
 
 import org.cytoscape.ding.customgraphics.image.SVGLayer;
-import org.cytoscape.ding.customgraphics.image.URLVectorCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.SVGCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.Cy2DGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 
@@ -58,9 +58,9 @@ public class CustomGraphicsIcon extends VisualPropertyIcon<CyCustomGraphics<?>> 
 		var g2 = (Graphics2D) g.create();
 		var cg = getValue();
 		
-		if (cg instanceof URLVectorCustomGraphics) {
+		if (cg instanceof SVGCustomGraphics) {
 			if (cy2DLayers == null)
-				cy2DLayers = ((URLVectorCustomGraphics) cg).getLayers(null, null);
+				cy2DLayers = ((SVGCustomGraphics) cg).getLayers(null, null);
 			
 			var rect = new Rectangle2D.Float(x + width / 2.0f, y + height / 2.0f, width, height);
 			

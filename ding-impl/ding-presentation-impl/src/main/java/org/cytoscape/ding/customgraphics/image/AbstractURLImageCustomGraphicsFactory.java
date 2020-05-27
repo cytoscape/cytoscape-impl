@@ -34,14 +34,15 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
-public abstract class AbstractURLImageCGFactory<T extends CustomGraphicLayer> implements CyCustomGraphicsFactory<T> {
+public abstract class AbstractURLImageCustomGraphicsFactory<T extends CustomGraphicLayer>
+		implements CyCustomGraphicsFactory<T> {
 
 	protected String entry[];
 	protected final CustomGraphicsManager manager;
 	
 	static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
-	public AbstractURLImageCGFactory(CustomGraphicsManager manager) {
+	public AbstractURLImageCustomGraphicsFactory(CustomGraphicsManager manager) {
 		this.manager = manager;
 	}
 
@@ -56,7 +57,7 @@ public abstract class AbstractURLImageCGFactory<T extends CustomGraphicLayer> im
 	 * There are two types of valid string:
 	 * <ul>
 	 * <li>Image URL only - This will be used in Passthrough mapper.
-	 * <li>Output of toSerializableString method of URLBitmapCustomGraphics
+	 * <li>Output of toSerializableString method of BitmapCustomGraphics
 	 * </ul>
 	 */
 	@Override

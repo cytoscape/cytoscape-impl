@@ -26,8 +26,8 @@ import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.customgraphics.AbstractDCustomGraphics;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.Taggable;
-import org.cytoscape.ding.customgraphics.image.URLBitmapCustomGraphics;
-import org.cytoscape.ding.customgraphics.image.URLVectorCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.BitmapCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.SVGCustomGraphics;
 import org.cytoscape.ding.customgraphics.vector.GradientOvalLayer;
 import org.cytoscape.ding.customgraphics.vector.GradientRoundRectangleLayer;
 import org.cytoscape.ding.customgraphicsmgr.internal.event.CustomGraphicsLibraryUpdatedEvent;
@@ -142,7 +142,7 @@ public class RestoreImagesTask implements Task {
 			var displayName = parts[parts.length - 1];
 
 			if (manager.getCustomGraphicsBySourceURL(url) == null && !names.contains(displayName)) {
-				var cg = new URLBitmapCustomGraphics(manager.getNextAvailableID(), displayName, url);
+				var cg = new BitmapCustomGraphics(manager.getNextAvailableID(), displayName, url);
 
 				if (cg != null) {
 					manager.addCustomGraphics(cg, url);
@@ -189,8 +189,8 @@ public class RestoreImagesTask implements Task {
 				
 				// Filter unnecessary files.
 				if (value == null ||
-						(!value.contains(URLBitmapCustomGraphics.TYPE_NAME)
-								&& !value.contains(URLVectorCustomGraphics.TYPE_NAME)))
+						(!value.contains(BitmapCustomGraphics.TYPE_NAME)
+								&& !value.contains(SVGCustomGraphics.TYPE_NAME)))
 					continue;
 				
 				var imageProps = value.split(",");
@@ -243,8 +243,8 @@ public class RestoreImagesTask implements Task {
 						continue;
 
 					var cg = image instanceof BufferedImage
-							? new URLBitmapCustomGraphics(idMap.get(future), nameMap.get(future), (BufferedImage) image)
-							: new URLVectorCustomGraphics(idMap.get(future), nameMap.get(future), (String) image);
+							? new BitmapCustomGraphics(idMap.get(future), nameMap.get(future), (BufferedImage) image)
+							: new SVGCustomGraphics(idMap.get(future), nameMap.get(future), (String) image);
 
 					if (cg instanceof Taggable && tagMap.get(future) != null)
 						((Taggable) cg).getTags().addAll(tagMap.get(future));

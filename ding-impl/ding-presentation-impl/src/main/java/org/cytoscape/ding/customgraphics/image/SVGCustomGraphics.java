@@ -39,14 +39,14 @@ import org.cytoscape.view.model.View;
  */
 
 /**
- * Render vector images (e.g. SVG) created from a URL.
+ * Render SVG images created from a URL.
  */
-public class URLVectorCustomGraphics extends AbstractURLImageCustomGraphics<SVGLayer> {
+public class SVGCustomGraphics extends AbstractURLImageCustomGraphics<SVGLayer> {
 
 	// DO NOT change, or you can break saving/restoring image_metadata.props!
 	public static final String TYPE_NAMESPACE = "org.cytoscape.ding.customgraphics.image";
 	// DO NOT change, or you can break saving/restoring image_metadata.props!
-	public static final String TYPE_NAME = "URLVectorCustomGraphics";
+	public static final String TYPE_NAME = "SVGCustomGraphics";
 	
 	private static final String DEF_TAG = "vector image";
 	private static final String DEF_IMAGE_FILE = "/images/no_image.svg";
@@ -59,7 +59,7 @@ public class URLVectorCustomGraphics extends AbstractURLImageCustomGraphics<SVGL
 	
 	static {
 		try (var scan = new Scanner(new BufferedInputStream(
-				URLVectorCustomGraphics.class.getResourceAsStream(DEF_IMAGE_FILE)))) {
+				SVGCustomGraphics.class.getResourceAsStream(DEF_IMAGE_FILE)))) {
 			var sb = new StringBuilder();
 
 			while (scan.hasNextLine()) {
@@ -73,13 +73,13 @@ public class URLVectorCustomGraphics extends AbstractURLImageCustomGraphics<SVGL
 		}
 	}
 	
-	public URLVectorCustomGraphics(Long id, String name, URL url) throws IOException {
+	public SVGCustomGraphics(Long id, String name, URL url) throws IOException {
 		super(id, name, url);
 		
 		tags.add(DEF_TAG);
 	}
 	
-	public URLVectorCustomGraphics(Long id, String name, String svg) throws IOException {
+	public SVGCustomGraphics(Long id, String name, String svg) throws IOException {
 		super(id, name);
 		
 		if (svg == null || svg.isBlank())

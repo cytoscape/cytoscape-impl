@@ -2,6 +2,7 @@ package org.cytoscape.ding.customgraphics.image;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
@@ -30,47 +31,57 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
  * #L%
  */
 
-public class URLVectorCGFactory extends AbstractURLImageCGFactory<SVGLayer> {
+public class BitmapCustomGraphicsFactory extends AbstractURLImageCustomGraphicsFactory<BitmapLayer> {
 
 	public static final String SUPPORTED_CLASS_ID =
-			URLVectorCustomGraphics.TYPE_NAMESPACE + "." + URLVectorCustomGraphics.TYPE_NAME;
+			BitmapCustomGraphics.TYPE_NAMESPACE + "." + BitmapCustomGraphics.TYPE_NAME;
 	
-	public URLVectorCGFactory(CustomGraphicsManager manager) {
+	private final List<String> MIME_TYPES = List.of(
+			"image/bmp",
+			"image/x-windows-bmp",
+			"image/gif",
+			"image/jpeg",
+			"image/png",
+			"image/vnd.wap.wbmp"
+	);
+	
+	public BitmapCustomGraphicsFactory(CustomGraphicsManager manager) {
 		super(manager);
 	}
 
 	@Override
 	public boolean supportsMime(String mimeType) {
-		return "image/svg+xml".equals(mimeType);
+		return MIME_TYPES.contains(mimeType);
 	}
 	
 	@Override
-	public URLVectorCustomGraphics getInstance(String input) {
+	public BitmapCustomGraphics getInstance(String input) {
 		try {
 			var url = new URL(input);
 			var cg = manager.getCustomGraphicsBySourceURL(url);
 	
-			if (cg instanceof URLVectorCustomGraphics == false) {
+			if (cg instanceof BitmapCustomGraphics == false) {
 				var id = manager.getNextAvailableID();
-				cg = new URLVectorCustomGraphics(id, input, url);
+				cg = new BitmapCustomGraphics(id, input, url);
 				manager.addCustomGraphics(cg, url);
 			}
-			
-			return (URLVectorCustomGraphics) cg;
+	
+			return (BitmapCustomGraphics) cg;
 		} catch (IOException e) {
 			return null;
 		}
 	}
 	
 	@Override
-	protected URLVectorCustomGraphics createMissingImageCustomGraphics(String entryStr, long id, String sourceURL) {
+	protected BitmapCustomGraphics createMissingImageCustomGraphics(String entryStr, long id,
+			String sourceURL) {
 		try {
-			var cg = new MissingVectorImageCustomGraphics(entryStr, id, sourceURL, this);
+			var cg = new MissingBitmapCustomGraphics(entryStr, id, sourceURL, this);
 			manager.addMissingImageCustomGraphics(cg);
 			
 			return cg;
 		} catch (IOException e) {
-			logger.error("Cannot create MissingVectorImageCustomGraphics object", e);
+			logger.error("Cannot create MissingBitmapCustomGraphics object", e);
 		}
 		
 		return null;
@@ -78,7 +89,7 @@ public class URLVectorCGFactory extends AbstractURLImageCGFactory<SVGLayer> {
 	
 	@Override
 	public Class<? extends CyCustomGraphics<?>> getSupportedClass() {
-		return URLVectorCustomGraphics.class;
+		return BitmapCustomGraphics.class;
 	}
 	
 	@Override

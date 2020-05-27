@@ -27,8 +27,8 @@ import javax.swing.event.ListSelectionListener;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.customgraphics.Taggable;
-import org.cytoscape.ding.customgraphics.image.URLBitmapCustomGraphics;
-import org.cytoscape.ding.customgraphics.image.URLVectorCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.BitmapCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.SVGCustomGraphics;
 import org.cytoscape.ding.icon.VisualPropertyIconFactory;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
@@ -231,8 +231,8 @@ public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionLi
 	        	if (cg == null || cg.getRenderedImage() == null)
 	    			return;
 
-	    		if (cg instanceof URLBitmapCustomGraphics) {
-	    			var image = ((URLBitmapCustomGraphics) cg).resetImage();
+	    		if (cg instanceof BitmapCustomGraphics) {
+	    			var image = ((BitmapCustomGraphics) cg).resetImage();
 	    			getImageViewPanel().setImage(image);
 	    			int w = image.getWidth(null);
 	    			int h = image.getHeight(null);
@@ -279,7 +279,7 @@ public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionLi
 			return;
 		}
 
-		boolean isBitmap = cg instanceof URLVectorCustomGraphics == false;
+		boolean isBitmap = cg instanceof SVGCustomGraphics == false;
 		
 		if (isBitmap) {
 			float ratio;
@@ -358,7 +358,7 @@ public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionLi
 		}
 		
 		// Disable resize components if it's a vector image
-		boolean isBitmap = cg instanceof URLBitmapCustomGraphics;
+		boolean isBitmap = cg instanceof BitmapCustomGraphics;
 		
 		getWidthTextField().setEnabled(isBitmap);
 		getHeightTextField().setEnabled(isBitmap);
@@ -368,7 +368,7 @@ public class CustomGraphicsDetailPanel extends JPanel implements ListSelectionLi
 		getImageViewPanel().setEditable(isBitmap);
 		
 		// Set up detail panel
-		if (cg instanceof URLVectorCustomGraphics) {
+		if (cg instanceof SVGCustomGraphics) {
 			int w = getImageViewPanel().getWidth();
 			int h = getImageViewPanel().getHeight();
 			var icon = VisualPropertyIconFactory.createIcon(cg, w, h);

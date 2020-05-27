@@ -6,7 +6,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 
-import org.cytoscape.ding.customgraphics.image.URLVectorCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.SVGCustomGraphics;
 import org.cytoscape.ding.internal.util.IconUtil;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 
@@ -57,8 +57,8 @@ public class CyCustomGraphicsCellRenderer extends DefaultCellRenderer {
 		if (value instanceof CyCustomGraphics) {
 			var cg = (CyCustomGraphics<?>) value;
 			
-			if (cg instanceof URLVectorCustomGraphics) {
-				var url = ((URLVectorCustomGraphics) cg).getSourceURL();
+			if (cg instanceof SVGCustomGraphics) {
+				var url = ((SVGCustomGraphics) cg).getSourceURL();
 				var icon = new SVGIcon();
 				icon.setSvgResourcePath(url.getPath());
 				setIcon(icon);

@@ -12,7 +12,7 @@ import java.util.List;
 
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
-import org.cytoscape.ding.customgraphics.image.URLBitmapCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.BitmapCustomGraphics;
 import org.cytoscape.ding.customgraphicsmgr.internal.event.CustomGraphicsLibraryUpdatedEvent;
 import org.cytoscape.ding.customgraphicsmgr.internal.event.CustomGraphicsLibraryUpdatedListener;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
@@ -96,7 +96,7 @@ public class CustomGraphicsBrowser extends JXList implements CustomGraphicsLibra
 	private void addCustomGraphics(String urlStr) {
 		try {
 			var url = new URL(urlStr);
-			var cg = new URLBitmapCustomGraphics(pool.getNextAvailableID(), urlStr, url);
+			var cg = new BitmapCustomGraphics(pool.getNextAvailableID(), urlStr, url);
 			
 			if (cg != null) {
 				pool.addCustomGraphics(cg, url);

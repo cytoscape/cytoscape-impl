@@ -34,35 +34,34 @@ import org.cytoscape.view.model.View;
  * #L%
  */
 
-public class MissingVectorImageCustomGraphics extends URLVectorCustomGraphics
-		implements MissingImageCustomGraphics<SVGLayer> {
+public class MissingBitmapCustomGraphics extends BitmapCustomGraphics
+		implements MissingImageCustomGraphics<BitmapLayer> {
 
-	private URLVectorCustomGraphics actualCustomGraphics;
+	private BitmapCustomGraphics actualCustomGraphics;
 	private final String serializationString;
 	
-	public MissingVectorImageCustomGraphics(
+	public MissingBitmapCustomGraphics(
 			String serializationString,
 			Long id,
 			String name,
-			URLVectorCGFactory factory
+			BitmapCustomGraphicsFactory factory
 	) throws IOException {
 		super(id, name, DEF_IMAGE);
 		this.serializationString = serializationString;
 		this.factory = factory;
-		fitRatio = 1.0f;
 	}
-	
+
 	@Override
 	public boolean isImageMissing() {
 		return actualCustomGraphics == null;
 	}
-
+	
 	@Override
-	public URLVectorCustomGraphics reloadImage() {
+	public BitmapCustomGraphics reloadImage() {
 		var cg = factory.parseSerializableString(serializationString);
 		
-		if (cg instanceof URLVectorCustomGraphics && cg instanceof MissingVectorImageCustomGraphics == false)
-			actualCustomGraphics = (URLVectorCustomGraphics) cg;
+		if (cg instanceof BitmapCustomGraphics && cg instanceof MissingBitmapCustomGraphics == false)
+			actualCustomGraphics = (BitmapCustomGraphics) cg;
 		
 		return actualCustomGraphics;
 	}
@@ -164,18 +163,26 @@ public class MissingVectorImageCustomGraphics extends URLVectorCustomGraphics
 	}
 	
 	@Override
-	public List<SVGLayer> getLayers(CyNetworkView networkView, View<? extends CyIdentifiable> graphObject) {
+	public List<BitmapLayer> getLayers(CyNetworkView networkView, View<? extends CyIdentifiable> graphObject) {
 		if (actualCustomGraphics != null)
 			return actualCustomGraphics.getLayers(networkView, graphObject);
 		
 		return super.getLayers(networkView, graphObject);
 	}
-
+	
 	@Override
-	public URLVectorCustomGraphics getActualCustomGraphics() {
+	public Image resetImage() {
+		if (actualCustomGraphics!= null)
+			return actualCustomGraphics.resetImage();
+		
+		return super.resetImage();
+	}
+	
+	@Override
+	public BitmapCustomGraphics getActualCustomGraphics() {
 		return actualCustomGraphics;
 	}
-
+	
 	@Override
 	public String toSerializableString() {
 		if (actualCustomGraphics != null)

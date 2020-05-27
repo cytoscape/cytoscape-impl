@@ -235,7 +235,7 @@ public final class CustomGraphicsManagerImpl
 		var cgSet = new HashSet<CyCustomGraphics>();
 		
 		for (var cg : getAllCustomGraphics()) {
-			// Currently, we only export URLBitmapCustomGraphics to the session file.  This may change in the future...
+			// Currently, we only export BitmapCustomGraphics to the session file.  This may change in the future...
 			if (cg instanceof AbstractURLImageCustomGraphics) {
 				var urlCG = (AbstractURLImageCustomGraphics<?>) cg;
 				

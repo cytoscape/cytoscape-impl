@@ -13,7 +13,7 @@ import javax.imageio.ImageIO;
 
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.ding.customgraphics.image.URLVectorCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.SVGCustomGraphics;
 import org.cytoscape.ding.internal.util.ImageUtil;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
@@ -79,8 +79,8 @@ public class SaveUserImagesTask implements Task {
 		var exService = Executors.newFixedThreadPool(NUM_THREADS);
 
 		for (var cg : manager.getAllPersistantCustomGraphics()) {
-			if (cg instanceof URLVectorCustomGraphics) {
-				var svg = ((URLVectorCustomGraphics) cg).getSVG();
+			if (cg instanceof SVGCustomGraphics) {
+				var svg = ((SVGCustomGraphics) cg).getSVG();
 				
 				if (svg != null && !svg.isBlank()) {
 					try {

@@ -30,8 +30,8 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.image.AbstractURLImageCustomGraphics;
-import org.cytoscape.ding.customgraphics.image.URLBitmapCustomGraphics;
-import org.cytoscape.ding.customgraphics.image.URLVectorCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.BitmapCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.SVGCustomGraphics;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -247,9 +247,9 @@ public class CustomGraphicsManagerDialog extends JDialog {
 				AbstractURLImageCustomGraphics<?> cg = null;
 				
 				if (svg != null)
-					cg = new URLVectorCustomGraphics(manager.getNextAvailableID(), file.toString(), svg);
+					cg = new SVGCustomGraphics(manager.getNextAvailableID(), file.toString(), svg);
 				else if (img != null)
-					cg = new URLBitmapCustomGraphics(manager.getNextAvailableID(), file.toString(), img);
+					cg = new BitmapCustomGraphics(manager.getNextAvailableID(), file.toString(), img);
 
 				if (cg != null) {
 					var url = file.toURI().toURL();

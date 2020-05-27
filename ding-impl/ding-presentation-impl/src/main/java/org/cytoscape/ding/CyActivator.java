@@ -32,8 +32,8 @@ import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.CustomGraphicsTranslator;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics2Manager;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics2ManagerImpl;
-import org.cytoscape.ding.customgraphics.image.URLBitmapCGFactory;
-import org.cytoscape.ding.customgraphics.image.URLVectorCGFactory;
+import org.cytoscape.ding.customgraphics.image.BitmapCustomGraphicsFactory;
+import org.cytoscape.ding.customgraphics.image.SVGCustomGraphicsFactory;
 import org.cytoscape.ding.customgraphics.vector.GradientOvalFactory;
 import org.cytoscape.ding.customgraphics.vector.GradientRoundRectangleFactory;
 import org.cytoscape.ding.customgraphicsmgr.internal.CustomGraphicsManagerImpl;
@@ -526,15 +526,15 @@ public class CyActivator extends AbstractCyActivator {
 		// Create and register our built-in factories.
 		// TODO:  When the CustomGraphicsFactory service stuff is set up, just register these as services
 		{
-			var bitmapFactory = new URLBitmapCGFactory(cgManager);
+			var bitmapFactory = new BitmapCustomGraphicsFactory(cgManager);
 			var props = new Properties();
-			props.setProperty(CustomGraphicsManager.SUPPORTED_CLASS_ID, URLBitmapCGFactory.SUPPORTED_CLASS_ID);
+			props.setProperty(CustomGraphicsManager.SUPPORTED_CLASS_ID, BitmapCustomGraphicsFactory.SUPPORTED_CLASS_ID);
 			cgManager.addCustomGraphicsFactory(bitmapFactory, props);
 		}
 		{
-			var vectorFactory = new URLVectorCGFactory(cgManager);
+			var vectorFactory = new SVGCustomGraphicsFactory(cgManager);
 			var props = new Properties();
-			props.setProperty(CustomGraphicsManager.SUPPORTED_CLASS_ID, URLVectorCGFactory.SUPPORTED_CLASS_ID);
+			props.setProperty(CustomGraphicsManager.SUPPORTED_CLASS_ID, SVGCustomGraphicsFactory.SUPPORTED_CLASS_ID);
 			cgManager.addCustomGraphicsFactory(vectorFactory, props);
 		}
 
