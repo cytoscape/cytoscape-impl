@@ -1,6 +1,6 @@
 package org.cytoscape.view.vizmap.gui.internal.task;
 
-import static org.cytoscape.view.vizmap.gui.internal.util.ViewUtil.invokeOnEDT;
+import static org.cytoscape.view.vizmap.gui.internal.view.util.ViewUtil.invokeOnEDT;
 
 import java.util.HashSet;
 import java.util.Set;

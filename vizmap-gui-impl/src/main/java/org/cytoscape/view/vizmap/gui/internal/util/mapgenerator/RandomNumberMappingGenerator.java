@@ -1,6 +1,6 @@
 package org.cytoscape.view.vizmap.gui.internal.util.mapgenerator;
 
-import static org.cytoscape.view.vizmap.gui.internal.util.ViewUtil.invokeOnEDTAndWait;
+import static org.cytoscape.view.vizmap.gui.internal.view.util.ViewUtil.invokeOnEDTAndWait;
 
 import java.util.HashMap;
 import java.util.Map;

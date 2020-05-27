@@ -14,7 +14,7 @@ import javax.swing.event.DocumentListener;
 
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
-import org.cytoscape.view.vizmap.gui.internal.util.ViewUtil;
+import org.cytoscape.view.vizmap.gui.internal.view.util.ViewUtil;
 
 import com.l2fprod.common.beans.editor.AbstractPropertyEditor;
 import com.l2fprod.common.swing.ComponentFactory;

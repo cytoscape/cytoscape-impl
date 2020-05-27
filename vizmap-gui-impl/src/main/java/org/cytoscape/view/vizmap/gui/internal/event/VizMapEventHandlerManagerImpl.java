@@ -1,6 +1,6 @@
 package org.cytoscape.view.vizmap.gui.internal.event;
 
-import static org.cytoscape.view.vizmap.gui.internal.util.ViewUtil.invokeOnEDT;
+import static org.cytoscape.view.vizmap.gui.internal.view.util.ViewUtil.invokeOnEDT;
 
 /*
  * #%L

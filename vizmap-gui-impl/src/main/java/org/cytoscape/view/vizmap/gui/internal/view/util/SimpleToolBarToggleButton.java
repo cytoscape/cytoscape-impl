@@ -1,4 +1,7 @@
-package org.cytoscape.view.vizmap.gui.internal.task;
+package org.cytoscape.view.vizmap.gui.internal.view.util;
+
+import javax.swing.Icon;
+import javax.swing.JToggleButton;
 
 /*
  * #%L
@@ -24,20 +27,36 @@ package org.cytoscape.view.vizmap.gui.internal.task;
  * #L%
  */
 
-import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
+@SuppressWarnings("serial")
+public class SimpleToolBarToggleButton extends JToggleButton {
 
-public final class CreateNewVisualStyleTaskFactory extends AbstractTaskFactory {
+	public SimpleToolBarToggleButton(String text) {
+		this(text, false);
+	}
+	
+	public SimpleToolBarToggleButton(Icon icon) {
+		this(icon, false);
+	}
 
-	private final ServicesUtil servicesUtil;
-
-	public CreateNewVisualStyleTaskFactory(ServicesUtil servicesUtil) {
-		this.servicesUtil = servicesUtil;
+	public SimpleToolBarToggleButton(String text, Boolean selected) {
+		super(text, selected);
+		addActionListener(evt -> update());
+	}
+	
+	public SimpleToolBarToggleButton(Icon icon, Boolean selected) {
+		super(icon, selected);
+		addActionListener(evt -> update());
 	}
 
 	@Override
-	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new CreateNewVisualStyleTask(servicesUtil));
+	public void setSelected(boolean b) {
+		if (b != isSelected()) {
+			super.setSelected(b);
+			update();
+		}
+	}
+	
+	protected void update() {
+		ViewUtil.updateToolBarStyle(this);
 	}
 }
