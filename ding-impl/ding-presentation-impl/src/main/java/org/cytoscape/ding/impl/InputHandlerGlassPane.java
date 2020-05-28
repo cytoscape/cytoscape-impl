@@ -738,10 +738,22 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		}
 		
 		private void showTooltip(MouseEvent e) {
+			String text = null;
+			
 			View<CyNode> node = re.getPicker().getNodeAt(e.getPoint());
-			String text = node == null ? null : re.getNodeDetails().getTooltipText(node);
+			if(node != null) {
+				text = re.getNodeDetails().getTooltipText(node);
+			}
+			else if(edgeCountIsLowEnoughToEnablePicking()) {
+				View<CyEdge> edge = re.getPicker().getEdgeAt(e.getPoint());
+				if(edge != null) {
+					text = re.getEdgeDetails().getTooltipText(edge);
+				}
+			}
+			
+			final String tooltip = text;
 			ViewUtil.invokeOnEDT(() -> {
-				setToolTipText(text);
+				setToolTipText(tooltip);
 				ToolTipManager.sharedInstance().mouseMoved(e);
 			});
 		}
@@ -832,9 +844,9 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				}
 			}
 			
-			final var edgeSelectionEnabled = edgeSelectionEnabled(true);
+			final boolean selectEdges = edgeSelectionEnabled() && edgeCountIsLowEnoughToEnablePicking();
 			
-			if(edgeSelectionEnabled && isLODEnabled(RenderDetailFlags.LOD_EDGE_ANCHORS)) {
+			if(selectEdges && isLODEnabled(RenderDetailFlags.LOD_EDGE_ANCHORS)) {
 				HandleInfo handle = picker.getHandleAt(e.getPoint());
 				if(handle != null) {
 					toggleChosenAnchor(handle, e);
@@ -842,7 +854,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				}
 			}
 			
-			if(edgeSelectionEnabled) {
+			if(selectEdges) {
 				View<CyEdge> edge = picker.getEdgeAt(e.getPoint());
 				if(edge != null) {
 					if(e.isAltDown() && isLODEnabled(RenderDetailFlags.LOD_EDGE_ANCHORS))
@@ -1315,7 +1327,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				if(nodeSelectionEnabled()) {
 					nodes = re.getPicker().getNodesInPath(selectionLasso);
 				}
-				if(edgeSelectionEnabled(false)) {
+				if(edgeSelectionEnabled()) {
 					// MKTODO getEdgesInPath() is not accurate, it does not work for curved edges
 					edges   = re.getPicker().getEdgesInPath(selectionLasso);
 //					handles = re.getPicker().getHandlesInPath(selectionLasso);
@@ -1397,7 +1409,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				if(nodeSelectionEnabled()) {
 					nodes = re.getPicker().getNodesInRectangle(selectionRect);
 				}
-				if(edgeSelectionEnabled(false)) {
+				if(edgeSelectionEnabled()) {
 					edges = re.getPicker().getEdgesInRectangle(selectionRect);
 					handles = re.getPicker().getHandlesInRectangle(selectionRect);
 				}
@@ -1555,22 +1567,23 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	}
 	
 	
-	private boolean edgeSelectionEnabled(boolean optimize) {
+	private boolean edgeSelectionEnabled() {
 		if(Boolean.FALSE.equals(re.getViewModelSnapshot().getVisualProperty(DVisualLexicon.NETWORK_EDGE_SELECTION))) {
 			return false;
 		}
-		
-		if(optimize) {
-			// Optimization, turn edge selection off if there are too many edges visible.
-			// Picking the edge that the user clicked on can become very performance intensive, and chances are they
-			// are not trying to select individual edges from a hairball.
-			var snapshot = re.getViewModelSnapshot();
-			var fastLod = re.getGraphLOD().faster();
-			RenderEdges edges = RenderDetailFlags.renderEdges(snapshot, re.getTransform(), fastLod);
-			return edges != RenderEdges.NONE;
-		}
 		return true;
 	}
+	
+	private boolean edgeCountIsLowEnoughToEnablePicking() {
+		// Optimization, turn edge selection off if there are too many edges visible.
+		// Picking the edge that the user clicked on can become very performance intensive, and chances are they
+		// are not trying to select individual edges from a hairball.
+		var snapshot = re.getViewModelSnapshot();
+		var fastLod = re.getGraphLOD().faster();
+		RenderEdges edges = RenderDetailFlags.renderEdges(snapshot, re.getTransform(), fastLod);
+		return edges != RenderEdges.NONE;
+	}
+	
 	
 	private boolean isLODEnabled(int flag) {
 		return re.getPicker().getLastRenderDetail().has(flag);
@@ -1614,7 +1627,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	}
 	
 	private boolean deselectAllEdges() {
-		if(edgeSelectionEnabled(false)) {
+		if(edgeSelectionEnabled()) {
 			var table = re.getViewModel().getModel().getDefaultEdgeTable();
 			var rows = table.getMatchingRows(CyNetwork.SELECTED, true);
 			if(rows.isEmpty())
