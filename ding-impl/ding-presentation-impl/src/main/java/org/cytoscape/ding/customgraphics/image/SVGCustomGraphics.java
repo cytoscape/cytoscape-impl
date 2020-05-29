@@ -151,4 +151,32 @@ public class SVGCustomGraphics extends AbstractURLImageCustomGraphics<SVGLayer> 
 		
 		return cg;
 	}
+	
+	@Override
+	public int hashCode() {
+		int prime = 31;
+		int result = 13;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!(obj instanceof SVGCustomGraphics))
+			return false;
+		
+		var other = (SVGCustomGraphics) obj;
+		
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id)) {
+			return false;
+		}
+		
+		return true;
+	}
 }
