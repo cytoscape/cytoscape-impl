@@ -34,7 +34,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -162,6 +161,7 @@ public class VisualStyleSelector extends JPanel {
 	
 	private boolean editMode;
 	private boolean editingTitle;
+	private boolean selectionIsAdjusting;
 	
 	private int selectionHead;
 	private int selectionTail;
@@ -215,8 +215,18 @@ public class VisualStyleSelector extends JPanel {
 	
 	public void setEditMode(boolean editMode) {
 		if (editMode != this.editMode) {
+			selectionIsAdjusting = true;
 			this.editMode = editMode;
-			update();
+			
+			try {
+				update();
+				
+				if (!editMode)
+					getStyleGrid().setSelectedValue(selectedStyle, getStyleGrid().isShowing());
+			} finally {
+				selectionIsAdjusting = false;
+			}
+			
 			firePropertyChange("editMode", !editMode, editMode);
 		}
 	}
@@ -257,7 +267,9 @@ public class VisualStyleSelector extends JPanel {
 			var oldValue = selectedStyle;
 			selectedStyle = style;
 			getStyleGrid().setSelectedValue(style, getStyleGrid().isShowing());
-			firePropertyChange("selectedStyle", oldValue, selectedStyle);
+			
+			if (!selectionIsAdjusting)
+				firePropertyChange("selectedStyle", oldValue, selectedStyle);
 		}
 	}
 	
@@ -478,7 +490,7 @@ public class VisualStyleSelector extends JPanel {
 				updateToolBarButtons();
 				repaint();
 				
-				if (!isEditMode())
+				if (!isEditMode() && !selectionIsAdjusting)
 					setSelectedStyle(styleGrid.getSelectedValue());
 			});
 		}
@@ -570,7 +582,22 @@ public class VisualStyleSelector extends JPanel {
 			}
 		}
 		
-		getStyleGrid().setModel(new StyleGridModel(filteredStyles != null ? filteredStyles : allStyles));
+		// Save current selection
+		var selectedStyles = isEditMode() ? getSelectedStyleList() : new ArrayList<VisualStyle>();
+		
+		if (selectedStyle != null && !isEditMode())
+			selectedStyles.add(selectedStyle);
+		
+		selectionIsAdjusting = true;
+		
+		try {
+			getStyleGrid().setModel(new StyleGridModel(filteredStyles != null ? filteredStyles : allStyles));
+			// Restore previous selection
+			getStyleGrid().setSelectedList(selectedStyles);
+		} finally {
+			selectionIsAdjusting = false;
+		}
+		
 		firePropertyChange("filterChanged", false, true);
 	}
 	
@@ -579,7 +606,6 @@ public class VisualStyleSelector extends JPanel {
 	}
 	
 	private int calculateColumns(int itemWidth, int gridWidth) {
-		System.out.println("\t-- " + gridWidth);
 		var cols = itemWidth > 0 ? Math.floorDiv(gridWidth, itemWidth) : 1;
 		cols = Math.max(cols, 1);
 		
@@ -684,7 +710,6 @@ public class VisualStyleSelector extends JPanel {
 		
 		@Override
 		public Dimension getPreferredScrollableViewportSize() {
-			System.out.println("\t> cols|model: " + cols + " :: " + getModel().getSize());
 			return getModel().getSize() == 0 ? getMinimumSize() : getPreferredSize();
 		}
 
@@ -777,26 +802,22 @@ public class VisualStyleSelector extends JPanel {
 			var dm = getModel();
 			var sm = getSelectionModel();
 			int[] selectedIndices = sm.getSelectedIndices();
+			var selectedItems = new ArrayList<VisualStyle>();
 
 			if (selectedIndices.length > 0) {
 				int size = dm.getSize();
 				
-				if (selectedIndices[0] >= size)
-					return Collections.emptyList();
-				
-				var selectedItems = new ArrayList<VisualStyle>();
-				
-				for (int i : selectedIndices) {
-					if (i >= size)
-						break;
-					
-					selectedItems.add(dm.getElementAt(i));
+				if (selectedIndices[0] < size) {
+					for (int i : selectedIndices) {
+						if (i >= size)
+							break;
+						
+						selectedItems.add(dm.getElementAt(i));
+					}
 				}
-				
-				return selectedItems;
 			}
 			
-			return Collections.emptyList();
+			return selectedItems;
 		}
 
 		void selectAll() {
@@ -861,6 +882,21 @@ public class VisualStyleSelector extends JPanel {
 			getSelectionModel().removeSelectionInterval(index0, index1);
 		}
 		
+		void setSelectedList(List<VisualStyle> styles) {
+			var sm = getSelectionModel();
+			sm.clearSelection();
+			
+			for (var vs : styles) {
+				int idx = indexOf(vs);
+				
+				if (idx >= 0)
+					sm.addSelectionInterval(idx, idx);
+			}
+			
+			selectionHead = -1;
+			selectionTail = -1;
+		}
+		
 		void setSelectionModel(ListSelectionModel selectionModel) {
 	        if (selectionModel == null)
 	            throw new IllegalArgumentException("selectionModel must be non null");
@@ -888,8 +924,15 @@ public class VisualStyleSelector extends JPanel {
 			var oldValue = dataModel;
 			dataModel = model;
 			firePropertyChange("model", oldValue, dataModel);
-			deselectAll();
-			update();
+			
+			selectionIsAdjusting = true;
+			
+			try {
+				deselectAll();
+				update();
+			} finally {
+				selectionIsAdjusting = false;
+			}
 		}
 		
 		/**
@@ -976,7 +1019,6 @@ public class VisualStyleSelector extends JPanel {
 				
 				if (dm.getSize() > 0) {
 					var size = this.getParent() != null ? this.getParent().getSize() : null;
-					System.out.println("\n. size: " + size);
 					
 					if (size != null) {
 						var itemWidth = IMAGE_WIDTH + 2 * ITEM_BORDER_WIDTH + 2 * ITEM_MARGIN + 2 * ITEM_PAD;
@@ -985,7 +1027,6 @@ public class VisualStyleSelector extends JPanel {
 					} else {
 						cols = minColumns;
 					}
-					System.out.println("\t.. cols: " + cols);
 					
 					var rows = calculateRows(dm.getSize(), cols);
 		
