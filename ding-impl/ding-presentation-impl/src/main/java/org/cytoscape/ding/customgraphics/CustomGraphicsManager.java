@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.SortedSet;
 
-import org.cytoscape.ding.customgraphics.bitmap.MissingImageCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.MissingImageCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 
@@ -16,7 +16,7 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -34,10 +34,19 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
  * #L%
  */
 
+@SuppressWarnings("rawtypes")
 public interface CustomGraphicsManager {
+	
+	/**
+	 * Use this as a property key to override the default behavior of using the factory's supported class name
+	 * (see {@link CyCustomGraphicsFactory#getSupportedClass()}) as the key when registering a 
+	 * {@link CyCustomGraphicsFactory} through {@link #addCustomGraphicsFactory(CyCustomGraphicsFactory, Map)}.
+	 * The property value must also be a String.
+	 */
+	static final String SUPPORTED_CLASS_ID = "SUPPORTED_CLASS_ID";
 
-	void addCustomGraphicsFactory(CyCustomGraphicsFactory factory, Map props);
-	void removeCustomGraphicsFactory(CyCustomGraphicsFactory factory, Map props);
+	void addCustomGraphicsFactory(CyCustomGraphicsFactory factory, Map<?, ?> props);
+	void removeCustomGraphicsFactory(CyCustomGraphicsFactory factory, Map<?, ?> props);
 	CyCustomGraphicsFactory getCustomGraphicsFactory(Class<? extends CyCustomGraphics> cls);
 	CyCustomGraphicsFactory getCustomGraphicsFactory(String className);
 	Collection<CyCustomGraphicsFactory> getAllCustomGraphicsFactories();
@@ -55,8 +64,8 @@ public interface CustomGraphicsManager {
 	
 	Properties getMetadata();
 	
-	boolean isUsedInCurrentSession(final CyCustomGraphics graphics);
-	void setUsedInCurrentSession(final CyCustomGraphics graphics, final Boolean isUsed);
+	boolean isUsedInCurrentSession(CyCustomGraphics graphics);
+	void setUsedInCurrentSession(CyCustomGraphics graphics, Boolean isUsed);
 	
 	void removeAllCustomGraphics();
 	void removeCustomGraphics(Long id);
@@ -67,6 +76,6 @@ public interface CustomGraphicsManager {
 	 */
 	Long getNextAvailableID();
 	
-	void addMissingImageCustomGraphics(MissingImageCustomGraphics cg);
-	Collection<MissingImageCustomGraphics> reloadMissingImageCustomGraphics();
+	void addMissingImageCustomGraphics(MissingImageCustomGraphics<?> cg);
+	Collection<MissingImageCustomGraphics<?>> reloadMissingImageCustomGraphics();
 }

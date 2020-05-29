@@ -90,7 +90,7 @@ public class GeneAssociationReaderTest {
 		assertEquals(1, tables.length);
 		assertNotNull(tables[0]);
 		
-		// All 22 Columns + NAME primary key + synonyms
+		// All 22 Columns + SERIALIZABLE_NAME primary key + synonyms
 		assertEquals(24, tables[0].getColumns().size());
 		// For yeast test file.
 		assertEquals(6359, tables[0].getRowCount());

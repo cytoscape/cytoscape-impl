@@ -1,12 +1,13 @@
 package org.cytoscape.view.vizmap.internal;
 
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.model.table.CyTableView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.vizmap.TableVisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 
-public class TableVisualMappingManagerImpl extends AbstractVisualMappingManager<CyTableView> implements TableVisualMappingManager {
+public class TableVisualMappingManagerImpl extends AbstractVisualMappingManager<View<CyColumn>> implements TableVisualMappingManager {
 
 	public TableVisualMappingManagerImpl(VisualStyleFactory factory, CyServiceRegistrar serviceRegistrar) {
 		super(factory, serviceRegistrar);
@@ -19,12 +20,12 @@ public class TableVisualMappingManagerImpl extends AbstractVisualMappingManager<
 	}
 
 	@Override
-	protected CyTableView getCurrentView() {
+	protected View<CyColumn> getCurrentView() {
 		return null;
 	}
 
 	@Override
-	protected void fireChangeEvent(VisualStyle vs, CyTableView view) {
+	protected void fireChangeEvent(VisualStyle vs, View<CyColumn> view) {
 	}
 
 	@Override

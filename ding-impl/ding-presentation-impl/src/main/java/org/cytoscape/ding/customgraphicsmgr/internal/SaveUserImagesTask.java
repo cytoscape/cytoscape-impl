@@ -1,12 +1,11 @@
 package org.cytoscape.ding.customgraphicsmgr.internal;
 
-import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -14,8 +13,8 @@ import javax.imageio.ImageIO;
 
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.ding.customgraphics.ImageUtil;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.SVGCustomGraphics;
+import org.cytoscape.ding.internal.util.ImageUtil;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
@@ -27,7 +26,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -45,9 +44,7 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
-public class PersistImageTask implements Task {
-
-	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
+public class SaveUserImagesTask implements Task {
 
 	private final File location;
 	private final CustomGraphicsManager manager;
@@ -56,38 +53,52 @@ public class PersistImageTask implements Task {
 	private static final int NUM_THREADS = 4;
 
 	private static final String METADATA_FILE = "image_metadata.props";
+	
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
-	PersistImageTask(final File location, final CustomGraphicsManager manager) {
+	public SaveUserImagesTask(File location, CustomGraphicsManager manager) {
 		this.location = location;
 		this.manager = manager;
 	}
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.setStatusMessage("Saving image library to your local disk.\n\nPlease wait...");
-		taskMonitor.setProgress(0.0);
+	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Save User Images");
+		tm.setStatusMessage("Saving image library to your local disk.\n\nPlease wait...");
+		tm.setProgress(0.0);
 
 		// Remove all existing files
-		final File[] files = location.listFiles();
+		var files = location.listFiles();
+
 		if (files != null) {
 			for (File old : files)
 				old.delete();
 		}
 
-		final long startTime = System.currentTimeMillis();
+		long startTime = System.currentTimeMillis();
+		var exService = Executors.newFixedThreadPool(NUM_THREADS);
 
-		final ExecutorService exService = Executors
-				.newFixedThreadPool(NUM_THREADS);
-
-		for (final CyCustomGraphics<?> cg : manager.getAllPersistantCustomGraphics()) {
-			final Image img = cg.getRenderedImage();
-			
-			if (img != null) {
-				try {
-					exService.submit(
-							new SaveImageTask(location, cg.getIdentifier().toString(), ImageUtil.toBufferedImage(img)));
-				} catch (Exception e) {
-					e.printStackTrace();
+		for (var cg : manager.getAllPersistantCustomGraphics()) {
+			if (cg instanceof SVGCustomGraphics) {
+				var svg = ((SVGCustomGraphics) cg).getSVG();
+				
+				if (svg != null && !svg.isBlank()) {
+					try {
+						exService.submit(new SaveSVGImageTask(location, cg.getIdentifier().toString(), svg));
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			} else {
+				var img = cg.getRenderedImage();
+				
+				if (img != null) {
+					try {
+						exService.submit(new SavePNGImageTask(location, cg.getIdentifier().toString(),
+								ImageUtil.toBufferedImage(img)));
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 			}
 		}
@@ -96,15 +107,12 @@ public class PersistImageTask implements Task {
 			exService.shutdown();
 			exService.awaitTermination(TIMEOUT, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
-
 			e.printStackTrace();
 			throw e;
 		}
 
 		try {
-			manager.getMetadata().store(
-					new FileOutputStream(new File(location, METADATA_FILE)),
-					"Image Metadata");
+			manager.getMetadata().store(new FileOutputStream(new File(location, METADATA_FILE)), "Image Metadata");
 		} catch (IOException e) {
 			throw new IOException("Could not save image metadata file.", e);
 		}
@@ -118,13 +126,13 @@ public class PersistImageTask implements Task {
 	public void cancel() {
 	}
 
-	private final class SaveImageTask implements Callable<String> {
+	private final class SavePNGImageTask implements Callable<String> {
 
 		private final File imageHome;
 		private String fileName;
 		private final BufferedImage image;
 
-		public SaveImageTask(final File imageHomeDirectory, String fileName, BufferedImage image) {
+		public SavePNGImageTask(File imageHomeDirectory, String fileName, BufferedImage image) {
 			this.imageHome = imageHomeDirectory;
 			this.fileName = fileName;
 			this.image = image;
@@ -132,18 +140,50 @@ public class PersistImageTask implements Task {
 
 		@Override
 		public String call() throws Exception {
-			logger.debug("  Saving Image: " + fileName);
+			logger.debug("  Saving PNG Image: " + fileName);
 
 			if (!fileName.endsWith(".png"))
 				fileName += ".png";
 			
-			File file = new File(imageHome, fileName);
+			var file = new File(imageHome, fileName);
 
 			try {
 				file.createNewFile();
 				ImageIO.write(image, "PNG", file);
 			} catch (IOException e) {
-				e.printStackTrace();
+				logger.error("Cannot save PNG image " + file.getAbsolutePath(), e);
+			}
+
+			return file.toString();
+		}
+	}
+	
+	private final class SaveSVGImageTask implements Callable<String> {
+
+		private final File imageHome;
+		private String fileName;
+		private final String svg;
+
+		public SaveSVGImageTask(File imageHomeDirectory, String fileName, String svg) {
+			this.imageHome = imageHomeDirectory;
+			this.fileName = fileName;
+			this.svg = svg;
+		}
+
+		@Override
+		public String call() throws Exception {
+			logger.debug("  Saving SVG Image: " + fileName);
+
+			if (!fileName.endsWith(".svg"))
+				fileName += ".svg";
+			
+			var file = new File(imageHome, fileName);
+
+			try (var writer = new FileWriter(file);) {
+				file.createNewFile();
+				writer.write(svg);
+			} catch (IOException e) {
+				logger.error("Cannot save SVG image " + file.getAbsolutePath(), e);
 			}
 
 			return file.toString();

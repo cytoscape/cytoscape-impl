@@ -6,7 +6,7 @@ package org.cytoscape.view.vizmap.gui.internal.task;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -48,11 +48,12 @@ public class CreateNewVisualStyleTask extends AbstractTask implements TunableVal
 
 	private VisualStyle newStyle;
 	private VisualStyle previousCurrentStyle;
+	
 	private final ServicesUtil servicesUtil;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public CreateNewVisualStyleTask(final ServicesUtil servicesUtil) {
+	public CreateNewVisualStyleTask(ServicesUtil servicesUtil) {
 		this.servicesUtil = servicesUtil;
 	}
 

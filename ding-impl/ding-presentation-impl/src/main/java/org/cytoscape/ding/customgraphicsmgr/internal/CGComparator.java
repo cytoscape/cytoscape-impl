@@ -1,12 +1,16 @@
 package org.cytoscape.ding.customgraphicsmgr.internal;
 
+import java.util.Comparator;
+
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,18 +28,22 @@ package org.cytoscape.ding.customgraphicsmgr.internal;
  * #L%
  */
 
-import java.util.Comparator;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-
+@SuppressWarnings("rawtypes")
 public class CGComparator implements Comparator<CyCustomGraphics> {
-  public int compare(CyCustomGraphics o1, CyCustomGraphics o2) {
-    String class1 = o1.getClass().getCanonicalName();
-    String class2 = o2.getClass().getCanonicalName();
-    if (!class1.equals(class2))
-      return class1.compareTo(class2);
+	
+	@Override
+	public int compare(CyCustomGraphics o1, CyCustomGraphics o2) {
+		var class1 = o1.getClass().getCanonicalName();
+		var class2 = o2.getClass().getCanonicalName();
+		
+		if (!class1.equals(class2))
+			return class1.compareTo(class2);
 
-    return o1.getDisplayName().compareTo(o2.getDisplayName());
-  }
+		return o1.getDisplayName().compareTo(o2.getDisplayName());
+	}
 
-  public boolean equals(Object obj) { return false; }
+	@Override
+	public boolean equals(Object obj) {
+		return false;
+	}
 }

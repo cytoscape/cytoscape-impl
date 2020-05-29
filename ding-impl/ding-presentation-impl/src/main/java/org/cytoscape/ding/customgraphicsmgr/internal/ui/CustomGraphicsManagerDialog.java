@@ -8,8 +8,7 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
+import java.nio.file.Files;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
@@ -30,7 +29,9 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.AbstractURLImageCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.BitmapCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.SVGCustomGraphics;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -44,7 +45,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -68,6 +69,9 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 public class CustomGraphicsManagerDialog extends JDialog {
 
+	private static final String IMG_FILES_DESCRIPTION = "Image file (PNG, GIF, JPEG or SVG)";
+	private static final String[] IMG_EXTENSIONS = { "jpg", "jpeg", "png", "gif", "svg" };
+	
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	private JButton addButton;
@@ -165,7 +169,7 @@ public class CustomGraphicsManagerDialog extends JDialog {
 		mainSplitPane.setRightComponent(rightScrollPane);
 		
 		{
-			final GroupLayout layout = new GroupLayout(leftPanel);
+			var layout = new GroupLayout(leftPanel);
 			leftPanel.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
 			layout.setAutoCreateGaps(false);
@@ -186,7 +190,7 @@ public class CustomGraphicsManagerDialog extends JDialog {
 			);
 		}
 		{
-			final GroupLayout layout = new GroupLayout(getContentPane());
+			var layout = new GroupLayout(getContentPane());
 			getContentPane().setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
 			layout.setAutoCreateGaps(true);
@@ -210,9 +214,9 @@ public class CustomGraphicsManagerDialog extends JDialog {
 
 	private void addButtonActionPerformed(ActionEvent evt) {
 		// Add a directory
-		final JFileChooser chooser = new JFileChooser();
+		var chooser = new JFileChooser();
 		
-		final FileNameExtensionFilter filter = new FileNameExtensionFilter("Image file (PNG, GIF or JPEG)", "jpg", "jpeg", "png", "gif");
+		var filter = new FileNameExtensionFilter(IMG_FILES_DESCRIPTION, IMG_EXTENSIONS);
 		chooser.setDialogTitle("Select Image Files");
 		chooser.setMultiSelectionEnabled(true);
 		chooser.setFileFilter(filter);
@@ -225,36 +229,45 @@ public class CustomGraphicsManagerDialog extends JDialog {
 	private void processFiles(File[] files) {
 		for (var file : files) {
 			BufferedImage img = null;
+			String svg = null;
 			
 			if (file.isFile()) {
 				try {
-					img = ImageIO.read(file);
-				} catch (IOException e) {
+					if (file.getName().toLowerCase().endsWith(".svg"))
+						svg = Files.readString(file.toPath());
+					else
+						img = ImageIO.read(file);
+				} catch (Exception e) {
 					logger.error("Could not read file: " + file.toString(), e);
 					continue;
 				}
 			}
 
-			if (img != null) {
-				var cg = new URLImageCustomGraphics(manager.getNextAvailableID(), file.toString(), img);
+			try {
+				AbstractURLImageCustomGraphics<?> cg = null;
 				
-				try {
-					manager.addCustomGraphics(cg, file.toURI().toURL());
-				} catch (MalformedURLException e) {
-					e.printStackTrace();
-					continue;
+				if (svg != null)
+					cg = new SVGCustomGraphics(manager.getNextAvailableID(), file.toString(), svg);
+				else if (img != null)
+					cg = new BitmapCustomGraphics(manager.getNextAvailableID(), file.toString(), img);
+
+				if (cg != null) {
+					var url = file.toURI().toURL();
+					manager.addCustomGraphics(cg, url);
+					((CustomGraphicsListModel) browser.getModel()).addElement(cg);
 				}
-				
-				((CustomGraphicsListModel) browser.getModel()).addElement(cg);
+			} catch (Exception e) {
+				logger.error("Could not create custom graphics: " + file.toString(), e);
+				continue;
 			}
 		}
 	}
 
 	private void deleteButtonActionPerformed(ActionEvent evt) {
-		Object[] toBeRemoved = browser.getSelectedValues();
+		var toBeRemoved = browser.getSelectedValues();
 		
-		for (Object g: toBeRemoved) {
-			var cg = (CyCustomGraphics<?>) g;
+		for (var obj : toBeRemoved) {
+			var cg = (CyCustomGraphics<?>) obj;
 			
 			if (!manager.isUsedInCurrentSession(cg)) {
 				browser.removeCustomGraphics(cg);

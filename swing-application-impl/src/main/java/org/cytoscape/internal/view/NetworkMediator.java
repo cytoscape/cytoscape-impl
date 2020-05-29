@@ -9,15 +9,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.WeakHashMap;
 
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.JSeparator;
 
-import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.internal.actions.DestroyNetworksAction;
 import org.cytoscape.internal.model.RootNetworkManager;
@@ -56,6 +54,7 @@ import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.RootNetworkCollectionTaskFactory;
 import org.cytoscape.task.edit.EditNetworkTitleTaskFactory;
+import org.cytoscape.util.swing.JMenuTracker;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
@@ -335,21 +334,15 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 	}
 
 	public void removeNetworkViewTaskFactory(NetworkViewTaskFactory factory, Map<?, ?> props) {
-		invokeOnEDT(() -> {
-			removeFactory(provisionerMap.remove(factory), false);
-		});
+		invokeOnEDT(() -> removeFactory(provisionerMap.remove(factory), false));
 	}
 	
 	public void addCyAction(CyAction action, Map<?, ?> props) {
-		invokeOnEDT(() -> {
-			netPopupActionMap.put(action, action);
-		});
+		invokeOnEDT(() -> netPopupActionMap.put(action, action));
 	}
 	
 	public void removeCyAction(CyAction action, Map<?, ?> props) {
-		invokeOnEDT(() -> {
-			netPopupActionMap.remove(action);
-		});
+		invokeOnEDT(() -> netPopupActionMap.remove(action));
 	}
 	
 	// // Private Methods // //
@@ -452,7 +445,7 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 			final JPopupMenu popup = new JPopupMenu();
 			
 			if (network instanceof CySubNetwork) {
-				addMenuItems(popup, netPopupActionMap);
+				addMenuItems(popup, netPopupActionMap.values());
 			} else {
 				// Basic actions for root-networks
 				{
@@ -475,7 +468,7 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 				
 				if (!rootPopupActionMap.isEmpty()) {
 					popup.addSeparator();
-					addMenuItems(popup, rootPopupActionMap);
+					addMenuItems(popup, rootPopupActionMap.values());
 				}
 			}
 			
@@ -488,46 +481,26 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 			popup.show(e.getComponent(), e.getX(), e.getY());
 		}
 
-		private void addMenuItems(JPopupMenu popup, Map<Object, CyAction> popupActionMap) {
+		private void addMenuItems(JPopupMenu popup, Collection<CyAction> actions) {
 			// Sort the actions by gravity first
-			TreeMap<Double, CyAction> gravityMap = sortByGravity(popupActionMap);
-			
-			// Create the menu items
-			gravityMap.forEach((g, action) -> {
-				int count = popup.getComponentCount();
-				
-				if (action.insertSeparatorBefore() && count > 0
-						&& popup.getComponent(count - 1) instanceof JSeparator == false)
-					popup.addSeparator();
-				
-				JMenuItem mi = new JMenuItem(action);
-				popup.add(mi);
-				action.updateEnableState();
-				
-				if (action.insertSeparatorAfter())
-					popup.addSeparator();
-			});
-			
-			// Remove the last item if it is a separator
-			int count = popup.getComponentCount();
-			
-			if (count > 0 && popup.getComponent(count - 1) instanceof JSeparator)
-				popup.remove(count - 1);
-		}
+			var menuTracker = new JMenuTracker(popup);
+			var menuString = ".";
 
-		private TreeMap<Double, CyAction> sortByGravity(Map<Object, CyAction> popupActionMap) {
-			TreeMap<Double, CyAction> gravityMap = new TreeMap<>();
-			
-			for (CyAction action : popupActionMap.values()) {
-				double g = 99;
+			// Create the menu items
+			for (var a : actions) {
+				var mi = a.useCheckBoxMenuItem() ? new JCheckBoxMenuItem(a) : new JMenuItem(a);
+				var gravityTracker = menuTracker.getGravityTracker(menuString);
 				
-				if (action instanceof AbstractCyAction)
-					g = ((AbstractCyAction) action).getMenuGravity();
-					
-				gravityMap.put(g, action);
+				if (a.insertSeparatorBefore())
+					gravityTracker.addMenuSeparator(a.getMenuGravity() - .0001);
+
+				gravityTracker.addMenuItem(mi, a.getMenuGravity());
+
+				if (a.insertSeparatorAfter())
+					gravityTracker.addMenuSeparator(a.getMenuGravity() + .0001);
+				
+				a.updateEnableState();
 			}
-			
-			return gravityMap;
 		}
 	}
 }

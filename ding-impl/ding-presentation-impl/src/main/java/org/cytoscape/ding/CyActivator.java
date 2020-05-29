@@ -1,9 +1,22 @@
 package org.cytoscape.ding;
 
-import static org.cytoscape.work.ServiceProperties.*;
+import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
+import static org.cytoscape.work.ServiceProperties.ID;
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
+import static org.cytoscape.work.ServiceProperties.IN_CONTEXT_MENU;
+import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.NETWORK_ADD_MENU;
+import static org.cytoscape.work.ServiceProperties.NETWORK_DELETE_MENU;
+import static org.cytoscape.work.ServiceProperties.NETWORK_EDIT_MENU;
+import static org.cytoscape.work.ServiceProperties.NETWORK_GROUP_MENU;
+import static org.cytoscape.work.ServiceProperties.NODE_ADD_MENU;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_ACTION;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+import static org.cytoscape.work.ServiceProperties.TITLE;
 
 import java.net.URL;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Properties;
@@ -19,7 +32,8 @@ import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.CustomGraphicsTranslator;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics2Manager;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics2ManagerImpl;
-import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphicsFactory;
+import org.cytoscape.ding.customgraphics.image.BitmapCustomGraphicsFactory;
+import org.cytoscape.ding.customgraphics.image.SVGCustomGraphicsFactory;
 import org.cytoscape.ding.customgraphics.vector.GradientOvalFactory;
 import org.cytoscape.ding.customgraphics.vector.GradientRoundRectangleFactory;
 import org.cytoscape.ding.customgraphicsmgr.internal.CustomGraphicsManagerImpl;
@@ -77,8 +91,6 @@ import org.cytoscape.task.EdgeViewTaskFactory;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.CyNetworkViewFactoryConfig;
 import org.cytoscape.view.model.CyNetworkViewFactoryProvider;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
@@ -104,7 +116,7 @@ import org.osgi.framework.BundleContext;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -130,60 +142,60 @@ public class CyActivator extends AbstractCyActivator {
 	
 	@Override
 	public void start(BundleContext bc) {
-		CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
-		
+		var serviceRegistrar = getService(bc, CyServiceRegistrar.class);
+
 		startCustomGraphicsMgr(bc, serviceRegistrar);
 		startCharts(bc, serviceRegistrar);
 		startGradients(bc, serviceRegistrar);
 		startPresentationImpl(bc, serviceRegistrar);
-		
-		if(DingDebugMediator.showDebugPanel(serviceRegistrar)) {
-			DingDebugMediator debugMediator = new DingDebugMediator(serviceRegistrar);
+
+		if (DingDebugMediator.showDebugPanel(serviceRegistrar)) {
+			var debugMediator = new DingDebugMediator(serviceRegistrar);
 			registerAllServices(bc, debugMediator);
 		}
 	}
 
-	private void startPresentationImpl(final BundleContext bc, final CyServiceRegistrar serviceRegistrar) {
-		DVisualLexicon dVisualLexicon = new DVisualLexicon(cgManager);
+	private void startPresentationImpl(BundleContext bc, CyServiceRegistrar serviceRegistrar) {
+		var dVisualLexicon = new DVisualLexicon(cgManager);
 
-		NVLTFActionSupport nvltfActionSupport = new NVLTFActionSupport(serviceRegistrar);
-		ViewTaskFactoryListener vtfListener = new ViewTaskFactoryListener(nvltfActionSupport);
+		var nvltfActionSupport = new NVLTFActionSupport(serviceRegistrar);
+		var vtfListener = new ViewTaskFactoryListener(nvltfActionSupport);
 		registerService(bc, vtfListener, ViewTaskFactoryListener.class);
 
-		AnnotationFactoryManager annotationFactoryManager = new AnnotationFactoryManager();
-		AnnotationManager annotationManager = new AnnotationManagerImpl(serviceRegistrar);
+		var annotationFactoryManager = new AnnotationFactoryManager();
+		var annotationManager = new AnnotationManagerImpl(serviceRegistrar);
 
-		DingGraphLOD dingGraphLOD = new DingGraphLOD(serviceRegistrar);
+		var dingGraphLOD = new DingGraphLOD(serviceRegistrar);
 		registerService(bc, dingGraphLOD, PropertyUpdatedListener.class);
 		
-		HandleFactory handleFactory = new HandleFactoryImpl();
+		var handleFactory = new HandleFactoryImpl();
 		registerService(bc, handleFactory, HandleFactory.class);
 
-		AddEdgeNodeViewTaskFactoryImpl addEdgeNodeViewTaskFactory = new AddEdgeNodeViewTaskFactoryImpl(serviceRegistrar);
+		var addEdgeNodeViewTaskFactory = new AddEdgeNodeViewTaskFactoryImpl(serviceRegistrar);
 
-		ContinuousMappingCellRendererFactory continuousMappingCellRendererFactory = getService(bc, ContinuousMappingCellRendererFactory.class);
+		var continuousMappingCellRendererFactory = getService(bc, ContinuousMappingCellRendererFactory.class);
 
 		// Object Position Editor
-		ObjectPositionValueEditor objectPositionValueEditor = new ObjectPositionValueEditor();
-		ObjectPositionEditor objectPositionEditor =
+		var objectPositionValueEditor = new ObjectPositionValueEditor();
+		var objectPositionEditor =
 				new ObjectPositionEditor(objectPositionValueEditor, continuousMappingCellRendererFactory, serviceRegistrar);
 
-		CyNetworkViewFactoryProvider netViewFactoryFactory = getService(bc, CyNetworkViewFactoryProvider.class);
-		CyNetworkViewFactoryConfig viewFactoryConfig = DingNetworkViewFactory.getNetworkViewConfig(netViewFactoryFactory, dVisualLexicon);
-		CyNetworkViewFactory netViewFactory = netViewFactoryFactory.createNetworkViewFactory(dVisualLexicon, DingRenderer.ID, viewFactoryConfig);
-		DingNetworkViewFactory dingNetViewFactory = new DingNetworkViewFactory(netViewFactory, dVisualLexicon, annotationFactoryManager, dingGraphLOD, handleFactory, serviceRegistrar);
+		var netViewFactoryFactory = getService(bc, CyNetworkViewFactoryProvider.class);
+		var viewFactoryConfig = DingNetworkViewFactory.getNetworkViewConfig(netViewFactoryFactory, dVisualLexicon);
+		var netViewFactory = netViewFactoryFactory.createNetworkViewFactory(dVisualLexicon, DingRenderer.ID, viewFactoryConfig);
+		var dingNetViewFactory = new DingNetworkViewFactory(netViewFactory, dVisualLexicon, annotationFactoryManager, dingGraphLOD, handleFactory, serviceRegistrar);
 		registerService(bc, dingNetViewFactory, NetworkViewAboutToBeDestroyedListener.class);
 		
-		DingRenderer renderer = new DingRenderer(dingNetViewFactory, dVisualLexicon, serviceRegistrar);
+		var renderer = new DingRenderer(dingNetViewFactory, dVisualLexicon, serviceRegistrar);
 		registerService(bc, renderer, NetworkViewRenderer.class);
 		registerService(bc, renderer, DingRenderer.class);
 		RenderingEngineFactory<CyNetwork> dingRenderingEngineFactory = renderer.getRenderingEngineFactory(DingRenderer.DEFAULT_CONTEXT);
 		
 		// Edge Bend editor
-		EdgeBendValueEditor edgeBendValueEditor = new EdgeBendValueEditor(dingNetViewFactory, dingRenderingEngineFactory, serviceRegistrar);
-		EdgeBendEditor edgeBendEditor = new EdgeBendEditor(edgeBendValueEditor, continuousMappingCellRendererFactory, serviceRegistrar);
+		var edgeBendValueEditor = new EdgeBendValueEditor(dingNetViewFactory, dingRenderingEngineFactory, serviceRegistrar);
+		var edgeBendEditor = new EdgeBendEditor(edgeBendValueEditor, continuousMappingCellRendererFactory, serviceRegistrar);
 
-		Properties dingRenderingEngineFactoryProps = new Properties();
+		var dingRenderingEngineFactoryProps = new Properties();
 		dingRenderingEngineFactoryProps.setProperty(ID, "ding");
 		registerAllServices(bc, dingRenderingEngineFactory, dingRenderingEngineFactoryProps);
 
@@ -191,22 +203,22 @@ public class CyActivator extends AbstractCyActivator {
 //		dingNavigationRenderingEngineFactoryProps.setProperty(ID, "dingNavigation");
 //		registerAllServices(bc, dingNavigationRenderingEngineFactory, dingNavigationRenderingEngineFactoryProps);
 
-		Properties addEdgeNodeViewTaskFactoryProps = new Properties();
+		var addEdgeNodeViewTaskFactoryProps = new Properties();
 		addEdgeNodeViewTaskFactoryProps.setProperty(PREFERRED_ACTION, "Edge");
 		addEdgeNodeViewTaskFactoryProps.setProperty(PREFERRED_MENU, NODE_ADD_MENU);
 		addEdgeNodeViewTaskFactoryProps.setProperty(TITLE, "Edge");
 		addEdgeNodeViewTaskFactoryProps.setProperty(MENU_GRAVITY, "0.1");
 		registerService(bc, addEdgeNodeViewTaskFactory, NodeViewTaskFactory.class, addEdgeNodeViewTaskFactoryProps);
 
-		Properties dVisualLexiconProps = new Properties();
+		var dVisualLexiconProps = new Properties();
 		dVisualLexiconProps.setProperty(ID, "ding");
 		registerService(bc, dVisualLexicon, VisualLexicon.class, dVisualLexiconProps);
 
-		final Properties positionEditorProp = new Properties();
+		var positionEditorProp = new Properties();
 		positionEditorProp.setProperty(ID, "objectPositionValueEditor");
 		registerService(bc, objectPositionValueEditor, ValueEditor.class, positionEditorProp);
 
-		final Properties objectPositionEditorProp = new Properties();
+		var objectPositionEditorProp = new Properties();
 		objectPositionEditorProp.setProperty(ID, "objectPositionEditor");
 		registerService(bc, objectPositionEditor, VisualPropertyEditor.class, objectPositionEditorProp);
 
@@ -218,76 +230,76 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, annotationManager, AnnotationManager.class);
 
 		// Annotations UI
-		AnnotationMediator annotationMediator = new AnnotationMediator(serviceRegistrar);
+		var annotationMediator = new AnnotationMediator(serviceRegistrar);
 		registerServiceListener(bc, annotationMediator::addAnnotationFactory, annotationMediator::removeAnnotationFactory, AnnotationFactory.class);
 		registerAllServices(bc, annotationMediator);
 		
 		// Annotation Factories (the order they are registered is the order they appear in the UI)
-		AnnotationFactory<?> textAnnotationFactory = new TextAnnotationFactory(serviceRegistrar);
-		Properties textFactory = new Properties();
+		var textAnnotationFactory = new TextAnnotationFactory(serviceRegistrar);
+		var textFactory = new Properties();
 		textFactory.setProperty("type","TextAnnotation.class");
 		registerService(bc, textAnnotationFactory, AnnotationFactory.class, textFactory);
 		
-		AnnotationFactory<?> boundedAnnotationFactory = new BoundedTextAnnotationFactory(serviceRegistrar);
-		Properties boundedFactory = new Properties();
+		var boundedAnnotationFactory = new BoundedTextAnnotationFactory(serviceRegistrar);
+		var boundedFactory = new Properties();
 		boundedFactory.setProperty("type","BoundedTextAnnotation.class");
 		registerService(bc, boundedAnnotationFactory, AnnotationFactory.class, boundedFactory);
 		
-		AnnotationFactory<?> shapeAnnotationFactory = new ShapeAnnotationFactory(serviceRegistrar);
-		Properties shapeFactory = new Properties();
+		var shapeAnnotationFactory = new ShapeAnnotationFactory(serviceRegistrar);
+		var shapeFactory = new Properties();
 		shapeFactory.setProperty("type","ShapeAnnotation.class");
 		registerService(bc, shapeAnnotationFactory, AnnotationFactory.class, shapeFactory);
 		
-		AnnotationFactory<?> imageAnnotationFactory = new ImageAnnotationFactory(serviceRegistrar);
-		Properties imageFactory = new Properties();
+		var imageAnnotationFactory = new ImageAnnotationFactory(serviceRegistrar);
+		var imageFactory = new Properties();
 		imageFactory.setProperty("type","ImageAnnotation.class");
 		registerService(bc, imageAnnotationFactory, AnnotationFactory.class, imageFactory);
 		
-		AnnotationFactory<?> arrowAnnotationFactory = new ArrowAnnotationFactory(serviceRegistrar);
-		Properties arrowFactory = new Properties();
+		var arrowAnnotationFactory = new ArrowAnnotationFactory(serviceRegistrar);
+		var arrowFactory = new Properties();
 		arrowFactory.setProperty("type","ArrowAnnotation.class");
 		registerService(bc, arrowAnnotationFactory, AnnotationFactory.class, arrowFactory);
 		
-		AnnotationFactory<?> groupAnnotationFactory = new GroupAnnotationFactory(serviceRegistrar);
-		Properties groupFactory = new Properties();
+		var groupAnnotationFactory = new GroupAnnotationFactory(serviceRegistrar);
+		var groupFactory = new Properties();
 		groupFactory.setProperty("type","GroupAnnotation.class");
 		registerService(bc, groupAnnotationFactory, AnnotationFactory.class, groupFactory);
 		
 		// Annotation Task Factories
-		AddArrowTaskFactory addArrowTaskFactory = new AddArrowTaskFactory(arrowAnnotationFactory, renderer);
-		Properties addArrowTaskFactoryProps = new Properties();
+		var addArrowTaskFactory = new AddArrowTaskFactory(arrowAnnotationFactory, renderer);
+		var addArrowTaskFactoryProps = new Properties();
 		addArrowTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		addArrowTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
 		addArrowTaskFactoryProps.setProperty(MENU_GRAVITY, "1.2");
 		addArrowTaskFactoryProps.setProperty(TITLE, "Arrow Annotation...");
 		registerService(bc, addArrowTaskFactory, NetworkViewLocationTaskFactory.class, addArrowTaskFactoryProps);
 
-		AddAnnotationTaskFactory addImageTaskFactory = new AddAnnotationTaskFactory(imageAnnotationFactory, renderer);
-		Properties addImageTaskFactoryProps = new Properties();
+		var addImageTaskFactory = new AddAnnotationTaskFactory(imageAnnotationFactory, renderer);
+		var addImageTaskFactoryProps = new Properties();
 		addImageTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		addImageTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
 		addImageTaskFactoryProps.setProperty(MENU_GRAVITY, "1.3");
 		addImageTaskFactoryProps.setProperty(TITLE, "Image Annotation...");
 		registerService(bc, addImageTaskFactory, NetworkViewLocationTaskFactory.class, addImageTaskFactoryProps);
 
-		AddAnnotationTaskFactory addShapeTaskFactory = new AddAnnotationTaskFactory(shapeAnnotationFactory, renderer);
-		Properties addShapeTaskFactoryProps = new Properties();
+		var addShapeTaskFactory = new AddAnnotationTaskFactory(shapeAnnotationFactory, renderer);
+		var addShapeTaskFactoryProps = new Properties();
 		addShapeTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		addShapeTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
 		addShapeTaskFactoryProps.setProperty(MENU_GRAVITY, "1.4");
 		addShapeTaskFactoryProps.setProperty(TITLE, "Shape Annotation...");
 		registerService(bc, addShapeTaskFactory, NetworkViewLocationTaskFactory.class, addShapeTaskFactoryProps);
 
-		AddAnnotationTaskFactory addTextTaskFactory = new AddAnnotationTaskFactory(textAnnotationFactory, renderer);
-		Properties addTextTaskFactoryProps = new Properties();
+		var addTextTaskFactory = new AddAnnotationTaskFactory(textAnnotationFactory, renderer);
+		var addTextTaskFactoryProps = new Properties();
 		addTextTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		addTextTaskFactoryProps.setProperty(MENU_GRAVITY, "1.5");
 		addTextTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
 		addTextTaskFactoryProps.setProperty(TITLE, "Text Annotation...");
 		registerService(bc, addTextTaskFactory, NetworkViewLocationTaskFactory.class, addTextTaskFactoryProps);
 
-		AddAnnotationTaskFactory addBoundedTextTaskFactory =  new AddAnnotationTaskFactory(boundedAnnotationFactory, renderer);
-		Properties addBoundedTextTaskFactoryProps = new Properties();
+		var addBoundedTextTaskFactory =  new AddAnnotationTaskFactory(boundedAnnotationFactory, renderer);
+		var addBoundedTextTaskFactoryProps = new Properties();
 		addBoundedTextTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		addBoundedTextTaskFactoryProps.setProperty(MENU_GRAVITY, "1.6");
 		addBoundedTextTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
@@ -296,8 +308,8 @@ public class CyActivator extends AbstractCyActivator {
 		                addBoundedTextTaskFactoryProps);
 
 		// Annotation edit
-		EditAnnotationTaskFactory editAnnotationTaskFactory = new EditAnnotationTaskFactory(renderer);
-		Properties editAnnotationTaskFactoryProps = new Properties();
+		var editAnnotationTaskFactory = new EditAnnotationTaskFactory(renderer);
+		var editAnnotationTaskFactoryProps = new Properties();
 		editAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		editAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "2.0");
 		editAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
@@ -319,8 +331,8 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Reorder Selected Annotations - Edit Menu
 		{
-			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(renderer, Shift.TO_FRONT);
-			Properties props = new Properties();
+			var factory = new ReorderSelectedAnnotationsTaskFactory(renderer, Shift.TO_FRONT);
+			var props = new Properties();
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
 			props.setProperty(TITLE, "Bring Annotations to Front");
 			props.setProperty(ACCELERATOR, "shift cmd CLOSE_BRACKET");
@@ -329,8 +341,8 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 		}
 		{
-			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(renderer, Shift.UP_ONE);
-			Properties props = new Properties();
+			var factory = new ReorderSelectedAnnotationsTaskFactory(renderer, Shift.UP_ONE);
+			var props = new Properties();
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
 			props.setProperty(TITLE, "Bring Annotations Forward");
 			props.setProperty(ACCELERATOR, "cmd CLOSE_BRACKET");
@@ -338,8 +350,8 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 		}
 		{
-			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(renderer, Shift.DOWN_ONE);
-			Properties props = new Properties();
+			var factory = new ReorderSelectedAnnotationsTaskFactory(renderer, Shift.DOWN_ONE);
+			var props = new Properties();
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
 			props.setProperty(TITLE, "Send Annotations Backward");
 			props.setProperty(ACCELERATOR, "cmd OPEN_BRACKET");
@@ -347,8 +359,8 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 		}
 		{
-			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(renderer, Shift.TO_BACK);
-			Properties props = new Properties();
+			var factory = new ReorderSelectedAnnotationsTaskFactory(renderer, Shift.TO_BACK);
+			var props = new Properties();
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
 			props.setProperty(TITLE, "Send Annotations to Back");
 			props.setProperty(ACCELERATOR, "shift cmd OPEN_BRACKET");
@@ -357,16 +369,16 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 		}
 		{
-			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(renderer, Annotation.FOREGROUND);
-			Properties props = new Properties();
+			var factory = new ReorderSelectedAnnotationsTaskFactory(renderer, Annotation.FOREGROUND);
+			var props = new Properties();
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
 			props.setProperty(MENU_GRAVITY, "6.5");
 			props.setProperty(TITLE, "Pull Annotations to Foreground Layer");
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 		}
 		{
-			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(renderer, Annotation.BACKGROUND);
-			Properties props = new Properties();
+			var factory = new ReorderSelectedAnnotationsTaskFactory(renderer, Annotation.BACKGROUND);
+			var props = new Properties();
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
 			props.setProperty(TITLE, "Push Annotations to Background Layer");
 			props.setProperty(MENU_GRAVITY, "6.6");
@@ -375,8 +387,8 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		
 		/*
-		ResizeAnnotationTaskFactory resizeAnnotationTaskFactory = new ResizeAnnotationTaskFactory();
-		Properties resizeAnnotationTaskFactoryProps = new Properties();
+		var resizeAnnotationTaskFactory = new ResizeAnnotationTaskFactory();
+		var resizeAnnotationTaskFactoryProps = new Properties();
 		resizeAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		resizeAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "2.3");
 		resizeAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
@@ -386,8 +398,8 @@ public class CyActivator extends AbstractCyActivator {
 		*/
 
 		// Annotation delete
-		RemoveAnnotationTaskFactory removeAnnotationTaskFactory = new RemoveAnnotationTaskFactory(renderer);
-		Properties removeAnnotationTaskFactoryProps = new Properties();
+		var removeAnnotationTaskFactory = new RemoveAnnotationTaskFactory(renderer);
+		var removeAnnotationTaskFactoryProps = new Properties();
 		removeAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		removeAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "1.1");
 		removeAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_DELETE_MENU);
@@ -397,8 +409,8 @@ public class CyActivator extends AbstractCyActivator {
 
 		/*
 		// Annotation select
-		SelectAnnotationTaskFactory selectAnnotationTaskFactory = new SelectAnnotationTaskFactory();
-		Properties selectAnnotationTaskFactoryProps = new Properties();
+		var selectAnnotationTaskFactory = new SelectAnnotationTaskFactory();
+		var selectAnnotationTaskFactoryProps = new Properties();
 		selectAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		selectAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "1.1");
 		selectAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_SELECT_MENU);
@@ -408,8 +420,8 @@ public class CyActivator extends AbstractCyActivator {
 		*/
 
 		// Annotation group
-		GroupAnnotationsTaskFactory groupAnnotationTaskFactory = new GroupAnnotationsTaskFactory(renderer);
-		Properties groupAnnotationTaskFactoryProps = new Properties();
+		var groupAnnotationTaskFactory = new GroupAnnotationsTaskFactory(renderer);
+		var groupAnnotationTaskFactoryProps = new Properties();
 		groupAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		groupAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "100");
 		groupAnnotationTaskFactoryProps.setProperty(INSERT_SEPARATOR_BEFORE, "true");
@@ -420,8 +432,8 @@ public class CyActivator extends AbstractCyActivator {
 		                groupAnnotationTaskFactoryProps);
 
 		// Annotation ungroup
-		UngroupAnnotationsTaskFactory ungroupAnnotationTaskFactory = new UngroupAnnotationsTaskFactory(renderer);
-		Properties ungroupAnnotationTaskFactoryProps = new Properties();
+		var ungroupAnnotationTaskFactory = new UngroupAnnotationsTaskFactory(renderer);
+		var ungroupAnnotationTaskFactoryProps = new Properties();
 		ungroupAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		ungroupAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "100");
 		ungroupAnnotationTaskFactoryProps.setProperty(INSERT_SEPARATOR_BEFORE, "true");
@@ -431,20 +443,19 @@ public class CyActivator extends AbstractCyActivator {
 		                ungroupAnnotationTaskFactoryProps);
 
 		// Set mouse drag selection modes
-		SelectModeAction selectNodesOnlyAction = new SelectModeAction(SelectModeAction.NODES, 0.5f, serviceRegistrar);
+		var selectNodesOnlyAction = new SelectModeAction(SelectModeAction.NODES, 0.5f, serviceRegistrar);
 		registerAllServices(bc, selectNodesOnlyAction);
 		
-		SelectModeAction selectEdgesOnlyAction = new SelectModeAction(SelectModeAction.EDGES, 0.6f, serviceRegistrar);
+		var selectEdgesOnlyAction = new SelectModeAction(SelectModeAction.EDGES, 0.6f, serviceRegistrar);
 		registerAllServices(bc, selectEdgesOnlyAction);
 		
-		SelectModeAction selectAnnotationsOnlyAction = new SelectModeAction(SelectModeAction.ANNOTATIONS, 0.7f, serviceRegistrar);
+		var selectAnnotationsOnlyAction = new SelectModeAction(SelectModeAction.ANNOTATIONS, 0.7f, serviceRegistrar);
 		registerAllServices(bc, selectAnnotationsOnlyAction);
 		
-		SelectModeAction selectNodesEdgesAction = new SelectModeAction(SelectModeAction.NODES_EDGES, 0.8f, serviceRegistrar);
+		var selectNodesEdgesAction = new SelectModeAction(SelectModeAction.NODES_EDGES, 0.8f, serviceRegistrar);
 		registerAllServices(bc, selectNodesEdgesAction);
 
-		
-		SelectModeAction selectNodeLabelsAction = new SelectModeAction(SelectModeAction.NODE_LABELS, 0.85f, serviceRegistrar);
+		var selectNodeLabelsAction = new SelectModeAction(SelectModeAction.NODE_LABELS, 0.85f, serviceRegistrar);
 		registerAllServices(bc, selectNodeLabelsAction);
 		
 		SelectModeAction selectAllAction = new SelectModeAction(SelectModeAction.ALL, 0.9f, serviceRegistrar);
@@ -452,17 +463,17 @@ public class CyActivator extends AbstractCyActivator {
 		
 		{
 			// Toggle Graphics Details
-			ShowGraphicsDetailsTaskFactory factory = new ShowGraphicsDetailsTaskFactory();
-			Properties props = new Properties();
+			var factory = new ShowGraphicsDetailsTaskFactory();
+			var props = new Properties();
 			props.setProperty(ID, "showGraphicsDetailsTaskFactory");
 			registerService(bc, factory, NetworkViewTaskFactory.class, props); // Used at least by cyREST
 			
 			// Main menu
-			GraphicsDetailAction mainMenuAction = new GraphicsDetailAction(5.0f, "View", factory, serviceRegistrar);
+			var mainMenuAction = new GraphicsDetailAction(5.0f, "View", factory, serviceRegistrar);
 			registerAllServices(bc, mainMenuAction);
 		}
 
-		final String vtfFilter = String.format("(| (!(%s=*)) (%s=true))", IN_CONTEXT_MENU, IN_CONTEXT_MENU); // if IN_CONTEXT_MENU is not specified, default to true
+		var vtfFilter = String.format("(| (!(%s=*)) (%s=true))", IN_CONTEXT_MENU, IN_CONTEXT_MENU); // if IN_CONTEXT_MENU is not specified, default to true
 		registerServiceListener(bc, vtfListener::addNodeViewTaskFactory, vtfListener::removeNodeViewTaskFactory, NodeViewTaskFactory.class, vtfFilter);
 		registerServiceListener(bc, vtfListener::addEdgeViewTaskFactory, vtfListener::removeEdgeViewTaskFactory, EdgeViewTaskFactory.class, vtfFilter);
 		registerServiceListener(bc, vtfListener::addNetworkViewTaskFactory, vtfListener::removeNetworkViewTaskFactory, NetworkViewTaskFactory.class, vtfFilter);
@@ -473,60 +484,64 @@ public class CyActivator extends AbstractCyActivator {
 
 		registerServiceListener(bc, annotationFactoryManager::addAnnotationFactory, annotationFactoryManager::removeAnnotationFactory, AnnotationFactory.class);
 
-		BendFactory bendFactory = new BendFactoryImpl();
+		var bendFactory = new BendFactoryImpl();
 		registerService(bc, bendFactory, BendFactory.class);
 
 		// Register the factory
 		dVisualLexicon.addBendFactory(bendFactory, new HashMap<Object, Object>());
 		
 		// Translators for Passthrough
-		final CustomGraphicsTranslator cgTranslator = new CustomGraphicsTranslator(cgManager, cg2Manager);
+		var cgTranslator = new CustomGraphicsTranslator(cgManager, cg2Manager);
 		registerService(bc, cgTranslator, ValueTranslator.class);
 
 		// Factories for Visual Property Dependency
-		final NodeSizeDependencyFactory nodeSizeDependencyFactory = new NodeSizeDependencyFactory(dVisualLexicon);
+		var nodeSizeDependencyFactory = new NodeSizeDependencyFactory(dVisualLexicon);
 		registerService(bc, nodeSizeDependencyFactory, VisualPropertyDependencyFactory.class);
 
-		final EdgeColorDependencyFactory edgeColorDependencyFactory = new EdgeColorDependencyFactory(dVisualLexicon);
+		var edgeColorDependencyFactory = new EdgeColorDependencyFactory(dVisualLexicon);
 		registerService(bc, edgeColorDependencyFactory, VisualPropertyDependencyFactory.class);
 
-		final CustomGraphicsSizeDependencyFactory cgSizeDependencyFactory = new CustomGraphicsSizeDependencyFactory(
-				dVisualLexicon);
+		var cgSizeDependencyFactory = new CustomGraphicsSizeDependencyFactory(dVisualLexicon);
 		registerService(bc, cgSizeDependencyFactory, VisualPropertyDependencyFactory.class);
 
 		// Custom Graphics Editors
-		final CyCustomGraphicsValueEditor cgValueEditor = new CyCustomGraphicsValueEditor(cgManager, cg2Manager,
-				cgBrowser, serviceRegistrar);
+		var cgValueEditor = new CyCustomGraphicsValueEditor(cgManager, cg2Manager, cgBrowser, serviceRegistrar);
 		registerAllServices(bc, cgValueEditor);
 
-		final CustomGraphicsVisualPropertyEditor cgVisualPropertyEditor = new CustomGraphicsVisualPropertyEditor(
-				CyCustomGraphics.class, cgValueEditor, continuousMappingCellRendererFactory, serviceRegistrar);
+		var cgVisualPropertyEditor = new CustomGraphicsVisualPropertyEditor(CyCustomGraphics.class, cgValueEditor,
+				continuousMappingCellRendererFactory, serviceRegistrar);
 		registerService(bc, cgVisualPropertyEditor, VisualPropertyEditor.class);
 	}
 
-	private void startCustomGraphicsMgr(final BundleContext bc, final CyServiceRegistrar serviceRegistrar) {
+	private void startCustomGraphicsMgr(BundleContext bc, CyServiceRegistrar serviceRegistrar) {
 		cgManager = new CustomGraphicsManagerImpl(getdefaultImageURLs(bc), serviceRegistrar);
 		registerAllServices(bc, cgManager);
 
 		cgBrowser = new CustomGraphicsBrowser(cgManager);
 		registerAllServices(bc, cgBrowser);
 
-		CustomGraphicsManagerAction cgManagerAction = new CustomGraphicsManagerAction(cgManager, cgBrowser,
-				serviceRegistrar);
-
+		var cgManagerAction = new CustomGraphicsManagerAction(cgManager, cgBrowser, serviceRegistrar);
 		registerService(bc, cgManagerAction, CyAction.class);
 
 		// Create and register our built-in factories.
-		// TODO:  When the CustomGraphicsFactory service stuff is set up, just
-		// register these as services
-		URLImageCustomGraphicsFactory imageFactory = new URLImageCustomGraphicsFactory(cgManager);
-		cgManager.addCustomGraphicsFactory(imageFactory, new Properties());
+		// TODO:  When the CustomGraphicsFactory service stuff is set up, just register these as services
+		{
+			var bitmapFactory = new BitmapCustomGraphicsFactory(cgManager);
+			var props = new Properties();
+			props.setProperty(CustomGraphicsManager.SUPPORTED_CLASS_ID, BitmapCustomGraphicsFactory.SUPPORTED_CLASS_ID);
+			cgManager.addCustomGraphicsFactory(bitmapFactory, props);
+		}
+		{
+			var vectorFactory = new SVGCustomGraphicsFactory(cgManager);
+			var props = new Properties();
+			props.setProperty(CustomGraphicsManager.SUPPORTED_CLASS_ID, SVGCustomGraphicsFactory.SUPPORTED_CLASS_ID);
+			cgManager.addCustomGraphicsFactory(vectorFactory, props);
+		}
 
-		GradientOvalFactory ovalFactory = new GradientOvalFactory(cgManager);
+		var ovalFactory = new GradientOvalFactory(cgManager);
 		cgManager.addCustomGraphicsFactory(ovalFactory, new Properties());
 
-		GradientRoundRectangleFactory rectangleFactory = 
-		     new GradientRoundRectangleFactory(cgManager);
+		var rectangleFactory = new GradientRoundRectangleFactory(cgManager);
 		cgManager.addCustomGraphicsFactory(rectangleFactory, new Properties());
 
 		// Register this service listener so that app writers can provide their own CustomGraphics factories
@@ -540,61 +555,60 @@ public class CyActivator extends AbstractCyActivator {
 				((CyCustomGraphics2ManagerImpl)cg2Manager)::removeFactory, CyCustomGraphics2Factory.class);
 	}
 	
-	private void startCharts(final BundleContext bc, final CyServiceRegistrar serviceRegistrar) {
+	private void startCharts(BundleContext bc, CyServiceRegistrar serviceRegistrar) {
 		// Register Chart Factories
-		final Properties factoryProps = new Properties();
-		factoryProps.setProperty(CyCustomGraphics2Factory.GROUP, CyCustomGraphics2Manager.GROUP_CHARTS);
+		var props = new Properties();
+		props.setProperty(CyCustomGraphics2Factory.GROUP, CyCustomGraphics2Manager.GROUP_CHARTS);
 		{
-			final BarChartFactory factory = new BarChartFactory(serviceRegistrar);
-			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
+			var factory = new BarChartFactory(serviceRegistrar);
+			registerService(bc, factory, CyCustomGraphics2Factory.class, props);
 		}
 		{
-			final BoxChartFactory factory = new BoxChartFactory(serviceRegistrar);
-			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
+			var factory = new BoxChartFactory(serviceRegistrar);
+			registerService(bc, factory, CyCustomGraphics2Factory.class, props);
 		}
 		{
-			final PieChartFactory factory = new PieChartFactory(serviceRegistrar);
-			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
+			var factory = new PieChartFactory(serviceRegistrar);
+			registerService(bc, factory, CyCustomGraphics2Factory.class, props);
 		}
 		{
-			final RingChartFactory factory = new RingChartFactory(serviceRegistrar);
-			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
+			var factory = new RingChartFactory(serviceRegistrar);
+			registerService(bc, factory, CyCustomGraphics2Factory.class, props);
 		}
 		{
-			final LineChartFactory factory = new LineChartFactory(serviceRegistrar);
-			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
+			var factory = new LineChartFactory(serviceRegistrar);
+			registerService(bc, factory, CyCustomGraphics2Factory.class, props);
 		}
 		{
-			final HeatMapChartFactory factory = new HeatMapChartFactory(serviceRegistrar);
-			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
+			var factory = new HeatMapChartFactory(serviceRegistrar);
+			registerService(bc, factory, CyCustomGraphics2Factory.class, props);
 		}
 	}
 	
-	private void startGradients(final BundleContext bc, final CyServiceRegistrar serviceRegistrar) {
+	private void startGradients(BundleContext bc, CyServiceRegistrar serviceRegistrar) {
 		// Register Gradient Factories
-		final Properties factoryProps = new Properties();
-		factoryProps.setProperty(CyCustomGraphics2Factory.GROUP, CyCustomGraphics2Manager.GROUP_GRADIENTS);
+		var props = new Properties();
+		props.setProperty(CyCustomGraphics2Factory.GROUP, CyCustomGraphics2Manager.GROUP_GRADIENTS);
 		{
 			final LinearGradientFactory factory = new LinearGradientFactory();
-			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
+			registerService(bc, factory, CyCustomGraphics2Factory.class, props);
 		}
 		{
 			final RadialGradientFactory factory = new RadialGradientFactory();
-			registerService(bc, factory, CyCustomGraphics2Factory.class, factoryProps);
+			registerService(bc, factory, CyCustomGraphics2Factory.class, props);
 		}
 	}
 	
 	/**
 	 * Get list of default images from resource.
 	 */
-	private Set<URL> getdefaultImageURLs(final BundleContext bc) {
-		Enumeration<URL> e = bc.getBundle().findEntries("images/sampleCustomGraphics", "*.png", true);
-		final Set<URL> defaultImageUrls = new HashSet<>();
+	private Set<URL> getdefaultImageURLs(BundleContext bc) {
+		var e = bc.getBundle().findEntries("images/sampleCustomGraphics", "*.png", true);
+		var defaultImageUrls = new HashSet<URL>();
 		
 		while (e.hasMoreElements())
 			defaultImageUrls.add(e.nextElement());
 		
 		return defaultImageUrls;
 	}
-
 }

@@ -21,11 +21,11 @@ import java.util.Map;
 import javax.swing.JDialog;
 
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.ding.customgraphics.ImageUtil;
-import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.BitmapCustomGraphics;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ImageAnnotationDialog;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
+import org.cytoscape.ding.internal.util.ImageUtil;
 import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.ImageAnnotation;
@@ -112,7 +112,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		this.height = image.getHeight();
 		this.url = url;
 		final Long id = customGraphicsManager.getNextAvailableID();
-		this.cg = new URLImageCustomGraphics(id, url.toString(), image);
+		this.cg = new BitmapCustomGraphics(id, url.toString(), image);
 		customGraphicsManager.addCustomGraphics(cg, url);
 		customGraphicsManager.setUsedInCurrentSession(cg, true);
 		name = getDefaultName();
@@ -132,7 +132,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 		this.image = null;
 
-		if(argMap.containsKey(URL)) {
+		if (argMap.containsKey(URL)) {
 			// Get the image from the image pool
 			try {
 				this.url = new URL(argMap.get(URL));

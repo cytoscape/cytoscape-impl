@@ -56,7 +56,6 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
@@ -83,7 +82,7 @@ import com.l2fprod.common.propertysheet.PropertySheetTableModel.Item;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -240,11 +239,11 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	
 	public void updateBypassButton() {
 		if (bypassBtn != null) {
-			final LockedValueState state = model.getLockedValueState();
+			var state = model.getLockedValueState();
 			bypassBtn.setEnabled(isEnabled() && state != LockedValueState.DISABLED);
 			
 			if (state == LockedValueState.ENABLED_MULTIPLE_VALUES) {
-				final IconManager iconManager = servicesUtil.get(IconManager.class);
+				var iconManager = servicesUtil.get(IconManager.class);
 				
 				bypassBtn.setForeground(LookAndFeelUtil.getInfoColor());
 				bypassBtn.setFont(iconManager.getIconFont(19.0f));
@@ -257,8 +256,8 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			
 			bypassBtn.setIcon(getIcon(model.getLockedValue(), VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT));
 			
-			final String elementsStr = model.getTargetDataType() == CyNode.class ? "nodes" : "edges";
-			String toolTipText = "No bypass";
+			var elementsStr = model.getTargetDataType() == CyNode.class ? "nodes" : "edges";
+			var toolTipText = "No bypass";
 			
 			if (state == LockedValueState.DISABLED)
 				toolTipText = "To bypass the visual property, first select one or more " + elementsStr;
@@ -717,9 +716,9 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private Icon getIcon(final T value, final int width, final int height) {// TODO should not be part of this class
+	private Icon getIcon(T value, int width, int height) {// TODO should not be part of this class
 		Icon icon = null;
-		final RenderingEngine<?> engine = model.getRenderingEngine();
+		var engine = model.getRenderingEngine();
 		
 		if (engine != null && value != null)
 			icon = engine.createIcon((VisualProperty) model.getVisualProperty(), value, width, height);

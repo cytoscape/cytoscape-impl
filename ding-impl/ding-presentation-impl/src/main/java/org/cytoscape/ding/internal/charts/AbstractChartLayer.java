@@ -2,13 +2,11 @@ package org.cytoscape.ding.internal.charts;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
-import java.awt.Composite;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.TexturePaint;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -24,7 +22,6 @@ import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.Cy2DGraphicLayer;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryLabelPositions;
-import org.jfree.chart.plot.Plot;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.Dataset;
@@ -91,23 +88,25 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	protected AbstractChartLayer(final Map<String, List<Double>> data,
-								 final List<String> itemLabels,
-								 final List<String> domainLabels,
-								 final List<String> rangeLabels,
-								 final boolean showItemLabels,
-								 final boolean showDomainAxis,
-								 final boolean showRangeAxis,
-								 final float itemFontSize,
-								 final LabelPosition domainLabelPosition,
-								 final List<Color> colors,
-								 final float axisWidth,
-								 final Color axisColor,
-								 final float axisFontSize,
-								 final float borderWidth,
-								 final Color borderColor,
-								 final List<Double> range,
-								 final Rectangle2D bounds) {
+	protected AbstractChartLayer(
+			Map<String, List<Double>> data,
+			List<String> itemLabels,
+			List<String> domainLabels,
+			List<String> rangeLabels,
+			boolean showItemLabels,
+			boolean showDomainAxis,
+			boolean showRangeAxis,
+			float itemFontSize,
+			LabelPosition domainLabelPosition,
+			List<Color> colors,
+			float axisWidth,
+			Color axisColor,
+			float axisFontSize,
+			float borderWidth,
+			Color borderColor,
+			List<Double> range,
+			Rectangle2D bounds
+	) {
 		this.data = data;
 		this.itemLabels = itemLabels;
 		this.domainLabels = domainLabels;
@@ -135,51 +134,46 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 	}
 
 	@Override
-	public CustomGraphicLayer transform(final AffineTransform xform) {
-		final Shape s = xform.createTransformedShape(bounds);
-		bounds = s.getBounds2D();
+	public CustomGraphicLayer transform(AffineTransform xform) {
+		bounds = xform.createTransformedShape(bounds).getBounds2D();
 		
 		return this;
 	}
 
 	@Override
-	public void draw(final Graphics2D g, final Shape shape, final CyNetworkView networkView, 
-			final View<? extends CyIdentifiable> view) {
+	public void draw(Graphics2D g, Shape shape, CyNetworkView networkView, View<? extends CyIdentifiable> view) {
+		var g2 = (Graphics2D) g.create();
+		
 		// Give JFreeChart a larger area to draw into, so the proportions of the chart elements looks better
-		final double scale = 2.0;
-		Rectangle2D newBounds = new Rectangle2D.Double(bounds.getX() * scale, bounds.getY() * scale,
-				bounds.getWidth() * scale, bounds.getHeight() * scale);
+		double scale = 2.0;
+		var newBounds = new Rectangle2D.Double(
+				bounds.getX() * scale,
+				bounds.getY() * scale,
+				bounds.getWidth() * scale,
+				bounds.getHeight() * scale
+		);
 		// Of course, we also have to ask Graphics2D to apply the inverse transformation
-		final double invScale = 1.0 / scale;
-		final AffineTransform at = new AffineTransform();
-		at.scale(invScale, invScale);
-		g.transform(at);
+		double invScale = 1.0 / scale;
+		g2.scale(invScale, invScale);
 
 		// Check to see if we have a current alpha composite
-		Composite comp = g.getComposite();
+		var comp = g2.getComposite();
+		
 		if (comp instanceof AlphaComposite) {
-			float alpha = ((AlphaComposite)comp).getAlpha();
-			JFreeChart fc = getChart();
-			Plot plot = fc.getPlot();
+			float alpha = ((AlphaComposite) comp).getAlpha();
+			var fc = getChart();
+			var plot = fc.getPlot();
 			plot.setForegroundAlpha(alpha);
-			fc.draw(g, newBounds);
+			fc.draw(g2, newBounds);
 		} else {
-			getChart().draw(g, newBounds);
+			getChart().draw(g2, newBounds);
 		}
-		
-		
-		// Make sure Graphics2D is "back to normal" before returning
-		try {
-			at.invert();
-		} catch (NoninvertibleTransformException e) {
-			e.printStackTrace();
-		}
-		
-		g.transform(at);
+
+		g2.dispose();
 	}
 	
 	@Override
-	public TexturePaint getPaint(final Rectangle2D r) {
+	public TexturePaint getPaint(Rectangle2D r) {
 		// If the bounds are the same as before, there is no need to recreate the "same" image again
 		if (img == null || paint == null || !r.equals(scaledBounds)) {
 			// Recreate and cache Image and TexturePaint
@@ -197,22 +191,22 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 	
 	protected JFreeChart getChart() {
 		if (chart == null) {
-			final T dataset = createDataset();
+			T dataset = createDataset();
 			chart = createChart(dataset);
 		}
 		
 		return chart;
 	}
 
-	protected BufferedImage createImage(final Rectangle2D r) {
-		final Rectangle nr = validateBounds(r);
+	protected BufferedImage createImage(Rectangle2D r) {
+		Rectangle nr = validateBounds(r);
         
         return getChart().createBufferedImage(nr.width, nr.height, BufferedImage.TYPE_INT_ARGB, null);
 	}
 	
-	protected Rectangle validateBounds(final Rectangle2D r) {
+	protected Rectangle validateBounds(Rectangle2D r) {
 		double minScale = 1;
-		final double minSize = 140;
+		double minSize = 140;
 		
 		if ((r.getWidth() < minSize || r.getHeight() < minSize) && r.getWidth() > 4 && r.getHeight() > 4)
 			minScale = minSize / Math.min(r.getWidth(), r.getHeight()); // Or the plot is not drawn/centered correctly;
@@ -222,11 +216,11 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 		
 		// width * height needs to be less than Integer.MAX_VALUE,
 		// but let's limit it to a much smaller resolution, to avoid performance issues and OutOfMemoryErrors
-		final double resolution = (double)w * (double)h;
+		double resolution = (double)w * (double)h;
 		
 		if (resolution > MAX_IMG_RESOLUTION) {
 			// (f*w)*(f*h) = MAX_IMG_RESOLUTION
-			final double f = Math.sqrt(MAX_IMG_RESOLUTION / resolution); // new scale
+			double f = Math.sqrt(MAX_IMG_RESOLUTION / resolution); // new scale
 			// The new scale may generate more images that are more pixelated, but that's fine,
 			// because either the node size or the zoom level is exaggerated.
 			w = (int) Math.round(w*f);
@@ -250,17 +244,19 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 	
 	protected abstract T createDataset();
 	
-	protected abstract JFreeChart createChart(final T dataset);
+	protected abstract JFreeChart createChart(T dataset);
 	
-	public static CategoryDataset createCategoryDataset(final Map<String, List<Double>> data,
-														final boolean listIsSeries,
-														List<String> labels) {
-		final DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+	public static CategoryDataset createCategoryDataset(
+			Map<String, List<Double>> data,
+			boolean listIsSeries,
+			List<String> labels
+	) {
+		var dataset = new DefaultCategoryDataset();
 		
 		if (listIsSeries && (labels == null || labels.isEmpty())) {
 			int size = 0;
 			
-			for (final List<Double> values : data.values())
+			for (var values : data.values())
 				size = Math.max(size, values.size());
 			
 			labels = createDefaultLabels(size);
@@ -268,11 +264,11 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 			
 		int count = 0;
 		
-		for (String category : data.keySet()) {
-			final List<Double> values = data.get(category);
+		for (var category : data.keySet()) {
+			var values = data.get(category);
 			
 			for (int i = 0; i < values.size(); i++) {
-				final Double v = values.get(i);
+				Double v = values.get(i);
 				String k = "#" + (i+1); // row key
 				
 				if (listIsSeries) {
@@ -295,13 +291,13 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 	}
 	
 	// TODO minimumslice: The minimum size of a slice to be considered. All slices smaller than this are grouped together in a single "other" slice
-	public static PieDataset createPieDataset(final List<Double> values) {
-		final DefaultPieDataset dataset = new DefaultPieDataset();
+	public static PieDataset createPieDataset(List<Double> values) {
+		var dataset = new DefaultPieDataset();
 		
 		if (values != null) {
 			for (int i = 0; i < values.size(); i++) {
-				final Double v = values.get(i);
-				final String k = "#" + (i+1);
+				Double v = values.get(i);
+				String k = "#" + (i+1);
 				dataset.setValue(k, v);
 			}
 		}
@@ -309,8 +305,8 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 		return dataset;
 	}
 	
-	public static List<String> createDefaultLabels(final int size) {
-		final List<String> labels = new ArrayList<String>(size);
+	public static List<String> createDefaultLabels(int size) {
+		var labels = new ArrayList<String>(size);
 		
 		for (int i = 0; i < size; i++)
 			labels.add("#" + (i+1));
@@ -318,18 +314,18 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 		return labels;
 	}
 	
-	public static List<Double> calculateRange(final Collection<List<Double>> lists, final boolean stacked) {
-		List<Double> range = new ArrayList<>();
+	public static List<Double> calculateRange(Collection<List<Double>> lists, boolean stacked) {
+		var range = new ArrayList<Double>();
 		
 		if (lists != null && !lists.isEmpty()) {
 			double min = Double.POSITIVE_INFINITY;
 			double max = Double.NEGATIVE_INFINITY;
 			
-			for (final List<Double> values : lists) {
+			for (var values : lists) {
 				double sum = 0;
 				
 				if (values != null) {
-					for (final double v : values) {
+					for (double v : values) {
 						if (Double.isNaN(v))
 							continue;
 						

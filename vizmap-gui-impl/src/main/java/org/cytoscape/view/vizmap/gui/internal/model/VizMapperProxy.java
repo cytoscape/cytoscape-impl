@@ -65,7 +65,7 @@ import org.puremvc.java.multicore.patterns.proxy.Proxy;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -177,6 +177,10 @@ public class VizMapperProxy extends Proxy
 		return originalDefaultVisualStyle;
 	}
 	
+	public boolean isDefaultStyle(VisualStyle vs) {
+		return vs.equals(getDefaultVisualStyle());
+	}
+	
 	public VisualStyle getDefaultVisualStyle() {
 		synchronized (lock) {
 			return servicesUtil.get(VisualMappingManager.class).getDefaultVisualStyle();
@@ -189,7 +193,7 @@ public class VizMapperProxy extends Proxy
 		}
 	}
 
-	public void setCurrentVisualStyle(final VisualStyle vs) {
+	public void setCurrentVisualStyle(VisualStyle vs) {
 		final VisualStyle curVs = getCurrentVisualStyle();
 		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
 		
@@ -197,7 +201,7 @@ public class VizMapperProxy extends Proxy
 			vmMgr.setCurrentVisualStyle(vs);
 	}
 
-	public VisualStyle getVisualStyle(final CyNetworkView view) {
+	public VisualStyle getVisualStyle(CyNetworkView view) {
 		return servicesUtil.get(VisualMappingManager.class).getVisualStyle(view);
 	}
 	
@@ -285,22 +289,36 @@ public class VizMapperProxy extends Proxy
 		return views;
 	}
 	
-	public Set<CyNetworkView> getNetworkViewsWithStyle(final VisualStyle style) {
-		final Set<CyNetworkView> views = new HashSet<>();
+	public Set<CyNetworkView> getNetworkViewsWithStyle(VisualStyle style) {
+		var views = new HashSet<CyNetworkView>();
 		
 		if (style != null) {
-			final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
-			final Set<CyNetworkView> allNetViews = servicesUtil.get(CyNetworkViewManager.class).getNetworkViewSet();
+			var vmMgr = servicesUtil.get(VisualMappingManager.class);
+			var allNetViews = servicesUtil.get(CyNetworkViewManager.class).getNetworkViewSet();
 			
-			for (final CyNetworkView nv : allNetViews) {
-				final VisualStyle vs = vmMgr.getVisualStyle(nv);
-				
-				if (style.equals(vs))
+			for (var nv : allNetViews) {
+				if (style.equals(vmMgr.getVisualStyle(nv)))
 					views.add(nv);
 			}
 		}
 		
 		return views;
+	}
+	
+	public int countNetworkViewsWithStyle(VisualStyle style) {
+		int count = 0;
+		
+		if (style != null) {
+			var vmMgr = servicesUtil.get(VisualMappingManager.class);
+			var allNetViews = servicesUtil.get(CyNetworkViewManager.class).getNetworkViewSet();
+			
+			for (var nv : allNetViews) {
+				if (style.equals(vmMgr.getVisualStyle(nv)))
+					count++;
+			}
+		}
+		
+		return count;
 	}
 	
 	public boolean isSupported(final VisualProperty<?> vp) {

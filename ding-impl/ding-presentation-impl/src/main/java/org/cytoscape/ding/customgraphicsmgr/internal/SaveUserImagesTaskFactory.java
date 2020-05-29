@@ -12,7 +12,7 @@ import org.cytoscape.work.TaskIterator;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -30,18 +30,18 @@ import org.cytoscape.work.TaskIterator;
  * #L%
  */
 
-public class PersistImageTaskFactory extends AbstractTaskFactory {
+public class SaveUserImagesTaskFactory extends AbstractTaskFactory {
 
 	private final File location;
 	private final CustomGraphicsManager manager;
 
-	PersistImageTaskFactory(final File location, final CustomGraphicsManager manager) {
+	public SaveUserImagesTaskFactory(File location, CustomGraphicsManager manager) {
 		this.manager = manager;
 		this.location = location;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new PersistImageTask(location, manager));
+		return new TaskIterator(new SaveUserImagesTask(location, manager));
 	}
 }

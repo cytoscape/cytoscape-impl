@@ -104,7 +104,7 @@ public class GroupNodesTask extends AbstractTask implements ObservableTask {
 		serviceRegistrar.getService(UndoSupport.class).postEdit(new GroupEdit(newGroup, serviceRegistrar));
 
 		// Now some trickery to actually name the group.  Note that we need to change
-		// both the NAME and SHARED_NAME columns
+		// both the SERIALIZABLE_NAME and SHARED_NAME columns
 		CyRow groupRow = ((CySubNetwork)net).getRootNetwork().getRow(newGroup.getGroupNode(), CyRootNetwork.SHARED_ATTRS);
  		groupRow.set(CyRootNetwork.SHARED_NAME, groupName);
 

@@ -1,12 +1,20 @@
 package org.cytoscape.ding.customgraphics;
 
+import java.awt.geom.AffineTransform;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
+import org.cytoscape.view.presentation.property.values.ObjectPosition;
+import org.cytoscape.view.presentation.property.values.Position;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,66 +32,60 @@ package org.cytoscape.ding.customgraphics;
  * #L%
  */
 
-import java.awt.geom.AffineTransform;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
-import org.cytoscape.view.presentation.property.values.ObjectPosition;
-import org.cytoscape.view.presentation.property.values.Position;
-
 public class CustomGraphicsPositionCalculator {
 	
-	/**
-	 * Defines displacement.
-	 */
+	/** Defines displacement. */
 	private static final Map<Position, Float[]> DISPLACEMENT_MAP;
-	
+
 	static {
-		DISPLACEMENT_MAP = new HashMap<Position, Float[]>();
-		
-		DISPLACEMENT_MAP.put(Position.CENTER, new Float[]{0f, 0f} );
-		
-		DISPLACEMENT_MAP.put(Position.NORTH,  new Float[]{0f, -0.5f});
-		DISPLACEMENT_MAP.put(Position.NORTH_WEST, new Float[]{-0.5f, -0.5f});
-		DISPLACEMENT_MAP.put(Position.NORTH_EAST, new Float[]{0.5f, -0.5f});
-		
-		DISPLACEMENT_MAP.put(Position.SOUTH,  new Float[]{0f, 0.5f});
-		DISPLACEMENT_MAP.put(Position.SOUTH_WEST,  new Float[]{-0.5f, 0.5f});
-		DISPLACEMENT_MAP.put(Position.SOUTH_EAST,  new Float[]{0.5f, 0.5f});
-		
-		DISPLACEMENT_MAP.put(Position.WEST,  new Float[]{-0.5f, 0f});
-		
-		DISPLACEMENT_MAP.put(Position.EAST,  new Float[]{0.5f, 0f});
+		DISPLACEMENT_MAP = new HashMap<>();
+
+		DISPLACEMENT_MAP.put(Position.CENTER, new Float[] { 0f, 0f });
+
+		DISPLACEMENT_MAP.put(Position.NORTH, new Float[] { 0f, -0.5f });
+		DISPLACEMENT_MAP.put(Position.NORTH_WEST, new Float[] { -0.5f, -0.5f });
+		DISPLACEMENT_MAP.put(Position.NORTH_EAST, new Float[] { 0.5f, -0.5f });
+
+		DISPLACEMENT_MAP.put(Position.SOUTH, new Float[] { 0f, 0.5f });
+		DISPLACEMENT_MAP.put(Position.SOUTH_WEST, new Float[] { -0.5f, 0.5f });
+		DISPLACEMENT_MAP.put(Position.SOUTH_EAST, new Float[] { 0.5f, 0.5f });
+
+		DISPLACEMENT_MAP.put(Position.WEST, new Float[] { -0.5f, 0f });
+
+		DISPLACEMENT_MAP.put(Position.EAST, new Float[] { 0.5f, 0f });
 	}
-	
-	
+
 	/**
 	 * Creates new custom graphics in new location
 	 */
-	public static CustomGraphicLayer transform(final ObjectPosition p, final double width, final double height,
-			final CustomGraphicLayer layer) {		
-		final Position anc = p.getAnchor();
-		final Position ancN = p.getTargetAnchor();
-		
-		final double cgW = layer.getBounds2D().getWidth();
-		final double cgH = layer.getBounds2D().getHeight();
-		
-		final Float[] disp1 = DISPLACEMENT_MAP.get(anc);
-		final Float[] disp2 = DISPLACEMENT_MAP.get(ancN);
-		
+	public static CustomGraphicLayer transform(
+			ObjectPosition p,
+			double width,
+			double height,
+			CustomGraphicLayer layer
+	) {
+		Position anc = p.getAnchor();
+		Position ancN = p.getTargetAnchor();
+
+		var bounds = layer.getBounds2D();
+		double cgW = bounds.getWidth();
+		double cgH = bounds.getHeight();
+
+		var disp1 = DISPLACEMENT_MAP.get(anc);
+		var disp2 = DISPLACEMENT_MAP.get(ancN);
+
 		// 1. Displacement for graphics
-		final double dispX = -disp1[0] * width;
-		final double dispY = -disp1[1] * height;
-		
-		final double dispNX = disp2[0] * cgW;
-		final double dispNY = disp2[1] * cgH;
-		
+		double dispX = -disp1[0] * width;
+		double dispY = -disp1[1] * height;
+
+		double dispNX = disp2[0] * cgW;
+		double dispNY = disp2[1] * cgH;
+
 		// calc total and apply transform
 		double totalDispX = dispX + dispNX + p.getOffsetX();
 		double totalDispY = dispY + dispNY + p.getOffsetY();
-		
-		final AffineTransform tf = AffineTransform.getTranslateInstance(totalDispX, totalDispY);
+
+		var tf = AffineTransform.getTranslateInstance(totalDispX, totalDispY);
 
 		return layer.transform(tf);
 	}

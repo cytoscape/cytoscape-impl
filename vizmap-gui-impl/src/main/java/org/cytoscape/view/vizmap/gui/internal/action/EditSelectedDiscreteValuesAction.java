@@ -30,7 +30,7 @@ import com.l2fprod.common.propertysheet.PropertySheetTableModel.Item;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -51,11 +51,11 @@ import com.l2fprod.common.propertysheet.PropertySheetTableModel.Item;
 /**
  * Action that allows the user to edit all the selected discrete mapping values at once.
  */
+@SuppressWarnings("serial")
 public class EditSelectedDiscreteValuesAction extends AbstractVizMapperAction {
 
 	public static final String NAME = "Edit Selected Discrete Mapping Values";
 
-	private static final long serialVersionUID = 7640977428847967990L;
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private final Map<DiscreteMapping<?, ?>, Map<Object, Object>> previousMappingValues;

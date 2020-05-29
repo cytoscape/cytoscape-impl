@@ -18,6 +18,30 @@ import org.cytoscape.view.presentation.customgraphics.ImageCustomGraphicLayer;
 import org.cytoscape.view.presentation.property.values.ObjectPosition;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 @SuppressWarnings("rawtypes")
 public class CustomGraphicsInfo {
 	
@@ -133,8 +157,7 @@ public class CustomGraphicsInfo {
 		return sync;
 	}
 
-	private CustomGraphicLayer syncSize(final CustomGraphicLayer layer, double width, double height,
-			float fitRatio) {
+	private CustomGraphicLayer syncSize(CustomGraphicLayer layer, double width, double height, float fitRatio) {
 		final Rectangle2D originalBounds = layer.getBounds2D();
 		
 		// If this is just a paint, getBounds2D will return null and we can use our own width and height
@@ -164,9 +187,9 @@ public class CustomGraphicsInfo {
 		return layer.transform(xform);
 	}
 	
-	private CustomGraphicLayer moveLayer(final CustomGraphicLayer layer, final ObjectPosition position,
-			final double nodeWidth, final double nodeHeight) {
-		final CustomGraphicLayer newLayer = position != null ?
+	private CustomGraphicLayer moveLayer(CustomGraphicLayer layer, ObjectPosition position, double nodeWidth,
+			double nodeHeight) {
+		var newLayer = position != null ?
 				CustomGraphicsPositionCalculator.transform(position, nodeWidth, nodeHeight, layer) : layer;
 
 		return newLayer;

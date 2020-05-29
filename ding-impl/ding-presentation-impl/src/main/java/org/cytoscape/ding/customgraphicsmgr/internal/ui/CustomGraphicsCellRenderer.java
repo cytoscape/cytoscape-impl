@@ -1,12 +1,30 @@
 package org.cytoscape.ding.customgraphicsmgr.internal.ui;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu.Separator;
+import javax.swing.ListCellRenderer;
+import javax.swing.border.Border;
+
+import org.cytoscape.ding.icon.VisualPropertyIconFactory;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,33 +42,11 @@ package org.cytoscape.ding.customgraphicsmgr.internal.ui;
  * #L%
  */
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Image;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu.Separator;
-import javax.swing.ListCellRenderer;
-import javax.swing.border.Border;
-
-import org.cytoscape.ding.customgraphics.CustomGraphicsUtil;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-
 /**
  * Cell renderer for Custom Graphics Browser.
- *
  */
-public class CustomGraphicsCellRenderer extends JPanel implements ListCellRenderer {
-
-	private static final long serialVersionUID = 8040076496780883222L;
+@SuppressWarnings({ "serial", "rawtypes" })
+public class CustomGraphicsCellRenderer extends JPanel implements ListCellRenderer<CyCustomGraphics> {
 
 	private static final int ICON_SIZE = 130;
 	private static final int NAME_LENGTH_LIMIT = 24;
@@ -63,17 +59,15 @@ public class CustomGraphicsCellRenderer extends JPanel implements ListCellRender
 	}
 
 	@Override
-	public Component getListCellRendererComponent(final JList list, final Object value,
-			final int index, final boolean isSelected, final boolean cellHasFocus) {
+	public Component getListCellRendererComponent(JList list, CyCustomGraphics cg, int index, boolean isSelected,
+			boolean cellHasFocus) {
 		ImagePanel target = null;
 		
-		if (value != null && value instanceof CyCustomGraphics) {
-			final CyCustomGraphics<?> cg = (CyCustomGraphics<?>) value;
-			
+		if (cg != null) {
 			target = panelMap.get(cg);
 			
 			if (target == null) {
-				final String name = cg.getDisplayName();
+				var name = cg.getDisplayName();
 				target = new ImagePanel(cg, name);
 				panelMap.put(cg, target);
 			}
@@ -84,7 +78,6 @@ public class CustomGraphicsCellRenderer extends JPanel implements ListCellRender
 		return target;
 	}
 
-	@SuppressWarnings("serial")
 	private class ImagePanel extends JPanel {
 		
 		private final JLabel nameLbl;
@@ -96,10 +89,10 @@ public class CustomGraphicsCellRenderer extends JPanel implements ListCellRender
 		final Color SEL_FG_COLOR;
 		final Color BORDER_COLOR;
 		
-		ImagePanel(final CyCustomGraphics<?> cg, String name) {
+		ImagePanel(CyCustomGraphics<?> cg, String name) {
 			super(new BorderLayout());
 			
-			final JList<?> list = new JList<>();
+			var list = new JList<>();
 			BG_COLOR = list.getBackground();
 			FG_COLOR = list.getForeground();
 			SEL_BG_COLOR = list.getSelectionBackground();
@@ -120,23 +113,15 @@ public class CustomGraphicsCellRenderer extends JPanel implements ListCellRender
 			iconLbl.setHorizontalAlignment(JLabel.CENTER);
 			iconLbl.setOpaque(true);
 			iconLbl.setBackground(BG_COLOR);
-			
-			Image image = cg.getRenderedImage();
-			
-			if (image != null) {
-				if (image.getHeight(null) >= ICON_SIZE || image.getWidth(null) >= 200)
-					image = CustomGraphicsUtil.getResizedImage(image, null, ICON_SIZE, true);
 				
-				final ImageIcon icon = new ImageIcon(image);
-				
-				iconLbl.setIcon(icon);
-			}
+			var icon = VisualPropertyIconFactory.createIcon(cg, ICON_SIZE, ICON_SIZE);
+			iconLbl.setIcon(icon);
 			
 			add(iconLbl, BorderLayout.CENTER);
 			add(nameLbl, BorderLayout.SOUTH);
 		}
 		
-		void setSelected(final boolean selected) {
+		void setSelected(boolean selected) {
 			final Border border;
 			
 			if (selected) {

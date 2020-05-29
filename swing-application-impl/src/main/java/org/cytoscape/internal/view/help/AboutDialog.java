@@ -76,16 +76,16 @@ public class AboutDialog extends JDialog {
 	public void init() {
 		setResizable(false);
 		
-		AboutPanel panel = new AboutPanel();
+		var panel = new AboutPanel();
 		
-		JButton closeButton = new JButton(new AbstractAction("Close") {
+		var closeButton = new JButton(new AbstractAction("Close") {
 			@Override
 			public void actionPerformed(ActionEvent evt) {
 				dispose();
 			}
 		});
 
-        GroupLayout layout = new GroupLayout(getContentPane());
+        var layout = new GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         
         layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, false)
@@ -116,15 +116,15 @@ public class AboutDialog extends JDialog {
 		private JTextPane infoPane;
 
 	    public AboutPanel() {
-	    	JScrollPane scrollPane1 = new JScrollPane(getAboutPane());
+	    	var scrollPane1 = new JScrollPane(getAboutPane());
 	    	scrollPane1.setBorder(BorderFactory.createEmptyBorder());
 	    	
-	    	JScrollPane scrollPane2 = new JScrollPane(getInfoPane());
+	    	var scrollPane2 = new JScrollPane(getInfoPane());
 	    	scrollPane2.setBorder(BorderFactory.createMatteBorder(1, 0, 1, 0, UIManager.getColor("Separator.foreground")));
 	    	
 	        int w = getAboutLabel().getPreferredSize().width;
 	        
-	        GroupLayout layout = new GroupLayout(this);
+	        var layout = new GroupLayout(this);
 	        setLayout(layout);
 	        
 	        layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, false)
@@ -232,7 +232,7 @@ public class AboutDialog extends JDialog {
 		}
 
 		private JTextPane createTextPane(String text, String textAlign) {
-			JTextPane pane = new JTextPane();
+			var pane = new JTextPane();
 			pane.setBackground(getBackground());
 			pane.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
 			pane.setEditable(false);

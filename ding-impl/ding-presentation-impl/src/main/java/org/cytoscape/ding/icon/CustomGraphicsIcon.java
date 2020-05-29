@@ -1,12 +1,25 @@
 package org.cytoscape.ding.icon;
 
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.RenderingHints;
+import java.awt.geom.Rectangle2D;
+import java.util.List;
+
+import org.cytoscape.ding.customgraphics.image.SVGLayer;
+import org.cytoscape.ding.customgraphics.image.SVGCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.Cy2DGraphicLayer;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,38 +37,50 @@ package org.cytoscape.ding.icon;
  * #L%
  */
 
-import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.RenderingHints;
-
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-
+@SuppressWarnings("serial")
 public class CustomGraphicsIcon extends VisualPropertyIcon<CyCustomGraphics<?>> {
 
-	private static final long serialVersionUID = -216647303312376087L;
+	private List<? extends Cy2DGraphicLayer> cy2DLayers;
 	
-	
-	public CustomGraphicsIcon(final CyCustomGraphics<?> value, int width, int height, String name) {
+	public CustomGraphicsIcon(CyCustomGraphics<?> value, int width, int height, String name) {
 		super(value, width, height, name);
-		Image img = value.getRenderedImage();
+		var img = value.getRenderedImage();
 		
 		if (img != null)
-			this.setImage(img);
+			setImage(img);
 	}
 	
 	@Override
 	public void paintIcon(Component c, Graphics g, int x, int y) {
-		final Graphics2D g2d = (Graphics2D) g;
-
-		// AA on
-		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		Image img = this.getImage();
+		if (width <= 0 || height <= 0)
+			return;
 		
-		if (img != null) {
-			img = img.getScaledInstance(width, height, Image.SCALE_AREA_AVERAGING);
-			g2d.drawImage(img, x, y, width, height, c);
+		var g2 = (Graphics2D) g.create();
+		var cg = getValue();
+		
+		if (cg instanceof SVGCustomGraphics) {
+			if (cy2DLayers == null)
+				cy2DLayers = ((SVGCustomGraphics) cg).getLayers(null, null);
+			
+			var rect = new Rectangle2D.Float(x + width / 2.0f, y + height / 2.0f, width, height);
+			
+			for (var cgl : cy2DLayers) {
+				// Much easier to use the SVGLayer draw method than have calculate and apply
+				// the same scale factor and translation transform already done by the layer!
+				if (cgl instanceof SVGLayer)
+					((SVGLayer) cgl).draw(g2, rect, rect, null, null);
+			}
+		} else {
+			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			
+			var img = getImage();
+			
+			if (img != null) {
+				img = img.getScaledInstance(width, height, Image.SCALE_AREA_AVERAGING);
+				g2.drawImage(img, x, y, width, height, c);
+			}
 		}
+		
+		g2.dispose();
 	}
 }

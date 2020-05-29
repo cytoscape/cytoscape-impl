@@ -1,4 +1,4 @@
-package org.cytoscape.ding.customgraphics.bitmap;
+package org.cytoscape.ding.customgraphics.image;
 
 import java.awt.Image;
 import java.io.IOException;
@@ -6,9 +6,9 @@ import java.util.Collection;
 import java.util.List;
 
 import org.cytoscape.ding.customgraphics.Taggable;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 
 /*
  * #%L
@@ -34,31 +34,34 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
  * #L%
  */
 
-public class MissingImageCustomGraphics extends URLImageCustomGraphics {
+public class MissingBitmapCustomGraphics extends BitmapCustomGraphics
+		implements MissingImageCustomGraphics<BitmapLayer> {
 
-	private CyCustomGraphics actualCustomGraphics;
+	private BitmapCustomGraphics actualCustomGraphics;
 	private final String serializationString;
 	
-	public MissingImageCustomGraphics(
+	public MissingBitmapCustomGraphics(
 			String serializationString,
 			Long id,
 			String name,
-			URLImageCustomGraphicsFactory factory
+			BitmapCustomGraphicsFactory factory
 	) throws IOException {
-		super(id, name, URLImageCustomGraphics.DEF_IMAGE);
+		super(id, name, DEF_IMAGE);
 		this.serializationString = serializationString;
 		this.factory = factory;
 	}
 
+	@Override
 	public boolean isImageMissing() {
 		return actualCustomGraphics == null;
 	}
 	
-	public CyCustomGraphics reloadImage() {
+	@Override
+	public BitmapCustomGraphics reloadImage() {
 		var cg = factory.parseSerializableString(serializationString);
 		
-		if (cg != null && cg instanceof MissingImageCustomGraphics == false)
-			actualCustomGraphics = cg;
+		if (cg instanceof BitmapCustomGraphics && cg instanceof MissingBitmapCustomGraphics == false)
+			actualCustomGraphics = (BitmapCustomGraphics) cg;
 		
 		return actualCustomGraphics;
 	}
@@ -160,7 +163,7 @@ public class MissingImageCustomGraphics extends URLImageCustomGraphics {
 	}
 	
 	@Override
-	public List getLayers(CyNetworkView networkView, View graphObject) {
+	public List<BitmapLayer> getLayers(CyNetworkView networkView, View<? extends CyIdentifiable> graphObject) {
 		if (actualCustomGraphics != null)
 			return actualCustomGraphics.getLayers(networkView, graphObject);
 		
@@ -169,10 +172,15 @@ public class MissingImageCustomGraphics extends URLImageCustomGraphics {
 	
 	@Override
 	public Image resetImage() {
-		if (actualCustomGraphics instanceof URLImageCustomGraphics)
-			return ((URLImageCustomGraphics)actualCustomGraphics).resetImage();
+		if (actualCustomGraphics!= null)
+			return actualCustomGraphics.resetImage();
 		
 		return super.resetImage();
+	}
+	
+	@Override
+	public BitmapCustomGraphics getActualCustomGraphics() {
+		return actualCustomGraphics;
 	}
 	
 	@Override
@@ -184,19 +192,10 @@ public class MissingImageCustomGraphics extends URLImageCustomGraphics {
 	}
 	
 	@Override
-	protected String getTypeName() {
-		return URLImageCustomGraphics.class.getCanonicalName();
-	}
-	
-	@Override
 	public String toString() {
 		if (actualCustomGraphics != null)
 			return actualCustomGraphics.toString();
 		
 		return super.toString();
-	}
-	
-	public CyCustomGraphics getActualCustomGraphics() {
-		return actualCustomGraphics;
 	}
 }
