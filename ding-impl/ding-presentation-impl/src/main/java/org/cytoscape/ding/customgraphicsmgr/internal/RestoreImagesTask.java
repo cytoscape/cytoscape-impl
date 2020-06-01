@@ -98,7 +98,7 @@ public class RestoreImagesTask implements Task {
 	
 	public RestoreImagesTask(
 			Set<URL> defaultImageURLs,
-			File imageLocaiton,
+			File imageLocation,
 			CustomGraphicsManager manager,
 			CyServiceRegistrar serviceRegistrar
 	) {
@@ -107,7 +107,7 @@ public class RestoreImagesTask implements Task {
 
 		// For loading images in parallel.
 		this.imageLoaderService = Executors.newFixedThreadPool(NUM_THREADS);
-		this.imageHomeDirectory = imageLocaiton;
+		this.imageHomeDirectory = imageLocation;
 		this.defaultImageURLs = defaultImageURLs;
 	}
 
@@ -242,14 +242,27 @@ public class RestoreImagesTask implements Task {
 					if (!(image instanceof BufferedImage || image instanceof String))
 						continue;
 
+					var id = idMap.get(future);
+					var name = nameMap.get(future);
+					
 					var cg = image instanceof BufferedImage
-							? new BitmapCustomGraphics(idMap.get(future), nameMap.get(future), (BufferedImage) image)
-							: new SVGCustomGraphics(idMap.get(future), nameMap.get(future), (String) image);
+							? new BitmapCustomGraphics(id, name, (BufferedImage) image)
+							: new SVGCustomGraphics(id, name, (String) image);
 
 					if (cg instanceof Taggable && tagMap.get(future) != null)
 						((Taggable) cg).getTags().addAll(tagMap.get(future));
 
-					var url = urlMap.get(future);
+					URL url = null;
+					
+					try {
+						// Try to use the image name as URL whenever possible, because the name is the only parameter
+						// that contains the original URL from passthrough mappings.
+						// Otherwise, every time a session is loaded, all the passthrough images will be
+						// downloaded and cached again, creating duplicates.
+						url = new URL(name);
+					} catch (MalformedURLException me) {
+						url = urlMap.get(future);
+					}
 					
 					if (url != null)
 						manager.addCustomGraphics(cg, url);
