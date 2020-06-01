@@ -6,32 +6,24 @@ import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.Component;
 import java.awt.Dimension;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 
-import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
+import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JSeparator;
-import javax.swing.JTabbedPane;
 
-import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.util.swing.GravityTracker;
 import org.cytoscape.util.swing.IconManager;
-import org.cytoscape.util.swing.MenuGravityTracker;
-import org.cytoscape.util.swing.PopupMenuGravityTracker;
 import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -39,6 +31,7 @@ import org.cytoscape.view.vizmap.gui.DefaultViewEditor;
 import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
 import org.cytoscape.view.vizmap.gui.VizMapGUI;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.cytoscape.view.vizmap.gui.internal.view.VisualStylePanel.VisualStyleDropDownButton;
 
 /*
  * #%L
@@ -69,51 +62,23 @@ import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
  */
 @SuppressWarnings("serial")
 public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultViewPanel, DefaultViewEditor,
-														  CytoPanelComponent2 {
+														  CytoPanelComponent2, VisualPropertySheetContainer {
 
 	private static final String TITLE = "Style";
 	private static final String ID = "org.cytoscape.Style";
-
-	private DropDownMenuButton optionsBtn;
-	private JPanel stylesPnl;
-	private JTabbedPane propertiesPn;
-	private final Map<Class<? extends CyIdentifiable>, VisualPropertySheet> vpSheetMap;
-	protected VisualStyleDropDownButton stylesBtn;
-	protected VisualStyleSelector styleSelector;
-	
-	/** Menu items under the options button */
-	private JPopupMenu mainMenu;
-	private PopupMenuGravityTracker mainMenuGravityTracker;
-	
-	/** Context menu */
-	private JPopupMenu contextPopupMenu;
-	private JMenu editSubMenu;
-	private MenuGravityTracker editSubMenuGravityTracker;
-	private JMenu mapValueGeneratorsSubMenu;
 	
 	private TextIcon icon;
+	private final ServicesUtil servicesUtil;
 	
-	private ServicesUtil servicesUtil;
+	private VisualStylePanel visualStylePanel;
+	private PropertySheetPanel propertySheetPanel;
 	
-	// ==[ CONSTRUCTORS ]===============================================================================================
 	
 	public VizMapperMainPanel(ServicesUtil servicesUtil) {
-		if (servicesUtil == null)
-			throw new IllegalArgumentException("'servicesUtil' must not be null");
-		
-		this.servicesUtil = servicesUtil;
-		
-		vpSheetMap = new HashMap<>();
-		
-		// We need to build and keep this UI component here because of the API method getDefaultView(),
-		// so instead of creating this object only when needed (e.g. before showing the popup),
-		// we keep it to store the panels for the rendered style previews
-		styleSelector = new VisualStyleSelector(2, 0, servicesUtil);
-		
+		this.servicesUtil = Objects.requireNonNull(servicesUtil, "'servicesUtil' must not be null");
 		init();
 	}
 
-	// ==[ PUBLIC METHODS ]=============================================================================================
 	
 	@Override
 	public String getTitle() {
@@ -131,7 +96,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	}
 
 	@Override
-	public Component getComponent() {
+	public JComponent getComponent() {
 		return this;
 	}
 
@@ -162,10 +127,27 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		return this;
 	}
 	
+	
+	VisualStylePanel getStylesPnl() {
+		if(visualStylePanel == null) {
+			visualStylePanel = new VisualStylePanel(servicesUtil);
+		}
+		return visualStylePanel;
+	}
+	
+	PropertySheetPanel getPropertiesPnl() {
+		if(propertySheetPanel == null) {
+			propertySheetPanel = new PropertySheetPanel();
+		}
+		return propertySheetPanel;
+	}
+	
+	
 	@Override
 	public RenderingEngine<CyNetwork> getRenderingEngine() {
-		return styleSelector.getRenderingEngine(getSelectedVisualStyle());
+		return getStylesPnl().getRenderingEngine();
 	}
+	
 	
 	/**
 	 * @return The correspondent JPanel which was used to create the rendering engine that then generates
@@ -175,7 +157,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	@Override
 	@Deprecated
 	public Component getDefaultView(VisualStyle vs) {
-		return styleSelector.getDefaultView(vs);
+		return getStylesPnl().getDefaultView(vs);
 	}
 
 	@Override
@@ -184,111 +166,74 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		// Doesn't do anything anymore, since it has been deprecated.
 	}
 	
+	VisualStyleDropDownButton getStylesBtn() {
+		return getStylesPnl().getStylesBtn();
+	}
+	
+	
 	public VisualStyle getSelectedVisualStyle() {
-		return styleSelector.getSelectedStyle();
+		return getStylesPnl().getSelectedVisualStyle();
 	}
 	
 	public void setSelectedVisualStyle(final VisualStyle style) {
-		getStylesBtn().setSelectedItem(style);
+		getStylesPnl().setSelectedVisualStyle(style);
 	}
 	
-	public Set<VisualPropertySheet> getVisualPropertySheets() {
-		return new HashSet<>(vpSheetMap.values());
-	}
-	
+	@Override
 	public VisualPropertySheet getVisualPropertySheet(final Class<? extends CyIdentifiable> targetDataType) {
-		return vpSheetMap.get(targetDataType);
+		return getPropertiesPnl().getVisualPropertySheet(targetDataType);
 	}
 	
-	public void addVisualPropertySheet(final VisualPropertySheet sheet) {
-		if (sheet == null)
-			return;
-		
-		final Class<? extends CyIdentifiable> type = sheet.getModel().getTargetDataType();
-		
-		if (vpSheetMap.containsKey(type))
-			getPropertiesPn().remove(vpSheetMap.get(type));
-		
-		getPropertiesPn().addTab(sheet.getModel().getTitle(), sheet);
-		vpSheetMap.put(type, sheet);
-	}
-	
-	public void removeAllVisualPropertySheets() {
-		getPropertiesPn().removeAll();
-		vpSheetMap.clear();
-	}
-	
+	@Override
 	public VisualPropertySheet getSelectedVisualPropertySheet() {
-		return (VisualPropertySheet) getPropertiesPn().getSelectedComponent();
+		return getPropertiesPnl().getSelectedVisualPropertySheet();
 	}
 	
-	public void setSelectedVisualPropertySheet(final VisualPropertySheet sheet) {
-		if (sheet != null) {
-			final int idx = getPropertiesPn().indexOfTab(sheet.getModel().getTitle());
-			
-			if (idx != -1)
-				getPropertiesPn().setSelectedIndex(idx);
-		}
-	}
-	
-	public void updateVisualStyles(SortedSet<VisualStyle> styles, VisualStyle selectedStyle) {
-		getStylesBtn().update(styles, selectedStyle);
-	}
-	
-	public void hideSelectedItems() {
-		final VisualPropertySheet vpSheet = getSelectedVisualPropertySheet();
-		
-		if (vpSheet != null) {
-			for (final VisualPropertySheetItem<?> item : vpSheet.getSelectedItems())
-				vpSheet.setVisible(item, false);
-		}
-	}
-	
-	/**
-	 * Add the menu item to the "Options" menu.
-	 * @param menuItem
-	 * @param gravity
-	 * @param insertSeparatorBefore
-	 * @param insertSeparatorAfter
-	 */
-	public void addOption(final JMenuItem menuItem, final double gravity, boolean insertSeparatorBefore,
-			boolean insertSeparatorAfter) {
-		addMenuItem(getMainMenuGravityTracker(), menuItem, gravity, insertSeparatorBefore, insertSeparatorAfter);
-		
-		if (menuItem.getAction() instanceof CyAction)
-			getMainMenu().addPopupMenuListener((CyAction)menuItem.getAction());
-	}
-
 	public void removeOption(final JMenuItem menuItem) {
-		getMainMenuGravityTracker().removeComponent(menuItem);
-		
-		if (menuItem.getAction() instanceof CyAction)
-			getMainMenu().removePopupMenuListener((CyAction)menuItem.getAction());
-	}
-	
-	/**
-	 * Add the menu item under the "Edit" context sub-menu.
-	 * @param menuItem
-	 * @param gravity
-	 * @param insertSeparatorBefore
-	 * @param insertSeparatorAfter
-	 */
-	public void addContextMenuItem(final JMenuItem menuItem, final double gravity, boolean insertSeparatorBefore,
-			boolean insertSeparatorAfter) {
-		addMenuItem(getEditSubMenuGravityTracker(), menuItem, gravity, insertSeparatorBefore, insertSeparatorAfter);
-		
-		if (menuItem.getAction() instanceof CyAction)
-			getContextMenu().addPopupMenuListener((CyAction)menuItem.getAction());
+		getStylesPnl().removeOption(menuItem);
 	}
 	
 	public void removeContextMenuItem(final JMenuItem menuItem) {
-		getEditSubMenuGravityTracker().removeComponent(menuItem);
-		
-		if (menuItem.getAction() instanceof CyAction)
-			getContextMenu().removePopupMenuListener((CyAction)menuItem.getAction());
+		getPropertiesPnl().removeContextMenuItem(menuItem);
+	}
+	
+	@Override
+	public JPopupMenu getContextMenu() {
+		return getPropertiesPnl().getContextMenu();
+	}
+	
+	public void updateVisualStyles(SortedSet<VisualStyle> styles, VisualStyle selectedStyle) {
+		getStylesPnl().updateVisualStyles(styles, selectedStyle);
+	}
+	
+	@Override
+	public Set<VisualPropertySheet> getVisualPropertySheets() {
+		return getPropertiesPnl().getVisualPropertySheets();
+	}
+	
+	@Override
+	public void addVisualPropertySheet(final VisualPropertySheet sheet) {
+		getPropertiesPnl().addVisualPropertySheet(sheet);
+	}
+	
+	@Override
+	public void setSelectedVisualPropertySheet(final VisualPropertySheet sheet) {
+		getPropertiesPnl().setSelectedVisualPropertySheet(sheet);
+	}
+	
+	public void addOption(JMenuItem menuItem, double gravity, boolean insertSeparatorBefore, boolean insertSeparatorAfter) {
+		getStylesPnl().addOption(menuItem, gravity, insertSeparatorBefore, insertSeparatorAfter);
 	}
 
-	// ==[ PRIVATE METHODS ]============================================================================================
+	public void addContextMenuItem(JMenuItem menuItem, double gravity, boolean insertSeparatorBefore, boolean insertSeparatorAfter) {
+		getPropertiesPnl().addContextMenuItem(menuItem, gravity, insertSeparatorBefore, insertSeparatorAfter);
+	}
+			
+	@Override
+	public JMenu getMapValueGeneratorsSubMenu() {
+		return getPropertiesPnl().getMapValueGeneratorsSubMenu();
+	}
+	
 
 	private void init() {
 		setMinimumSize(new Dimension(420, 240));
@@ -301,234 +246,14 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		layout.setAutoCreateGaps(!isAquaLAF());
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
-				.addComponent(getStylesPnl(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(getPropertiesPn(), DEFAULT_SIZE, 280, Short.MAX_VALUE)
+				.addComponent(getStylesPnl().getComponent(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getPropertiesPnl().getComponent(), DEFAULT_SIZE, 280, Short.MAX_VALUE)
 		);
 		layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING)
 				.addGroup(layout.createSequentialGroup()
-						.addComponent(getStylesPnl(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(getPropertiesPn(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(getStylesPnl().getComponent(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getPropertiesPnl().getComponent(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				)
 		);
-	}
-	
-	private JPanel getStylesPnl() {
-		if (stylesPnl == null) {
-			stylesPnl = new JPanel();
-			stylesPnl.setOpaque(!isAquaLAF());
-			
-			// TODO: For some reason, the Styles button is naturally taller than the Options one on Nimbus and Windows.
-			//       Let's force it to have the same height.
-			getStylesBtn().setPreferredSize(
-					new Dimension(getStylesBtn().getPreferredSize().width, getOptionsBtn().getPreferredSize().height));
-			
-			var layout = new GroupLayout(stylesPnl);
-			stylesPnl.setLayout(layout);
-			layout.setAutoCreateGaps(!isAquaLAF());
-			
-			layout.setHorizontalGroup(layout.createSequentialGroup()
-					.addComponent(getStylesBtn(), 0, 146, Short.MAX_VALUE)
-					.addComponent(getOptionsBtn(), PREFERRED_SIZE, 64, PREFERRED_SIZE)
-			);
-			layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING, false)
-					.addComponent(getStylesBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getOptionsBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-			);
-		}
-		
-		return stylesPnl;
-	}
-	
-	JTabbedPane getPropertiesPn() {
-		if (propertiesPn == null) {
-			propertiesPn = new JTabbedPane(JTabbedPane.BOTTOM, JTabbedPane.WRAP_TAB_LAYOUT);
-		}
-		
-		return propertiesPn;
-	}
-
-	VisualStyleDropDownButton getStylesBtn() {
-		if (stylesBtn == null) {
-			stylesBtn = new VisualStyleDropDownButton();
-			stylesBtn.setToolTipText("Current Style");
-		}
-		
-		return stylesBtn;
-	}
-	
-	DropDownMenuButton getOptionsBtn() {
-		if (optionsBtn == null) {
-			var iconManager = servicesUtil.get(IconManager.class);
-			
-			optionsBtn = new DropDownMenuButton(getMainMenu(), false);
-			optionsBtn.setToolTipText("Options...");
-			optionsBtn.setFont(iconManager.getIconFont(12.0f));
-			optionsBtn.setText(IconManager.ICON_BARS);
-		}
-		
-		return optionsBtn;
-	}
-	
-	JPopupMenu getMainMenu() {
-		if (mainMenu == null) {
-			mainMenu = new JPopupMenu();
-		}
-		
-		return mainMenu;
-	}
-	
-	JPopupMenu getContextMenu() {
-		if (contextPopupMenu == null) {
-			contextPopupMenu = new JPopupMenu();
-			contextPopupMenu.add(getEditSubMenu());
-			contextPopupMenu.add(getMapValueGeneratorsSubMenu());
-			contextPopupMenu.add(new JSeparator());
-			
-			{
-				final JMenuItem mi = new JMenuItem("Hide Selected Visual Properties");
-				mi.addActionListener(evt -> hideSelectedItems());
-				contextPopupMenu.add(mi);
-			}
-		}
-		
-		return contextPopupMenu;
-	}
-	
-	JMenu getEditSubMenu() {
-		if (editSubMenu == null) {
-			editSubMenu = new JMenu("Edit");
-		}
-		
-		return editSubMenu;
-	}
-	
-	JMenu getMapValueGeneratorsSubMenu() {
-		if (mapValueGeneratorsSubMenu == null) {
-			mapValueGeneratorsSubMenu = new JMenu("Mapping Value Generators");
-		}
-		
-		return mapValueGeneratorsSubMenu;
-	}
-	
-	private PopupMenuGravityTracker getMainMenuGravityTracker() {
-		if (mainMenuGravityTracker == null) {
-			mainMenuGravityTracker = new PopupMenuGravityTracker(getMainMenu());
-		}
-		
-		return mainMenuGravityTracker;
-	}
-	
-	private MenuGravityTracker getEditSubMenuGravityTracker() {
-		if (editSubMenuGravityTracker == null) {
-			editSubMenuGravityTracker = new MenuGravityTracker(getEditSubMenu());
-		}
-		
-		return editSubMenuGravityTracker;
-	}
-	
-	private void addMenuItem(final GravityTracker gravityTracker, final JMenuItem menuItem, final double gravity,
-			boolean insertSeparatorBefore, boolean insertSeparatorAfter) {
-		if (insertSeparatorBefore)
-			gravityTracker.addMenuSeparator(gravity - .0001);
-		
-		gravityTracker.addMenuItem(menuItem, gravity);
-		
-		if (insertSeparatorAfter)
-			gravityTracker.addMenuSeparator(gravity + .0001);
-	}
-	
-	// ==[ CLASSES ]====================================================================================================
-	
-	class VisualStyleDropDownButton extends DropDownMenuButton {
-
-		private JPopupMenu popup;
-		
-		VisualStyleDropDownButton() {
-			super(true);
-			
-			setHorizontalAlignment(LEFT);
-			
-			addActionListener(evt -> {
-				if (!styleSelector.isEmpty())
-					showDialog();
-			});
-			
-			styleSelector.addPropertyChangeListener("selectedStyle", evt -> {
-				update();
-				disposePopup();
-				firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
-			});
-		}
-		
-		public void update(SortedSet<VisualStyle> styles, VisualStyle selectedStyle) {
-			styleSelector.update(styles, selectedStyle);
-			setEnabled(!styleSelector.isEmpty());
-		}
-		
-		public void setSelectedItem(VisualStyle vs) {
-			styleSelector.setSelectedStyle(vs);
-			
-			if (styleSelector.isEditMode())
-				update(vs);
-		}
-		
-		public void update() {
-			update(styleSelector.getSelectedStyle());
-		}
-		
-		private void update(VisualStyle selectedStyle) {
-			setText(selectedStyle != null ? selectedStyle.getTitle() : "");
-			repaint();
-		}
-		
-		private void showDialog() {
-			setEnabled(false); // Disable the button to prevent accidental repeated clicks
-			disposePopup(); // Just to make sure there will never be more than one popup
-			
-			popup = new JPopupMenu();
-			popup.setBackground(styleSelector.getBackground());
-			popup.setBorder(BorderFactory.createEmptyBorder());
-			
-			popup.addPropertyChangeListener("visible", evt -> {
-				if (evt.getNewValue() == Boolean.FALSE)
-					onPopupDisposed();
-			});
-			
-			var layout = new GroupLayout(popup);
-			popup.setLayout(layout);
-			layout.setAutoCreateGaps(false);
-			layout.setAutoCreateContainerGaps(false);
-			
-			layout.setHorizontalGroup(layout.createSequentialGroup()
-					.addComponent(styleSelector, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-			);
-			layout.setVerticalGroup(layout.createSequentialGroup()
-					.addComponent(styleSelector, DEFAULT_SIZE, DEFAULT_SIZE, 660)
-			);
-			
-			if (getSize() != null && getSize().width > 0)
-				popup.setPreferredSize(new Dimension(getSize().width, popup.getPreferredSize().height));
-			
-			popup.pack();
-			popup.show(VisualStyleDropDownButton.this, 0, 0);
-			popup.requestFocus();
-		}
-
-		private void disposePopup() {
-			if (popup != null)
-				popup.setVisible(false);
-			
-			styleSelector.setEditMode(false);
-		}
-
-		private void onPopupDisposed() {
-			if (popup != null) {
-				popup.removeAll();
-				popup = null;
-			}
-			
-			setEnabled(!styleSelector.isEmpty()); // Re-enable the Styles button
-			styleSelector.resetFilter();
-		}
 	}
 }

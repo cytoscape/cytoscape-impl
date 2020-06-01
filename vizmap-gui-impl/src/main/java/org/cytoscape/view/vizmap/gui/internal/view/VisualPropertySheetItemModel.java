@@ -203,7 +203,7 @@ public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void update(final RenderingEngine<CyNetwork> engine) {
+	public void update(final RenderingEngine<?> engine) {
 		setRenderingEngine(engine);
 		
 		if (dependency == null) {
