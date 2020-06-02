@@ -35,6 +35,9 @@ import org.cytoscape.ding.internal.util.ImageUtil;
  * #L%
  */
 
+/**
+ * Creates bitmap images from URLs or Base64 Data URLs (e.g. "data:image/jpeg;base64,LzlqLzRBQ...").
+ */
 public class BitmapCustomGraphics extends AbstractURLImageCustomGraphics<BitmapLayer> {
 
 	// DO NOT change, or you can break saving/restoring image_metadata.props!
@@ -66,11 +69,6 @@ public class BitmapCustomGraphics extends AbstractURLImageCustomGraphics<BitmapL
 		buildCustomGraphics(originalImage);
 	}
 
-	/**
-	 * @param name display name of this object. NOT UNIQUE!
-	 * @param img
-	 * @throws IOException 
-	 */
 	public BitmapCustomGraphics(Long id, String name, BufferedImage img) {
 		super(id, name);
 
@@ -87,6 +85,12 @@ public class BitmapCustomGraphics extends AbstractURLImageCustomGraphics<BitmapL
 		tags.add(DEF_TAG);
 		this.originalImage = img;
 		buildCustomGraphics(originalImage);
+	}
+	
+	public BitmapCustomGraphics(Long id, String name, URL url, BufferedImage img) {
+		this(id, name, img);
+		
+		sourceUrl = url;
 	}
 	
 	@Override

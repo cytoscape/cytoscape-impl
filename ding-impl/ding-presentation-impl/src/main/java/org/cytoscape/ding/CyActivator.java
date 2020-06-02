@@ -526,13 +526,13 @@ public class CyActivator extends AbstractCyActivator {
 		// Create and register our built-in factories.
 		// TODO:  When the CustomGraphicsFactory service stuff is set up, just register these as services
 		{
-			var bitmapFactory = new BitmapCustomGraphicsFactory(cgManager);
+			var bitmapFactory = new BitmapCustomGraphicsFactory(cgManager, serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(CustomGraphicsManager.SUPPORTED_CLASS_ID, BitmapCustomGraphicsFactory.SUPPORTED_CLASS_ID);
 			cgManager.addCustomGraphicsFactory(bitmapFactory, props);
 		}
 		{
-			var vectorFactory = new SVGCustomGraphicsFactory(cgManager);
+			var vectorFactory = new SVGCustomGraphicsFactory(cgManager, serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(CustomGraphicsManager.SUPPORTED_CLASS_ID, SVGCustomGraphicsFactory.SUPPORTED_CLASS_ID);
 			cgManager.addCustomGraphicsFactory(vectorFactory, props);

@@ -33,7 +33,7 @@ public abstract class AbstractURLImageCustomGraphics<T extends CustomGraphicLaye
 	
 	static final float DEF_FIT_RATIO = 1.0f;
 	
-	private URL sourceUrl;
+	protected URL sourceUrl;
 	
 	protected AbstractURLImageCustomGraphics(Long id, String displayName) {
 		super(id, displayName);

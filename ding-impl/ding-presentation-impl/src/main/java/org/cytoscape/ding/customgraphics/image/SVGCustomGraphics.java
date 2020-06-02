@@ -89,6 +89,12 @@ public class SVGCustomGraphics extends AbstractURLImageCustomGraphics<SVGLayer> 
 		tags.add(DEF_TAG);
 	}
 	
+	public SVGCustomGraphics(Long id, String name, URL url, String svg) throws IOException {
+		this(id, name, svg);
+		
+		sourceUrl = url;
+	}
+	
 	@Override
 	public String getTypeNamespace() {
 		// This way, we can refactor this class package without breaking the serialization and backwards compatibility.
