@@ -48,7 +48,7 @@ public abstract class AbstractVisualMappingManager<V> {
 	// title for the default visual style.
 	public static final String DEFAULT_STYLE_NAME = "default";
 	
-	private VisualStyle defaultStyle;
+	protected VisualStyle defaultStyle;
 	private volatile VisualStyle currentStyle;
 
 	private final Map<V, VisualStyle> view2VisualStyleMap;

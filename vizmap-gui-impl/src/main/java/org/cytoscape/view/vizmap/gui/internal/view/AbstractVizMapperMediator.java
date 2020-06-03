@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -116,27 +115,22 @@ public abstract class AbstractVizMapperMediator extends Mediator implements Visu
 		});
 	}
 	
+	
 	abstract protected void updateMappingStatus(final VisualPropertySheetItem<?> item);
 	
 	abstract protected Collection<VisualProperty<?>> getVisualPropertyList(VisualLexicon lexicon);
 	
 	abstract protected Set<View<? extends CyIdentifiable>> getSelectedViews(Class<?> type);
 	
-	protected VisualLexicon getVisualLexicon() {
-		return vmProxy.getCurrentVisualLexicon();
-	}
+	abstract protected VisualLexicon getVisualLexicon();
 	
-	protected VisualStyle getVisualStyle() {
-		return vmProxy.getCurrentVisualStyle();
-	}
+	abstract protected VisualStyle getVisualStyle();
 	
-	protected boolean isSupported(VisualProperty<?>	vp) {
-		return vmProxy.isSupported(vp);
-	}
+	abstract protected boolean isSupported(VisualProperty<?> vp);
 	
-	protected boolean isSupported(VisualPropertyDependency<?> dep) {
-		return vmProxy.isSupported(dep);
-	}
+	abstract protected boolean isSupported(VisualPropertyDependency<?> dep);
+	
+	
 	
 	@Override
 	public void onRegister() {

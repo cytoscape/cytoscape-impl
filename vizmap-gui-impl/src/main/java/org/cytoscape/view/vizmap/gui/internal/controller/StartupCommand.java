@@ -14,6 +14,7 @@ import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMediator;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMenuMediator;
+import org.cytoscape.view.vizmap.gui.internal.view.VizMapperTableMediator;
 import org.puremvc.java.multicore.interfaces.INotification;
 import org.puremvc.java.multicore.patterns.command.SimpleCommand;
 
@@ -52,6 +53,7 @@ public class StartupCommand extends SimpleCommand {
 	private final PropsProxy propsProxy;
 	private final VizMapperMediator vizMapperMediator;
 	private final VizMapperMenuMediator vizMapperMenuMediator;
+	private final VizMapperTableMediator vizMapperTableMediator;
 	private final ServicesUtil servicesUtil;
 	
 	public StartupCommand(final VizMapperProxy vizMapperProxy,
@@ -60,6 +62,7 @@ public class StartupCommand extends SimpleCommand {
 						  final PropsProxy propsProxy,
 						  final VizMapperMediator vizMapperMediator,
 						  final VizMapperMenuMediator vizMapperMenuMediator,
+						  final VizMapperTableMediator vizMapperTableMediator,
 						  final ServicesUtil servicesUtil) {
 		this.vizMapperProxy = vizMapperProxy;
 		this.attributeSetProxy = attributeSetProxy;
@@ -67,6 +70,7 @@ public class StartupCommand extends SimpleCommand {
 		this.propsProxy = propsProxy;
 		this.vizMapperMediator = vizMapperMediator;
 		this.vizMapperMenuMediator = vizMapperMenuMediator;
+		this.vizMapperTableMediator = vizMapperTableMediator;
 		this.servicesUtil = servicesUtil;
 	}
 
@@ -81,6 +85,7 @@ public class StartupCommand extends SimpleCommand {
 		// Register mediators
 		getFacade().registerMediator(vizMapperMediator);
 		getFacade().registerMediator(vizMapperMenuMediator);
+		getFacade().registerMediator(vizMapperTableMediator);
 		
 		// Register other commands
 		getFacade().registerCommand(LOAD_DEFAULT_VISUAL_STYLES, new ImportDefaultVisualStylesCommand(servicesUtil));

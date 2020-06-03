@@ -18,6 +18,11 @@ public class TableVisualMappingManagerImpl extends AbstractVisualMappingManager<
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	@Override
+	public VisualStyle getDefaultVisualStyle() {
+		return defaultStyle;
+	}
 
 	@Override
 	protected View<CyColumn> getCurrentView() {

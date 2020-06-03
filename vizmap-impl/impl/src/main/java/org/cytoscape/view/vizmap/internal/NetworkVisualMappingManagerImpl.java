@@ -88,6 +88,8 @@ public class NetworkVisualMappingManagerImpl extends AbstractVisualMappingManage
 	@Override
 	protected CyNetworkView getCurrentView() {
 		final CyApplicationManager appManager = serviceRegistrar.getService(CyApplicationManager.class);
+		if(appManager == null)
+			return null;
 		return appManager.getCurrentNetworkView();
 	}
 

@@ -179,6 +179,18 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		getStylesPnl().setSelectedVisualStyle(style);
 	}
 	
+	public void removeOption(final JMenuItem menuItem) {
+		getStylesPnl().removeOption(menuItem);
+	}
+	
+	public void removeContextMenuItem(final JMenuItem menuItem) {
+		getPropertiesPnl().removeContextMenuItem(menuItem);
+	}
+	
+	public void updateVisualStyles(SortedSet<VisualStyle> styles, VisualStyle selectedStyle) {
+		getStylesPnl().updateVisualStyles(styles, selectedStyle);
+	}
+	
 	@Override
 	public VisualPropertySheet getVisualPropertySheet(final Class<? extends CyIdentifiable> targetDataType) {
 		return getPropertiesPnl().getVisualPropertySheet(targetDataType);
@@ -189,21 +201,9 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		return getPropertiesPnl().getSelectedVisualPropertySheet();
 	}
 	
-	public void removeOption(final JMenuItem menuItem) {
-		getStylesPnl().removeOption(menuItem);
-	}
-	
-	public void removeContextMenuItem(final JMenuItem menuItem) {
-		getPropertiesPnl().removeContextMenuItem(menuItem);
-	}
-	
 	@Override
 	public JPopupMenu getContextMenu() {
 		return getPropertiesPnl().getContextMenu();
-	}
-	
-	public void updateVisualStyles(SortedSet<VisualStyle> styles, VisualStyle selectedStyle) {
-		getStylesPnl().updateVisualStyles(styles, selectedStyle);
 	}
 	
 	@Override
@@ -220,6 +220,12 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	public void setSelectedVisualPropertySheet(final VisualPropertySheet sheet) {
 		getPropertiesPnl().setSelectedVisualPropertySheet(sheet);
 	}
+			
+	@Override
+	public JMenu getMapValueGeneratorsSubMenu() {
+		return getPropertiesPnl().getMapValueGeneratorsSubMenu();
+	}
+	
 	
 	public void addOption(JMenuItem menuItem, double gravity, boolean insertSeparatorBefore, boolean insertSeparatorAfter) {
 		getStylesPnl().addOption(menuItem, gravity, insertSeparatorBefore, insertSeparatorAfter);
@@ -228,12 +234,6 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	public void addContextMenuItem(JMenuItem menuItem, double gravity, boolean insertSeparatorBefore, boolean insertSeparatorAfter) {
 		getPropertiesPnl().addContextMenuItem(menuItem, gravity, insertSeparatorBefore, insertSeparatorAfter);
 	}
-			
-	@Override
-	public JMenu getMapValueGeneratorsSubMenu() {
-		return getPropertiesPnl().getMapValueGeneratorsSubMenu();
-	}
-	
 
 	private void init() {
 		setMinimumSize(new Dimension(420, 240));

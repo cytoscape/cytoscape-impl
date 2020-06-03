@@ -26,9 +26,11 @@ import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
@@ -40,9 +42,13 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.model.table.CyColumnView;
+import org.cytoscape.view.model.table.CyTableView;
+import org.cytoscape.view.model.table.CyTableViewManager;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.vizmap.TableVisualMappingManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -205,6 +211,46 @@ public class VizMapperProxy extends Proxy
 		return servicesUtil.get(VisualMappingManager.class).getVisualStyle(view);
 	}
 	
+	
+	
+	public CyTableView getTableView(CyColumn column) {
+		CyTableViewManager tableViewManager = servicesUtil.get(CyTableViewManager.class);
+		return tableViewManager.getTableView(column.getTable());
+	}
+	
+	public CyColumnView getColumnView(CyColumn column) {
+		var tableView = getTableView(column);
+		if(tableView == null)
+			return null;
+		var colView = tableView.getColumnView(column);
+		if(colView instanceof CyColumnView)
+			return (CyColumnView) colView;
+		return null;
+	}
+	
+	public RenderingEngine<CyTable> getRenderingEngine(CyColumn column) {
+		var tableView = getTableView(column);
+		if(tableView == null)
+			return null;
+		var renderingEngineManager = servicesUtil.get(RenderingEngineManager.class);
+		return (RenderingEngine<CyTable>) renderingEngineManager.getRenderingEngines(tableView).iterator().next();
+	}
+	
+	public VisualStyle getVisualStyle(CyColumn column) {
+		var colView = getColumnView(column);
+		if(colView == null)
+			return null;
+		
+		TableVisualMappingManager tableMappingManager = servicesUtil.get(TableVisualMappingManager.class);
+		VisualStyle style = tableMappingManager.getVisualStyle(colView);
+		if(style == null) {
+			VisualStyleFactory factory = servicesUtil.get(VisualStyleFactory.class);
+			style = factory.createVisualStyle("default");
+			tableMappingManager.setVisualStyle(style, colView);
+		}
+		return style;
+	}
+	
 	public CyNetwork getCurrentNetwork() {
 		return servicesUtil.get(CyApplicationManager.class).getCurrentNetwork();
 	}
@@ -321,21 +367,30 @@ public class VizMapperProxy extends Proxy
 		return count;
 	}
 	
-	public boolean isSupported(final VisualProperty<?> vp) {
-		return PropertySheetUtil.isCompatible(vp) && getCurrentVisualLexicon().isSupported(vp);
+	public static boolean isSupported(VisualLexicon lexicon, VisualProperty<?> vp) {
+		return PropertySheetUtil.isCompatible(vp) && lexicon.isSupported(vp);
 	}
 	
-	public boolean isSupported(final VisualPropertyDependency<?> dependency) {
-		if (!isSupported(dependency.getParentVisualProperty()))
+	public boolean isSupported(VisualProperty<?> vp) {
+		return isSupported(getCurrentVisualLexicon(), vp);
+	}
+	
+	public static boolean isSupported(VisualLexicon lexicon, VisualPropertyDependency<?> dependency) {
+		if (!isSupported(lexicon, dependency.getParentVisualProperty()))
 			return false;
 		
 		for (final VisualProperty<?> vp : dependency.getVisualProperties()) {
-			if (!isSupported(vp))
+			if (!isSupported(lexicon, vp))
 				return false;
 		}
 		
 		return true;
 	}
+	
+	public boolean isSupported(VisualPropertyDependency<?> dependency) {
+		return isSupported(getCurrentVisualLexicon(), dependency);
+	}
+	
 	
 	public void setIgnoreStyleEvents(final boolean b) {
 		synchronized (lock) {

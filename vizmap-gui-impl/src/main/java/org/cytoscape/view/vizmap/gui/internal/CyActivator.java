@@ -18,6 +18,7 @@ import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.EdgeViewTaskFactory;
+import org.cytoscape.task.TableColumnTaskFactory;
 import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.color.Palette;
 import org.cytoscape.util.color.PaletteProvider;
@@ -63,6 +64,8 @@ import org.cytoscape.view.vizmap.gui.internal.view.VizMapPropertyBuilder;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMainPanel;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMediator;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMenuMediator;
+import org.cytoscape.view.vizmap.gui.internal.view.VizMapperTableDialog;
+import org.cytoscape.view.vizmap.gui.internal.view.VizMapperTableMediator;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.BooleanVisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.ColorVisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.EditorManagerImpl;
@@ -77,6 +80,7 @@ import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.CyColorCho
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.FontValueEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.NumericValueEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.StringValueEditor;
+import org.cytoscape.view.vizmap.gui.internal.view.table.TableStyleDialogTaskFactory;
 import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
 import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
@@ -319,21 +323,39 @@ public class CyActivator extends AbstractCyActivator {
 		// Create the main GUI component
 		// -------------------------------------------------------------------------------------------------------------
 		var vizMapperMainPanel = new VizMapperMainPanel(servicesUtil);
+		var vizMapperTableDialog = new VizMapperTableDialog(servicesUtil);
 		
 		// Start the PureMVC components
 		// -------------------------------------------------------------------------------------------------------------
 		var vizMapperProxy = new VizMapperProxy(servicesUtil);
 		var propsProxy = new PropsProxy(servicesUtil);
 		var vizMapPropertyBuilder = new VizMapPropertyBuilder(editorManager, mappingFunctionFactoryManager, servicesUtil);
+		
 		var vizMapperMediator = new VizMapperMediator(vizMapperMainPanel, servicesUtil, vizMapPropertyBuilder);
 		var vizMapperMenuMediator = new VizMapperMenuMediator(vizMapperMainPanel, servicesUtil);
+		var vizMapperTableMediator = new VizMapperTableMediator(vizMapperTableDialog, servicesUtil, vizMapPropertyBuilder);
+		
 		var startupCommand = new StartupCommand(vizMapperProxy,
 												attributeSetProxy,
 												mappingFactoryProxy,
 												propsProxy,
 												vizMapperMediator,
 												vizMapperMenuMediator,
+												vizMapperTableMediator,
 												servicesUtil);
+		
+		// Table Panel Context Menu
+		// -------------------------------------------------------------------------------------------------------------
+				
+		{
+			var factory = new TableStyleDialogTaskFactory(vizMapperTableMediator, serviceRegistrar);
+			var props = new Properties();
+			props.setProperty(TITLE, "Open Table Style Dialog");
+			registerService(bc, factory, TableColumnTaskFactory.class, props);
+		}
+		
+		// Register Services
+		// -------------------------------------------------------------------------------------------------------------
 		
 		registerAllServices(bc, vizMapperProxy);
 		registerAllServices(bc, mappingFactoryProxy);
