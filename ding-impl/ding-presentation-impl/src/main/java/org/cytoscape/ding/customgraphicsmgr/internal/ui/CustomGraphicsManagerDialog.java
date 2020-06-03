@@ -91,10 +91,10 @@ public class CustomGraphicsManagerDialog extends JDialog {
 	private final IconManager iconManager;
 
 	public CustomGraphicsManagerDialog(
-			final Window owner,
-			final CustomGraphicsManager manager,
-			final CustomGraphicsBrowser browser,
-			final CyServiceRegistrar serviceRegistrar
+			Window owner,
+			CustomGraphicsManager manager,
+			CustomGraphicsBrowser browser,
+			CyServiceRegistrar serviceRegistrar
 	) {
 		super(owner, ModalityType.APPLICATION_MODAL);
 		
