@@ -244,20 +244,20 @@ public class CustomGraphicsManagerDialog extends JDialog {
 			}
 
 			try {
+				var url = file.toURI().toURL();
 				AbstractURLImageCustomGraphics<?> cg = null;
 				
 				if (svg != null)
-					cg = new SVGCustomGraphics(manager.getNextAvailableID(), file.toString(), svg);
+					cg = new SVGCustomGraphics(manager.getNextAvailableID(), file.toString(), url, svg);
 				else if (img != null)
-					cg = new BitmapCustomGraphics(manager.getNextAvailableID(), file.toString(), img);
+					cg = new BitmapCustomGraphics(manager.getNextAvailableID(), file.toString(), url, img);
 
 				if (cg != null) {
-					var url = file.toURI().toURL();
 					manager.addCustomGraphics(cg, url);
 					((CustomGraphicsListModel) browser.getModel()).addElement(cg);
 				}
 			} catch (Exception e) {
-				logger.error("Could not create custom graphics: " + file.toString(), e);
+				logger.error("Could not create custom graphics: " + file, e);
 				continue;
 			}
 		}

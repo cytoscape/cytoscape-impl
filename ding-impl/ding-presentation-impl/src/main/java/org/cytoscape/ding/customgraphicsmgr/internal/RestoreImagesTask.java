@@ -245,13 +245,6 @@ public class RestoreImagesTask implements Task {
 					var id = idMap.get(future);
 					var name = nameMap.get(future);
 					
-					var cg = image instanceof BufferedImage
-							? new BitmapCustomGraphics(id, name, (BufferedImage) image)
-							: new SVGCustomGraphics(id, name, (String) image);
-
-					if (cg instanceof Taggable && tagMap.get(future) != null)
-						((Taggable) cg).getTags().addAll(tagMap.get(future));
-
 					URL url = null;
 					
 					try {
@@ -263,6 +256,13 @@ public class RestoreImagesTask implements Task {
 					} catch (MalformedURLException me) {
 						url = urlMap.get(future);
 					}
+					
+					var cg = image instanceof BufferedImage
+							? new BitmapCustomGraphics(id, name, url, (BufferedImage) image)
+							: new SVGCustomGraphics(id, name, url, (String) image);
+
+					if (cg instanceof Taggable && tagMap.get(future) != null)
+						((Taggable) cg).getTags().addAll(tagMap.get(future));
 					
 					if (url != null)
 						manager.addCustomGraphics(cg, url);
