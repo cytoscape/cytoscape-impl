@@ -126,6 +126,8 @@ public abstract class AbstractVizMapperMediator extends Mediator implements Visu
 	
 	abstract protected VisualStyle getVisualStyle();
 	
+	abstract protected RenderingEngine<?> getRenderingEngine();
+	
 	abstract protected boolean isSupported(VisualProperty<?> vp);
 	
 	abstract protected boolean isSupported(VisualPropertyDependency<?> dep);
@@ -274,7 +276,7 @@ public abstract class AbstractVizMapperMediator extends Mediator implements Visu
 					// Update values
 					final VisualPropertySheetItemModel model = item.getModel();
 					// MKTODO need to parameterize the model class
-					model.update(viewComponent.getRenderingEngine());
+					model.update(getRenderingEngine());
 					
 					if (model.getVisualPropertyDependency() != null)
 						item.update();
@@ -378,7 +380,7 @@ public abstract class AbstractVizMapperMediator extends Mediator implements Visu
 //		final Set<View<CyEdge>> selectedEdgeViews = vmProxy.getSelectedEdgeViews(curNetView);
 //		final Set<View<CyNetwork>> selectedNetViews = curNetView != null ?
 //				Collections.singleton((View<CyNetwork>) curNetView) : Collections.EMPTY_SET;
-		final RenderingEngine<?> engine = viewComponent.getRenderingEngine();
+		final RenderingEngine<?> engine = getRenderingEngine();
 		
 		Map<Class<?>,Set> selectedViewsCache = new HashMap<>();
 		

@@ -3,6 +3,7 @@ package org.cytoscape.view.vizmap.gui.internal.view;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.util.Set;
 
@@ -11,11 +12,10 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JMenu;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 
 import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 
 @SuppressWarnings("serial")
@@ -39,11 +39,6 @@ public class VizMapperTableDialog extends JDialog implements VisualPropertySheet
 	@Override
 	public JComponent getComponent() {
 		return getRootPane();
-	}
-	
-	@Override
-	public RenderingEngine<CyNetwork> getRenderingEngine() {
-		return null;
 	}
 	
 	@Override
@@ -85,8 +80,11 @@ public class VizMapperTableDialog extends JDialog implements VisualPropertySheet
 		setMinimumSize(new Dimension(420, 240));
 		setPreferredSize(new Dimension(420, 385));
 		
-		final GroupLayout layout = new GroupLayout(this);
-		this.setLayout(layout);
+		JPanel panel = new JPanel();
+		
+		
+		GroupLayout layout = new GroupLayout(panel);
+		panel.setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(!isAquaLAF());
 		
@@ -100,5 +98,9 @@ public class VizMapperTableDialog extends JDialog implements VisualPropertySheet
 						.addComponent(getPropertiesPnl().getComponent(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				)
 		);
+		
+		
+		setLayout(new BorderLayout());
+		add(panel, BorderLayout.CENTER);
 	}
 }

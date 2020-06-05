@@ -25,8 +25,6 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor;
  */
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.text.Collator;
 import java.util.HashMap;
 import java.util.List;
@@ -44,9 +42,11 @@ import javax.swing.UIManager;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyColumnPresentationManager;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.view.vizmap.gui.editor.ListEditor;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSet;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
@@ -79,11 +79,11 @@ public final class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEdi
 
 		final JComboBox comboBox = (JComboBox) editor;
 		comboBox.setRenderer(new AttributeComboBoxCellRenderer());
-		comboBox.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
+		comboBox.addActionListener(e -> {
+			if(type == CyColumn.class)
+				updateComboBox(appManager.getCurrentTable());
+			else
 				updateComboBox(appManager.getCurrentNetwork());
-			}
 		});
 	}
 
@@ -91,29 +91,54 @@ public final class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEdi
 	public Class<?> getTargetObjectType() {
 		return graphObjectType;
 	}
+	
+	
+	private void updateComboBox(CyTable table) {
+		JComboBox box = (JComboBox) editor;
+		Object selected = box.getSelectedItem();
+		box.removeAllItems();
+		
+		if(table == null)
+			return;
+		
+		Collator collator = Collator.getInstance(Locale.getDefault()); // For locale-specific sorting
+		SortedSet<String> sortedName = new TreeSet<String>(collator);
+		
+		AttributeSet currentSet = attrProxy.getAttributeSet(table);
+		for (Entry<String, Class<?>> entry: currentSet.getAttrMap().entrySet()) {
+			if (columnIsAllowed(entry.getKey(), entry.getValue()))
+				sortedName.add(entry.getKey());
+		}
+		
+		for (String attrName : sortedName)
+			box.addItem(attrName);
 
-	private void updateComboBox(final CyNetwork currentNetwork) {
-		final JComboBox box = (JComboBox) editor;
-		final Object selected = box.getSelectedItem();
+		// Add new name if not in the list.
+		box.setSelectedItem(selected);
+	}
+	
+	
+	private void updateComboBox(CyNetwork currentNetwork) {
+		JComboBox box = (JComboBox) editor;
+		Object selected = box.getSelectedItem();
 		box.removeAllItems();
 		
 		if (currentNetwork == null)
 			return;
 		
-		final AttributeSet compatibleColumns = attrProxy.getAttributeSet(currentNetwork, graphObjectType);
+		AttributeSet compatibleColumns = attrProxy.getAttributeSet(currentNetwork, graphObjectType);
 		currentColumnMap = compatibleColumns.getAttrMap();
-		final AttributeSet targetSet = attrProxy.getAttributeSet(currentNetwork, graphObjectType);
-
+		AttributeSet targetSet = attrProxy.getAttributeSet(currentNetwork, graphObjectType);
 		if (targetSet == null)
 			return;
 		
-		final Collator collator = Collator.getInstance(Locale.getDefault()); // For locale-specific sorting
-		final SortedSet<String> sortedName = new TreeSet<String>(collator);
+		Collator collator = Collator.getInstance(Locale.getDefault()); // For locale-specific sorting
+		SortedSet<String> sortedName = new TreeSet<String>(collator);
 		
-		final Set<CyNetwork> networks = networkManager.getNetworkSet();
+		Set<CyNetwork> networks = networkManager.getNetworkSet();
 
-		for (final CyNetwork net : networks) {
-			final AttributeSet currentSet = attrProxy.getAttributeSet(net, graphObjectType);
+		for(CyNetwork net : networks) {
+			AttributeSet currentSet = attrProxy.getAttributeSet(net, graphObjectType);
 			
 			for (Entry<String, Class<?>> entry: currentSet.getAttrMap().entrySet()) {
 				if (columnIsAllowed(entry.getKey(), entry.getValue()))
@@ -121,7 +146,7 @@ public final class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEdi
 			}
 		}
 
-		for (final String attrName : sortedName)
+		for (String attrName : sortedName)
 			box.addItem(attrName);
 
 		// Add new name if not in the list.

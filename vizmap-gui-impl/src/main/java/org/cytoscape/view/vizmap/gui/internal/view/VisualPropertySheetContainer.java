@@ -7,7 +7,6 @@ import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 
 import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.view.presentation.RenderingEngine;
 
 public interface VisualPropertySheetContainer {
 
@@ -20,8 +19,6 @@ public interface VisualPropertySheetContainer {
 	void addVisualPropertySheet(VisualPropertySheet vpSheet);
 	
 	VisualPropertySheet getSelectedVisualPropertySheet();
-	
-	RenderingEngine<?> getRenderingEngine();
 	
 	JComponent getComponent();
 

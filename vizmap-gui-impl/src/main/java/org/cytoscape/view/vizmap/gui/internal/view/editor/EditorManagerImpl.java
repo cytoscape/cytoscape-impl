@@ -16,6 +16,7 @@ import javax.swing.JOptionPane;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentRenderingEngineListener;
 import org.cytoscape.application.swing.CyColumnPresentationManager;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -120,16 +121,16 @@ public class EditorManagerImpl implements EditorManager {
 		final CyColumnPresentationManager presMgr = servicesUtil.get(CyColumnPresentationManager.class);
 		
 		// Create attribute (Column Name) editors
-		final AttributeComboBoxPropertyEditor nodeAttrEditor = new AttributeComboBoxPropertyEditor(CyNode.class,
-				attrProxy, appMgr, netMgr, presMgr);
-		final AttributeComboBoxPropertyEditor edgeAttrEditor = new AttributeComboBoxPropertyEditor(CyEdge.class,
-				attrProxy, appMgr, netMgr, presMgr);
-		final AttributeComboBoxPropertyEditor networkAttrEditor = new AttributeComboBoxPropertyEditor(CyNetwork.class,
-				attrProxy, appMgr, netMgr, presMgr);
+		var nodeAttrEditor = new AttributeComboBoxPropertyEditor(CyNode.class, attrProxy, appMgr, netMgr, presMgr);
+		var edgeAttrEditor = new AttributeComboBoxPropertyEditor(CyEdge.class, attrProxy, appMgr, netMgr, presMgr);
+		var networkAttrEditor = new AttributeComboBoxPropertyEditor(CyNetwork.class, attrProxy, appMgr, netMgr, presMgr);
+		var columnAttrEditor = new AttributeComboBoxPropertyEditor(CyColumn.class, attrProxy, appMgr, netMgr, presMgr);
+		
 		attrComboBoxEditors = new HashMap<>();
 		attrComboBoxEditors.put(nodeAttrEditor.getTargetObjectType(), nodeAttrEditor);
 		attrComboBoxEditors.put(edgeAttrEditor.getTargetObjectType(), edgeAttrEditor);
 		attrComboBoxEditors.put(networkAttrEditor.getTargetObjectType(), networkAttrEditor);
+		attrComboBoxEditors.put(columnAttrEditor.getTargetObjectType(), columnAttrEditor);
 
 		// Create Mapping Type editor
 		mappingTypeEditor = new MappingTypeComboBoxPropertyEditor(mappingFactoryProxy);
@@ -278,18 +279,15 @@ public class EditorManagerImpl implements EditorManager {
 			return (VisualPropertyValueEditor<V>) vizPropValueEditors.get(vp.getRange().getType());
 		}
 	}
-
+	
 	/**
 	 * Editor name is NODE, EDGE, or NETWORK.
 	 */
 	@Override
 	public PropertyEditor getDataTableComboBoxEditor(final Class<? extends CyIdentifiable> targetObjectType) {
-
-		final ListEditor editor = attrComboBoxEditors.get(targetObjectType);
-
+		ListEditor editor = attrComboBoxEditors.get(targetObjectType);
 		if (editor == null)
 			throw new IllegalArgumentException("No such list editor: " + targetObjectType);
-
 		return (PropertyEditor) editor;
 	}
 

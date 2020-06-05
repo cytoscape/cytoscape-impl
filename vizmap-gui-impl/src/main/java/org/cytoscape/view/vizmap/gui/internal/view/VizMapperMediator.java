@@ -47,6 +47,7 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
 import org.cytoscape.view.model.events.UpdateNetworkPresentationListener;
+import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
@@ -201,6 +202,11 @@ public class VizMapperMediator extends AbstractVizMapperMediator implements Lexi
 		}
 	}
 
+	@Override
+	protected RenderingEngine<?> getRenderingEngine() {
+		return vizMapperMainPanel.getRenderingEngine();
+	}
+	
 	@Override
 	protected Collection<VisualProperty<?>> getVisualPropertyList(VisualLexicon lexicon) {
 		return lexicon.getAllDescendants(BasicVisualLexicon.NETWORK);

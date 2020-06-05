@@ -10,9 +10,11 @@ import javax.swing.SwingUtilities;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -27,7 +29,7 @@ public class VizMapperTableMediator extends AbstractVizMapperMediator {
 	private static final Class<? extends CyIdentifiable>[] SHEET_TYPES = new Class[] { CyColumn.class };
 	
 	private final VizMapperTableDialog vizMapperTableDialog;
-	private VisualLexicon currentLexicon;
+	private RenderingEngine<CyTable> currentRenderingEngine;
 	private VisualStyle currentStyle;
 	
 	public VizMapperTableMediator(VizMapperTableDialog vizMapperTableDialog, ServicesUtil servicesUtil, VizMapPropertyBuilder propBuilder) {
@@ -43,7 +45,7 @@ public class VizMapperTableMediator extends AbstractVizMapperMediator {
 	
 	public void showDialogFor(CyColumn column) {
 		this.currentStyle = vmProxy.getVisualStyle(column);
-		this.currentLexicon = vmProxy.getRenderingEngine(column).getVisualLexicon();
+		this.currentRenderingEngine = vmProxy.getRenderingEngine(column);
 		
 		updateVisualPropertySheets();
 		
@@ -81,12 +83,17 @@ public class VizMapperTableMediator extends AbstractVizMapperMediator {
 	
 	@Override
 	protected VisualLexicon getVisualLexicon() {
-		return currentLexicon;
+		return currentRenderingEngine.getVisualLexicon();
 	}
 	
 	@Override
 	protected VisualStyle getVisualStyle() {
 		return currentStyle;
+	}
+	
+	@Override
+	protected RenderingEngine<?> getRenderingEngine() {
+		return currentRenderingEngine;
 	}
 	
 	@Override

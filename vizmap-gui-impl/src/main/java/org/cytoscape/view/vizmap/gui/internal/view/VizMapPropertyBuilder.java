@@ -109,29 +109,24 @@ public class VizMapPropertyBuilder {
 			throw new IllegalArgumentException("'propertySheetPanel' must not be null.");
 		
 		// TODO: Refactor--create new view component for mapping editor???
-		final VizMapperProperty<VisualProperty<V>, String, VisualMappingFunctionFactory> columnProp =
-				new VizMapperProperty<>(CellType.VISUAL_PROPERTY_TYPE, visualProperty, String.class);
+		var columnProp = new VizMapperProperty<>(CellType.VISUAL_PROPERTY_TYPE, visualProperty, String.class);
 
 		// Build Property object
 		columnProp.setDisplayName(COLUMN);
 		((PropertyRendererRegistry) propertySheetPanel.getTable().getRendererFactory()).registerRenderer(
 				columnProp, defaultTableCellRendererForColumn);
 		
-		final VizMapperProperty<String, VisualMappingFunctionFactory, VisualMappingFunction<?, V>> mapTypeProp = 
-				new VizMapperProperty<>(CellType.MAPPING_TYPE, MAPPING_TYPE, VisualMappingFunctionFactory.class);
+		var mapTypeProp = new VizMapperProperty<>(CellType.MAPPING_TYPE, MAPPING_TYPE, VisualMappingFunctionFactory.class);
 		
 		mapTypeProp.setDisplayName(MAPPING_TYPE);
-		((PropertyRendererRegistry) propertySheetPanel.getTable().getRendererFactory()).registerRenderer(
-				mapTypeProp, defaultTableCellRenderer);
+		((PropertyRendererRegistry) propertySheetPanel.getTable().getRendererFactory()).registerRenderer(mapTypeProp, defaultTableCellRenderer);
 
 		propertySheetPanel.addProperty(0, columnProp);
 		propertySheetPanel.addProperty(1, mapTypeProp);
 		propertySheetPanel.repaint();
 		
-		final PropertyEditorRegistry propEditorRegistry = 
-				(PropertyEditorRegistry) propertySheetPanel.getTable().getEditorFactory();
-		propEditorRegistry.registerEditor(columnProp, 
-				editorManager.getDataTableComboBoxEditor((Class<? extends CyIdentifiable>) visualProperty.getTargetDataType()));
+		final PropertyEditorRegistry propEditorRegistry = (PropertyEditorRegistry) propertySheetPanel.getTable().getEditorFactory();
+		propEditorRegistry.registerEditor(columnProp, editorManager.getDataTableComboBoxEditor(visualProperty.getTargetDataType()));
 		propEditorRegistry.registerEditor(mapTypeProp, editorManager.getDefaultComboBoxEditor("mappingTypeEditor"));
 	}
 	
