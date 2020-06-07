@@ -45,6 +45,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -324,9 +325,11 @@ public class VisualPropertySheet extends JPanel{
 				vpListHeaderPnl.add(mapLbl);
 			}
 			
-			final JLabel bypassLbl = new HeaderLabel("Byp.");
-			bypassLbl.setToolTipText("Bypass");
-			vpListHeaderPnl.add(bypassLbl);
+			if (model.getTargetDataType() != CyColumn.class) {
+				final JLabel bypassLbl = new HeaderLabel("Byp.");
+				bypassLbl.setToolTipText("Bypass");
+				vpListHeaderPnl.add(bypassLbl);
+			}
 			
 			vpListHeaderPnl.add(Box.createHorizontalGlue());
 		}

@@ -105,6 +105,8 @@ public final class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEdi
 		SortedSet<String> sortedName = new TreeSet<String>(collator);
 		
 		AttributeSet currentSet = attrProxy.getAttributeSet(table);
+		currentColumnMap = currentSet.getAttrMap();
+		
 		for (Entry<String, Class<?>> entry: currentSet.getAttrMap().entrySet()) {
 			if (columnIsAllowed(entry.getKey(), entry.getValue()))
 				sortedName.add(entry.getKey());

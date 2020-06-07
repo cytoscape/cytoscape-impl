@@ -16,6 +16,8 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.vizmap.events.VisualStyleChangedEvent;
+import org.cytoscape.view.vizmap.events.VisualStyleChangedListener;
 
 /*
  * #%L
@@ -41,7 +43,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
  * #L%
  */
 
-public class TableBrowserMediator implements SetCurrentNetworkListener, CytoPanelComponentSelectedListener {
+public class TableBrowserMediator implements SetCurrentNetworkListener, VisualStyleChangedListener, CytoPanelComponentSelectedListener {
 
 	private final DefaultTableBrowser nodeTableBrowser;
 	private final DefaultTableBrowser edgeTableBrowser;
@@ -121,6 +123,15 @@ public class TableBrowserMediator implements SetCurrentNetworkListener, CytoPane
 		if (table == null || table.isPublic())
 			serviceRegistrar.getService(CyApplicationManager.class).setCurrentTable(table);
 	}
+	
+	@Override
+	public void handleEvent(VisualStyleChangedEvent e) {
+		// figure out which tables/columns have the style
+		// apply the style to those columns
+		// okay...
+		
+	}
+	
 	
 	public void hideColumn(CyColumn column) {
 		CyTable table = column.getTable();

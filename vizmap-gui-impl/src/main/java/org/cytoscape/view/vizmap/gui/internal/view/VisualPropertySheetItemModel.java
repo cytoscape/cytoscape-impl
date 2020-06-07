@@ -1,5 +1,6 @@
 package org.cytoscape.view.vizmap.gui.internal.view;
 
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.VisualLexicon;
@@ -176,7 +177,7 @@ public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 	}
 	
 	public boolean isLockedValueAllowed() {
-		return getVisualPropertyDependency() == null;
+		return getTargetDataType() != CyColumn.class && getVisualPropertyDependency() == null;
 	}
 
 	public static String createTitle(final VisualProperty<?> vp) {

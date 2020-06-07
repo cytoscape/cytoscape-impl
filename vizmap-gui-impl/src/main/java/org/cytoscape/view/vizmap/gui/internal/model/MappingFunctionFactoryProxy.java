@@ -1,10 +1,8 @@
 package org.cytoscape.view.vizmap.gui.internal.model;
 
 import java.text.Collator;
-import java.util.Comparator;
 import java.util.Locale;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -53,36 +51,36 @@ public class MappingFunctionFactoryProxy extends Proxy {
 	}
 	
 	public Set<VisualMappingFunctionFactory> getMappingFactories() {
-		final SortedSet<VisualMappingFunctionFactory> set = new TreeSet<VisualMappingFunctionFactory>(
-				new Comparator<VisualMappingFunctionFactory>() {
-					
-					@Override
-					public int compare(final VisualMappingFunctionFactory f1, final VisualMappingFunctionFactory f2) {
-						// Locale-specific sorting
-						final Collator collator = Collator.getInstance(Locale.getDefault());
-						collator.setStrength(Collator.PRIMARY);
-						
-						return collator.compare(f1.toString(), f2.toString());
-					}
-				});
+		Collator collator = Collator.getInstance(Locale.getDefault()); // Locale-specific sorting
+		collator.setStrength(Collator.PRIMARY);
+		var set = new TreeSet<VisualMappingFunctionFactory>((f1,f2) -> collator.compare(f1.toString(), f2.toString()));
 		
-		final MappingFunctionFactoryManager mappingFactoryMgr = servicesUtil.get(MappingFunctionFactoryManager.class);
+		MappingFunctionFactoryManager mappingFactoryMgr = servicesUtil.get(MappingFunctionFactoryManager.class);
 		set.addAll(mappingFactoryMgr.getFactories());
 		
 		if (currentColumnName != null && currentTargetDataType != null) {
 			// Remove the factories that don't make sense for the current column type
-			final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
-			final CyNetwork net = appMgr.getCurrentNetwork();
+			CyTable table = null;
 			
-			if (net != null) {
-				final CyTable table = net.getTable(currentTargetDataType, CyNetwork.DEFAULT_ATTRS);
-				final CyColumn column = table.getColumn(currentColumnName);
-				
-				if (column != null && !Number.class.isAssignableFrom(column.getType()))
-					set.remove(mappingFactoryMgr.getFactory(ContinuousMapping.class));
+			CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
+			if(currentTargetDataType == CyColumn.class) {
+				table = appMgr.getCurrentTable();
+			} else {
+				CyNetwork net = appMgr.getCurrentNetwork();
+				if (net != null) {
+					table = net.getTable(currentTargetDataType, CyNetwork.DEFAULT_ATTRS);
+				}
 			}
+			
+			if(table != null) {
+				CyColumn column = table.getColumn(currentColumnName);
+				if (column != null && !Number.class.isAssignableFrom(column.getType())) {
+					set.remove(mappingFactoryMgr.getFactory(ContinuousMapping.class));
+				}
+			}
+			
 		}
-		
 		return set;
 	}
+	
 }

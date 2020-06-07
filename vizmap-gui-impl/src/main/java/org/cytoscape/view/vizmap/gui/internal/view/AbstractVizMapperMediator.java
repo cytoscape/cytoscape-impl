@@ -109,10 +109,8 @@ public abstract class AbstractVizMapperMediator extends Mediator implements Visu
 		userProps = new HashMap<>();
 		defVisibleProps = new HashMap<>();
 		
-		final Collator collator = Collator.getInstance(Locale.getDefault());
-		mappingGenerators = new TreeMap<>((s1, s2) -> {
-			return collator.compare(s1, s2);
-		});
+		var collator = Collator.getInstance(Locale.getDefault());
+		mappingGenerators = new TreeMap<>(collator::compare);
 	}
 	
 	
@@ -238,8 +236,7 @@ public abstract class AbstractVizMapperMediator extends Mediator implements Visu
 			for (final VisualPropertyDependency<?> dep : dependencies) {
 				final Class<? extends CyIdentifiable> type = dep.getParentVisualProperty().getTargetDataType();
 				final VisualPropertySheet sheet = viewComponent.getVisualPropertySheet(type);
-				
-				if (sheet.getItem(dep) == null) {
+				if (sheet != null && sheet.getItem(dep) == null) {
 					// There's a new dependency!
 					rebuild = true;
 					break;
@@ -308,8 +305,7 @@ public abstract class AbstractVizMapperMediator extends Mediator implements Visu
 				viewComponent.addVisualPropertySheet(vpSheet);
 				
 				// Create Visual Property Sheet Items
-				final Set<VisualPropertySheetItem<?>> vpSheetItems = 
-						createVisualPropertySheetItems(vpSheet.getModel().getTargetDataType(), lexicon, style);
+				var vpSheetItems = createVisualPropertySheetItems(vpSheet.getModel().getTargetDataType(), lexicon, style);
 				vpSheet.setItems(vpSheetItems);
 				
 				// Add event listeners to the new components
@@ -366,20 +362,12 @@ public abstract class AbstractVizMapperMediator extends Mediator implements Visu
 	
 	
 	@SuppressWarnings("rawtypes")
-	private Set<VisualPropertySheetItem<?>> createVisualPropertySheetItems(final Class<? extends CyIdentifiable> type,
-			final VisualLexicon lexicon, final VisualStyle style) {
-		final Set<VisualPropertySheetItem<?>> items = new HashSet<>();
-		
+	private Set<VisualPropertySheetItem<?>> createVisualPropertySheetItems(Class<? extends CyIdentifiable> type, VisualLexicon lexicon, VisualStyle style) {
+		Set<VisualPropertySheetItem<?>> items = new HashSet<>();
 		if (lexicon == null || style == null)
 			return items;
 		
 		final Collection<VisualProperty<?>> vpList = getVisualPropertyList(lexicon);
-		
-//		final CyNetworkView curNetView = vmProxy.getCurrentNetworkView();
-//		final Set<View<CyNode>> selectedNodeViews = vmProxy.getSelectedNodeViews(curNetView);
-//		final Set<View<CyEdge>> selectedEdgeViews = vmProxy.getSelectedEdgeViews(curNetView);
-//		final Set<View<CyNetwork>> selectedNetViews = curNetView != null ?
-//				Collections.singleton((View<CyNetwork>) curNetView) : Collections.EMPTY_SET;
 		final RenderingEngine<?> engine = getRenderingEngine();
 		
 		Map<Class<?>,Set> selectedViewsCache = new HashMap<>();
@@ -396,18 +384,6 @@ public abstract class AbstractVizMapperMediator extends Mediator implements Visu
 			Set selectedViews = selectedViewsCache.computeIfAbsent(vp.getTargetDataType(), this::getSelectedViews);
 			Set values = getDistinctLockedValues(vp, selectedViews);
 			updateVpInfoLockedState(model, values, selectedViews);
-//			
-//			
-//			if (vp.getTargetDataType() == CyNode.class) {
-//				values = getDistinctLockedValues(vp, selectedNodeViews);
-//				updateVpInfoLockedState(model, values, selectedNodeViews);
-//			} else if (vp.getTargetDataType() == CyEdge.class) {
-//				values = getDistinctLockedValues(vp, selectedEdgeViews);
-//				updateVpInfoLockedState(model, values, selectedEdgeViews);
-//			} else {
-//				values = getDistinctLockedValues(vp, selectedNetViews);
-//				updateVpInfoLockedState(model, values, selectedNetViews);
-//			}
 			
 			// Create View
 			final VisualPropertySheetItem<?> sheetItem = new VisualPropertySheetItem(model, vizMapPropertyBuilder, servicesUtil);
@@ -591,64 +567,6 @@ public abstract class AbstractVizMapperMediator extends Mediator implements Visu
 		}
 	}
 	
-	
-//	protected void updateMappingStatus(final VisualPropertySheetItem<?> item) {
-//		if (!item.isEnabled())
-//			return;
-//		
-//		final CyNetwork net = vmProxy.getCurrentNetwork();
-//		final Class<? extends CyIdentifiable> targetDataType = item.getModel().getTargetDataType();
-//		
-//		if (net != null && targetDataType != CyNetwork.class) {
-//			final CyTable netTable = targetDataType == CyNode.class ? net.getDefaultNodeTable() : net.getDefaultEdgeTable();
-//			String msg = null;
-//			MessageType msgType = null;
-//			
-//			if (netTable != null) {
-//				final VizMapperProperty<VisualProperty<?>, String, VisualMappingFunctionFactory> columnProp =
-//						vizMapPropertyBuilder.getColumnProperty(item.getPropSheetPnl());
-//				final String colName = (columnProp != null && columnProp.getValue() != null) ?
-//						columnProp.getValue().toString() : null;
-//				
-//				if (colName != null) {
-//					final VisualMappingFunction<?, ?> mapping = item.getModel().getVisualMappingFunction();
-//					Class<?> mapColType = mapping != null ? mapping.getMappingColumnType() : null;
-//					final CyColumn column = netTable.getColumn(colName);
-//					Class<?> colType = column != null ? column.getType() : null;
-//					
-//					// Ignore "List" type
-//					if (mapColType == List.class)
-//						mapColType = String.class;
-//					if (colType == List.class)
-//						colType = String.class;
-//					
-//					if (column == null || (mapColType != null && !mapColType.isAssignableFrom(colType))) {
-//						String tableName = netTable != null ? targetDataType.getSimpleName().replace("Cy", "") : null;
-//						msg = "<html>Visual Mapping cannot be applied to current network:<br>" + tableName +
-//								" table does not have column <b>\"" + colName + "\"</b>" +
-//								(mapColType != null ? " (" + mapColType.getSimpleName() + ")" : "") + "</html>";
-//						msgType = MessageType.WARNING;
-//					}
-//				}
-//			}
-//			
-//			final String finalMsg = msg;
-//			final MessageType finalMsgType = msgType;
-//			
-//			invokeOnEDT(() -> item.setMessage(finalMsg, finalMsgType));
-//		}
-//	}
-	
-	
-//	protected void updateLockedValues(final CyNetworkView currentView) {
-//		if (currentView != null) {
-//			updateLockedValues(Collections.singleton((View<CyNetwork>)currentView), CyNetwork.class);
-//			updateLockedValues(vmProxy.getSelectedNodeViews(currentView), CyNode.class);
-//			updateLockedValues(vmProxy.getSelectedEdgeViews(currentView), CyEdge.class);
-//		} else {
-//			updateLockedValues(Collections.EMPTY_SET, CyNetwork.class);
-//		}
-//	}
 	
 	@SuppressWarnings("rawtypes")
 	public <S extends CyIdentifiable> void updateLockedValues(Set<View<S>> selectedViews, Class<S> targetDataType) {

@@ -1,5 +1,7 @@
 package org.cytoscape.view.vizmap.gui.internal.view;
 
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_UPDATED;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Properties;
@@ -20,6 +22,7 @@ import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.puremvc.java.multicore.interfaces.INotification;
 
 public class VizMapperTableMediator extends AbstractVizMapperMediator {
 
@@ -43,6 +46,23 @@ public class VizMapperTableMediator extends AbstractVizMapperMediator {
 		servicesUtil.registerAllServices(vizMapperTableDialog, new Properties());
 	}
 	
+	@Override
+	public String[] listNotificationInterests() {
+		return new String[]{ VISUAL_STYLE_UPDATED };
+	}
+	
+	@Override
+	public void handleNotification(final INotification notification) {
+		final String id = notification.getName();
+		final Object body = notification.getBody();
+		
+		if(VISUAL_STYLE_UPDATED.equals(id)) {
+			if(body != null && body.equals(currentStyle)) {
+				updateVisualPropertySheets((VisualStyle) body, false, false);
+			}
+		}
+	}
+	
 	public void showDialogFor(CyColumn column) {
 		this.currentStyle = vmProxy.getVisualStyle(column);
 		this.currentRenderingEngine = vmProxy.getRenderingEngine(column);
@@ -60,11 +80,6 @@ public class VizMapperTableMediator extends AbstractVizMapperMediator {
 		updateVisualPropertySheets(getVisualStyle(), false, true);
 	}
 	
-	@Override
-	public String[] listNotificationInterests() {
-		return new String[]{ };
-	}
-
 	@Override
 	protected void updateMappingStatus(VisualPropertySheetItem<?> item) {
 		// TODO Auto-generated method stub

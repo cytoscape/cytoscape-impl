@@ -24,6 +24,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.TableColumnTaskFactory;
+import org.cytoscape.view.vizmap.events.VisualStyleChangedListener;
 import org.osgi.framework.BundleContext;
 
 /*
@@ -92,6 +93,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		var mediator = new TableBrowserMediator(nodeTableBrowser, edgeTableBrowser, networkTableBrowser, globalTableBrowser, serviceRegistrar);
 		registerService(bc, mediator, SetCurrentNetworkListener.class);
+		registerService(bc, mediator, VisualStyleChangedListener.class);
 		registerService(bc, mediator, CytoPanelComponentSelectedListener.class);
 		
 		{
