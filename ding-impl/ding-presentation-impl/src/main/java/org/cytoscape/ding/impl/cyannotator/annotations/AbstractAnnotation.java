@@ -182,8 +182,7 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	public void setBounds(Rectangle2D bounds) {
 		this.x = bounds.getX();
 		this.y = bounds.getY();
-		this.width = bounds.getWidth();
-		this.height = bounds.getHeight();
+		setSize(bounds.getWidth(), bounds.getHeight());
 	}
 	
 	public Rectangle2D getBounds() {
