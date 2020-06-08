@@ -9,7 +9,7 @@ import org.cytoscape.view.presentation.property.values.Handle;
 
 public class HandleInfo {
 
-	private final long edgeSuid;;
+	private final long edgeSuid;
 	private final Bend bend;
 	private final Handle handle;
 	
@@ -22,6 +22,13 @@ public class HandleInfo {
 		this.bend = bend;
 		this.handle = handle;
 	}
+	
+	public HandleInfo forNewBend(Bend newBend) {
+		if(newBend == bend)
+			return this;
+		Handle handle = newBend.getAllHandles().get(getHandleIndex());
+		return new HandleInfo(edgeSuid, newBend, handle);
+	}
 
 	public long getSUID() {
 		return edgeSuid;
@@ -33,6 +40,10 @@ public class HandleInfo {
 
 	public Handle getHandle() {
 		return handle;
+	}
+	
+	public int getHandleIndex() {
+		return bend.getIndex(handle);
 	}
 
 	@Override
