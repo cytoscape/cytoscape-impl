@@ -1,6 +1,7 @@
 package org.cytoscape.ding.impl;
 
 import java.awt.geom.Point2D;
+import java.util.Objects;
 
 /*
  * #%L
@@ -269,8 +270,29 @@ public class HandleImpl implements Handle {
 		
 	}
 
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(cosTheta, ratio, sinTheta, x, y);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!(obj instanceof HandleImpl))
+			return false;
+		HandleImpl other = (HandleImpl) obj;
+		return Double.doubleToLongBits(cosTheta) == Double.doubleToLongBits(other.cosTheta)
+				&& Double.doubleToLongBits(ratio) == Double.doubleToLongBits(other.ratio)
+				&& Double.doubleToLongBits(sinTheta) == Double.doubleToLongBits(other.sinTheta)
+				&& Double.doubleToLongBits(x) == Double.doubleToLongBits(other.x)
+				&& Double.doubleToLongBits(y) == Double.doubleToLongBits(other.y);
+	}
+
 	@Override
 	public String toString() {
 		return "handle x:" + x + " y:" + y + " cosTheta: " + cosTheta + " sinTheta: " + sinTheta + " ratio: " + ratio;
 	}
+	
 }
