@@ -9,9 +9,6 @@ import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
@@ -22,8 +19,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
 import org.cytoscape.util.swing.ColorButton;
@@ -69,8 +64,8 @@ public class ImageAnnotationPanel extends JPanel {
 
 	private ImageAnnotationImpl annotation;
 
-	public ImageAnnotationPanel(ImageAnnotationImpl mAnnotation, PreviewPanel previewPanel) {
-		this.annotation = mAnnotation;
+	public ImageAnnotationPanel(ImageAnnotationImpl annotation, PreviewPanel previewPanel) {
+		this.annotation = annotation;
 		this.previewPanel = previewPanel;
 		this.preview = (ImageAnnotationImpl) previewPanel.getAnnotation();
 
@@ -80,31 +75,23 @@ public class ImageAnnotationPanel extends JPanel {
 	private void initComponents() {
 		setBorder(LookAndFeelUtil.createPanelBorder());
 
-		final JLabel label1 = new JLabel("Border Color:");
-		final JLabel label2 = new JLabel("Border Opacity:");
-		final JLabel label3 = new JLabel("Border Width:");
-		final JLabel label4 = new JLabel("Opacity:");
-		final JLabel label5 = new JLabel("Brightness:");
-		final JLabel label6 = new JLabel("Contrast:");
+		var label1 = new JLabel("Border Color:");
+		var label2 = new JLabel("Border Opacity:");
+		var label3 = new JLabel("Border Width:");
+		var label4 = new JLabel("Opacity:");
+		var label5 = new JLabel("Brightness:");
+		var label6 = new JLabel("Contrast:");
 
 		borderColorCheck = new JCheckBox();
 		borderColorCheck.setSelected(annotation.getBorderColor() != null);
-		borderColorCheck.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				borderColorCheckActionPerformed(evt);
-			}
-		});
+		borderColorCheck.addActionListener(evt -> borderColorCheckActionPerformed(evt));
 
 		borderColorButton = new ColorButton((Color) preview.getBorderColor());
 		borderColorButton.setToolTipText("Select border color...");
 		borderColorButton.setEnabled(borderColorCheck.isSelected());
-		borderColorButton.addPropertyChangeListener("color", new PropertyChangeListener() {
-			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				preview.setBorderColor((Color) evt.getNewValue());
-				previewPanel.repaint();
-			}
+		borderColorButton.addPropertyChangeListener("color", evt -> {
+			preview.setBorderColor((Color) evt.getNewValue());
+			previewPanel.repaint();
 		});
 		
 		borderOpacitySlider = new JSlider(0, 100);
@@ -121,12 +108,7 @@ public class ImageAnnotationPanel extends JPanel {
 			borderOpacitySlider.setEnabled(false);
 		}
 
-		borderOpacitySlider.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent evt) {
-				updateBorderOpacity(borderOpacitySlider.getValue());
-			}
-		});
+		borderOpacitySlider.addChangeListener(evt -> updateBorderOpacity(borderOpacitySlider.getValue()));
 
 		borderWidthCombo = new JComboBox<>();
 		borderWidthCombo.setModel(new DefaultComboBoxModel<String>(
@@ -141,12 +123,7 @@ public class ImageAnnotationPanel extends JPanel {
 			}
 		}
 
-		borderWidthCombo.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				modifySAPreview();
-			}
-		});
+		borderWidthCombo.addActionListener(evt -> modifySAPreview());
 
 		opacitySlider = new JSlider(0, 100);
 		opacitySlider.setMajorTickSpacing(100);
@@ -160,12 +137,7 @@ public class ImageAnnotationPanel extends JPanel {
 		else
 			opacitySlider.setValue(100);
 
-		opacitySlider.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent evt) {
-				updateOpacity(opacitySlider.getValue());
-			}
-		});
+		opacitySlider.addChangeListener(evt -> updateOpacity(opacitySlider.getValue()));
 
 		brightnessSlider = new JSlider(-100, 100);
 		brightnessSlider.setMajorTickSpacing(100);
@@ -173,12 +145,7 @@ public class ImageAnnotationPanel extends JPanel {
 		brightnessSlider.setPaintTicks(true);
 		brightnessSlider.setPaintLabels(true);
 		brightnessSlider.setValue(0);
-		brightnessSlider.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent evt) {
-				updateBrightness(brightnessSlider.getValue());
-			}
-		});
+		brightnessSlider.addChangeListener(evt -> updateBrightness(brightnessSlider.getValue()));
 
 		contrastSlider = new JSlider(-100, 100);
 		contrastSlider.setMajorTickSpacing(100);
@@ -186,14 +153,9 @@ public class ImageAnnotationPanel extends JPanel {
 		contrastSlider.setPaintTicks(true);
 		contrastSlider.setPaintLabels(true);
 		contrastSlider.setValue(0);
-		contrastSlider.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent evt) {
-				updateContrast(contrastSlider.getValue());
-			}
-		});
+		contrastSlider.addChangeListener(evt -> updateContrast(contrastSlider.getValue()));
 		
-		final GroupLayout layout = new GroupLayout(this);
+		var layout = new GroupLayout(this);
 		setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());

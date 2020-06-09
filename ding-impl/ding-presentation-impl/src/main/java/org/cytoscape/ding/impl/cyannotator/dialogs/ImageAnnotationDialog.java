@@ -4,8 +4,6 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 
-import java.awt.Image;
-import java.awt.Point;
 import java.awt.Robot;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -29,7 +27,7 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -64,7 +62,7 @@ public class ImageAnnotationDialog extends JDialog {
 	private ImageAnnotationImpl preview;
 	private final boolean create;
 		
-	public ImageAnnotationDialog(final DRenderingEngine re, final Point2D start, final Window owner) {
+	public ImageAnnotationDialog(DRenderingEngine re, Point2D start, Window owner) {
 		super(owner);
 		this.re = re;
 		this.cyAnnotator = re.getCyAnnotator();
@@ -75,7 +73,7 @@ public class ImageAnnotationDialog extends JDialog {
 		initComponents();
 	}
 
-	public ImageAnnotationDialog(final ImageAnnotationImpl mAnnotation, final Window owner) {
+	public ImageAnnotationDialog(ImageAnnotationImpl mAnnotation, Window owner) {
 		super(owner);
 		this.annotation = mAnnotation;
 		this.cyAnnotator = mAnnotation.getCyAnnotator();
@@ -94,14 +92,14 @@ public class ImageAnnotationDialog extends JDialog {
 		
 		// Create the preview panel
 		preview = new ImageAnnotationImpl(annotation, true);
-		Image img = annotation.getImage();
+		var img = annotation.getImage();
 		double width = (double) img.getWidth(this);
 		double height = (double) img.getHeight(this);
 		double scale = (Math.max(width, height)) / (PREVIEW_HEIGHT - 50);
 
 		preview.setImage(img);
 		preview.setSize(width / scale, height / scale);
-		PreviewPanel previewPanel = new PreviewPanel(preview);
+		var previewPanel = new PreviewPanel(preview);
 
 		imageAnnotationPanel = new ImageAnnotationPanel(annotation, previewPanel);
 
@@ -118,10 +116,10 @@ public class ImageAnnotationDialog extends JDialog {
 			}
 		});
 		
-		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(applyButton, cancelButton);
+		var buttonPanel = LookAndFeelUtil.createOkCancelPanel(applyButton, cancelButton);
 
-		final JPanel contents = new JPanel();
-		final GroupLayout layout = new GroupLayout(contents);
+		var contents = new JPanel();
+		var layout = new GroupLayout(contents);
 		contents.setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(true);
@@ -173,8 +171,8 @@ public class ImageAnnotationDialog extends JDialog {
 
 		try {
 			// Warp the mouse to the starting location (if supported)
-			Point start = re.getComponent().getLocationOnScreen();
-			Robot robot = new Robot();
+			var start = re.getComponent().getLocationOnScreen();
+			var robot = new Robot();
 			robot.mouseMove((int) start.getX() + 100, (int) start.getY() + 100);
 		} catch (Exception e) {
 		}

@@ -31,7 +31,7 @@ import org.cytoscape.view.presentation.annotations.GroupAnnotation;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -56,7 +56,6 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	protected static final String ANNOTATION_ID = "uuid";
 	protected static final String PARENT_ID = "parent";
 	
-	
 	protected final CyAnnotator cyAnnotator;
 	private UUID uuid = UUID.randomUUID();
 	
@@ -75,7 +74,6 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	
 	protected int zOrder;
 	protected Rectangle2D initialBounds;
-	
 	
 	private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
@@ -111,60 +109,61 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 			x = Double.parseDouble(argMap.get(Annotation.X));
 		if (argMap.containsKey(Annotation.Y))
 			y = Double.parseDouble(argMap.get(Annotation.Y));
-		
+
 		this.zOrder = ViewUtils.getDouble(argMap, Z, 0.0).intValue();
-		
+
 		if (argMap.get(NAME) != null)
 			name = argMap.get(NAME);
-		
-		String canvasString = ViewUtils.getString(argMap, CANVAS, FOREGROUND);
-		
-		if (canvasString != null && canvasString.equals(BACKGROUND)) {
+
+		var canvasString = ViewUtils.getString(argMap, CANVAS, FOREGROUND);
+
+		if (canvasString != null && canvasString.equals(BACKGROUND))
 			this.canvas = CanvasID.BACKGROUND;
-		}
 
 		if (argMap.containsKey(ANNOTATION_ID))
 			this.uuid = UUID.fromString(argMap.get(ANNOTATION_ID));
 	}
 
-	protected static double getLegacyZoom(Map<String,String> argMap) {
+	protected static double getLegacyZoom(Map<String, String> argMap) {
 		// Legacy, support for annotations created before 3.8
 		@SuppressWarnings("deprecation")
 		double zoom = ViewUtils.getDouble(argMap, ZOOM, 1.0);
-		if(zoom == 0)
+
+		if (zoom == 0)
 			zoom = 1.0;
+
 		return zoom;
 	}
 	
 	//------------------------------------------------------------------------
 
 	protected String getDefaultName() {
-		if(cyAnnotator == null)
+		if (cyAnnotator == null)
 			return "Annotation";
+		
 		return cyAnnotator.getDefaultAnnotationName(getType().getSimpleName().replace("Annotation", ""));
 	}
-	
-	
+
 	@Override
 	public double getX() {
 		return x;
 	}
-	
+
 	@Override
 	public double getY() {
 		return y;
 	}
-	
+
 	@Override
 	public void setLocation(double x, double y) {
 		this.x = x;
 		this.y = y;
 	}
-	
+
 	public void setX(double x) {
 		this.x = x;
 	}
-	
+
 	public void setY(double y) {
 		this.y = y;
 	}
@@ -182,8 +181,7 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	public void setBounds(Rectangle2D bounds) {
 		this.x = bounds.getX();
 		this.y = bounds.getY();
-		this.width = bounds.getWidth();
-		this.height = bounds.getHeight();
+		setSize(bounds.getWidth(), bounds.getHeight());
 	}
 	
 	public Rectangle2D getBounds() {
@@ -208,14 +206,14 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	}
 		
 	public void resizeAnnotationRelative(Rectangle2D initialBounds, Rectangle2D outlineBounds) {
-		Rectangle2D daBounds = getInitialBounds();
+		var daBounds = getInitialBounds();
 		
 		double deltaW = outlineBounds.getWidth()/initialBounds.getWidth();
 		double deltaH = outlineBounds.getHeight()/initialBounds.getHeight();
 		
 		double deltaX = (daBounds.getX()-initialBounds.getX())/initialBounds.getWidth();
 		double deltaY = (daBounds.getY()-initialBounds.getY())/initialBounds.getHeight();
-		Rectangle2D newBounds = adjustBounds(daBounds, outlineBounds, deltaX, deltaY, deltaW, deltaH);
+		var newBounds = adjustBounds(daBounds, outlineBounds, deltaX, deltaY, deltaW, deltaH);
 
 		setBounds(newBounds);
 	}
@@ -225,6 +223,7 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 		double newY = outerBounds.getY() + dy * outerBounds.getHeight();
 		double newWidth  = bounds.getWidth() * dw;
 		double newHeight = bounds.getHeight()* dh;
+		
 		return new Rectangle2D.Double(newX,  newY, newWidth, newHeight);
 	}
 	
@@ -232,7 +231,6 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	public double getZoom() {
 		return 1; // Legacy
 	}
-	
 
 	@Override
 	public CanvasID getCanvas() {
@@ -241,22 +239,21 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 
 	@Override
 	public void setCanvas(String name) {
-		CanvasID canvasID = CanvasID.fromArgName(name); 
+		CanvasID canvasID = CanvasID.fromArgName(name);
 		changeCanvas(canvasID);
-		update();		// Update network attributes
+		update(); // Update network attributes
 	}
 
 	@Override
 	public void changeCanvas(CanvasID canvasID) {
-		if(this.canvas == canvasID)
+		if (this.canvas == canvasID)
 			return;
 
 		this.canvas = canvasID;
-		
-		for(ArrowAnnotation arrow: arrowList) {
-			if(arrow instanceof DingAnnotation) {
-				((DingAnnotation)arrow).changeCanvas(canvasID);
-			}
+
+		for (ArrowAnnotation arrow : arrowList) {
+			if (arrow instanceof DingAnnotation)
+				((DingAnnotation) arrow).changeCanvas(canvasID);
 		}
 	}
 
@@ -287,11 +284,11 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 
 	@Override
 	public void setGroupParent(GroupAnnotation parent) {
-		if (parent instanceof GroupAnnotationImpl) {
+		if (parent instanceof GroupAnnotationImpl)
 			this.groupParent = (GroupAnnotationImpl) parent;
-		} else if (parent == null) {
+		else if (parent == null)
 			this.groupParent = null;
-		}
+		
 //		cyAnnotator.addAnnotation(this);
 	}
 
@@ -303,22 +300,21 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	// Assumes location is node coordinates.
 	@Override
 	public void moveAnnotation(Point2D location) {
-		if (!(this instanceof ArrowAnnotationImpl)) {
+		if (!(this instanceof ArrowAnnotationImpl))
 			setLocation(location.getX(), location.getY());
-		}
 	}
 
 	@Override
 	public void removeAnnotation() {
 		cyAnnotator.removeAnnotation(this);
-		for(ArrowAnnotation arrow: arrowList) {
-			if(arrow instanceof DingAnnotation) {
-				((DingAnnotation)arrow).removeAnnotation();
-			}
+
+		for (ArrowAnnotation arrow : arrowList) {
+			if (arrow instanceof DingAnnotation)
+				((DingAnnotation) arrow).removeAnnotation();
 		}
-		if(groupParent != null) {
+
+		if (groupParent != null)
 			groupParent.removeMember(this);
-		}
 	}
 
 	@Override

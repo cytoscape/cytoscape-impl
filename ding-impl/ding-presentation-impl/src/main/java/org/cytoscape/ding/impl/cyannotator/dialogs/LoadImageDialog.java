@@ -9,9 +9,9 @@ import java.awt.Robot;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.File;
-import java.net.URL;
+import java.io.InputStreamReader;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -62,6 +62,8 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 public class LoadImageDialog extends JDialog {
 
+	private static final String UNDO_LABEL = "Create Image Annotation";
+	
 	private JButton openButton;
 	private JButton cancelButton;
 	private JFileChooser fileChooser;
@@ -70,10 +72,12 @@ public class LoadImageDialog extends JDialog {
 	private final CyAnnotator cyAnnotator;
 	private final CustomGraphicsManager cgm;
 	private final Point2D startingLocation;
+	
+	private static File lastDirectory;
 
 	private static final Logger logger = LoggerFactory.getLogger(LoadImageDialog.class);
 
-	public LoadImageDialog(final DRenderingEngine re, final Point2D start, final CustomGraphicsManager cgm, final Window owner) {
+	public LoadImageDialog(DRenderingEngine re, Point2D start, CustomGraphicsManager cgm, Window owner) {
 		super(owner);
 		this.re = re;
 		this.cgm = cgm;
@@ -89,7 +93,7 @@ public class LoadImageDialog extends JDialog {
 		setModalityType(DEFAULT_MODALITY_TYPE);
 		setResizable(false);
 
-		fileChooser = new JFileChooser();
+		fileChooser = new JFileChooser(lastDirectory);
 		fileChooser.setControlButtonsAreShown(false);
 		fileChooser.setCurrentDirectory(null);
 		fileChooser.setDialogTitle("");
@@ -109,10 +113,10 @@ public class LoadImageDialog extends JDialog {
 			}
 		});
 		
-		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(openButton, cancelButton);
+		var buttonPanel = LookAndFeelUtil.createOkCancelPanel(openButton, cancelButton);
 
-		final JPanel contents = new JPanel();
-		final GroupLayout layout = new GroupLayout(contents);
+		var contents = new JPanel();
+		var layout = new GroupLayout(contents);
 		contents.setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(true);
@@ -137,33 +141,69 @@ public class LoadImageDialog extends JDialog {
 		try {
 			// Read the selected Image, create an Image Annotation, repaint the
 			// whole network and then dispose off this Frame
-			File imageFile = fileChooser.getSelectedFile(); // Get the file
-			BufferedImage image = ImageIO.read(imageFile);
-			URL url = imageFile.toURI().toURL();
+			var file = fileChooser.getSelectedFile();
+			var ext = FilenameUtils.getExtension(file.getName());
+			var url = file.toURI().toURL();
 			
-			cyAnnotator.markUndoEdit("Create Image Annotation");
+			ImageAnnotationImpl annotation = null;
 			
-			// The Attributes are x, y, Image, componentNumber, scaleFactor
-			ImageAnnotationImpl newOne = new ImageAnnotationImpl(
-					re,
-					(int) startingLocation.getX(),
-					(int) startingLocation.getY(),
-					url, image, re.getZoom(), cgm
-			);
-
+			if (ext.equalsIgnoreCase("svg")) {
+				// SVG...
+				var sb = new StringBuilder();
+				
+				try (var in = new BufferedReader(new InputStreamReader(url.openStream()))) {
+					String line = null;
+					
+					while ((line = in.readLine()) != null)
+			            sb.append(line + "\n");
+				}
+				
+				var svg = sb.toString();
+				
+				if (svg.isBlank())
+					return;
+				
+				cyAnnotator.markUndoEdit(UNDO_LABEL);
+				
+				annotation = new ImageAnnotationImpl(
+						re,
+						(int) startingLocation.getX(),
+						(int) startingLocation.getY(),
+						url,
+						svg,
+						re.getZoom(),
+						cgm
+				);
+			} else {
+				// Bitmap (PNG, JPG, etc.)...
+				var image = ImageIO.read(file);
+				
+				cyAnnotator.markUndoEdit(UNDO_LABEL);
+				
+				annotation = new ImageAnnotationImpl(
+						re,
+						(int) startingLocation.getX(),
+						(int) startingLocation.getY(),
+						url,
+						image,
+						re.getZoom(),
+						cgm
+				);
+			}
+	
 			var nodePoint = re.getTransform().getNodeCoordinates(startingLocation);
-			newOne.setLocation(nodePoint.getX(), nodePoint.getY());
-			newOne.update();
-			cyAnnotator.addAnnotation(newOne);
+			annotation.setLocation(nodePoint.getX(), nodePoint.getY());
+			annotation.update();
+			cyAnnotator.addAnnotation(annotation);
 			
 			// Set this shape to be resized
-			cyAnnotator.resizeShape(newOne);
+			cyAnnotator.resizeShape(annotation);
 
 			try {
 				// Warp the mouse to the starting location (if supported).
 				// But we want to preserve the aspect ratio, at least initially.
-				double width = (double) image.getWidth();
-				double height = (double) image.getHeight();
+				double width = (double) annotation.getWidth();
+				double height = (double) annotation.getHeight();
 				
 				if (height > width) {
 					width = 100.0 * width / height;
@@ -177,9 +217,14 @@ public class LoadImageDialog extends JDialog {
 				Robot robot = new Robot();
 				robot.mouseMove((int) start.getX() + (int) width, (int) start.getY() + (int) height);
 			} catch (Exception e) {
+				// Ignore...
 			}
 
-			this.dispose();
+			dispose();
+			
+			// Save current directory
+			if (file.getParentFile().isDirectory())
+				lastDirectory = file.getParentFile();
 		} catch (Exception ex) {
 			logger.warn("Unable to load the selected image", ex);
 		}
@@ -198,20 +243,11 @@ public class LoadImageDialog extends JDialog {
 			if (f.isDirectory())
 				return true;
 
-			String extension = FilenameUtils.getExtension(f.getName());
+			var ext = FilenameUtils.getExtension(f.getName()).toLowerCase();
 			
-			if (!extension.isEmpty()) {
-				
-				if (extension.equals("tiff") ||
-					extension.equals("tif") ||
-					extension.equals("gif") ||
-					extension.equals("jpeg") ||
-					extension.equals("jpg") ||
-					extension.equals("png"))
-						return true;
-				else
-					return false;
-			}
+			if (!ext.isEmpty())
+				return ext.equals("tiff") || ext.equals("tif") || ext.equals("jpeg") || ext.equals("jpg")
+						|| ext.equals("png") || ext.equals("gif") || ext.equals("svg");
 
 			return false;
 		}

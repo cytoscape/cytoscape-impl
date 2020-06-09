@@ -91,23 +91,23 @@ public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer> impl
 	}
 	
 	@Override
-	public void setWidth(final int width) {
+	public void setWidth(int width) {
 		this.width = width;
 	}
 	
 	@Override
-	public void setHeight(final int height) {
+	public void setHeight(int height) {
 		this.height = height;
 	}
 	
 	@Override
 	public int getWidth() {
-		return this.width;
+		return width;
 	}
 	
 	@Override
 	public int getHeight() {
-		return this.height;
+		return height;
 	}
 
 	@Override	
@@ -121,7 +121,7 @@ public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer> impl
 	}
 
 	@Override
-	public void setDisplayName(final String displayName) {
+	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
 	}
 
