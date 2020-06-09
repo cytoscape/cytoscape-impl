@@ -81,6 +81,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		this.image = c.image;
 		this.svg = c.svg;
 		this.customGraphicsManager = c.customGraphicsManager;
+		this.cg = c.cg;
 		this.width = c.getWidth();
 		this.height = c.getHeight();
 		this.url = c.url;
@@ -215,7 +216,9 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			cg = customGraphicsManager.getCustomGraphicsBySourceURL(url);
 			
 			if (cg != null) {
-				image = ImageUtil.toBufferedImage(cg.getRenderedImage());
+				if (cg instanceof SVGCustomGraphics == false)
+					image = ImageUtil.toBufferedImage(cg.getRenderedImage());
+				
 				customGraphicsManager.addCustomGraphics(cg, url);
 				customGraphicsManager.setUsedInCurrentSession(cg, true);
 			} else {
@@ -405,12 +408,12 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		if (cg instanceof SVGCustomGraphics) {
 			var w = Math.max(1, (int) Math.round(getWidth())); // will throw exception if w <= 0
 			var h = Math.max(1, (int) Math.round(getHeight())); // will throw exception if h <= 0
+			var rect = new Rectangle2D.Float(w / 2.0f, h / 2.0f, w, h);
 			
 			image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
 			var g = image.createGraphics();
 			
 			var layers = ((SVGCustomGraphics) cg).getLayers(null, null);
-			var rect = new Rectangle2D.Float(w / 2.0f, h / 2.0f, w, h);
 			
 			for (var cgl : layers) {
 				// Much easier to use the SVGLayer draw method than have calculate and apply
@@ -453,27 +456,42 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	
 	@Override
 	public void paint(Graphics g, boolean showSelection) {
-		var image = getModifiedImage();
-
-		if (image != null) {
-			var g2 = (Graphics2D) g.create();
-
-			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
-			g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-			g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-			g2.drawImage(
-					image, 
-					Math.round((float) getX()), 
-					Math.round((float) getY()), 
-					Math.round((float) getWidth()),
-					Math.round((float) getHeight()), 
-					null
-			);
+		var g2 = (Graphics2D) g.create();
+		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
+		
+		if (cg instanceof SVGCustomGraphics) {
+			// SVG...
+			var w = Math.max(1.0, getWidth()); // will throw exception if w <= 0
+			var h = Math.max(1.0, getHeight()); // will throw exception if h <= 0
+			var rect = new Rectangle2D.Double(getX() + w / 2.0f, getY() + h / 2.0f, w, h);
 			
-			g2.dispose();
+			var layers = ((SVGCustomGraphics) cg).getLayers(null, null);
+			
+			for (var cgl : layers) {
+				if (cgl instanceof SVGLayer)
+					((SVGLayer) cgl).draw(g2, rect, rect, null, null);
+			}
+		} else {
+			// Bitmap...
+			var image = getModifiedImage();
+	
+			if (image != null) {
+				g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+				g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+				g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+	
+				g2.drawImage(
+						image, 
+						Math.round((float) getX()), 
+						Math.round((float) getY()), 
+						Math.round((float) getWidth()),
+						Math.round((float) getHeight()), 
+						null
+				);
+			}
 		}
+		
+		g2.dispose();
 		
 		super.paint(g, showSelection); // draw the border over top
 	}
