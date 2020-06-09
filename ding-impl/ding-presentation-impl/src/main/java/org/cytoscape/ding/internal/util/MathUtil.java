@@ -188,4 +188,28 @@ public final class MathUtil {
 		
 		return new Line2D.Double(p1, p2);
 	}
+	
+	/**
+	 * Calculates the scaling factor for the maximum possible size that fits inside of the target bounding box
+	 * while maintaining the aspect ratio given by the original box. Just multiply the original rectangle's
+	 * width and height by the returned value in order to get the new size.
+	 * 
+	 * @param w1 the width of the rectangle that must be resized to fit the bounding box.
+	 * @param h1 the height of the rectangle that must be resized to fit the bounding box.
+	 * @param w2 the width of the bounding box.
+	 * @param h2 the height of the bounding box.
+	 * @return the scaling factor that allows the original rectangle to fit inside the bounding box
+	 *         with no distortion or cropping.
+	 */
+	public static double scaleToFit(double w1, double h1, double w2, double h2) {
+		var fw = 0.0; // scaling factor for the width
+		var fh = 0.0; // scaling factor for the height
+		
+		if (w1 > 0)
+			fw = w2 / w1;
+		if (h1 > 0)
+			fh = h2 / h1;
+		
+		return Math.min(fw, fh); // final scaling factor
+    }
 }

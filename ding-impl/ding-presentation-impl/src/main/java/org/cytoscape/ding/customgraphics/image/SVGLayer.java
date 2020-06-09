@@ -10,6 +10,7 @@ import java.awt.image.BufferedImage;
 import java.io.StringReader;
 
 import org.cytoscape.ding.customgraphics.paint.TexturePaintFactory;
+import org.cytoscape.ding.internal.util.MathUtil;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
@@ -114,8 +115,6 @@ public class SVGLayer implements Cy2DGraphicLayer {
 		var iw = (double) diagram.getWidth();
 		var ih = (double) diagram.getHeight();
 		// New image width/height
-		var nw = iw;
-		var nh = ih;
 		
 		if (w == 0 || h == 0 || iw == 0 || ih == 0)
 			return;
@@ -125,27 +124,13 @@ public class SVGLayer implements Cy2DGraphicLayer {
 		g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 		
 		// Fit image to shape's bounds...
-		// - first check if we need to scale width
-		if (iw > w) {
-			// scale width to fit
-			nw = w;
-			// scale height to maintain aspect ratio
-			nh = (nw * ih) / iw;
-		}
-		
-		// - then check if we need to scale even with the new height
-		if (nh > h) {
-			// scale height to fit instead
-			nh = h;
-			// scale width to maintain aspect ratio
-			nw = (nh * iw) / ih;
-		}
+		var scale = MathUtil.scaleToFit(iw, ih, w, h);
+		var nw = iw * scale;
+		var nh = ih * scale;
 		
 		// Scale factors
-		var sx = nw / iw;
-		var sy = nh / ih;
 		g2.translate(x - nw / 2.0f, y - nh / 2.0f);
-		g2.scale(sx, sy);
+		g2.scale(scale, scale);
 		
 		try {
 			diagram.render(g2);
