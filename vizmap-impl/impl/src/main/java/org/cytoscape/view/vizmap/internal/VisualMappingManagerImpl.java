@@ -17,6 +17,8 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
+import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -52,7 +54,7 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
-public class VisualMappingManagerImpl implements VisualMappingManager, SetCurrentNetworkViewListener {
+public class VisualMappingManagerImpl implements VisualMappingManager, SetCurrentNetworkViewListener, NetworkViewAboutToBeDestroyedListener {
 	
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
@@ -108,6 +110,12 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 		return defStyle;
 	}
 
+	@Override
+	public void handleEvent(NetworkViewAboutToBeDestroyedEvent e) {
+		CyNetworkView netView = e.getNetworkView();
+		network2VisualStyleMap.remove(netView);
+	}
+	
 	/**
 	 * Returns an associated Visual Style for the View Model.
 	 */
