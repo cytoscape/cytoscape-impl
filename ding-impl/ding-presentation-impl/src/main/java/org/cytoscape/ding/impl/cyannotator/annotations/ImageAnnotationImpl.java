@@ -75,7 +75,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 	private static final Logger logger = LoggerFactory.getLogger(ImageAnnotationImpl.class);
 	
-	public ImageAnnotationImpl(ImageAnnotationImpl c, boolean usedForPreviews) { 
+	public ImageAnnotationImpl(ImageAnnotationImpl c, boolean usedForPreviews) {
 		super((ShapeAnnotationImpl) c, 0, 0, usedForPreviews);
 		
 		this.image = c.image;
@@ -126,7 +126,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			CustomGraphicsManager customGraphicsManager
 	) {
 		super(re, x, y, ShapeType.RECTANGLE, 0, 0, null, null, 0.0f);
-
+		
 		this.svg = svg;
 		this.customGraphicsManager = customGraphicsManager;
 		this.url = url;
@@ -151,8 +151,8 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			CustomGraphicsManager customGraphicsManager
 	) {
 		super(re, argMap);
+		
 		this.customGraphicsManager = customGraphicsManager;
-
 		opacity = ViewUtils.getFloat(argMap, OPACITY, 1.0f);
 		brightness = ViewUtils.getInteger(argMap, LIGHTNESS, 0);
 		contrast = ViewUtils.getInteger(argMap, CONTRAST, 0);
@@ -216,7 +216,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			cg = customGraphicsManager.getCustomGraphicsBySourceURL(url);
 			
 			if (cg != null) {
-				if (cg instanceof SVGCustomGraphics == false)
+				if (!isSVG())
 					image = ImageUtil.toBufferedImage(cg.getRenderedImage());
 				
 				customGraphicsManager.addCustomGraphics(cg, url);
@@ -320,7 +320,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			super.setSize(width, height);
 			
 			// We want to take advantage of the fact that SVG images scale and convert the SVG to bitmap again
-			if (cg instanceof SVGCustomGraphics) {
+			if (isSVG()) {
 				modifiedImage = null;
 				update();
 			}
@@ -389,6 +389,10 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 		return super.getDefaultName();
 	}
+	
+	public boolean isSVG() {
+		return cg instanceof SVGCustomGraphics;
+	}
 
 	public void dropImage() {
 		customGraphicsManager.setUsedInCurrentSession(cg, false);
@@ -405,7 +409,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 		BufferedImage image = null;
 
-		if (cg instanceof SVGCustomGraphics) {
+		if (isSVG()) {
 			var w = Math.max(1, (int) Math.round(getWidth())); // will throw exception if w <= 0
 			var h = Math.max(1, (int) Math.round(getHeight())); // will throw exception if h <= 0
 			var rect = new Rectangle2D.Float(w / 2.0f, h / 2.0f, w, h);
@@ -459,7 +463,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		var g2 = (Graphics2D) g.create();
 		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
 		
-		if (cg instanceof SVGCustomGraphics) {
+		if (isSVG()) {
 			// SVG...
 			var w = Math.max(1.0, getWidth()); // will throw exception if w <= 0
 			var h = Math.max(1.0, getHeight()); // will throw exception if h <= 0

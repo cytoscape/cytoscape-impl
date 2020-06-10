@@ -30,7 +30,7 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -60,11 +60,14 @@ public class ImageAnnotationPanel extends JPanel {
 	private JSlider contrastSlider;
 
 	private ImageAnnotationImpl preview;
-	private PreviewPanel previewPanel;
+	private final PreviewPanel previewPanel;
 
-	private ImageAnnotationImpl annotation;
+	private final ImageAnnotationImpl annotation;
 
 	public ImageAnnotationPanel(ImageAnnotationImpl annotation, PreviewPanel previewPanel) {
+		if (annotation == null)
+			throw new IllegalArgumentException("'annotation' must not be null.");
+		
 		this.annotation = annotation;
 		this.previewPanel = previewPanel;
 		this.preview = (ImageAnnotationImpl) previewPanel.getAnnotation();
@@ -218,6 +221,14 @@ public class ImageAnnotationPanel extends JPanel {
 		makeSmall(label1, label2, label3, label4, label5, label6);
 		makeSmall(borderColorCheck, borderColorButton, borderOpacitySlider, borderWidthCombo, opacitySlider,
 				brightnessSlider, contrastSlider);
+		
+		if (annotation.isSVG()) {
+			label5.setVisible(false);
+			brightnessSlider.setVisible(false);
+			
+			label6.setVisible(false);
+			contrastSlider.setVisible(false);
+		}
 	}
 
 	public ImageAnnotationImpl getPreview() {
