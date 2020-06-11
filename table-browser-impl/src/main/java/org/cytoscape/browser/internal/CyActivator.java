@@ -13,6 +13,7 @@ import org.cytoscape.browser.internal.task.SetColumnFormatTaskFactory;
 import org.cytoscape.browser.internal.view.DefaultTableBrowser;
 import org.cytoscape.browser.internal.view.GlobalTableBrowser;
 import org.cytoscape.browser.internal.view.TableBrowserMediator;
+import org.cytoscape.browser.internal.view.TableBrowserStyleMediator;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -25,6 +26,7 @@ import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.TableColumnTaskFactory;
 import org.cytoscape.view.vizmap.events.VisualStyleChangedListener;
+import org.cytoscape.view.vizmap.events.table.ColumnVisualStyleSetListener;
 import org.osgi.framework.BundleContext;
 
 /*
@@ -93,7 +95,6 @@ public class CyActivator extends AbstractCyActivator {
 		
 		var mediator = new TableBrowserMediator(nodeTableBrowser, edgeTableBrowser, networkTableBrowser, globalTableBrowser, serviceRegistrar);
 		registerService(bc, mediator, SetCurrentNetworkListener.class);
-		registerService(bc, mediator, VisualStyleChangedListener.class);
 		registerService(bc, mediator, CytoPanelComponentSelectedListener.class);
 		
 		{
@@ -102,5 +103,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(TITLE, "Hide Column");
 			registerService(bc, factory, TableColumnTaskFactory.class, props);
 		}
+		
+		var styleMediator = new TableBrowserStyleMediator(serviceRegistrar);
+		registerService(bc, styleMediator, VisualStyleChangedListener.class);
+		registerService(bc, styleMediator, ColumnVisualStyleSetListener.class);
 	}
 }

@@ -51,7 +51,7 @@ public class TableRenderer implements CyDisposable {
 	
 	public static void setColumnVisible(View<CyColumn> colView, boolean visible) {
 		if(colView != null) {
-			colView.setVisualProperty(BasicTableVisualLexicon.COLUMN_VISIBLE, visible);
+			colView.setLockedValue(BasicTableVisualLexicon.COLUMN_VISIBLE, visible);
 		}
 	}
 	
@@ -64,7 +64,7 @@ public class TableRenderer implements CyDisposable {
 	public void setColumnGravity(String name, int grav) {
 		View<CyColumn> colView = getTableView().getColumnView(name);
 		if(colView != null) {
-			colView.setVisualProperty(BasicTableVisualLexicon.COLUMN_GRAVITY, grav);
+			colView.setLockedValue(BasicTableVisualLexicon.COLUMN_GRAVITY, grav);
 		}
 	}
 	

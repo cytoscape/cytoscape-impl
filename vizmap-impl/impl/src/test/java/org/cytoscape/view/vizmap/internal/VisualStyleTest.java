@@ -1,18 +1,9 @@
 package org.cytoscape.view.vizmap.internal;
 
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_TRANSPARENCY;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_WIDTH;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_FILL_COLOR;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_HEIGHT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SIZE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_TRANSPARENCY;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_WIDTH;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
@@ -265,7 +256,7 @@ public class VisualStyleTest extends AbstractVisualStyleTest {
 	
 	@Test(expected=NullPointerException.class)
 	public void testApplyToNullThrowsNPE() {
-		style.apply(null);
+		style.apply((CyNetworkView)null);
 	}
 	
 	@Test

@@ -762,8 +762,7 @@ public class NetworkViewMediator
 		if (view == null)
 			return;
 		
-		if (getNetworkViewMainPanel().isGridVisible()
-				|| view.equals(getNetworkViewMainPanel().getCurrentNetworkView())) {
+		if (getNetworkViewMainPanel().isGridVisible() || view.equals(getNetworkViewMainPanel().getCurrentNetworkView())) {
 			Timer timer = null;
 			
 			synchronized (lock) {
@@ -772,8 +771,7 @@ public class NetworkViewMediator
 			
 			if (timer == null) {
 				timer = new Timer(0, evt -> {
-					VisualStyle vs = style != null ?
-							style : serviceRegistrar.getService(VisualMappingManager.class).getVisualStyle(view);
+					VisualStyle vs = style != null ? style : serviceRegistrar.getService(VisualMappingManager.class).getVisualStyle(view);
 					vs.apply(view);
 					view.updateView();
 				});

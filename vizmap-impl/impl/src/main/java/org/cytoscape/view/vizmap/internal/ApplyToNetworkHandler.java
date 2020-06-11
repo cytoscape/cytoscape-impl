@@ -60,7 +60,7 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	ApplyToNetworkHandler(final VisualStyle style, final CyServiceRegistrar serviceRegistrar) {
-		super(style, serviceRegistrar, CyNetwork.class);
+		super(style, serviceRegistrar, CyNetwork.class, BasicVisualLexicon.NETWORK);
 	}
 
 	@Override

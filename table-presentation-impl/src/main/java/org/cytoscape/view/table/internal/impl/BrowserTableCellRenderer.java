@@ -111,7 +111,7 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 			if(vpValue instanceof Color) {
 				background = (Color) vpValue;
 			}
-		}
+		} 
 		setBackground(background);
 		
 		
