@@ -1,31 +1,23 @@
 package org.cytoscape.ding.impl.editor;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
-import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -36,11 +28,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.CyCustomGraphics2Manager;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsBrowser;
-import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsManagerDialog;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.VisualProperty;
@@ -48,7 +38,6 @@ import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
-import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyValueEditor;
 
 /*
@@ -82,7 +71,7 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 	
 	private JTabbedPane groupTpn;
 	private JPanel bottomPnl;
-	private GraphicsPanel graphicsPnl;
+	private ImageCustomGraphicsSelector imageSelector;
 	private Map<String/*group*/, CustomGraphics2Panel> cg2PnlMap;
 	private JButton removeBtn;
 	private JButton cancelBtn;
@@ -93,8 +82,6 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 	
 	private boolean initialized;
 
-	private final CustomGraphicsManager customGraphicsMgr;
-	private final CyCustomGraphics2Manager customGraphics2Mgr;
 	private final CustomGraphicsBrowser browser;
 	private final CyServiceRegistrar serviceRegistrar;
 	
@@ -102,12 +89,7 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public CyCustomGraphicsValueEditor(final CustomGraphicsManager customGraphicsMgr,
-									   final CyCustomGraphics2Manager customGraphics2Mgr,
-									   final CustomGraphicsBrowser browser,
-									   final CyServiceRegistrar serviceRegistrar) {
-		this.customGraphicsMgr = customGraphicsMgr;
-		this.customGraphics2Mgr = customGraphics2Mgr;
+	public CyCustomGraphicsValueEditor(CustomGraphicsBrowser browser, CyServiceRegistrar serviceRegistrar) {
 		this.browser = browser;
 		this.serviceRegistrar = serviceRegistrar;
 		cg2PnlMap = new HashMap<>();
@@ -117,7 +99,7 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 	
 	@Override
 	public <S extends CyCustomGraphics> CyCustomGraphics<? extends CustomGraphicLayer> showEditor(
-			final Component parent, final S initialValue, final VisualProperty<S> vp) {
+			Component parent, S initialValue, VisualProperty<S> vp) {
 		oldCustomGraphics = initialValue;
 		
 		// Make sure it initializes only after the Cytoscape UI (specially DefaultViewPanel) is ready
@@ -126,7 +108,7 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 			initialized = true;
 		}
 		
-		refreshUI();
+		update();
 		
 		dialog.pack();
 		dialog.setLocationRelativeTo(parent);
@@ -142,8 +124,8 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 	
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
-	private void init(final Component parent) {
-		final Window owner = parent != null ? SwingUtilities.getWindowAncestor(parent) : null;
+	private void init(Component parent) {
+		var owner = parent != null ? SwingUtilities.getWindowAncestor(parent) : null;
 		dialog = new JDialog(owner, ModalityType.APPLICATION_MODAL);
 		dialog.setMinimumSize(new Dimension(400, 600));
 		dialog.setTitle("Graphics");
@@ -156,7 +138,7 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 			}
 		});
 		
-		final GroupLayout layout = new GroupLayout(dialog.getContentPane());
+		var layout = new GroupLayout(dialog.getContentPane());
 		dialog.getContentPane().setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(true);
@@ -175,14 +157,15 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 		dialog.getRootPane().setDefaultButton(getApplyBtn());
 	}
 	
-	private void refreshUI() {
-		getGraphicsPnl().updateList();
-		Component newSelected = getGraphicsPnl();
-		final Iterator<Entry<String, CustomGraphics2Panel>> iter = cg2PnlMap.entrySet().iterator();
+	private void update() {
+		getImageSelector().update(oldCustomGraphics);
+		Component newSelectedComp = getImageSelector();
+		var iter = cg2PnlMap.entrySet().iterator();
 		
 		while (iter.hasNext()) {
-			final CustomGraphics2Panel cg2Pnl = iter.next().getValue();
-			cg2Pnl.update(oldCustomGraphics instanceof CyCustomGraphics2 ? (CyCustomGraphics2)oldCustomGraphics : null);
+			CustomGraphics2Panel cg2Pnl = iter.next().getValue();
+			cg2Pnl.update(oldCustomGraphics instanceof CyCustomGraphics2 ?
+					(CyCustomGraphics2) oldCustomGraphics : null);
 			
 			if (cg2Pnl.getEditorCount() == 0) {
 				iter.remove();
@@ -193,11 +176,11 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 				continue;
 			}
 			
-			if (oldCustomGraphics instanceof CyCustomGraphics2 && cg2Pnl.canEdit((CyCustomGraphics2)oldCustomGraphics))
-				newSelected = cg2Pnl;
+			if (oldCustomGraphics instanceof CyCustomGraphics2 && cg2Pnl.canEdit((CyCustomGraphics2) oldCustomGraphics))
+				newSelectedComp = cg2Pnl;
 		}
 		
-		getGroupTpn().setSelectedComponent(newSelected);
+		getGroupTpn().setSelectedComponent(newSelectedComp);
 	}
 	
 	private void remove() {
@@ -213,23 +196,25 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 	
 	private void apply() {
 		editCancelled = false;
-		final Component c = getGroupTpn().getSelectedComponent();
+		var c = getGroupTpn().getSelectedComponent();
 		
-		if (c instanceof GraphicsPanel)
-			newCustomGraphics = ((GraphicsPanel)c).getCustomGraphics();
+		if (c instanceof ImageCustomGraphicsSelector)
+			newCustomGraphics = ((ImageCustomGraphicsSelector) c).getSelectedValue();
 		else if (c instanceof CustomGraphics2Panel)
-			newCustomGraphics = ((CustomGraphics2Panel)c).getCustomGraphics2();
-		
+			newCustomGraphics = ((CustomGraphics2Panel) c).getCustomGraphics2();
+
 		dialog.dispose();
 	}
 	
 	private JTabbedPane getGroupTpn() {
 		if (groupTpn == null) {
 			groupTpn = new JTabbedPane();
-			groupTpn.addTab("Images", getGraphicsPnl());
+			groupTpn.addTab("Images", getImageSelector());
 			
-			for (final String group : customGraphics2Mgr.getGroups()) {
-				final CustomGraphics2Panel cg2Pnl = getCG2Pnl(group);
+			var customGraphics2Mgr = serviceRegistrar.getService(CyCustomGraphics2Manager.class);
+			
+			for (var group : customGraphics2Mgr.getGroups()) {
+				var cg2Pnl = getCG2Pnl(group);
 				
 				if (cg2Pnl != null)
 					groupTpn.addTab(group, cg2Pnl);
@@ -247,16 +232,17 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 		return bottomPnl;
 	}
 	
-	private GraphicsPanel getGraphicsPnl() {
-		if (graphicsPnl == null) {
-			graphicsPnl = new GraphicsPanel();
+	private ImageCustomGraphicsSelector getImageSelector() {
+		if (imageSelector == null) {
+			imageSelector = new ImageCustomGraphicsSelector(browser, serviceRegistrar);
+			imageSelector.addActionListener(evt -> apply());
 		}
 		
-		return graphicsPnl;
+		return imageSelector;
 	}
 	
-	private CustomGraphics2Panel getCG2Pnl(final String group) {
-		CustomGraphics2Panel cg2Pnl = cg2PnlMap.get(group);
+	private CustomGraphics2Panel getCG2Pnl(String group) {
+		var cg2Pnl = cg2PnlMap.get(group);
 		
 		if (cg2Pnl == null) {
 			cg2Pnl = new CustomGraphics2Panel(group);
@@ -270,12 +256,7 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 	public JButton getRemoveBtn() {
 		if (removeBtn == null) {
 			removeBtn = new JButton("Remove Graphics");
-			removeBtn.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					remove();
-				}
-			});
+			removeBtn.addActionListener(evt -> remove());
 		}
 		
 		return removeBtn;
@@ -286,7 +267,7 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 		if (cancelBtn == null) {
 			cancelBtn = new JButton(new AbstractAction("Cancel") {
 				@Override
-				public void actionPerformed(final ActionEvent e) {
+				public void actionPerformed(ActionEvent e) {
 					cancel();
 				}
 			});
@@ -300,7 +281,7 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 		if (applyBtn == null) {
 			applyBtn = new JButton(new AbstractAction("Apply") {
 				@Override
-				public void actionPerformed(final ActionEvent e) {
+				public void actionPerformed(ActionEvent e) {
 					apply();
 				}
 			});
@@ -310,68 +291,6 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 	}
 	
 	// ==[ CLASSES ]====================================================================================================
-	
-	@SuppressWarnings("serial")
-	private class GraphicsPanel extends JPanel {
-		
-		private DiscreteValueList<CyCustomGraphics<?>> graphicsList;
-		
-		public GraphicsPanel() {
-			var scrollPane = new JScrollPane();
-			scrollPane.setViewportView(getGraphicsList());
-			
-			var openImgMgrBtn = new JButton(new AbstractAction("Open Image Manager...") {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					var owner = SwingUtilities.getWindowAncestor(GraphicsPanel.this);
-					var dialog = new CustomGraphicsManagerDialog(owner, customGraphicsMgr, browser, serviceRegistrar);
-					dialog.setVisible(true);
-					
-					updateList();
-				}
-			});
-			
-			var layout = new GroupLayout(this);
-			this.setLayout(layout);
-			layout.setAutoCreateContainerGaps(false);
-			layout.setAutoCreateGaps(true);
-			
-			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
-					.addComponent(scrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(openImgMgrBtn, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-			);
-			layout.setVerticalGroup(layout.createSequentialGroup()
-					.addComponent(scrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(openImgMgrBtn, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-			);
-		}
-		
-		public void updateList() {
-			var newValues = customGraphicsMgr.getAllCustomGraphics();
-			getGraphicsList().setListItems(newValues, oldCustomGraphics);
-		}
-		
-		public CyCustomGraphics getCustomGraphics() {
-			return (CyCustomGraphics) getGraphicsList().getSelectedValue();
-		}
-		
-		private DiscreteValueList getGraphicsList() {
-			if (graphicsList == null) {
-				var defViewPanel = serviceRegistrar.getService(DefaultViewPanel.class);
-				
-				graphicsList = new DiscreteValueList(CyCustomGraphics.class, null, defViewPanel);
-				graphicsList.addMouseListener(new MouseAdapter() {
-					@Override
-					public void mouseClicked(MouseEvent evt) {
-						if (evt.getClickCount() == 2)
-							getApplyBtn().doClick();
-					}
-				});
-			}
-			
-			return graphicsList;
-		}
-	}
 	
 	/**
 	 * Panel that contains all CyCustomGraphics2 editors that belong to the same group
@@ -388,7 +307,7 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 		
 		private JTabbedPane typeTpn;
 
-		public CustomGraphics2Panel(final String group) {
+		public CustomGraphics2Panel(String group) {
 			this.group = group;
 			this.setLayout(new BorderLayout());
 			this.add(getTypeTpn(), BorderLayout.CENTER);
@@ -398,8 +317,8 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 			return group;
 		}
 		
-		boolean canEdit(final CyCustomGraphics2 cg2) {
-			for (final CyCustomGraphics2Factory<?> cf : supportedFactories) {
+		boolean canEdit(CyCustomGraphics2 cg2) {
+			for (var cf : supportedFactories) {
 				if (cf.getSupportedClass().isAssignableFrom(cg2.getClass()))
 					return true;
 			}
@@ -415,10 +334,12 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 			return getTypeTpn().getTabCount();
 		}
 		
-		private void update(final CyCustomGraphics2 cg2) {
+		private void update(CyCustomGraphics2 cg2) {
 			updatingTypes = true;
 			
+			var customGraphics2Mgr = serviceRegistrar.getService(CyCustomGraphics2Manager.class);
 			supportedFactories = customGraphics2Mgr.getCyCustomGraphics2Factories(group);
+			
 			CustomGraphics2EditorPane selectedEditorPn = null;
 			int maxWidth = 100;
 			
@@ -426,9 +347,9 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 				getTypeTpn().removeAll();
 				CyCustomGraphics2 initialCg2 = null;
 				
-				for (final CyCustomGraphics2Factory<?> cf : supportedFactories) {
-					final CustomGraphics2EditorPane cg2EditorPn = new CustomGraphics2EditorPane(cf);
-					final Icon icon = cf.getIcon(ICON_SIZE, ICON_SIZE);
+				for (var cf : supportedFactories) {
+					var cg2EditorPn = new CustomGraphics2EditorPane(cf);
+					var icon = cf.getIcon(ICON_SIZE, ICON_SIZE);
 					
 					if (cg2 != null) {
 						initialCg2 = cf.getInstance(cg2.getProperties());
@@ -481,10 +402,10 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 					public void stateChanged(ChangeEvent e) {
 						if (updatingTypes) return;
 						
-						final Component c = typeTpn.getSelectedComponent();
+						var c = typeTpn.getSelectedComponent();
 						
 						if (c instanceof CustomGraphics2EditorPane) {
-							final CyCustomGraphics2Factory<?> cf = ((CustomGraphics2EditorPane)c).getFactory();
+							var cf = ((CustomGraphics2EditorPane)c).getFactory();
 							
 							if (cg2 == null || !cf.getSupportedClass().isAssignableFrom(cg2.getClass()))
 								cg2 = cf.getInstance(
@@ -506,20 +427,18 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 		
 		private class CustomGraphics2EditorPane extends JScrollPane {
 			
-			private static final long serialVersionUID = -5023596235150818148L;
-			
 			private final CyCustomGraphics2Factory<?> factory;
 			private JComponent editor;
 			private CyCustomGraphics2 cg2;
 
-			CustomGraphics2EditorPane(final CyCustomGraphics2Factory<?> factory) {
+			CustomGraphics2EditorPane(CyCustomGraphics2Factory<?> factory) {
 				this.factory = factory;
 				this.setBorder(BorderFactory.createEmptyBorder());
 				this.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 				this.getViewport().setOpaque(!LookAndFeelUtil.isAquaLAF());
 			}
 			
-			void update(final CyCustomGraphics2 initialCg2) {
+			void update(CyCustomGraphics2 initialCg2) {
 				this.cg2 = initialCg2;
 				editor = factory.createEditor(initialCg2);
 				this.setViewportView(editor);

@@ -70,9 +70,9 @@ public abstract class AbstractURLImageCustomGraphics<T extends CustomGraphicLaye
 			return "Empty image";
 		
 		if (sourceUrl != null && !sourceUrl.toString().startsWith("bundle"))
-			return "Image: " + sourceUrl.toString();
+			return sourceUrl.toString();
 
-		return "Image: " + displayName;
+		return displayName;
 	}
 	
 	/** Used to create the serializable key. */

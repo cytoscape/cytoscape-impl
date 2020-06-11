@@ -74,7 +74,18 @@ public class DiscreteValueList<T> extends JXList {
 	
 	private final DefaultViewPanel defViewPanel;
 
-	DiscreteValueList(Class<T> type, VisualProperty<T> vp, DefaultViewPanel defViewPanel) {
+	public DiscreteValueList(Class<T> type, DefaultViewPanel defViewPanel) {
+		this(type, null, defViewPanel);
+	}
+	
+	public DiscreteValueList(Class<T> type, int iconWidth, int iconHeight, DefaultViewPanel defViewPanel) {
+		this(type, null, defViewPanel);
+		
+		this.iconWidth = iconWidth;
+		this.iconHeight = iconHeight;
+	}
+	
+	public DiscreteValueList(Class<T> type, VisualProperty<T> vp, DefaultViewPanel defViewPanel) {
 		this.type = type;
 		this.vp = vp;
 		this.defViewPanel = defViewPanel;
@@ -133,7 +144,7 @@ public class DiscreteValueList<T> extends JXList {
 		}
 	}
 	
-	protected void setListItems(Collection<T> newValues, T selectedValue) {
+	public void setListItems(Collection<T> newValues, T selectedValue) {
 		synchronized (values) {
 			values.clear();
 			

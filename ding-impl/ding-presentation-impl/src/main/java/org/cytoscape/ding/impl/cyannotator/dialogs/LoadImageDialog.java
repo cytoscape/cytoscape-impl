@@ -4,13 +4,12 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 
-import java.awt.Point;
-import java.awt.Robot;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 
 import javax.imageio.ImageIO;
@@ -21,14 +20,22 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 import javax.swing.filechooser.FileFilter;
 
 import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
+import org.cytoscape.ding.customgraphics.image.BitmapCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.SVGCustomGraphics;
+import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsBrowser;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
+import org.cytoscape.ding.impl.editor.ImageCustomGraphicsSelector;
+import org.cytoscape.ding.internal.util.ViewUtil;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,23 +71,32 @@ public class LoadImageDialog extends JDialog {
 
 	private static final String UNDO_LABEL = "Create Image Annotation";
 	
-	private JButton openButton;
-	private JButton cancelButton;
+	private JTabbedPane tabbedPane;
 	private JFileChooser fileChooser;
+	private ImageCustomGraphicsSelector imageSelector;
 	
 	private final DRenderingEngine re;
 	private final CyAnnotator cyAnnotator;
-	private final CustomGraphicsManager cgm;
 	private final Point2D startingLocation;
+	
+	private final CustomGraphicsBrowser browser;
+	private final CyServiceRegistrar serviceRegistrar;
 	
 	private static File lastDirectory;
 
 	private static final Logger logger = LoggerFactory.getLogger(LoadImageDialog.class);
 
-	public LoadImageDialog(DRenderingEngine re, Point2D start, CustomGraphicsManager cgm, Window owner) {
-		super(owner);
+	public LoadImageDialog(
+			DRenderingEngine re,
+			Point2D start,
+			Window owner,
+			CustomGraphicsBrowser browser,
+			CyServiceRegistrar serviceRegistrar
+	) {
+		super(owner, ModalityType.APPLICATION_MODAL);
 		this.re = re;
-		this.cgm = cgm;
+		this.browser = browser;
+		this.serviceRegistrar = serviceRegistrar;
 		this.cyAnnotator = re.getCyAnnotator();
 		this.startingLocation = start != null ? start : re.getComponentCenter();
 
@@ -90,30 +106,22 @@ public class LoadImageDialog extends JDialog {
 	private void initComponents() {
 		setTitle("Select an Image");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setModalityType(DEFAULT_MODALITY_TYPE);
-		setResizable(false);
+		setResizable(true);
 
-		fileChooser = new JFileChooser(lastDirectory);
-		fileChooser.setControlButtonsAreShown(false);
-		fileChooser.setCurrentDirectory(null);
-		fileChooser.setDialogTitle("");
-		fileChooser.setAcceptAllFileFilterUsed(false);
-		fileChooser.addChoosableFileFilter( new ImageFilter() );
-
-		openButton = new JButton(new AbstractAction("Open") {
+		var okButton = new JButton(new AbstractAction("Insert") {
 			@Override
-			public void actionPerformed(ActionEvent e) {
-				openButtonActionPerformed(e);
+			public void actionPerformed(ActionEvent evt) {
+				insertImage();
 			}
 		});
-		cancelButton = new JButton(new AbstractAction("Cancel") {
+		var cancelButton = new JButton(new AbstractAction("Cancel") {
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent evt) {
 				dispose();
 			}
 		});
 		
-		var buttonPanel = LookAndFeelUtil.createOkCancelPanel(openButton, cancelButton);
+		var buttonPanel = LookAndFeelUtil.createOkCancelPanel(okButton, cancelButton);
 
 		var contents = new JPanel();
 		var layout = new GroupLayout(contents);
@@ -122,121 +130,184 @@ public class LoadImageDialog extends JDialog {
 		layout.setAutoCreateGaps(true);
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
-				.addComponent(fileChooser, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getTabbedPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(buttonPanel)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addComponent(fileChooser, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getTabbedPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
 		
-		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), openButton.getAction(), cancelButton.getAction());
-		getRootPane().setDefaultButton(openButton);
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), okButton.getAction(), cancelButton.getAction());
+		getRootPane().setDefaultButton(okButton);
 		
 		getContentPane().add(contents);
+		
 		pack();
 	}
-
-	private void openButtonActionPerformed(ActionEvent evt) {
-		try {
-			// Read the selected Image, create an Image Annotation, repaint the
-			// whole network and then dispose off this Frame
-			var file = fileChooser.getSelectedFile();
-			var ext = FilenameUtils.getExtension(file.getName());
-			var url = file.toURI().toURL();
-			
-			ImageAnnotationImpl annotation = null;
-			
-			if (ext.equalsIgnoreCase("svg")) {
-				// SVG...
-				var sb = new StringBuilder();
-				
-				try (var in = new BufferedReader(new InputStreamReader(url.openStream()))) {
-					String line = null;
-					
-					while ((line = in.readLine()) != null)
-			            sb.append(line + "\n");
-				}
-				
-				var svg = sb.toString();
-				
-				if (svg.isBlank())
-					return;
-				
-				cyAnnotator.markUndoEdit(UNDO_LABEL);
-				
-				annotation = new ImageAnnotationImpl(
-						re,
-						(int) startingLocation.getX(),
-						(int) startingLocation.getY(),
-						url,
-						svg,
-						re.getZoom(),
-						cgm
-				);
-			} else {
-				// Bitmap (PNG, JPG, etc.)...
-				var image = ImageIO.read(file);
-				
-				cyAnnotator.markUndoEdit(UNDO_LABEL);
-				
-				annotation = new ImageAnnotationImpl(
-						re,
-						(int) startingLocation.getX(),
-						(int) startingLocation.getY(),
-						url,
-						image,
-						re.getZoom(),
-						cgm
-				);
-			}
 	
-			var nodePoint = re.getTransform().getNodeCoordinates(startingLocation);
-			annotation.setLocation(nodePoint.getX(), nodePoint.getY());
-			annotation.update();
-			cyAnnotator.addAnnotation(annotation);
-			
-			// Set this shape to be resized
-			cyAnnotator.resizeShape(annotation);
+	private JTabbedPane getTabbedPane() {
+		if (tabbedPane == null) {
+			tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+			tabbedPane.addTab("From File", getFileChooser());
+			tabbedPane.addTab("From Image Browser", getImageSelector());
+		}
+		
+		return tabbedPane;
+	}
+	
+	private JFileChooser getFileChooser() {
+		if (fileChooser == null) {
+			fileChooser = new JFileChooser(lastDirectory);
+			fileChooser.setControlButtonsAreShown(false);
+			fileChooser.setCurrentDirectory(null);
+			fileChooser.setDialogTitle("");
+			fileChooser.setAcceptAllFileFilterUsed(false);
+			fileChooser.addChoosableFileFilter(new ImageFilter());
+		}
 
-			try {
-				// Warp the mouse to the starting location (if supported).
-				// But we want to preserve the aspect ratio, at least initially.
-				double width = (double) annotation.getWidth();
-				double height = (double) annotation.getHeight();
+		return fileChooser;
+	}
+	
+	private ImageCustomGraphicsSelector getImageSelector() {
+		if (imageSelector == null) {
+			imageSelector = new ImageCustomGraphicsSelector(browser, serviceRegistrar);
+			imageSelector.addActionListener(evt -> insertImage());
+		}
+		
+		return imageSelector;
+	}
+	
+	private void insertImage() {
+		var selectedComp = getTabbedPane().getSelectedComponent();
+		
+		try {
+			final ImageAnnotationImpl annotation;
+			
+			if (selectedComp == getFileChooser()) {
+				var file = fileChooser.getSelectedFile();
+				annotation = createAnnotation(file);
 				
-				if (height > width) {
-					width = 100.0 * width / height;
-					height = 100;
-				} else {
-					height = 100.0 * height / width;
-					width = 100;
-				}
-				
-				Point start = re.getComponent().getLocationOnScreen();
-				Robot robot = new Robot();
-				robot.mouseMove((int) start.getX() + (int) width, (int) start.getY() + (int) height);
-			} catch (Exception e) {
-				// Ignore...
+				// Save current directory
+				if (file.getParentFile().isDirectory())
+					lastDirectory = file.getParentFile();
+			} else {
+				var cg = getImageSelector().getSelectedValue();
+				annotation = createAnnotation(cg);
 			}
-
-			dispose();
 			
-			// Save current directory
-			if (file.getParentFile().isDirectory())
-				lastDirectory = file.getParentFile();
+			if (annotation != null) {
+				var nodePoint = re.getTransform().getNodeCoordinates(startingLocation);
+				var w = annotation.getWidth();
+				var h = annotation.getHeight();
+				
+				annotation.setLocation(nodePoint.getX() - w / 2.0, nodePoint.getY() - h / 2.0);
+				annotation.update();
+				ViewUtil.selectAnnotation(re, annotation);
+			}
+			
+			dispose();
 		} catch (Exception ex) {
 			logger.warn("Unable to load the selected image", ex);
 		}
 	}
 
+	private ImageAnnotationImpl createAnnotation(File file) throws IOException {
+		final ImageAnnotationImpl annotation;
+		
+		var cgManager = serviceRegistrar.getService(CustomGraphicsManager.class);
+		
+		// Read the selected Image, create an Image Annotation, repaint the
+		// whole network and then dispose off this Frame
+		var ext = FilenameUtils.getExtension(file.getName());
+		var url = file.toURI().toURL();
+		
+		if (ext.equalsIgnoreCase("svg")) {
+			// SVG...
+			var sb = new StringBuilder();
+			
+			try (var in = new BufferedReader(new InputStreamReader(url.openStream()))) {
+				String line = null;
+				
+				while ((line = in.readLine()) != null)
+		            sb.append(line + "\n");
+			}
+			
+			var svg = sb.toString();
+			
+			if (svg.isBlank())
+				return null;
+			
+			cyAnnotator.markUndoEdit(UNDO_LABEL);
+			
+			annotation = new ImageAnnotationImpl(
+					re,
+					(int) startingLocation.getX(),
+					(int) startingLocation.getY(),
+					url,
+					svg,
+					re.getZoom(),
+					cgManager
+			);
+		} else {
+			// Bitmap (PNG, JPG, etc.)...
+			var image = ImageIO.read(file);
+			
+			cyAnnotator.markUndoEdit(UNDO_LABEL);
+			
+			annotation = new ImageAnnotationImpl(
+					re,
+					(int) startingLocation.getX(),
+					(int) startingLocation.getY(),
+					url,
+					image,
+					re.getZoom(),
+					cgManager
+			);
+		}
+		
+		return annotation;
+	}
+	
+	private ImageAnnotationImpl createAnnotation(CyCustomGraphics<?> cg) {
+		ImageAnnotationImpl annotation = null;
+		
+		var cgManager = serviceRegistrar.getService(CustomGraphicsManager.class);
+		
+		if (cg instanceof SVGCustomGraphics) {
+			cyAnnotator.markUndoEdit(UNDO_LABEL);
+			
+			annotation = new ImageAnnotationImpl(
+					re,
+					(SVGCustomGraphics) cg,
+					(int) startingLocation.getX(),
+					(int) startingLocation.getY(),
+					re.getZoom(),
+					cgManager
+			);
+		} else if (cg instanceof BitmapCustomGraphics) {
+			cyAnnotator.markUndoEdit(UNDO_LABEL);
+			
+			annotation = new ImageAnnotationImpl(
+					re,
+					(BitmapCustomGraphics) cg,
+					(int) startingLocation.getX(),
+					(int) startingLocation.getY(),
+					re.getZoom(),
+					cgManager
+			);
+		}
+		
+		return annotation;
+	}
+
 	/**
 	 * This class provides a FileFilter for the JFileChooser.
 	 */
-	public class ImageFilter extends FileFilter{
+	private class ImageFilter extends FileFilter {
 
 		/**
-		 * Accept all directories and all gif, jpg, tiff, or png files.
+		 * Accept all directories and all gif, jpg, tiff, png and svg files.
 		 */
 		@Override
 		public boolean accept(File f) {

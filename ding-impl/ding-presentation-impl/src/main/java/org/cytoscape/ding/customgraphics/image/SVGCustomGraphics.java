@@ -52,6 +52,10 @@ public class SVGCustomGraphics extends AbstractURLImageCustomGraphics<SVGLayer> 
 	private static final String DEF_IMAGE_FILE = "/images/no_image.svg";
 	
 	private String svg;
+	
+	/** Layer used to draw the custom graphics directly onto the network view or other component */
+	private final SVGLayer svgLayer;
+	
 	/** Layer used only to draw rendered images */
 	private SVGLayer renderedImageLayer;
 	
@@ -76,7 +80,8 @@ public class SVGCustomGraphics extends AbstractURLImageCustomGraphics<SVGLayer> 
 	public SVGCustomGraphics(Long id, String name, URL url) throws IOException {
 		super(id, name, url);
 		
-		tags.add(DEF_TAG);
+		svgLayer = createLayer();
+		init();
 	}
 	
 	public SVGCustomGraphics(Long id, String name, String svg) throws IOException {
@@ -86,7 +91,8 @@ public class SVGCustomGraphics extends AbstractURLImageCustomGraphics<SVGLayer> 
 			throw new IllegalArgumentException("'svg' must not be null or empty");
 		
 		this.svg = svg;
-		tags.add(DEF_TAG);
+		svgLayer = createLayer();
+		init();
 	}
 	
 	public SVGCustomGraphics(Long id, String name, URL url, String svg) throws IOException {
@@ -110,7 +116,7 @@ public class SVGCustomGraphics extends AbstractURLImageCustomGraphics<SVGLayer> 
 	@Override
 	public List<SVGLayer> getLayers(CyNetworkView networkView, View<? extends CyIdentifiable> graphObject) {
 		if (layers.isEmpty())
-			layers.add(createLayer());
+			layers.add(svgLayer);
 
 		return layers;
 	}
@@ -125,6 +131,14 @@ public class SVGCustomGraphics extends AbstractURLImageCustomGraphics<SVGLayer> 
 	
 	public String getSVG() {
 		return svg;
+	}
+	
+	private void init() {
+		tags.add(DEF_TAG);
+		
+		var bounds = svgLayer.getBounds2D().getBounds();
+		width = bounds.width;
+		height = bounds.height;
 	}
 	
 	private SVGLayer createLayer() {

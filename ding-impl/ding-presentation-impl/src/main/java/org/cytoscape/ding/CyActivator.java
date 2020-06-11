@@ -250,7 +250,7 @@ public class CyActivator extends AbstractCyActivator {
 		shapeFactory.setProperty("type","ShapeAnnotation.class");
 		registerService(bc, shapeAnnotationFactory, AnnotationFactory.class, shapeFactory);
 		
-		var imageAnnotationFactory = new ImageAnnotationFactory(serviceRegistrar);
+		var imageAnnotationFactory = new ImageAnnotationFactory(cgBrowser, serviceRegistrar);
 		var imageFactory = new Properties();
 		imageFactory.setProperty("type","ImageAnnotation.class");
 		registerService(bc, imageAnnotationFactory, AnnotationFactory.class, imageFactory);
@@ -505,7 +505,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, cgSizeDependencyFactory, VisualPropertyDependencyFactory.class);
 
 		// Custom Graphics Editors
-		var cgValueEditor = new CyCustomGraphicsValueEditor(cgManager, cg2Manager, cgBrowser, serviceRegistrar);
+		var cgValueEditor = new CyCustomGraphicsValueEditor(cgBrowser, serviceRegistrar);
 		registerAllServices(bc, cgValueEditor);
 
 		var cgVisualPropertyEditor = new CustomGraphicsVisualPropertyEditor(CyCustomGraphics.class, cgValueEditor,

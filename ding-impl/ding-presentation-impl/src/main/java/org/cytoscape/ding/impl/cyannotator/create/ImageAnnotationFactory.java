@@ -9,6 +9,7 @@ import javax.swing.JDialog;
 import javax.swing.UIManager;
 
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
+import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsBrowser;
 import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.dialogs.LoadImageDialog;
@@ -50,16 +51,18 @@ public class ImageAnnotationFactory extends AbstractDingAnnotationFactory<ImageA
 
 	private Icon icon;
 	
-	public ImageAnnotationFactory(final CyServiceRegistrar serviceRegistrar) {
+	private final CustomGraphicsBrowser browser;
+	
+	public ImageAnnotationFactory(CustomGraphicsBrowser browser, CyServiceRegistrar serviceRegistrar) {
 		super(ImageAnnotation.class, serviceRegistrar);
+		this.browser = browser;
 	}
 
 	@Override
 	public JDialog createAnnotationDialog(CyNetworkView view, Point2D location) {
-		var cgManager = serviceRegistrar.getService(CustomGraphicsManager.class);
 		var re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
 		
-		return new LoadImageDialog(re, location, cgManager, ViewUtil.getActiveWindow(re));
+		return new LoadImageDialog(re, location, ViewUtil.getActiveWindow(re), browser, serviceRegistrar);
 	}
 
 	@Override

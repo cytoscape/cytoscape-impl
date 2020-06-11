@@ -22,6 +22,7 @@ import java.util.Map;
 import javax.swing.JDialog;
 
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
+import org.cytoscape.ding.customgraphics.image.AbstractURLImageCustomGraphics;
 import org.cytoscape.ding.customgraphics.image.BitmapCustomGraphics;
 import org.cytoscape.ding.customgraphics.image.SVGCustomGraphics;
 import org.cytoscape.ding.customgraphics.image.SVGLayer;
@@ -71,26 +72,30 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	private int brightness;
 	private int contrast;
 	private CyCustomGraphics<?> cg;
-	protected CustomGraphicsManager customGraphicsManager;
+	
+	protected final CustomGraphicsManager customGraphicsManager;
 
 	private static final Logger logger = LoggerFactory.getLogger(ImageAnnotationImpl.class);
 	
-	public ImageAnnotationImpl(ImageAnnotationImpl c, boolean usedForPreviews) {
-		super((ShapeAnnotationImpl) c, 0, 0, usedForPreviews);
+	public ImageAnnotationImpl(ImageAnnotationImpl annotation, boolean usedForPreviews) {
+		super((ShapeAnnotationImpl) annotation, 0, 0, usedForPreviews);
 		
-		this.image = c.image;
-		this.svg = c.svg;
-		this.customGraphicsManager = c.customGraphicsManager;
-		this.cg = c.cg;
-		this.width = c.getWidth();
-		this.height = c.getHeight();
-		this.url = c.url;
-		this.opacity = c.opacity;
-		this.brightness = c.brightness;
-		this.contrast = c.contrast;
+		if (annotation == null)
+			throw new IllegalArgumentException("'annotation' must not be null.");
+		
+		this.image = annotation.image;
+		this.svg = annotation.svg;
+		this.customGraphicsManager = annotation.customGraphicsManager;
+		this.cg = annotation.cg;
+		this.width = annotation.getWidth();
+		this.height = annotation.getHeight();
+		this.url = annotation.url;
+		this.opacity = annotation.opacity;
+		this.brightness = annotation.brightness;
+		this.contrast = annotation.contrast;
 		
 		setBorderWidth(0.0); // Our default border width is 0
-		name = c.getName() != null ? c.getName() : getDefaultName();
+		name = annotation.getName() != null ? annotation.getName() : getDefaultName();
 	}
 
 	public ImageAnnotationImpl(
@@ -104,6 +109,11 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	) {
 		super(re, x, y, ShapeType.RECTANGLE, 0, 0, null, null, 0.0f);
 
+		if (image == null)
+			throw new IllegalArgumentException("'image' must not be null.");
+		if (customGraphicsManager == null)
+			throw new IllegalArgumentException("'customGraphicsManager' must not be null.");
+		
 		this.image = image;
 		this.customGraphicsManager = customGraphicsManager;
 		this.width = image.getWidth();
@@ -127,6 +137,11 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	) {
 		super(re, x, y, ShapeType.RECTANGLE, 0, 0, null, null, 0.0f);
 		
+		if (svg == null)
+			throw new IllegalArgumentException("'svg' must not be null.");
+		if (customGraphicsManager == null)
+			throw new IllegalArgumentException("'customGraphicsManager' must not be null.");
+		
 		this.svg = svg;
 		this.customGraphicsManager = customGraphicsManager;
 		this.url = url;
@@ -144,6 +159,42 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		customGraphicsManager.setUsedInCurrentSession(cg, true);
 		name = getDefaultName();
 	}
+	
+	public ImageAnnotationImpl(
+			DRenderingEngine re,
+			AbstractURLImageCustomGraphics<?> cg,
+			int x,
+			int y,
+			double zoom,
+			CustomGraphicsManager customGraphicsManager
+	) {
+		super(re, x, y, ShapeType.RECTANGLE, 0, 0, null, null, 0.0f);
+		
+		if (cg == null)
+			throw new IllegalArgumentException("'cg' must not be null.");
+		if (customGraphicsManager == null)
+			throw new IllegalArgumentException("'customGraphicsManager' must not be null.");
+		
+		this.cg = cg;
+		this.url = cg.getSourceURL();
+		this.customGraphicsManager = customGraphicsManager;
+		
+		if (cg instanceof SVGCustomGraphics) {
+			svg = ((SVGCustomGraphics) cg).getSVG();
+			width = cg.getWidth();
+			height = cg.getHeight();
+		} else if (cg instanceof BitmapCustomGraphics) {
+			image = ((BitmapCustomGraphics) cg).getOriginalImage();
+			width = image.getWidth();
+			height = image.getHeight();
+		} else {
+			throw new IllegalArgumentException("'cg' must be a BitmapCustomGraphics or SVGCustomGraphics.");
+		}
+		
+		customGraphicsManager.addCustomGraphics(cg, url);
+		customGraphicsManager.setUsedInCurrentSession(cg, true);
+		name = getDefaultName();
+	}
 
 	public ImageAnnotationImpl(
 			DRenderingEngine re,
@@ -151,6 +202,11 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			CustomGraphicsManager customGraphicsManager
 	) {
 		super(re, argMap);
+		
+		if (argMap == null)
+			throw new IllegalArgumentException("'argMap' must not be null.");
+		if (customGraphicsManager == null)
+			throw new IllegalArgumentException("'customGraphicsManager' must not be null.");
 		
 		this.customGraphicsManager = customGraphicsManager;
 		opacity = ViewUtils.getFloat(argMap, OPACITY, 1.0f);
@@ -176,14 +232,23 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		}
 	}
 	
+	public ImageAnnotationImpl(
+			DRenderingEngine re,
+			boolean usedForPreviews,
+			CustomGraphicsManager customGraphicsManager
+	) {
+		super(re, 0, 0, usedForPreviews);
+		
+		if (customGraphicsManager == null)
+			throw new IllegalArgumentException("'customGraphicsManager' must not be null.");
+		
+		this.customGraphicsManager = customGraphicsManager;
+	}
+	
 	// XXX HACK to force the custom graphics manager to respect these graphics
 	public void preserveCustomGraphics() {
 		for (var cg : customGraphicsManager.getAllCustomGraphics())
 			customGraphicsManager.setUsedInCurrentSession(cg, true);
-	}
-
-	public ImageAnnotationImpl(DRenderingEngine re, boolean usedForPreviews) {
-		super(re, 0, 0, usedForPreviews);
 	}
 
 	@Override
@@ -205,7 +270,8 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		argMap.put(LIGHTNESS, Integer.toString(brightness));
 		argMap.put(CONTRAST, Integer.toString(contrast));
 		
-		customGraphicsManager.setUsedInCurrentSession(cg, true);
+		if (cg != null)
+			customGraphicsManager.setUsedInCurrentSession(cg, true);
 
 		return argMap;
 	}
@@ -391,7 +457,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	}
 	
 	public boolean isSVG() {
-		return cg instanceof SVGCustomGraphics;
+		return cg instanceof SVGCustomGraphics || svg != null;
 	}
 
 	public void dropImage() {

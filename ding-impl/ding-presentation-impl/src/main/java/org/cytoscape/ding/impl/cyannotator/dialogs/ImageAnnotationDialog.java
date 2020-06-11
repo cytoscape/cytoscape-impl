@@ -4,7 +4,6 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 
-import java.awt.Robot;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
@@ -16,7 +15,6 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -56,28 +54,15 @@ public class ImageAnnotationDialog extends JDialog {
 	private JButton cancelButton;
 
 	private final CyAnnotator cyAnnotator;
-	private final DRenderingEngine re;
 	private final Point2D startingLocation;
 	private final ImageAnnotationImpl annotation;
 	private ImageAnnotationImpl preview;
 	private final boolean create;
 		
-	public ImageAnnotationDialog(DRenderingEngine re, Point2D start, Window owner) {
-		super(owner);
-		this.re = re;
-		this.cyAnnotator = re.getCyAnnotator();
-		this.startingLocation = start != null ? start : re.getTransform().getCenter();
-		this.annotation = new ImageAnnotationImpl(re, false);
-		this.create = true;
-
-		initComponents();
-	}
-
 	public ImageAnnotationDialog(ImageAnnotationImpl mAnnotation, Window owner) {
 		super(owner);
 		this.annotation = mAnnotation;
 		this.cyAnnotator = mAnnotation.getCyAnnotator();
-		this.re = cyAnnotator.getRenderingEngine();
 		this.create = false;
 		this.startingLocation = null;
 
@@ -168,13 +153,5 @@ public class ImageAnnotationDialog extends JDialog {
 
 		// Set this shape to be resized
 		cyAnnotator.resizeShape(annotation);
-
-		try {
-			// Warp the mouse to the starting location (if supported)
-			var start = re.getComponent().getLocationOnScreen();
-			var robot = new Robot();
-			robot.mouseMove((int) start.getX() + 100, (int) start.getY() + 100);
-		} catch (Exception e) {
-		}
 	}
 }

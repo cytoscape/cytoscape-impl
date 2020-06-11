@@ -115,6 +115,10 @@ public class BitmapCustomGraphics extends AbstractURLImageCustomGraphics<BitmapL
 		
 		return scaledImage;
 	}
+	
+	public BufferedImage getOriginalImage() {
+		return originalImage;
+	}
 
 	public Image resetImage() {
 		if (scaledImage != null) {
