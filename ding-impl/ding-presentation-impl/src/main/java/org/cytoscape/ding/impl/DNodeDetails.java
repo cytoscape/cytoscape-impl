@@ -94,6 +94,9 @@ public class DNodeDetails implements NodeDetails {
 		this.registrar = registrar;
 	}
 	
+	private static int clamp(int value, int min, int max) {
+		return Math.min(Math.max(value, min), max);
+	}
 	
 	@Override
 	public boolean isSelected(View<CyNode> nodeView) {
@@ -103,7 +106,7 @@ public class DNodeDetails implements NodeDetails {
 	static Paint getTransparentColor(Paint p, Integer trans) {
 		if(trans == null)
 			return p;
-		int alpha = trans;
+		int alpha = clamp(trans, 0, 255);
 		if (p instanceof Color && ((Color)p).getAlpha() != alpha) {
 			final Color c = (Color) p;
 			return new Color(c.getRed(), c.getGreen(), c.getBlue(), alpha);

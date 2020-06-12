@@ -239,14 +239,6 @@ public final class DEdgeDetails implements EdgeDetails {
 		return edgeView.getVisualProperty(EDGE_TOOLTIP);
 	}
 
-	public Integer getTransparency(View<CyEdge> edgeView) {
-		return edgeView.getVisualProperty(EDGE_TRANSPARENCY);
-	}
-
-	public Integer getLabelTransparency(View<CyEdge> edgeView) {
-		return edgeView.getVisualProperty(EDGE_LABEL_TRANSPARENCY);
-	}
-
 	@Override
 	public Font getLabelFont(View<CyEdge> edgeView) {
 		Number size = edgeView.getVisualProperty(EDGE_LABEL_FONT_SIZE);
