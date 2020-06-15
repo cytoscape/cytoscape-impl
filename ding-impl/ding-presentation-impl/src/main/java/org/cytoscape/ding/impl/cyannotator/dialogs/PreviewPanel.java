@@ -70,12 +70,12 @@ public class PreviewPanel extends JPanel {
 			
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addGap(10, 20, Short.MAX_VALUE)
-					.addComponent(c, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(c, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGap(10, 20, Short.MAX_VALUE)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addGap(10, 20, Short.MAX_VALUE)
-					.addComponent(c, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(c, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGap(10, 20, Short.MAX_VALUE)
 			);
 		}

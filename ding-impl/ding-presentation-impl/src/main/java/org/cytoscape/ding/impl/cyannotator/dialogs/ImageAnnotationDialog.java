@@ -116,7 +116,7 @@ public class ImageAnnotationDialog extends JDialog {
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addComponent(imageAnnotationPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				.addComponent(previewPanel, DEFAULT_SIZE, PREVIEW_HEIGHT, Short.MAX_VALUE)
+				.addComponent(previewPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
 		
