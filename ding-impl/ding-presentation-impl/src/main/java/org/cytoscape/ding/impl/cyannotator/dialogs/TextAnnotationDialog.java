@@ -159,8 +159,10 @@ public class TextAnnotationDialog extends JDialog {
 		mAnnotation.setBounds(mAnnotation.getBounds());
 		mAnnotation.update();
 		cyAnnotator.addAnnotation(mAnnotation);
-		
 		mAnnotation.contentChanged();
+		
+		cyAnnotator.clearSelectedAnnotations();
+		ViewUtil.selectAnnotation(re, mAnnotation);
 
 		cyAnnotator.postUndoEdit();
 	}

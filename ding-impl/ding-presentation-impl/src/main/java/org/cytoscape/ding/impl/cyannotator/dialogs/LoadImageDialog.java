@@ -203,6 +203,8 @@ public class LoadImageDialog extends JDialog {
 				
 				annotation.setLocation(nodePoint.getX() - w / 2.0, nodePoint.getY() - h / 2.0);
 				annotation.update();
+				
+				cyAnnotator.clearSelectedAnnotations();
 				ViewUtil.selectAnnotation(re, annotation);
 			}
 			

@@ -171,15 +171,8 @@ public class BoundedTextAnnotationDialog extends JDialog {
 		mAnnotation.setLocation(nodePoint.getX(), nodePoint.getY());
 		mAnnotation.update();
 		cyAnnotator.addAnnotation(mAnnotation);
-
-		// Set this shape to be resized
-		cyAnnotator.resizeShape(mAnnotation);
-
-		try {
-			// Warp the mouse to the starting location (if supported)
-			Point start = re.getComponent().getLocationOnScreen();
-			Robot robot = new Robot();
-			robot.mouseMove((int) start.getX() + 100, (int) start.getY() + 100);
-		} catch (Exception e) {}
+		
+		cyAnnotator.clearSelectedAnnotations();
+		ViewUtil.selectAnnotation(re, mAnnotation);
 	}
 }

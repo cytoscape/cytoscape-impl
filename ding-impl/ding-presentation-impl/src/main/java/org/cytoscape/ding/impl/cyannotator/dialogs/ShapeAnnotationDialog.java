@@ -162,15 +162,8 @@ public class ShapeAnnotationDialog extends JDialog {
 		shapeAnnotation.setLocation(annotationLocation.getX(), annotationLocation.getY());
 		shapeAnnotation.update();
 		cyAnnotator.addAnnotation(shapeAnnotation);
-
-		// Set this shape to be resized
-		cyAnnotator.resizeShape(shapeAnnotation);
-
-		try {
-			// Warp the mouse to the starting location (if supported)
-			Point start = re.getComponent().getLocationOnScreen();
-			Robot robot = new Robot();
-			robot.mouseMove((int)start.getX()+CREATE_WIDTH, (int)start.getY()+CREATE_HEIGHT);
-		} catch (Exception e) {}
+		
+		cyAnnotator.clearSelectedAnnotations();
+		ViewUtil.selectAnnotation(re, shapeAnnotation);
 	}
 }
