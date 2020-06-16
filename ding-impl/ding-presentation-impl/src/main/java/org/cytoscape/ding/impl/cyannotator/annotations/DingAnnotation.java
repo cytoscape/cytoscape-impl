@@ -16,7 +16,7 @@ import org.cytoscape.view.presentation.annotations.GroupAnnotation;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -103,21 +103,26 @@ public interface DingAnnotation extends Annotation {
 	
 	void setZOrder(int z);
 	
-	default void setZoom(double zoom) {}
+	@Override
+	default void setZoom(double zoom) {
+		// Nothing to do here...
+	}
 
-	default double getZoom() { return 1.0; }
-	
+	@Override
+	default double getZoom() {
+		return 1.0;
+	}
 
 	@Override
 	default void setSpecificZoom(double zoom) {
 		setZoom(zoom);
 	}
-	
+
 	@Override
 	default double getSpecificZoom() {
 		return getZoom();
 	}
-	
+
 	/**
 	 * Returns the bounds of this annotation in NODE COORDINATES.
 	 */

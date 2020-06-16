@@ -284,9 +284,9 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	@Override
 	public void setGroupParent(GroupAnnotation parent) {
 		if (parent instanceof GroupAnnotationImpl)
-			this.groupParent = (GroupAnnotationImpl) parent;
+			groupParent = (GroupAnnotationImpl) parent;
 		else if (parent == null)
-			this.groupParent = null;
+			groupParent = null;
 		
 //		cyAnnotator.addAnnotation(this);
 	}
@@ -336,7 +336,7 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 
 	@Override
 	public void setSelected(boolean selected) {
-		if(selected != isSelected()) {
+		if (selected != isSelected()) {
 			cyAnnotator.setSelectedAnnotation(this, selected);
 			pcs.firePropertyChange("selected", !selected, selected);
 		}
@@ -361,7 +361,8 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 
 	@Override
 	public Map<String,String> getArgMap() {
-		Map<String, String> argMap = new HashMap<>();
+		var argMap = new HashMap<String, String>();
+		
 		if (name != null)
 			argMap.put(NAME, name);
 		
@@ -374,6 +375,7 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 			argMap.put(PARENT_ID, groupParent.getUUID().toString());
 
 		argMap.put(Z, Integer.toString(getZOrder()));
+		
 		return argMap;
 	}
 	
@@ -390,7 +392,7 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	// Component overrides
 	@Override
 	public void paint(Graphics g, boolean showSelected) {
-		Graphics2D g2 = (Graphics2D)g;
+		var g2 = (Graphics2D)g;
 
 		/* Set up all of our anti-aliasing, etc. here to avoid doing it redundantly */
 		g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
@@ -434,10 +436,12 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 		pcs.removePropertyChangeListener(listener);
 	}
 
+	@Override
 	public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
 		pcs.addPropertyChangeListener(propertyName, listener);
 	}
 
+	@Override
 	public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
 		pcs.removePropertyChangeListener(propertyName, listener);
 	}

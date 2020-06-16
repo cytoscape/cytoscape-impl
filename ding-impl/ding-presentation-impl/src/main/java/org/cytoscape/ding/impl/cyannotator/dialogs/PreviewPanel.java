@@ -9,7 +9,6 @@ import java.awt.Color;
 
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
@@ -23,7 +22,7 @@ import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -49,21 +48,25 @@ public class PreviewPanel extends JPanel {
 	public PreviewPanel(AbstractAnnotation annotation) {
 		this.annotation = annotation;
 		
-		Color background = (Color) annotation.getCyAnnotator().getRenderingEngine().getBackgroundColor();
+		init();
+	}
+
+	protected void init() {
+		var background = (Color) annotation.getCyAnnotator().getRenderingEngine().getBackgroundColor();
 		
-		JComponent c = new AnnotationComponent(annotation);
+		var c = new AnnotationComponent(annotation);
 		c.setOpaque(false);
 		c.setBackground(new Color(255, 255, 255, 0)); // Make the component background transparent
 
-		final JLabel label = new JLabel("Preview:");
+		var label = new JLabel("Preview:");
 		makeSmall(label);
 		
-		final JPanel panel = new JPanel();
+		var panel = new JPanel();
 		panel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
 		panel.setBackground(background); // Set our background to match
 		
 		{
-			final GroupLayout layout = new GroupLayout(panel);
+			var layout = new GroupLayout(panel);
 			panel.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
 			layout.setAutoCreateGaps(false);
@@ -80,7 +83,7 @@ public class PreviewPanel extends JPanel {
 			);
 		}
 		
-		final GroupLayout layout = new GroupLayout(this);
+		var layout = new GroupLayout(this);
 		setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(true);

@@ -379,7 +379,6 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			dataTypeTargetForNetworkList = new ListSingleSelection<>(options);
 			
 			if (tableType == null) {
-				System.out.println("tableType is null!");
 				getWhereImportTable().setSelectedValue(UNASSIGNED_TABLE);
 			} else {
 				dataTypeTargetForNetworkCollection.setSelectedValue(tableType);

@@ -1,14 +1,11 @@
 package org.cytoscape.ding.impl.cyannotator.create;
 
-import java.awt.Font;
 import java.awt.geom.Point2D;
 import java.util.Map;
 
 import javax.swing.Icon;
-import javax.swing.JDialog;
 import javax.swing.UIManager;
 
-import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.cyannotator.annotations.TextAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.dialogs.TextAnnotationDialog;
@@ -26,7 +23,7 @@ import org.cytoscape.view.presentation.annotations.TextAnnotation;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -50,7 +47,7 @@ public class TextAnnotationFactory extends AbstractDingAnnotationFactory<TextAnn
 
 	private Icon icon;
 	
-	public TextAnnotationFactory(final CyServiceRegistrar serviceRegistrar) {
+	public TextAnnotationFactory(CyServiceRegistrar serviceRegistrar) {
 		super(TextAnnotation.class, serviceRegistrar);
 	}
 	
@@ -62,12 +59,16 @@ public class TextAnnotationFactory extends AbstractDingAnnotationFactory<TextAnn
 	}
 
 	@Override
-	public TextAnnotation createAnnotation(Class<? extends TextAnnotation> type, CyNetworkView view, Map<String, String> argMap) {
+	public TextAnnotation createAnnotation(Class<? extends TextAnnotation> type, CyNetworkView view,
+			Map<String, String> argMap) {
 		if (!this.type.equals(type))
 			return null;
-		DRenderingEngine re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
-		if(re == null)
+
+		var re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
+
+		if (re == null)
 			return null;
+
 		return new TextAnnotationImpl(re, argMap);
 	}
 	
@@ -86,7 +87,7 @@ public class TextAnnotationFactory extends AbstractDingAnnotationFactory<TextAnn
 		if (icon == null) {
 			// Lazily initialize the icon here, because the LAF might not have been set yet,
 			// and we need to get the correct colors
-			Font font = serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 12f);
+			var font = serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 12f);
 			icon = new TextIcon(
 					IconUtil.ICON_ANNOTATION_TEXT,
 					font,

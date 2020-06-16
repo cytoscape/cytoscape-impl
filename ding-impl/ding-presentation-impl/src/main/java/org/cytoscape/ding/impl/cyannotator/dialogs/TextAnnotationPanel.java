@@ -10,9 +10,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 import javax.swing.AbstractListModel;
 import javax.swing.GroupLayout;
@@ -23,7 +20,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 import org.cytoscape.util.swing.ColorButton;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -35,7 +31,7 @@ import org.cytoscape.view.presentation.annotations.TextAnnotation;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -76,22 +72,23 @@ public class TextAnnotationPanel extends JPanel {
 	private void initComponents() {
 		setBorder(LookAndFeelUtil.createPanelBorder());
 		
-		final JLabel label1 = new JLabel("Text:");
-		final JLabel label2 = new JLabel("Font Family:");
-		final JLabel label3 = new JLabel("Style:");
-		final JLabel label4 = new JLabel("Size:");
+		var label1 = new JLabel("Text:");
+		var label2 = new JLabel("Font Family:");
+		var label3 = new JLabel("Style:");
+		var label4 = new JLabel("Size:");
 
 		annotationText = new JTextField(annotation.getText());
 		textColorButton = new ColorButton(getTextColor());
 		fontTypeList = new JList<>();
 		fontStyleList = new JList<>();
 		fontSizeList = new JList<>();
-		final JScrollPane scrollPane1 = new JScrollPane(fontTypeList);
-		final JScrollPane scrollPane2 = new JScrollPane(fontStyleList);
-		final JScrollPane scrollPane3 = new JScrollPane(fontSizeList);
+		
+		var scrollPane1 = new JScrollPane(fontTypeList);
+		var scrollPane2 = new JScrollPane(fontStyleList);
+		var scrollPane3 = new JScrollPane(fontSizeList);
 
-		final String[] familyStrings = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
-		fontTypeList.setModel(new AbstractListModel<String>() {
+		var familyStrings = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+		fontTypeList.setModel(new AbstractListModel<>() {
 			@Override
 			public int getSize() {
 				return familyStrings.length;
@@ -110,8 +107,8 @@ public class TextAnnotationPanel extends JPanel {
 		}
 
 		// Font style
-		final String[] typeStrings = { "Plain", "Bold", "Italic", "Bold and Italic" };
-		fontStyleList.setModel(new AbstractListModel<String>() {
+		String[] typeStrings = { "Plain", "Bold", "Italic", "Bold and Italic" };
+		fontStyleList.setModel(new AbstractListModel<>() {
 			@Override
 			public int getSize() {
 				return typeStrings.length;
@@ -132,9 +129,9 @@ public class TextAnnotationPanel extends JPanel {
 			fontStyleList.setSelectedValue(typeStrings[3], true);
 
 		// Font size
-		final String[] sizeStrings = 
+		String[] sizeStrings = 
 			{ "10", "12", "14", "16", "18", "20", "22", "24", "26", "28", "30", "32", "34", "36" };
-		fontSizeList.setModel(new AbstractListModel<String>() {
+		fontSizeList.setModel(new AbstractListModel<>() {
 			@Override
 			public int getSize() {
 				return sizeStrings.length;
@@ -164,49 +161,24 @@ public class TextAnnotationPanel extends JPanel {
 
 		iModifyTAPreview();
 
-		fontStyleList.addListSelectionListener(new ListSelectionListener() {
-			@Override
-			public void valueChanged(ListSelectionEvent evt) {
-				fontStyleListValueChanged(evt);
-			}
-		});
-
-		fontTypeList.addListSelectionListener(new ListSelectionListener() {
-			@Override
-			public void valueChanged(ListSelectionEvent evt) {
-				fontTypeListValueChanged(evt);
-			}
-		});
-
-		fontSizeList.addListSelectionListener(new ListSelectionListener() {
-			@Override
-			public void valueChanged(ListSelectionEvent evt) {
-				fontSizeListValueChanged(evt);
-			}
-		});
+		fontStyleList.addListSelectionListener(evt -> fontStyleListValueChanged(evt));
+		fontTypeList.addListSelectionListener(evt -> fontTypeListValueChanged(evt));
+		fontSizeList.addListSelectionListener(evt -> fontSizeListValueChanged(evt));
 
 		textColorButton.setToolTipText("Select text color...");
-		textColorButton.addPropertyChangeListener("color", new PropertyChangeListener() {
-			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				preview.setTextColor((Color) evt.getNewValue());
-				previewPanel.repaint();
-			}
+		textColorButton.addPropertyChangeListener("color", evt -> {
+			preview.setTextColor((Color) evt.getNewValue());
+			previewPanel.repaint();
 		});
 
-		annotationText.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				annotationTextActionPerformed(evt);
-			}
-		});
+		annotationText.addActionListener(evt -> annotationTextActionPerformed(evt));
 		
-		final GroupLayout layout = new GroupLayout(this);
+		var layout = new GroupLayout(this);
 		setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
-		GroupLayout.Group hGroup = layout.createParallelGroup(LEADING, true);
+		var hGroup = layout.createParallelGroup(LEADING, true);
 		hGroup.addGroup(layout.createSequentialGroup()
 						.addComponent(label1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addPreferredGap(ComponentPlacement.RELATED)
@@ -235,7 +207,7 @@ public class TextAnnotationPanel extends JPanel {
 				);
 		layout.setHorizontalGroup(hGroup);
 
-		GroupLayout.SequentialGroup vGroup = layout.createSequentialGroup();
+		var vGroup = layout.createSequentialGroup();
 		vGroup.addGroup(layout.createParallelGroup(CENTER, false)
 						.addComponent(label1)
 						.addComponent(annotationText, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)

@@ -14,7 +14,7 @@ import org.cytoscape.view.presentation.annotations.AnnotationFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -36,10 +36,10 @@ public abstract class AbstractDingAnnotationFactory<T extends Annotation> implem
 	
 	public static final int ICON_SIZE = 16;
 	protected static final String NAMESPACE = "org.cytoscape.annotation.";
-	
+
 	protected final Class<T> type;
 	protected final CyServiceRegistrar serviceRegistrar;
-	
+
 	protected AbstractDingAnnotationFactory(Class<T> type, CyServiceRegistrar serviceRegistrar) {
 		this.type = type;
 		this.serviceRegistrar = serviceRegistrar;

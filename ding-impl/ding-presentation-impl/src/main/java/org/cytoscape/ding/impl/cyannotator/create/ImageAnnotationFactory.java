@@ -71,6 +71,7 @@ public class ImageAnnotationFactory extends AbstractDingAnnotationFactory<ImageA
 			return null;
 		
 		var re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
+		
 		if (re == null)
 			return null;
 		

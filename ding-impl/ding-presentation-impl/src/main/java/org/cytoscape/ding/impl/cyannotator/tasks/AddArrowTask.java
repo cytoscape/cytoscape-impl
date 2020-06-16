@@ -1,12 +1,22 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
+import java.awt.geom.Point2D;
+
+import javax.swing.SwingUtilities;
+
+import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
+import org.cytoscape.view.presentation.annotations.AnnotationFactory;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,17 +33,6 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import java.awt.geom.Point2D;
-
-import javax.swing.JDialog;
-import javax.swing.SwingUtilities;
-
-import org.cytoscape.ding.impl.DRenderingEngine;
-import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
-import org.cytoscape.view.presentation.annotations.AnnotationFactory;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
 
 public class AddArrowTask extends AbstractTask {
 
@@ -53,7 +52,7 @@ public class AddArrowTask extends AbstractTask {
 		
 		if (re != null && annotationFactory instanceof AbstractDingAnnotationFactory) {
 			SwingUtilities.invokeLater(() -> {
-				final JDialog dialog = ((AbstractDingAnnotationFactory<?>) annotationFactory).createAnnotationDialog(re.getViewModel(), location);
+				var dialog = ((AbstractDingAnnotationFactory<?>) annotationFactory).createAnnotationDialog(re.getViewModel(), location);
 				
 				if (dialog != null) {
 					dialog.setLocation((int) location.getX(), (int) location.getY());

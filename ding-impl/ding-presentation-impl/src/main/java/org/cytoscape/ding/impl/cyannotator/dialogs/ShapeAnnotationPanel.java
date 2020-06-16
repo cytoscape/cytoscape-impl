@@ -1,29 +1,5 @@
 package org.cytoscape.ding.impl.cyannotator.dialogs;
 
-/*
- * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
@@ -32,7 +8,6 @@ import static javax.swing.GroupLayout.Alignment.TRAILING;
 import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
 import java.awt.Color;
-import java.awt.Paint;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -59,6 +34,30 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation.ShapeType;
 
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 @SuppressWarnings("serial")
 public class ShapeAnnotationPanel extends JPanel {
 	
@@ -77,7 +76,7 @@ public class ShapeAnnotationPanel extends JPanel {
 	private ShapeAnnotationImpl annotation;
 	private Shape customShape;
 
-	public ShapeAnnotationPanel(final ShapeAnnotation annotation, final PreviewPanel previewPanel) {
+	public ShapeAnnotationPanel(ShapeAnnotation annotation, PreviewPanel previewPanel) {
 		this.annotation = (ShapeAnnotationImpl) annotation;
 		this.previewPanel = previewPanel;
 		this.preview = (ShapeAnnotationImpl) previewPanel.getAnnotation();
@@ -88,23 +87,23 @@ public class ShapeAnnotationPanel extends JPanel {
 	private void initComponents() {
 		setBorder(LookAndFeelUtil.createPanelBorder());
 
-		final JLabel label1 = new JLabel("Shape:");
-		final JLabel label2 = new JLabel("Fill Color:");
-		final JLabel label3 = new JLabel("Fill Opacity:");
-		final JLabel label4 = new JLabel("Border Color:");
-		final JLabel label5 = new JLabel("Border Opacity:");
-		final JLabel label6 = new JLabel("Border Width:");
+		var label1 = new JLabel("Shape:");
+		var label2 = new JLabel("Fill Color:");
+		var label3 = new JLabel("Fill Opacity:");
+		var label4 = new JLabel("Border Color:");
+		var label5 = new JLabel("Border Opacity:");
+		var label6 = new JLabel("Border Width:");
 
-		if(annotation.getShapeTypeEnum() == ShapeType.CUSTOM) {
+		if (annotation.getShapeTypeEnum() == ShapeType.CUSTOM)
 			customShape = annotation.getShape();
-		}
 		
 		shapeList = new JList<>();
 		shapeList.setModel(new AbstractListModel<>() {
-			List<String> typeList; 
+			List<String> typeList;
 			{
 				typeList = new ArrayList<>(annotation.getSupportedShapes());
-				if(annotation.getShapeTypeEnum() != ShapeType.CUSTOM) {
+				
+				if (annotation.getShapeTypeEnum() != ShapeType.CUSTOM) {
 					// currently no support in UI for creating a custom shape
 					typeList.remove(ShapeType.CUSTOM.shapeName());
 				}
@@ -116,10 +115,10 @@ public class ShapeAnnotationPanel extends JPanel {
 		shapeList.setSelectedValue(annotation.getShapeType(), true);
 		shapeList.addListSelectionListener(this::shapeListValueChanged);
 		
-		final JScrollPane scrollPane = new JScrollPane(shapeList);
+		var scrollPane = new JScrollPane(shapeList);
 
-		final Paint fillColor = preview.getFillColor();
-		final Paint borderColor = preview.getBorderColor();
+		var fillColor = preview.getFillColor();
+		var borderColor = preview.getBorderColor();
 		
 		fillColorCheck = new JCheckBox();
 		fillColorCheck.setSelected(annotation.getFillColor() != null);
@@ -183,12 +182,13 @@ public class ShapeAnnotationPanel extends JPanel {
 		
 		
 		// Its possible for an app to set the annotation color to a gradient, which won't work
-		if(!(fillColor instanceof Color) && fillColor != null) {
+		if (!(fillColor instanceof Color) && fillColor != null) {
 			fillColorButton.setEnabled(false);
 			fillColorCheck.setEnabled(false);
 			fillOpacitySlider.setEnabled(false);
 		}
-		if(!(borderColor instanceof Color) && borderColor != null) {
+		
+		if (!(borderColor instanceof Color) && borderColor != null) {
 			borderColorButton.setEnabled(false);
 			borderColorCheck.setEnabled(false);
 			borderOpacitySlider.setEnabled(false);
@@ -209,8 +209,7 @@ public class ShapeAnnotationPanel extends JPanel {
 
 		borderWidthCombo.addActionListener(this::borderWidthActionPerformed);
 		
-		
-		final GroupLayout layout = new GroupLayout(this);
+		var layout = new GroupLayout(this);
 		setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
@@ -302,13 +301,13 @@ public class ShapeAnnotationPanel extends JPanel {
 	public void modifySAPreview(){
 		preview.setBorderWidth(Integer.parseInt((String) (borderWidthCombo.getModel().getSelectedItem())));
 		String shapeType = shapeList.getSelectedValue();
-		if(ShapeType.CUSTOM.shapeName().equals(shapeType)) { // This option will only be available if user started by editing a custom shape
+		
+		if (ShapeType.CUSTOM.shapeName().equals(shapeType)) // This option will only be available if user started by editing a custom shape
 			preview.setCustomShape(customShape); // You can't edit the custom shape, but you can reset it.
-		} else {
+		else
 			preview.setShapeType(shapeType);
-		}
+		
 		preview.setName(annotation.getName());
-
 		previewPanel.repaint();
 	}	    
 
@@ -327,6 +326,7 @@ public class ShapeAnnotationPanel extends JPanel {
 			fillOpacitySlider.setEnabled(false);
 			preview.setFillColor(null);
 		}
+		
 		previewPanel.repaint();
 	}
 
@@ -341,6 +341,7 @@ public class ShapeAnnotationPanel extends JPanel {
 			borderOpacitySlider.setEnabled(false);
 			preview.setBorderColor(null);
 		}
+		
 		previewPanel.repaint();
 	}
 
@@ -349,13 +350,12 @@ public class ShapeAnnotationPanel extends JPanel {
 	}
 
 	private void updateFillOpacity(int opacity) {
-		preview.setFillOpacity((double)opacity);
+		preview.setFillOpacity((double) opacity);
 		previewPanel.repaint();
 	}
 
 	private void updateBorderOpacity(int opacity) {
-		preview.setBorderOpacity((double)opacity);
+		preview.setBorderOpacity((double) opacity);
 		previewPanel.repaint();
 	}
 }
-

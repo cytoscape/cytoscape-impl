@@ -22,7 +22,7 @@ import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -68,11 +68,11 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		borderWidth = c.getBorderWidth();
 		fillColor = c.getFillColor();
 		name = c.getName() != null ? c.getName() : getDefaultName();
-		if(shapeType == ShapeType.CUSTOM) {
+
+		if (shapeType == ShapeType.CUSTOM)
 			shape = GraphicsUtilities.copyCustomShape(c.getShape(), width, height);
-		} else { 
+		else
 			shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, width, height);
-		}
 	}
 
 	public ShapeAnnotationImpl(
@@ -129,7 +129,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	
 	@Override
 	public Map<String, String> getArgMap() {
-		Map<String, String> argMap = super.getArgMap();
+		var argMap = super.getArgMap();
 		argMap.put(TYPE, ShapeAnnotation.class.getName());
 
 		if (fillColor != null)
@@ -145,9 +145,11 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		
 		if (shapeType != null) {
 			argMap.put(SHAPETYPE, shapeType.name());
+			
 			if (shapeType.equals(ShapeType.CUSTOM) && shape != null)
 				argMap.put(CUSTOMSHAPE, GraphicsUtilities.serializeShape(shape));
 		}
+		
 		argMap.put(ShapeAnnotation.WIDTH,  Double.toString(width));
 		argMap.put(ShapeAnnotation.HEIGHT, Double.toString(height));
 
@@ -175,17 +177,19 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 
 	public void setShapeType(ShapeType type) {
 		shapeType = type;
+
 		if (shapeType != ShapeType.CUSTOM)
 			this.shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, width, height);
+
 		update();
 	}
 
 	@Override
 	public void setShapeType(String type) {
-		ShapeType shapeType = getShapeFromString(type);
-		if(!Objects.equals(this.shapeType, shapeType)) {
+		var shapeType = getShapeFromString(type);
+
+		if (!Objects.equals(this.shapeType, shapeType))
 			setShapeType(shapeType);
-		}
 	}
 
 	@Override
@@ -267,7 +271,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	}
 
 	private ShapeType getShapeFromString(String shapeName) {
-		for (ShapeType type : ShapeType.values()) {
+		for (var type : ShapeType.values()) {
 			if (type.shapeName().equals(shapeName))
 				return type;
 		}

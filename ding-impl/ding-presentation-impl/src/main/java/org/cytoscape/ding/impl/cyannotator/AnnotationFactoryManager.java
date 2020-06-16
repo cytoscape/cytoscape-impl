@@ -1,6 +1,18 @@
 package org.cytoscape.ding.impl.cyannotator;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.AnnotationFactory;
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
+import org.cytoscape.view.presentation.annotations.BoundedTextAnnotation;
+import org.cytoscape.view.presentation.annotations.ImageAnnotation;
+import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
+import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
 /*
  * #%L
@@ -8,7 +20,7 @@ import java.util.ArrayList;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -25,19 +37,6 @@ import java.util.ArrayList;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.annotations.Annotation;
-import org.cytoscape.view.presentation.annotations.AnnotationFactory;
-import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
-import org.cytoscape.view.presentation.annotations.BoundedTextAnnotation;
-import org.cytoscape.view.presentation.annotations.ImageAnnotation;
-import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
-import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
 public class AnnotationFactoryManager {
 
@@ -82,11 +81,13 @@ public class AnnotationFactoryManager {
 	}
 
 	public Annotation createAnnotation(Class type, CyNetworkView view, Map<String, String> argMap) {
-		for (AnnotationFactory<? extends Annotation> factory : annotationFactories) {
-			Annotation annotation = factory.createAnnotation(type, view, argMap);
-			if(annotation != null)
+		for (var factory : annotationFactories) {
+			var annotation = factory.createAnnotation(type, view, argMap);
+			
+			if (annotation != null)
 				return annotation;
 		}
+		
 		return null;
 	}
 

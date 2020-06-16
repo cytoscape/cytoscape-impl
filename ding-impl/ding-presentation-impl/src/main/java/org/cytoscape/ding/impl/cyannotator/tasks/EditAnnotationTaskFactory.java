@@ -1,12 +1,20 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
+import java.awt.geom.Point2D;
+
+import org.cytoscape.ding.impl.DingRenderer;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.task.NetworkViewLocationTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,18 +32,6 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
  * #L%
  */
 
-
-
-import java.awt.geom.Point2D;
-
-import org.cytoscape.ding.impl.DRenderingEngine;
-import org.cytoscape.ding.impl.DingRenderer;
-import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
-import org.cytoscape.task.NetworkViewLocationTaskFactory;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.TaskIterator;
-
-
 public class EditAnnotationTaskFactory implements NetworkViewLocationTaskFactory {
 	
 	private final DingRenderer dingRenderer;
@@ -46,29 +42,37 @@ public class EditAnnotationTaskFactory implements NetworkViewLocationTaskFactory
 	
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView networkView, Point2D javaPt, Point2D xformPt) {
-		DRenderingEngine re = dingRenderer.getRenderingEngine(networkView);
-		if(re == null)
+		var re = dingRenderer.getRenderingEngine(networkView);
+		
+		if (re == null)
 			return null;
-		DingAnnotation annotation = re.getPicker().getAnnotationAt(javaPt);
+		
+		var annotation = re.getPicker().getAnnotationAt(javaPt);
+		
 		return new TaskIterator(new EditAnnotationTask(re, annotation, javaPt));
-
 	}
 
 	@Override
 	public boolean isReady(CyNetworkView networkView, Point2D javaPt, Point2D xformPt) {
-		DRenderingEngine re = dingRenderer.getRenderingEngine(networkView);
-		if(re == null)
+		var re = dingRenderer.getRenderingEngine(networkView);
+		
+		if (re == null)
 			return false;
-		DingAnnotation annotation = re.getPicker().getAnnotationAt(javaPt);
+		
+		var annotation = re.getPicker().getAnnotationAt(javaPt);
+		
 		if (annotation != null)
 			return true;
+		
 		return false;
 	}
 
 	public TaskIterator createTaskIterator(CyNetworkView networkView, DingAnnotation annotation, Point2D javaPt) {
-		DRenderingEngine re = dingRenderer.getRenderingEngine(networkView);
-		if(re == null)
+		var re = dingRenderer.getRenderingEngine(networkView);
+		
+		if (re == null)
 			return null;
+		
 		return new TaskIterator(new EditAnnotationTask(re, annotation, javaPt));
 	}
 }
