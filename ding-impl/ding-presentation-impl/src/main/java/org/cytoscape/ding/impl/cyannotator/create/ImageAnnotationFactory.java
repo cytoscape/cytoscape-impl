@@ -5,7 +5,6 @@ import java.awt.geom.Point2D;
 import java.util.Map;
 
 import javax.swing.Icon;
-import javax.swing.JDialog;
 import javax.swing.UIManager;
 
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
@@ -59,7 +58,7 @@ public class ImageAnnotationFactory extends AbstractDingAnnotationFactory<ImageA
 	}
 
 	@Override
-	public JDialog createAnnotationDialog(CyNetworkView view, Point2D location) {
+	public LoadImageDialog createAnnotationDialog(CyNetworkView view, Point2D location) {
 		var re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
 		
 		return new LoadImageDialog(re, location, ViewUtil.getActiveWindow(re), browser, serviceRegistrar);

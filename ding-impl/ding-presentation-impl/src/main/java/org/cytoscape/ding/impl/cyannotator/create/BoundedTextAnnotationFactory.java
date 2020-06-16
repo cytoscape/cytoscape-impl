@@ -56,8 +56,9 @@ public class BoundedTextAnnotationFactory extends AbstractDingAnnotationFactory<
 	}
 	
 	@Override
-	public JDialog createAnnotationDialog(CyNetworkView view, Point2D location) {
-		DRenderingEngine re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
+	public BoundedTextAnnotationDialog createAnnotationDialog(CyNetworkView view, Point2D location) {
+		var re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
+		
 		return new BoundedTextAnnotationDialog(re, location, ViewUtil.getActiveWindow(re));
 	}
 

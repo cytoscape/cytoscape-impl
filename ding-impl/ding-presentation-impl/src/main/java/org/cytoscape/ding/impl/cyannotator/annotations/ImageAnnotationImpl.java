@@ -19,8 +19,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.JDialog;
-
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.image.AbstractURLImageCustomGraphics;
 import org.cytoscape.ding.customgraphics.image.BitmapCustomGraphics;
@@ -465,7 +463,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	}
 
 	@Override
-	public JDialog getModifyDialog() {
+	public ImageAnnotationDialog getModifyDialog() {
 		return new ImageAnnotationDialog(this, ViewUtil.getActiveWindow(re));
 	}
 	

@@ -15,10 +15,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.swing.JDialog;
-
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
+import org.cytoscape.ding.impl.cyannotator.dialogs.AbstractAnnotationDialog;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.Annotation;
@@ -417,10 +416,9 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	}
 
 	@Override
-	public JDialog getModifyDialog() {
+	public AbstractAnnotationDialog getModifyDialog() {
 		return null;
 	}
-
 
 	@Override
 	public void contentChanged() {

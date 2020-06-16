@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.swing.JDialog;
-
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ArrowAnnotationDialog;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
@@ -419,7 +417,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	}
 
 	@Override
-	public JDialog getModifyDialog() {
+	public ArrowAnnotationDialog getModifyDialog() {
 		return new ArrowAnnotationDialog(this, ViewUtil.getActiveWindow(re));
 	}
 

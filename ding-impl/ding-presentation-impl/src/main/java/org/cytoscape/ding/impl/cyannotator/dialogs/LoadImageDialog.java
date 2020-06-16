@@ -1,9 +1,5 @@
 package org.cytoscape.ding.impl.cyannotator.dialogs;
 
-import static javax.swing.GroupLayout.DEFAULT_SIZE;
-import static javax.swing.GroupLayout.PREFERRED_SIZE;
-import static javax.swing.GroupLayout.Alignment.CENTER;
-
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
@@ -14,12 +10,8 @@ import java.io.InputStreamReader;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
-import javax.swing.GroupLayout;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.filechooser.FileFilter;
 
@@ -29,12 +21,10 @@ import org.cytoscape.ding.customgraphics.image.BitmapCustomGraphics;
 import org.cytoscape.ding.customgraphics.image.SVGCustomGraphics;
 import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsBrowser;
 import org.cytoscape.ding.impl.DRenderingEngine;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
 import org.cytoscape.ding.impl.editor.ImageCustomGraphicsSelector;
 import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,17 +57,14 @@ import org.slf4j.LoggerFactory;
  * Provides a way to create ImageAnnotations
  */
 @SuppressWarnings("serial")
-public class LoadImageDialog extends JDialog {
+public class LoadImageDialog extends AbstractAnnotationDialog<ImageAnnotationImpl> {
 
+	private static final String NAME = "Image";
 	private static final String UNDO_LABEL = "Create Image Annotation";
 	
 	private JTabbedPane tabbedPane;
 	private JFileChooser fileChooser;
 	private ImageCustomGraphicsSelector imageSelector;
-	
-	private final DRenderingEngine re;
-	private final CyAnnotator cyAnnotator;
-	private final Point2D startingLocation;
 	
 	private final CustomGraphicsBrowser browser;
 	private final CyServiceRegistrar serviceRegistrar;
@@ -93,97 +80,45 @@ public class LoadImageDialog extends JDialog {
 			CustomGraphicsBrowser browser,
 			CyServiceRegistrar serviceRegistrar
 	) {
-		super(owner, ModalityType.APPLICATION_MODAL);
-		this.re = re;
+		super(NAME, re, start, owner);
+		
 		this.browser = browser;
 		this.serviceRegistrar = serviceRegistrar;
-		this.cyAnnotator = re.getCyAnnotator();
-		this.startingLocation = start != null ? start : re.getComponentCenter();
-
-		initComponents();
-	}
-
-	private void initComponents() {
+		
 		setTitle("Select an Image");
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setResizable(true);
-
-		var okButton = new JButton(new AbstractAction("Insert") {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				insertImage();
-			}
-		});
-		var cancelButton = new JButton(new AbstractAction("Cancel") {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				dispose();
-			}
-		});
 		
-		var buttonPanel = LookAndFeelUtil.createOkCancelPanel(okButton, cancelButton);
-
-		var contents = new JPanel();
-		var layout = new GroupLayout(contents);
-		contents.setLayout(layout);
-		layout.setAutoCreateContainerGaps(true);
-		layout.setAutoCreateGaps(true);
-		
-		layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
-				.addComponent(getTabbedPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(buttonPanel)
-		);
-		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addComponent(getTabbedPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-		);
-		
-		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), okButton.getAction(), cancelButton.getAction());
-		getRootPane().setDefaultButton(okButton);
-		
-		getContentPane().add(contents);
+		getTabbedPane().addTab("From File", getFileChooser());
+		getTabbedPane().addTab("From Image Browser", getImageSelector());
 		
 		pack();
 	}
 	
-	private JTabbedPane getTabbedPane() {
-		if (tabbedPane == null) {
-			tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-			tabbedPane.addTab("From File", getFileChooser());
-			tabbedPane.addTab("From Image Browser", getImageSelector());
-		}
-		
-		return tabbedPane;
+	@Override
+	protected JTabbedPane createControlPanel() {
+		return getTabbedPane();
 	}
-	
-	private JFileChooser getFileChooser() {
-		if (fileChooser == null) {
-			fileChooser = new JFileChooser(lastDirectory);
-			fileChooser.setControlButtonsAreShown(false);
-			fileChooser.setCurrentDirectory(null);
-			fileChooser.setDialogTitle("");
-			fileChooser.setAcceptAllFileFilterUsed(false);
-			fileChooser.addChoosableFileFilter(new ImageFilter());
-		}
 
-		return fileChooser;
+	@Override
+	protected ImageAnnotationImpl getPreviewAnnotation() {
+		return null;
 	}
 	
-	private ImageCustomGraphicsSelector getImageSelector() {
-		if (imageSelector == null) {
-			imageSelector = new ImageCustomGraphicsSelector(browser, serviceRegistrar);
-			imageSelector.addActionListener(evt -> insertImage());
-		}
-		
-		return imageSelector;
+	@Override
+	protected int getPreviewWidth() {
+		return 0;
+	}
+
+	@Override
+	protected int getPreviewHeight() {
+		return 0;
 	}
 	
-	private void insertImage() {
+	@Override
+	protected void apply() {
 		var selectedComp = getTabbedPane().getSelectedComponent();
 		
 		try {
-			final ImageAnnotationImpl annotation;
-			
 			if (selectedComp == getFileChooser()) {
 				var file = fileChooser.getSelectedFile();
 				annotation = createAnnotation(file);
@@ -207,13 +142,56 @@ public class LoadImageDialog extends JDialog {
 				cyAnnotator.clearSelectedAnnotations();
 				ViewUtil.selectAnnotation(re, annotation);
 			}
-			
-			dispose();
 		} catch (Exception ex) {
 			logger.warn("Unable to load the selected image", ex);
 		}
 	}
 
+	@Override
+	protected JButton getApplyButton() {
+		if (applyButton == null) {
+			applyButton = new JButton(new AbstractAction("Insert") {
+				@Override
+				public void actionPerformed(ActionEvent evt) {
+					apply();
+					dispose();
+				}
+			});
+		}
+		
+		return applyButton;
+	}
+	
+	private JTabbedPane getTabbedPane() {
+		if (tabbedPane == null) {
+			tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		}
+		
+		return tabbedPane;
+	}
+	
+	private JFileChooser getFileChooser() {
+		if (fileChooser == null) {
+			fileChooser = new JFileChooser(lastDirectory);
+			fileChooser.setControlButtonsAreShown(false);
+			fileChooser.setCurrentDirectory(null);
+			fileChooser.setDialogTitle("");
+			fileChooser.setAcceptAllFileFilterUsed(false);
+			fileChooser.addChoosableFileFilter(new ImageFilter());
+		}
+
+		return fileChooser;
+	}
+	
+	private ImageCustomGraphicsSelector getImageSelector() {
+		if (imageSelector == null) {
+			imageSelector = new ImageCustomGraphicsSelector(browser, serviceRegistrar);
+			imageSelector.addActionListener(evt -> getApplyButton().doClick());
+		}
+		
+		return imageSelector;
+	}
+	
 	private ImageAnnotationImpl createAnnotation(File file) throws IOException {
 		final ImageAnnotationImpl annotation;
 		

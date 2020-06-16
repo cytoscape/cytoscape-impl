@@ -1,52 +1,12 @@
 package org.cytoscape.ding.impl.cyannotator.dialogs;
 
-import static javax.swing.GroupLayout.DEFAULT_SIZE;
-import static javax.swing.GroupLayout.PREFERRED_SIZE;
-import static javax.swing.GroupLayout.Alignment.LEADING;
-
-/*
- * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
-import java.awt.Point;
 import java.awt.Robot;
 import java.awt.Window;
-import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
 
-import javax.swing.AbstractAction;
-import javax.swing.GroupLayout;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-
 import org.cytoscape.ding.impl.DRenderingEngine;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
-import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation.ArrowEnd;
 
 /*
@@ -55,7 +15,7 @@ import org.cytoscape.view.presentation.annotations.ArrowAnnotation.ArrowEnd;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -74,101 +34,53 @@ import org.cytoscape.view.presentation.annotations.ArrowAnnotation.ArrowEnd;
  */
 
 @SuppressWarnings("serial")
-public class ArrowAnnotationDialog extends JDialog {
+public class ArrowAnnotationDialog extends AbstractAnnotationDialog<ArrowAnnotationImpl> {
+	
+	private static final String NAME = "Arrow";
 	
 	private static final int PREVIEW_WIDTH = 400;
 	private static final int PREVIEW_HEIGHT = 120;
 	
-	private JButton applyButton;
-	private JButton cancelButton;
-	private ArrowAnnotationPanel arrowAnnotationPanel;
-
-	private final CyAnnotator cyAnnotator;    
-	private final DRenderingEngine re;    
-	private final ArrowAnnotationImpl annotation;
 	private ArrowAnnotationImpl preview;
 	private DingAnnotation source;
-	private final boolean create;
+	
+	public ArrowAnnotationDialog(DRenderingEngine re, Point2D start, Window owner) {
+		super(NAME, new ArrowAnnotationImpl(re, false), re, start, owner);
 		
-	public ArrowAnnotationDialog(final DRenderingEngine re, final Point2D start, final Window owner) {
-		super(owner);
-		this.re = re;
-		this.cyAnnotator = re.getCyAnnotator();
-		this.annotation = new ArrowAnnotationImpl(re, false);
-		this.source = re.getPicker().getAnnotationAt(start != null ? start : re.getComponentCenter());
-		this.create = true;
-
-		initComponents();
+		this.source = re.getPicker().getAnnotationAt(startingLocation);
 	}
 
-	public ArrowAnnotationDialog(final ArrowAnnotationImpl annotation, final Window owner) {
-		super(owner);
-		this.annotation = annotation;
-		this.cyAnnotator = annotation.getCyAnnotator();
-		this.re = cyAnnotator.getRenderingEngine();
-		this.create = false;
-
-		initComponents();
+	public ArrowAnnotationDialog(ArrowAnnotationImpl annotation, Window owner) {
+		super(NAME, annotation, owner);
 	}
     
-	private void initComponents() {
-		setTitle(create ? "Create Arrow Annotation" : "Modify Arrow Annotation");
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setModalityType(DEFAULT_MODALITY_TYPE);
-		setResizable(false);
-
-		// Create the preview panel
-		preview = new ArrowAnnotationImpl(re, true);
-		((ArrowAnnotationImpl) preview).setSize(400.0, 100.0);
-		
-		final PreviewPanel previewPanel = new PreviewPanel(preview);
-		arrowAnnotationPanel = new ArrowAnnotationPanel(annotation, previewPanel);
-
-		applyButton = new JButton(new AbstractAction("OK") {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				applyButtonActionPerformed(e);
-			}
-		});
-		cancelButton = new JButton(new AbstractAction("Cancel") {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				dispose();
-			}
-		});
-		
-		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(applyButton, cancelButton);
-
-		final JPanel contents = new JPanel();
-		final GroupLayout layout = new GroupLayout(contents);
-		contents.setLayout(layout);
-		layout.setAutoCreateContainerGaps(true);
-		layout.setAutoCreateGaps(true);
-		
-		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
-				.addComponent(arrowAnnotationPanel)
-				.addComponent(previewPanel, DEFAULT_SIZE, PREVIEW_WIDTH, Short.MAX_VALUE)
-				.addComponent(buttonPanel)
-		);
-		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addComponent(arrowAnnotationPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				.addComponent(previewPanel, DEFAULT_SIZE, PREVIEW_HEIGHT, Short.MAX_VALUE)
-				.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-		);
-		
-		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), applyButton.getAction(), cancelButton.getAction());
-		getRootPane().setDefaultButton(applyButton);
-		
-		getContentPane().add(contents);
-
-		pack();
+	@Override
+	protected ArrowAnnotationPanel createControlPanel() {
+		return new ArrowAnnotationPanel(annotation, getPreviewPanel());
 	}
 
-	private void applyButtonActionPerformed(ActionEvent evt) {
-		dispose();
-
-		cyAnnotator.markUndoEdit(create ? "Create Annotation" : "Edit Annotation");
+	@Override
+	protected ArrowAnnotationImpl getPreviewAnnotation() {
+		if (preview == null) {
+			preview = new ArrowAnnotationImpl(re, true);
+			preview.setSize(400.0, 100.0);
+		}
 		
+		return preview;
+	}
+	
+	@Override
+	protected int getPreviewWidth() {
+		return PREVIEW_WIDTH;
+	}
+
+	@Override
+	protected int getPreviewHeight() {
+		return PREVIEW_HEIGHT;
+	}
+	
+	@Override
+	protected void apply() {
 		annotation.setLineColor(preview.getLineColor());
 		annotation.setLineWidth(preview.getLineWidth());
 		annotation.setArrowType(ArrowEnd.SOURCE, preview.getArrowType(ArrowEnd.SOURCE));
@@ -183,10 +95,11 @@ public class ArrowAnnotationDialog extends JDialog {
 		if (!create) {
 			annotation.update();
 			cyAnnotator.postUndoEdit();
+			
 			return;
 		}
 
-		annotation.setSource(this.source);
+		annotation.setSource(source);
 		annotation.update();
 		cyAnnotator.addAnnotation(annotation);
 
@@ -195,8 +108,8 @@ public class ArrowAnnotationDialog extends JDialog {
 
 		try {
 			// Warp the mouse to the starting location (if supported)
-			Point start = re.getComponent().getLocationOnScreen();
-			Robot robot = new Robot();
+			var start = re.getComponent().getLocationOnScreen();
+			var robot = new Robot();
 			robot.mouseMove((int) start.getX() + 100, (int) start.getY() + 100);
 		} catch (Exception e) {
 		}

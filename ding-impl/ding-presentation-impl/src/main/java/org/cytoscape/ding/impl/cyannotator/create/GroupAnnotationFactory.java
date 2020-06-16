@@ -11,6 +11,7 @@ import javax.swing.UIManager;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.cyannotator.annotations.GroupAnnotationImpl;
+import org.cytoscape.ding.impl.cyannotator.dialogs.AbstractAnnotationDialog;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
@@ -52,7 +53,7 @@ public class GroupAnnotationFactory extends AbstractDingAnnotationFactory<GroupA
 	}
 	
 	@Override
-	public JDialog createAnnotationDialog(CyNetworkView view, Point2D location) {
+	public AbstractAnnotationDialog createAnnotationDialog(CyNetworkView view, Point2D location) {
 		return null;
 	}
 

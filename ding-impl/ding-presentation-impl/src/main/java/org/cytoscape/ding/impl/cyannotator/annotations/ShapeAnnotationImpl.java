@@ -8,9 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import javax.swing.JDialog;
-
 import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.cyannotator.dialogs.AbstractAnnotationDialog;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ShapeAnnotationDialog;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.ding.internal.util.ViewUtil;
@@ -263,7 +262,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	}
 
 	@Override
-	public JDialog getModifyDialog() {
+	public AbstractAnnotationDialog getModifyDialog() {
 		return new ShapeAnnotationDialog(this, ViewUtil.getActiveWindow(re));
 	}
 

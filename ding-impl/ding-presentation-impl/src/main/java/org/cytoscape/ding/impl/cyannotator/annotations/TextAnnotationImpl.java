@@ -10,8 +10,6 @@ import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
 import java.util.Map;
 
-import javax.swing.JDialog;
-
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.dialogs.TextAnnotationDialog;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
@@ -232,7 +230,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	}
 
 	@Override
-	public JDialog getModifyDialog() {
+	public TextAnnotationDialog getModifyDialog() {
 		return new TextAnnotationDialog(this, ViewUtil.getActiveWindow(re));
 	}
 

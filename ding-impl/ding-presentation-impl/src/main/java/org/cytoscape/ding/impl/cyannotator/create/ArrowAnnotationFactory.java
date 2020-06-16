@@ -56,7 +56,7 @@ public class ArrowAnnotationFactory extends AbstractDingAnnotationFactory<ArrowA
 	}
 
 	@Override
-	public JDialog createAnnotationDialog(CyNetworkView view, Point2D location) {
+	public ArrowAnnotationDialog createAnnotationDialog(CyNetworkView view, Point2D location) {
 		// We need to be over an annotation
 		DRenderingEngine re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
 		DingAnnotation annotation = re.getPicker().getAnnotationAt(location);

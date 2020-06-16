@@ -5,6 +5,7 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static javax.swing.GroupLayout.Alignment.TRAILING;
+import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
 import java.awt.Color;
 import java.awt.Paint;
@@ -201,6 +202,9 @@ public class ArrowAnnotationPanel extends JPanel {
 				)
 		);
 		
+		makeSmall(label1, label2, label3);
+		makeSmall(lineColorCheck, lineColorButton, lineOpacitySlider, lineWidthCombo);
+		
 		iModifySAPreview();	
 	}
 
@@ -393,6 +397,9 @@ public class ArrowAnnotationPanel extends JPanel {
 						.addComponent(anchorTypeCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
 		);
+		
+		makeSmall(label1, label2, label3, label4, label5);
+		makeSmall(arrowTypeCombo, arrowColorCheck, arrowColorButton, arrowOpacitySlider, arrowSizeCombo, anchorTypeCombo);
 
 		return arrowPanel;
 	}

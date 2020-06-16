@@ -9,10 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.JDialog;
-
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.IllegalAnnotationStructureException;
+import org.cytoscape.ding.impl.cyannotator.dialogs.AbstractAnnotationDialog;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 
@@ -146,8 +145,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 	}
 
 	@Override
-	public JDialog getModifyDialog() {
-		// return new GroupAnnotationDialog(this);
+	public AbstractAnnotationDialog getModifyDialog() {
 		return null;
 	}
 

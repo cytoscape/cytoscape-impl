@@ -55,8 +55,9 @@ public class ShapeAnnotationFactory extends AbstractDingAnnotationFactory<ShapeA
 	}
 	
 	@Override
-	public JDialog createAnnotationDialog(CyNetworkView view, Point2D location) {
-		DRenderingEngine re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
+	public ShapeAnnotationDialog createAnnotationDialog(CyNetworkView view, Point2D location) {
+		var re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
+		
 		return new ShapeAnnotationDialog(re, location, ViewUtil.getActiveWindow(re));
 	}
 

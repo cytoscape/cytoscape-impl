@@ -10,8 +10,6 @@ import java.awt.Paint;
 import java.awt.font.FontRenderContext;
 import java.util.Map;
 
-import javax.swing.JDialog;
-
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.dialogs.BoundedTextAnnotationDialog;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
@@ -184,7 +182,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	}
 	
 	@Override
-	public JDialog getModifyDialog() {
+	public BoundedTextAnnotationDialog getModifyDialog() {
 		return new BoundedTextAnnotationDialog(this, ViewUtil.getActiveWindow(re));
 	}
 	

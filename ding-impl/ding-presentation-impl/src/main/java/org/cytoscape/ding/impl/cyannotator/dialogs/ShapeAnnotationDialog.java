@@ -1,26 +1,10 @@
 package org.cytoscape.ding.impl.cyannotator.dialogs;
 
-import static javax.swing.GroupLayout.DEFAULT_SIZE;
-import static javax.swing.GroupLayout.PREFERRED_SIZE;
-import static javax.swing.GroupLayout.Alignment.LEADING;
-
-import java.awt.Point;
-import java.awt.Robot;
 import java.awt.Window;
-import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
 
-import javax.swing.AbstractAction;
-import javax.swing.GroupLayout;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-
 import org.cytoscape.ding.impl.DRenderingEngine;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
-import org.cytoscape.util.swing.LookAndFeelUtil;
 
 /*
  * #%L
@@ -28,7 +12,7 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -47,123 +31,69 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
  */
 
 @SuppressWarnings("serial")
-public class ShapeAnnotationDialog extends JDialog {
+public class ShapeAnnotationDialog extends AbstractAnnotationDialog<ShapeAnnotationImpl> {
 
+	private static final String NAME = "Shape";
+	
 	private static final int CREATE_WIDTH = 100;
 	private static final int CREATE_HEIGHT = 100;
 	
 	private static final int PREVIEW_WIDTH = 500;
 	private static final int PREVIEW_HEIGHT = 220;
 	
-	private ShapeAnnotationPanel shapeAnnotationPanel;
-	private JButton applyButton;
-	private JButton cancelButton;
-
-	private final CyAnnotator cyAnnotator;    
-	private final DRenderingEngine re;    
-	private final Point2D startingLocation;
-	private final ShapeAnnotationImpl shapeAnnotation;
 	private ShapeAnnotationImpl preview;
-	private final boolean create;
 		
-	public ShapeAnnotationDialog(DRenderingEngine re, final Point2D start, final Window owner) {
-		super(owner);
-		this.re = re;
-		this.cyAnnotator = re.getCyAnnotator();
-		this.startingLocation = start != null ? start : re.getComponentCenter();
-		this.shapeAnnotation = new ShapeAnnotationImpl(re, CREATE_WIDTH, CREATE_HEIGHT, false);
-		this.create = true;
-
-		initComponents();		        
+	public ShapeAnnotationDialog(DRenderingEngine re, Point2D start, Window owner) {
+		super(NAME, new ShapeAnnotationImpl(re, CREATE_WIDTH, CREATE_HEIGHT, false), re, start, owner);
 	}
 
-	public ShapeAnnotationDialog(final ShapeAnnotationImpl mAnnotation, final Window owner) {
-		super(owner);
-		this.shapeAnnotation = mAnnotation;
-		this.cyAnnotator = mAnnotation.getCyAnnotator();
-		this.re = cyAnnotator.getRenderingEngine();
-		this.create = false;
-		this.startingLocation = null;
-
-		initComponents();	
+	public ShapeAnnotationDialog(ShapeAnnotationImpl annotation, Window owner) {
+		super(NAME, annotation, owner);
 	}
-    
-	private void initComponents() {
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setModalityType(DEFAULT_MODALITY_TYPE);
-		setResizable(false);
-		setTitle(create ? "Create Shape Annotation" : "Modify Shape Annotation");
-		
-		// Create the preview panel
-		preview = new ShapeAnnotationImpl(shapeAnnotation, 150, 150, true);
-		preview.setSize(152, 152);
-		final PreviewPanel previewPanel = new PreviewPanel(preview);
-
-		shapeAnnotationPanel = new ShapeAnnotationPanel(shapeAnnotation, previewPanel);
-
-		applyButton = new JButton(new AbstractAction("OK") {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				applyButtonActionPerformed(e);
-			}
-		});
-		cancelButton = new JButton(new AbstractAction("Cancel") {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				dispose();
-			}
-		});
-		
-		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(applyButton, cancelButton);
-
-		final JPanel contents = new JPanel();
-		final GroupLayout layout = new GroupLayout(contents);
-		contents.setLayout(layout);
-		layout.setAutoCreateContainerGaps(true);
-		layout.setAutoCreateGaps(true);
-		
-		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
-				.addComponent(shapeAnnotationPanel)
-				.addComponent(previewPanel, DEFAULT_SIZE, PREVIEW_WIDTH, Short.MAX_VALUE)
-				.addComponent(buttonPanel)
-		);
-		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addComponent(shapeAnnotationPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				.addComponent(previewPanel, DEFAULT_SIZE, PREVIEW_HEIGHT, Short.MAX_VALUE)
-				.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-		);
-		
-		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), applyButton.getAction(), cancelButton.getAction());
-		getRootPane().setDefaultButton(applyButton);
-		
-		getContentPane().add(contents);
-		pack();
+	
+	@Override
+	protected ShapeAnnotationPanel createControlPanel() {
+		return new ShapeAnnotationPanel(annotation, getPreviewPanel());
 	}
 
-	private void applyButtonActionPerformed(ActionEvent evt) {
-		dispose();
-
-		cyAnnotator.markUndoEdit(create ? "Create Annotation" : "Edit Annotation");
-		
-		shapeAnnotation.setShapeType(preview.getShapeType());
-		shapeAnnotation.setFillColor(preview.getFillColor());
-		shapeAnnotation.setFillOpacity(preview.getFillOpacity());
-		shapeAnnotation.setBorderColor(preview.getBorderColor());
-		shapeAnnotation.setBorderOpacity(preview.getBorderOpacity());
-		shapeAnnotation.setBorderWidth((int)preview.getBorderWidth());
-
-		if (!create) {
-			shapeAnnotation.update(); 
-			cyAnnotator.postUndoEdit();
-			return;
+	@Override
+	protected ShapeAnnotationImpl getPreviewAnnotation() {
+		if (preview == null) {
+			preview = new ShapeAnnotationImpl(annotation, 150, 150, true);
+			preview.setSize(152, 152);
 		}
 		
+		return preview;
+	}
+	
+	@Override
+	protected int getPreviewWidth() {
+		return PREVIEW_WIDTH;
+	}
+
+	@Override
+	protected int getPreviewHeight() {
+		return PREVIEW_HEIGHT;
+	}
+    
+	@Override
+	protected void apply() {
+		annotation.setShapeType(preview.getShapeType());
+		annotation.setFillColor(preview.getFillColor());
+		annotation.setFillOpacity(preview.getFillOpacity());
+		annotation.setBorderColor(preview.getBorderColor());
+		annotation.setBorderOpacity(preview.getBorderOpacity());
+		annotation.setBorderWidth((int) preview.getBorderWidth());
+
+		if (!create) {
+			annotation.update();
+			cyAnnotator.postUndoEdit();
+			
+			return;
+		}
+
 		var annotationLocation = re.getTransform().getNodeCoordinates(startingLocation);
-		shapeAnnotation.setLocation(annotationLocation.getX(), annotationLocation.getY());
-		shapeAnnotation.update();
-		cyAnnotator.addAnnotation(shapeAnnotation);
-		
-		cyAnnotator.clearSelectedAnnotations();
-		ViewUtil.selectAnnotation(re, shapeAnnotation);
+		annotation.setLocation(annotationLocation.getX(), annotationLocation.getY());
+		annotation.update();
 	}
 }
