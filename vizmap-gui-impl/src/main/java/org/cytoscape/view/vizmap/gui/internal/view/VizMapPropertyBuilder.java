@@ -23,6 +23,7 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
@@ -189,60 +190,70 @@ public class VizMapPropertyBuilder {
 	public <K, V> void createMappingProperties(final VisualMappingFunction<K, V> visualMapping,
 											   final PropertySheetPanel propertySheetPanel,
 											   final VisualMappingFunctionFactory factory) {
-		final String attrName = visualMapping.getMappingColumnName();
-
+		String attrName = visualMapping.getMappingColumnName();
 		if (attrName == null)
 			return;
 		
 		removeMappingProperties(propertySheetPanel);
 		
-		final VisualProperty<V> vp = visualMapping.getVisualProperty();
-		final VisualPropertyEditor<V> vpEditor = editorManager.getVisualPropertyEditor(vp);
+		VisualProperty<V> vp = visualMapping.getVisualProperty();
+		VisualPropertyEditor<V> vpEditor = editorManager.getVisualPropertyEditor(vp);
 		
 		if (visualMapping instanceof DiscreteMapping) {
-			// Discrete Mapping
-			// This set should not contain null!
-			final SortedSet<Object> attrSet = new TreeSet<>();
-			final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
-			final CyNetwork network = appMgr.getCurrentNetwork();
+			var type = vp.getTargetDataType();
+			SortedSet<Object> attrSet = new TreeSet<>();
 			
-			if (network != null) {
-				final Set<CyIdentifiable> graphObjects = new HashSet<>();
-
-				if (network != null) {
-					if (vp.getTargetDataType().equals(CyNode.class)) {
-						graphObjects.addAll(network.getNodeList());
-					} else if (vp.getTargetDataType().equals(CyEdge.class)) {
-						graphObjects.addAll(network.getEdgeList());
-					} else if (vp.getTargetDataType().equals(CyNetwork.class)) {
-						graphObjects.add(network);
-					} else {
-						throw new IllegalArgumentException("Data type not supported: " + vp.getTargetDataType());
-					}
-				}
+			if(type == CyNode.class || type == CyEdge.class || type == CyNetwork.class) {
+				// Discrete Mapping
+				// This set should not contain null!
+				CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
+				CyNetwork network = appMgr.getCurrentNetwork();
 				
-				if (vp.getTargetDataType() == CyNetwork.class) {
-					final CyRow row = network.getRow(network);
-					final CyColumn column = row.getTable().getColumn(attrName);
+				if (network != null) {
+					final Set<CyIdentifiable> graphObjects = new HashSet<>();
+	
+					if (network != null) {
+						if (type == CyNode.class) {
+							graphObjects.addAll(network.getNodeList());
+						} else if (type == CyEdge.class) {
+							graphObjects.addAll(network.getEdgeList());
+						} else if (type == CyNetwork.class) {
+							graphObjects.add(network);
+						} else {
+							throw new IllegalArgumentException("Data type not supported: " + vp.getTargetDataType());
+						}
+					}
 					
-					if (column != null)
-						processDiscretValues(row, attrName, column, column.getType(), attrSet);
-				} else {
-					// Make sure all data sets have the same data type.
-					if (!graphObjects.isEmpty()) {
-						final CyIdentifiable firstEntry = graphObjects.iterator().next();
-						final CyRow firstRow = network.getRow(firstEntry);
-						final CyColumn column = firstRow.getTable().getColumn(attrName);
-						
+					if (type == CyNetwork.class) {
+						CyRow row = network.getRow(network);
+						CyColumn column = row.getTable().getColumn(attrName);
 						if (column != null) {
-							final Class<?> type = column.getType();
+							processDiscretValues(row, attrName, column, column.getType(), attrSet);
+						}
+					} else {
+						// Make sure all data sets have the same data type.
+						if (!graphObjects.isEmpty()) {
+							CyIdentifiable firstEntry = graphObjects.iterator().next();
+							CyRow firstRow = network.getRow(firstEntry);
+							CyColumn column = firstRow.getTable().getColumn(attrName);
 							
-							for (final CyIdentifiable go : graphObjects) {
-								final CyRow row = network.getRow(go);
-								processDiscretValues(row, attrName, column, type, attrSet);
+							if (column != null) {
+								Class<?> colType = column.getType();
+								for (CyIdentifiable go : graphObjects) {
+									CyRow row = network.getRow(go);
+									processDiscretValues(row, attrName, column, colType, attrSet);
+								}
 							}
 						}
 					}
+				}
+			} else if(type == CyColumn.class) {
+				CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
+				CyTable table = appMgr.getCurrentTable();
+				CyColumn column = table.getColumn(attrName);
+				Class<?> colType = column.getType();
+				for(CyRow row : table.getAllRows()) {
+					processDiscretValues(row, attrName, column, colType, attrSet);
 				}
 			}
 			
@@ -251,8 +262,8 @@ public class VizMapPropertyBuilder {
 				if (entry.getValue() != null)
 					attrSet.add(entry.getKey());
 			}
-
 			setDiscreteProps(vp, visualMapping, attrSet, vpEditor, propertySheetPanel);
+			
 		} else if (visualMapping instanceof ContinuousMapping) {
 			// TODO: How do we decide when to reset the range tracer for this mapping?
 			final VizMapperProperty<String, VisualMappingFunction, VisualMappingFunction<K, V>> graphicalView = 
