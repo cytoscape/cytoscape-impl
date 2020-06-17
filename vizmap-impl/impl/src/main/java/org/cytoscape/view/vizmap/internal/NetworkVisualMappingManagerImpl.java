@@ -1,13 +1,17 @@
 package org.cytoscape.view.vizmap.internal;
 
 import java.awt.Color;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -86,8 +90,22 @@ public class NetworkVisualMappingManagerImpl extends AbstractVisualMappingManage
 	}
 
 	@Override
+	public Set<VisualLexicon> getAllVisualLexicon() {
+		Set<VisualLexicon> set = new LinkedHashSet<>();
+		CyApplicationManager appManager = serviceRegistrar.getService(CyApplicationManager.class);
+		
+		for (var nvRenderer : appManager.getNetworkViewRendererSet()) {
+			var lexicon = nvRenderer.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT).getVisualLexicon();
+			if (lexicon != null)
+				set.add(lexicon);
+		}
+		
+		return set;
+	}
+	
+	@Override
 	protected CyNetworkView getCurrentView() {
-		final CyApplicationManager appManager = serviceRegistrar.getService(CyApplicationManager.class);
+		var appManager = serviceRegistrar.getService(CyApplicationManager.class);
 		if(appManager == null)
 			return null;
 		return appManager.getCurrentNetworkView();

@@ -26,10 +26,9 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
-import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.vizmap.TableVisualMappingManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 
@@ -47,15 +46,19 @@ public class EditorValueRangeTracer {
 	 *            DOCUMENT ME!
 	 */
 	public EditorValueRangeTracer(final ServicesUtil servicesUtil) {
-
-		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
-		final Set<VisualLexicon> lexSet = vmMgr.getAllVisualLexicon();
-		rangeMap = new HashMap<VisualProperty<?>, Range>();
-
-		for (VisualLexicon lexicon : lexSet) {
-			for (VisualProperty<?> v : lexicon.getAllVisualProperties()) {
-				Range r = new Range(0d, 0d);
-				rangeMap.put(v, r);
+		rangeMap = new HashMap<>();
+		
+		var vmMgr = servicesUtil.get(VisualMappingManager.class);
+		for (var lexicon : vmMgr.getAllVisualLexicon()) {
+			for (var vp : lexicon.getAllVisualProperties()) {
+				rangeMap.put(vp, new Range(0d, 0d));
+			}
+		}
+		
+		var tblMgr = servicesUtil.get(TableVisualMappingManager.class);
+		for (var lexicon : tblMgr.getAllVisualLexicon()) {
+			for (var vp : lexicon.getAllVisualProperties()) {
+				rangeMap.put(vp, new Range(0d, 0d));
 			}
 		}
 	}

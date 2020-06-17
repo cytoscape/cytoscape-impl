@@ -1,12 +1,10 @@
 package org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
+import org.cytoscape.view.vizmap.gui.internal.CurrentTableService;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 
@@ -46,25 +44,15 @@ public class C2DEditor<V> extends AbstractContinuousMappingEditor<Number, V> {
 		if (value instanceof ContinuousMapping == false)
 			throw new IllegalArgumentException("Value should be ContinuousMapping: this is " + value);
 
-		final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
-		final CyNetwork currentNetwork = appMgr.getCurrentNetwork();
-		
-		if (currentNetwork == null)
-			return;
-
-		ContinuousMapping<?, ?> mTest = (ContinuousMapping<?, ?>) value;
-		// TODO: error chekcing
-		
 		mapping = (ContinuousMapping<Number, V>) value;
 		
-		Class<? extends CyIdentifiable> type = (Class<? extends CyIdentifiable>) mapping.getVisualProperty()
-				.getTargetDataType();
+		Class<? extends CyIdentifiable> type = (Class<? extends CyIdentifiable>) mapping.getVisualProperty().getTargetDataType();
 		
-		final CyNetworkTableManager netTblMgr = servicesUtil.get(CyNetworkTableManager.class);
-		final CyTable attr = netTblMgr.getTable(appMgr.getCurrentNetwork(), type, CyNetwork.DEFAULT_ATTRS);
+		CyTable attr = servicesUtil.get(CurrentTableService.class).getCurrentTable(type);
+		if(attr == null)
+			return;
 		
 		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
-		editorPanel = new C2DMappingEditorPanel(vmMgr.getCurrentVisualStyle(), mapping, attr, editorManager,
-				servicesUtil);
+		editorPanel = new C2DMappingEditorPanel(vmMgr.getCurrentVisualStyle(), mapping, attr, editorManager, servicesUtil);
 	}
 }

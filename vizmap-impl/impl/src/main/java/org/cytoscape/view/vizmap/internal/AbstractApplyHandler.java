@@ -114,7 +114,7 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 					applyDefaultValue(view, vp, lexicon);
 				} else {
 					// Apply the mapped value...
-					applyMappedValue(view, vp, value, mapping);
+					applyMappedValue(view, vp, value);
 				}
 				
 				descendants.addAll(node.getChildren());
@@ -122,7 +122,7 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 		});
 	}
 
-	private void applyDefaultValue(final View<T> view, final VisualProperty<?> vp, final VisualLexicon lexicon) {
+	protected void applyDefaultValue(final View<T> view, final VisualProperty<?> vp, final VisualLexicon lexicon) {
 		// This is the view default value.
 		Object value = style.getDefaultValue(vp);
 
@@ -148,7 +148,7 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 		}
 	}
 
-	protected void applyMappedValue(final View<T> view, final VisualProperty<?> vp, final Object value, VisualMappingFunction<?,?> mapping) {
+	protected void applyMappedValue(final View<T> view, final VisualProperty<?> vp, final Object value) {
 		final Set<VisualPropertyDependency<?>> depSet = dependencyParents.get(vp);
 		
 		// If this property has already received a propagated value from a previous

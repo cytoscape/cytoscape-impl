@@ -5,13 +5,12 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.gui.MappingFunctionFactoryManager;
+import org.cytoscape.view.vizmap.gui.internal.CurrentTableService;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.puremvc.java.multicore.patterns.proxy.Proxy;
@@ -60,17 +59,20 @@ public class MappingFunctionFactoryProxy extends Proxy {
 		
 		if (currentColumnName != null && currentTargetDataType != null) {
 			// Remove the factories that don't make sense for the current column type
-			CyTable table = null;
+//			CyTable table = null;
+//			
+//			CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
+//			if(currentTargetDataType == CyColumn.class) {
+//				table = appMgr.getCurrentTable();
+//			} else {
+//				CyNetwork net = appMgr.getCurrentNetwork();
+//				if (net != null) {
+//					table = net.getTable(currentTargetDataType, CyNetwork.DEFAULT_ATTRS);
+//				}
+//			}
 			
-			CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
-			if(currentTargetDataType == CyColumn.class) {
-				table = appMgr.getCurrentTable();
-			} else {
-				CyNetwork net = appMgr.getCurrentNetwork();
-				if (net != null) {
-					table = net.getTable(currentTargetDataType, CyNetwork.DEFAULT_ATTRS);
-				}
-			}
+			var currentTableService = servicesUtil.get(CurrentTableService.class);
+			CyTable table = currentTableService.getCurrentTable(currentTargetDataType);
 			
 			if(table != null) {
 				CyColumn column = table.getColumn(currentColumnName);

@@ -148,7 +148,7 @@ public abstract class AbstractVizMapperMediator extends Mediator implements Visu
 		final VisualStyle curStyle = getVisualStyle();
 		
 		// If the source mapping belongs to the current visual style, update the correspondent property sheet item
-		if (vm.equals(curStyle.getVisualMappingFunction(vp))) {
+		if (curStyle != null && vm.equals(curStyle.getVisualMappingFunction(vp))) {
 			final VisualPropertySheet vpSheet = viewComponent.getVisualPropertySheet(vp.getTargetDataType());
 			
 			if (vpSheet != null) {

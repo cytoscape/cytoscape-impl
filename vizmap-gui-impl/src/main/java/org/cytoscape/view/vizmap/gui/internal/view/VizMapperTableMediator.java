@@ -40,6 +40,10 @@ public class VizMapperTableMediator extends AbstractVizMapperMediator {
 		this.vizMapperTableDialog = vizMapperTableDialog;
 	}
 	
+	public boolean isTableDialogOpen() {
+		return vizMapperTableDialog.isVisible();
+	}
+	
 	@Override
 	public final void onRegister() {
 		super.onRegister();
@@ -71,6 +75,7 @@ public class VizMapperTableMediator extends AbstractVizMapperMediator {
 		
 		var swingApplication = servicesUtil.get(CySwingApplication.class);
 		SwingUtilities.invokeLater(() -> {
+			vizMapperTableDialog.setModal(true);
 			vizMapperTableDialog.setLocationRelativeTo(swingApplication.getJFrame());
 			vizMapperTableDialog.setVisible(true);
 		});

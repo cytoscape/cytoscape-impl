@@ -2,16 +2,12 @@ package org.cytoscape.view.vizmap.internal;
 
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
-import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.slf4j.Logger;
@@ -256,20 +252,6 @@ public abstract class AbstractVisualMappingManager<V> {
 		return defaultStyle;
 	}
 
-	public Set<VisualLexicon> getAllVisualLexicon() {
-		final Set<VisualLexicon> set = new LinkedHashSet<>();
-		final CyApplicationManager appManager = serviceRegistrar.getService(CyApplicationManager.class);
-		
-		for (final NetworkViewRenderer nvRenderer : appManager.getNetworkViewRendererSet()) {
-			final VisualLexicon lexicon = 
-					nvRenderer.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT).getVisualLexicon();
-			
-			if (lexicon != null)
-				set.add(lexicon);
-		}
-		
-		return set;
-	}
 
 	public VisualStyle getCurrentVisualStyle() {
 		return currentStyle;

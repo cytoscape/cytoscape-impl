@@ -131,8 +131,7 @@ public class LegendDialog extends JDialog {
 			final JPanel mappingLegend;
 
 			if (map instanceof ContinuousMapping) {
-				mappingLegend = new ContinuousLegendPanel(visualStyle, (ContinuousMapping) map, appMgr
-						.getCurrentNetwork().getDefaultNodeTable(), servicesUtil);
+				mappingLegend = new ContinuousLegendPanel(visualStyle, (ContinuousMapping) map, appMgr.getCurrentNetwork().getDefaultNodeTable(), servicesUtil);
 			} else if (map instanceof DiscreteMapping) {
 				mappingLegend = new DiscreteLegendPanel((DiscreteMapping<?, ?>) map, servicesUtil);
 			} else if (map instanceof DiscreteMapping) {

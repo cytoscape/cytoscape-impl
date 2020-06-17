@@ -344,6 +344,9 @@ public class CyActivator extends AbstractCyActivator {
 												vizMapperTableMediator,
 												servicesUtil);
 		
+		var currentTableService = new CurrentTableService(servicesUtil, vizMapperTableMediator, vizMapperMediator, attributeSetProxy);
+		registerService(bc, currentTableService, CurrentTableService.class);
+		
 		// Table Panel Context Menu
 		// -------------------------------------------------------------------------------------------------------------
 				
@@ -362,15 +365,16 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, propsProxy);
 		
 		registerAllServices(bc, vizMapperMediator);
+		registerAllServices(bc, vizMapperTableMediator);
 		
+		// MKTODO the table mediator needs to register for some of these
 		registerServiceListener(bc, vizMapperMediator::onCyActionRegistered, vizMapperMediator::onCyActionUnregistered, CyAction.class);
 		registerServiceListener(bc, vizMapperMediator::onTaskFactoryRegistered, vizMapperMediator::onTaskFactoryUnregistered, TaskFactory.class);
 		registerServiceListener(bc, vizMapperMediator::onMappingGeneratorRegistered, vizMapperMediator::onMappingGeneratorUnregistered, DiscreteMappingGenerator.class);
 		
 		registerServiceListener(bc, vizMapperMenuMediator::onRenderingEngineFactoryRegistered, vizMapperMenuMediator::onRenderingEngineFactoryUnregistered, RenderingEngineFactory.class);
 		
-		var vizMapEventHandlerManager = new VizMapEventHandlerManagerImpl(editorManager, attributeSetProxy,
-				servicesUtil, vizMapPropertyBuilder, vizMapperMediator);
+		var vizMapEventHandlerManager = new VizMapEventHandlerManagerImpl(editorManager, attributeSetProxy, servicesUtil, vizMapPropertyBuilder, vizMapperMediator, vizMapperTableMediator);
 		registerServiceListener(bc, vizMapEventHandlerManager::registerPCL, vizMapEventHandlerManager::unregisterPCL, RenderingEngineFactory.class);
 		
 		// Startup the framework
