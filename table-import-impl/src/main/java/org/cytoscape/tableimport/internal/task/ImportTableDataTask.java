@@ -53,7 +53,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -127,7 +127,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	public ListSingleSelection<String> whereImportTable;
 	
 	@Tunable(
-			description = "Where to Import Table Data",
+			description = "Where to Import Table Data:",
 			gravity = 1.0,
 			groups = { "Target Table Data" },
 			xorChildren = true, 
@@ -161,7 +161,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	public ListSingleSelection<String> targetNetworkCollection;
 	
 	@Tunable(
-			description = "Network Collection",
+			description = "Network Collection:",
 			groups = { "Target Table Data", "Select a Network Collection" },
 			gravity = 2.0,
 			xorKey = NETWORK_COLLECTION, 
@@ -179,7 +179,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	public ListSingleSelection<TableType> dataTypeTargetForNetworkCollection;
 
 	@Tunable(
-			description = "Import Data as",
+			description = "Import Data as:",
 			groups = { "Target Table Data", "Select a Network Collection" },
 			gravity = 3.1,
 			xorKey = NETWORK_COLLECTION, 
@@ -246,7 +246,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	public ListSingleSelection<TableType> dataTypeTargetForNetworkList;
 	
 	@Tunable(
-			description = "Import Data as",
+			description = "Import Data as:",
 			groups = { "Target Table Data", "Select Networks" },
 			gravity = 3.2,
 			xorKey = NETWORK_SELECTION, 
@@ -263,7 +263,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	public ListSingleSelection<String> keyColumnForMappingNetworkList;
 	
 	@Tunable(
-			description = "Key Column for Networks",
+			description = "Key Column for Networks:",
 			groups = { "Target Table Data", "Select Networks" },
 			gravity = 3.3,
 			xorKey = NETWORK_SELECTION,
@@ -276,7 +276,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	public void setKeyColumnForMappingNetworkList(ListSingleSelection<String> colList) {	keyColumnForMappingNetworkList = colList;	}
 	
 	@Tunable(
-			description = "Case Sensitive Key Values",
+			description = "Case Sensitive Key Values:",
 			groups = { "Target Table Data", "Select Networks" },
 			gravity = 3.4,
 			xorKey = NETWORK_SELECTION, 
@@ -471,12 +471,39 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 				return;
 		}
 
-		if (getWhereImportTable().getSelectedValue().matches(NETWORK_COLLECTION))
-			mapTableToDefaultAttrs(getDataTypeOptions());
-		if (getWhereImportTable().getSelectedValue().matches(NETWORK_SELECTION))
-			mapTableToLocalAttrs(getDataTypeOptions());
-		if (getWhereImportTable().getSelectedValue().matches(UNASSIGNED_TABLE))
+		var where = getWhereImportTable().getSelectedValue();
+		var tableType = getDataTypeOptions();
+		
+		if (where.matches(NETWORK_COLLECTION)) {
+			// Import to shared columns first, because if a column has to be created,
+			// we must create them as a shared one, as requested by the user
+			mapTableToDefaultAttrs(tableType);
+			
+			// Now try to import to local columns as well (but this should not create local columns!)
+			var rootNet = name2RootMap.get(targetNetworkCollection.getSelectedValue());
+			
+			if (rootNet != null) {
+				var networks = rootNet.getSubNetworkList();
+				mapTableToLocalAttrs(tableType, networks);
+			}
+		} else if (where.matches(NETWORK_SELECTION)) {
+			if (!targetNetworkList.getSelectedValues().isEmpty()) {
+				var networks = new HashSet<CyNetwork>();
+
+				if (!targetNetworkList.getSelectedValues().get(0).equals(NO_NETWORKS)) {
+					for (var netName : targetNetworkList.getSelectedValues()) {
+						var net = name2NetworkMap.get(netName);
+
+						if (net != null)
+							networks.add(net);
+					}
+
+					mapTableToLocalAttrs(tableType, networks);
+				}
+			}
+		} else if (where.matches(UNASSIGNED_TABLE)) {
 			addTable();
+		}
 	}
 	
 	private void updateKeyColumnForMapping() {
@@ -556,29 +583,19 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 				!name.endsWith(".SUID");
 	}
 	
-	private void mapTableToLocalAttrs(final TableType tableType) {
-		final List<CyNetwork> networks = new ArrayList<>();
-
-		if (targetNetworkList.getSelectedValues().isEmpty())
-			return;
-
-		if (!targetNetworkList.getSelectedValues().get(0).equals(NO_NETWORKS))
-			for (String netName : targetNetworkList.getSelectedValues())
-				networks.add(name2NetworkMap.get(netName));
-
-		for (CyNetwork network : networks) {
-			CyTable targetTable = getTable(network, tableType, CyNetwork.LOCAL_ATTRS);
+	private void mapTableToLocalAttrs(TableType tableType, Collection<? extends CyNetwork> networks) {
+		for (var net : networks) {
+			var targetTable = getTable(net, tableType, CyNetwork.LOCAL_ATTRS);
 			
 			if (targetTable != null) {
 				mappedTables.add(targetTable);
 				applyMapping(targetTable, caseSensitiveNetworkKeys);
 			}
-
 		}
 	}
 
-	private void mapTableToDefaultAttrs(final TableType tableType) {
-		final CyTable targetTable = getTable(name2RootMap.get(targetNetworkCollection.getSelectedValue()), tableType,
+	private void mapTableToDefaultAttrs(TableType tableType) {
+		var targetTable = getTable(name2RootMap.get(targetNetworkCollection.getSelectedValue()), tableType,
 				CyRootNetwork.SHARED_DEFAULT_ATTRS);
 		
 		if (targetTable != null) {
