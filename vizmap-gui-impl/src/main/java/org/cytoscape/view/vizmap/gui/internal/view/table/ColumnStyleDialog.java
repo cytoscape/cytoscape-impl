@@ -32,6 +32,7 @@ import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
 
 @SuppressWarnings("serial")
+@Deprecated
 public class ColumnStyleDialog extends JDialog {
 	
 	private final CyServiceRegistrar registrar;

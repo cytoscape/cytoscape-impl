@@ -89,11 +89,6 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 		final ValidatedObjectAndEditString objEditStr = (ValidatedObjectAndEditString) value;
 		final Object validatedObj = objEditStr != null ? objEditStr.getValidatedObject() : null;
 
-		if (validatedObj instanceof Boolean)
-			setFont(iconManager.getIconFont(12.0f));
-		else
-			setFont(defaultFont);
-
 		BrowserTable browserTable = (BrowserTable) table;
 		BrowserTableModel model = (BrowserTableModel) browserTable.getModel();
 		CyTableView tableView = model.getTableView();
@@ -103,9 +98,8 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 		CyColumnView colView = (CyColumnView) tableView.getColumnView(col);
 		
 		// Apply background VP
-		Function<CyRow,Paint> cellPaintMapping = colView.getCellVisualProperty(BasicTableVisualLexicon.CELL_BACKGROUND_PAINT);
-		
 		Color background = UIManager.getColor("Table.background");
+		Function<CyRow,Paint> cellPaintMapping = colView.getCellVisualProperty(BasicTableVisualLexicon.CELL_BACKGROUND_PAINT);
 		if(cellPaintMapping != null) {
 			Paint vpValue = cellPaintMapping.apply(row);
 			if(vpValue instanceof Color) {
@@ -113,6 +107,19 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 			}
 		} 
 		setBackground(background);
+		
+		
+		// Apply font style VP
+		Font font = defaultFont;
+		if (validatedObj instanceof Boolean) {
+			font = iconManager.getIconFont(12.0f);
+		} else {
+			Function<CyRow,Font> cellFontMapping = colView.getCellVisualProperty(BasicTableVisualLexicon.CELL_FONT_FACE);
+			if(cellFontMapping != null) {
+				font = cellFontMapping.apply(row);
+			}
+		}
+		setFont(font);
 		
 		
 		setIcon(objEditStr != null && objEditStr.isEquation() ? EQUATION_ICON : null);
