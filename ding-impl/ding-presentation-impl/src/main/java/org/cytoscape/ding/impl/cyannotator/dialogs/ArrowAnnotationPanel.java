@@ -23,7 +23,6 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.util.swing.ColorButton;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation.AnchorType;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation.ArrowEnd;
 
@@ -57,13 +56,14 @@ public class ArrowAnnotationPanel extends JPanel {
 	private PreviewPanel previewPanel;
 	private ArrowAnnotationImpl preview;
 	
-	private ArrowAnnotation annotation;
+	private ArrowAnnotationImpl annotation;
 
 	public ArrowAnnotationPanel(ArrowAnnotationImpl annotation, PreviewPanel previewPanel) {
 		this.annotation = annotation;
 		this.previewPanel = previewPanel;
 		this.preview = (ArrowAnnotationImpl) previewPanel.getAnnotation();
 
+		initPreview();
 		initComponents();
 	}
 
@@ -74,10 +74,12 @@ public class ArrowAnnotationPanel extends JPanel {
 		var label2 = new JLabel("Line Opacity:");
 		var label3 = new JLabel("Line Width:");
 
-		var lineColorButton = new ColorButton((Color) preview.getLineColor());
+		var lineColor = (Color) annotation.getLineColor();
+		
+		var lineColorButton = new ColorButton(lineColor);
 		lineColorButton.setToolTipText("Select line color...");
 		
-		var lineOpacitySlider = new JSlider(0, 100);
+		var lineOpacitySlider = new JSlider(0, 100, 100);
 
 		var lineColorCheck = new JCheckBox();
 		lineColorCheck.setSelected(annotation.getLineColor() != null);
@@ -91,6 +93,7 @@ public class ArrowAnnotationPanel extends JPanel {
 				lineOpacitySlider.setEnabled(false);
 				preview.setLineColor(null);
 			}
+			
 			previewPanel.repaint();
 		});
 
@@ -104,8 +107,15 @@ public class ArrowAnnotationPanel extends JPanel {
 		lineOpacitySlider.setMinorTickSpacing(25);
 		lineOpacitySlider.setPaintTicks(true);
 		lineOpacitySlider.setPaintLabels(true);
-		lineOpacitySlider.setValue(100);
 		lineOpacitySlider.setEnabled(lineColorCheck.isSelected());
+		
+		int opacity = getOpacity(lineColor);
+		
+		if (opacity != 100 || lineColorCheck.isSelected())
+			lineOpacitySlider.setValue(opacity);
+		else
+			lineOpacitySlider.setEnabled(false);
+		
 		lineOpacitySlider.addChangeListener(evt -> {
 			preview.setLineColor(mixColor(preview.getLineColor(), lineOpacitySlider.getValue()));
 			previewPanel.repaint();
@@ -129,8 +139,8 @@ public class ArrowAnnotationPanel extends JPanel {
 			previewPanel.repaint();
 		});
 
-		var sourcePanel = getArrowPanel(ArrowEnd.SOURCE);
-		var targetPanel = getArrowPanel(ArrowEnd.TARGET);
+		var sourcePanel = createArrowPanel(ArrowEnd.SOURCE);
+		var targetPanel = createArrowPanel(ArrowEnd.TARGET);
 
 		var layout = new GroupLayout(this);
 		setLayout(layout);
@@ -185,11 +195,9 @@ public class ArrowAnnotationPanel extends JPanel {
 		
 		makeSmall(label1, label2, label3);
 		makeSmall(lineColorCheck, lineColorButton, lineOpacitySlider, lineWidthCombo);
-		
-		iModifySAPreview();	
 	}
 
-	public void iModifySAPreview() {
+	private void initPreview() {
 		// Line parameters
 		preview.setLineWidth(annotation.getLineWidth());
 		preview.setLineColor(annotation.getLineColor());
@@ -212,11 +220,7 @@ public class ArrowAnnotationPanel extends JPanel {
 		previewPanel.repaint();
 	}
 
-	public ArrowAnnotationImpl getPreview() {
-		return preview;
-	}
-
-	private JPanel getArrowPanel(ArrowEnd end) {
+	private JPanel createArrowPanel(ArrowEnd end) {
 		var label1 = new JLabel("Shape:");
 		var label2 = new JLabel("Color:");
 		var label3 = new JLabel("Opacity:");
@@ -232,10 +236,12 @@ public class ArrowAnnotationPanel extends JPanel {
 			previewPanel.repaint();
 		});
 
-		var arrowColorButton = new ColorButton((Color) preview.getArrowColor(end));
+		var arrowColor = (Color) preview.getArrowColor(end);
+		
+		var arrowColorButton = new ColorButton(arrowColor);
 		arrowColorButton.setToolTipText("Select arrow color...");
 		
-		var arrowOpacitySlider = new JSlider(0, 100);
+		var arrowOpacitySlider = new JSlider(0, 100, 100);
 		
 		var arrowColorCheck = new JCheckBox();
 		arrowColorCheck.setSelected(annotation.getArrowColor(end) != null);
@@ -261,8 +267,15 @@ public class ArrowAnnotationPanel extends JPanel {
 		arrowOpacitySlider.setMinorTickSpacing(25);
 		arrowOpacitySlider.setPaintTicks(true);
 		arrowOpacitySlider.setPaintLabels(true);
-		arrowOpacitySlider.setValue(100);
-		arrowOpacitySlider.setEnabled(arrowColorCheck.isSelected());
+		arrowOpacitySlider.setEnabled(true);
+		
+		int opacity = getOpacity(arrowColor);
+		
+		if (opacity != 100 || arrowColorCheck.isSelected())
+			arrowOpacitySlider.setValue(opacity);
+		else
+			arrowOpacitySlider.setEnabled(false);
+		
 		arrowOpacitySlider.addChangeListener(evt -> {
 			preview.setArrowColor(end, mixColor(preview.getArrowColor(end), arrowOpacitySlider.getValue()));
 			previewPanel.repaint();
@@ -308,7 +321,7 @@ public class ArrowAnnotationPanel extends JPanel {
 		var arrowPanel = new JPanel();
 		arrowPanel.setBorder(
 				LookAndFeelUtil.createTitledBorder(end == ArrowEnd.TARGET ? "Target Arrow" : "Source Arrow"));
-		
+
 		if (LookAndFeelUtil.isAquaLAF())
 			arrowPanel.setOpaque(false);
 		
@@ -367,11 +380,18 @@ public class ArrowAnnotationPanel extends JPanel {
 		return arrowPanel;
 	}
 
+	/**
+	 * @return value between 1-100
+	 */
+	private int getOpacity(Color c) {
+		return c == null ? 100 : (int) (100 * c.getAlpha() / 255.0);
+	}
+	
 	private Paint mixColor(Paint p, int value) {
 		if (p == null || !(p instanceof Color))
 			return p;
 
-		Color c = (Color) p;
+		var c = (Color) p;
 
 		return new Color(c.getRed(), c.getGreen(), c.getBlue(), value * 255 / 100);
 	}

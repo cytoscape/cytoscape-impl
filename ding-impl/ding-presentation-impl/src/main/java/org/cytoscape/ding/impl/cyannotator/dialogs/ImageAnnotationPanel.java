@@ -72,6 +72,7 @@ public class ImageAnnotationPanel extends JPanel {
 		this.previewPanel = previewPanel;
 		this.preview = (ImageAnnotationImpl) previewPanel.getAnnotation();
 
+		initPreview();
 		initComponents();
 	}
 
@@ -126,19 +127,17 @@ public class ImageAnnotationPanel extends JPanel {
 			}
 		}
 
-		borderWidthCombo.addActionListener(evt -> modifySAPreview());
+		borderWidthCombo.addActionListener(evt -> updatePreview());
 
-		opacitySlider = new JSlider(0, 100);
+		opacitySlider = new JSlider(0, 100, 100);
 		opacitySlider.setMajorTickSpacing(100);
 		opacitySlider.setMinorTickSpacing(25);
 		opacitySlider.setPaintTicks(true);
 		opacitySlider.setPaintLabels(true);
 		opacitySlider.setEnabled(true);
 
-		if (annotation.getImageOpacity() != 100.0 || borderColorCheck.isSelected())
+		if (annotation.getImageOpacity() != 1.0f || borderColorCheck.isSelected())
 			opacitySlider.setValue((int) (annotation.getImageOpacity() * 100));
-		else
-			opacitySlider.setValue(100);
 
 		opacitySlider.addChangeListener(evt -> updateOpacity(opacitySlider.getValue()));
 
@@ -150,12 +149,15 @@ public class ImageAnnotationPanel extends JPanel {
 		brightnessSlider.setValue(0);
 		brightnessSlider.addChangeListener(evt -> updateBrightness(brightnessSlider.getValue()));
 
-		contrastSlider = new JSlider(-100, 100);
+		contrastSlider = new JSlider(-100, 100, 0);
 		contrastSlider.setMajorTickSpacing(100);
 		contrastSlider.setMinorTickSpacing(25);
 		contrastSlider.setPaintTicks(true);
 		contrastSlider.setPaintLabels(true);
-		contrastSlider.setValue(0);
+		
+		if (annotation.getImageContrast() != 0)
+			contrastSlider.setValue(annotation.getImageContrast());
+		
 		contrastSlider.addChangeListener(evt -> updateContrast(contrastSlider.getValue()));
 		
 		var layout = new GroupLayout(this);
@@ -216,8 +218,6 @@ public class ImageAnnotationPanel extends JPanel {
 				)
 		);
 
-		iModifySAPreview();
-		
 		makeSmall(label1, label2, label3, label4, label5, label6);
 		makeSmall(borderColorCheck, borderColorButton, borderOpacitySlider, borderWidthCombo, opacitySlider,
 				brightnessSlider, contrastSlider);
@@ -230,24 +230,22 @@ public class ImageAnnotationPanel extends JPanel {
 			contrastSlider.setVisible(false);
 		}
 	}
-
-	public ImageAnnotationImpl getPreview() {
-		return preview;
-	}
-
-	public void iModifySAPreview() {
+	
+	private void initPreview() {
 		preview.setBorderColor(annotation.getBorderColor());
-		preview.setBorderWidth(Integer.parseInt((String) (borderWidthCombo.getModel().getSelectedItem())));
-		preview.setImageOpacity((float) opacitySlider.getValue() / 100.0f);
-		preview.setImageBrightness(brightnessSlider.getValue());
+		preview.setBorderWidth(annotation.getBorderWidth());
+		preview.setImageOpacity(annotation.getImageOpacity());
+		preview.setImageBrightness(annotation.getImageBrightness());
+		preview.setImageContrast(annotation.getImageContrast());
 		preview.setName(annotation.getName());
-		preview.setImageContrast(contrastSlider.getValue());
+		
 		previewPanel.repaint();
 	}
 
-	public void modifySAPreview() {
-		preview.setBorderWidth(Integer.parseInt((String) (borderWidthCombo.getModel().getSelectedItem())));
+	private void updatePreview() {
+		preview.setBorderWidth(Integer.parseInt((String) borderWidthCombo.getModel().getSelectedItem()));
 		preview.setName(annotation.getName());
+		
 		previewPanel.repaint();
 	}
 
@@ -268,7 +266,7 @@ public class ImageAnnotationPanel extends JPanel {
 	}
 
 	private void updateOpacity(int opacity) {
-		preview.setImageOpacity((float) opacity / 100.0f);
+		preview.setImageOpacity(opacity / 100.0f);
 		previewPanel.repaint();
 	}
 

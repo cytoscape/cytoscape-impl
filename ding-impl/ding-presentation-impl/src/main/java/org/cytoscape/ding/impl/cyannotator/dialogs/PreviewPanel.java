@@ -14,7 +14,6 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
-import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 
 /*
  * #%L
@@ -100,7 +99,7 @@ public class PreviewPanel extends JPanel {
 		repaint();
 	}
 
-	public DingAnnotation getAnnotation() {
+	public AbstractAnnotation getAnnotation() {
 		return annotation;
 	}
 }
