@@ -75,6 +75,7 @@ public class VizMapperTableMediator extends AbstractVizMapperMediator {
 		
 		var swingApplication = servicesUtil.get(CySwingApplication.class);
 		SwingUtilities.invokeLater(() -> {
+			vizMapperTableDialog.setTargetColumn(column);
 			vizMapperTableDialog.setModal(true);
 			vizMapperTableDialog.setLocationRelativeTo(swingApplication.getJFrame());
 			vizMapperTableDialog.setVisible(true);

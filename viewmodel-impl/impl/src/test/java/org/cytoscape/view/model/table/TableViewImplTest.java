@@ -1,6 +1,6 @@
 package org.cytoscape.view.model.table;
 
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_FORMAT;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_FORMAT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -14,8 +14,6 @@ import org.cytoscape.model.TableTestSupport;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.internal.table.CyTableViewImpl;
 import org.junit.Test;
-
-
 /**
  * Add TableViewTestSupport
  * - test basic visual properties
@@ -79,16 +77,16 @@ public class TableViewImplTest {
 		View<CyColumn> colStr = tableView.getColumnView("s");
 		View<CyColumn> colLst = tableView.getColumnView("ls");
 		
-		tableView.setViewDefault(COLUMN_FORMAT, "asdf");
-		colInt.setVisualProperty(COLUMN_FORMAT, "qwerty");
-		colFlt.setVisualProperty(COLUMN_FORMAT, "qwerty");
-		colStr.setVisualProperty(COLUMN_FORMAT, "qwerty");
-		colStr.setLockedValue(COLUMN_FORMAT, "zxcv");
+		tableView.setViewDefault(CELL_FORMAT, "asdf");
+		colInt.setVisualProperty(CELL_FORMAT, "qwerty");
+		colFlt.setVisualProperty(CELL_FORMAT, "qwerty");
+		colStr.setVisualProperty(CELL_FORMAT, "qwerty");
+		colStr.setLockedValue(CELL_FORMAT, "zxcv");
 		
-		assertEquals(colLst.getVisualProperty(COLUMN_FORMAT), "asdf");
-		assertEquals(colInt.getVisualProperty(COLUMN_FORMAT), "qwerty");
-		assertEquals(colFlt.getVisualProperty(COLUMN_FORMAT), "qwerty");
-		assertEquals(colStr.getVisualProperty(COLUMN_FORMAT), "zxcv");
+		assertEquals(colLst.getVisualProperty(CELL_FORMAT), "asdf");
+		assertEquals(colInt.getVisualProperty(CELL_FORMAT), "qwerty");
+		assertEquals(colFlt.getVisualProperty(CELL_FORMAT), "qwerty");
+		assertEquals(colStr.getVisualProperty(CELL_FORMAT), "zxcv");
 	}
 	
 	

@@ -173,6 +173,9 @@ public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 	}
 	
 	public boolean isVisualMappingAllowed() {
+		// MKTODO temp hack
+		if(visualProperty.getIdString().equals("CELL_FORMAT"))
+			return false;
 		return getTargetDataType() != CyNetwork.class && getVisualPropertyDependency() == null;
 	}
 	

@@ -12,6 +12,7 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.table.CyTableView;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
+import org.cytoscape.view.presentation.property.table.CellFormat;
 import org.cytoscape.view.presentation.property.table.TableMode;
 
 /**
@@ -92,12 +93,21 @@ public class TableRenderer implements CyDisposable {
 	
 	public String getColumnFormat(String name) {
 		View<CyColumn> colView = getTableView().getColumnView(name);
-		return colView.getVisualProperty(BasicTableVisualLexicon.COLUMN_FORMAT);
+		CellFormat f = colView.getVisualProperty(BasicTableVisualLexicon.CELL_FORMAT);
+		if(f == null)
+			return null;
+		String format = f.getFormat();
+		if(format == null)
+			return null;
+		if(format.isEmpty())
+			return null;
+		return f.getFormat();
 	}
+	
 	public void setColumnFormat(String name, String format) {
 		View<CyColumn> colView = getTableView().getColumnView(name);
 		if(colView != null) {
-			colView.setVisualProperty(BasicTableVisualLexicon.COLUMN_FORMAT, format);
+			colView.setVisualProperty(BasicTableVisualLexicon.CELL_FORMAT, format);
 		}		
 	}
 	
