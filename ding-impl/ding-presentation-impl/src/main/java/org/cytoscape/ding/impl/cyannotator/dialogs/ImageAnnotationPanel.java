@@ -147,6 +147,10 @@ public class ImageAnnotationPanel extends JPanel {
 		brightnessSlider.setPaintTicks(true);
 		brightnessSlider.setPaintLabels(true);
 		brightnessSlider.setValue(0);
+		
+		if (annotation.getImageBrightness() != 0)
+			brightnessSlider.setValue(annotation.getImageBrightness());
+		
 		brightnessSlider.addChangeListener(evt -> updateBrightness(brightnessSlider.getValue()));
 
 		contrastSlider = new JSlider(-100, 100, 0);
