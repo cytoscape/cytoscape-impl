@@ -130,7 +130,7 @@ public abstract class AbstractAnnotationDialog<T extends AbstractAnnotation> ext
 		hGroup.addComponent(getControlPanel());
 		vGroup.addComponent(getControlPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
 
-		var previewPanel= getPreviewPanel();
+		var previewPanel = getPreviewPanel();
 
 		if (previewPanel != null) {
 			hGroup.addComponent(previewPanel, DEFAULT_SIZE, getPreviewWidth(), Short.MAX_VALUE);
