@@ -14,15 +14,19 @@ import javax.swing.AbstractListModel;
 import javax.swing.GroupLayout;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.cytoscape.ding.impl.cyannotator.annotations.TextAnnotationImpl;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.ColorButton;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
 /*
@@ -50,54 +54,96 @@ import org.cytoscape.view.presentation.annotations.TextAnnotation;
  */
 
 @SuppressWarnings("serial")
-public class TextAnnotationPanel extends JPanel {
+public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotation> {
+	
+	private static final String[] FONT_STYLES = { "Plain", "Bold", "Italic", "Bold and Italic" };
+	private static final String[] FONT_FAMILY_NAMES = GraphicsEnvironment.getLocalGraphicsEnvironment()
+			.getAvailableFontFamilyNames();
+	private static final String[] FONT_SIZES =
+		{ "10", "12", "14", "16", "18", "20", "22", "24", "26", "28", "30", "32", "34", "36" };
 	
 	private JTextField textField;
 	private JList<String> fontSizeList;
 	private JList<String> fontStyleList;
-	private JList<String> fontTypeList;
+	private JList<String> fontFamilyList;
 	private ColorButton textColorButton;
 
-	private PreviewPanel previewPanel;
-	private TextAnnotation annotation;
-	private TextAnnotation preview;
-
-	public TextAnnotationPanel(TextAnnotation annotation, PreviewPanel previewPanel) {
-		this.annotation = annotation;
-		this.previewPanel = previewPanel;
-		this.preview = (TextAnnotation) previewPanel.getAnnotation();
-		
-		initPreview();
-		initComponents();
+	public TextAnnotationEditor(AnnotationFactory<TextAnnotation> factory, CyServiceRegistrar serviceRegistrar) {
+		super(factory, serviceRegistrar);
 	}
 	
-	public String getText() {
-		preview.setText(getTextField().getText()); // Make sure text is updated!
-		
-		return preview.getText();
+	@Override
+	public boolean accepts(Annotation annotation) {
+		return annotation instanceof TextAnnotationImpl;
 	}
+	
+	@Override
+	protected void update() {
+		if (annotation != null) {
+			// Text
+			getTextField().setText(annotation.getText());
+			
+			// Font Style
+			if (annotation.getFont().getStyle() == Font.PLAIN)
+				getFontStyleList().setSelectedValue(FONT_STYLES[0], true);
+			else if (annotation.getFont().getStyle() == Font.BOLD)
+				getFontStyleList().setSelectedValue(FONT_STYLES[1], true);
+			else if (annotation.getFont().getStyle() == Font.ITALIC)
+				getFontStyleList().setSelectedValue(FONT_STYLES[2], true);
+			else
+				getFontStyleList().setSelectedValue(FONT_STYLES[3], true);
+			
+			// Font Family
+			{
+				var model = getFontFamilyList().getModel();
+				var total = model.getSize();
 
-	public Color getTextColor() {
-		return preview.getTextColor();
+				for (int i = 0; i < total; i++) {
+					if (annotation.getFont().getFamily().equals(model.getElementAt(i))) {
+						getFontFamilyList().setSelectedValue(FONT_FAMILY_NAMES[i], true);
+						break;
+					}
+				}
+			}
+			// Font Size
+			{
+				int fontSize = annotation.getFont().getSize();
+
+				if (fontSize % 2 != 0)
+					fontSize++;
+
+				int i = 0;
+
+				var model = getFontSizeList().getModel();
+				var total = model.getSize();
+				
+				for (i = 0; i < total; i++) {
+					if (fontSize == Integer.parseInt(model.getElementAt(i))) {
+						getFontSizeList().setSelectedValue(FONT_SIZES[i], true);
+						break;
+					}
+				}
+
+				if (i == total)
+					getFontSizeList().setSelectedValue(FONT_SIZES[2], true);
+			}
+			
+			// Text Color
+			getTextColorButton().setColor(annotation.getTextColor());
+		}
 	}
-
-	public Font getNewFont() {
-		int fontStyle = 0;
-
-		if (getFontStyleList().getSelectedValue().equals("Plain"))
-			fontStyle = Font.PLAIN;
-		else if (getFontStyleList().getSelectedValue().equals("Bold"))
-			fontStyle = Font.BOLD;
-		else if (getFontStyleList().getSelectedValue().equals("Italic"))
-			fontStyle = Font.ITALIC;
-		else if (getFontStyleList().getSelectedValue().equals("Bold and Italic"))
-			fontStyle = Font.ITALIC + Font.BOLD;
-
-		return new Font((String) getFontTypeList().getSelectedValue(), fontStyle,
-				Integer.parseInt((String) getFontSizeList().getSelectedValue()));
+	
+	@Override
+	protected void apply() {
+		if (annotation != null && !adjusting) {
+			annotation.setFont(getNewFont());
+			annotation.setText(getTextField().getText());	   
+			annotation.setTextColor(getTextColorButton().getColor());
+		}
 	}
-
-	private void initComponents() {
+	
+	@Override
+	protected void init() {
 		setBorder(LookAndFeelUtil.createPanelBorder());
 		
 		var label1 = new JLabel("Text:");
@@ -105,7 +151,7 @@ public class TextAnnotationPanel extends JPanel {
 		var label3 = new JLabel("Style:");
 		var label4 = new JLabel("Size:");
 
-		var scrollPane1 = new JScrollPane(getFontTypeList());
+		var scrollPane1 = new JScrollPane(getFontFamilyList());
 		var scrollPane2 = new JScrollPane(getFontStyleList());
 		var scrollPane3 = new JScrollPane(getFontSizeList());
 
@@ -167,21 +213,21 @@ public class TextAnnotationPanel extends JPanel {
 		layout.setVerticalGroup(vGroup);
 		
 		makeSmall(label1, label2, label3, label4);
-		makeSmall(getTextField(), getTextColorButton(), getFontTypeList(), getFontStyleList(), getFontSizeList());
+		makeSmall(getTextField(), getTextColorButton(), getFontFamilyList(), getFontStyleList(), getFontSizeList());
 		makeSmall(scrollPane1, scrollPane2, scrollPane3);
 	}
 	
 	private JTextField getTextField() {
 		if (textField == null) {
-			textField = new JTextField(annotation.getText());
+			textField = new JTextField();
 			textField.getDocument().addDocumentListener(new DocumentListener() {
 				@Override
 				public void removeUpdate(DocumentEvent evt) {
-					updatePreview();
+					apply();
 				}
 				@Override
 				public void insertUpdate(DocumentEvent evt) {
-					updatePreview();
+					apply();
 				}
 				@Override
 				public void changedUpdate(DocumentEvent evt) {
@@ -195,39 +241,20 @@ public class TextAnnotationPanel extends JPanel {
 	
 	private JList<String> getFontSizeList() {
 		if (fontSizeList == null) {
-			String[] sizeStrings = 
-				{ "10", "12", "14", "16", "18", "20", "22", "24", "26", "28", "30", "32", "34", "36" };
-			
 			fontSizeList = new JList<>();
 			fontSizeList.setModel(new AbstractListModel<>() {
 				@Override
 				public int getSize() {
-					return sizeStrings.length;
+					return FONT_SIZES.length;
 				}
 				@Override
 				public String getElementAt(int i) {
-					return sizeStrings[i];
+					return FONT_SIZES[i];
 				}
 			});
 
-			int fontSize = annotation.getFont().getSize();
-			
-			if (fontSize % 2 != 0)
-				fontSize++;
-
-			int i = 0;
-
-			for (i = 0; i < fontSizeList.getModel().getSize(); i++) {
-				if (fontSize == Integer.parseInt((String) fontSizeList.getModel().getElementAt(i))) {
-					fontSizeList.setSelectedValue(sizeStrings[i], true);
-					break;
-				}
-			}
-
-			if (i == fontSizeList.getModel().getSize())
-				fontSizeList.setSelectedValue(sizeStrings[2], true);
-
-			fontSizeList.addListSelectionListener(evt -> updatePreview());
+			fontSizeList.setSelectedValue(FONT_SIZES[2], true);
+			fontSizeList.addListSelectionListener(evt -> apply());
 		}
 		
 		return fontSizeList;
@@ -235,91 +262,69 @@ public class TextAnnotationPanel extends JPanel {
 	
 	private JList<String> getFontStyleList() {
 		if (fontStyleList == null) {
-			String[] typeStrings = { "Plain", "Bold", "Italic", "Bold and Italic" };
-			
 			fontStyleList = new JList<>();
 			fontStyleList.setModel(new AbstractListModel<>() {
 				@Override
 				public int getSize() {
-					return typeStrings.length;
+					return FONT_STYLES.length;
 				}
 				@Override
 				public String getElementAt(int i) {
-					return typeStrings[i];
+					return FONT_STYLES[i];
 				}
 			});
 
-			if (annotation.getFont().getStyle() == Font.PLAIN)
-				fontStyleList.setSelectedValue(typeStrings[0], true);
-			else if (annotation.getFont().getStyle() == Font.BOLD)
-				fontStyleList.setSelectedValue(typeStrings[1], true);
-			else if (annotation.getFont().getStyle() == Font.ITALIC)
-				fontStyleList.setSelectedValue(typeStrings[2], true);
-			else
-				fontStyleList.setSelectedValue(typeStrings[3], true);
-			
-			fontStyleList.addListSelectionListener(evt -> updatePreview());
+			fontStyleList.setSelectedValue(FONT_STYLES[0], true);
+			fontStyleList.addListSelectionListener(evt -> apply());
 		}
 		
 		return fontStyleList;
 	}
 	
-	private JList<String> getFontTypeList() {
-		if (fontTypeList == null) {
-			var familyStrings = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
-			
-			fontTypeList = new JList<>();
-			fontTypeList.setModel(new AbstractListModel<>() {
+	private JList<String> getFontFamilyList() {
+		if (fontFamilyList == null) {
+			fontFamilyList = new JList<>();
+			fontFamilyList.setModel(new AbstractListModel<>() {
 				@Override
 				public int getSize() {
-					return familyStrings.length;
+					return FONT_FAMILY_NAMES.length;
 				}
 				@Override
 				public String getElementAt(int i) {
-					return familyStrings[i];
+					return FONT_FAMILY_NAMES[i];
 				}
 			});
 
-			for (int i = 0; i < fontTypeList.getModel().getSize(); i++) {
-				if (annotation.getFont().getFamily().equals((String) fontTypeList.getModel().getElementAt(i))) {
-					fontTypeList.setSelectedValue(familyStrings[i], true);
-					break;
-				}
-			}
-
-			fontTypeList.addListSelectionListener(evt -> updatePreview());
+			fontFamilyList.setSelectedValue(UIManager.getFont("Label.font").getFamily(), true);
+			fontFamilyList.addListSelectionListener(evt -> apply());
 		}
 
-		return fontTypeList;
+		return fontFamilyList;
 	}
 	
 	private ColorButton getTextColorButton() {
 		if (textColorButton == null) {
-			textColorButton = new ColorButton(getTextColor());
+			textColorButton = new ColorButton(Color.BLACK);
 			textColorButton.setToolTipText("Select text color...");
-			textColorButton.addPropertyChangeListener("color", evt -> {
-				preview.setTextColor((Color) evt.getNewValue());
-				previewPanel.repaint();
-			});
+			textColorButton.addPropertyChangeListener("color", evt -> apply());
 		}
 
 		return textColorButton;
 	}
-
-	private void initPreview(){
-		preview.setFont(annotation.getFont());
-		preview.setText(annotation.getText());	   
-		preview.setTextColor(annotation.getTextColor());
-		preview.setName(annotation.getName());
-
-		previewPanel.repaint();
-	}
 	
-	private void updatePreview(){
-		preview.setFont(getNewFont());
-		preview.setText(getTextField().getText());	   
-		preview.setName(annotation.getName());
+	private Font getNewFont() {
+		int fontStyle = 0;
 
-		previewPanel.repaint();
+		if (getFontStyleList().getSelectedValue().equals("Plain"))
+			fontStyle = Font.PLAIN;
+		else if (getFontStyleList().getSelectedValue().equals("Bold"))
+			fontStyle = Font.BOLD;
+		else if (getFontStyleList().getSelectedValue().equals("Italic"))
+			fontStyle = Font.ITALIC;
+		else if (getFontStyleList().getSelectedValue().equals("Bold and Italic"))
+			fontStyle = Font.ITALIC + Font.BOLD;
+
+		return new Font(getFontFamilyList().getSelectedValue(), fontStyle,
+				Integer.parseInt(getFontSizeList().getSelectedValue()));
 	}
 }

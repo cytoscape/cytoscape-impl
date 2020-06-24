@@ -11,20 +11,14 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
-import javax.swing.JDialog;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.JToggleButton;
 import javax.swing.JTree;
-import javax.swing.tree.TreePath;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
@@ -55,7 +49,6 @@ import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
 import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
@@ -75,7 +68,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -98,8 +91,7 @@ import org.slf4j.LoggerFactory;
  */
 public class AnnotationMediator implements CyStartListener, CyShutdownListener, SessionAboutToBeLoadedListener,
 		SessionLoadedListener, NetworkViewAddedListener, NetworkViewAboutToBeDestroyedListener,
-		SetCurrentNetworkViewListener, PropertyChangeListener,
-		CytoPanelComponentSelectedListener {
+		SetCurrentNetworkViewListener, PropertyChangeListener, CytoPanelComponentSelectedListener {
 
 	private AnnotationMainPanel mainPanel;
 	private final Map<String, AnnotationFactory<? extends Annotation>> factories = new LinkedHashMap<>();
@@ -121,7 +113,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 	
 	@Override
 	public void handleEvent(CyStartEvent evt) {
-		final HashSet<AnnotationFactory<? extends Annotation>> set = new LinkedHashSet<>(factories.values());
+		var set = new LinkedHashSet<AnnotationFactory<? extends Annotation>>(factories.values());
 		
 		invokeOnEDT(() -> {
 			if (mainPanel == null) {
@@ -200,18 +192,19 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		
 		mainPanel.clearAnnotationButtonSelection();
 		
-		final Set<CyNetworkView> allViews = serviceRegistrar.getService(CyNetworkViewManager.class).getNetworkViewSet();
-		DingRenderer dingRenderer = serviceRegistrar.getService(DingRenderer.class);
+		var allViews = serviceRegistrar.getService(CyNetworkViewManager.class).getNetworkViewSet();
+		var dingRenderer = serviceRegistrar.getService(DingRenderer.class);
 		
 		allViews.forEach(view -> {
-			DRenderingEngine re = dingRenderer.getRenderingEngine(view);
+			var re = dingRenderer.getRenderingEngine(view);
+			
 			if (re != null) {
 				addPropertyListeners(re);
 				addPropertyListeners(re.getCyAnnotator().getAnnotations());
 			}
 		});
 		
-		DRenderingEngine re = getCurrentDRenderingEngine();
+		var re = getCurrentDRenderingEngine();
 		invokeOnEDT(() -> mainPanel.update(re));
 	}
 
@@ -220,8 +213,8 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		if (!appStarted || loadingSession)
 			return;
 		
-		CyNetworkView view = evt.getNetworkView();
-		DRenderingEngine re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
+		var view = evt.getNetworkView();
+		var re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
 		
 		if (re != null) {
 			addPropertyListeners(re);
@@ -231,8 +224,8 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 	
 	@Override
 	public void handleEvent(NetworkViewAboutToBeDestroyedEvent evt) {
-		CyNetworkView view = evt.getNetworkView();
-		DRenderingEngine re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
+		var view = evt.getNetworkView();
+		var re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
 		
 		if (re != null) {
 			removePropertyListeners(re);
@@ -244,8 +237,8 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 	public void handleEvent(SetCurrentNetworkViewEvent evt) {
 		if (appStarted && !loadingSession) {
 			mainPanel.clearAnnotationButtonSelection();
-			CyNetworkView view = evt.getNetworkView();
-			DRenderingEngine re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
+			var view = evt.getNetworkView();
+			var re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
 			
 			invokeOnEDT(() -> mainPanel.update(re));
 		}
@@ -265,36 +258,39 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		if (!appStarted || loadingSession)
 			return;
 		
-		DRenderingEngine re = getCurrentDRenderingEngine();
-		CyAnnotator cyAnnotator = re != null ? re.getCyAnnotator() : null;
+		var re = getCurrentDRenderingEngine();
+		var cyAnnotator = re != null ? re.getCyAnnotator() : null;
 		
-		Object source = evt.getSource();
+		var source = evt.getSource();
 		
 		if (source.equals(cyAnnotator)) {
-			switch(evt.getPropertyName()) {
-			case CyAnnotator.PROP_ANNOTATIONS:
-				// First remove property listeners from deleted annotations and add them to the new ones
-				Set<Annotation> oldList = mainPanel.getAllAnnotations();
-				List<DingAnnotation> newList = cyAnnotator.getAnnotations();
-				oldList.removeAll(newList);
-				removePropertyListeners(oldList);
-				addPropertyListeners((Collection<Annotation>) evt.getNewValue());
-				// Now update the UI
-				invokeOnEDT(() -> mainPanel.update(re));
-				break;
-			case CyAnnotator.PROP_REORDERED:
-				if (re != null && re.equals(mainPanel.getRenderingEngine())) {
-					invokeOnEDT(() -> mainPanel.updateAnnotationsOrder());
-				}
-				break;
+			switch (evt.getPropertyName()) {
+				case CyAnnotator.PROP_ANNOTATIONS:
+					// First remove property listeners from deleted annotations and add them to the new ones
+					var oldList = mainPanel.getAllAnnotations();
+					var newList = cyAnnotator.getAnnotations();
+					oldList.removeAll(newList);
+					removePropertyListeners(oldList);
+					addPropertyListeners((Collection<Annotation>) evt.getNewValue());
+					// Now update the UI
+					invokeOnEDT(() -> mainPanel.update(re));
+					break;
+				case CyAnnotator.PROP_REORDERED:
+					if (re != null && re.equals(mainPanel.getRenderingEngine()))
+						invokeOnEDT(() -> mainPanel.updateAnnotationsOrder());
+					break;
 			}
 		} else if (source instanceof Annotation) {
 			if ("selected".equals(evt.getPropertyName()) && !ignoreSelectedPropChangeEvents) {
-				if (re != null && re.equals(mainPanel.getRenderingEngine())) {
+				if (re != null && re.equals(mainPanel.getRenderingEngine()))
 					invokeOnEDT(() -> mainPanel.setSelected((Annotation) source, (boolean) evt.getNewValue()));
-				}
 			}
 		}
+	}
+	
+	public void editAnnotation(Annotation a) {
+		if (a != null)
+			invokeOnEDT(() -> mainPanel.editAnnotation(a));
 	}
 	
 	public void addAnnotationFactory(AnnotationFactory<? extends Annotation> f, Map<?, ?> props) {
@@ -320,38 +316,43 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 	}
 	
 	private void addAnnotationButton(AnnotationFactory<? extends Annotation> annotationFactory) {
-		final JToggleButton btn = mainPanel.addAnnotationButton(annotationFactory);
+		var btn = mainPanel.addAnnotationButton(annotationFactory);
 		btn.addItemListener(evt -> {
 			int state = evt.getStateChange();
+			
 			if (state == ItemEvent.SELECTED) {
-				DRenderingEngine re = getCurrentDRenderingEngine();
-				if(re != null) {
+				var re = getCurrentDRenderingEngine();
+				
+				if (re != null) {
 					Runnable mousePressedCallback = () -> mainPanel.clearAnnotationButtonSelection();
 					re.getInputHandlerGlassPane().beginClickToAddAnnotation(annotationFactory, mousePressedCallback);
 				}
 			}
+			
+			mainPanel.setCreateMode(state == ItemEvent.SELECTED);
 		});
 	}
 
 	private DRenderingEngine getCurrentDRenderingEngine() {
-		CyNetworkView view = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
-		DRenderingEngine re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
+		var view = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
+		var re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
+		
 		return re;
 	}
 	
 	private void selectAnnotationsFromSelectedRows() {
-		DRenderingEngine re = mainPanel.getRenderingEngine();
+		var re = mainPanel.getRenderingEngine();
 		
 		if (re == null || re.getCyAnnotator() == null)
 			return;
 		
-		final List<DingAnnotation> all = re.getCyAnnotator().getAnnotations();
+		var all = re.getCyAnnotator().getAnnotations();
 		
 		if (all != null && !all.isEmpty()) {
 			ignoreSelectedPropChangeEvents = true;
 			
 			try {
-				final Collection<Annotation> selList = mainPanel.getSelectedAnnotations();
+				var selList = mainPanel.getSelectedAnnotations();
 				all.forEach(a -> a.setSelected(selList.contains(a)));
 			} finally {
 				ignoreSelectedPropChangeEvents = false;
@@ -360,65 +361,69 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 	}
 	
 	private void groupAnnotations() {
-		DRenderingEngine re = mainPanel.getRenderingEngine();
+		var re = mainPanel.getRenderingEngine();
 		
 		if (re == null)
 			return;
 		
-		Collection<DingAnnotation> selList = mainPanel.getSelectedAnnotations(DingAnnotation.class);
+		var selList = mainPanel.getSelectedAnnotations(DingAnnotation.class);
 
 		if (!selList.isEmpty()) {
-			GroupAnnotationsTask task = new GroupAnnotationsTask(re, selList);
+			var task = new GroupAnnotationsTask(re, selList);
 			serviceRegistrar.getService(DialogTaskManager.class).execute(new TaskIterator(task));
 		}
 	}
 	
 	private void ungroupAnnotations() {
-		DRenderingEngine re = mainPanel.getRenderingEngine();
+		var re = mainPanel.getRenderingEngine();
+		
 		if (re == null)
 			return;
 		
-		Collection<GroupAnnotation> selList = mainPanel.getSelectedAnnotations(GroupAnnotation.class);
+		var selList = mainPanel.getSelectedAnnotations(GroupAnnotation.class);
 
 		if (!selList.isEmpty()) {
-			UngroupAnnotationsTask task = new UngroupAnnotationsTask(re, selList);
+			var task = new UngroupAnnotationsTask(re, selList);
 			serviceRegistrar.getService(DialogTaskManager.class).execute(new TaskIterator(task));
 		}
 	}
 	
 	private void removeAnnotations() {
-		DRenderingEngine re = mainPanel.getRenderingEngine();
+		var re = mainPanel.getRenderingEngine();
+		
 		if (re == null)
 			return;
 		
-		Collection<Annotation> selList = mainPanel.getSelectedAnnotations();
+		var selList = mainPanel.getSelectedAnnotations();
 		
 		if (!selList.isEmpty()) {
-			TaskIterator iterator = new TaskIterator(new RemoveAnnotationsTask(re, selList, serviceRegistrar));
+			var iterator = new TaskIterator(new RemoveAnnotationsTask(re, selList, serviceRegistrar));
 			serviceRegistrar.getService(DialogTaskManager.class).execute(iterator);
 		}
 	}
 	
 	private void moveAnnotationsToCanvas(String canvasName) {
-		DRenderingEngine re = mainPanel.getRenderingEngine();
+		var re = mainPanel.getRenderingEngine();
+		
 		if (re == null)
 			return;
 		
 		if (re != null) {
-			DingRenderer dingRenderer = serviceRegistrar.getService(DingRenderer.class);
-			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(dingRenderer, canvasName);
+			var dingRenderer = serviceRegistrar.getService(DingRenderer.class);
+			var factory = new ReorderSelectedAnnotationsTaskFactory(dingRenderer, canvasName);
 			serviceRegistrar.getService(DialogTaskManager.class).execute(factory.createTaskIterator(re.getViewModel()));
 		}
 	}
 	
 	private void reorderAnnotations(String canvas, JTree tree, Shift shift) {
-		DRenderingEngine re = mainPanel.getRenderingEngine();
+		var re = mainPanel.getRenderingEngine();
+		
 		if (re == null)
 			return;
 		
 		if (re != null) {
-			List<DingAnnotation> annotations = mainPanel.getSelectedAnnotations(tree, DingAnnotation.class);
-			ReorderAnnotationsTask task = new ReorderAnnotationsTask(re, annotations, null, shift);
+			var annotations = mainPanel.getSelectedAnnotations(tree, DingAnnotation.class);
+			var task = new ReorderAnnotationsTask(re, annotations, null, shift);
 			serviceRegistrar.getService(DialogTaskManager.class).execute(new TaskIterator(task));
 		}
 	}
@@ -463,43 +468,37 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		if (!e.isPopupTrigger())
 			return;
 
-		DRenderingEngine re = getCurrentDRenderingEngine();
+		var re = getCurrentDRenderingEngine();
+		
 		if (re == null)
 			return;
 		
 		// If the item is not selected, select it first
-		AnnotationNode node = getNodeAt(tree, e.getPoint());
-		List<DingAnnotation> annotations = mainPanel.getSelectedAnnotations(tree, DingAnnotation.class);
+		var node = getNodeAt(tree, e.getPoint());
+		var annotations = mainPanel.getSelectedAnnotations(tree, DingAnnotation.class);
 
 		if (node != null && !annotations.contains(node.getAnnotation()))
 			mainPanel.setSelected((Annotation) node.getAnnotation(), true);
 		
-		final DialogTaskManager taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
-		final DingRenderer dingRenderer = serviceRegistrar.getService(DingRenderer.class);
-		final JPopupMenu popup = new JPopupMenu();
+		var taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
+		var dingRenderer = serviceRegistrar.getService(DingRenderer.class);
+		var popup = new JPopupMenu();
 
 		// Edit
 		{
-			List<DingAnnotation> list = mainPanel.getSelectedAnnotations(tree, DingAnnotation.class);
-			DingAnnotation a = list.size() == 1 ? list.get(0) : null;
+			var list = mainPanel.getSelectedAnnotations(tree, DingAnnotation.class);
+			var a = list.size() == 1 ? list.get(0) : null;
 			
-			JMenuItem mi = new JMenuItem("Modify Annotation...");
-			mi.addActionListener(evt -> {
-				JDialog dialog = a != null ? a.getModifyDialog() : null;
-
-				if (dialog != null) {
-					dialog.setLocationRelativeTo(mainPanel);
-					dialog.setVisible(true);
-				}
-			});
+			var mi = new JMenuItem("Modify Annotation...");
+			mi.addActionListener(evt -> mainPanel.editAnnotation(a));
 			popup.add(mi);
 			mi.setEnabled(a != null && !(a instanceof GroupAnnotation));
 		}
 		popup.addSeparator();
 		// Reorder
 		{
-			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(dingRenderer, Shift.TO_FRONT);
-			JMenuItem mi = new JMenuItem("Bring Annotations to Front");
+			var factory = new ReorderSelectedAnnotationsTaskFactory(dingRenderer, Shift.TO_FRONT);
+			var mi = new JMenuItem("Bring Annotations to Front");
 			mi.addActionListener(evt -> {
 				taskMgr.execute(factory.createTaskIterator(re.getViewModel()));
 			});
@@ -507,8 +506,8 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 			mi.setEnabled(factory.isReady(re.getViewModel()));
 		}
 		{
-			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(dingRenderer, Shift.TO_BACK);
-			JMenuItem mi = new JMenuItem("Send Annotations to Back");
+			var factory = new ReorderSelectedAnnotationsTaskFactory(dingRenderer, Shift.TO_BACK);
+			var mi = new JMenuItem("Send Annotations to Back");
 			mi.addActionListener(evt -> {
 				taskMgr.execute(factory.createTaskIterator(re.getViewModel()));
 			});
@@ -517,12 +516,12 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		}
 		popup.addSeparator();
 		{
-			String text = FOREGROUND.equalsIgnoreCase(tree.getName()) ?
+			var text = FOREGROUND.equalsIgnoreCase(tree.getName()) ?
 					"Push Annotations to Background Layer" : "Pull Annotations to Foreground Layer";
-			String canvasName = FOREGROUND.equalsIgnoreCase(tree.getName()) ? BACKGROUND : FOREGROUND;
-			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(dingRenderer, canvasName);
+			var canvasName = FOREGROUND.equalsIgnoreCase(tree.getName()) ? BACKGROUND : FOREGROUND;
+			var factory = new ReorderSelectedAnnotationsTaskFactory(dingRenderer, canvasName);
 			
-			JMenuItem mi = new JMenuItem(text);
+			var mi = new JMenuItem(text);
 			mi.addActionListener(evt -> taskMgr.execute(factory.createTaskIterator(re.getViewModel())));
 			popup.add(mi);
 			mi.setEnabled(factory.isReady(re.getViewModel()));
@@ -532,8 +531,8 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 	}
 	
 	private AnnotationNode getNodeAt(JTree tree, Point point) {
-		TreePath path = tree.getPathForLocation(point.x, point.y);
+		var path = tree.getPathForLocation(point.x, point.y);
+		
 		return path == null ? null : (AnnotationNode) path.getLastPathComponent();
 	}
-	
 }

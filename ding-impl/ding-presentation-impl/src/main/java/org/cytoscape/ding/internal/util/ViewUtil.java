@@ -126,7 +126,7 @@ public final class ViewUtil {
 		return isLeftClick(e) && isDoubleClick(e);
 	}
 	
-	public static boolean isDragSelectionKeyDown(final InputEvent e) {
+	public static boolean isDragSelectionKeyDown(InputEvent e) {
 		return e.isShiftDown() || isControlOrMetaDown(e);
 	}
 	
@@ -173,6 +173,8 @@ public final class ViewUtil {
 			if (view.getVisualProperty(vp) != Boolean.TRUE)
 				view.setLockedValue(vp, Boolean.TRUE);
 		}
+		
+		annotation.setSelected(true);
 		
 		var cyAnnotator = re.getCyAnnotator();
 		cyAnnotator.addAnnotation(annotation);

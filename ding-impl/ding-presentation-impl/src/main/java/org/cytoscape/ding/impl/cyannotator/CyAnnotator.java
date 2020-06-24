@@ -354,25 +354,21 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 	
 	public boolean contains(Annotation a) {
-		if(a == null)
-			return false;
-		return annotationSet.contains(a);
+		return a == null ? false : annotationSet.contains(a);
 	}
 
 	public void setSelectedAnnotation(DingAnnotation a, boolean selected) {
-		if (selected) {
+		if (selected)
 			annotationSelection.add(a);
-		} else {
+		else
 			annotationSelection.remove(a);
-		}
 	}
 
 	public void clearSelectedAnnotations() {
-		if(annotationSelection.isEmpty())
+		if (annotationSelection.isEmpty())
 			return;
-		for(var a : annotationSelection.getSelectedAnnotations()) {
-			a.setSelected(false);
-		}
+
+		annotationSelection.getSelectedAnnotations().forEach(a -> a.setSelected(false));
 		annotationSelection.clear();
 	}
 
@@ -381,7 +377,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 
 	public void resizeShape(AbstractAnnotation shape) {
-		if(shape == null) {
+		if (shape == null) {
 			resizing = null;
 			resizeBounds = null;
 		} else {

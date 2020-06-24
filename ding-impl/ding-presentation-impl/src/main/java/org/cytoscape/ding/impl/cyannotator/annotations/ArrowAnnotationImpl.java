@@ -12,12 +12,11 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
-import org.cytoscape.ding.impl.cyannotator.dialogs.ArrowAnnotationDialog;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
-import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.View;
@@ -104,19 +103,18 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		}
 
 		public String arrowName() {
-			return this.name;
+			return name;
 		}
 
 		@Override
 		public String toString() {
-			return this.name;
+			return name;
 		}
 	}
 
 	public ArrowAnnotationImpl(DRenderingEngine re, boolean usedForPreviews) {
 		super(re, usedForPreviews);
 	}
-
 
 	public ArrowAnnotationImpl(DRenderingEngine re, Map<String,String> argMap) {
 		super(re, argMap);
@@ -160,6 +158,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			// MKTODO This is a terrible way of looking up the node. What if there are overlapping nodes???
 			target = re.getPicker().getNodeForArrowAnnotation(centerX, centerY);
 		}
+		
 		updateBounds();
 	}
 	
@@ -170,7 +169,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 	@Override
 	public Map<String, String> getArgMap() {
-		Map<String, String> argMap = super.getArgMap();
+		var argMap = super.getArgMap();
 		argMap.put(TYPE, ArrowAnnotation.class.getName());
 
 		if (this.lineColor != null)
@@ -188,12 +187,13 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			argMap.put(SOURCECOLOR, ViewUtils.convertColor(this.sourceColor));
 
 		if (target instanceof Point2D) {
-			Point2D xy = (Point2D) target;
+			var xy = (Point2D) target;
 			argMap.put(TARGETPOINT, Double.toString(xy.getX()) + "," + Double.toString(xy.getY()));
 		} else if (target instanceof Annotation) {
 			argMap.put(TARGETANN, ((DingAnnotation) target).getUUID().toString());
 		} else if (target instanceof View) {
-			View<CyNode> nv = (View<CyNode>) target;
+			var nv = (View<CyNode>) target;
+			
 			if (nv != null) {
 				double xCenter = re.getNodeDetails().getXPosition(nv);
 				double yCenter = re.getNodeDetails().getYPosition(nv);
@@ -212,16 +212,16 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 	@Override
 	public Annotation getSource() { 
-		return this.source;
+		return source;
 	}
-	
 	
 	@Override
 	public void setSource(Annotation source) { 
 		if (this.source != null)
-			((DingAnnotation)source).removeArrow(this);
-		this.source = (DingAnnotation)source; 
+			((DingAnnotation) source).removeArrow(this);
 		
+		this.source = (DingAnnotation) source;
+
 		if (source != null)
 			source.addArrow(this);
 
@@ -230,121 +230,156 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	
 	@Override
 	public Object getTarget() {
-		return this.target; 
+		return target; 
 	}
-	
+
 	@Override
-	public void setTarget(Annotation target) { 
-		this.target = target; 
-		update();
+	public void setTarget(Annotation target) {
+		if (!Objects.equals(this.target, target)) {
+			this.target = target;
+			update();
+		}
 	}
 
 	@Override
 	@Deprecated
-	public void setTarget(CyNode target) { 
+	public void setTarget(CyNode target) {
 		// This is only here for backwards compatibility, do not use
-		View<CyNode> nv = re.getViewModelSnapshot().getNodeView(target);
+		var nv = re.getViewModelSnapshot().getNodeView(target);
 		setTarget(nv);
 	}
-	
-	public void setTarget(View<CyNode> target) { 
-		this.target = target; 
-		update();
+
+	public void setTarget(View<CyNode> target) {
+		if (!Objects.equals(this.target, target)) {
+			this.target = target;
+			update();
+		}
 	}
 
 	@Override
-	public void setTarget(Point2D target) { 
-		this.target = target; 
-		update();
+	public void setTarget(Point2D target) {
+		if (!Objects.equals(this.target, target)) {
+			this.target = target;
+			update();
+		}
 	}
 
 	@Override
-	public double getLineWidth() { 
-		return (double)lineWidth; 
-		
-	}
-	
-	@Override
-	public void setLineWidth(double width) { 
-		this.lineWidth = (float)width; 
-		update();
+	public double getLineWidth() {
+		return lineWidth;
 	}
 
 	@Override
-	public double getArrowSize(ArrowEnd end) { 
-		return (end == ArrowEnd.SOURCE) ? sourceSize : targetSize; 
+	public void setLineWidth(double width) {
+		if (lineWidth != (float) width) {
+			lineWidth = (float) width;
+			update();
+		}
 	}
+
 	@Override
-	public void setArrowSize(ArrowEnd end, double width) { 
-		if (end == ArrowEnd.SOURCE)
-			this.sourceSize = width; 
-		else
-			this.targetSize = width; 
-		update();
+	public double getArrowSize(ArrowEnd end) {
+		return end == ArrowEnd.SOURCE ? sourceSize : targetSize;
+	}
+
+	@Override
+	public void setArrowSize(ArrowEnd end, double width) {
+		if (end == ArrowEnd.SOURCE) {
+			if (sourceSize != width) {
+				sourceSize = width;
+				update();
+			}
+		} else {
+			if (targetSize != width) {
+				targetSize = width;
+				update();
+			}
+		}
 	}
 
 	@Override
 	public String getArrowType(ArrowEnd end) { 
-		return (end == ArrowEnd.SOURCE) ? sourceType.arrowName() : targetType.arrowName(); 
+		return end == ArrowEnd.SOURCE ? sourceType.arrowName() : targetType.arrowName(); 
 	}
 
 	@Override
-	public void setArrowType(ArrowEnd end, String type) { 
+	public void setArrowType(ArrowEnd end, String type) {
 		ArrowType aType = null;
 
-		for (ArrowType t: ArrowType.values()) {
+		for (ArrowType t : ArrowType.values()) {
 			if (t.arrowName().equals(type)) {
 				aType = t;
+				break;
 			}
 		}
 
-		if (aType == null) 
+		if (aType == null)
 			return;
 
-		if (end == ArrowEnd.SOURCE)
-			this.sourceType = aType; 
-		else
-			this.targetType = aType; 
-		update();
+		if (end == ArrowEnd.SOURCE) {
+			if (sourceType != aType) {
+				sourceType = aType;
+				update();
+			}
+		} else {
+			if (targetType != aType) {
+				targetType = aType;
+				update();
+			}
+		}
 	}
 
 	@Override
 	public AnchorType getAnchorType(ArrowEnd end) {
-		return (end == ArrowEnd.SOURCE) ? sourceAnchorType : targetAnchorType; 
+		return end == ArrowEnd.SOURCE ? sourceAnchorType : targetAnchorType;
 	}
 
 	@Override
 	public void setAnchorType(ArrowEnd end, AnchorType type) {
-		if (end == ArrowEnd.SOURCE)
-			this.sourceAnchorType = type;
-		else
-			this.targetAnchorType = type;
-		update();
+		if (end == ArrowEnd.SOURCE) {
+			if (sourceAnchorType != type) {
+				sourceAnchorType = type;
+				update();
+			}
+		} else {
+			if (targetAnchorType != type) {
+				targetAnchorType = type;
+				update();
+			}
+		}
 	}
 
 	@Override
-	public Paint getLineColor() { 
-		return this.lineColor;
+	public Paint getLineColor() {
+		return lineColor;
 	}
 
 	@Override
-	public void setLineColor(Paint clr) { 
-		this.lineColor = clr;
-		update();
+	public void setLineColor(Paint color) {
+		if (!Objects.equals(lineColor, color)) {
+			lineColor = color;
+			update();
+		}
 	}
 
 	@Override
-	public Paint getArrowColor(ArrowEnd end) { 
-		return (end == ArrowEnd.SOURCE) ? sourceColor : targetColor; 
+	public Paint getArrowColor(ArrowEnd end) {
+		return end == ArrowEnd.SOURCE ? sourceColor : targetColor;
 	}
 
 	@Override
-	public void setArrowColor(ArrowEnd end, Paint color) { 
-		if (end == ArrowEnd.SOURCE)
-			this.sourceColor = color; 
-		else
-			this.targetColor = color; 
-		update();
+	public void setArrowColor(ArrowEnd end, Paint color) {
+		if (end == ArrowEnd.SOURCE) {
+			if (!Objects.equals(sourceColor, color)) {
+				sourceColor = color;
+				update();
+			}
+		} else {
+			if (!Objects.equals(targetColor, color)) {
+				targetColor = color;
+				update();
+			}
+		}
 	}
 
 	@Override
@@ -415,12 +450,6 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		updateBounds();
 		super.update();
 	}
-
-	@Override
-	public ArrowAnnotationDialog getModifyDialog() {
-		return new ArrowAnnotationDialog(this, ViewUtil.getActiveWindow(re));
-	}
-
 
 	private void updateBounds() {
 		xOffset = 0.0; yOffset = 0.0;

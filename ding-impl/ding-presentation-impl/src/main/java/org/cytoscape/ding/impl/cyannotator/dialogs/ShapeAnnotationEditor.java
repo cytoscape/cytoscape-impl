@@ -20,15 +20,18 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.ColorButton;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.AnnotationFactory;
+import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation.ShapeType;
 
 /*
@@ -56,7 +59,7 @@ import org.cytoscape.view.presentation.annotations.ShapeAnnotation.ShapeType;
  */
 
 @SuppressWarnings("serial")
-public class ShapeAnnotationPanel extends JPanel {
+public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotation> {
 	
 	private JList<String> shapeList;
 	private JCheckBox fillColorCheck;
@@ -67,22 +70,125 @@ public class ShapeAnnotationPanel extends JPanel {
 	private JSlider borderOpacitySlider;
 	private JComboBox<String> borderWidthCombo;
 
-	private ShapeAnnotationImpl preview;
-	private PreviewPanel previewPanel;
-
-	private ShapeAnnotationImpl annotation;
 	private Shape customShape;
 
-	public ShapeAnnotationPanel(ShapeAnnotationImpl annotation, PreviewPanel previewPanel) {
-		this.annotation = annotation;
-		this.previewPanel = previewPanel;
-		this.preview = (ShapeAnnotationImpl) previewPanel.getAnnotation();
-		
-		initPreview();
-		initComponents();
+	public ShapeAnnotationEditor(AnnotationFactory<ShapeAnnotation> factory, CyServiceRegistrar serviceRegistrar) {
+		super(factory, serviceRegistrar);
 	}
 	
-	private void initComponents() {
+	@Override
+	public boolean accepts(Annotation annotation) {
+		return annotation instanceof ShapeAnnotationImpl;
+	}
+	
+	@Override
+	public void setAnnotation(Annotation annotation) {
+		super.setAnnotation(annotation);
+
+		if (annotation instanceof ShapeAnnotationImpl
+				&& ((ShapeAnnotationImpl) annotation).getShapeTypeEnum() == ShapeType.CUSTOM)
+			customShape = ((ShapeAnnotationImpl) annotation).getShape();
+	}
+	
+	@Override
+	public void update() {
+		if (annotation != null) {
+			// Shape
+			getShapeList().setModel(new AbstractListModel<>() {
+				List<String> typeList;
+				{
+					typeList = new ArrayList<>(annotation.getSupportedShapes());
+
+					// currently no support in UI for creating a custom shape
+					if (annotation instanceof ShapeAnnotationImpl
+							&& ((ShapeAnnotationImpl) annotation).getShapeTypeEnum() != ShapeType.CUSTOM)
+						typeList.remove(ShapeType.CUSTOM.shapeName());
+				}
+
+				@Override
+				public int getSize() {
+					return typeList.size();
+				}
+
+				@Override
+				public String getElementAt(int i) {
+					return typeList.get(i);
+				}
+			});
+			getShapeList().setSelectedValue(annotation.getShapeType(), true);
+			
+			// Fill Color
+			var fillColor = annotation.getFillColor();
+			getFillColorCheck().setSelected(fillColor != null);
+			
+			// Its possible for an app to set the annotation color to a gradient, which won't work
+			if (fillColor instanceof Color) {
+				getFillColorButton().setColor((Color) fillColor);
+			} else if (fillColor != null) {
+				getFillColorButton().setEnabled(false);
+				getFillColorCheck().setEnabled(false);
+				getFillOpacitySlider().setEnabled(false);
+			}
+			
+			// Border Color
+			var borderColor = annotation.getBorderColor();
+			getBorderColorCheck().setSelected(borderColor != null);
+
+			if (borderColor instanceof Color) {
+				getBorderColorButton().setColor((Color) borderColor);
+			} else if (borderColor != null) {
+				getBorderColorButton().setEnabled(false);
+				getBorderColorCheck().setEnabled(false);
+				getBorderOpacitySlider().setEnabled(false);
+			}
+
+			// Fill Opacity
+			if (annotation.getFillOpacity() != 100.0 || getFillColorCheck().isSelected())
+				getFillOpacitySlider().setEnabled(true);
+			
+			getFillOpacitySlider().setValue((int) annotation.getFillOpacity());
+			
+			// Border Opacity
+			if (annotation.getBorderOpacity() != 100.0 || getBorderColorCheck().isSelected())
+				getBorderOpacitySlider().setEnabled(true);
+			
+			getBorderOpacitySlider().setValue((int) annotation.getBorderOpacity());
+			
+			// Border Width
+			{
+				var model = getBorderWidthCombo().getModel();
+
+				for (int i = 0; i < model.getSize(); i++) {
+					if (((int) annotation.getBorderWidth()) == Integer.parseInt(model.getElementAt(i))) {
+						getBorderWidthCombo().setSelectedIndex(i);
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	@Override
+	protected void apply() {
+		if (annotation != null && !adjusting) {
+			var shapeType = getShapeList().getSelectedValue();
+			
+			// CUSTOM will only be available if user started by editing a custom shape
+			if (ShapeType.CUSTOM.shapeName().equals(shapeType))
+				annotation.setCustomShape(customShape); // You can't edit the custom shape, but you can reset it.
+			else
+				annotation.setShapeType(shapeType);
+			
+			annotation.setFillColor(getFillColorCheck().isSelected() ? getFillColorButton().getColor() : null);
+			annotation.setFillOpacity(getFillOpacitySlider().getValue());
+			annotation.setBorderColor(getBorderColorCheck().isSelected() ? getBorderColorButton().getColor() : null);
+			annotation.setBorderOpacity(getBorderOpacitySlider().getValue());
+			annotation.setBorderWidth(Integer.parseInt((String) getBorderWidthCombo().getModel().getSelectedItem()));
+		}
+	}
+
+	@Override
+	protected void init() {
 		setBorder(LookAndFeelUtil.createPanelBorder());
 
 		var label1 = new JLabel("Shape:");
@@ -92,28 +198,8 @@ public class ShapeAnnotationPanel extends JPanel {
 		var label5 = new JLabel("Border Opacity:");
 		var label6 = new JLabel("Border Width:");
 
-		if (annotation.getShapeTypeEnum() == ShapeType.CUSTOM)
-			customShape = annotation.getShape();
-		
 		var scrollPane = new JScrollPane(getShapeList());
 		
-		// Its possible for an app to set the annotation color to a gradient, which won't work
-		var fillColor = preview.getFillColor();
-		
-		if (!(fillColor instanceof Color) && fillColor != null) {
-			getFillColorButton().setEnabled(false);
-			getFillColorCheck().setEnabled(false);
-			getFillOpacitySlider().setEnabled(false);
-		}
-		
-		var borderColor = preview.getBorderColor();
-		
-		if (!(borderColor instanceof Color) && borderColor != null) {
-			getBorderColorButton().setEnabled(false);
-			getBorderColorCheck().setEnabled(false);
-			getBorderOpacitySlider().setEnabled(false);
-		}
-				
 		var layout = new GroupLayout(this);
 		setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
@@ -188,21 +274,8 @@ public class ShapeAnnotationPanel extends JPanel {
 	private JList<String> getShapeList() {
 		if (shapeList == null) {
 			shapeList = new JList<>();
-			shapeList.setModel(new AbstractListModel<>() {
-				List<String> typeList;
-				{
-					typeList = new ArrayList<>(annotation.getSupportedShapes());
-					
-					// currently no support in UI for creating a custom shape
-					if (annotation.getShapeTypeEnum() != ShapeType.CUSTOM)
-						typeList.remove(ShapeType.CUSTOM.shapeName());
-				}
-				@Override public int getSize() { return typeList.size(); }
-				@Override public String getElementAt(int i) { return typeList.get(i); }
-			});
 			shapeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-			shapeList.setSelectedValue(annotation.getShapeType(), true);
-			shapeList.addListSelectionListener(evt -> updatePreview());
+			shapeList.addListSelectionListener(evt -> apply());
 		}
 		
 		return shapeList;
@@ -211,19 +284,10 @@ public class ShapeAnnotationPanel extends JPanel {
 	private JCheckBox getFillColorCheck() {
 		if (fillColorCheck == null) {
 			fillColorCheck = new JCheckBox();
-			fillColorCheck.setSelected(annotation.getFillColor() != null);
 			fillColorCheck.addActionListener(evt -> {
-				if (fillColorCheck.isSelected()) {
-					getFillColorButton().setEnabled(true);
-					getFillOpacitySlider().setEnabled(true);
-					preview.setFillColor(getFillColorButton().getColor());
-				} else {
-					getFillColorButton().setEnabled(false);
-					getFillOpacitySlider().setEnabled(false);
-					preview.setFillColor(null);
-				}
-				
-				previewPanel.repaint();
+				getFillColorButton().setEnabled(fillColorCheck.isSelected());
+				getFillOpacitySlider().setEnabled(fillColorCheck.isSelected());
+				apply();
 			});
 		}
 		
@@ -233,19 +297,10 @@ public class ShapeAnnotationPanel extends JPanel {
 	private JCheckBox getBorderColorCheck() {
 		if (borderColorCheck == null) {
 			borderColorCheck = new JCheckBox();
-			borderColorCheck.setSelected(annotation.getBorderColor() != null);
 			borderColorCheck.addActionListener(evt -> {
-				if (borderColorCheck.isSelected()) {
-					getBorderColorButton().setEnabled(true);
-					getBorderOpacitySlider().setEnabled(true);
-					preview.setBorderColor(getBorderColorButton().getColor());
-				} else {
-					getBorderColorButton().setEnabled(false);
-					getBorderOpacitySlider().setEnabled(false);
-					preview.setBorderColor(null);
-				}
-				
-				previewPanel.repaint();
+				getBorderColorButton().setEnabled(borderColorCheck.isSelected());
+				getBorderOpacitySlider().setEnabled(borderColorCheck.isSelected());
+				apply();
 			});
 		}
 		
@@ -254,15 +309,10 @@ public class ShapeAnnotationPanel extends JPanel {
 	
 	private ColorButton getFillColorButton() {
 		if (fillColorButton == null) {
-			var fillColor = preview.getFillColor();
-			
-			fillColorButton = new ColorButton(fillColor instanceof Color ? (Color) fillColor : Color.GRAY);
+			fillColorButton = new ColorButton(Color.GRAY);
 			fillColorButton.setToolTipText("Select fill color...");
 			fillColorButton.setEnabled(getFillColorCheck().isSelected());
-			fillColorButton.addPropertyChangeListener("color", evt -> {
-				preview.setFillColor((Color) evt.getNewValue());
-				previewPanel.repaint();
-			});
+			fillColorButton.addPropertyChangeListener("color", evt -> apply());
 		}
 		
 		return fillColorButton;
@@ -270,15 +320,10 @@ public class ShapeAnnotationPanel extends JPanel {
 	
 	private ColorButton getBorderColorButton() {
 		if (borderColorButton == null) {
-			var borderColor = preview.getBorderColor();
-			
-			borderColorButton = new ColorButton(borderColor instanceof Color ? (Color) borderColor : Color.BLACK);
+			borderColorButton = new ColorButton(Color.BLACK);
 			borderColorButton.setToolTipText("Select border color...");
 			borderColorButton.setEnabled(getBorderColorCheck().isSelected());
-			borderColorButton.addPropertyChangeListener("color", evt -> {
-				preview.setBorderColor((Color) evt.getNewValue());
-				previewPanel.repaint();
-			});
+			borderColorButton.addPropertyChangeListener("color", evt -> apply());
 		}
 		
 		return borderColorButton;
@@ -286,21 +331,13 @@ public class ShapeAnnotationPanel extends JPanel {
 	
 	private JSlider getFillOpacitySlider() {
 		if (fillOpacitySlider == null) {
-			fillOpacitySlider = new JSlider(0, 100);
+			fillOpacitySlider = new JSlider(0, 100, 100);
 			fillOpacitySlider.setMajorTickSpacing(100);
 			fillOpacitySlider.setMinorTickSpacing(25);
 			fillOpacitySlider.setPaintTicks(true);
 			fillOpacitySlider.setPaintLabels(true);
-
-			if (annotation.getFillOpacity() != 100.0) {
-				fillOpacitySlider.setEnabled(true);
-				fillOpacitySlider.setValue((int) annotation.getFillOpacity());
-			} else {
-				fillOpacitySlider.setValue(100);
-				fillOpacitySlider.setEnabled(false);
-			}
-
-			fillOpacitySlider.addChangeListener(evt -> updateFillOpacity(fillOpacitySlider.getValue()));
+			fillOpacitySlider.setEnabled(false);
+			fillOpacitySlider.addChangeListener(evt -> apply());
 		}
 		
 		return fillOpacitySlider;
@@ -308,21 +345,13 @@ public class ShapeAnnotationPanel extends JPanel {
 	
 	private JSlider getBorderOpacitySlider() {
 		if (borderOpacitySlider == null) {
-			borderOpacitySlider = new JSlider(0, 100);
+			borderOpacitySlider = new JSlider(0, 100, 100);
 			borderOpacitySlider.setMajorTickSpacing(100);
 			borderOpacitySlider.setMinorTickSpacing(25);
 			borderOpacitySlider.setPaintTicks(true);
 			borderOpacitySlider.setPaintLabels(true);
-
-			if (annotation.getBorderOpacity() != 100.0 || getBorderColorCheck().isSelected()) {
-				borderOpacitySlider.setEnabled(true);
-				borderOpacitySlider.setValue((int) annotation.getBorderOpacity());
-			} else {
-				borderOpacitySlider.setValue(100);
-				borderOpacitySlider.setEnabled(false);
-			}
-
-			borderOpacitySlider.addChangeListener(evt -> updateBorderOpacity(borderOpacitySlider.getValue()));
+			borderOpacitySlider.setEnabled(false);
+			borderOpacitySlider.addChangeListener(evt -> apply());
 		}
 		
 		return borderOpacitySlider;
@@ -334,53 +363,9 @@ public class ShapeAnnotationPanel extends JPanel {
 			borderWidthCombo.setModel(new DefaultComboBoxModel<>(
 					new String[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13" }));
 			borderWidthCombo.setSelectedIndex(1);
-
-			for (int i = 0; i < borderWidthCombo.getModel().getSize(); i++) {
-				if (((int) annotation.getBorderWidth()) == Integer.parseInt(borderWidthCombo.getModel().getElementAt(i))) {
-					borderWidthCombo.setSelectedIndex(i);
-					break;
-				}
-			}
-
-			borderWidthCombo.addActionListener(evt -> updatePreview());
+			borderWidthCombo.addActionListener(evt -> apply());
 		}
 		
 		return borderWidthCombo;
-	}
-	
-	private void initPreview(){
-		preview.setBorderWidth(annotation.getBorderWidth());
-		preview.setShapeType(annotation.getShapeType());
-		preview.setFillColor(annotation.getFillColor());
-		preview.setFillOpacity(annotation.getFillOpacity());
-		preview.setBorderColor(annotation.getBorderColor());
-		preview.setBorderOpacity(annotation.getBorderOpacity());
-		preview.setName(annotation.getName());
-
-		previewPanel.repaint();
-	}	
-	
-	private void updatePreview(){
-		preview.setBorderWidth(Integer.parseInt((String) getBorderWidthCombo().getModel().getSelectedItem()));
-		String shapeType = getShapeList().getSelectedValue();
-		
-		if (ShapeType.CUSTOM.shapeName().equals(shapeType)) // This option will only be available if user started by editing a custom shape
-			preview.setCustomShape(customShape); // You can't edit the custom shape, but you can reset it.
-		else
-			preview.setShapeType(shapeType);
-		
-		preview.setName(annotation.getName());
-		
-		previewPanel.repaint();
-	}	    
-
-	private void updateFillOpacity(int opacity) {
-		preview.setFillOpacity((double) opacity);
-		previewPanel.repaint();
-	}
-
-	private void updateBorderOpacity(int opacity) {
-		preview.setBorderOpacity((double) opacity);
-		previewPanel.repaint();
 	}
 }

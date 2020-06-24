@@ -1,8 +1,8 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
-import java.awt.geom.Point2D;
+import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
 
-import javax.swing.SwingUtilities;
+import java.awt.geom.Point2D;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
@@ -51,13 +51,14 @@ public class AddArrowTask extends AbstractTask {
 		tm.setTitle("Add Arrow Annotation");
 		
 		if (re != null && annotationFactory instanceof AbstractDingAnnotationFactory) {
-			SwingUtilities.invokeLater(() -> {
-				var dialog = ((AbstractDingAnnotationFactory<?>) annotationFactory).createAnnotationDialog(re.getViewModel(), location);
-				
-				if (dialog != null) {
-					dialog.setLocation((int) location.getX(), (int) location.getY());
-					dialog.setVisible(true);
-				}
+			invokeOnEDT(() -> {
+				// TODO
+//				var dialog = ((AbstractDingAnnotationFactory<?>) annotationFactory).createView(re.getViewModel(), location);
+//				
+//				if (dialog != null) {
+//					dialog.setLocation((int) location.getX(), (int) location.getY());
+//					dialog.setVisible(true);
+//				}
 			});
 		}
 	}

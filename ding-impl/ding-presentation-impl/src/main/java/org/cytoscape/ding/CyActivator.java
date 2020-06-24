@@ -325,8 +325,9 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Annotation edit
 		{
-			var factory = new EditAnnotationTaskFactory(renderer);
+			var factory = new EditAnnotationTaskFactory(renderer, annotationMediator);
 			var props = new Properties();
+			props.setProperty(ID, "editAnnotationTaskFactory");
 			props.setProperty(PREFERRED_ACTION, "NEW");
 			props.setProperty(MENU_GRAVITY, "2.0");
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);

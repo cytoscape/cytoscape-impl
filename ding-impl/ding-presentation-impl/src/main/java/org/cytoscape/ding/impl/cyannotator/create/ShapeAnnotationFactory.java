@@ -1,16 +1,14 @@
 package org.cytoscape.ding.impl.cyannotator.create;
 
 import java.awt.Color;
-import java.awt.geom.Point2D;
 import java.util.Map;
 
 import javax.swing.Icon;
 
 import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.dialogs.ShapeAnnotationDialog;
+import org.cytoscape.ding.impl.cyannotator.dialogs.ShapeAnnotationEditor;
 import org.cytoscape.ding.internal.util.IconUtil;
-import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
@@ -52,10 +50,8 @@ public class ShapeAnnotationFactory extends AbstractDingAnnotationFactory<ShapeA
 	}
 	
 	@Override
-	public ShapeAnnotationDialog createAnnotationDialog(CyNetworkView view, Point2D location) {
-		var re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
-		
-		return new ShapeAnnotationDialog(re, location, ViewUtil.getActiveWindow(re));
+	public ShapeAnnotationEditor createEditor() {
+		return new ShapeAnnotationEditor(this, serviceRegistrar);
 	}
 
 	@Override

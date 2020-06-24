@@ -9,12 +9,11 @@ import java.awt.Graphics2D;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
 import java.util.Map;
+import java.util.Objects;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
-import org.cytoscape.ding.impl.cyannotator.dialogs.TextAnnotationDialog;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.ding.impl.strokes.EqualDashStroke;
-import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
@@ -171,15 +170,17 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 
 	@Override
 	public void setText(String text) {
-		this.text = text;
-		
-		if (updateNameFromText)
-			name = text != null ? text.trim() : "";
-		
-		if (!usedForPreviews)
-			setSize(getAnnotationWidth(), getAnnotationHeight());
-		
-		update();
+		if (!Objects.equals(text, this.text)) {
+			this.text = text;
+			
+			if (updateNameFromText)
+				name = text != null ? text.trim() : "";
+			
+			if (!usedForPreviews)
+				setSize(getAnnotationWidth(), getAnnotationHeight());
+			
+			update();
+		}
 	}
 
 	@Override
@@ -189,8 +190,10 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 
 	@Override
 	public void setTextColor(Color color) {
-		this.textColor = color;
-		update();
+		if (!Objects.equals(textColor, color)) {
+			textColor = color;
+			update();
+		}
 	}
 
 	@Override
@@ -200,13 +203,16 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 
 	@Override
 	public void setFontSize(double size) {
-		this.fontSize = (float)size;
-		font = font.deriveFont((float)fontSize);
-		if (!usedForPreviews)
-			setSize(getAnnotationWidth(), getAnnotationHeight());
-		update();
-	}
+		if (font == null || font.getSize() != (int) size) {
+			fontSize = (float) size;
+			font = font.deriveFont(fontSize);
 
+			if (!usedForPreviews)
+				setSize(getAnnotationWidth(), getAnnotationHeight());
+
+			update();
+		}
+	}
 
 	@Override
 	public double getFontSize() {
@@ -215,10 +221,14 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 
 	@Override
 	public void setFontStyle(int style) {
-		font = font.deriveFont(style, (float) (fontSize));
-		if (!usedForPreviews)
-			setSize(getAnnotationWidth(), getAnnotationHeight());
-		update();
+		if (font == null || style != font.getStyle()) {
+			font = font.deriveFont(style, fontSize);
+			
+			if (!usedForPreviews)
+				setSize(getAnnotationWidth(), getAnnotationHeight());
+			
+			update();
+		}
 	}
 
 	@Override
@@ -228,10 +238,14 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 
 	@Override
 	public void setFontFamily(String family) {
-		font = new Font(family, font.getStyle(), (int) fontSize);
-		if (!usedForPreviews)
-			setSize(getAnnotationWidth(), getAnnotationHeight());
-		update();
+		if (font == null || (family != null && family.equalsIgnoreCase(font.getFamily()))) {
+			font = new Font(family, font.getStyle(), (int) fontSize);
+			
+			if (!usedForPreviews)
+				setSize(getAnnotationWidth(), getAnnotationHeight());
+			
+			update();
+		}
 	}
 
 	@Override
@@ -246,39 +260,38 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 
 	@Override
 	public void setFont(Font font) {
-		this.font = font;
-		this.fontSize = font.getSize2D();
-		if (!usedForPreviews)
-			setSize(getAnnotationWidth(), getAnnotationHeight());
-		update();
-	}
-
-	@Override
-	public TextAnnotationDialog getModifyDialog() {
-		return new TextAnnotationDialog(this, ViewUtil.getActiveWindow(re));
+		if (!Objects.equals(this.font, font)) {
+			this.font = font;
+			this.fontSize = font.getSize2D();
+			
+			if (!usedForPreviews)
+				setSize(getAnnotationWidth(), getAnnotationHeight());
+			
+			update();
+		}
 	}
 
 	@Override
 	public void setBounds(Rectangle2D newBounds) {
-		if(newBounds.getWidth() == 0 || newBounds.getHeight() == 0)
+		if (newBounds.getWidth() == 0 || newBounds.getHeight() == 0)
 			return;
-			
-		Rectangle2D initialBounds = getBounds();
 
-		if(initialBounds.getWidth() != 0) {
+		var initialBounds = getBounds();
+
+		if (initialBounds.getWidth() != 0) {
 			double factor = newBounds.getWidth() / initialBounds.getWidth();
-			
+
 			double fontSize;
-			if(savedFontSize != 0.0)
-				fontSize = (this.savedFontSize * factor);
+
+			if (savedFontSize != 0.0)
+				fontSize = (savedFontSize * factor);
 			else
 				fontSize = (this.fontSize * factor);
-			
-			
+
 			this.fontSize = (float) fontSize;
-			this.font = font.deriveFont((float)fontSize);
+			this.font = font.deriveFont((float) fontSize);
 		}
-		
+
 		super.setBounds(newBounds);
 		update();
 	}

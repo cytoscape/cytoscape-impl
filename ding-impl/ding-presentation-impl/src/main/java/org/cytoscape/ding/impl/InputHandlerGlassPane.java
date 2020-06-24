@@ -7,7 +7,16 @@ import static java.awt.event.KeyEvent.VK_ESCAPE;
 import static java.awt.event.KeyEvent.VK_LEFT;
 import static java.awt.event.KeyEvent.VK_RIGHT;
 import static java.awt.event.KeyEvent.VK_UP;
-import static org.cytoscape.ding.internal.util.ViewUtil.*;
+import static org.cytoscape.ding.internal.util.ViewUtil.getResizeCursor;
+import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
+import static org.cytoscape.ding.internal.util.ViewUtil.isAdditiveSelect;
+import static org.cytoscape.ding.internal.util.ViewUtil.isControlOrMetaDown;
+import static org.cytoscape.ding.internal.util.ViewUtil.isDoubleLeftClick;
+import static org.cytoscape.ding.internal.util.ViewUtil.isDragSelectionKeyDown;
+import static org.cytoscape.ding.internal.util.ViewUtil.isLeftClick;
+import static org.cytoscape.ding.internal.util.ViewUtil.isLeftMouse;
+import static org.cytoscape.ding.internal.util.ViewUtil.isSingleLeftClick;
+import static org.cytoscape.ding.internal.util.ViewUtil.isSingleRightClick;
 
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
@@ -82,6 +91,7 @@ import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.NetworkTaskFactory;
+import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.task.destroy.DeleteSelectedNodesAndEdgesTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -570,13 +580,14 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		
 		@Override
 		public void mouseClicked(MouseEvent e) {
-			if(isDoubleLeftClick(e)) {
-				NetworkPicker picker = re.getPicker();
+			if (isDoubleLeftClick(e)) {
+				var picker = re.getPicker();
 				
-				if(annotationSelectionEnabled()) {
-					DingAnnotation annotation = picker.getAnnotationAt(e.getPoint());
-					if(annotation != null) {
-						editAnnotation(annotation, e.getPoint());
+				if (annotationSelectionEnabled()) {
+					var annotation = picker.getAnnotationAt(e.getPoint());
+					
+					if (annotation != null) {
+						editAnnotation(annotation);
 						e.consume();
 						return;
 					}
@@ -608,16 +619,16 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			popupMenuHelper.createNetworkViewMenu(p, xformPt, PopupMenuHelper.ACTION_OPEN);
 		}
 		
-		private void editAnnotation(DingAnnotation annotation, Point p) {
+		private void editAnnotation(DingAnnotation annotation) {
 			invokeOnEDT(() -> {
-				DingRenderer dingRenderer = registrar.getService(DingRenderer.class);
-				DialogTaskManager tm = registrar.getService(DialogTaskManager.class);
-				EditAnnotationTaskFactory taskFactory = new EditAnnotationTaskFactory(dingRenderer);
-				tm.execute(taskFactory.createTaskIterator(re.getViewModel(), annotation, p));
+				var tm = registrar.getService(DialogTaskManager.class);
+				var f = registrar.getService(NetworkViewLocationTaskFactory.class, "(id=editAnnotationTaskFactory)");
+
+				if (f instanceof EditAnnotationTaskFactory)
+					tm.execute(((EditAnnotationTaskFactory) f).createTaskIterator(annotation, re.getViewModel()));
 			});
 		}
 	}
-	
 	
 	private class AddEdgeListener extends MouseAdapter {
 		

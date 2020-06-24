@@ -30,6 +30,7 @@ import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
  * #L%
  */
 
+@Deprecated
 @SuppressWarnings("serial")
 public class ShapeAnnotationDialog extends AbstractAnnotationDialog<ShapeAnnotationImpl> {
 
@@ -52,8 +53,8 @@ public class ShapeAnnotationDialog extends AbstractAnnotationDialog<ShapeAnnotat
 	}
 	
 	@Override
-	protected ShapeAnnotationPanel createControlPanel() {
-		return new ShapeAnnotationPanel(annotation, getPreviewPanel());
+	protected ShapeAnnotationEditor createControlPanel() {
+		return null;
 	}
 
 	@Override

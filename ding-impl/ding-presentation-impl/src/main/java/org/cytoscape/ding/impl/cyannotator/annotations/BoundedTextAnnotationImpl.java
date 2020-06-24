@@ -9,11 +9,10 @@ import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.font.FontRenderContext;
 import java.util.Map;
+import java.util.Objects;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
-import org.cytoscape.ding.impl.cyannotator.dialogs.BoundedTextAnnotationDialog;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
-import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.BoundedTextAnnotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
@@ -182,11 +181,6 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	}
 	
 	@Override
-	public BoundedTextAnnotationDialog getModifyDialog() {
-		return new BoundedTextAnnotationDialog(this, ViewUtil.getActiveWindow(re));
-	}
-	
-	@Override
 	public void paint(Graphics graphics, boolean showSelection) {
 		super.paint(graphics, showSelection);
 
@@ -211,16 +205,18 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	@Override
 	public void setText(String text) {
-		this.text = text;
+		if (!Objects.equals(text, this.text)) {
+			this.text = text;
 
-		if (updateNameFromText)
-			name = text != null ? text.trim() : "";
-		
-		if (shapeIsFit)
-			fitShapeToText();
+			if (updateNameFromText)
+				name = text != null ? text.trim() : "";
 
-		updateBounds();
-		update();
+			if (shapeIsFit)
+				fitShapeToText();
+
+			updateBounds();
+			update();
+		}
 	}
 
 	@Override
@@ -230,8 +226,10 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	@Override
 	public void setTextColor(Color color) {
-		this.textColor = color;
-		update();
+		if (!Objects.equals(textColor, color)) {
+			textColor = color;
+			update();
+		}
 	}
 
 	@Override
@@ -242,16 +240,21 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	@Override
 	public void setFontSize(double size) {
 		setFontSize(size, true);
-		update();
 	}
 
-	// A method that can be used for group resizing
+	/**
+	 * A method that can be used for group resizing.
+	 */
 	public void setFontSize(double size, boolean updateBounds) {
-		this.fontSize = (float) size;
-		font = font.deriveFont((float) (fontSize));
-		if (updateBounds)
-			updateBounds();
-		update();
+		if (font == null || font.getSize() != (int) size) {
+			fontSize = (float) size;
+			font = font.deriveFont((float) fontSize);
+
+			if (updateBounds)
+				updateBounds();
+
+			update();
+		}
 	}
 //
 //	public void setFontSizeRelative(double factor) {
@@ -264,7 +267,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	@Override
 	public double getFontSize() {
-		return this.fontSize;
+		return fontSize;
 	}
 
 //	@Override
@@ -275,8 +278,10 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	@Override
 	public void setFontStyle(int style) {
-		font = font.deriveFont(style, (float) (fontSize));
-		update();
+		if (font == null || style != font.getStyle()) {
+			font = font.deriveFont(style, fontSize);
+			update();
+		}
 	}
 
 	@Override
@@ -286,8 +291,10 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	@Override
 	public void setFontFamily(String family) {
-		font = new Font(family, font.getStyle(), (int) fontSize);
-		update();
+		if (font == null || (family != null && family.equalsIgnoreCase(font.getFamily()))) {
+			font = new Font(family, font.getStyle(), (int) fontSize);
+			update();
+		}
 	}
 
 	@Override
@@ -302,10 +309,12 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	@Override
 	public void setFont(Font font) {
-		this.font = font;
-		this.fontSize = font.getSize2D();
-		updateBounds();
-		update();
+		if (!Objects.equals(font, this.font)) {
+			this.font = font;
+			this.fontSize = font.getSize2D();
+			updateBounds();
+			update();
+		}
 	}
 
 	@Override

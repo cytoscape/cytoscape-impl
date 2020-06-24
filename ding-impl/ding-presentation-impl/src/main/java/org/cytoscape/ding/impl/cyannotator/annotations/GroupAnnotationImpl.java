@@ -11,7 +11,6 @@ import java.util.Map;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.IllegalAnnotationStructureException;
-import org.cytoscape.ding.impl.cyannotator.dialogs.AbstractAnnotationDialog;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 
@@ -140,11 +139,6 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 			argMap.put(MEMBERS, members.substring(0, members.length() - 1));
 
 		return argMap;
-	}
-
-	@Override
-	public AbstractAnnotationDialog getModifyDialog() {
-		return null;
 	}
 
 	@Override

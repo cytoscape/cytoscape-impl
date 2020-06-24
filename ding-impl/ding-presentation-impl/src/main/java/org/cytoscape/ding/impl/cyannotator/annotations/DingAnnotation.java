@@ -6,7 +6,6 @@ import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeListener;
 
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.dialogs.AbstractAnnotationDialog;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 
@@ -62,8 +61,6 @@ public interface DingAnnotation extends Annotation {
 	boolean isUsedForPreviews();
 
 	void contentChanged();
-
-	AbstractAnnotationDialog getModifyDialog();
 
 	// Overrides of Component
 	void paint(Graphics g, boolean showSelected);

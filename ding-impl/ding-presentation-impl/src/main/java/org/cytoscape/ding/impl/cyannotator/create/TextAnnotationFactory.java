@@ -1,6 +1,5 @@
 package org.cytoscape.ding.impl.cyannotator.create;
 
-import java.awt.geom.Point2D;
 import java.util.Map;
 
 import javax.swing.Icon;
@@ -8,9 +7,8 @@ import javax.swing.UIManager;
 
 import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.cyannotator.annotations.TextAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.dialogs.TextAnnotationDialog;
+import org.cytoscape.ding.impl.cyannotator.dialogs.TextAnnotationEditor;
 import org.cytoscape.ding.internal.util.IconUtil;
-import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
@@ -52,10 +50,8 @@ public class TextAnnotationFactory extends AbstractDingAnnotationFactory<TextAnn
 	}
 	
 	@Override
-	public TextAnnotationDialog createAnnotationDialog(CyNetworkView view, Point2D location) {
-		var re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
-		
-		return new TextAnnotationDialog(re, location, ViewUtil.getActiveWindow(re));
+	public TextAnnotationEditor createEditor() {
+		return new TextAnnotationEditor(this, serviceRegistrar);
 	}
 
 	@Override

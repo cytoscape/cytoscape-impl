@@ -30,6 +30,7 @@ import org.cytoscape.ding.impl.cyannotator.annotations.BoundedTextAnnotationImpl
  * #L%
  */
 
+@Deprecated
 @SuppressWarnings("serial")
 public class BoundedTextAnnotationDialog extends AbstractAnnotationDialog<BoundedTextAnnotationImpl> {
 
@@ -49,8 +50,8 @@ public class BoundedTextAnnotationDialog extends AbstractAnnotationDialog<Bounde
 	}
 	
 	@Override
-	protected BoundedTextAnnotationPanel createControlPanel() {
-		return new BoundedTextAnnotationPanel(annotation, getPreviewPanel());
+	protected BoundedTextAnnotationEditor createControlPanel() {
+		return null;
 	}
 
 	@Override

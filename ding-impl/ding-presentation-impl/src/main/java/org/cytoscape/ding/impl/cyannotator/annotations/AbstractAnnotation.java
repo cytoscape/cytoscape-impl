@@ -17,7 +17,6 @@ import java.util.UUID;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.dialogs.AbstractAnnotationDialog;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.Annotation;
@@ -339,6 +338,7 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 		if (selected != isSelected()) {
 			cyAnnotator.setSelectedAnnotation(this, selected);
 			pcs.firePropertyChange("selected", !selected, selected);
+			update();
 		}
 	}
 
@@ -415,11 +415,6 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 			// We need to control composite ourselves for previews...
 			g2.setComposite(AlphaComposite.Src);
 		}
-	}
-
-	@Override
-	public AbstractAnnotationDialog getModifyDialog() {
-		return null;
 	}
 
 	@Override

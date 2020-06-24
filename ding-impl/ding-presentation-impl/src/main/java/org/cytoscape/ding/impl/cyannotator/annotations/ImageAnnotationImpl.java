@@ -25,10 +25,8 @@ import org.cytoscape.ding.customgraphics.image.BitmapCustomGraphics;
 import org.cytoscape.ding.customgraphics.image.SVGCustomGraphics;
 import org.cytoscape.ding.customgraphics.image.SVGLayer;
 import org.cytoscape.ding.impl.DRenderingEngine;
-import org.cytoscape.ding.impl.cyannotator.dialogs.ImageAnnotationDialog;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.ding.internal.util.ImageUtil;
-import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.ImageAnnotation;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
@@ -341,8 +339,10 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 	@Override
 	public void setImageOpacity(float opacity) {
-		this.opacity = opacity;
-		update();
+		if (this.opacity != opacity) {
+			this.opacity = opacity;
+			update();
+		}
 	}
 
 	@Override
@@ -462,11 +462,6 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		customGraphicsManager.setUsedInCurrentSession(cg, false);
 	}
 
-	@Override
-	public ImageAnnotationDialog getModifyDialog() {
-		return new ImageAnnotationDialog(this, ViewUtil.getActiveWindow(re));
-	}
-	
 	private Image getModifiedImage() {
 		if (modifiedImage != null)
 			return modifiedImage;

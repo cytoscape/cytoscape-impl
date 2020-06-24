@@ -1,7 +1,6 @@
 package org.cytoscape.ding.impl.cyannotator.create;
 
 import java.awt.Color;
-import java.awt.geom.Point2D;
 import java.util.Map;
 
 import javax.swing.Icon;
@@ -11,9 +10,8 @@ import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsBrowser;
 import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.dialogs.LoadImageDialog;
+import org.cytoscape.ding.impl.cyannotator.dialogs.ImageAnnotationEditor;
 import org.cytoscape.ding.internal.util.IconUtil;
-import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
@@ -58,10 +56,12 @@ public class ImageAnnotationFactory extends AbstractDingAnnotationFactory<ImageA
 	}
 
 	@Override
-	public LoadImageDialog createAnnotationDialog(CyNetworkView view, Point2D location) {
-		var re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
-		
-		return new LoadImageDialog(re, location, ViewUtil.getActiveWindow(re), browser, serviceRegistrar);
+	public ImageAnnotationEditor createEditor() {
+		// TODO Move the image dialog to another place???
+//		var re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
+//		
+//		return new LoadImageDialog(re, location, ViewUtil.getActiveWindow(re), browser, serviceRegistrar);
+		return new ImageAnnotationEditor(this, serviceRegistrar);
 	}
 
 	@Override

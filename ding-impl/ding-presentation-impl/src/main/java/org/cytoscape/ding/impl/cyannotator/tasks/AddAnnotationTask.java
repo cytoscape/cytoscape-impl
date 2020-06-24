@@ -52,13 +52,14 @@ public class AddAnnotationTask extends AbstractTask {
 		
 		if (re != null && annotationFactory instanceof AbstractDingAnnotationFactory) {
 			invokeOnEDT(() -> {
-				var dialog = ((AbstractDingAnnotationFactory<?>) annotationFactory)
-						.createAnnotationDialog(re.getViewModel(), location);
-				
-				if (dialog != null) {
-					dialog.setLocationRelativeTo(re.getComponent());
-					dialog.setVisible(true);
-				}
+				// TODO
+//				var dialog = ((AbstractDingAnnotationFactory<?>) annotationFactory)
+//						.createView(re.getViewModel(), location);
+//				
+//				if (dialog != null) {
+//					dialog.setLocationRelativeTo(re.getComponent());
+//					dialog.setVisible(true);
+//				}
 			});
 		}
 	}
