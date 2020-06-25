@@ -1,9 +1,17 @@
 package org.cytoscape.task.internal.filter;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -164,7 +172,7 @@ public class CreateFilterTaskTest {
 	
 	@Test
 	public void testCreateColumnFilterString() {
-		CreateFilterTask task = new CreateFilterTask(serviceRegistrar, "MyFilter");
+		CreateFilterTask task = new CreateFilterTask(serviceRegistrar, "MyFilter", false);
 		task.jsonTunable.json = "{ \"id\" : \"ColumnFilter\", \"parameters\" : { \"criterion\" : \"1\", \"columnName\" : \"name\", \"predicate\" : \"CONTAINS\"} }";
 		runTask(task);
 		
@@ -179,7 +187,7 @@ public class CreateFilterTaskTest {
 	
 	@Test
 	public void testCreateColumnFilterNumber() {
-		CreateFilterTask task = new CreateFilterTask(serviceRegistrar, "MyFilter");
+		CreateFilterTask task = new CreateFilterTask(serviceRegistrar, "MyFilter", false);
 		task.jsonTunable.json = "{ \"id\" : \"ColumnFilter\", \"parameters\" : { \"predicate\" : \"BETWEEN\", \"criterion\" : [1,1], \"columnName\" : \"name\"} }";
 		runTask(task);
 		
@@ -194,7 +202,7 @@ public class CreateFilterTaskTest {
 	
 	@Test
 	public void testCreateColumnFilterBoolean() {
-		CreateFilterTask task = new CreateFilterTask(serviceRegistrar, "MyFilter");
+		CreateFilterTask task = new CreateFilterTask(serviceRegistrar, "MyFilter", false);
 		task.jsonTunable.json = "{ \"id\" : \"ColumnFilter\", \"parameters\" : { \"criterion\" : false, \"columnName\" : \"name\", \"predicate\" : \"IS\"} }";
 		runTask(task);
 		
@@ -210,7 +218,7 @@ public class CreateFilterTaskTest {
 	
 	@Test
 	public void testCreateColumnFilterCommandBad1() {
-		CreateFilterTask task = new CreateFilterTask(serviceRegistrar, "MyFilter");
+		CreateFilterTask task = new CreateFilterTask(serviceRegistrar, "MyFilter", false);
 		task.jsonTunable.json = "{ \"id\" : \"ColumnFilter\", \"parameters\" : { \"criterion\" : \"1\", \"columnName\" : \"name\", \"predicate\" : \"BLARF\"} }";
 		
 		TaskMonitor tm = mock(TaskMonitor.class);
@@ -220,7 +228,7 @@ public class CreateFilterTaskTest {
 	
 	@Test
 	public void testCreateColumnFilterCommandBad2() {
-		CreateFilterTask task = new CreateFilterTask(serviceRegistrar, "MyFilter");
+		CreateFilterTask task = new CreateFilterTask(serviceRegistrar, "MyFilter", false);
 		task.jsonTunable.json = "{ \"id\" : \"ColumnFilter\", \"parameters\" : { \"criterion\" : \"1\", \"columnName\" : \"name\", \"predicate\" : \"BETWEEN\"} }";
 		
 		TaskMonitor tm = mock(TaskMonitor.class);
@@ -230,7 +238,7 @@ public class CreateFilterTaskTest {
 	
 	@Test
 	public void testCreateColumnFilterCommandBad3() {
-		CreateFilterTask task = new CreateFilterTask(serviceRegistrar, "MyFilter");
+		CreateFilterTask task = new CreateFilterTask(serviceRegistrar, "MyFilter", false);
 		task.jsonTunable.json = "{ \"id\" : \"ColumnFilter\", \"parameters\" : { \"criterion\" : [1,1], \"columnName\" : \"name\", \"predicate\" : \"IS\"} }";
 		
 		TaskMonitor tm = mock(TaskMonitor.class);
@@ -240,7 +248,7 @@ public class CreateFilterTaskTest {
 	
 	@Test
 	public void testCreateColumnFilterCommandBad4() {
-		CreateFilterTask task = new CreateFilterTask(serviceRegistrar, "MyFilter");
+		CreateFilterTask task = new CreateFilterTask(serviceRegistrar, "MyFilter", false);
 		task.jsonTunable.json = "{ \"id\" : \"ColumnFilter\", \"parameters\" : { \"criterion\" : false, \"columnName\" : \"name\", \"predicate\" : \"BETWEEN\"} }";
 		
 		TaskMonitor tm = mock(TaskMonitor.class);
@@ -251,7 +259,7 @@ public class CreateFilterTaskTest {
 	
 	@Test
 	public void testCreateDegreeFilter() {
-		CreateFilterTask task = new CreateFilterTask(serviceRegistrar, "MyFilter");
+		CreateFilterTask task = new CreateFilterTask(serviceRegistrar, "MyFilter", false);
 		task.jsonTunable.json = "{ \"id\" : \"DegreeFilter\", \"parameters\" : { \"predicate\" : \"BETWEEN\", \"criterion\" : [ 0, 1 ], \"edgeType\" : \"ANY\" } }";
 		runTask(task);
 		
@@ -266,7 +274,7 @@ public class CreateFilterTaskTest {
 	
 	@Test
 	public void testCreateTopologyFilter() {
-		CreateFilterTask task = new CreateFilterTask(serviceRegistrar, "MyFilter");
+		CreateFilterTask task = new CreateFilterTask(serviceRegistrar, "MyFilter", false);
 		String subFilterJson  = "{ \"id\" : \"ColumnFilter\", \"parameters\" : { \"criterion\" : \"1\", \"columnName\" : \"name\", \"predicate\" : \"CONTAINS\"} }";
 		task.jsonTunable.json = "{ \"id\" : \"TopologyFilter\", \"parameters\" : { \"predicate\" : \"GREATER_THAN_OR_EQUAL\", \"distance\" : 3, \"threshold\" : 2, \"type\" : \"ALL\" }, \"transformers\" : [ " + subFilterJson + "] }";
 		runTask(task);
@@ -289,7 +297,7 @@ public class CreateFilterTaskTest {
 	
 	@Test
 	public void testCreateCompositeFilter() {
-		CreateFilterTask task = new CreateFilterTask(serviceRegistrar, "MyFilter");
+		CreateFilterTask task = new CreateFilterTask(serviceRegistrar, "MyFilter", false);
 		String subFilterJson  = "{ \"id\" : \"ColumnFilter\", \"parameters\" : { \"criterion\" : \"1\", \"columnName\" : \"name\", \"predicate\" : \"CONTAINS\"} }";
 		task.jsonTunable.json = "{ \"id\" : \"org.cytoscape.CompositeFilter\", \"parameters\" : { \"type\" : \"ALL\" }, \"transformers\" : [ " + subFilterJson + " ] }";
 		runTask(task);
