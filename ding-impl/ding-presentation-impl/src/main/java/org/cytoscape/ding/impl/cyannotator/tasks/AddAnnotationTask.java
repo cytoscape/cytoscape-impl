@@ -1,11 +1,16 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
+import static java.util.Collections.emptyMap;
 import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
 
 import java.awt.Point;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
+import org.cytoscape.ding.impl.cyannotator.create.ImageAnnotationFactory;
+import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
+import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
@@ -38,28 +43,61 @@ public class AddAnnotationTask extends AbstractTask {
 
 	private final DRenderingEngine re;
 	private final Point location;
-	private final AnnotationFactory<?> annotationFactory; 
+	private final AnnotationFactory annotationFactory;
 
-	public AddAnnotationTask(DRenderingEngine re, Point location, AnnotationFactory<?> annotationFactory) {
+	public AddAnnotationTask(
+			DRenderingEngine re,
+			Point location,
+			AnnotationFactory<?> annotationFactory
+	) {
 		this.re = re;
-		this.location = location;
+		this.location = location != null ? location : re.getComponentCenter();
 		this.annotationFactory = annotationFactory;
 	}
 
 	@Override
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setTitle("Add Annotation");
 		
 		if (re != null && annotationFactory instanceof AbstractDingAnnotationFactory) {
 			invokeOnEDT(() -> {
-				// TODO
-//				var dialog = ((AbstractDingAnnotationFactory<?>) annotationFactory)
-//						.createView(re.getViewModel(), location);
-//				
-//				if (dialog != null) {
-//					dialog.setLocationRelativeTo(re.getComponent());
-//					dialog.setVisible(true);
-//				}
+				re.getCyAnnotator().markUndoEdit("Create " + annotationFactory.getName() + " Annotation");
+				
+				var view = re.getViewModel();
+				final Annotation annotation;
+				
+				if (annotationFactory instanceof ImageAnnotationFactory) {
+					var dialog = ((ImageAnnotationFactory) annotationFactory).createLoadImageDialog(view, location);
+					dialog.setVisible(true);
+					annotation = dialog.getAnnotation();
+					
+					if (annotation == null)
+						return;
+				} else {
+					annotation = annotationFactory.createAnnotation(annotationFactory.getType(), view, emptyMap());
+				}
+				
+				var editor = ((AbstractDingAnnotationFactory) annotationFactory).getEditor();
+				
+				// No need to set the new annotation to the editor now,
+				// so just ask the editor to apply the previous styles
+				if (editor != null)
+					editor.apply(annotation);
+				
+				if (annotation instanceof DingAnnotation) {
+					var annotationLocation = re.getTransform().getNodeCoordinates(location);
+					((DingAnnotation) annotation).setLocation(annotationLocation.getX(), annotationLocation.getY());
+					annotation.update();
+				}
+				
+				re.getCyAnnotator().addAnnotation(annotation);
+				
+				// Select only the new annotation
+				if (annotation instanceof DingAnnotation) {
+					re.getCyAnnotator().clearSelectedAnnotations();
+					ViewUtils.selectAnnotation(re, (DingAnnotation) annotation);
+				}
 			});
 		}
 	}

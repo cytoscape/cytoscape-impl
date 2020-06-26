@@ -440,6 +440,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		updateMoveToCanvasButtons();
 	}
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	void updateEditPanel() {
 		// Remove annotation from current editor
 		if (getEditPanel().getComponentCount() > 0) {
@@ -480,7 +481,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 					var f = btn.getFactory();
 					
 					if (f instanceof AbstractDingAnnotationFactory) {
-						var comp = ((AbstractDingAnnotationFactory<?>) f).getEditor();
+						var comp = ((AbstractDingAnnotationFactory) f).getEditor();
 					
 						if (comp != null) {
 							comp.setAnnotation(annotation);
@@ -1287,19 +1288,19 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			setHorizontalAlignment(LEFT);
 			
 			if (value instanceof AnnotationNode) {
-				Annotation annotation = ((AnnotationNode) value).getAnnotation();
-				if(annotation != null) {
-//					DingAnnotation da = (DingAnnotation)annotation;
-//					setText(annotation.getName() + " (" + da.getCanvasName() + " z:" + da.getCanvas().getComponentZOrder(da.getComponent()) + ")");
+				var annotation = ((AnnotationNode) value).getAnnotation();
+				
+				if (annotation != null) {
 					setText(annotation.getName());
 					setToolTipText(annotation.getName());
 					setIconTextGap(8);
 				}
+				
 				if (annotation instanceof GroupAnnotation) {
 					setOpenIcon(getOpenAnnotationIcon());
 					setClosedIcon(getClosedAnnotationIcon());
 				} else {
-					Icon icon = getAnnotationIcon(annotation);
+					var icon = getAnnotationIcon(annotation);
 					setLeafIcon(icon);
 					setIcon(icon);
 				}

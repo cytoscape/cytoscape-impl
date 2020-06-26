@@ -25,6 +25,7 @@ import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.cytoscape.ding.impl.cyannotator.annotations.TextAnnotationImpl;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.ColorButton;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
@@ -97,17 +98,19 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 				var model = getFontFamilyCombo().getModel();
 				var total = model.getSize();
 
-				for (int i = 0; i < total; i++) {
-					if (annotation.getFont().getFamily().equals(model.getElementAt(i))) {
-						getFontFamilyCombo().setSelectedItem(FONTS[i]);
-						
-						break;
+				if (annotation.getFont() != null) {
+					for (int i = 0; i < total; i++) {
+						if (annotation.getFont().getFamily().equals(model.getElementAt(i).getFamily())) {
+							getFontFamilyCombo().setSelectedItem(FONTS[i]);
+							
+							break;
+						}
 					}
 				}
 			}
 			// Font Size
 			{
-				int fontSize = annotation.getFont().getSize();
+				int fontSize = annotation.getFont() != null ? annotation.getFont().getSize() : FONT_SIZES[2];
 
 				if (fontSize % 2 != 0)
 					fontSize++;
@@ -131,12 +134,14 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 			
 			// Text Color
 			getTextColorButton().setColor(annotation.getTextColor());
+		} else {
+			getTextField().setText(TextAnnotationImpl.DEF_TEXT);
 		}
 	}
 	
 	@Override
-	protected void apply() {
-		if (annotation != null && !adjusting) {
+	public void apply(TextAnnotation annotation) {
+		if (annotation != null) {
 			annotation.setFont(getNewFont());
 			annotation.setText(getTextField().getText());	   
 			annotation.setTextColor(getTextColorButton().getColor());

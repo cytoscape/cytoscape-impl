@@ -10,6 +10,8 @@ import java.awt.geom.Point2D;
 import java.util.Map;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
@@ -195,4 +197,24 @@ public class ViewUtils {
 		return new Point2D.Double(nextLocn[0], nextLocn[1]);
 	}
 
+	/**
+	 * Force-select the passed annotation. If the annotation selection mode is off, this also turns it on.
+	 */
+	public static void selectAnnotation(DRenderingEngine re, DingAnnotation annotation) {
+		var lexicon = re.getVisualLexicon();
+		var vp = lexicon.lookup(CyNetwork.class, "NETWORK_ANNOTATION_SELECTION");
+		
+		if (vp != null) {
+			var view = re.getViewModel();
+			
+			if (view.getVisualProperty(vp) != Boolean.TRUE)
+				view.setLockedValue(vp, Boolean.TRUE);
+		}
+		
+		annotation.setSelected(true);
+		
+		var cyAnnotator = re.getCyAnnotator();
+		cyAnnotator.addAnnotation(annotation);
+		cyAnnotator.setSelectedAnnotation(annotation, true);
+	}
 }

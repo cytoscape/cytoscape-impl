@@ -20,7 +20,7 @@ import javax.swing.JPanel;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
-import org.cytoscape.ding.internal.util.ViewUtil;
+import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 /*
@@ -107,7 +107,11 @@ public abstract class AbstractAnnotationDialog<T extends AbstractAnnotation> ext
 		setName(name);
 		init();
 	}
-
+	
+	public T getAnnotation() {
+		return annotation;
+	}
+	
 	protected void init() {
 		setTitle((create ? "Create " : "Modify ") + getName() + " Annotation");
 		
@@ -182,7 +186,7 @@ public abstract class AbstractAnnotationDialog<T extends AbstractAnnotation> ext
 					if (annotation != null) {
 						cyAnnotator.addAnnotation(annotation);
 						cyAnnotator.clearSelectedAnnotations();
-						ViewUtil.selectAnnotation(re, annotation);
+						ViewUtils.selectAnnotation(re, annotation);
 						cyAnnotator.postUndoEdit(); // TODO test
 					}
 				}
@@ -203,10 +207,6 @@ public abstract class AbstractAnnotationDialog<T extends AbstractAnnotation> ext
 		}
 		
 		return cancelButton;
-	}
-	
-	protected T getAnnotation() {
-		return annotation;
 	}
 	
 	protected abstract JComponent createControlPanel();

@@ -35,7 +35,6 @@ import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.utils.ShapeIcon;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.ColorButton;
-import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation.ShapeType;
@@ -83,7 +82,7 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 	}
 	
 	@Override
-	public void setAnnotation(Annotation annotation) {
+	public void setAnnotation(ShapeAnnotation annotation) {
 		super.setAnnotation(annotation);
 
 		if (annotation instanceof ShapeAnnotationImpl
@@ -93,6 +92,8 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 	
 	@Override
 	public void update() {
+		// Only update the fields if the new annotation is not null,
+		// because we want to save the previous set values for when a new annotation is created...
 		if (annotation != null) {
 			// Shape
 			getShapeList().setSelectedValue(annotation.getShapeType(), true);
@@ -149,8 +150,8 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 	}
 
 	@Override
-	protected void apply() {
-		if (annotation != null && !adjusting) {
+	public void apply(ShapeAnnotation annotation) {
+		if (annotation != null) {
 			var shapeType = getShapeList().getSelectedValue();
 			
 			// CUSTOM will only be available if user started by editing a custom shape

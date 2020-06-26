@@ -101,8 +101,8 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 	}
 
 	@Override
-	protected void apply() {
-		if (annotation != null && !adjusting) {
+	public void apply(ArrowAnnotation annotation) {
+		if (annotation != null) {
 			// Line Color and Opacity
 			if (getLineColorCheck().isSelected())
 				annotation.setLineColor(mixColor(getLineColorButton().getColor(), getLineOpacitySlider().getValue()));

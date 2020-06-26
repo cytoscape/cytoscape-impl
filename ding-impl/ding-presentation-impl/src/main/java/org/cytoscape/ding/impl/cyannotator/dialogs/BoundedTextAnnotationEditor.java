@@ -7,7 +7,6 @@ import javax.swing.GroupLayout;
 
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.BoundedTextAnnotation;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
@@ -40,8 +39,8 @@ import org.cytoscape.view.presentation.annotations.TextAnnotation;
 @SuppressWarnings("serial")
 public class BoundedTextAnnotationEditor extends AbstractAnnotationEditor<BoundedTextAnnotation> {
 	
-	private TextAnnotationEditor textAnnotationPanel;
-	private ShapeAnnotationEditor shapeAnnotationPanel;
+	private TextAnnotationEditor textAnnotationEditor;
+	private ShapeAnnotationEditor shapeAnnotationEditor;
 	
 	public BoundedTextAnnotationEditor(
 			AnnotationFactory<BoundedTextAnnotation> factory,
@@ -51,27 +50,29 @@ public class BoundedTextAnnotationEditor extends AbstractAnnotationEditor<Bounde
 	}
 	
 	@Override
-	public void setAnnotation(Annotation annotation) {
+	public void setAnnotation(BoundedTextAnnotation annotation) {
 		super.setAnnotation(annotation);
 		
 		if (annotation instanceof TextAnnotation)
-			getTextAnnotationPanel().setAnnotation(annotation);
+			getTextAnnotationEditor().setAnnotation((TextAnnotation) annotation);
 		
 		if (annotation instanceof ShapeAnnotation)
-			getShapeAnnotationPanel().setAnnotation(annotation);
+			getShapeAnnotationEditor().setAnnotation(annotation);
 	}
 	
 	@Override
 	protected void update() {
-		getTextAnnotationPanel().update();
-		getShapeAnnotationPanel().update();
+		getTextAnnotationEditor().update();
+		getShapeAnnotationEditor().update();
 	}
 
 	@Override
-	protected void apply() {
+	public void apply(BoundedTextAnnotation annotation) {
 		if (!adjusting) {
-			getTextAnnotationPanel().apply();
-			getShapeAnnotationPanel().apply();
+			if (annotation instanceof TextAnnotation)
+				getTextAnnotationEditor().apply((TextAnnotation) annotation);
+			
+			getShapeAnnotationEditor().apply(annotation);
 		}
 	}
 	
@@ -83,30 +84,30 @@ public class BoundedTextAnnotationEditor extends AbstractAnnotationEditor<Bounde
 		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
-				.addComponent(getTextAnnotationPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(getShapeAnnotationPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getTextAnnotationEditor(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getShapeAnnotationEditor(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addComponent(getTextAnnotationPanel())
-				.addComponent(getShapeAnnotationPanel())
+				.addComponent(getTextAnnotationEditor())
+				.addComponent(getShapeAnnotationEditor())
 		);
 	}
 	
-	protected TextAnnotationEditor getTextAnnotationPanel() {
-		if (textAnnotationPanel == null) {
-			textAnnotationPanel = new TextAnnotationEditor(null, serviceRegistrar);
-			textAnnotationPanel.init();
+	protected TextAnnotationEditor getTextAnnotationEditor() {
+		if (textAnnotationEditor == null) {
+			textAnnotationEditor = new TextAnnotationEditor(null, serviceRegistrar);
+			textAnnotationEditor.init();
 		}
 		
-		return textAnnotationPanel;
+		return textAnnotationEditor;
 	}
 	
-	protected ShapeAnnotationEditor getShapeAnnotationPanel() {
-		if (shapeAnnotationPanel == null) {
-			shapeAnnotationPanel = new ShapeAnnotationEditor(null, serviceRegistrar);
-			textAnnotationPanel.init();
+	protected ShapeAnnotationEditor getShapeAnnotationEditor() {
+		if (shapeAnnotationEditor == null) {
+			shapeAnnotationEditor = new ShapeAnnotationEditor(null, serviceRegistrar);
+			shapeAnnotationEditor.init();
 		}
 		
-		return shapeAnnotationPanel;
+		return shapeAnnotationEditor;
 	}
 }

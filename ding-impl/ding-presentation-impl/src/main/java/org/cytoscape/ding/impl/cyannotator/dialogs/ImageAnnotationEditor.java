@@ -99,6 +99,11 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 			opacitySlider.setValue((int) (annotation.getImageOpacity() * 100));
 			brightnessSlider.setValue(annotation.getImageBrightness());
 			contrastSlider.setValue(annotation.getImageContrast());
+		} else {
+			// Reset these image adjustments fields (we don't want new images to appear damaged to the user)
+			opacitySlider.setValue(100);
+			brightnessSlider.setValue(0);
+			contrastSlider.setValue(0);
 		}
 		
 		// Hide fields not applied to SVG images
@@ -110,8 +115,8 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 	}
 	
 	@Override
-	protected void apply() {
-		if (annotation != null && !adjusting) {
+	public void apply(ImageAnnotation annotation) {
+		if (annotation != null) {
 			annotation.setBorderColor(borderColorCheck.isSelected() ? borderColorButton.getColor() : null);
 			annotation.setBorderWidth(Integer.parseInt((String) borderWidthCombo.getModel().getSelectedItem()));
 			annotation.setBorderOpacity(borderOpacitySlider.getValue());
@@ -153,7 +158,7 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 		borderWidthCombo = new JComboBox<>();
 		borderWidthCombo.setModel(new DefaultComboBoxModel<String>(
 				new String[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13" }));
-		borderWidthCombo.setSelectedIndex(1);
+		borderWidthCombo.setSelectedIndex(0);
 		borderWidthCombo.addActionListener(evt -> apply());
 
 		opacitySlider = new JSlider(0, 100, 100);
@@ -163,12 +168,11 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 		opacitySlider.setPaintLabels(true);
 		opacitySlider.addChangeListener(evt -> apply());
 
-		brightnessSlider = new JSlider(-100, 100);
+		brightnessSlider = new JSlider(-100, 100, 0);
 		brightnessSlider.setMajorTickSpacing(100);
 		brightnessSlider.setMinorTickSpacing(25);
 		brightnessSlider.setPaintTicks(true);
 		brightnessSlider.setPaintLabels(true);
-		brightnessSlider.setValue(0);
 		brightnessSlider.addChangeListener(evt -> apply());
 
 		contrastSlider = new JSlider(-100, 100, 0);

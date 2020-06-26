@@ -59,21 +59,16 @@ public abstract class AbstractAnnotationEditor<T extends Annotation> extends JPa
 	 *  
 	 * @param annotation The annotation to be edited or null. 
 	 */
-	@SuppressWarnings("unchecked")
-	public void setAnnotation(Annotation annotation) {
+	public void setAnnotation(T annotation) {
 		if (!Objects.equals(this.annotation, annotation)) {
 			this.annotation = (T) annotation;
 			
-			// Only update the fields if the new annotation is not null,
-			// because we want to save the previous set values for when a new annotation is created
-			if (annotation != null) {
-				adjusting = true;
-				
-				try {
-					update();
-				} finally {
-					adjusting = false;
-				}
+			adjusting = true;
+			
+			try {
+				update();
+			} finally {
+				adjusting = false;
 			}
 		}
 	}
@@ -91,11 +86,20 @@ public abstract class AbstractAnnotationEditor<T extends Annotation> extends JPa
 	protected abstract void update();
 	
 	/**
-	 * Apply all the UI selected values to the current annotation, if there is one.<br>
+	 * Apply all the UI values to the current annotation, if there is one.<br>
 	 * The subclass should call this method every time the user changes a style, such as the border color,
 	 * so the change is applied to the current annotation right away.
 	 */
-	protected abstract void apply();
+	protected void apply() {
+		if (annotation != null && !adjusting)
+			apply(annotation);
+	}
+	
+	/**
+	 * Apply all the current UI values to the passed annotation.<br>
+	 * This does not call {@link #setAnnotation(Annotation)}.
+	 */
+	public abstract void apply(T annotation);
 	
 	/**
 	 * Initialize the visual components.
