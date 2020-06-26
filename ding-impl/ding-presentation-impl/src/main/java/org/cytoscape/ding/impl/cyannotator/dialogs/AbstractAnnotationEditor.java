@@ -61,9 +61,6 @@ public abstract class AbstractAnnotationEditor<T extends Annotation> extends JPa
 	 */
 	@SuppressWarnings("unchecked")
 	public void setAnnotation(Annotation annotation) {
-		if (annotation != null && !accepts(annotation))
-			throw new IllegalArgumentException("Invalid annotation type for this editor.");
-		
 		if (!Objects.equals(this.annotation, annotation)) {
 			this.annotation = (T) annotation;
 			
@@ -87,8 +84,6 @@ public abstract class AbstractAnnotationEditor<T extends Annotation> extends JPa
 	public T getAnnotation() {
 		return annotation;
 	}
-	
-	public abstract boolean accepts(Annotation annotation);
 	
 	/**
 	 * This must update the editor's components. Remember that the {@link #annotation} may be null.

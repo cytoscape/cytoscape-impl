@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EventObject;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -133,7 +132,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	private LayerPanel backgroundLayerPanel;
 	private JButton selectAllButton;
 	private JButton selectNoneButton;
-	private final Map<String/*factory_id*/, AnnotationToggleButton> buttonMap = new LinkedHashMap<>();
+	private final Map<Class<? extends Annotation>, AnnotationToggleButton> buttonMap = new LinkedHashMap<>();
 	private final Map<Class<? extends Annotation>, Icon> iconMap = new LinkedHashMap<>();
 	private final ButtonGroup buttonGroup;
 	
@@ -150,7 +149,6 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	/** Tab icon */
 	private TextIcon icon;
 	
-	private Map<String/*factory_id*/, AbstractAnnotationEditor<?>> editors = new HashMap<>();
 	private DRenderingEngine re;
 	
 	private boolean createMode;
@@ -238,7 +236,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		return createMode;
 	}
 	
-	public void setCreateMode(boolean createMode) {System.out.println(createMode);
+	public void setCreateMode(boolean createMode) {
 		if (this.createMode != createMode) {
 			this.createMode = createMode;
 			
@@ -273,7 +271,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		btn.setFocusPainted(false);
 		
 		buttonGroup.add(btn);
-		buttonMap.put(f.getId(), btn);
+		buttonMap.put(f.getType(), btn);
 		iconMap.put(f.getType(), f.getIcon());
 		
 		btnHGroup.addComponent(btn, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
@@ -282,28 +280,23 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		if (isAquaLAF())
 			btn.putClientProperty("JButton.buttonType", "gradient");
 		
-		if (f instanceof AbstractDingAnnotationFactory) {
-			var comp = ((AbstractDingAnnotationFactory<?>) f).createEditor();
-			
-			if (comp != null)
-				editors.put(f.getId(), comp);
-		}
-		
 		return btn;
 	}
 	
 	void removeAnnotationButton(AnnotationFactory<? extends Annotation> f) {
-		var btn = buttonMap.remove(f.getId());
+		var btn = buttonMap.remove(f.getType());
 		iconMap.remove(f.getType());
 		
 		if (btn != null)
 			getButtonPanel().remove(btn);
 		
-		var comp = editors.remove(f.getId());
-		
-		if (comp != null) {
-			getEditPanel().remove(comp);
-			updateEditPanel();
+		if (f instanceof AbstractDingAnnotationFactory) {
+			var comp = ((AbstractDingAnnotationFactory<?>) f).getEditor();
+			
+			if (comp != null) {
+				getEditPanel().remove(comp);
+				updateEditPanel();
+			}
 		}
 	}
 	
@@ -430,13 +423,11 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		
 		// Enable/disable annotation add buttons
 		if (isEnabled()) {
-			for (var btn : buttonMap.values()) {
-				if (ArrowAnnotation.class.equals(btn.getFactory().getType())) {
-					// The ArrowAnnotation requires at least one other annotation before it can be added
-					btn.setEnabled(getAnnotationCount() > 0);
-					break;
-				}
-			}
+			// The ArrowAnnotation requires at least one other annotation before it can be added
+			var btn = buttonMap.get(ArrowAnnotation.class);
+
+			if (btn != null)
+				btn.setEnabled(getAnnotationCount() > 0);
 		}
 		
 		// Editor panel
@@ -466,11 +457,14 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 				var btn = entry.getValue();
 				
 				if (btn.isSelected()) {
-					var id = entry.getKey();
-					var comp = editors.get(id);
+					var f = btn.getFactory();
 					
-					if (comp != null)
-						getEditPanel().add(comp);
+					if (f instanceof AbstractDingAnnotationFactory) {
+						var comp = ((AbstractDingAnnotationFactory<?>) f).getEditor();
+						
+						if (comp != null)
+							getEditPanel().add(comp);
+					}
 					
 					break;
 				}
@@ -479,33 +473,34 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			var selectedList = getSelectedAnnotations();
 			var annotation = selectedList.size() == 1 ? selectedList.iterator().next() : null;
 			
-			if (annotation != null) {
-				System.out.println();
-				System.out.println(annotation.getName());
-				System.out.println(annotation.getArgMap());
+			if (annotation instanceof DingAnnotation) {
+				var btn = buttonMap.get(((DingAnnotation) annotation).getType());
 				
-				for (var entry : editors.entrySet()) {
-					var comp = entry.getValue();
+				if (btn != null) {
+					var f = btn.getFactory();
 					
-					if (comp.accepts(annotation)) {
-						comp.setAnnotation(annotation);
-						getEditPanel().add(comp);
-	
-						break;
+					if (f instanceof AbstractDingAnnotationFactory) {
+						var comp = ((AbstractDingAnnotationFactory<?>) f).getEditor();
+					
+						if (comp != null) {
+							comp.setAnnotation(annotation);
+							getEditPanel().add(comp);
+						}
 					}
 				}
 			}
 		}
 		
-		getEditPanel().repaint();
 		getEditPanel().setVisible(getEditPanel().getComponentCount() > 0);
+		revalidate();
+		repaint();
 	}
 	
 	private void updateInfoLabel() {
 		if (buttonGroup.getSelection() == null) {
 			getInfoLabel().setText(isEnabled() ? "Select the Annotation you want to add..." : " ");
 		} else {
-			for (AnnotationToggleButton btn : buttonMap.values()) {
+			for (var btn : buttonMap.values()) {
 				if (btn.isSelected()) {
 					if (ArrowAnnotation.class.equals(btn.getFactory().getType()))
 						getInfoLabel().setText("Click another Annotation in the view...");
@@ -694,6 +689,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		if (editPanel == null) {
 			editPanel = new JPanel();
 			editPanel.setLayout(new BorderLayout());
+			editPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground")));
 			editPanel.setVisible(false);
 		}
 		

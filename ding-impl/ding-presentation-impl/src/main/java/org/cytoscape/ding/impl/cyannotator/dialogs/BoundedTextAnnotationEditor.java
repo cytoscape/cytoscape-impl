@@ -5,7 +5,6 @@ import static javax.swing.GroupLayout.Alignment.LEADING;
 
 import javax.swing.GroupLayout;
 
-import org.cytoscape.ding.impl.cyannotator.annotations.BoundedTextAnnotationImpl;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.annotations.Annotation;
@@ -49,11 +48,6 @@ public class BoundedTextAnnotationEditor extends AbstractAnnotationEditor<Bounde
 			CyServiceRegistrar serviceRegistrar
 	) {
 		super(factory, serviceRegistrar);
-	}
-	
-	@Override
-	public boolean accepts(Annotation annotation) {
-		return annotation instanceof BoundedTextAnnotationImpl;
 	}
 	
 	@Override

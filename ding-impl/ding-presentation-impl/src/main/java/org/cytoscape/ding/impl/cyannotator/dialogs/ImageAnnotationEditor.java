@@ -22,7 +22,6 @@ import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.ColorButton;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.ImageAnnotation;
 
@@ -70,11 +69,6 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 
 	public ImageAnnotationEditor(AnnotationFactory<ImageAnnotation> factory, CyServiceRegistrar serviceRegistrar) {
 		super(factory, serviceRegistrar);
-	}
-	
-	@Override
-	public boolean accepts(Annotation annotation) {
-		return annotation instanceof ImageAnnotationImpl;
 	}
 	
 	@Override
@@ -129,8 +123,6 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 
 	@Override
 	protected void init() {
-		setBorder(LookAndFeelUtil.createPanelBorder());
-		
 		label1 = new JLabel("Border Color:");
 		label2 = new JLabel("Border Opacity:");
 		label3 = new JLabel("Border Width:");

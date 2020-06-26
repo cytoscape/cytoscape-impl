@@ -5,15 +5,20 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static javax.swing.GroupLayout.Alignment.TRAILING;
+import static org.cytoscape.util.swing.LookAndFeelUtil.getSmallFontSize;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Shape;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Vector;
 
-import javax.swing.AbstractListModel;
+import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JCheckBox;
@@ -25,10 +30,11 @@ import javax.swing.JSlider;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
 
+import org.cytoscape.ding.impl.cyannotator.annotations.GraphicsUtilities;
 import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
+import org.cytoscape.ding.impl.cyannotator.utils.ShapeIcon;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.ColorButton;
-import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
@@ -77,11 +83,6 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 	}
 	
 	@Override
-	public boolean accepts(Annotation annotation) {
-		return annotation instanceof ShapeAnnotationImpl;
-	}
-	
-	@Override
 	public void setAnnotation(Annotation annotation) {
 		super.setAnnotation(annotation);
 
@@ -94,27 +95,6 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 	public void update() {
 		if (annotation != null) {
 			// Shape
-			getShapeList().setModel(new AbstractListModel<>() {
-				List<String> typeList;
-				{
-					typeList = new ArrayList<>(annotation.getSupportedShapes());
-
-					// currently no support in UI for creating a custom shape
-					if (annotation instanceof ShapeAnnotationImpl
-							&& ((ShapeAnnotationImpl) annotation).getShapeTypeEnum() != ShapeType.CUSTOM)
-						typeList.remove(ShapeType.CUSTOM.shapeName());
-				}
-
-				@Override
-				public int getSize() {
-					return typeList.size();
-				}
-
-				@Override
-				public String getElementAt(int i) {
-					return typeList.get(i);
-				}
-			});
 			getShapeList().setSelectedValue(annotation.getShapeType(), true);
 			
 			// Fill Color
@@ -189,8 +169,6 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 
 	@Override
 	protected void init() {
-		setBorder(LookAndFeelUtil.createPanelBorder());
-
 		var label1 = new JLabel("Shape:");
 		var label2 = new JLabel("Fill Color:");
 		var label3 = new JLabel("Fill Opacity:");
@@ -203,13 +181,15 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 		var layout = new GroupLayout(this);
 		setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
-		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+		layout.setAutoCreateGaps(!isAquaLAF());
 		
-		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
-				.addComponent(label1)
-				.addGroup(layout.createSequentialGroup()
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup(LEADING, true)
+						.addComponent(label1)
 						.addComponent(scrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-						.addPreferredGap(ComponentPlacement.UNRELATED)
+				)
+				.addPreferredGap(ComponentPlacement.UNRELATED)
+				.addGroup(layout.createSequentialGroup()
 						.addGroup(layout.createParallelGroup(TRAILING, true)
 								.addComponent(label2)
 								.addComponent(label3)
@@ -233,10 +213,12 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 						)
 				)
 		);
-		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addComponent(label1)
+		layout.setVerticalGroup(layout.createParallelGroup(LEADING, true)
+				.addGroup(layout.createSequentialGroup()
+						.addComponent(label1)
+						.addComponent(scrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				)
 				.addGroup(layout.createParallelGroup(LEADING, true)
-						.addComponent(scrollPane)
 						.addGroup(layout.createSequentialGroup()
 								.addGroup(layout.createParallelGroup(CENTER, false)
 										.addComponent(label2)
@@ -266,15 +248,56 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 		);
 
 		makeSmall(label1, label2, label3, label4, label5, label6);
-		makeSmall(getShapeList(), getFillColorCheck(), getFillColorButton(), getFillOpacitySlider(),
+		makeSmall(getFillColorCheck(), getFillColorButton(), getFillOpacitySlider(),
 				getBorderColorCheck(), getBorderColorButton(), getBorderOpacitySlider(), getBorderWidthCombo());
 		makeSmall(scrollPane);
 	}
 	
 	private JList<String> getShapeList() {
 		if (shapeList == null) {
-			shapeList = new JList<>();
+			var typeList = GraphicsUtilities.getSupportedShapes();
+			
+			// Currently no support in UI for creating a custom shape, so we always remove CUSTOM for now
+			/*
+			if (annotation instanceof ShapeAnnotationImpl
+					&& ((ShapeAnnotationImpl) annotation).getShapeTypeEnum() != ShapeType.CUSTOM)
+					typeList.remove(ShapeType.CUSTOM.shapeName());
+			*/
+			typeList.remove(ShapeType.CUSTOM.shapeName());
+			
+			shapeList = new JList<>(new Vector<>(typeList));
 			shapeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+			shapeList.setCellRenderer(new DefaultListCellRenderer() {
+				final Map<String, ShapeIcon> icons = new HashMap<>();
+				final int ICON_SIZE = 12;
+				{
+					setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+				}
+				@Override
+				public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+						boolean isSelected, boolean cellHasFocus) {
+					super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+					
+					var shapeName = "" + value;
+					var shapeIcon = icons.get(shapeName);
+					
+					if (shapeIcon == null) {
+						var shape = GraphicsUtilities.getShape(shapeName, 0, 0, ICON_SIZE, ICON_SIZE);
+						
+						if (shape != null)
+							icons.put(shapeName, shapeIcon = new ShapeIcon(shape, ICON_SIZE, ICON_SIZE));
+					}
+					
+					setIcon(shapeIcon);
+					
+					return this;
+				}
+			});
+			shapeList.setFont(getFont().deriveFont(getSmallFontSize()));
+			
+			if (shapeList.getModel().getSize() > 0)
+				shapeList.setSelectedIndex(0);
+			
 			shapeList.addListSelectionListener(evt -> apply());
 		}
 		

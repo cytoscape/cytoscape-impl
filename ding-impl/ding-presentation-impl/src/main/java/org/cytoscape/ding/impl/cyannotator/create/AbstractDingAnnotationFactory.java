@@ -34,6 +34,8 @@ public abstract class AbstractDingAnnotationFactory<T extends Annotation> implem
 	public static final int ICON_SIZE = 16;
 	protected static final String NAMESPACE = "org.cytoscape.annotation.";
 
+	protected AbstractAnnotationEditor<T> editor;
+	
 	protected final Class<T> type;
 	protected final CyServiceRegistrar serviceRegistrar;
 
@@ -42,10 +44,29 @@ public abstract class AbstractDingAnnotationFactory<T extends Annotation> implem
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
-	public abstract AbstractAnnotationEditor<T> createEditor();
-
 	@Override
 	public Class<T> getType() {
 		return type;
 	}
+	
+	/**
+	 * This method creates only one editor and returns the same instance every time
+	 * it is called. This is useful if you want to use the same editor instance as
+	 * an easy way of saving the previously set annotation styles. It also makes it
+	 * easier to locate the correct editor for an annotation type.
+	 * 
+	 * @return The editor instance that must be used to edit annotations created by this factory. 
+	 */
+	public AbstractAnnotationEditor<T> getEditor() {
+		if (editor == null)
+			editor = createEditor();
+		
+		return editor;
+	}
+	
+	/**
+	 * The implementation must create a new annotation editor.
+	 * @return A new instance of the appropriate annotation editor.
+	 */
+	protected abstract AbstractAnnotationEditor<T> createEditor();
 }

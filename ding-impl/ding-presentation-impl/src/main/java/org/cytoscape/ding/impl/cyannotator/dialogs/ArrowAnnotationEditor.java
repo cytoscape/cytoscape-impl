@@ -20,11 +20,9 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.LayoutStyle.ComponentPlacement;
 
-import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.ColorButton;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation.AnchorType;
@@ -68,11 +66,6 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 		super(factory, serviceRegistrar);
 	}
 
-	@Override
-	public boolean accepts(Annotation annotation) {
-		return annotation instanceof ArrowAnnotationImpl;
-	}
-	
 	@Override
 	protected void update() {
 		if (annotation != null) {
@@ -127,8 +120,6 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 
 	@Override
 	protected void init() {
-		setBorder(LookAndFeelUtil.createPanelBorder());
-
 		getSourceArrowPanel().init();
 		getTargetArrowPanel().init();
 		
