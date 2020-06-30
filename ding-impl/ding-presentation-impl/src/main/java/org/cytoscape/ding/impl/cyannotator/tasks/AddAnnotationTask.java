@@ -6,12 +6,15 @@ import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
 import java.awt.Point;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
+import org.cytoscape.ding.impl.cyannotator.create.ArrowAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.ImageAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -62,9 +65,12 @@ public class AddAnnotationTask extends AbstractTask {
 		
 		if (re != null && annotationFactory instanceof AbstractDingAnnotationFactory) {
 			invokeOnEDT(() -> {
-				re.getCyAnnotator().markUndoEdit("Create " + annotationFactory.getName() + " Annotation");
+				var cyAnnotator = re.getCyAnnotator();
+				cyAnnotator.markUndoEdit("Create " + annotationFactory.getName() + " Annotation"); // FIXME
 				
 				var view = re.getViewModel();
+				var source = re.getPicker().getAnnotationAt(location); // For ArrowAnnotations only!
+				
 				final Annotation annotation;
 				
 				if (annotationFactory instanceof ImageAnnotationFactory) {
@@ -75,7 +81,12 @@ public class AddAnnotationTask extends AbstractTask {
 					if (annotation == null)
 						return;
 				} else {
+					if (annotationFactory instanceof ArrowAnnotationFactory
+							&& (source == null || source instanceof ArrowAnnotation))
+						return; // e.g. cannot create an arrow when the user did not click another annotation first!
+					
 					annotation = annotationFactory.createAnnotation(annotationFactory.getType(), view, emptyMap());
+					tm.setStatusMessage("Created annotation: " + annotation.getName());
 				}
 				
 				var editor = ((AbstractDingAnnotationFactory) annotationFactory).getEditor();
@@ -85,18 +96,31 @@ public class AddAnnotationTask extends AbstractTask {
 				if (editor != null)
 					editor.apply(annotation);
 				
-				if (annotation instanceof DingAnnotation) {
-					var annotationLocation = re.getTransform().getNodeCoordinates(location);
-					((DingAnnotation) annotation).setLocation(annotationLocation.getX(), annotationLocation.getY());
+				if (annotation instanceof ArrowAnnotationImpl) {
+					// Arrow...
+					((ArrowAnnotationImpl) annotation).setSource(source);
+					
+					cyAnnotator.addAnnotation(annotation);
+					
+					// NOTE: Do not select arrow annotation now! It should be done only after the arrow's target is set.
+					
+					cyAnnotator.positionArrow((ArrowAnnotationImpl) annotation);
 					annotation.update();
-				}
-				
-				re.getCyAnnotator().addAnnotation(annotation);
-				
-				// Select only the new annotation
-				if (annotation instanceof DingAnnotation) {
-					re.getCyAnnotator().clearSelectedAnnotations();
-					ViewUtils.selectAnnotation(re, (DingAnnotation) annotation);
+				} else {
+					// Other annotations types...
+					if (annotation instanceof DingAnnotation) {
+						var annotationLocation = re.getTransform().getNodeCoordinates(location);
+						((DingAnnotation) annotation).setLocation(annotationLocation.getX(), annotationLocation.getY());
+						annotation.update();
+					}
+					
+					cyAnnotator.addAnnotation(annotation);
+					
+					if (annotation instanceof DingAnnotation) {
+						// Select only the new annotation
+						cyAnnotator.clearSelectedAnnotations();
+						ViewUtils.selectAnnotation(re, (DingAnnotation) annotation);
+					}
 				}
 			});
 		}

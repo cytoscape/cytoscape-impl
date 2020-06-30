@@ -75,54 +75,57 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 	protected void update() {
 		if (annotation != null) {
 			// Border Color
-			borderColorCheck.setSelected(annotation.getBorderColor() != null);
+			getBorderColorCheck().setSelected(annotation.getBorderColor() != null);
 			
 			if (annotation.getBorderColor() != null)
-				borderColorButton.setColor((Color) annotation.getBorderColor());
+				getBorderColorButton().setColor((Color) annotation.getBorderColor());
 			
 			// Border Width
-			for (int i = 0; i < borderWidthCombo.getModel().getSize(); i++) {
-				if (((int) annotation.getBorderWidth()) == Integer
-						.parseInt((String) borderWidthCombo.getModel().getElementAt(i))) {
-					borderWidthCombo.setSelectedIndex(i);
-					break;
+			{
+				var model = getBorderWidthCombo().getModel();
+				
+				for (int i = 0; i < model.getSize(); i++) {
+					if (((int) annotation.getBorderWidth()) == Integer.parseInt((String) model.getElementAt(i))) {
+						getBorderWidthCombo().setSelectedIndex(i);
+						break;
+					}
 				}
 			}
 			
 			// Border Opacity
-			if (annotation.getBorderOpacity() != 100.0 || borderColorCheck.isSelected())
-				borderOpacitySlider.setEnabled(true);
+			if (annotation.getBorderOpacity() != 100.0 || getBorderColorCheck().isSelected())
+				getBorderOpacitySlider().setEnabled(true);
 			
-			borderOpacitySlider.setValue((int) annotation.getBorderOpacity());
+			getBorderOpacitySlider().setValue((int) annotation.getBorderOpacity());
 			
 			// Image Adjustments
-			opacitySlider.setValue((int) (annotation.getImageOpacity() * 100));
-			brightnessSlider.setValue(annotation.getImageBrightness());
-			contrastSlider.setValue(annotation.getImageContrast());
+			getOpacitySlider().setValue((int) (annotation.getImageOpacity() * 100));
+			getBrightnessSlider().setValue(annotation.getImageBrightness());
+			getContrastSlider().setValue(annotation.getImageContrast());
 		} else {
 			// Reset these image adjustments fields (we don't want new images to appear damaged to the user)
-			opacitySlider.setValue(100);
-			brightnessSlider.setValue(0);
-			contrastSlider.setValue(0);
+			getOpacitySlider().setValue(100);
+			getBrightnessSlider().setValue(0);
+			getContrastSlider().setValue(0);
 		}
 		
 		// Hide fields not applied to SVG images
 		var isSVG = annotation instanceof ImageAnnotationImpl && ((ImageAnnotationImpl) annotation).isSVG();
 		label5.setVisible(!isSVG);
-		brightnessSlider.setVisible(!isSVG);
+		getBrightnessSlider().setVisible(!isSVG);
 		label6.setVisible(!isSVG);
-		contrastSlider.setVisible(!isSVG);
+		getContrastSlider().setVisible(!isSVG);
 	}
 	
 	@Override
 	public void apply(ImageAnnotation annotation) {
 		if (annotation != null) {
-			annotation.setBorderColor(borderColorCheck.isSelected() ? borderColorButton.getColor() : null);
-			annotation.setBorderWidth(Integer.parseInt((String) borderWidthCombo.getModel().getSelectedItem()));
-			annotation.setBorderOpacity(borderOpacitySlider.getValue());
-			annotation.setImageOpacity(opacitySlider.getValue() / 100.0f);
-			annotation.setImageBrightness(brightnessSlider.getValue());
-			annotation.setImageContrast(contrastSlider.getValue());
+			annotation.setBorderColor(getBorderColorCheck().isSelected() ? getBorderColorButton().getColor() : null);
+			annotation.setBorderWidth(Integer.parseInt((String) getBorderWidthCombo().getModel().getSelectedItem()));
+			annotation.setBorderOpacity(getBorderOpacitySlider().getValue());
+			annotation.setImageOpacity(getOpacitySlider().getValue() / 100.0f);
+			annotation.setImageBrightness(getBrightnessSlider().getValue());
+			annotation.setImageContrast(getContrastSlider().getValue());
 		}
 	}
 
@@ -135,53 +138,6 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 		label5 = new JLabel("Brightness:");
 		label6 = new JLabel("Contrast:");
 
-		borderColorCheck = new JCheckBox();
-		borderColorCheck.addActionListener(evt -> {
-			borderColorButton.setEnabled(borderColorCheck.isSelected());
-			borderOpacitySlider.setEnabled(borderColorCheck.isSelected());
-			apply();
-		});
-
-		borderColorButton = new ColorButton(null);
-		borderColorButton.setToolTipText("Select border color...");
-		borderColorButton.setEnabled(false);
-		borderColorButton.addPropertyChangeListener("color", evt -> apply());
-		
-		borderOpacitySlider = new JSlider(0, 100, 100);
-		borderOpacitySlider.setMajorTickSpacing(100);
-		borderOpacitySlider.setMinorTickSpacing(25);
-		borderOpacitySlider.setPaintTicks(true);
-		borderOpacitySlider.setPaintLabels(true);
-		borderOpacitySlider.setEnabled(false);
-		borderOpacitySlider.addChangeListener(evt -> apply());
-
-		borderWidthCombo = new JComboBox<>();
-		borderWidthCombo.setModel(new DefaultComboBoxModel<String>(
-				new String[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13" }));
-		borderWidthCombo.setSelectedIndex(0);
-		borderWidthCombo.addActionListener(evt -> apply());
-
-		opacitySlider = new JSlider(0, 100, 100);
-		opacitySlider.setMajorTickSpacing(100);
-		opacitySlider.setMinorTickSpacing(25);
-		opacitySlider.setPaintTicks(true);
-		opacitySlider.setPaintLabels(true);
-		opacitySlider.addChangeListener(evt -> apply());
-
-		brightnessSlider = new JSlider(-100, 100, 0);
-		brightnessSlider.setMajorTickSpacing(100);
-		brightnessSlider.setMinorTickSpacing(25);
-		brightnessSlider.setPaintTicks(true);
-		brightnessSlider.setPaintLabels(true);
-		brightnessSlider.addChangeListener(evt -> apply());
-
-		contrastSlider = new JSlider(-100, 100, 0);
-		contrastSlider.setMajorTickSpacing(100);
-		contrastSlider.setMinorTickSpacing(25);
-		contrastSlider.setPaintTicks(true);
-		contrastSlider.setPaintLabels(true);
-		contrastSlider.addChangeListener(evt -> apply());
-		
 		var layout = new GroupLayout(this);
 		setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
@@ -200,48 +156,137 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 				.addPreferredGap(ComponentPlacement.RELATED)
 				.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
 						.addGroup(layout.createSequentialGroup()
-								.addComponent(borderColorCheck)
-								.addComponent(borderColorButton)
+								.addComponent(getBorderColorCheck())
+								.addComponent(getBorderColorButton())
 						)
-						.addComponent(borderOpacitySlider, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(borderWidthCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(opacitySlider, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(brightnessSlider, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(contrastSlider, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getBorderOpacitySlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getBorderWidthCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getOpacitySlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getBrightnessSlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getContrastSlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
 				.addGap(0, 20, Short.MAX_VALUE)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addGroup(layout.createParallelGroup(CENTER, false)
 						.addComponent(label1)
-						.addComponent(borderColorCheck)
-						.addComponent(borderColorButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getBorderColorCheck())
+						.addComponent(getBorderColorButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
 				.addGroup(layout.createParallelGroup(LEADING, false)
 						.addComponent(label2)
-						.addComponent(borderOpacitySlider, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getBorderOpacitySlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
 				.addGroup(layout.createParallelGroup(CENTER, false)
 						.addComponent(label3)
-						.addComponent(borderWidthCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getBorderWidthCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
 				.addGap(20)
 				.addGroup(layout.createParallelGroup(LEADING, false)
 						.addComponent(label4)
-						.addComponent(opacitySlider, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getOpacitySlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
 				.addGroup(layout.createParallelGroup(LEADING, false)
 						.addComponent(label5)
-						.addComponent(brightnessSlider, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getBrightnessSlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
 				.addGroup(layout.createParallelGroup(LEADING, false)
 						.addComponent(label6)
-						.addComponent(contrastSlider, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getContrastSlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
 		);
 
 		makeSmall(label1, label2, label3, label4, label5, label6);
-		makeSmall(borderColorCheck, borderColorButton, borderOpacitySlider, borderWidthCombo, opacitySlider,
-				brightnessSlider, contrastSlider);
+		makeSmall(getBorderColorCheck(), getBorderColorButton(), getBorderOpacitySlider(), getBorderWidthCombo(),
+				getOpacitySlider(), getBrightnessSlider(), getContrastSlider());
+	}
+	
+	private JCheckBox getBorderColorCheck() {
+		if (borderColorCheck == null) {
+			borderColorCheck = new JCheckBox();
+			borderColorCheck.addActionListener(evt -> {
+				getBorderColorButton().setEnabled(borderColorCheck.isSelected());
+				getBorderOpacitySlider().setEnabled(borderColorCheck.isSelected());
+				apply();
+			});
+		}
+		
+		return borderColorCheck;
+	}
+	
+	private ColorButton getBorderColorButton() {
+		if (borderColorButton == null) {
+			borderColorButton = new ColorButton(Color.BLACK);
+			borderColorButton.setToolTipText("Select border color...");
+			borderColorButton.setEnabled(false);
+			borderColorButton.addPropertyChangeListener("color", evt -> apply());
+		}
+
+		return borderColorButton;
+	}
+	
+	private JSlider getBorderOpacitySlider() {
+		if (borderOpacitySlider == null) {
+			borderOpacitySlider = new JSlider(0, 100, 100);
+			borderOpacitySlider.setMajorTickSpacing(100);
+			borderOpacitySlider.setMinorTickSpacing(25);
+			borderOpacitySlider.setPaintTicks(true);
+			borderOpacitySlider.setPaintLabels(true);
+			borderOpacitySlider.setEnabled(false);
+			borderOpacitySlider.addChangeListener(evt -> apply());
+		}
+
+		return borderOpacitySlider;
+	}
+	
+	private JComboBox<String> getBorderWidthCombo() {
+		if (borderWidthCombo == null) {
+			borderWidthCombo = new JComboBox<>();
+			borderWidthCombo.setModel(new DefaultComboBoxModel<String>(
+					new String[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13" }));
+			borderWidthCombo.setSelectedIndex(0);
+			borderWidthCombo.addActionListener(evt -> apply());
+		}
+
+		return borderWidthCombo;
+	}
+	
+	private JSlider getOpacitySlider() {
+		if (opacitySlider == null) {
+			opacitySlider = new JSlider(0, 100, 100);
+			opacitySlider.setMajorTickSpacing(100);
+			opacitySlider.setMinorTickSpacing(25);
+			opacitySlider.setPaintTicks(true);
+			opacitySlider.setPaintLabels(true);
+			opacitySlider.addChangeListener(evt -> apply());
+		}
+
+		return opacitySlider;
+	}
+	
+	private JSlider getBrightnessSlider() {
+		if (brightnessSlider == null) {
+			brightnessSlider = new JSlider(-100, 100, 0);
+			brightnessSlider.setMajorTickSpacing(100);
+			brightnessSlider.setMinorTickSpacing(25);
+			brightnessSlider.setPaintTicks(true);
+			brightnessSlider.setPaintLabels(true);
+			brightnessSlider.addChangeListener(evt -> apply());
+		}
+
+		return brightnessSlider;
+	}
+
+	private JSlider getContrastSlider() {
+		if (contrastSlider == null) {
+			contrastSlider = new JSlider(-100, 100, 0);
+			contrastSlider.setMajorTickSpacing(100);
+			contrastSlider.setMinorTickSpacing(25);
+			contrastSlider.setPaintTicks(true);
+			contrastSlider.setPaintLabels(true);
+			contrastSlider.addChangeListener(evt -> apply());
+		}
+
+		return contrastSlider;
 	}
 }

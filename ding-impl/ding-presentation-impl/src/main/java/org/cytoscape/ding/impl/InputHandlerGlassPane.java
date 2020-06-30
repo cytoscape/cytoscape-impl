@@ -39,7 +39,6 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,16 +57,15 @@ import javax.swing.UIManager;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.AnchorLocation;
 import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
-import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.AddAnnotationTask;
 import org.cytoscape.ding.impl.cyannotator.tasks.EditAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.RemoveAnnotationsTask;
+import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.ding.impl.undo.AnnotationEdit;
 import org.cytoscape.ding.impl.undo.CompositeCyEdit;
 import org.cytoscape.ding.impl.undo.NodeLabelChangeEdit;
@@ -1199,8 +1197,9 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		}
 		
 		private void createAnnotation(AnnotationFactory<? extends Annotation> f, Point point) {
-			if(!(f instanceof AbstractDingAnnotationFactory))  // For now, only DING annotations are supported!
+			if (!(f instanceof AbstractDingAnnotationFactory)) // For now, only DING annotations are supported!
 				return;
+			
 			var task = new AddAnnotationTask(re, point, f);
 			registrar.getService(DialogTaskManager.class).execute(new TaskIterator(task));
 		}
@@ -1210,39 +1209,37 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			// This handles when you first add an annotation to the canvas and it auto-resizes
 			// This operation is initiated by the various annotation dialogs
 			
-			AbstractAnnotation resizeAnnotation = cyAnnotator.getResizeShape();
+			var resizeAnnotation = cyAnnotator.getResizeShape();
 			var annotationSelection = cyAnnotator.getAnnotationSelection();
-			ArrowAnnotationImpl repositionAnnotation = cyAnnotator.getRepositioningArrow();
+			var repositionAnnotation = cyAnnotator.getRepositioningArrow();
 			
-			if(resizeAnnotation == null && annotationSelection.isEmpty() && repositionAnnotation == null)
+			if (resizeAnnotation == null && annotationSelection.isEmpty() && repositionAnnotation == null)
 				return;
 
-
-			if(resizeAnnotation != null) {
-				Rectangle2D initialBounds = cyAnnotator.getResizeBounds(); // node coords
+			if (resizeAnnotation != null) {
+				var initialBounds = cyAnnotator.getResizeBounds(); // node coords
 				var point = re.getTransform().getNodeCoordinates(e.getPoint());
 				var bounds = AnnotationSelection.resize(Position.SOUTH_EAST, initialBounds, point.getX(), point.getY());
 				resizeAnnotation.setBounds(bounds);
 				resizeAnnotation.update();
 				re.updateView(UpdateType.JUST_ANNOTATIONS);
+			} else if (repositionAnnotation != null) {
+				var mousePoint = e.getPoint();
+				var annotations = re.getPicker().getAnnotationsAt(mousePoint);
 				
-			} else if(repositionAnnotation != null) {
-				Point mousePoint = e.getPoint();
-
-				List<DingAnnotation> annotations = re.getPicker().getAnnotationsAt(mousePoint);
 				if (annotations.contains(repositionAnnotation))
 					annotations.remove(repositionAnnotation);
 
 				// Target can be another annotation, a node, or just a point.
-				if(annotations.size() > 0) {
+				if (!annotations.isEmpty()) {
 					repositionAnnotation.setTarget(annotations.get(0));
-				} else if(overNode(mousePoint)) {
-					View<CyNode> overNode = re.getPicker().getNodeAt(mousePoint);
-					// the node view must be mutable so that the coordinates will update when the node is moved
+				} else if (overNode(mousePoint)) {
+					var overNode = re.getPicker().getNodeAt(mousePoint);
+					// The node view must be mutable so that the coordinates will update when the node is moved
 					var mutableNodeView = re.getViewModelSnapshot().getMutableNodeView(overNode.getSUID());
 					repositionAnnotation.setTarget(mutableNodeView);
 				} else {
-					Point2D nodeCoordinates = re.getTransform().getNodeCoordinates(mousePoint);
+					var nodeCoordinates = re.getTransform().getNodeCoordinates(mousePoint);
 					repositionAnnotation.setTarget(nodeCoordinates);
 				}
 
@@ -1253,19 +1250,23 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		
 		@Override
 		public void mouseClicked(MouseEvent e) {
-			if(cyAnnotator.getResizeShape() != null) {
+			if (cyAnnotator.getResizeShape() != null) {
 				cyAnnotator.getResizeShape().contentChanged();
 				cyAnnotator.resizeShape(null);
 				cyAnnotator.postUndoEdit(); // markUndoEdit() is in the dialogs like ShapeAnnotationDialog
-			} else if(cyAnnotator.getRepositioningArrow() != null) {
+			} else if (cyAnnotator.getRepositioningArrow() != null
+					&& cyAnnotator.getRepositioningArrow().getTarget() != null) {
 				cyAnnotator.getRepositioningArrow().contentChanged();
+				
+				// Select only the new arrow annotation
+				cyAnnotator.clearSelectedAnnotations();
+				ViewUtils.selectAnnotation(re, cyAnnotator.getRepositioningArrow());
+				
 				cyAnnotator.positionArrow(null);
 				cyAnnotator.postUndoEdit(); // markUndoEdit() is in ArrowAnnotationDialog
 			}
 		}
-		
 	}
-	
 	
 	/**
 	 * MKTODO This listener is not finished and should not be enabled.

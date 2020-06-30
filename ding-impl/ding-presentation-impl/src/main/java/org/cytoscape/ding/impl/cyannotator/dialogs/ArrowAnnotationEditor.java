@@ -9,6 +9,7 @@ import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
 import java.awt.Color;
 import java.awt.Paint;
+import java.util.Vector;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
@@ -20,6 +21,8 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.LayoutStyle.ComponentPlacement;
 
+import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl.ArrowType;
+import org.cytoscape.ding.impl.cyannotator.annotations.GraphicsUtilities;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.ColorButton;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -405,7 +408,11 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 		
 		private JComboBox<String> getArrowTypeCombo() {
 			if (arrowTypeCombo == null) {
-				arrowTypeCombo = new JComboBox<>();
+				var typeNames = GraphicsUtilities.getSupportedArrowTypeNames();
+				
+				arrowTypeCombo = new JComboBox<>(new Vector<>(typeNames));
+				arrowTypeCombo.setSelectedItem(
+						arrowEnd == ArrowEnd.SOURCE ? ArrowType.NONE.toString() : ArrowType.OPEN.toString());
 				arrowTypeCombo.addActionListener(evt -> apply());
 			}
 			
