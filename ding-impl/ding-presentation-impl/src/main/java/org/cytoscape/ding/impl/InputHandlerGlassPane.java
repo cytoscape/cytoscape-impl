@@ -104,6 +104,30 @@ import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 /**
  * This is a Swing glass pane that sits above the network canvas and handles all
  * mouse and keyboard events.
@@ -124,12 +148,10 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	private DRenderingEngine re;
 	private CyAnnotator cyAnnotator;
 	
-	
 	public InputHandlerGlassPane(CyServiceRegistrar registrar, DRenderingEngine re) {
 		this.registrar = registrar;
 		this.re = re;
 		this.cyAnnotator = re.getCyAnnotator();
-		
 		
 		// Order matters, some listeners use MouseEvent.consume() to prevent subsequent listeners from running
 		this.orderedMouseAdapter = new OrderedMouseAdapter(
@@ -176,7 +198,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
         add(panel, BorderLayout.SOUTH);
         return progressBar;
 	}
-	
 	
 	/**
 	 * The progress monitor returned by this method cannot be restarted. 
@@ -245,7 +266,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		maybe(SelectionLassoListener.class).ifPresent(listener -> listener.drawSelectionLasso(g));
 	}
 	
-	
 	@Override
 	public void processMouseEvent(MouseEvent e) {
 		// expose so the birds-eye-view can pass mouse events here.
@@ -263,12 +283,26 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		get(AddEdgeListener.class).beginAddingEdge(nodeView);
 	}
 
-	// Called by the Annotation panel
-	public void beginClickToAddAnnotation(AnnotationFactory<? extends Annotation> annotationFactory, Runnable mousePressedCallback)	 {
-		get(AddAnnotationListener.class).beginClickToAddAnnotation(annotationFactory, mousePressedCallback);
+	/** 
+	 * Usually called by the Annotation UI.
+	 * 
+	 * @param factory
+	 * @param callback To be be called after the anottation is added
+	 */
+	public void beginClickToAddAnnotation(AnnotationFactory<? extends Annotation> factory, Runnable callback) {
+		get(AddAnnotationListener.class).beginClickToAddAnnotation(factory, callback);
 	}
-	
-	
+
+	/**
+	 * 
+	 * @param factory
+	 */
+	public void cancelClickToAddAnnotation(AnnotationFactory<? extends Annotation> factory) {
+		var listener = get(AddAnnotationListener.class);
+		
+		if (listener != null && factory.equals(listener.getAnnotationFactory()))
+			listener.cancel();
+	}
 	
 	private class CanvasKeyListener extends MouseAdapter implements KeyListener {
 
@@ -429,7 +463,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			return false;
 		}
 		
-		
 		private void panCanvas(KeyEvent k) {
 			if(panEdit == null) {
 				panEdit = new ViewChangeEdit(re, null, "Pan", registrar); 
@@ -443,7 +476,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				case VK_RIGHT: re.pan(-move, 0); break;
 			}
 		}
-		
 
 		private boolean moveNodesAndHandles(KeyEvent k) {
 			var snapshot = re.getViewModelSnapshot();
@@ -530,7 +562,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		}
 	}
 
-	
 	private class FocusRequestListener extends MouseAdapter {
 		
 		@Override
@@ -539,12 +570,11 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		}
 	}
 	
-	
 	private class ContextMenuListener extends MouseAdapter {
 		
 		@Override
 		public void mousePressed(MouseEvent e) {
-			if(isSingleRightClick(e)) {
+			if (isSingleRightClick(e)) {
 				showContextMenu(e.getPoint());
 				e.consume();
 				get(AddAnnotationListener.class).cancel();
@@ -553,26 +583,29 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		
 		private void showContextMenu(Point p) {
 			// Node menu
-			View<CyNode> nodeView = re.getPicker().getNodeAt(p);
-			if(nodeView != null) {
+			var nodeView = re.getPicker().getNodeAt(p);
+			
+			if (nodeView != null) {
 				popupMenuHelper.createNodeViewMenu(nodeView, p.x, p.y, PopupMenuHelper.ACTION_NEW);
 				return;
 			}
+			
 			// Edge menu
-			View<CyEdge> edgeView = re.getPicker().getEdgeAt(p);
-			if(edgeView != null) {
+			var edgeView = re.getPicker().getEdgeAt(p);
+			
+			if (edgeView != null) {
 				popupMenuHelper.createEdgeViewMenu(edgeView, p.x, p.y, PopupMenuHelper.ACTION_NEW);
 				return;
 			}
+			
 			// Network canvas menu
 			double[] loc = { p.getX(), p.getY() };
 			re.getTransform().xformImageToNodeCoords(loc);
-			Point xformP = new Point();
-			xformP.setLocation(loc[0], loc[1]); 
+			var xformP = new Point();
+			xformP.setLocation(loc[0], loc[1]);
 			popupMenuHelper.createNetworkViewMenu(p, xformP, PopupMenuHelper.ACTION_NEW);
 		}
 	}
-
 
 	private class DoubleClickListener extends MouseAdapter {
 		
@@ -757,7 +790,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			});
 		}
 	}
-	
 	
 	private class SelecionClickAndDragListener extends MouseAdapter {
 
@@ -1164,36 +1196,40 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		}
 	}
 	
-	
 	private class AddAnnotationListener extends MouseAdapter {
 		
-		private AnnotationFactory<?> annotationFactory = null;
-		private Runnable mousePressedCallback = null;
+		private AnnotationFactory<?> annotationFactory;
+		private Runnable callback;
 		
-		public void beginClickToAddAnnotation(AnnotationFactory<? extends Annotation> annotationFactory, Runnable mousePressedCallback) {
-			this.annotationFactory = annotationFactory;
-			this.mousePressedCallback = mousePressedCallback;
+		public void beginClickToAddAnnotation(AnnotationFactory<? extends Annotation> factory, Runnable callback) {
+			this.annotationFactory = factory;
+			this.callback = callback;
+		}
+		
+		public AnnotationFactory<?> getAnnotationFactory() {
+			return annotationFactory;
 		}
 		
 		public void cancel() {
-			if(annotationFactory != null) {
+			if (annotationFactory != null)
 				cyAnnotator.fireAnnotations(); // tell the Annotation panel that we cancelled
-			}
-			this.annotationFactory = null;
-			this.mousePressedCallback = null;
+			
+			annotationFactory = null;
+			callback = null;
 		}
 		
 		@Override
 		public void mousePressed(MouseEvent e) {
-			if(annotationFactory != null && isSingleLeftClick(e)) {
-				if(mousePressedCallback != null) {
-					mousePressedCallback.run();
-				}
+			if (annotationFactory != null && isSingleLeftClick(e)) {
 				createAnnotation(annotationFactory, e.getPoint());
 				e.consume();
+				
+				if (callback != null)
+					callback.run();
 			}
+			
 			annotationFactory = null;
-			mousePressedCallback = null;
+			callback = null;
 		}
 		
 		private void createAnnotation(AnnotationFactory<? extends Annotation> f, Point point) {

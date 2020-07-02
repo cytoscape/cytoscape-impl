@@ -315,18 +315,19 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		}
 	}
 	
-	private void addAnnotationButton(AnnotationFactory<? extends Annotation> annotationFactory) {
-		var btn = mainPanel.addAnnotationButton(annotationFactory);
+	private void addAnnotationButton(AnnotationFactory<? extends Annotation> factory) {
+		var btn = mainPanel.addAnnotationButton(factory);
 		btn.addItemListener(evt -> {
 			int state = evt.getStateChange();
+			var re = getCurrentDRenderingEngine();
 			
-			if (state == ItemEvent.SELECTED) {
-				var re = getCurrentDRenderingEngine();
+			if (re != null) {
+				var ihGlassPane = re.getInputHandlerGlassPane();
 				
-				if (re != null) {
-					Runnable mousePressedCallback = () -> mainPanel.clearAnnotationButtonSelection();
-					re.getInputHandlerGlassPane().beginClickToAddAnnotation(annotationFactory, mousePressedCallback);
-				}
+				if (state == ItemEvent.SELECTED)
+					ihGlassPane.beginClickToAddAnnotation(factory, () -> mainPanel.clearAnnotationButtonSelection());
+				else
+					ihGlassPane.cancelClickToAddAnnotation(factory);
 			}
 			
 			mainPanel.setCreateMode(state == ItemEvent.SELECTED);
