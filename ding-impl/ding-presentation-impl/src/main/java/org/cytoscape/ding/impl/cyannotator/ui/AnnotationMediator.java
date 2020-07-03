@@ -28,7 +28,9 @@ import org.cytoscape.application.events.CyStartEvent;
 import org.cytoscape.application.events.CyStartListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
 import org.cytoscape.ding.impl.DRenderingEngine;
@@ -98,8 +100,6 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 	private boolean appStarted;
 	private boolean loadingSession;
 	private boolean ignoreSelectedPropChangeEvents;
-	
-//	private ClickToAddAnnotationListener clickToAddAnnotationListener;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	private final Object lock = new Object();
@@ -288,6 +288,27 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		}
 	}
 	
+	/**
+	 * Show the Control panel, if not visible, and switch to the Annotation tab.
+	 */
+	public void showAnnotationPanel() {
+		invokeOnEDT(() -> {
+			var swingApp = serviceRegistrar.getService(CySwingApplication.class);
+			var cytoPanel = swingApp.getCytoPanel(AnnotationMainPanel.CYTOPANEL_NAME);
+			
+			if (cytoPanel.getState() == CytoPanelState.HIDE)
+				cytoPanel.setState(CytoPanelState.DOCK);
+			
+			int idx = cytoPanel.indexOfComponent(mainPanel.getComponent());
+			
+			if (idx >= 0)
+				cytoPanel.setSelectedIndex(idx);
+		});
+	}
+	
+	/**
+	 * Asks the editor to be updated with the passed annotation and show the editor.
+	 */
 	public void editAnnotation(Annotation a) {
 		if (a != null)
 			invokeOnEDT(() -> mainPanel.editAnnotation(a));
@@ -359,6 +380,8 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 				ignoreSelectedPropChangeEvents = false;
 			}
 		}
+		
+		mainPanel.maybeUpdateEditingAnnotation(mainPanel.getEditingAnnotation());
 	}
 	
 	private void groupAnnotations() {
@@ -491,7 +514,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 			var a = list.size() == 1 ? list.get(0) : null;
 			
 			var mi = new JMenuItem("Modify Annotation...");
-			mi.addActionListener(evt -> mainPanel.editAnnotation(a));
+			mi.addActionListener(evt -> editAnnotation(a));
 			popup.add(mi);
 			mi.setEnabled(a != null && !(a instanceof GroupAnnotation));
 		}

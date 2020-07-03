@@ -2,6 +2,7 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.ui.AnnotationMediator;
+import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -34,14 +35,26 @@ public class EditAnnotationTask extends AbstractTask {
 	private final DingAnnotation annotation; 
 	private final AnnotationMediator mediator;
 
-	public EditAnnotationTask(DingAnnotation annotation, AnnotationMediator mediator) {
-		this.annotation = annotation;
+	public EditAnnotationTask(DingAnnotation a, AnnotationMediator mediator) {
+		this.annotation = a;
 		this.mediator = mediator;
 	}
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setTitle("Edit Annotation");
-		mediator.editAnnotation(annotation);
+		
+		if (annotation != null) {
+			if (annotation instanceof GroupAnnotation) {
+				tm.setStatusMessage("No annotation selected (group selected instead)!");
+			} else {
+				tm.setStatusMessage("Annotation: " + annotation.getName());
+				
+				mediator.editAnnotation(annotation);
+				mediator.showAnnotationPanel();
+			}
+		} else {
+			tm.setStatusMessage("No annotation selected!");
+		}
 	}
 }

@@ -5,6 +5,7 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static javax.swing.GroupLayout.Alignment.TRAILING;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
 import java.awt.Color;
@@ -134,7 +135,7 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 		var layout = new GroupLayout(this);
 		setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
-		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+		layout.setAutoCreateGaps(!isAquaLAF());
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
 				.addGroup(layout.createSequentialGroup()
@@ -144,7 +145,6 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 								.addComponent(label2)
 								.addComponent(label3)
 						)
-						.addPreferredGap(ComponentPlacement.RELATED)
 						.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
 								.addGroup(layout.createSequentialGroup()
 										.addComponent(getLineColorCheck(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -157,7 +157,6 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 				)
 				.addGroup(layout.createSequentialGroup()
 						.addComponent(getSourceArrowPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-						.addPreferredGap(ComponentPlacement.RELATED)
 						.addComponent(getTargetArrowPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				)
 		);
@@ -349,13 +348,13 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 			var label4 = new JLabel("Size:");
 			var label5 = new JLabel("Anchor:");
 			
-			if (LookAndFeelUtil.isAquaLAF())
+			if (isAquaLAF())
 				setOpaque(false);
 			
 			var layout = new GroupLayout(this);
 			setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
-			layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+			layout.setAutoCreateGaps(!isAquaLAF());
 			
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addGroup(layout.createParallelGroup(TRAILING, true)
