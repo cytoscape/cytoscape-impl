@@ -133,6 +133,14 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>application-api</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>swing-application-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>swing-util-api</artifactId>
+		</dependency>
 	</dependencies>
 
 </project>
