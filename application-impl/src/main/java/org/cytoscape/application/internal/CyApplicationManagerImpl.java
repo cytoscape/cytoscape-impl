@@ -20,6 +20,7 @@ import org.cytoscape.application.TableViewRenderer;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentRenderingEngineEvent;
+import org.cytoscape.application.events.SetCurrentTableEvent;
 import org.cytoscape.application.events.SetSelectedNetworkViewsEvent;
 import org.cytoscape.application.events.SetSelectedNetworksEvent;
 import org.cytoscape.event.CyEvent;
@@ -322,9 +323,14 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 
 	@Override
 	public void setCurrentTable(CyTable table) {
+		final List<CyEvent<?>> eventsToFire = new ArrayList<>(1);
+		
 		synchronized (lock) {
 			currentTable = table;
+			eventsToFire.add(new SetCurrentTableEvent(this, currentTable));
 		}
+		
+		fireEvents(eventsToFire);
 	}
 	
 	private Set<CyNetwork> selectNetworks(final Collection<CyNetwork> networks) {

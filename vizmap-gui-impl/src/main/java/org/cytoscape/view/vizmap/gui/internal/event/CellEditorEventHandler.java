@@ -50,7 +50,6 @@ import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheetItem;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapPropertyBuilder;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMediator;
-import org.cytoscape.view.vizmap.gui.internal.view.VizMapperTableMediator;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.AttributeComboBoxPropertyEditor;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
@@ -71,7 +70,6 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 	private final ServicesUtil servicesUtil;
 	private final VizMapperMediator vizMapperMediator;
 	private final VizMapPropertyBuilder vizMapPropertyBuilder;
-	private final VizMapperTableMediator vizMapperTableMediator;
 
 	/**
 	 * Creates a new CellEditorEventHandler object.
@@ -79,13 +77,11 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 	public CellEditorEventHandler(final AttributeSetProxy attrProxy,
 								  final ServicesUtil servicesUtil,
 								  final VizMapPropertyBuilder vizMapPropertyBuilder,
-								  final VizMapperMediator vizMapperMediator,
-								  final VizMapperTableMediator vizMapperTableMediator) {
+								  final VizMapperMediator vizMapperMediator) {
 		this.attrProxy = attrProxy;
 		this.servicesUtil = servicesUtil;
 		this.vizMapPropertyBuilder = vizMapPropertyBuilder;
 		this.vizMapperMediator = vizMapperMediator;
-		this.vizMapperTableMediator = vizMapperTableMediator;
 	}
 
 	

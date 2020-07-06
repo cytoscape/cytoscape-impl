@@ -2,6 +2,7 @@ package org.cytoscape.view.vizmap.gui.internal.model;
 
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_NETWORK_CHANGED;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_NETWORK_VIEW_CHANGED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_TABLE_CHANGED;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_VISUAL_STYLE_CHANGED;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.LOAD_DEFAULT_VISUAL_STYLES;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_ADDED;
@@ -26,6 +27,8 @@ import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
+import org.cytoscape.application.events.SetCurrentTableEvent;
+import org.cytoscape.application.events.SetCurrentTableListener;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -93,7 +96,7 @@ import org.puremvc.java.multicore.patterns.proxy.Proxy;
 public class VizMapperProxy extends Proxy
 							implements VisualStyleAddedListener, VisualStyleAboutToBeRemovedListener,
 							  		   VisualStyleChangedListener, SetCurrentVisualStyleListener,
-							  		   SetCurrentNetworkListener, SetCurrentNetworkViewListener,
+							  		   SetCurrentNetworkListener, SetCurrentNetworkViewListener, SetCurrentTableListener,
 							  		   SessionAboutToBeLoadedListener, SessionLoadedListener, CyStartListener {
 
 	public static final String NAME = "VisualStyleProxy";
@@ -234,6 +237,20 @@ public class VizMapperProxy extends Proxy
 			return null;
 		var renderingEngineManager = servicesUtil.get(RenderingEngineManager.class);
 		return (RenderingEngine<CyTable>) renderingEngineManager.getRenderingEngines(tableView).iterator().next();
+	}
+	
+	public RenderingEngine<CyTable> getCurrentTableRenderingEngine() {
+		CyTable table = getCurrentTable();
+		CyTableViewManager tableViewManager = servicesUtil.get(CyTableViewManager.class);
+		CyTableView tableView = tableViewManager.getTableView(table);
+		
+		var renderingEngineManager = servicesUtil.get(RenderingEngineManager.class);
+		return (RenderingEngine<CyTable>) renderingEngineManager.getRenderingEngines(tableView).iterator().next();
+	}
+	
+	public CyTable getCurrentTable() {
+		CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
+		return appMgr.getCurrentTable();
 	}
 	
 	public VisualStyle getVisualStyle(CyColumn column) {
@@ -463,6 +480,13 @@ public class VizMapperProxy extends Proxy
 	public void handleEvent(final SetCurrentNetworkViewEvent e) {
 		if (cytoscapeStarted && !loadingSession)
 			sendNotification(CURRENT_NETWORK_VIEW_CHANGED, e.getNetworkView());
+	}
+
+	@Override
+	public void handleEvent(SetCurrentTableEvent e) {
+		System.out.println("VizMapperProxy.handleEvent: e.getTable(): " + java.util.Arrays.asList(e.getTable()));
+		if (cytoscapeStarted && !loadingSession)
+			sendNotification(CURRENT_TABLE_CHANGED, e.getTable());
 	}
 	
 	@Override

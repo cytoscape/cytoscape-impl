@@ -18,7 +18,6 @@ import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.EdgeViewTaskFactory;
-import org.cytoscape.task.TableColumnTaskFactory;
 import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.color.Palette;
 import org.cytoscape.util.color.PaletteProvider;
@@ -65,7 +64,6 @@ import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMainPanel;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMediator;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMenuMediator;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperTableDialog;
-import org.cytoscape.view.vizmap.gui.internal.view.VizMapperTableMediator;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.BooleanVisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.ColorVisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.EditorManagerImpl;
@@ -81,7 +79,6 @@ import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.CyColorCho
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.FontValueEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.NumericValueEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.StringValueEditor;
-import org.cytoscape.view.vizmap.gui.internal.view.table.TableStyleDialogTaskFactory;
 import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
 import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
@@ -336,7 +333,6 @@ public class CyActivator extends AbstractCyActivator {
 		
 		var vizMapperMediator = new VizMapperMediator(vizMapperMainPanel, servicesUtil, vizMapPropertyBuilder);
 		var vizMapperMenuMediator = new VizMapperMenuMediator(vizMapperMainPanel, servicesUtil);
-		var vizMapperTableMediator = new VizMapperTableMediator(vizMapperTableDialog, servicesUtil, vizMapPropertyBuilder);
 		
 		var startupCommand = new StartupCommand(vizMapperProxy,
 												attributeSetProxy,
@@ -344,21 +340,11 @@ public class CyActivator extends AbstractCyActivator {
 												propsProxy,
 												vizMapperMediator,
 												vizMapperMenuMediator,
-												vizMapperTableMediator,
 												servicesUtil);
 		
-		var currentTableService = new CurrentTableService(servicesUtil, vizMapperTableMediator, vizMapperMediator, attributeSetProxy);
+		var currentTableService = new CurrentTableService(servicesUtil, vizMapperMediator, attributeSetProxy);
 		registerService(bc, currentTableService, CurrentTableService.class);
 		
-		// Table Panel Context Menu
-		// -------------------------------------------------------------------------------------------------------------
-				
-		{
-			var factory = new TableStyleDialogTaskFactory(vizMapperTableMediator, serviceRegistrar);
-			var props = new Properties();
-			props.setProperty(TITLE, "Open Table Style Dialog");
-			registerService(bc, factory, TableColumnTaskFactory.class, props);
-		}
 		
 		// Register Services
 		// -------------------------------------------------------------------------------------------------------------
@@ -368,7 +354,6 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, propsProxy);
 		
 		registerAllServices(bc, vizMapperMediator);
-		registerAllServices(bc, vizMapperTableMediator);
 		
 		// MKTODO the table mediator needs to register for some of these
 		registerServiceListener(bc, vizMapperMediator::onCyActionRegistered, vizMapperMediator::onCyActionUnregistered, CyAction.class);
@@ -377,7 +362,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		registerServiceListener(bc, vizMapperMenuMediator::onRenderingEngineFactoryRegistered, vizMapperMenuMediator::onRenderingEngineFactoryUnregistered, RenderingEngineFactory.class);
 		
-		var vizMapEventHandlerManager = new VizMapEventHandlerManagerImpl(editorManager, attributeSetProxy, servicesUtil, vizMapPropertyBuilder, vizMapperMediator, vizMapperTableMediator);
+		var vizMapEventHandlerManager = new VizMapEventHandlerManagerImpl(editorManager, attributeSetProxy, servicesUtil, vizMapPropertyBuilder, vizMapperMediator);
 		registerServiceListener(bc, vizMapEventHandlerManager::registerPCL, vizMapEventHandlerManager::unregisterPCL, RenderingEngineFactory.class);
 		
 		// Startup the framework

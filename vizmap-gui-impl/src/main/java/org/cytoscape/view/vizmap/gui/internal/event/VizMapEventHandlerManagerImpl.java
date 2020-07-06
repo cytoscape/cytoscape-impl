@@ -40,7 +40,6 @@ import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapPropertyBuilder;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMediator;
-import org.cytoscape.view.vizmap.gui.internal.view.VizMapperTableMediator;
 
 public class VizMapEventHandlerManagerImpl implements VizMapEventHandlerManager, PropertyChangeListener {
 
@@ -56,14 +55,13 @@ public class VizMapEventHandlerManagerImpl implements VizMapEventHandlerManager,
 										 final AttributeSetProxy attrManager,
 										 final ServicesUtil servicesUtil,
 										 final VizMapPropertyBuilder vizMapPropertyBuilder,
-										 final VizMapperMediator vizMapperMediator,
-										 final VizMapperTableMediator vizMapperTableMediator) {
+										 final VizMapperMediator vizMapperMediator) {
 		this.editorManager = editorManager;
 		this.attrManager = attrManager;
 		this.servicesUtil = servicesUtil;
 
 		eventHandlers = new HashMap<String, VizMapEventHandler>();
-		createHandlers(vizMapPropertyBuilder, vizMapperMediator, vizMapperTableMediator);
+		createHandlers(vizMapPropertyBuilder, vizMapperMediator);
 	}
 
 	/**
@@ -102,9 +100,9 @@ public class VizMapEventHandlerManagerImpl implements VizMapEventHandlerManager,
 			invokeOnEDT(() -> handler.processEvent(e));
 	}
 
-	private void createHandlers(VizMapPropertyBuilder vizMapPropertyBuilder, VizMapperMediator vizMapperMediator, VizMapperTableMediator vizMapperTableMediator) {
+	private void createHandlers(VizMapPropertyBuilder vizMapPropertyBuilder, VizMapperMediator vizMapperMediator) {
 		// Create handler for local property editor event.
-		eventHandlers.put(VALUE, new CellEditorEventHandler(attrManager, servicesUtil, vizMapPropertyBuilder, vizMapperMediator, vizMapperTableMediator));
+		eventHandlers.put(VALUE, new CellEditorEventHandler(attrManager, servicesUtil, vizMapPropertyBuilder, vizMapperMediator));
 	}
 
 	/**

@@ -17,11 +17,9 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 
 import org.cytoscape.application.swing.CyAction;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.GravityTracker;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.PopupMenuGravityTracker;
-import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 
@@ -46,12 +44,12 @@ public class VisualStylePanel {
 	
 	
 	public JComponent getComponent() {
-		return getStylesBtn();
+		return getStylesPnl();
 	}
 	
-	public RenderingEngine<CyNetwork> getRenderingEngine() {
-		return styleSelector.getRenderingEngine(getSelectedVisualStyle());
-	}
+//	public RenderingEngine<CyNetwork> getRenderingEngine() {
+//		return styleSelector.getRenderingEngine(getSelectedVisualStyle());
+//	}
 	
 	public VisualStyle getSelectedVisualStyle() {
 		return styleSelector.getSelectedStyle();
