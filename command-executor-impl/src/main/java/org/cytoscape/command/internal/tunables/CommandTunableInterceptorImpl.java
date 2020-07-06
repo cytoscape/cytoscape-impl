@@ -1,5 +1,8 @@
 package org.cytoscape.command.internal.tunables;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+
 /*
  * #%L
  * Cytoscape Command Executor Impl (command-executor-impl)
@@ -26,12 +29,19 @@ package org.cytoscape.command.internal.tunables;
 
 import java.util.Map;
 
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 import org.cytoscape.application.CyUserLog;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.command.StringTunableHandler;
 import org.cytoscape.command.StringTunableHandlerFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.AbstractTunableInterceptor;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TunableValidator;
@@ -45,7 +55,13 @@ public class CommandTunableInterceptorImpl extends AbstractTunableInterceptor<St
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	private String args = null;
 	private Map<String, Object> mapArgs = null;
-
+	
+	private final CyServiceRegistrar registrar;
+	
+	public CommandTunableInterceptorImpl(CyServiceRegistrar registrar) {
+		this.registrar = registrar;
+	}
+	
 	public void setConfigurationContext(String args) {
 		this.args = args;
 		if (args == null) {
@@ -116,11 +132,7 @@ public class CommandTunableInterceptorImpl extends AbstractTunableInterceptor<St
 				tm.showMessage(TaskMonitor.Level.ERROR, "[ERROR] " + errMsg.toString());
 				return false;
 			} else if (validationState == ValidationState.REQUEST_CONFIRMATION) {
-				if (JOptionPane.showConfirmDialog(new JFrame(), errMsg.toString(),
-								  "Confirmation",
-								  JOptionPane.YES_NO_OPTION)
-				    == JOptionPane.NO_OPTION)
-				{
+				if (!showYesNoDialog(errMsg.toString())) {
 					return false;
 				}
 			}
@@ -130,6 +142,48 @@ public class CommandTunableInterceptorImpl extends AbstractTunableInterceptor<St
 
 		return true;
 	}
+	
+	// MKTODO This should be in the swing-util-api bundle as a utility. Can't do that right now because we
+	// are not updating API for the 3.8.1 release. 
+	// There is a similar copy of this method in PauseCommandTask.
+	private boolean showYesNoDialog(String message) {
+		JFrame parent = registrar.getService(CySwingApplication.class).getJFrame();
+		
+		// Can't use JOptionPane because it doesn't work when run from automation script (CYTOSCAPE-12730).
+		JLabel label = new JLabel(message);
+		JButton yesButton = new JButton("Yes");
+		JButton noButton = new JButton("No");
+		
+		JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(yesButton, noButton);
+		
+		JPanel bodyPanel = new JPanel(new BorderLayout());
+		bodyPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		bodyPanel.add(label, BorderLayout.CENTER);
+		bodyPanel.add(buttonPanel, BorderLayout.SOUTH);
+		
+		JDialog dialog = new JDialog(parent);
+		dialog.getContentPane().add(bodyPanel);
+		
+		boolean[] result = { false };
+		
+		yesButton.addActionListener(e -> {
+			result[0] = true;
+			dialog.dispose();
+		});
+		noButton.addActionListener(e -> {
+			dialog.dispose();
+		});
+		
+		dialog.setTitle("Confirmation");
+		dialog.setMinimumSize(new Dimension(200, 100));
+		dialog.setLocationRelativeTo(parent);
+		dialog.setModal(true);
+		dialog.pack();
+		dialog.setVisible(true);
+		
+		return result[0];
+	}
+	
 
 	public void addTunableHandlerFactory(StringTunableHandlerFactory<StringTunableHandler> f, Map<String,String> p) {
 		super.addTunableHandlerFactory(f,p);
