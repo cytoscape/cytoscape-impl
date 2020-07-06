@@ -1,5 +1,7 @@
 package org.cytoscape.ding.impl.cyannotator.dialogs;
 
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+
 import java.util.Objects;
 
 import javax.swing.JPanel;
@@ -44,6 +46,8 @@ public abstract class AbstractAnnotationEditor<T extends Annotation> extends JPa
 	protected AbstractAnnotationEditor(AnnotationFactory<T> factory, CyServiceRegistrar serviceRegistrar) {
 		this.factory = factory;
 		this.serviceRegistrar = serviceRegistrar;
+		
+		setOpaque(!isAquaLAF());
 		
 		init();
 		update();

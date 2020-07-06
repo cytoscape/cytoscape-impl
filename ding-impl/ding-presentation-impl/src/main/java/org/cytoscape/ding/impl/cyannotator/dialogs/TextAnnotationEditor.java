@@ -199,15 +199,15 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 				.addGroup(layout.createParallelGroup(LEADING, true)
 						.addGroup(layout.createSequentialGroup()
 								.addComponent(label2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-								.addComponent(getFontFamilyCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+								.addComponent(getFontFamilyCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						)
 						.addGroup(layout.createSequentialGroup()
 								.addComponent(label3, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-								.addComponent(getFontStyleCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+								.addComponent(getFontStyleCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						)
 						.addGroup(layout.createSequentialGroup()
 								.addComponent(label4, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-								.addComponent(getFontSizeCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+								.addComponent(getFontSizeCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						)
 		);
 		layout.setVerticalGroup(vGroup);

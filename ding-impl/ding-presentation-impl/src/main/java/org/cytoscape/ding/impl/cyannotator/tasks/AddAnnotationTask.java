@@ -11,6 +11,7 @@ import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.ArrowAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.ImageAnnotationFactory;
+import org.cytoscape.ding.impl.cyannotator.ui.AnnotationMediator;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
@@ -47,15 +48,18 @@ public class AddAnnotationTask extends AbstractTask {
 	private final DRenderingEngine re;
 	private final Point location;
 	private final AnnotationFactory annotationFactory;
+	private final AnnotationMediator annotationMediator;
 
 	public AddAnnotationTask(
 			DRenderingEngine re,
 			Point location,
-			AnnotationFactory<?> annotationFactory
+			AnnotationFactory<?> annotationFactory,
+			AnnotationMediator annotationMediator
 	) {
 		this.re = re;
 		this.location = location != null ? location : re.getComponentCenter();
 		this.annotationFactory = annotationFactory;
+		this.annotationMediator = annotationMediator;
 	}
 
 	@Override
@@ -122,6 +126,10 @@ public class AddAnnotationTask extends AbstractTask {
 						ViewUtils.selectAnnotation(re, (DingAnnotation) annotation);
 					}
 				}
+				
+				// The can now be changed by the user, now that it has been created
+				annotationMediator.editAnnotation(annotation);
+				annotationMediator.showAnnotationPanel();
 			});
 		}
 	}

@@ -1,6 +1,7 @@
 package org.cytoscape.ding.impl.cyannotator.dialogs;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 
 import javax.swing.GroupLayout;
@@ -88,8 +89,8 @@ public class BoundedTextAnnotationEditor extends AbstractAnnotationEditor<Bounde
 				.addComponent(getShapeAnnotationEditor(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addComponent(getTextAnnotationEditor())
-				.addComponent(getShapeAnnotationEditor())
+				.addComponent(getTextAnnotationEditor(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(getShapeAnnotationEditor(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
 	}
 	

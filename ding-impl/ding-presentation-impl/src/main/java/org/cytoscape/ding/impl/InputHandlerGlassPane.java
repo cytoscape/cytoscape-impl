@@ -62,7 +62,6 @@ import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
-import org.cytoscape.ding.impl.cyannotator.tasks.AddAnnotationTask;
 import org.cytoscape.ding.impl.cyannotator.tasks.EditAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.RemoveAnnotationsTask;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
@@ -1236,8 +1235,10 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			if (!(f instanceof AbstractDingAnnotationFactory)) // For now, only DING annotations are supported!
 				return;
 			
-			var task = new AddAnnotationTask(re, point, f);
-			registrar.getService(DialogTaskManager.class).execute(new TaskIterator(task));
+			var filter = "(id=addAnnotationTaskFactory_" + f.getId() + ")";
+			var factory = registrar.getService(NetworkViewLocationTaskFactory.class, filter);
+			var iterator = factory.createTaskIterator(re.getViewModel(), point, null);
+			registrar.getService(DialogTaskManager.class).execute(iterator);
 		}
 		
 		@Override

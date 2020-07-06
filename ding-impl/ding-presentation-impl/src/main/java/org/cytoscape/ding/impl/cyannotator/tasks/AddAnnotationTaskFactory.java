@@ -4,6 +4,7 @@ import java.awt.Point;
 import java.awt.geom.Point2D;
 
 import org.cytoscape.ding.impl.DingRenderer;
+import org.cytoscape.ding.impl.cyannotator.ui.AnnotationMediator;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
@@ -37,10 +38,16 @@ public class AddAnnotationTaskFactory implements NetworkViewLocationTaskFactory 
 
 	private final AnnotationFactory<?> annotationFactory;
 	private final DingRenderer dingRenderer;
+	private final AnnotationMediator annotationMediator;
 
-	public AddAnnotationTaskFactory(AnnotationFactory<?> annotationFactory, DingRenderer dingRenderer) {
+	public AddAnnotationTaskFactory(
+			AnnotationFactory<?> annotationFactory,
+			DingRenderer dingRenderer,
+			AnnotationMediator annotationMediator
+	) {
 		this.annotationFactory = annotationFactory;
 		this.dingRenderer = dingRenderer;
+		this.annotationMediator = annotationMediator;
 	}
 
 	@Override
@@ -52,7 +59,7 @@ public class AddAnnotationTaskFactory implements NetworkViewLocationTaskFactory 
 		
 		var p = new Point((int) javaPt.getX(), (int) javaPt.getY());
 		
-		return new TaskIterator(new AddAnnotationTask(re, p, annotationFactory));
+		return new TaskIterator(new AddAnnotationTask(re, p, annotationFactory, annotationMediator));
 	}
 
 	@Override

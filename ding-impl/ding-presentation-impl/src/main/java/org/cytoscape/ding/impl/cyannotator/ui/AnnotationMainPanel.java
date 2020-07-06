@@ -644,8 +644,7 @@ System.out.println("\t>>> " + selected);
 	}
 	
 	private void init() {
-		if (isAquaLAF())
-			setOpaque(false);
+		setOpaque(!isAquaLAF());
 		
 		equalizeSize(getGroupAnnotationsButton(), getUngroupAnnotationsButton(), getRemoveAnnotationsButton());
 		equalizeSize(getSelectAllButton(), getSelectNoneButton());
