@@ -71,6 +71,7 @@ import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.AnnotationNode;
 import org.cytoscape.ding.impl.cyannotator.AnnotationTree;
 import org.cytoscape.ding.impl.cyannotator.AnnotationTree.Shift;
+import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.dialogs.AbstractAnnotationEditor;
@@ -82,7 +83,9 @@ import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
+import org.cytoscape.view.presentation.annotations.BoundedTextAnnotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
+import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
 
 /*
@@ -250,6 +253,8 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			
 			updateEditPanel();
 		}
+		
+		updateInfoLabel();
 	}
 	
 	boolean isEditMode() {
@@ -268,6 +273,8 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			editingAnnotation = a;
 			updateEditPanel();
 		}
+		
+		updateInfoLabel();
 	}
 	
 	/**
@@ -315,6 +322,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			if (comp != null) {
 				getEditPanel().remove(comp);
 				updateEditPanel();
+				updateInfoLabel();
 			}
 		}
 	}
@@ -519,20 +527,39 @@ System.out.println("AnnotationMainPanel.setSelected(): " + a + " -- " + selected
 	}
 	
 	private void updateInfoLabel() {
-		if (buttonGroup.getSelection() == null) {
-			getInfoLabel().setText(isEnabled() ? "Select the Annotation you want to add..." : " ");
-		} else {
+		var text = " ";
+		
+		if (isCreateMode()) {
 			for (var btn : buttonMap.values()) {
 				if (btn.isSelected()) {
+					text = "New " + (btn.getFactory().getName()) + ": ";
+					
 					if (ArrowAnnotation.class.equals(btn.getFactory().getType()))
-						getInfoLabel().setText("Click another Annotation in the view...");
+						text += "Click another annotation in the view...";
 					else
-						getInfoLabel().setText("Click anywhere on the view...");
+						text += "Click anywhere on the view to add it...";
 					
 					break;
 				}
 			}
+		} else if (editingAnnotation instanceof ArrowAnnotationImpl
+				&& ((ArrowAnnotationImpl) editingAnnotation).getCyAnnotator().getRepositioningArrow() != null) {
+			text += "Click another annotation or node to create the arrow...";
+		} else if (isEditMode()) {
+			var name = editingAnnotation.getName();
+			text = "Edit ";
+			
+			if (editingAnnotation instanceof TextAnnotation || editingAnnotation instanceof BoundedTextAnnotation)
+				text += (editingAnnotation instanceof BoundedTextAnnotation ? "Bounded Text" : "Text");
+			else
+				text += (name != null && !name.isBlank() ? "\"" + name + "\"" : "");
+			
+			text += ":";
+		} else if (isEnabled()) {
+			text = "Select the annotation you want to add...";
 		}
+		
+		getInfoLabel().setText(text);
 	}
 	
 	void updateSelectionLabel() {

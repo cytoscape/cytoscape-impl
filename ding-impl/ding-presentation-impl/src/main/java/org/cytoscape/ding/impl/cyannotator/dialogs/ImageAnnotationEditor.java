@@ -15,6 +15,7 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JSeparator;
 import javax.swing.JSlider;
 import javax.swing.LayoutStyle.ComponentPlacement;
 
@@ -138,6 +139,8 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 		label5 = new JLabel("Brightness:");
 		label6 = new JLabel("Contrast:");
 
+		var sep = new JSeparator();
+		
 		var layout = new GroupLayout(this);
 		setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
@@ -145,25 +148,37 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
 				.addGap(0, 20, Short.MAX_VALUE)
-				.addGroup(layout.createParallelGroup(TRAILING, true)
-						.addComponent(label1)
-						.addComponent(label2)
-						.addComponent(label3)
-						.addComponent(label4)
-						.addComponent(label5)
-						.addComponent(label6)
-				)
-				.addPreferredGap(ComponentPlacement.RELATED)
-				.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+				.addGroup(layout.createParallelGroup(CENTER, false)
 						.addGroup(layout.createSequentialGroup()
-								.addComponent(getBorderColorCheck())
-								.addComponent(getBorderColorButton())
+								.addGroup(layout.createParallelGroup(TRAILING, true)
+										.addComponent(label1)
+										.addComponent(label2)
+										.addComponent(label3)
+								)
+								.addPreferredGap(ComponentPlacement.RELATED)
+								.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+										.addGroup(layout.createSequentialGroup()
+												.addComponent(getBorderColorCheck())
+												.addComponent(getBorderColorButton())
+										)
+										.addComponent(getBorderOpacitySlider(), 100, 140, 140)
+										.addComponent(getBorderWidthCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								)
 						)
-						.addComponent(getBorderOpacitySlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(getBorderWidthCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(getOpacitySlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(getBrightnessSlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(getContrastSlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addGroup(layout.createSequentialGroup()
+								.addGroup(layout.createParallelGroup(TRAILING, true)
+										.addComponent(label4)
+										.addComponent(label5)
+										.addComponent(label6)
+								)
+								.addPreferredGap(ComponentPlacement.RELATED)
+								.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+										.addComponent(getOpacitySlider(), 100, 140, 140)
+										.addComponent(getBrightnessSlider(), 100, 140, 140)
+										.addComponent(getContrastSlider(), 100, 140, 140)
+								)
+						)
 				)
 				.addGap(0, 20, Short.MAX_VALUE)
 		);
@@ -181,7 +196,9 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 						.addComponent(label3)
 						.addComponent(getBorderWidthCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
-				.addGap(20)
+				.addPreferredGap(ComponentPlacement.RELATED)
+				.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addPreferredGap(ComponentPlacement.RELATED)
 				.addGroup(layout.createParallelGroup(LEADING, false)
 						.addComponent(label4)
 						.addComponent(getOpacitySlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)

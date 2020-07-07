@@ -26,6 +26,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JSlider;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
@@ -178,6 +179,7 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 		var label6 = new JLabel("Border Width:");
 
 		var scrollPane = new JScrollPane(getShapeList());
+		var sep = new JSeparator();
 		
 		var layout = new GroupLayout(this);
 		setLayout(layout);
@@ -185,9 +187,10 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 		layout.setAutoCreateGaps(!isAquaLAF());
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
+				.addGap(0, 20, Short.MAX_VALUE)
 				.addGroup(layout.createParallelGroup(LEADING, true)
 						.addComponent(label1)
-						.addComponent(scrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(scrollPane)
 				)
 				.addPreferredGap(ComponentPlacement.UNRELATED)
 				.addGroup(layout.createSequentialGroup()
@@ -204,15 +207,17 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 										.addComponent(getFillColorCheck())
 										.addComponent(getFillColorButton())
 								)
-								.addComponent(getFillOpacitySlider(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+								.addComponent(getFillOpacitySlider(), 100, 140, 140)
+								.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 								.addGroup(layout.createSequentialGroup()
 										.addComponent(getBorderColorCheck())
 										.addComponent(getBorderColorButton())
 								)
-								.addComponent(getBorderOpacitySlider(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+								.addComponent(getBorderOpacitySlider(), 100, 140, 140)
 								.addComponent(getBorderWidthCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						)
 				)
+				.addGap(0, 20, Short.MAX_VALUE)
 		);
 		layout.setVerticalGroup(layout.createParallelGroup(LEADING, true)
 				.addGroup(layout.createSequentialGroup()
@@ -230,7 +235,9 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 										.addComponent(label3)
 										.addComponent(getFillOpacitySlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 								)
-								.addGap(20)
+								.addPreferredGap(ComponentPlacement.RELATED)
+								.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								.addPreferredGap(ComponentPlacement.RELATED)
 								.addGroup(layout.createParallelGroup(CENTER, false)
 										.addComponent(label4)
 										.addComponent(getBorderColorCheck())

@@ -325,22 +325,22 @@ public class GraphicsUtilities {
 
 	public static Shape getArrowShape(ArrowType arrowType, double size) {
 		switch (arrowType) {
-		case CIRCLE:
-			return circleArrow(size);
-		case CLOSED:
-			return closedArrow(size);
-		case CONCAVE:
-			return concaveArrow(size);
-		case DIAMOND:
-			return diamondArrow(size);
-		case OPEN:
-			return openArrow(size);
-		case TRIANGLE:
-			return triangleArrow(size);
-		case TSHAPE:
-			return tshapeArrow(size);
-		default:
-			return null;
+			case CIRCLE:
+				return circleArrow(size);
+			case CLOSED:
+				return closedArrow(size);
+			case CONCAVE:
+				return concaveArrow(size);
+			case DIAMOND:
+				return diamondArrow(size);
+			case OPEN:
+				return openArrow(size);
+			case TRIANGLE:
+				return triangleArrow(size);
+			case TSHAPE:
+				return tshapeArrow(size);
+			default:
+				return null;
 		}
 	}
 

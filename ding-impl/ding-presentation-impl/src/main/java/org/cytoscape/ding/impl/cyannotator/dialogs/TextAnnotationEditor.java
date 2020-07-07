@@ -19,6 +19,7 @@ import javax.swing.GroupLayout;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.UIManager;
@@ -155,47 +156,54 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 		var label3 = new JLabel("Style:");
 		var label4 = new JLabel("Size:");
 
+		var sep = new JSeparator();
+		
 		var layout = new GroupLayout(this);
 		setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(!isAquaLAF());
 		
-		var hGroup = layout.createParallelGroup(LEADING, true);
-		hGroup.addGroup(layout.createSequentialGroup()
-						.addComponent(label1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addPreferredGap(ComponentPlacement.RELATED)
-						.addComponent(getTextField(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-						.addComponent(getTextColorButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+				.addGap(0, 20, Short.MAX_VALUE)
+				.addGroup(layout.createParallelGroup(LEADING, true)
+						.addGroup(layout.createSequentialGroup()
+								.addComponent(label1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								.addPreferredGap(ComponentPlacement.RELATED)
+								.addComponent(getTextField(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+								.addComponent(getTextColorButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						)
+						.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addGroup(layout.createSequentialGroup()
+								.addGroup(layout.createParallelGroup(LEADING, true)
+										.addComponent(label2)
+										.addComponent(getFontFamilyCombo())
+								)
+								.addPreferredGap(ComponentPlacement.RELATED)
+								.addGroup(layout.createParallelGroup(LEADING, true)
+										.addComponent(label3)
+										.addComponent(getFontStyleCombo())
+								)
+								.addPreferredGap(ComponentPlacement.RELATED)
+								.addGroup(layout.createParallelGroup(LEADING, true)
+										.addComponent(label4)
+										.addComponent(getFontSizeCombo())
+								)
+						)
+						.addGroup(layout.createSequentialGroup()
+								.addComponent(getFontStyleCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								.addComponent(getFontSizeCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						)
+						.addGap(0, 20, Short.MAX_VALUE)
 				)
-				.addGroup(layout.createSequentialGroup()
-						.addGroup(layout.createParallelGroup(LEADING, true)
-								.addComponent(label2)
-								.addComponent(getFontFamilyCombo())
-						)
-						.addPreferredGap(ComponentPlacement.RELATED)
-						.addGroup(layout.createParallelGroup(LEADING, true)
-								.addComponent(label3)
-								.addComponent(getFontStyleCombo())
-						)
-						.addPreferredGap(ComponentPlacement.RELATED)
-						.addGroup(layout.createParallelGroup(LEADING, true)
-								.addComponent(label4)
-								.addComponent(getFontSizeCombo())
-						)
-				)
-				.addGroup(layout.createSequentialGroup()
-						.addComponent(getFontStyleCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(getFontSizeCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				);
-		layout.setHorizontalGroup(hGroup);
-
-		var vGroup = layout.createSequentialGroup();
-		vGroup.addGroup(layout.createParallelGroup(CENTER, false)
+				.addGap(0, 20, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup(CENTER, false)
 						.addComponent(label1)
 						.addComponent(getTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(getTextColorButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
-				.addPreferredGap(ComponentPlacement.RELATED)
+				.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addGroup(layout.createParallelGroup(LEADING, true)
 						.addGroup(layout.createSequentialGroup()
 								.addComponent(label2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -209,8 +217,8 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 								.addComponent(label4, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 								.addComponent(getFontSizeCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						)
+				)
 		);
-		layout.setVerticalGroup(vGroup);
 		
 		makeSmall(label1, label2, label3, label4);
 		makeSmall(getTextField(), getTextColorButton(), getFontFamilyCombo(), getFontStyleCombo(), getFontSizeCombo());

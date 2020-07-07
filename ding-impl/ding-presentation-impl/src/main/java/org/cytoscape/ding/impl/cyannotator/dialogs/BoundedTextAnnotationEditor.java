@@ -5,6 +5,7 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 
 import javax.swing.GroupLayout;
+import javax.swing.JSeparator;
 
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -79,17 +80,23 @@ public class BoundedTextAnnotationEditor extends AbstractAnnotationEditor<Bounde
 	
 	@Override
 	protected void init() {
+		var sep = new JSeparator();
+		
 		var layout = new GroupLayout(this);
 		setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
+				.addGap(0, 20, Short.MAX_VALUE)
 				.addComponent(getTextAnnotationEditor(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(getShapeAnnotationEditor(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addGap(0, 20, Short.MAX_VALUE)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addComponent(getTextAnnotationEditor(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(getShapeAnnotationEditor(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
 	}
