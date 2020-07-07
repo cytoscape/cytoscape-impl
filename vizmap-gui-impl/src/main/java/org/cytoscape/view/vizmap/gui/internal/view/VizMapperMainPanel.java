@@ -4,8 +4,10 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
+import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
@@ -21,7 +23,9 @@ import javax.swing.JPopupMenu;
 
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -68,6 +72,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	private final ServicesUtil servicesUtil;
 	
 	private VisualStylePanel visualStylePanel;
+	private ColumnStylePanel columnStylePanel;
 	private PropertySheetPanel propertySheetPanel;
 	
 	
@@ -132,18 +137,19 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		return visualStylePanel;
 	}
 	
+	ColumnStylePanel getColumnStylePnl() {
+		if(columnStylePanel == null) {
+			columnStylePanel = new ColumnStylePanel(servicesUtil);
+		}
+		return columnStylePanel;
+	}
+	
 	PropertySheetPanel getPropertiesPnl() {
 		if(propertySheetPanel == null) {
 			propertySheetPanel = new PropertySheetPanel();
 		}
 		return propertySheetPanel;
 	}
-	
-	
-//	@Override
-//	public RenderingEngine<CyNetwork> getRenderingEngine() {
-//		return getStylesPnl().getRenderingEngine();
-//	}
 	
 	
 	/**
@@ -231,11 +237,32 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	public void addContextMenuItem(JMenuItem menuItem, double gravity, boolean insertSeparatorBefore, boolean insertSeparatorAfter) {
 		getPropertiesPnl().addContextMenuItem(menuItem, gravity, insertSeparatorBefore, insertSeparatorAfter);
 	}
+	
+	public void updateColumns(Collection<CyColumn> columns, CyColumn selected) {
+		getColumnStylePnl().updateColumns(columns, selected);
+	}
+	
 
 	private void init() {
 		setMinimumSize(new Dimension(420, 240));
 		setPreferredSize(new Dimension(420, 385));
 		setOpaque(!isAquaLAF());
+		
+		JPanel topPanel = new JPanel();
+		CardLayout cardLayout = new CardLayout();
+		topPanel.setLayout(cardLayout);
+		
+		topPanel.add(getStylesPnl().getComponent(), "styles");
+		topPanel.add(getColumnStylePnl().getComponent(), "columns");
+		
+		getPropertiesPnl().getPropertiesPn().addChangeListener(e -> {
+			var type = getPropertiesPnl().getSelectedVisualPropertySheet().getModel().getTargetDataType();
+			if(CyColumn.class.equals(type) || CyTable.class.equals(type)) {
+				cardLayout.show(topPanel, "columns");
+			} else {
+				cardLayout.show(topPanel, "styles");
+			}
+	    });
 		
 		final GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);
@@ -243,12 +270,12 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		layout.setAutoCreateGaps(!isAquaLAF());
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
-				.addComponent(getStylesPnl().getComponent(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(topPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(getPropertiesPnl().getComponent(), DEFAULT_SIZE, 280, Short.MAX_VALUE)
 		);
 		layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING)
 				.addGroup(layout.createSequentialGroup()
-						.addComponent(getStylesPnl().getComponent(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(topPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(getPropertiesPnl().getComponent(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				)
 		);

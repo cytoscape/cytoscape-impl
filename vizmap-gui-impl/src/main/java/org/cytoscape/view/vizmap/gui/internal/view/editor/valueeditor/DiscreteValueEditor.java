@@ -150,7 +150,7 @@ public class DiscreteValueEditor<T> implements VisualPropertyValueEditor<T> {
 		if (vp == null)
 			return values;
 		
-		var lexicon = servicesUtil.get(CurrentTableService.class).getCurrentVisualLexicon();
+		var lexicon = servicesUtil.get(CurrentTableService.class).getCurrentVisualLexicon(vp);
 		return (Set<T>) lexicon.getSupportedValueRange(vp);
 	}
 

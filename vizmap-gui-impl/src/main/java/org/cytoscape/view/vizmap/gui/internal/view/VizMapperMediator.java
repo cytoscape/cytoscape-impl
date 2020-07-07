@@ -70,6 +70,7 @@ import org.cytoscape.view.model.events.UpdateNetworkPresentationListener;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.DefaultVisualizableVisualProperty;
+import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
@@ -273,24 +274,28 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				vizMapperMainPanel.getStylesBtn().update();
 				break;
 			case CURRENT_TABLE_CHANGED:
-//				CyTable table = (CyTable) body;
-//				vmProxy.getVisualStyle(column)
-//				invokeOnEDT(() -> {
-//					updateTableVisualPropertySheets((VisualStyle) body, false);
-//				});
+				// MKTODO need to remember the selected column
+				CyTable table = (CyTable) body;
+				invokeOnEDT(() -> {
+					updateTableVisualPropertySheets(table, false);
+				});
 				break;
 		}
 	}
 	
 	private RenderingEngine<?> getRenderingEngine(Class<? extends CyIdentifiable> type) {
-//		var type = vizMapperMainPanel.getPropertiesPnl().getSelectedVisualPropertySheet().getModel().getTargetDataType();
-		if(NETWORK_SHEET_TYPES.contains(type)) {
+		if(NETWORK_SHEET_TYPES.contains(type))
 			return vmProxy.getCurrentRenderingEngine();
-		} else {
+		else
 			return vmProxy.getCurrentTableRenderingEngine();
-		}
 	}
 	
+	private VisualProperty<?> getRootVP(Class<? extends CyIdentifiable> type) {
+		if(NETWORK_SHEET_TYPES.contains(type))
+			return BasicVisualLexicon.NETWORK;
+		else
+			return BasicTableVisualLexicon.CELL;
+	}
 	
 
 	@Override
@@ -541,9 +546,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 
 	private void updateDefaultProps() {
 		defVisibleProps.clear();
-		defVisibleProps.put(CyNode.class, propsProxy.getDefaultVisualProperties(CyNode.class));
-		defVisibleProps.put(CyEdge.class, propsProxy.getDefaultVisualProperties(CyEdge.class));
+		defVisibleProps.put(CyNode.class,    propsProxy.getDefaultVisualProperties(CyNode.class));
+		defVisibleProps.put(CyEdge.class,    propsProxy.getDefaultVisualProperties(CyEdge.class));
 		defVisibleProps.put(CyNetwork.class, propsProxy.getDefaultVisualProperties(CyNetwork.class));
+		defVisibleProps.put(CyColumn.class,  propsProxy.getDefaultVisualProperties(CyColumn.class));
 	}
 	
 	private void initView() {
@@ -727,9 +733,15 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		updateVisualPropertySheets(vs, NETWORK_SHEET_TYPES, resetDefaultVisibleItems, rebuild);
 	}
 	
-	private void updateTableVisualPropertySheets(VisualStyle vs, boolean resetDefaultVisibleItems) {
+	private void updateTableVisualPropertySheets(CyTable table, boolean resetDefaultVisibleItems) {
+		Collection<CyColumn> columns = table.getColumns();
+		// MKTODO remember the selected column
+		CyColumn firstCol = columns.iterator().next(); // a table must have at least a key column
+		System.out.println("Using VP for " + firstCol);
+		var vs = vmProxy.getVisualStyle(firstCol);
 		boolean rebuild = shouldRebuildTableVisualPropertySheets(vs);
 		updateVisualPropertySheets(vs, TABLE_SHEET_TYPES, resetDefaultVisibleItems, rebuild);
+		vizMapperMainPanel.updateColumns(columns, firstCol);
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -773,7 +785,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		}
 		
 		if (rebuild) {
-			createVisualPropertySheets(sheetTypes, resetDefaultVisibleItems);
+			createVisualPropertySheets(vs, sheetTypes, resetDefaultVisibleItems);
 		} else {
 			// Just update the current Visual Property sheets
 			final Set<VisualPropertySheet> vpSheets = vizMapperMainPanel.getVisualPropertySheets();
@@ -820,10 +832,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	}
 	
 	
-	private void createVisualPropertySheets(List<Class<? extends CyIdentifiable>> sheetTypes, boolean resetDefaultVisibleItems) {
-		final VisualStyle style = vmProxy.getCurrentVisualStyle();
-		final VisualLexicon lexicon = vmProxy.getCurrentVisualLexicon();
-		
+	private void createVisualPropertySheets(VisualStyle style, List<Class<? extends CyIdentifiable>> sheetTypes, boolean resetDefaultVisibleItems) {
 		invokeOnEDT(() -> {
 			final VisualPropertySheet selVpSheet = getSelectedVisualPropertySheet();
 			final Class<? extends CyIdentifiable> selectedTargetDataType = selVpSheet != null ?
@@ -831,6 +840,11 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			
 			for (final Class<? extends CyIdentifiable> type : sheetTypes) {
 				// Create Visual Property Sheet
+				RenderingEngine<?> re = getRenderingEngine(type);
+				if(re == null)
+					System.out.println("its null! " + type);
+				final VisualLexicon lexicon = re.getVisualLexicon();
+				
 				final VisualPropertySheetModel model = new VisualPropertySheetModel(type, style, lexicon);
 				final VisualPropertySheet vpSheet = new VisualPropertySheet(model, servicesUtil);
 				vizMapperMainPanel.addVisualPropertySheet(vpSheet);
@@ -891,26 +905,19 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private Set<VisualPropertySheetItem<?>> createVisualPropertySheetItems(final Class<? extends CyIdentifiable> type,
-			final VisualLexicon lexicon, final VisualStyle style) {
+	private Set<VisualPropertySheetItem<?>> createVisualPropertySheetItems(final Class<? extends CyIdentifiable> type, final VisualLexicon lexicon, final VisualStyle style) {
 		final Set<VisualPropertySheetItem<?>> items = new HashSet<>();
 		
 		if (lexicon == null || style == null)
 			return items;
 		
-		final Collection<VisualProperty<?>> vpList = lexicon.getAllDescendants(BasicVisualLexicon.NETWORK);
-		
-		final CyNetworkView curNetView = vmProxy.getCurrentNetworkView();
-		final Set<View<CyNode>> selectedNodeViews = vmProxy.getSelectedNodeViews(curNetView);
-		final Set<View<CyEdge>> selectedEdgeViews = vmProxy.getSelectedEdgeViews(curNetView);
-		final Set<View<CyNetwork>> selectedNetViews = curNetView != null ?
-				Collections.singleton((View<CyNetwork>) curNetView) : Collections.EMPTY_SET;
+		final Collection<VisualProperty<?>> vpList = lexicon.getAllDescendants(getRootVP(type));
 		final RenderingEngine<?> engine = getRenderingEngine(type);
 		
 		for (final VisualProperty<?> vp : vpList) {
 			if (vp.getTargetDataType() != type || vp instanceof DefaultVisualizableVisualProperty)
 				continue;
-			if (!vmProxy.isSupported(vp))
+			if (!VizMapperProxy.isSupported(lexicon, vp))
 				continue;
 			
 			// Create model
@@ -918,19 +925,24 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			final Set values;
 			
 			if (vp.getTargetDataType() == CyNode.class) {
+				final CyNetworkView curNetView = vmProxy.getCurrentNetworkView();
+				final Set<View<CyNode>> selectedNodeViews = vmProxy.getSelectedNodeViews(curNetView);
 				values = getDistinctLockedValues(vp, selectedNodeViews);
 				updateVpInfoLockedState(model, values, selectedNodeViews);
 			} else if (vp.getTargetDataType() == CyEdge.class) {
+				final CyNetworkView curNetView = vmProxy.getCurrentNetworkView();
+				final Set<View<CyEdge>> selectedEdgeViews = vmProxy.getSelectedEdgeViews(curNetView);
 				values = getDistinctLockedValues(vp, selectedEdgeViews);
 				updateVpInfoLockedState(model, values, selectedEdgeViews);
-			} else {
+			} else if (vp.getTargetDataType() == CyNetwork.class) {
+				final CyNetworkView curNetView = vmProxy.getCurrentNetworkView();
+				final Set<View<CyNetwork>> selectedNetViews = curNetView != null ? Collections.singleton((View<CyNetwork>)curNetView) : Collections.EMPTY_SET;
 				values = getDistinctLockedValues(vp, selectedNetViews);
 				updateVpInfoLockedState(model, values, selectedNetViews);
 			}
 			
 			// Create View
-			final VisualPropertySheetItem<?> sheetItem = new VisualPropertySheetItem(model, vizMapPropertyBuilder,
-					servicesUtil);
+			final VisualPropertySheetItem<?> sheetItem = new VisualPropertySheetItem(model, vizMapPropertyBuilder, servicesUtil);
 			items.add(sheetItem);
 			
 			// Add listeners to item and model:
@@ -964,12 +976,11 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		for (final VisualPropertyDependency<?> dep : dependencies) {
 			if (dep.getParentVisualProperty().getTargetDataType() != type)
 				continue;
-			if (!vmProxy.isSupported(dep))
+			if (!VizMapperProxy.isSupported(lexicon, dep))
 				continue;
 			
 			final VisualPropertySheetItemModel<?> model = new VisualPropertySheetItemModel(dep, style, engine, lexicon);
-			final VisualPropertySheetItem<?> sheetItem = new VisualPropertySheetItem(model, vizMapPropertyBuilder,
-					servicesUtil);
+			final VisualPropertySheetItem<?> sheetItem = new VisualPropertySheetItem(model, vizMapPropertyBuilder, servicesUtil);
 			items.add(sheetItem);
 		}
 		

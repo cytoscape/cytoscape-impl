@@ -388,10 +388,6 @@ public class VizMapperProxy extends Proxy
 		return PropertySheetUtil.isCompatible(vp) && lexicon.isSupported(vp);
 	}
 	
-	public boolean isSupported(VisualProperty<?> vp) {
-		return isSupported(getCurrentVisualLexicon(), vp);
-	}
-	
 	public static boolean isSupported(VisualLexicon lexicon, VisualPropertyDependency<?> dependency) {
 		if (!isSupported(lexicon, dependency.getParentVisualProperty()))
 			return false;
@@ -403,11 +399,6 @@ public class VizMapperProxy extends Proxy
 		
 		return true;
 	}
-	
-	public boolean isSupported(VisualPropertyDependency<?> dependency) {
-		return isSupported(getCurrentVisualLexicon(), dependency);
-	}
-	
 	
 	public void setIgnoreStyleEvents(final boolean b) {
 		synchronized (lock) {

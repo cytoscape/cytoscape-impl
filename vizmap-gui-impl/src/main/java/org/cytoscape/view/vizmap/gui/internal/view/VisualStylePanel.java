@@ -47,10 +47,6 @@ public class VisualStylePanel {
 		return getStylesPnl();
 	}
 	
-//	public RenderingEngine<CyNetwork> getRenderingEngine() {
-//		return styleSelector.getRenderingEngine(getSelectedVisualStyle());
-//	}
-	
 	public VisualStyle getSelectedVisualStyle() {
 		return styleSelector.getSelectedStyle();
 	}
@@ -156,6 +152,7 @@ public class VisualStylePanel {
 	}
 	
 	
+	@SuppressWarnings("serial")
 	class VisualStyleDropDownButton extends DropDownMenuButton {
 
 		private JPopupMenu popup;
