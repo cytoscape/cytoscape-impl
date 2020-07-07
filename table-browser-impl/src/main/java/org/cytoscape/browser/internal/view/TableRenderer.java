@@ -107,7 +107,7 @@ public class TableRenderer implements CyDisposable {
 	public void setColumnFormat(String name, String format) {
 		View<CyColumn> colView = getTableView().getColumnView(name);
 		if(colView != null) {
-			colView.setVisualProperty(BasicTableVisualLexicon.CELL_FORMAT, format);
+			colView.setLockedValue(BasicTableVisualLexicon.CELL_FORMAT, format);
 		}		
 	}
 	

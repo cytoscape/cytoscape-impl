@@ -74,7 +74,6 @@ import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.CyColor
 import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.CyComboBoxPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.CyFontPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.BooleanValueEditor;
-import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.CellFormatValueEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.CyColorChooser;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.FontValueEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.NumericValueEditor;
@@ -136,7 +135,6 @@ public class CyActivator extends AbstractCyActivator {
 		var integerValueEditor = new NumericValueEditor<>(Integer.class);
 		var floatValueEditor = new NumericValueEditor<>(Float.class);
 		var stringValueEditor = new StringValueEditor();
-		var cellFormatValueEditor = new CellFormatValueEditor(serviceRegistrar);
 		var booleanValueEditor = new BooleanValueEditor();
 		var fontValueEditor = new FontValueEditor(servicesUtil);
 		
@@ -179,7 +177,6 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, integerValueEditor);
 		registerAllServices(bc, floatValueEditor);
 		registerAllServices(bc, stringValueEditor);
-		registerAllServices(bc, cellFormatValueEditor);
 		registerAllServices(bc, booleanValueEditor);
 		registerAllServices(bc, fontValueEditor);
 		
