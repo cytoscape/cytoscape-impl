@@ -196,12 +196,20 @@ public class VizMapperProxy extends Proxy
 		}
 	}
 	
+	public boolean isTableStyle(VisualStyle style) {
+		// MKTODO getAllVisualStyles builds a new set, perhaps optimize this
+		return servicesUtil.get(TableVisualMappingManager.class).getAllVisualStyles().contains(style);
+	}
+	
+	
+	@Deprecated
 	public VisualStyle getCurrentVisualStyle() {
 		synchronized (lock) {
 			return servicesUtil.get(VisualMappingManager.class).getCurrentVisualStyle();
 		}
 	}
 
+	@Deprecated
 	public void setCurrentVisualStyle(VisualStyle vs) {
 		final VisualStyle curVs = getCurrentVisualStyle();
 		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);

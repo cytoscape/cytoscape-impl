@@ -21,6 +21,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.text.Collator;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -246,8 +247,12 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				});
 				break;
 			case VISUAL_STYLE_UPDATED:
-				if(body != null && body.equals(vmProxy.getCurrentVisualStyle())) {
-					updateNetworkVisualPropertySheets((VisualStyle) body, false);
+				if(body != null) {
+					VisualStyle style = (VisualStyle) body;
+					// MKTODO this only works for visual styles applied to a network
+					if(body.equals(vmProxy.getCurrentVisualStyle())) {
+						updateNetworkVisualPropertySheets((VisualStyle) body, false);
+					}
 				}
 				break;
 			case CURRENT_NETWORK_VIEW_CHANGED:
@@ -298,6 +303,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	}
 	
 
+	// MKTODO possibly get rid of this method
 	@Override
 	public void handleEvent(final LexiconStateChangedEvent e) {
 		// Update Network Views
@@ -336,31 +342,36 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		final CyNetwork curNet = vmProxy.getCurrentNetwork();
 		
 		if (curNet != null) {
-			VisualPropertySheet vpSheet = null;
+			List<VisualPropertySheet> vpSheets = new ArrayList<>(2);
 			
 			if (tbl.equals(curNet.getDefaultEdgeTable()))
-				vpSheet = vizMapperMainPanel.getVisualPropertySheet(CyEdge.class);
+				vpSheets.add(vizMapperMainPanel.getVisualPropertySheet(CyEdge.class));
 			else if (tbl.equals(curNet.getDefaultNodeTable()))
-				vpSheet = vizMapperMainPanel.getVisualPropertySheet(CyNode.class);
+				vpSheets.add(vizMapperMainPanel.getVisualPropertySheet(CyNode.class));
 			else if (tbl.equals(curNet.getDefaultNetworkTable()))
-				vpSheet = vizMapperMainPanel.getVisualPropertySheet(CyNetwork.class);
+				vpSheets.add(vizMapperMainPanel.getVisualPropertySheet(CyNetwork.class));
 			
-			if (vpSheet != null) {
+			if (tbl.equals(vmProxy.getCurrentTable()))
+				vpSheets.add(vizMapperMainPanel.getVisualPropertySheet(CyColumn.class));
+			
+			if (!vpSheets.isEmpty()) {
 				final Set<String> columns = e.getColumns();
 				
-				for (final VisualPropertySheetItem<?> item : vpSheet.getItems()) {
-					final VisualMappingFunction<?, ?> mapping = item.getModel().getVisualMappingFunction();
-					
-					if (mapping != null) {
-						for (String columnName : columns) {
-							if (mapping.getMappingColumnName().equalsIgnoreCase(columnName)) {
-								invokeOnEDT(() -> item.updateMapping());
-								break;
+				for (VisualPropertySheet vpSheet : vpSheets) {
+					for (VisualPropertySheetItem<?> item : vpSheet.getItems()) {
+						VisualMappingFunction<?, ?> mapping = item.getModel().getVisualMappingFunction();
+						if (mapping != null) {
+							for (String columnName : columns) {
+								if (mapping.getMappingColumnName().equalsIgnoreCase(columnName)) {
+									invokeOnEDT(() -> item.updateMapping());
+									break;
+								}
 							}
 						}
 					}
 				}
 			}
+			
 		}
 	}
 	
@@ -406,7 +417,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			}
 		}
 	}
-	
+
 	public VisualPropertySheetItem<?> getCurrentVisualPropertySheetItem() {
 		return curVpSheetItem;
 	}
@@ -1268,7 +1279,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		final VisualPropertySheetItemModel model = vpSheetItem.getModel();
 		final VisualProperty vp = model.getVisualProperty();
 
-		final VisualStyle style = vmProxy.getCurrentVisualStyle();
+		final VisualStyle style = vpSheetItem.getModel().getVisualStyle();
 		final Object oldValue = style.getDefaultValue(vp);
 		Object val = null;
 		
