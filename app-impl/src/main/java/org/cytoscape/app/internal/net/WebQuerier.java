@@ -411,16 +411,31 @@ public class WebQuerier {
 							if (isCompatible)
 								releases.add(release);
 						}
-						
+	
 						// Sort releases by version number
 						Collections.sort(releases, Comparator.comparing(Release::getReleaseVersion, ( a, b ) -> {	
+							Version aVersion = null;
+							Version bVersion = null;
 							try {
-								final Version aVersion = new Version(a);
-								final Version bVersion = new Version(b);
-								return aVersion.compare(bVersion);
+								aVersion = new Version(a);
 							} catch (Exception e) {
-								e.printStackTrace();
+								aVersion = null;
+							}
+							
+							try {
+								bVersion = new Version(b);
+							} catch (Exception e) {
+								bVersion = null; 
+							}
+							
+							if (aVersion == null && bVersion == null) {
 								return 0;
+							} else if (aVersion == null && bVersion != null) {
+								return -1;
+							} else if (bVersion == null && aVersion != null) {
+								return 1;
+							} else {
+								return aVersion.compare(bVersion);
 							}
 						}));
 					}
