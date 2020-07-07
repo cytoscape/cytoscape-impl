@@ -475,7 +475,6 @@ public class VizMapperProxy extends Proxy
 
 	@Override
 	public void handleEvent(SetCurrentTableEvent e) {
-		System.out.println("VizMapperProxy.handleEvent: e.getTable(): " + java.util.Arrays.asList(e.getTable()));
 		if (cytoscapeStarted && !loadingSession)
 			sendNotification(CURRENT_TABLE_CHANGED, e.getTable());
 	}

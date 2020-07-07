@@ -222,6 +222,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		final String id = notification.getName();
 		final Object body = notification.getBody();
 		
+		System.out.println("handleNotification: " + id);
 		switch(id) {
 			case VISUAL_STYLE_SET_CHANGED:
 				updateVisualStyleList((SortedSet<VisualStyle>) body, true);
@@ -233,7 +234,6 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			case CURRENT_VISUAL_STYLE_CHANGED:
 				invokeOnEDTAndWait(() -> {
 					ignoreVisualStyleSelectedEvents = true;
-					
 					try {
 						selectCurrentVisualStyle((VisualStyle) body);
 					} finally {
@@ -707,10 +707,12 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		
 		invokeOnEDT(() -> {
 			ignoreVisualStyleSelectedEvents = true;
-			final VisualStyle vs = vmProxy.getCurrentVisualStyle();
+			VisualStyle vs = vmProxy.getCurrentVisualStyle();
+			CyTable table = vmProxy.getCurrentTable();
 			vizMapperMainPanel.updateVisualStyles(styles, vs);
 			selectCurrentVisualStyle(vs);
 			updateNetworkVisualPropertySheets(vs, resetDefaultVisibleItems);
+			updateTableVisualPropertySheets(table, resetDefaultVisibleItems);
 			ignoreVisualStyleSelectedEvents = false;
 		});
 	}
