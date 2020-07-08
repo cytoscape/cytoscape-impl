@@ -29,7 +29,6 @@ import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.WebApp.Release;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
 import org.cytoscape.app.internal.util.DebugHelper;
-import org.cytoscape.app.internal.manager.Version;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.io.util.StreamUtil;
@@ -413,16 +412,7 @@ public class WebQuerier {
 						}
 						
 						// Sort releases by version number
-						Collections.sort(releases, Comparator.comparing(Release::getReleaseVersion, ( a, b ) -> {	
-							try {
-								final Version aVersion = new Version(a);
-								final Version bVersion = new Version(b);
-								return aVersion.compare(bVersion);
-							} catch (Exception e) {
-								e.printStackTrace();
-								return 0;
-							}
-						}));
+						Collections.sort(releases, Comparator.comparing(Release::getReleaseVersion));
 					}
 					
 					webApp.setReleases(releases);
