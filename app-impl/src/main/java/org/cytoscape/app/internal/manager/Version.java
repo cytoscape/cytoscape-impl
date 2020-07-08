@@ -14,7 +14,7 @@ import org.cytoscape.app.internal.util.AppUtil;
  * are a, ., 1., 1..3, and 1.2.3-.
  */
 
-public class Version {
+class Version {
 	static private final int UNDEFINED_INT = -1;
 	static private final String UNDEFINED_STRING = null;
 
