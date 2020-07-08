@@ -67,14 +67,20 @@ import org.cytoscape.view.presentation.annotations.ShapeAnnotation.ShapeType;
 @SuppressWarnings("serial")
 public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotation> {
 	
+	private JLabel borderWidthLabel;
+	private JLabel shapeLabel;
+	private JLabel fillColorLabel;
+	private JLabel fillOpacityLabel;
+	private JLabel borderColorLabel;
+	private JLabel borderOpacityLabel;
+	
 	private JList<String> shapeList;
 	private JCheckBox fillColorCheck;
-	private JCheckBox borderColorCheck;
 	private ColorButton fillColorButton;
 	private ColorButton borderColorButton;
 	private JSlider fillOpacitySlider;
 	private JSlider borderOpacitySlider;
-	private JComboBox<String> borderWidthCombo;
+	private JComboBox<Integer> borderWidthCombo;
 
 	private Shape customShape;
 
@@ -99,49 +105,38 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 			// Shape
 			getShapeList().setSelectedValue(annotation.getShapeType(), true);
 			
-			// Fill Color
-			var fillColor = annotation.getFillColor();
-			getFillColorCheck().setSelected(fillColor != null);
-			
+			// Fill Color and Opacity
 			// Its possible for an app to set the annotation color to a gradient, which won't work
-			if (fillColor instanceof Color) {
-				getFillColorButton().setColor((Color) fillColor);
-			} else if (fillColor != null) {
-				getFillColorButton().setEnabled(false);
-				getFillColorCheck().setEnabled(false);
-				getFillOpacitySlider().setEnabled(false);
-			}
+			var fillColor = annotation.getFillColor() instanceof Color ? (Color) annotation.getFillColor() : null;
+			int fillOpacity = (int) annotation.getFillOpacity();
 			
-			// Border Color
-			var borderColor = annotation.getBorderColor();
-			getBorderColorCheck().setSelected(borderColor != null);
-
-			if (borderColor instanceof Color) {
-				getBorderColorButton().setColor((Color) borderColor);
-			} else if (borderColor != null) {
-				getBorderColorButton().setEnabled(false);
-				getBorderColorCheck().setEnabled(false);
-				getBorderOpacitySlider().setEnabled(false);
-			}
-
-			// Fill Opacity
-			if (annotation.getFillOpacity() != 100.0 || getFillColorCheck().isSelected())
-				getFillOpacitySlider().setEnabled(true);
+			getFillColorCheck().setSelected(annotation.getFillColor() != null);
 			
-			getFillOpacitySlider().setValue((int) annotation.getFillOpacity());
+			getFillColorButton().setColor(fillColor != null ? fillColor : Color.BLACK);
+			getFillColorButton().setEnabled(getFillColorCheck().isSelected());	
 			
-			// Border Opacity
-			if (annotation.getBorderOpacity() != 100.0 || getBorderColorCheck().isSelected())
-				getBorderOpacitySlider().setEnabled(true);
+			getFillOpacitySlider().setValue(fillOpacity);
+			getFillOpacitySlider().setEnabled(getFillColorCheck().isSelected());
+			fillOpacityLabel.setEnabled(getFillColorCheck().isSelected());
 			
-			getBorderOpacitySlider().setValue((int) annotation.getBorderOpacity());
+			// Border
+			int borderWidth = (int) annotation.getBorderWidth();
+			var borderColor = annotation.getBorderColor() instanceof Color ? (Color) annotation.getBorderColor() : null;
+			int borderOpacity = (int) annotation.getBorderOpacity();
 			
-			// Border Width
+			getBorderColorButton().setColor(borderColor != null ? borderColor : Color.BLACK);
+			getBorderColorButton().setEnabled(borderWidth > 0);
+			borderColorLabel.setEnabled(borderWidth > 0);
+			
+			getBorderOpacitySlider().setValue(borderOpacity);
+			getBorderOpacitySlider().setEnabled(borderWidth > 0);
+			borderOpacityLabel.setEnabled(borderWidth > 0);
+			
 			{
 				var model = getBorderWidthCombo().getModel();
 
 				for (int i = 0; i < model.getSize(); i++) {
-					if (((int) annotation.getBorderWidth()) == Integer.parseInt(model.getElementAt(i))) {
+					if (borderWidth == model.getElementAt(i)) {
 						getBorderWidthCombo().setSelectedIndex(i);
 						break;
 					}
@@ -161,24 +156,25 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 			else
 				annotation.setShapeType(shapeType);
 			
+			annotation.setBorderWidth((int) getBorderWidthCombo().getModel().getSelectedItem());
 			annotation.setFillColor(getFillColorCheck().isSelected() ? getFillColorButton().getColor() : null);
 			annotation.setFillOpacity(getFillOpacitySlider().getValue());
-			annotation.setBorderColor(getBorderColorCheck().isSelected() ? getBorderColorButton().getColor() : null);
+			annotation.setBorderColor(getBorderColorButton().getColor());
 			annotation.setBorderOpacity(getBorderOpacitySlider().getValue());
-			annotation.setBorderWidth(Integer.parseInt((String) getBorderWidthCombo().getModel().getSelectedItem()));
 		}
 	}
 
 	@Override
 	protected void init() {
-		var label1 = new JLabel("Shape:");
-		var label2 = new JLabel("Fill Color:");
-		var label3 = new JLabel("Fill Opacity:");
-		var label4 = new JLabel("Border Color:");
-		var label5 = new JLabel("Border Opacity:");
-		var label6 = new JLabel("Border Width:");
-
-		var scrollPane = new JScrollPane(getShapeList());
+		borderWidthLabel = new JLabel("Border Width:");
+		shapeLabel = new JLabel("Shape:");
+		fillColorLabel = new JLabel("Fill Color:");
+		fillOpacityLabel = new JLabel("Fill Opacity:");
+		borderColorLabel = new JLabel("Border Color:");
+		borderOpacityLabel = new JLabel("Border Opacity:");
+		
+		var scrollPane = new JScrollPane(getShapeList(), JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		var sep = new JSeparator();
 		
 		var layout = new GroupLayout(this);
@@ -189,75 +185,71 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 		layout.setHorizontalGroup(layout.createSequentialGroup()
 				.addGap(0, 20, Short.MAX_VALUE)
 				.addGroup(layout.createParallelGroup(LEADING, true)
-						.addComponent(label1)
+						.addComponent(shapeLabel)
 						.addComponent(scrollPane)
 				)
 				.addPreferredGap(ComponentPlacement.UNRELATED)
 				.addGroup(layout.createSequentialGroup()
 						.addGroup(layout.createParallelGroup(TRAILING, true)
-								.addComponent(label2)
-								.addComponent(label3)
-								.addComponent(label4)
-								.addComponent(label5)
-								.addComponent(label6)
+								.addComponent(fillColorLabel)
+								.addComponent(fillOpacityLabel)
+								.addComponent(borderWidthLabel)
+								.addComponent(borderColorLabel)
+								.addComponent(borderOpacityLabel)
 						)
 						.addPreferredGap(ComponentPlacement.RELATED)
-						.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+						.addGroup(layout.createParallelGroup(Alignment.LEADING, false)
 								.addGroup(layout.createSequentialGroup()
 										.addComponent(getFillColorCheck())
 										.addComponent(getFillColorButton())
 								)
 								.addComponent(getFillOpacitySlider(), 100, 140, 140)
-								.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-								.addGroup(layout.createSequentialGroup()
-										.addComponent(getBorderColorCheck())
-										.addComponent(getBorderColorButton())
-								)
-								.addComponent(getBorderOpacitySlider(), 100, 140, 140)
+								.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 								.addComponent(getBorderWidthCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								.addComponent(getBorderColorButton())
+								.addComponent(getBorderOpacitySlider(), 100, 140, 140)
 						)
 				)
 				.addGap(0, 20, Short.MAX_VALUE)
 		);
 		layout.setVerticalGroup(layout.createParallelGroup(LEADING, true)
 				.addGroup(layout.createSequentialGroup()
-						.addComponent(label1)
+						.addComponent(shapeLabel)
 						.addComponent(scrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				)
 				.addGroup(layout.createParallelGroup(LEADING, true)
 						.addGroup(layout.createSequentialGroup()
 								.addGroup(layout.createParallelGroup(CENTER, false)
-										.addComponent(label2)
+										.addComponent(fillColorLabel)
 										.addComponent(getFillColorCheck())
 										.addComponent(getFillColorButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 								)
 								.addGroup(layout.createParallelGroup(LEADING, false)
-										.addComponent(label3)
+										.addComponent(fillOpacityLabel)
 										.addComponent(getFillOpacitySlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 								)
 								.addPreferredGap(ComponentPlacement.RELATED)
 								.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 								.addPreferredGap(ComponentPlacement.RELATED)
 								.addGroup(layout.createParallelGroup(CENTER, false)
-										.addComponent(label4)
-										.addComponent(getBorderColorCheck())
+										.addComponent(borderWidthLabel)
+										.addComponent(getBorderWidthCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								)
+								.addGroup(layout.createParallelGroup(CENTER, false)
+										.addComponent(borderColorLabel)
 										.addComponent(getBorderColorButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 								)
 								.addGroup(layout.createParallelGroup(LEADING, false)
-										.addComponent(label5)
+										.addComponent(borderOpacityLabel)
 										.addComponent(getBorderOpacitySlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-								)
-								.addGroup(layout.createParallelGroup(CENTER, false)
-										.addComponent(label6)
-										.addComponent(getBorderWidthCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 								)
 						)
 				)
 		);
 
-		makeSmall(label1, label2, label3, label4, label5, label6);
-		makeSmall(getFillColorCheck(), getFillColorButton(), getFillOpacitySlider(),
-				getBorderColorCheck(), getBorderColorButton(), getBorderOpacitySlider(), getBorderWidthCombo());
+		makeSmall(shapeLabel, fillColorLabel, fillOpacityLabel, borderColorLabel, borderOpacityLabel, borderWidthLabel);
+		makeSmall(getFillColorCheck(), getFillColorButton(), getFillOpacitySlider(), getBorderColorButton(),
+				getBorderOpacitySlider(), getBorderWidthCombo());
 		makeSmall(scrollPane);
 	}
 	
@@ -317,25 +309,13 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 			fillColorCheck = new JCheckBox();
 			fillColorCheck.addActionListener(evt -> {
 				getFillColorButton().setEnabled(fillColorCheck.isSelected());
+				fillOpacityLabel.setEnabled(fillColorCheck.isSelected());
 				getFillOpacitySlider().setEnabled(fillColorCheck.isSelected());
 				apply();
 			});
 		}
 		
 		return fillColorCheck;
-	}
-	
-	private JCheckBox getBorderColorCheck() {
-		if (borderColorCheck == null) {
-			borderColorCheck = new JCheckBox();
-			borderColorCheck.addActionListener(evt -> {
-				getBorderColorButton().setEnabled(borderColorCheck.isSelected());
-				getBorderOpacitySlider().setEnabled(borderColorCheck.isSelected());
-				apply();
-			});
-		}
-		
-		return borderColorCheck;
 	}
 	
 	private ColorButton getFillColorButton() {
@@ -353,7 +333,7 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 		if (borderColorButton == null) {
 			borderColorButton = new ColorButton(Color.BLACK);
 			borderColorButton.setToolTipText("Select border color...");
-			borderColorButton.setEnabled(getBorderColorCheck().isSelected());
+			borderColorButton.setEnabled((int) getBorderWidthCombo().getSelectedItem() > 0);
 			borderColorButton.addPropertyChangeListener("color", evt -> apply());
 		}
 		
@@ -381,20 +361,27 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 			borderOpacitySlider.setMinorTickSpacing(25);
 			borderOpacitySlider.setPaintTicks(true);
 			borderOpacitySlider.setPaintLabels(true);
-			borderOpacitySlider.setEnabled(false);
+			borderOpacitySlider.setEnabled((int) getBorderWidthCombo().getSelectedItem() > 0);
 			borderOpacitySlider.addChangeListener(evt -> apply());
 		}
 		
 		return borderOpacitySlider;
 	}
 	
-	private JComboBox<String> getBorderWidthCombo() {
+	private JComboBox<Integer> getBorderWidthCombo() {
 		if (borderWidthCombo == null) {
 			borderWidthCombo = new JComboBox<>();
 			borderWidthCombo.setModel(new DefaultComboBoxModel<>(
-					new String[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13" }));
+					new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 }));
 			borderWidthCombo.setSelectedIndex(1);
-			borderWidthCombo.addActionListener(evt -> apply());
+			borderWidthCombo.addActionListener(evt -> {
+				int borderWidth = (int) borderWidthCombo.getModel().getSelectedItem();
+				borderColorLabel.setEnabled(borderWidth > 0);
+				getBorderColorButton().setEnabled(borderWidth > 0);
+				borderOpacityLabel.setEnabled(borderWidth > 0);
+				getBorderOpacitySlider().setEnabled(borderWidth > 0);
+				apply();
+			});
 		}
 		
 		return borderWidthCombo;

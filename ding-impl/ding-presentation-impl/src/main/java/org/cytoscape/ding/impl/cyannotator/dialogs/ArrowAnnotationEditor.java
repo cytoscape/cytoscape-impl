@@ -59,7 +59,10 @@ import org.cytoscape.view.presentation.annotations.ArrowAnnotation.ArrowEnd;
 @SuppressWarnings("serial")
 public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotation> {
 
-	private JCheckBox lineColorCheck;
+	private JLabel lineWidthLabel;
+	private JLabel lineColorLabel;
+	private JLabel lineOpacityLabel;
+	
 	private ColorButton lineColorButton;
 	private JSlider lineOpacitySlider;
 	private JComboBox<Integer> lineWidthCombo;
@@ -77,24 +80,20 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 		if (annotation != null) {
 			// Line Color
 			var lineColor = (Color) annotation.getLineColor();
-			getLineColorCheck().setSelected(lineColor != null); // TODO check enabling related fields 
 			getLineColorButton().setColor(lineColor);
 			
 			// Line Opacity
 			int opacity = getOpacity(lineColor);
-			
-			if (opacity != 100 || getLineColorCheck().isSelected())
-				getLineOpacitySlider().setValue(opacity);
-			else
-				getLineOpacitySlider().setEnabled(false);
+			getLineOpacitySlider().setValue(opacity);
 			
 			// Line Width
 			{
+				int lineWidth = Math.max(1, (int) Math.round(annotation.getLineWidth()));
 				var model = getLineWidthCombo().getModel();
 				int size = model.getSize();
 
 				for (int i = 0; i < size; i++) {
-					if (model.getElementAt(i) == (int) annotation.getLineWidth()) {
+					if (lineWidth == model.getElementAt(i)) {
 						getLineWidthCombo().setSelectedIndex(i);
 						break;
 					}
@@ -110,22 +109,23 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 	public void apply(ArrowAnnotation annotation) {
 		if (annotation != null) {
 			// Line Color and Opacity
-			if (getLineColorCheck().isSelected())
-				annotation.setLineColor(mixColor(getLineColorButton().getColor(), getLineOpacitySlider().getValue()));
-			else
-				annotation.setLineColor(null);
+			annotation.setLineColor(mixColor(getLineColorButton().getColor(), getLineOpacitySlider().getValue()));
 
 			// Line Width
-			annotation.setLineWidth((Integer) getLineWidthCombo().getModel().getSelectedItem());
+			annotation.setLineWidth((int) getLineWidthCombo().getModel().getSelectedItem());
 
 			// Arrows
-			getSourceArrowPanel().apply();
-			getTargetArrowPanel().apply();
+			getSourceArrowPanel().apply(annotation);
+			getTargetArrowPanel().apply(annotation);
 		}
 	}
 
 	@Override
 	protected void init() {
+		lineWidthLabel = new JLabel("Line Width:");
+		lineColorLabel = new JLabel("Line Color:");
+		lineOpacityLabel = new JLabel("Line Opacity:");
+		
 		getSourceArrowPanel().init();
 		getTargetArrowPanel().init();
 		
@@ -157,11 +157,6 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 			linePanel = new JPanel();
 			linePanel.setOpaque(!isAquaLAF());
 			
-			// TODO disable labels too
-			var label1 = new JLabel("Line Color:");
-			var label2 = new JLabel("Line Opacity:");
-			var label3 = new JLabel("Line Width:");
-			
 			var layout = new GroupLayout(linePanel);
 			linePanel.setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
@@ -170,38 +165,35 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addGap(0, 0, Short.MAX_VALUE)
 					.addGroup(layout.createParallelGroup(TRAILING, false)
-							.addComponent(label1)
-							.addComponent(label2)
-							.addComponent(label3)
+							.addComponent(lineWidthLabel)
+							.addComponent(lineColorLabel)
+							.addComponent(lineOpacityLabel)
 					)
+					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(layout.createParallelGroup(Alignment.LEADING, false)
-							.addGroup(layout.createSequentialGroup()
-									.addComponent(getLineColorCheck(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-									.addComponent(getLineColorButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-							)
-							.addComponent(getLineOpacitySlider(), 100, 140, 140)
 							.addComponent(getLineWidthCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getLineColorButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getLineOpacitySlider(), 100, 140, 140)
 					)
 					.addGap(0, 0, Short.MAX_VALUE)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addGroup(layout.createParallelGroup(CENTER, false)
-							.addComponent(label1)
-							.addComponent(getLineColorCheck())
+							.addComponent(lineWidthLabel)
+							.addComponent(getLineWidthCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
+					.addGroup(layout.createParallelGroup(CENTER, false)
+							.addComponent(lineColorLabel)
 							.addComponent(getLineColorButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
 					.addGroup(layout.createParallelGroup(LEADING, false)
-							.addComponent(label2)
+							.addComponent(lineOpacityLabel)
 							.addComponent(getLineOpacitySlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					)
-					.addGroup(layout.createParallelGroup(CENTER, false)
-							.addComponent(label3)
-							.addComponent(getLineWidthCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
 			);
 			
-			makeSmall(label1, label2, label3);
-			makeSmall(getLineColorCheck(), getLineColorButton(), getLineOpacitySlider(), getLineWidthCombo());
+			makeSmall(lineColorLabel, lineOpacityLabel, lineWidthLabel);
+			makeSmall(getLineColorButton(), getLineOpacitySlider(), getLineWidthCombo());
 		}
 		
 		return linePanel;
@@ -236,25 +228,10 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 		return arrowsPanel;
 	}
 	
-	private JCheckBox getLineColorCheck() {
-		if (lineColorCheck == null) {
-			lineColorCheck = new JCheckBox();
-			lineColorCheck.setSelected(false);
-			lineColorCheck.addActionListener(evt -> {
-				getLineColorButton().setEnabled(lineColorCheck.isSelected());
-				getLineOpacitySlider().setEnabled(lineColorCheck.isSelected());
-				apply();
-			});
-		}
-		
-		return lineColorCheck;
-	}
-
 	private ColorButton getLineColorButton() {
 		if (lineColorButton == null) {
 			lineColorButton = new ColorButton(Color.BLACK);
 			lineColorButton.setToolTipText("Select line color...");
-			lineColorButton.setEnabled(false);
 			lineColorButton.addPropertyChangeListener("color", evt -> apply());
 		}
 		
@@ -268,7 +245,6 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 			lineOpacitySlider.setMinorTickSpacing(25);
 			lineOpacitySlider.setPaintTicks(true);
 			lineOpacitySlider.setPaintLabels(true);
-			lineOpacitySlider.setEnabled(false);
 			lineOpacitySlider.addChangeListener(evt -> apply());
 		}
 		
@@ -277,8 +253,8 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 	
 	private JComboBox<Integer> getLineWidthCombo() {
 		if (lineWidthCombo == null) {
-			lineWidthCombo = new JComboBox<>(new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 });
-			lineWidthCombo.setSelectedIndex(1);
+			lineWidthCombo = new JComboBox<>(new Integer[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 });
+			lineWidthCombo.setSelectedIndex(0);
 			lineWidthCombo.addActionListener(evt -> apply());
 		}
 		
@@ -319,6 +295,12 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 
 	private class ArrowPanel extends JPanel {
 		
+		private JLabel shapeLabel = new JLabel("Shape:");
+		private JLabel colorLabel = new JLabel("Color:");
+		private JLabel opacityLabel = new JLabel("Opacity:");
+		private JLabel sizeLabel = new JLabel("Size:");
+		private JLabel anchorLabel = new JLabel("Anchor:");
+		
 		private JComboBox<String> arrowTypeCombo;
 		private JCheckBox arrowColorCheck;
 		private ColorButton arrowColorButton;
@@ -337,29 +319,22 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 		void update() {
 			if (annotation != null) {
 				var arrows = annotation.getSupportedArrows();
+				var arrowType = annotation.getArrowType(arrowEnd);
+				
 				getArrowTypeCombo().setModel(new DefaultComboBoxModel<>(arrows.toArray(new String[arrows.size()])));
-				getArrowTypeCombo().setSelectedItem(annotation.getArrowType(arrowEnd));
+				getArrowTypeCombo().setSelectedItem(arrowType);
 				
-				var arrowColor = (Color) annotation.getArrowColor(arrowEnd);
-				getArrowColorCheck().setSelected(arrowColor != null);
+				var color = (Color) annotation.getArrowColor(arrowEnd);
+				int opacity = getOpacity(color);
+				boolean hasArrow = !ArrowType.NONE.getName().equalsIgnoreCase(arrowType);
 				
-				getArrowColorButton().setColor(arrowColor);
-				getArrowColorButton().setEnabled(getArrowColorCheck().isSelected());	
-				
-				int opacity = getOpacity(arrowColor);
-				
-				if (opacity != 100 || getArrowColorCheck().isSelected())
-					getArrowOpacitySlider().setValue(opacity);
-				else
-					getArrowOpacitySlider().setEnabled(false);
-
+				getArrowSizeCombo().setEnabled(hasArrow);
 				{
+					int arrowSize = Math.max(1, (int) Math.round(annotation.getArrowSize(arrowEnd)));
 					var model = getArrowSizeCombo().getModel();
 
 					for (int i = 0; i < model.getSize(); i++) {
-						int size = model.getElementAt(i);
-						
-						if (size == (int) annotation.getArrowSize(arrowEnd)) {
+						if (arrowSize == model.getElementAt(i)) {
 							getArrowSizeCombo().setSelectedIndex(i);
 							break;
 						}
@@ -367,12 +342,25 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 				}
 				
 				getAnchorTypeCombo().setSelectedIndex(annotation.getAnchorType(arrowEnd) == AnchorType.CENTER ? 1 : 0);
+				getAnchorTypeCombo().setEnabled(hasArrow);
+				
+				getArrowColorCheck().setSelected(color != null || opacity != 100);
+				getArrowColorCheck().setEnabled(hasArrow);
+				
+				boolean enabled = hasArrow && getArrowColorCheck().isSelected();
+				
+				getArrowColorButton().setColor(color);
+				getArrowColorButton().setEnabled(enabled);
+				
+				getArrowOpacitySlider().setValue(opacity);
+				getArrowOpacitySlider().setEnabled(enabled);
 			}
 		}
 		
-		void apply() {
+		void apply(ArrowAnnotation annotation) {
 			if (annotation != null) {
-				annotation.setArrowType(arrowEnd, (String) getArrowTypeCombo().getSelectedItem());
+				var arrowType = (String) getArrowTypeCombo().getSelectedItem();
+				annotation.setArrowType(arrowEnd, arrowType);
 				
 				if (getArrowColorCheck().isSelected())
 					annotation.setArrowColor(arrowEnd,
@@ -382,10 +370,8 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 				
 				annotation.setArrowSize(arrowEnd, (int) getArrowSizeCombo().getModel().getSelectedItem());
 				
-				if (getAnchorTypeCombo().getModel().getSelectedItem().equals("Center"))
-					annotation.setAnchorType(arrowEnd, AnchorType.CENTER);
-				else
-					annotation.setAnchorType(arrowEnd, AnchorType.ANCHOR);
+				var anchorType = getAnchorTypeCombo().getModel().getSelectedItem();
+				annotation.setAnchorType(arrowEnd, "Center".equals(anchorType) ? AnchorType.CENTER : AnchorType.ANCHOR);
 			}
 		}
 		
@@ -393,17 +379,11 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 			var titleLabel = new JLabel(arrowEnd == ArrowEnd.TARGET ? "Target Arrow:" : "Source Arrow:");
 			makeSmall(titleLabel);
 			
-			var label1 = new JLabel("Shape:");
-			var label2 = new JLabel("Color:");
-			var label3 = new JLabel("Opacity:");
-			var label4 = new JLabel("Size:");
-			var label5 = new JLabel("Anchor:");
-			
-			label1.setVisible(showLabels);
-			label2.setVisible(showLabels);
-			label3.setVisible(showLabels);
-			label4.setVisible(showLabels);
-			label5.setVisible(showLabels);
+			shapeLabel.setVisible(showLabels);
+			colorLabel.setVisible(showLabels);
+			opacityLabel.setVisible(showLabels);
+			sizeLabel.setVisible(showLabels);
+			anchorLabel.setVisible(showLabels);
 			
 			if (isAquaLAF())
 				setOpaque(false);
@@ -417,11 +397,11 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 					.addGap(0, 0, Short.MAX_VALUE)
 					.addGroup(layout.createParallelGroup(TRAILING, true)
 							.addGap(titleLabel.getPreferredSize().height)
-							.addComponent(label1)
-							.addComponent(label2)
-							.addComponent(label3)
-							.addComponent(label4)
-							.addComponent(label5)
+							.addComponent(shapeLabel)
+							.addComponent(colorLabel)
+							.addComponent(opacityLabel)
+							.addComponent(sizeLabel)
+							.addComponent(anchorLabel)
 					)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
@@ -441,31 +421,33 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 					.addComponent(titleLabel)
 					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addGroup(layout.createParallelGroup(CENTER, false)
-							.addComponent(label1)
+							.addComponent(shapeLabel)
 							.addComponent(getArrowTypeCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
 					.addGroup(layout.createParallelGroup(CENTER, false)
-							.addComponent(label2)
+							.addComponent(colorLabel)
 							.addComponent(getArrowColorCheck(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							.addComponent(getArrowColorButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
 					.addGroup(layout.createParallelGroup(LEADING, false)
-							.addComponent(label3)
+							.addComponent(opacityLabel)
 							.addComponent(getArrowOpacitySlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
 					.addGroup(layout.createParallelGroup(CENTER, false)
-							.addComponent(label4)
+							.addComponent(sizeLabel)
 							.addComponent(getArrowSizeCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
 					.addGroup(layout.createParallelGroup(CENTER, false)
-							.addComponent(label5)
+							.addComponent(anchorLabel)
 							.addComponent(getAnchorTypeCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
 			);
 			
-			makeSmall(label1, label2, label3, label4, label5);
+			makeSmall(shapeLabel, colorLabel, opacityLabel, sizeLabel, anchorLabel);
 			makeSmall(getArrowTypeCombo(), getArrowColorCheck(), getArrowColorButton(), getArrowOpacitySlider(),
 					getArrowSizeCombo(), getAnchorTypeCombo());
+			
+			updateEnabled();
 		}
 		
 		private JComboBox<String> getArrowTypeCombo() {
@@ -475,7 +457,10 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 				arrowTypeCombo = new JComboBox<>(new Vector<>(typeNames));
 				arrowTypeCombo.setSelectedItem(
 						arrowEnd == ArrowEnd.SOURCE ? ArrowType.NONE.toString() : ArrowType.OPEN.toString());
-				arrowTypeCombo.addActionListener(evt -> apply());
+				arrowTypeCombo.addActionListener(evt -> {
+					updateEnabled();
+					apply(annotation);
+				});
 			}
 			
 			return arrowTypeCombo;
@@ -485,9 +470,8 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 			if (arrowColorCheck == null) {
 				arrowColorCheck = new JCheckBox();
 				arrowColorCheck.addActionListener(evt -> {
-					getArrowColorButton().setEnabled(arrowColorCheck.isSelected());
-					getArrowOpacitySlider().setEnabled(arrowColorCheck.isSelected());
-					apply();
+					updateEnabled();
+					apply(annotation);
 				});
 			}
 			
@@ -498,8 +482,7 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 			if (arrowColorButton == null) {
 				arrowColorButton = new ColorButton(Color.BLACK);
 				arrowColorButton.setToolTipText("Select arrow color...");
-				arrowColorButton.setEnabled(false);
-				arrowColorButton.addPropertyChangeListener("color", evt -> apply());
+				arrowColorButton.addPropertyChangeListener("color", evt -> apply(annotation));
 			}
 			
 			return arrowColorButton;
@@ -512,8 +495,7 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 				arrowOpacitySlider.setMinorTickSpacing(25);
 				arrowOpacitySlider.setPaintTicks(true);
 				arrowOpacitySlider.setPaintLabels(true);
-				arrowOpacitySlider.setEnabled(false);
-				arrowOpacitySlider.addChangeListener(evt -> apply());
+				arrowOpacitySlider.addChangeListener(evt -> apply(annotation));
 			}
 			
 			return arrowOpacitySlider;
@@ -522,9 +504,9 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 		private JComboBox<Integer> getArrowSizeCombo() {
 			if (arrowSizeCombo == null) {
 				arrowSizeCombo = new JComboBox<>(
-						new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 });
-				arrowSizeCombo.setSelectedIndex(1);
-				arrowSizeCombo.addActionListener(evt -> apply());
+						new Integer[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 });
+				arrowSizeCombo.setSelectedIndex(0);
+				arrowSizeCombo.addActionListener(evt -> apply(annotation));
 			}
 			
 			return arrowSizeCombo;
@@ -534,10 +516,24 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 			if (anchorTypeCombo == null) {
 				anchorTypeCombo = new JComboBox<>();
 				anchorTypeCombo.setModel(new DefaultComboBoxModel<>(new String[] { "Edge", "Center" }));
-				anchorTypeCombo.addActionListener(evt -> apply());
+				anchorTypeCombo.addActionListener(evt -> apply(annotation));
 			}
 			
 			return anchorTypeCombo;
+		}
+		
+		private void updateEnabled() {
+			var arrowType = (String) getArrowTypeCombo().getSelectedItem();
+			boolean hasArrow = !ArrowType.NONE.getName().equalsIgnoreCase(arrowType);
+			
+			getArrowColorCheck().setEnabled(hasArrow);
+			getArrowSizeCombo().setEnabled(hasArrow);
+			getAnchorTypeCombo().setEnabled(hasArrow);
+			
+			var enabled = hasArrow && getArrowColorCheck().isSelected();
+			
+			getArrowColorButton().setEnabled(enabled);
+			getArrowOpacitySlider().setEnabled(enabled);
 		}
 	}
 }

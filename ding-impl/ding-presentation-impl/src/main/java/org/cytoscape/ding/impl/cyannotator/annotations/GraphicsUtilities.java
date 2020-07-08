@@ -346,7 +346,7 @@ public class GraphicsUtilities {
 
 	public static ArrowType getArrowType(String arrowName) {
 		for (ArrowType type : ArrowType.values()) {
-			if (arrowName.equals(type.arrowName()))
+			if (arrowName.equals(type.getName()))
 				return type;
 		}
 		return ArrowType.NONE; // If we can't do anything else...
@@ -369,7 +369,7 @@ public class GraphicsUtilities {
 	}
 
 	public static List<String> getSupportedArrowTypeNames() {
-		return Arrays.stream(ArrowType.values()).map(ArrowType::arrowName).collect(Collectors.toList());
+		return Arrays.stream(ArrowType.values()).map(ArrowType::getName).collect(Collectors.toList());
 	}
 
 	public static void drawArrow(Graphics g, Line2D line, ArrowEnd end, Paint paint, double size, ArrowType type) {

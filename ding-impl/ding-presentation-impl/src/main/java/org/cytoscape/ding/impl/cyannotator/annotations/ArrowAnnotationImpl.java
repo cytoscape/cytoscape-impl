@@ -102,7 +102,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			this.name = name;
 		}
 
-		public String arrowName() {
+		public String getName() {
 			return name;
 		}
 
@@ -299,7 +299,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 	@Override
 	public String getArrowType(ArrowEnd end) { 
-		return end == ArrowEnd.SOURCE ? sourceType.arrowName() : targetType.arrowName(); 
+		return end == ArrowEnd.SOURCE ? sourceType.getName() : targetType.getName(); 
 	}
 
 	@Override
@@ -307,7 +307,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		ArrowType aType = null;
 
 		for (ArrowType t : ArrowType.values()) {
-			if (t.arrowName().equals(type)) {
+			if (t.getName().equals(type)) {
 				aType = t;
 				break;
 			}

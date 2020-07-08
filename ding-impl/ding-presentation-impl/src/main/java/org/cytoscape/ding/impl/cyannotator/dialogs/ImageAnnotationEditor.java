@@ -12,7 +12,6 @@ import java.awt.Color;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JSeparator;
@@ -53,16 +52,15 @@ import org.cytoscape.view.presentation.annotations.ImageAnnotation;
 @SuppressWarnings("serial")
 public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotation> {
 	
-	private JLabel label1;
-	private JLabel label2;
-	private JLabel label3;
-	private JLabel label4;
-	private JLabel label5;
-	private JLabel label6;
+	private JLabel borderWidthLabel;
+	private JLabel borderColorLabel;
+	private JLabel borderOpacityLabel;
+	private JLabel opacityLabel;
+	private JLabel brightnessLabel;
+	private JLabel contrastLabel;
 	
-	private JCheckBox borderColorCheck;
 	private ColorButton borderColorButton;
-	private JComboBox<String> borderWidthCombo;
+	private JComboBox<Integer> borderWidthCombo;
 	private JSlider borderOpacitySlider;
 	private JSlider opacitySlider;
 	private JSlider brightnessSlider;
@@ -75,29 +73,29 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 	@Override
 	protected void update() {
 		if (annotation != null) {
-			// Border Color
-			getBorderColorCheck().setSelected(annotation.getBorderColor() != null);
-			
-			if (annotation.getBorderColor() != null)
-				getBorderColorButton().setColor((Color) annotation.getBorderColor());
-			
 			// Border Width
+			int borderWidth = (int) Math.round(annotation.getBorderWidth());
 			{
 				var model = getBorderWidthCombo().getModel();
 				
 				for (int i = 0; i < model.getSize(); i++) {
-					if (((int) annotation.getBorderWidth()) == Integer.parseInt((String) model.getElementAt(i))) {
+					if (borderWidth == model.getElementAt(i)) {
 						getBorderWidthCombo().setSelectedIndex(i);
 						break;
 					}
 				}
 			}
 			
-			// Border Opacity
-			if (annotation.getBorderOpacity() != 100.0 || getBorderColorCheck().isSelected())
-				getBorderOpacitySlider().setEnabled(true);
-			
+			// Border Color and Opacity
+			var borderColor = annotation.getBorderColor();
+			getBorderColorButton().setColor(borderColor instanceof Color ? (Color) borderColor : Color.BLACK);
 			getBorderOpacitySlider().setValue((int) annotation.getBorderOpacity());
+			
+			borderColorLabel.setEnabled(borderWidth > 0);
+			getBorderColorButton().setEnabled(borderWidth > 0);
+			
+			borderOpacityLabel.setEnabled(borderWidth > 0);
+			getBorderOpacitySlider().setEnabled(borderWidth > 0);
 			
 			// Image Adjustments
 			getOpacitySlider().setValue((int) (annotation.getImageOpacity() * 100));
@@ -112,17 +110,17 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 		
 		// Hide fields not applied to SVG images
 		var isSVG = annotation instanceof ImageAnnotationImpl && ((ImageAnnotationImpl) annotation).isSVG();
-		label5.setVisible(!isSVG);
+		brightnessLabel.setVisible(!isSVG);
 		getBrightnessSlider().setVisible(!isSVG);
-		label6.setVisible(!isSVG);
+		contrastLabel.setVisible(!isSVG);
 		getContrastSlider().setVisible(!isSVG);
 	}
 	
 	@Override
 	public void apply(ImageAnnotation annotation) {
 		if (annotation != null) {
-			annotation.setBorderColor(getBorderColorCheck().isSelected() ? getBorderColorButton().getColor() : null);
-			annotation.setBorderWidth(Integer.parseInt((String) getBorderWidthCombo().getModel().getSelectedItem()));
+			annotation.setBorderColor(getBorderColorButton().getColor());
+			annotation.setBorderWidth((int) getBorderWidthCombo().getModel().getSelectedItem());
 			annotation.setBorderOpacity(getBorderOpacitySlider().getValue());
 			annotation.setImageOpacity(getOpacitySlider().getValue() / 100.0f);
 			annotation.setImageBrightness(getBrightnessSlider().getValue());
@@ -132,12 +130,12 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 
 	@Override
 	protected void init() {
-		label1 = new JLabel("Border Color:");
-		label2 = new JLabel("Border Opacity:");
-		label3 = new JLabel("Border Width:");
-		label4 = new JLabel("Opacity:");
-		label5 = new JLabel("Brightness:");
-		label6 = new JLabel("Contrast:");
+		borderWidthLabel = new JLabel("Border Width:");
+		borderColorLabel = new JLabel("Border Color:");
+		borderOpacityLabel = new JLabel("Border Opacity:");
+		opacityLabel = new JLabel("Opacity:");
+		brightnessLabel = new JLabel("Brightness:");
+		contrastLabel = new JLabel("Contrast:");
 
 		var sep = new JSeparator();
 		
@@ -151,26 +149,23 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 				.addGroup(layout.createParallelGroup(CENTER, false)
 						.addGroup(layout.createSequentialGroup()
 								.addGroup(layout.createParallelGroup(TRAILING, true)
-										.addComponent(label1)
-										.addComponent(label2)
-										.addComponent(label3)
+										.addComponent(borderWidthLabel)
+										.addComponent(borderColorLabel)
+										.addComponent(borderOpacityLabel)
 								)
 								.addPreferredGap(ComponentPlacement.RELATED)
 								.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
-										.addGroup(layout.createSequentialGroup()
-												.addComponent(getBorderColorCheck())
-												.addComponent(getBorderColorButton())
-										)
-										.addComponent(getBorderOpacitySlider(), 100, 140, 140)
 										.addComponent(getBorderWidthCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+										.addComponent(getBorderColorButton())
+										.addComponent(getBorderOpacitySlider(), 100, 140, 140)
 								)
 						)
 						.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 						.addGroup(layout.createSequentialGroup()
 								.addGroup(layout.createParallelGroup(TRAILING, true)
-										.addComponent(label4)
-										.addComponent(label5)
-										.addComponent(label6)
+										.addComponent(opacityLabel)
+										.addComponent(brightnessLabel)
+										.addComponent(contrastLabel)
 								)
 								.addPreferredGap(ComponentPlacement.RELATED)
 								.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
@@ -184,51 +179,37 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addGroup(layout.createParallelGroup(CENTER, false)
-						.addComponent(label1)
-						.addComponent(getBorderColorCheck())
+						.addComponent(borderWidthLabel)
+						.addComponent(getBorderWidthCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addGroup(layout.createParallelGroup(CENTER, false)
+						.addComponent(borderColorLabel)
 						.addComponent(getBorderColorButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
 				.addGroup(layout.createParallelGroup(LEADING, false)
-						.addComponent(label2)
+						.addComponent(borderOpacityLabel)
 						.addComponent(getBorderOpacitySlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				)
-				.addGroup(layout.createParallelGroup(CENTER, false)
-						.addComponent(label3)
-						.addComponent(getBorderWidthCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
 				.addPreferredGap(ComponentPlacement.RELATED)
 				.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addPreferredGap(ComponentPlacement.RELATED)
 				.addGroup(layout.createParallelGroup(LEADING, false)
-						.addComponent(label4)
+						.addComponent(opacityLabel)
 						.addComponent(getOpacitySlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
 				.addGroup(layout.createParallelGroup(LEADING, false)
-						.addComponent(label5)
+						.addComponent(brightnessLabel)
 						.addComponent(getBrightnessSlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
 				.addGroup(layout.createParallelGroup(LEADING, false)
-						.addComponent(label6)
+						.addComponent(contrastLabel)
 						.addComponent(getContrastSlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
 		);
 
-		makeSmall(label1, label2, label3, label4, label5, label6);
-		makeSmall(getBorderColorCheck(), getBorderColorButton(), getBorderOpacitySlider(), getBorderWidthCombo(),
-				getOpacitySlider(), getBrightnessSlider(), getContrastSlider());
-	}
-	
-	private JCheckBox getBorderColorCheck() {
-		if (borderColorCheck == null) {
-			borderColorCheck = new JCheckBox();
-			borderColorCheck.addActionListener(evt -> {
-				getBorderColorButton().setEnabled(borderColorCheck.isSelected());
-				getBorderOpacitySlider().setEnabled(borderColorCheck.isSelected());
-				apply();
-			});
-		}
-		
-		return borderColorCheck;
+		makeSmall(borderColorLabel, borderOpacityLabel, borderWidthLabel, opacityLabel, brightnessLabel, contrastLabel);
+		makeSmall(getBorderColorButton(), getBorderOpacitySlider(), getBorderWidthCombo(), getOpacitySlider(),
+				getBrightnessSlider(), getContrastSlider());
 	}
 	
 	private ColorButton getBorderColorButton() {
@@ -256,13 +237,20 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 		return borderOpacitySlider;
 	}
 	
-	private JComboBox<String> getBorderWidthCombo() {
+	private JComboBox<Integer> getBorderWidthCombo() {
 		if (borderWidthCombo == null) {
 			borderWidthCombo = new JComboBox<>();
-			borderWidthCombo.setModel(new DefaultComboBoxModel<String>(
-					new String[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13" }));
+			borderWidthCombo.setModel(new DefaultComboBoxModel<>(
+					new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 }));
 			borderWidthCombo.setSelectedIndex(0);
-			borderWidthCombo.addActionListener(evt -> apply());
+			borderWidthCombo.addActionListener(evt -> {
+				var borderWidth = (int) getBorderWidthCombo().getModel().getSelectedItem();
+				borderColorLabel.setEnabled(borderWidth > 0);
+				getBorderColorButton().setEnabled(borderWidth > 0);
+				borderOpacityLabel.setEnabled(borderWidth > 0);
+				getBorderOpacitySlider().setEnabled(borderWidth > 0);
+				apply();
+			});
 		}
 
 		return borderWidthCombo;
