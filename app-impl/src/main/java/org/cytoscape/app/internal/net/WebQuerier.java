@@ -29,7 +29,6 @@ import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.WebApp.Release;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
 import org.cytoscape.app.internal.util.DebugHelper;
-import org.cytoscape.app.internal.manager.Version;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.io.util.StreamUtil;
