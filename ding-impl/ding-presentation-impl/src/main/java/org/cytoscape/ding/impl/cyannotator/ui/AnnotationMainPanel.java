@@ -287,6 +287,19 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		}
 	}
 	
+	void renameAnnotation(Annotation a) {
+		if (a != null) {
+			var tree = getLayerTree(a.getCanvasName());
+			var model = (AnnotationTreeModel) tree.getModel();
+			var path = model.pathTo(a);
+
+			if (path != null) {
+				tree.startEditingAtPath(path);
+				getContentTabbedPane().setSelectedComponent(getLayersPanel());
+			}
+		}
+	}
+	
 	/**
 	 * Adds a buttons that creates annotations through the passed factory and also
 	 * adds an corresponding editor panel if one is returned by {@link AbstractDingAnnotationFactory#createEditor()}.
@@ -556,7 +569,7 @@ System.out.println("AnnotationMainPanel.setSelected(): " + a + " -- " + selected
 			
 			text += ":";
 		} else if (isEnabled()) {
-			text = "Select the annotation you want to add...";
+			text = "Select the annotation you want to add or modify...";
 		}
 		
 		getInfoLabel().setText(text);
@@ -723,9 +736,9 @@ System.out.println("\t>>> " + selected);
 	
 	JTabbedPane getContentTabbedPane() {
 		if (contentTabbedPane == null) {
-			contentTabbedPane = new JTabbedPane(JTabbedPane.BOTTOM);
-			contentTabbedPane.addTab("Annotation", getEditPanel());
+			contentTabbedPane = new JTabbedPane(JTabbedPane.TOP);
 			contentTabbedPane.addTab("Layers", getLayersPanel());
+			contentTabbedPane.addTab("Appearance", getEditPanel());
 			makeSmall(contentTabbedPane);
 		}
 		
@@ -810,6 +823,7 @@ System.out.println("\t>>> " + selected);
 					)
 			);
 		}
+		
 		return layersPanel;
 	}
 	
@@ -817,6 +831,7 @@ System.out.println("\t>>> " + selected);
 		if (infoLabel == null) {
 			infoLabel = new JLabel(" ");
 			infoLabel.setHorizontalAlignment(JLabel.CENTER);
+			infoLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
 			infoLabel.setEnabled(false);
 			makeSmall(infoLabel);
 		}
@@ -839,7 +854,7 @@ System.out.println("\t>>> " + selected);
 			groupAnnotationsButton = new JButton(IconManager.ICON_OBJECT_GROUP);
 			groupAnnotationsButton.setToolTipText("Group Selected Annotations");
 			
-			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+			var iconManager = serviceRegistrar.getService(IconManager.class);
 			styleToolBarButton(groupAnnotationsButton, iconManager.getIconFont(16f));
 		}
 		
@@ -851,7 +866,7 @@ System.out.println("\t>>> " + selected);
 			ungroupAnnotationsButton = new JButton(IconManager.ICON_OBJECT_UNGROUP);
 			ungroupAnnotationsButton.setToolTipText("Ungroup Selected Annotations");
 			
-			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+			var iconManager = serviceRegistrar.getService(IconManager.class);
 			styleToolBarButton(ungroupAnnotationsButton, iconManager.getIconFont(16f));
 		}
 		
@@ -863,7 +878,7 @@ System.out.println("\t>>> " + selected);
 			removeAnnotationsButton = new JButton(IconManager.ICON_TRASH_O);
 			removeAnnotationsButton.setToolTipText("Remove Selected Annotations");
 			
-			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+			var iconManager = serviceRegistrar.getService(IconManager.class);
 			styleToolBarButton(removeAnnotationsButton, iconManager.getIconFont(18f));
 		}
 		
@@ -875,7 +890,7 @@ System.out.println("\t>>> " + selected);
 			pushToBackgroundButton = new JButton(IconManager.ICON_ARROW_DOWN);
 			pushToBackgroundButton.setToolTipText("Push Annotations to Background Layer");
 			
-			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+			var iconManager = serviceRegistrar.getService(IconManager.class);
 			styleToolBarButton(pushToBackgroundButton, iconManager.getIconFont(12f));
 		}
 		
@@ -887,7 +902,7 @@ System.out.println("\t>>> " + selected);
 			pullToForegroundButton = new JButton(IconManager.ICON_ARROW_UP);
 			pullToForegroundButton.setToolTipText("Pull Annotations to Foreground Layer");
 			
-			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+			var iconManager = serviceRegistrar.getService(IconManager.class);
 			styleToolBarButton(pullToForegroundButton, iconManager.getIconFont(12f));
 		}
 		
@@ -982,7 +997,7 @@ System.out.println("\t>>> " + selected);
 		if (defIcon == null) {
 			// Lazily initialize the icon here, because the LAF might not have been set yet,
 			// and we need to get the correct colors
-			Font font = serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 16f);
+			var font = serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 16f);
 			defIcon = new TextIcon(
 					new String[] { IconUtil.ICON_ANNOTATION_1, IconUtil.ICON_ANNOTATION_2 },
 					font,
@@ -1000,7 +1015,7 @@ System.out.println("\t>>> " + selected);
 		if (closedAnnotationIcon == null) {
 			// Lazily initialize the icon here, because the LAF might not have been set yet,
 			// and we need to get the correct colors
-			Font font = serviceRegistrar.getService(IconManager.class).getIconFont(16f);
+			var font = serviceRegistrar.getService(IconManager.class).getIconFont(16f);
 			closedAnnotationIcon = new TextIcon(
 					IconManager.ICON_FOLDER,
 					font,
@@ -1017,7 +1032,7 @@ System.out.println("\t>>> " + selected);
 		if (openAnnotationIcon == null) {
 			// Lazily initialize the icon here, because the LAF might not have been set yet,
 			// and we need to get the correct colors
-			Font font = serviceRegistrar.getService(IconManager.class).getIconFont(16f);
+			var font = serviceRegistrar.getService(IconManager.class).getIconFont(16f);
 			openAnnotationIcon = new TextIcon(
 					IconManager.ICON_FOLDER_OPEN,
 					font,
@@ -1193,12 +1208,12 @@ System.out.println("\t>>> " + selected);
 				tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "startEditing");
 				tree.setInvokesStopCellEditing(true); // this helps stop editing within focus of tree
 				
-				final JTextField textField = new JTextField();
+				var textField = new JTextField();
 				textField.setEditable(true);
 				makeSmall(textField);
 				
-				TreeCellEditor txtEditor = new DefaultCellEditor(textField);
-				TreeCellEditor editor = new AnnotationTreeCellEditor(tree, annotationCellRenderer, txtEditor);
+				var txtEditor = new DefaultCellEditor(textField);
+				var editor = new AnnotationTreeCellEditor(tree, annotationCellRenderer, txtEditor);
 				editor.addCellEditorListener(new CellEditorListener() {
 					@Override
 					public void editingStopped(ChangeEvent evt) {
@@ -1231,7 +1246,7 @@ System.out.println("\t>>> " + selected);
 					@Override
 					public void mouseClicked(MouseEvent evt) {
 						if (evt.getClickCount() == 2) {
-							TreePath selectionPath = tree.getSelectionPath();
+							var selectionPath = tree.getSelectionPath();
 
 							if (selectionPath != null)
 								tree.startEditingAtPath(selectionPath);

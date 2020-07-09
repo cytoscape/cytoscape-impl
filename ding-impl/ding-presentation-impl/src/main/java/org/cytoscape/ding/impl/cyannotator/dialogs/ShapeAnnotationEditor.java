@@ -212,7 +212,7 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 				)
 				.addGap(0, 20, Short.MAX_VALUE)
 		);
-		layout.setVerticalGroup(layout.createParallelGroup(LEADING, true)
+		layout.setVerticalGroup(layout.createParallelGroup(LEADING, false)
 				.addGroup(layout.createSequentialGroup()
 						.addComponent(shapeLabel)
 						.addComponent(scrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)

@@ -314,6 +314,14 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 			invokeOnEDT(() -> mainPanel.editAnnotation(a));
 	}
 	
+	/**
+	 * Asks the view to let the user edit the annotation's name.
+	 */
+	public void renameAnnotation(Annotation a) {
+		if (a != null)
+			invokeOnEDT(() -> mainPanel.renameAnnotation(a));
+	}
+	
 	public void addAnnotationFactory(AnnotationFactory<? extends Annotation> f, Map<?, ?> props) {
 		if (f instanceof AbstractDingAnnotationFactory == false)
 			return; // For now, only DING annotations are supported!
@@ -517,6 +525,11 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 			mi.addActionListener(evt -> editAnnotation(a));
 			popup.add(mi);
 			mi.setEnabled(a != null && !(a instanceof GroupAnnotation));
+		
+			mi = new JMenuItem("Rename Annotation...");
+			mi.addActionListener(evt -> renameAnnotation(a));
+			popup.add(mi);
+			mi.setEnabled(a != null);
 		}
 		popup.addSeparator();
 		// Reorder

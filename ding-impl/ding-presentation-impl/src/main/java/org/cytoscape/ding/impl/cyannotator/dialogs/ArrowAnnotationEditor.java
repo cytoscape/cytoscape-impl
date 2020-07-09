@@ -117,7 +117,7 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 			annotation.setLineColor(mixColor(getLineColorButton().getColor(), getLineOpacitySlider().getValue()));
 
 			// Line Width
-			annotation.setLineWidth((int) getLineWidthCombo().getModel().getSelectedItem());
+			annotation.setLineWidth((int) getLineWidthCombo().getSelectedItem());
 
 			// Arrows
 			getSourceArrowPanel().apply(annotation);
@@ -344,9 +344,7 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 				
 				var color = (Color) annotation.getArrowColor(arrowEnd);
 				int opacity = getOpacity(color);
-				boolean hasArrow = !ArrowType.NONE.getName().equalsIgnoreCase(arrowType);
 				
-				getArrowSizeCombo().setEnabled(hasArrow);
 				{
 					int arrowSize = Math.max(1, (int) Math.round(annotation.getArrowSize(arrowEnd)));
 					var model = getArrowSizeCombo().getModel();
@@ -360,19 +358,12 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 				}
 				
 				getAnchorTypeCombo().setSelectedIndex(annotation.getAnchorType(arrowEnd) == AnchorType.CENTER ? 1 : 0);
-				getAnchorTypeCombo().setEnabled(hasArrow);
-				
 				getArrowColorCheck().setSelected(color != null || opacity != 100);
-				getArrowColorCheck().setEnabled(hasArrow);
-				
-				boolean enabled = hasArrow && getArrowColorCheck().isSelected();
-				
 				getArrowColorButton().setColor(color);
-				getArrowColorButton().setEnabled(enabled);
-				
 				getArrowOpacitySlider().setValue(opacity);
-				getArrowOpacitySlider().setEnabled(enabled);
 			}
+			
+			updateEnabled();
 		}
 		
 		void apply() {
@@ -391,9 +382,9 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 				else
 					annotation.setArrowColor(arrowEnd, null);
 				
-				annotation.setArrowSize(arrowEnd, (int) getArrowSizeCombo().getModel().getSelectedItem());
+				annotation.setArrowSize(arrowEnd, (int) getArrowSizeCombo().getSelectedItem());
 				
-				var anchorType = getAnchorTypeCombo().getModel().getSelectedItem();
+				var anchorType = getAnchorTypeCombo().getSelectedItem();
 				annotation.setAnchorType(arrowEnd, "Center".equals(anchorType) ? AnchorType.CENTER : AnchorType.ANCHOR);
 			}
 		}
@@ -469,8 +460,6 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 			makeSmall(shapeLabel, colorLabel, opacityLabel, sizeLabel, anchorLabel);
 			makeSmall(getArrowTypeCombo(), getArrowColorCheck(), getArrowColorButton(), getArrowOpacitySlider(),
 					getArrowSizeCombo(), getAnchorTypeCombo());
-			
-			updateEnabled();
 		}
 		
 		private JComboBox<String> getArrowTypeCombo() {

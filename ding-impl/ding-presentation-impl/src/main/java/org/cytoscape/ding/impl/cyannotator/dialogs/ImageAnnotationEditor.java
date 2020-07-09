@@ -9,7 +9,6 @@ import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
 import java.awt.Color;
 
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JComboBox;
@@ -91,12 +90,6 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 			getBorderColorButton().setColor(borderColor instanceof Color ? (Color) borderColor : Color.BLACK);
 			getBorderOpacitySlider().setValue((int) annotation.getBorderOpacity());
 			
-			borderColorLabel.setEnabled(borderWidth > 0);
-			getBorderColorButton().setEnabled(borderWidth > 0);
-			
-			borderOpacityLabel.setEnabled(borderWidth > 0);
-			getBorderOpacitySlider().setEnabled(borderWidth > 0);
-			
 			// Image Adjustments
 			getOpacitySlider().setValue((int) (annotation.getImageOpacity() * 100));
 			getBrightnessSlider().setValue(annotation.getImageBrightness());
@@ -107,6 +100,9 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 			getBrightnessSlider().setValue(0);
 			getContrastSlider().setValue(0);
 		}
+		
+		// Enable/disable fields
+		updateEnabled();
 		
 		// Hide fields not applied to SVG images
 		var isSVG = annotation instanceof ImageAnnotationImpl && ((ImageAnnotationImpl) annotation).isSVG();
@@ -120,7 +116,7 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 	public void apply(ImageAnnotation annotation) {
 		if (annotation != null) {
 			annotation.setBorderColor(getBorderColorButton().getColor());
-			annotation.setBorderWidth((int) getBorderWidthCombo().getModel().getSelectedItem());
+			annotation.setBorderWidth((int) getBorderWidthCombo().getSelectedItem());
 			annotation.setBorderOpacity(getBorderOpacitySlider().getValue());
 			annotation.setImageOpacity(getOpacitySlider().getValue() / 100.0f);
 			annotation.setImageBrightness(getBrightnessSlider().getValue());
@@ -216,7 +212,6 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 		if (borderColorButton == null) {
 			borderColorButton = new ColorButton(Color.BLACK);
 			borderColorButton.setToolTipText("Select border color...");
-			borderColorButton.setEnabled(false);
 			borderColorButton.addPropertyChangeListener("color", evt -> apply());
 		}
 
@@ -230,7 +225,6 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 			borderOpacitySlider.setMinorTickSpacing(25);
 			borderOpacitySlider.setPaintTicks(true);
 			borderOpacitySlider.setPaintLabels(true);
-			borderOpacitySlider.setEnabled(false);
 			borderOpacitySlider.addChangeListener(evt -> apply());
 		}
 
@@ -239,16 +233,10 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 	
 	private JComboBox<Integer> getBorderWidthCombo() {
 		if (borderWidthCombo == null) {
-			borderWidthCombo = new JComboBox<>();
-			borderWidthCombo.setModel(new DefaultComboBoxModel<>(
-					new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 }));
+			borderWidthCombo = new JComboBox<>(new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 });
 			borderWidthCombo.setSelectedIndex(0);
 			borderWidthCombo.addActionListener(evt -> {
-				var borderWidth = (int) getBorderWidthCombo().getModel().getSelectedItem();
-				borderColorLabel.setEnabled(borderWidth > 0);
-				getBorderColorButton().setEnabled(borderWidth > 0);
-				borderOpacityLabel.setEnabled(borderWidth > 0);
-				getBorderOpacitySlider().setEnabled(borderWidth > 0);
+				updateEnabled();
 				apply();
 			});
 		}
@@ -293,5 +281,15 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 		}
 
 		return contrastSlider;
+	}
+	
+	private void updateEnabled() {
+		var borderWidth = (int) getBorderWidthCombo().getSelectedItem();
+		boolean enabled = borderWidth > 0;
+		
+		borderColorLabel.setEnabled(enabled);
+		getBorderColorButton().setEnabled(enabled);
+		borderOpacityLabel.setEnabled(enabled);
+		getBorderOpacitySlider().setEnabled(enabled);
 	}
 }
