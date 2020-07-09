@@ -410,9 +410,11 @@ public class WebQuerier {
 							if (isCompatible)
 								releases.add(release);
 						}
-						
+	
 						// Sort releases by version number
-						Collections.sort(releases, Comparator.comparing(Release::getReleaseVersion));
+						Collections.sort(releases, Comparator.comparing(Release::getReleaseVersion, ( a, b ) -> {	
+							return -compareVersions(a,b);
+						}));
 					}
 					
 					webApp.setReleases(releases);
