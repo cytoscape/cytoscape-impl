@@ -1,6 +1,5 @@
 package org.cytoscape.view.vizmap.gui.internal.view;
 
-import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
@@ -10,6 +9,7 @@ import java.util.Collections;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.cytoscape.application.swing.CyColumnComboBox;
@@ -21,6 +21,7 @@ public class ColumnStylePanel {
 
 	private final ServicesUtil servicesUtil;
 	
+	private JLabel tableNameLabel;
 	private CyColumnComboBox columnCombo;
 	private JPanel columnPanel;
 	
@@ -42,17 +43,19 @@ public class ColumnStylePanel {
 			columnPanel.setLayout(layout);
 			layout.setAutoCreateGaps(!isAquaLAF());
 			
-			layout.setHorizontalGroup(layout.createSequentialGroup()
+			layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(getTableNameLabel(), PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
 				.addComponent(getColumnComboBox(), PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
 			);
-			layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING, false)
-				.addComponent(getColumnComboBox(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, false)
+				.addComponent(getTableNameLabel(), PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
+				.addComponent(getColumnComboBox(), PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
 			);
 		}
 		return columnPanel;
 	}
 	
-	private CyColumnComboBox getColumnComboBox() {
+	public CyColumnComboBox getColumnComboBox() {
 		if(columnCombo == null) {
 			var columnPresentationManager = servicesUtil.get(CyColumnPresentationManager.class);
 			columnCombo = new CyColumnComboBox(columnPresentationManager, Collections.emptyList());
@@ -60,8 +63,16 @@ public class ColumnStylePanel {
 		return columnCombo;
 	}
 	
+	private JLabel getTableNameLabel() {
+		if(tableNameLabel == null) {
+			tableNameLabel = new JLabel();
+		}
+		return tableNameLabel;
+	}
 	
-	public void updateColumns(Collection<CyColumn> columns, CyColumn selected) {
+	public void updateColumns(String tableName, Collection<CyColumn> columns, CyColumn selected) {
+		// MKTODO may need to abbreviate
+		tableNameLabel.setText(tableName);
 		CyColumnComboBox columnComboBox = getColumnComboBox();
 		columnComboBox.removeAllItems();
 		columns.forEach(columnComboBox::addItem);

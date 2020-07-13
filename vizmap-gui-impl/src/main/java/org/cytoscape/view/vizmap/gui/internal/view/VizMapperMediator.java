@@ -14,6 +14,7 @@ import static org.cytoscape.view.vizmap.gui.internal.view.util.ViewUtil.invokeOn
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ItemEvent;
@@ -152,6 +153,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	
 	private VisualPropertySheetItem<?> curVpSheetItem;
 	private VizMapperProperty<?, ?, ?> curVizMapperProperty;
+	private Map<Long,Long> selectedColumns;
+	private ActionListener columnChangeListener;
 	
 	// MKTODO Current network renderer
 	private String curRendererId;
@@ -188,6 +191,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		actions = new HashMap<>();
 		userProps = new HashMap<>();
 		defVisibleProps = new HashMap<>();
+		selectedColumns = new HashMap<>();
 		
 		setViewComponent(vizMapperMainPanel);
 	}
@@ -572,6 +576,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		// Switching the current Visual Style
 		var stylesBtn = vizMapperMainPanel.getStylesBtn();
 		stylesBtn.addPropertyChangeListener("selectedStyle", evt -> onSelectedVisualStyleChanged(evt));
+		columnChangeListener = e -> onSelectedColumnChanged();
+		vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().addActionListener(columnChangeListener);
 	}
 	
 	private void addViewListeners(final VisualPropertySheet vpSheet) {
@@ -747,15 +753,46 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	}
 	
 	private void updateTableVisualPropertySheets(CyTable table, boolean resetDefaultVisibleItems) {
+		System.out.println("VizMapperMediator.updateTableVisualPropertySheets() " + table);
 		Collection<CyColumn> columns = table.getColumns();
-		// MKTODO remember the selected column
-		CyColumn firstCol = columns.iterator().next(); // a table must have at least a key column
-		System.out.println("Using VP for " + firstCol);
-		var vs = vmProxy.getVisualStyle(firstCol);
+		CyColumn columnToUse = getSelectedColumn(table);
+		var vs = vmProxy.getVisualStyle(columnToUse);
 		boolean rebuild = shouldRebuildTableVisualPropertySheets(vs);
 		updateVisualPropertySheets(vs, TABLE_SHEET_TYPES, resetDefaultVisibleItems, rebuild);
-		vizMapperMainPanel.updateColumns(columns, firstCol);
+		
+		vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().removeActionListener(columnChangeListener);
+		vizMapperMainPanel.updateColumns(table.getTitle(), columns, columnToUse);
+		vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().addActionListener(columnChangeListener);
 	}
+	
+	private CyColumn getSelectedColumn(CyTable table) {
+		Collection<CyColumn> columns = table.getColumns();
+		// MKTODO what if the column isn't visible?
+		Long colSuid = selectedColumns.get(table.getSUID());
+		if(colSuid == null) {
+			for(CyColumn col : columns) {
+				if(!"SUID".equals(col.getName())) {
+					return col;
+				}
+			}
+		} else {
+			for(CyColumn col : columns) {
+				if(colSuid.equals(col.getSUID())) {
+					return col;
+				}
+			}
+		}
+		
+		// table must have at least a primary key column
+		return columns.iterator().next();
+	}
+	
+	private void onSelectedColumnChanged() {
+		CyColumn col = vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().getSelectedItem();
+		selectedColumns.put(col.getTable().getSUID(), col.getSUID());
+		updateTableVisualPropertySheets(col.getTable(), false);
+	}
+	
 	
 	@SuppressWarnings("rawtypes")
 	private void updateVisualPropertySheets(VisualStyle vs, List<Class<? extends CyIdentifiable>> sheetTypes, boolean resetDefaultVisibleItems, boolean rebuild) {
