@@ -227,7 +227,6 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		final String id = notification.getName();
 		final Object body = notification.getBody();
 		
-		System.out.println("handleNotification: " + id);
 		switch(id) {
 			case VISUAL_STYLE_SET_CHANGED:
 				updateVisualStyleList((SortedSet<VisualStyle>) body, true);
@@ -253,9 +252,15 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			case VISUAL_STYLE_UPDATED:
 				if(body != null) {
 					VisualStyle style = (VisualStyle) body;
-					// MKTODO this only works for visual styles applied to a network
-					if(body.equals(vmProxy.getCurrentVisualStyle())) {
-						updateNetworkVisualPropertySheets((VisualStyle) body, false);
+					if(vmProxy.isTableStyle(style)) {
+						CyColumn currentColumn = vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().getSelectedItem();
+						if(vmProxy.getVisualStyle(currentColumn) == style) {
+							updateTableVisualPropertySheets(currentColumn.getTable(), false);
+						}
+					} else {
+						if(style.equals(vmProxy.getCurrentVisualStyle())) {
+							updateNetworkVisualPropertySheets(style, false);
+						}
 					}
 				}
 				break;
@@ -283,7 +288,6 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				vizMapperMainPanel.getStylesBtn().update();
 				break;
 			case CURRENT_TABLE_CHANGED:
-				// MKTODO need to remember the selected column
 				CyTable table = (CyTable) body;
 				invokeOnEDT(() -> {
 					updateTableVisualPropertySheets(table, false);
@@ -304,6 +308,15 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			return BasicVisualLexicon.NETWORK;
 		else
 			return BasicTableVisualLexicon.CELL;
+	}
+	
+	private VisualStyle getCurrentVisualStyle(Class<? extends CyIdentifiable> type) {
+		if(NETWORK_SHEET_TYPES.contains(type))
+			return vmProxy.getCurrentVisualStyle();
+		else {
+			var col = vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().getSelectedItem();
+			return vmProxy.getVisualStyle(col);
+		}
 	}
 	
 
@@ -398,7 +411,6 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	@Override
 	public void handleEvent(final UpdateNetworkPresentationEvent e) {
 		final CyNetworkView view = e.getSource();
-		
 		if (view.equals(vmProxy.getCurrentNetworkView()))
 			updateLockedValues(view);
 	}
@@ -407,7 +419,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	public void handleEvent(final VisualMappingFunctionChangedEvent e) {
 		final VisualMappingFunction<?, ?> vm = e.getSource();
 		final VisualProperty<?> vp = vm.getVisualProperty();
-		final VisualStyle curStyle = vmProxy.getCurrentVisualStyle();
+		final VisualStyle curStyle = getCurrentVisualStyle(vp.getTargetDataType());
 		
 		// If the source mapping belongs to the current visual style, update the correspondent property sheet item
 		if (vm.equals(curStyle.getVisualMappingFunction(vp))) {
@@ -729,7 +741,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			vizMapperMainPanel.updateVisualStyles(styles, vs);
 			selectCurrentVisualStyle(vs);
 			updateNetworkVisualPropertySheets(vs, resetDefaultVisibleItems);
-			updateTableVisualPropertySheets(table, resetDefaultVisibleItems);
+			if(table != null)
+				updateTableVisualPropertySheets(table, resetDefaultVisibleItems);
 			ignoreVisualStyleSelectedEvents = false;
 		});
 	}
@@ -876,8 +889,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	}
 	
 	private boolean shouldRebuildTableVisualPropertySheets(VisualStyle vs) {
-		// MKTODO It souldn't be too bad to just rebuild all the time right? Hmmm... make this smarter.
-		return true;
+		var col = vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().getSelectedItem();
+		VisualStyle curStyle = vmProxy.getVisualStyle(col);
+		boolean rebuild = !vs.equals(curStyle);
+		return rebuild;
 	}
 	
 	
@@ -891,7 +906,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				// Create Visual Property Sheet
 				RenderingEngine<?> re = getRenderingEngine(type);
 				if(re == null)
-					System.out.println("its null! " + type);
+					continue;
+				
 				final VisualLexicon lexicon = re.getVisualLexicon();
 				
 				final VisualPropertySheetModel model = new VisualPropertySheetModel(type, style, lexicon);

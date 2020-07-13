@@ -262,6 +262,8 @@ public class VizMapperProxy extends Proxy
 	}
 	
 	public VisualStyle getVisualStyle(CyColumn column) {
+		if(column == null)
+			return null;
 		var colView = getColumnView(column);
 		if(colView == null)
 			return null;
