@@ -4,7 +4,7 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
-import java.awt.CardLayout;
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.util.Collection;
@@ -248,19 +248,17 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		setPreferredSize(new Dimension(420, 385));
 		setOpaque(!isAquaLAF());
 		
-		JPanel topPanel = new JPanel();
-		CardLayout cardLayout = new CardLayout();
-		topPanel.setLayout(cardLayout);
+		JPanel topPanel = new JPanel(new BorderLayout());
 		
-		topPanel.add(getStylesPnl().getComponent(), "styles");
-		topPanel.add(getColumnStylePnl().getComponent(), "columns");
+		topPanel.add(getStylesPnl().getComponent(), BorderLayout.CENTER);
 		
 		getPropertiesPnl().getPropertiesPn().addChangeListener(e -> {
 			var type = getPropertiesPnl().getSelectedVisualPropertySheet().getModel().getTargetDataType();
+			topPanel.removeAll();
 			if(CyColumn.class.equals(type) || CyTable.class.equals(type)) {
-				cardLayout.show(topPanel, "columns");
+				topPanel.add(getColumnStylePnl().getComponent(), BorderLayout.CENTER);
 			} else {
-				cardLayout.show(topPanel, "styles");
+				topPanel.add(getStylesPnl().getComponent(), BorderLayout.CENTER);
 			}
 	    });
 		

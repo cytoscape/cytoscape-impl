@@ -753,7 +753,6 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	}
 	
 	private void updateTableVisualPropertySheets(CyTable table, boolean resetDefaultVisibleItems) {
-		System.out.println("VizMapperMediator.updateTableVisualPropertySheets() " + table);
 		Collection<CyColumn> columns = table.getColumns();
 		CyColumn columnToUse = getSelectedColumn(table);
 		var vs = vmProxy.getVisualStyle(columnToUse);

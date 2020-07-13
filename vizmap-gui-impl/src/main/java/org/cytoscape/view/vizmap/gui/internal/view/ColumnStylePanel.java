@@ -72,7 +72,7 @@ public class ColumnStylePanel {
 	
 	public void updateColumns(String tableName, Collection<CyColumn> columns, CyColumn selected) {
 		// MKTODO may need to abbreviate
-		tableNameLabel.setText(tableName);
+		getTableNameLabel().setText(tableName);
 		CyColumnComboBox columnComboBox = getColumnComboBox();
 		columnComboBox.removeAllItems();
 		columns.forEach(columnComboBox::addItem);
