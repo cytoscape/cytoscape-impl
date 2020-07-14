@@ -63,7 +63,8 @@ public class BoundedTextAnnotationEditor extends AbstractAnnotationEditor<Bounde
 	}
 	
 	@Override
-	protected void update() {
+	protected void doUpdate() {
+		// Do not call doUpdate() on the actual editors, because they have to set their 'adjusting' flags themselves!
 		getTextAnnotationEditor().update();
 		getShapeAnnotationEditor().update();
 	}

@@ -79,7 +79,7 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 	}
 	
 	@Override
-	protected void update() {
+	protected void doUpdate() {
 		if (annotation != null) {
 			// Text
 			getTextField().setText(annotation.getText());

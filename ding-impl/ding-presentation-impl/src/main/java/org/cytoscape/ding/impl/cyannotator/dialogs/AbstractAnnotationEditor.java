@@ -66,14 +66,7 @@ public abstract class AbstractAnnotationEditor<T extends Annotation> extends JPa
 	public void setAnnotation(T annotation) {
 		if (!Objects.equals(this.annotation, annotation)) {
 			this.annotation = (T) annotation;
-			
-			adjusting = true;
-			
-			try {
-				update();
-			} finally {
-				adjusting = false;
-			}
+			update();
 		}
 	}
 	
@@ -85,9 +78,22 @@ public abstract class AbstractAnnotationEditor<T extends Annotation> extends JPa
 	}
 	
 	/**
+	 * Calls {@link #doUpdate()} but first set the {@link #adjusting} flag to <code>true</code>.
+	 */
+	protected void update() {
+		adjusting = true;
+		
+		try {
+			doUpdate();
+		} finally {
+			adjusting = false;
+		}
+	}
+	
+	/**
 	 * This must update the editor's components. Remember that the {@link #annotation} may be null.
 	 */
-	protected abstract void update();
+	protected abstract void doUpdate();
 	
 	/**
 	 * Apply all the UI values to the current annotation, if there is one.<br>

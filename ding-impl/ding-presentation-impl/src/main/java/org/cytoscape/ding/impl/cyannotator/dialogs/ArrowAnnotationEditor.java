@@ -81,7 +81,7 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 	}
 
 	@Override
-	protected void update() {
+	protected void doUpdate() {
 		if (annotation != null) {
 			// Line Color
 			var lineColor = (Color) annotation.getLineColor();

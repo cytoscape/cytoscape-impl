@@ -97,7 +97,7 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 	}
 	
 	@Override
-	public void update() {
+	public void doUpdate() {
 		// Only update the fields if the new annotation is not null,
 		// because we want to save the previous set values for when a new annotation is created...
 		if (annotation != null) {

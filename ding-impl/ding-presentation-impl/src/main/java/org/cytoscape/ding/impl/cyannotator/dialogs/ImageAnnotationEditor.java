@@ -71,7 +71,7 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 	}
 	
 	@Override
-	protected void update() {
+	protected void doUpdate() {
 		if (annotation != null) {
 			// Border Width
 			int borderWidth = (int) Math.round(annotation.getBorderWidth());
