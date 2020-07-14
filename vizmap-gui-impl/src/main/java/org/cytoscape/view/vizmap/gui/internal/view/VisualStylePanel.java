@@ -12,28 +12,19 @@ import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JComponent;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 
-import org.cytoscape.application.swing.CyAction;
-import org.cytoscape.util.swing.GravityTracker;
-import org.cytoscape.util.swing.IconManager;
-import org.cytoscape.util.swing.PopupMenuGravityTracker;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 
 public class VisualStylePanel {
 	
-	private DropDownMenuButton optionsBtn;
+	private OptionsButton optionsBtn;
 	private JPanel stylesPnl;
 	
 	protected VisualStyleDropDownButton stylesBtn;
 	protected VisualStyleSelector styleSelector;
-	
-	/** Menu items under the options button */
-	private JPopupMenu mainMenu;
-	private PopupMenuGravityTracker mainMenuGravityTracker;
 	
 	private final ServicesUtil servicesUtil;
 	
@@ -55,6 +46,8 @@ public class VisualStylePanel {
 		getStylesBtn().setSelectedItem(style);
 	}
 	
+	
+	
 	private JPanel getStylesPnl() {
 		if (stylesPnl == null) {
 			stylesPnl = new JPanel();
@@ -63,7 +56,7 @@ public class VisualStylePanel {
 			// TODO: For some reason, the Styles button is naturally taller than the Options one on Nimbus and Windows.
 			//       Let's force it to have the same height.
 			getStylesBtn().setPreferredSize(
-					new Dimension(getStylesBtn().getPreferredSize().width, getOptionsBtn().getPreferredSize().height));
+					new Dimension(getStylesBtn().getPreferredSize().width, getOptionsBtn().getOptionsBtn().getPreferredSize().height));
 			
 			var layout = new GroupLayout(stylesPnl);
 			stylesPnl.setLayout(layout);
@@ -71,11 +64,11 @@ public class VisualStylePanel {
 			
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addComponent(getStylesBtn(), 0, 146, Short.MAX_VALUE)
-					.addComponent(getOptionsBtn(), PREFERRED_SIZE, 64, PREFERRED_SIZE)
+					.addComponent(getOptionsBtn().getOptionsBtn(), PREFERRED_SIZE, 64, PREFERRED_SIZE)
 			);
 			layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING, false)
 					.addComponent(getStylesBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getOptionsBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getOptionsBtn().getOptionsBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 		}
 		
@@ -99,59 +92,14 @@ public class VisualStylePanel {
 		return stylesBtn;
 	}
 	
-	DropDownMenuButton getOptionsBtn() {
+	OptionsButton getOptionsBtn() {
 		if (optionsBtn == null) {
-			var iconManager = servicesUtil.get(IconManager.class);
-			
-			optionsBtn = new DropDownMenuButton(getMainMenu(), false);
-			optionsBtn.setToolTipText("Options...");
-			optionsBtn.setFont(iconManager.getIconFont(12.0f));
-			optionsBtn.setText(IconManager.ICON_BARS);
+			optionsBtn = new OptionsButton(servicesUtil);
 		}
-		
 		return optionsBtn;
 	}
 	
-	JPopupMenu getMainMenu() {
-		if (mainMenu == null) {
-			mainMenu = new JPopupMenu();
-		}
-		
-		return mainMenu;
-	}
-	
-	private PopupMenuGravityTracker getMainMenuGravityTracker() {
-		if (mainMenuGravityTracker == null) {
-			mainMenuGravityTracker = new PopupMenuGravityTracker(getMainMenu());
-		}
-		
-		return mainMenuGravityTracker;
-	}
-	
-	
-	/**
-	 * Add the menu item to the "Options" menu.
-	 * @param menuItem
-	 * @param gravity
-	 * @param insertSeparatorBefore
-	 * @param insertSeparatorAfter
-	 */
-	public void addOption(final JMenuItem menuItem, final double gravity, boolean insertSeparatorBefore,
-			boolean insertSeparatorAfter) {
-		addMenuItem(getMainMenuGravityTracker(), menuItem, gravity, insertSeparatorBefore, insertSeparatorAfter);
-		
-		if (menuItem.getAction() instanceof CyAction)
-			getMainMenu().addPopupMenuListener((CyAction)menuItem.getAction());
-	}
 
-	public void removeOption(final JMenuItem menuItem) {
-		getMainMenuGravityTracker().removeComponent(menuItem);
-		
-		if (menuItem.getAction() instanceof CyAction)
-			getMainMenu().removePopupMenuListener((CyAction)menuItem.getAction());
-	}
-	
-	
 	@SuppressWarnings("serial")
 	class VisualStyleDropDownButton extends DropDownMenuButton {
 
@@ -244,16 +192,5 @@ public class VisualStylePanel {
 			setEnabled(!styleSelector.isEmpty()); // Re-enable the Styles button
 			styleSelector.resetFilter();
 		}
-	}
-	
-	private void addMenuItem(final GravityTracker gravityTracker, final JMenuItem menuItem, final double gravity,
-			boolean insertSeparatorBefore, boolean insertSeparatorAfter) {
-		if (insertSeparatorBefore)
-			gravityTracker.addMenuSeparator(gravity - .0001);
-		
-		gravityTracker.addMenuItem(menuItem, gravity);
-		
-		if (insertSeparatorAfter)
-			gravityTracker.addMenuSeparator(gravity + .0001);
 	}
 }

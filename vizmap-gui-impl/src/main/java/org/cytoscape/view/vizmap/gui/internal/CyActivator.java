@@ -38,6 +38,8 @@ import org.cytoscape.view.vizmap.gui.internal.model.MappingFunctionFactoryProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.PropsProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
 import org.cytoscape.view.vizmap.gui.internal.task.ClearAllBendsForThisEdgeTaskFactory;
+import org.cytoscape.view.vizmap.gui.internal.task.ClearColumnStyleTask;
+import org.cytoscape.view.vizmap.gui.internal.task.ClearColumnStyleTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.CopyVisualStyleTask;
 import org.cytoscape.view.vizmap.gui.internal.task.CopyVisualStyleTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.CreateLegendTask;
@@ -248,6 +250,18 @@ public class CyActivator extends AbstractCyActivator {
 			registerAllServices(bc, factory, props);
 		}
 
+		// Table style tasks
+		// -------------------------------------------------------------------------------------------------------------
+		{
+			var factory = new ClearColumnStyleTaskFactory(servicesUtil);
+			var props = new Properties();
+			props.setProperty(ServicePropertiesUtil.SERVICE_TYPE, "vizmapUI");
+			props.setProperty(ServicePropertiesUtil.TITLE, ClearColumnStyleTask.TITLE + "...");
+			props.setProperty(ServicePropertiesUtil.MENU_ID, ServicePropertiesUtil.TABLE_MAIN_MENU);
+			props.setProperty(ServicePropertiesUtil.GRAVITY, "1.0");
+			registerAllServices(bc, factory, props);
+		}
+		
 		// Visual Styles Panel Context Menu
 		// -------------------------------------------------------------------------------------------------------------
 		// Edit sub-menu

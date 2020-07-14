@@ -255,7 +255,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 					if(vmProxy.isTableStyle(style)) {
 						CyColumn currentColumn = vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().getSelectedItem();
 						if(vmProxy.getVisualStyle(currentColumn) == style) {
-							updateTableVisualPropertySheets(currentColumn.getTable(), false, false);
+							updateTableVisualPropertySheets(currentColumn.getTable(), false, true);
 						}
 					} else {
 						if(style.equals(vmProxy.getCurrentVisualStyle())) {
@@ -310,13 +310,17 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			return BasicTableVisualLexicon.CELL;
 	}
 	
-	private VisualStyle getCurrentVisualStyle(Class<? extends CyIdentifiable> type) {
+	public VisualStyle getCurrentVisualStyle(Class<? extends CyIdentifiable> type) {
 		if(NETWORK_SHEET_TYPES.contains(type))
 			return vmProxy.getCurrentVisualStyle();
 		else {
 			var col = vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().getSelectedItem();
 			return vmProxy.getVisualStyle(col);
 		}
+	}
+	
+	public CyColumn getCurrentColumn() {
+		return vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().getSelectedItem();
 	}
 	
 	private CyTable getTable(Class<? extends CyIdentifiable> type) {
@@ -484,12 +488,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	 * Custom listener for adding registered VizMapper CyActions to the main menu.
 	 */
 	public synchronized void onCyActionRegistered(final CyAction action, final Map<?, ?> properties) {
-		final String serviceType = ServicePropertiesUtil.getServiceType(properties);
-		
-		if (serviceType != null && serviceType.toString().startsWith("vizmapUI")) {
+		String serviceType = ServicePropertiesUtil.getServiceType(properties);
+		if (serviceType != null && serviceType.startsWith("vizmapUI")) {
 			invokeOnEDT(() -> {
-				final JMenuItem menuItem = createMenuItem(action, properties);
-				
+				JMenuItem menuItem = createMenuItem(action, properties);
 				if (menuItem != null)
 					actions.put(action, menuItem);
 			});
@@ -499,7 +501,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	/**
 	 * Custom listener for removing unregistered VizMapper CyActions from the main and context menus.
 	 */
-	public synchronized void onCyActionUnregistered(final CyAction action, final Map<?, ?> properties) {
+	public synchronized void onCyActionUnregistered(final CyAction action, final Map<?,?> properties) {
 		final JMenuItem menuItem = actions.remove(action);
 		
 		if (menuItem != null) {
@@ -513,10 +515,9 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	/**
 	 * Create menu items for related registered Task Factories.
 	 */
-	public void onTaskFactoryRegistered(final TaskFactory taskFactory, final Map<?, ?> properties) {
+	public void onTaskFactoryRegistered(final TaskFactory taskFactory, final Map<?,?> properties) {
 		// First filter the service...
 		final String serviceType = ServicePropertiesUtil.getServiceType(properties);
-		
 		if (serviceType == null || !serviceType.toString().startsWith("vizmapUI"))
 			return;
 
@@ -542,8 +543,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		};
 		
 		invokeOnEDT(() -> {
-			final JMenuItem menuItem = createMenuItem(action, properties);
-			
+			JMenuItem menuItem = createMenuItem(action, properties);
 			if (menuItem != null)
 				taskFactories.put(taskFactory, menuItem);
 		});
@@ -551,7 +551,6 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 
 	public void onTaskFactoryUnregistered(final TaskFactory taskFactory, final Map<?, ?> properties) {
 		final JMenuItem menuItem = taskFactories.remove(taskFactory);
-		
 		if (menuItem != null) {
 			invokeOnEDT(() -> {
 				vizMapperMainPanel.removeOption(menuItem);
@@ -1332,17 +1331,15 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	
 	private JMenuItem createMenuItem(final CyAction action, final Map<?, ?> properties) {
 		String title = ServicePropertiesUtil.getTitle(properties);
-		
 		if (title == null)
 			title = action.getName();
-			
 		if (title == null) {
 			logger.error("Cannot create VizMapper menu item for: " + action + 
 					"; \"" + ServicePropertiesUtil.TITLE +  "\" metadata is missing from properties: " + properties);
 			return null;
 		}
 		
-		final JMenuItem menuItem = new JMenuItem(action);
+		JMenuItem menuItem = new JMenuItem(action);
 		menuItem.setText(title);
 		
 		final double gravity = ServicePropertiesUtil.getGravity(properties);
@@ -1352,6 +1349,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		
 		if (menuId.equals(ServicePropertiesUtil.CONTEXT_MENU))
 			vizMapperMainPanel.addContextMenuItem(menuItem, gravity, insertSeparatorBefore, insertSeparatorAfter);
+		else if(menuId.equals(ServicePropertiesUtil.TABLE_MAIN_MENU))
+			vizMapperMainPanel.addTableOption(menuItem, gravity, insertSeparatorBefore, insertSeparatorAfter);
 		else
 			vizMapperMainPanel.addOption(menuItem, gravity, insertSeparatorBefore, insertSeparatorAfter);
 		

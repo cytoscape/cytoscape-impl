@@ -10,6 +10,7 @@ import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSet;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
@@ -75,6 +76,14 @@ public class CurrentTableService {
 			CyNetworkTableManager netTblMgr = servicesUtil.get(CyNetworkTableManager.class);
 			return netTblMgr.getTable(appMgr.getCurrentNetwork(), targetDataType, CyNetwork.DEFAULT_ATTRS);
 		}
+	}
+	
+	public VisualStyle getCurrentVisualStyle(Class<? extends CyIdentifiable> type) {
+		return vizMapperMediator.getCurrentVisualStyle(type);
+	}
+	
+	public CyColumn getCurrentColumn() {
+		return vizMapperMediator.getCurrentColumn();
 	}
 	
 }

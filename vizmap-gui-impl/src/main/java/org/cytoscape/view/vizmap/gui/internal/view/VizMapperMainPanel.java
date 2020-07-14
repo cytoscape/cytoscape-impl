@@ -182,10 +182,6 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		getStylesPnl().setSelectedVisualStyle(style);
 	}
 	
-	public void removeOption(final JMenuItem menuItem) {
-		getStylesPnl().removeOption(menuItem);
-	}
-	
 	public void removeContextMenuItem(final JMenuItem menuItem) {
 		getPropertiesPnl().removeContextMenuItem(menuItem);
 	}
@@ -229,10 +225,22 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		return getPropertiesPnl().getMapValueGeneratorsSubMenu();
 	}
 	
-	
 	public void addOption(JMenuItem menuItem, double gravity, boolean insertSeparatorBefore, boolean insertSeparatorAfter) {
-		getStylesPnl().addOption(menuItem, gravity, insertSeparatorBefore, insertSeparatorAfter);
+		getStylesPnl().getOptionsBtn().addOption(menuItem, gravity, insertSeparatorBefore, insertSeparatorAfter);
 	}
+	
+	public void removeOption(JMenuItem menuItem) {
+		getStylesPnl().getOptionsBtn().removeOption(menuItem);
+	}
+	
+	public void addTableOption(JMenuItem menuItem, double gravity, boolean insertSeparatorBefore, boolean insertSeparatorAfter) {
+		getColumnStylePnl().getOptionsBtn().addOption(menuItem, gravity, insertSeparatorBefore, insertSeparatorAfter);
+	}
+	
+	public void removeTableOption(JMenuItem menuItem) {
+		getColumnStylePnl().getOptionsBtn().removeOption(menuItem);
+	}
+
 
 	public void addContextMenuItem(JMenuItem menuItem, double gravity, boolean insertSeparatorBefore, boolean insertSeparatorAfter) {
 		getPropertiesPnl().addContextMenuItem(menuItem, gravity, insertSeparatorBefore, insertSeparatorAfter);
@@ -260,6 +268,8 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			} else {
 				topPanel.add(getStylesPnl().getComponent(), BorderLayout.CENTER);
 			}
+			topPanel.revalidate();
+			topPanel.repaint();
 	    });
 		
 		final GroupLayout layout = new GroupLayout(this);

@@ -1,15 +1,16 @@
 package org.cytoscape.view.vizmap.gui.internal.view;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
+import java.awt.Dimension;
 import java.util.Collection;
 import java.util.Collections;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.cytoscape.application.swing.CyColumnComboBox;
@@ -21,7 +22,8 @@ public class ColumnStylePanel {
 
 	private final ServicesUtil servicesUtil;
 	
-	private JLabel tableNameLabel;
+	private OptionsButton optionsBtn;
+//	private JLabel tableNameLabel;
 	private CyColumnComboBox columnCombo;
 	private JPanel columnPanel;
 	
@@ -39,17 +41,22 @@ public class ColumnStylePanel {
 			columnPanel = new JPanel();
 			columnPanel.setOpaque(!isAquaLAF());
 			
+			// TODO: For some reason, the Styles button is naturally taller than the Options one on Nimbus and Windows.
+			//       Let's force it to have the same height.
+			getColumnComboBox().setPreferredSize(
+					new Dimension(getColumnComboBox().getPreferredSize().width, getOptionsBtn().getOptionsBtn().getPreferredSize().height));
+			
 			var layout = new GroupLayout(columnPanel);
 			columnPanel.setLayout(layout);
 			layout.setAutoCreateGaps(!isAquaLAF());
 			
-			layout.setVerticalGroup(layout.createSequentialGroup()
-				.addComponent(getTableNameLabel(), PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
-				.addComponent(getColumnComboBox(), PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
+			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addComponent(getColumnComboBox(), 0, 146, Short.MAX_VALUE)
+					.addComponent(getOptionsBtn().getOptionsBtn(), PREFERRED_SIZE, 64, PREFERRED_SIZE)
 			);
-			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, false)
-				.addComponent(getTableNameLabel(), PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
-				.addComponent(getColumnComboBox(), PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
+			layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING, false)
+					.addComponent(getColumnComboBox(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getOptionsBtn().getOptionsBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 		}
 		return columnPanel;
@@ -63,16 +70,23 @@ public class ColumnStylePanel {
 		return columnCombo;
 	}
 	
-	private JLabel getTableNameLabel() {
-		if(tableNameLabel == null) {
-			tableNameLabel = new JLabel();
+//	private JLabel getTableNameLabel() {
+//		if(tableNameLabel == null) {
+//			tableNameLabel = new JLabel();
+//		}
+//		return tableNameLabel;
+//	}
+	
+	OptionsButton getOptionsBtn() {
+		if (optionsBtn == null) {
+			optionsBtn = new OptionsButton(servicesUtil);
 		}
-		return tableNameLabel;
+		return optionsBtn;
 	}
 	
 	public void updateColumns(String tableName, Collection<CyColumn> columns, CyColumn selected) {
 		// MKTODO may need to abbreviate
-		getTableNameLabel().setText(tableName);
+//		getTableNameLabel().setText(tableName);
 		CyColumnComboBox columnComboBox = getColumnComboBox();
 		columnComboBox.removeAllItems();
 		columns.forEach(columnComboBox::addItem);
