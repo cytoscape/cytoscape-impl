@@ -11,6 +11,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
 import java.awt.image.VolatileImage;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Paths;
@@ -18,10 +19,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.JDialog;
-
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
+import org.cytoscape.ding.customgraphics.image.AbstractURLImageCustomGraphics;
 import org.cytoscape.ding.customgraphics.image.BitmapCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.SVGCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.SVGLayer;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ImageAnnotationDialog;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
@@ -59,6 +61,7 @@ import org.slf4j.LoggerFactory;
 
 public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnnotation {
 	
+	private String svg;
 	private BufferedImage image;
 	private BufferedImage modifiedImage;
 	private	URL url;
@@ -67,32 +70,30 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	private int brightness;
 	private int contrast;
 	private CyCustomGraphics<?> cg;
-	protected CustomGraphicsManager customGraphicsManager;
+	
+	protected final CustomGraphicsManager customGraphicsManager;
 
 	private static final Logger logger = LoggerFactory.getLogger(ImageAnnotationImpl.class);
 	
-	// XXX HACK to force the custom graphics manager to respect these graphics
-	public void preserveCustomGraphics() {
-		for (CyCustomGraphics<?> cg : customGraphicsManager.getAllCustomGraphics())
-			customGraphicsManager.setUsedInCurrentSession(cg, true);
-	}
-
-	public ImageAnnotationImpl(DRenderingEngine re, boolean usedForPreviews) {
-		super(re, 0, 0, usedForPreviews);
-	}
-
-	public ImageAnnotationImpl(ImageAnnotationImpl c, boolean usedForPreviews) { 
-		super((ShapeAnnotationImpl) c, 0, 0, usedForPreviews);
-		this.image = c.image;
-		this.customGraphicsManager = c.customGraphicsManager;
-		this.width = image.getWidth();
-		this.height = image.getHeight();
-		this.url = c.url;
-		this.opacity = c.opacity;
-		this.brightness = c.brightness;
-		this.contrast = c.contrast;
+	public ImageAnnotationImpl(ImageAnnotationImpl annotation, boolean usedForPreviews) {
+		super((ShapeAnnotationImpl) annotation, 0, 0, usedForPreviews);
+		
+		if (annotation == null)
+			throw new IllegalArgumentException("'annotation' must not be null.");
+		
+		this.image = annotation.image;
+		this.svg = annotation.svg;
+		this.customGraphicsManager = annotation.customGraphicsManager;
+		this.cg = annotation.cg;
+		this.width = annotation.getWidth();
+		this.height = annotation.getHeight();
+		this.url = annotation.url;
+		this.opacity = annotation.opacity;
+		this.brightness = annotation.brightness;
+		this.contrast = annotation.contrast;
+		
 		setBorderWidth(0.0); // Our default border width is 0
-		name = c.getName() != null ? c.getName() : getDefaultName();
+		name = annotation.getName() != null ? annotation.getName() : getDefaultName();
 	}
 
 	public ImageAnnotationImpl(
@@ -106,13 +107,88 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	) {
 		super(re, x, y, ShapeType.RECTANGLE, 0, 0, null, null, 0.0f);
 
+		if (image == null)
+			throw new IllegalArgumentException("'image' must not be null.");
+		if (customGraphicsManager == null)
+			throw new IllegalArgumentException("'customGraphicsManager' must not be null.");
+		
 		this.image = image;
 		this.customGraphicsManager = customGraphicsManager;
 		this.width = image.getWidth();
 		this.height = image.getHeight();
 		this.url = url;
-		final Long id = customGraphicsManager.getNextAvailableID();
-		this.cg = new BitmapCustomGraphics(id, url.toString(), image);
+		this.cg = new BitmapCustomGraphics(customGraphicsManager.getNextAvailableID(), url.toString(), image);
+		
+		customGraphicsManager.addCustomGraphics(cg, url);
+		customGraphicsManager.setUsedInCurrentSession(cg, true);
+		name = getDefaultName();
+	}
+	
+	public ImageAnnotationImpl(
+			DRenderingEngine re,
+			double x,
+			double y,
+			URL url,
+			String svg,
+			double zoom,
+			CustomGraphicsManager customGraphicsManager
+	) {
+		super(re, x, y, ShapeType.RECTANGLE, 0, 0, null, null, 0.0f);
+		
+		if (svg == null)
+			throw new IllegalArgumentException("'svg' must not be null.");
+		if (customGraphicsManager == null)
+			throw new IllegalArgumentException("'customGraphicsManager' must not be null.");
+		
+		this.svg = svg;
+		this.customGraphicsManager = customGraphicsManager;
+		this.url = url;
+		
+		try {
+			cg = new SVGCustomGraphics(customGraphicsManager.getNextAvailableID(), url.toString(), url, svg);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		
+		width = cg.getWidth();
+		height = cg.getHeight();
+		
+		customGraphicsManager.addCustomGraphics(cg, url);
+		customGraphicsManager.setUsedInCurrentSession(cg, true);
+		name = getDefaultName();
+	}
+	
+	public ImageAnnotationImpl(
+			DRenderingEngine re,
+			AbstractURLImageCustomGraphics<?> cg,
+			int x,
+			int y,
+			double zoom,
+			CustomGraphicsManager customGraphicsManager
+	) {
+		super(re, x, y, ShapeType.RECTANGLE, 0, 0, null, null, 0.0f);
+		
+		if (cg == null)
+			throw new IllegalArgumentException("'cg' must not be null.");
+		if (customGraphicsManager == null)
+			throw new IllegalArgumentException("'customGraphicsManager' must not be null.");
+		
+		this.cg = cg;
+		this.url = cg.getSourceURL();
+		this.customGraphicsManager = customGraphicsManager;
+		
+		if (cg instanceof SVGCustomGraphics) {
+			svg = ((SVGCustomGraphics) cg).getSVG();
+			width = cg.getWidth();
+			height = cg.getHeight();
+		} else if (cg instanceof BitmapCustomGraphics) {
+			image = ((BitmapCustomGraphics) cg).getOriginalImage();
+			width = image.getWidth();
+			height = image.getHeight();
+		} else {
+			throw new IllegalArgumentException("'cg' must be a BitmapCustomGraphics or SVGCustomGraphics.");
+		}
+		
 		customGraphicsManager.addCustomGraphics(cg, url);
 		customGraphicsManager.setUsedInCurrentSession(cg, true);
 		name = getDefaultName();
@@ -124,30 +200,53 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			CustomGraphicsManager customGraphicsManager
 	) {
 		super(re, argMap);
+		
+		if (argMap == null)
+			throw new IllegalArgumentException("'argMap' must not be null.");
+		if (customGraphicsManager == null)
+			throw new IllegalArgumentException("'customGraphicsManager' must not be null.");
+		
 		this.customGraphicsManager = customGraphicsManager;
-
 		opacity = ViewUtils.getFloat(argMap, OPACITY, 1.0f);
 		brightness = ViewUtils.getInteger(argMap, LIGHTNESS, 0);
 		contrast = ViewUtils.getInteger(argMap, CONTRAST, 0);
 
-		this.image = null;
-
 		if (argMap.containsKey(URL)) {
 			// Get the image from the image pool
 			try {
-				this.url = new URL(argMap.get(URL));
-				this.cg = customGraphicsManager.getCustomGraphicsBySourceURL(this.url);
+				url = new URL(argMap.get(URL));
+				cg = customGraphicsManager.getCustomGraphicsBySourceURL(url);
 				
 				if (cg != null) {
-					this.image = ImageUtil.toBufferedImage(cg.getRenderedImage());
-					customGraphicsManager.addCustomGraphics(cg, this.url);
+					image = ImageUtil.toBufferedImage(cg.getRenderedImage());
+					customGraphicsManager.addCustomGraphics(cg, url);
 					customGraphicsManager.setUsedInCurrentSession(cg, true);
 				}
+				
 				name = getDefaultName();
 			} catch (Exception e) {
 				logger.warn("Unable to restore image '" + argMap.get(URL) + "'", e);
 			}
 		}
+	}
+	
+	public ImageAnnotationImpl(
+			DRenderingEngine re,
+			boolean usedForPreviews,
+			CustomGraphicsManager customGraphicsManager
+	) {
+		super(re, 0, 0, usedForPreviews);
+		
+		if (customGraphicsManager == null)
+			throw new IllegalArgumentException("'customGraphicsManager' must not be null.");
+		
+		this.customGraphicsManager = customGraphicsManager;
+	}
+	
+	// XXX HACK to force the custom graphics manager to respect these graphics
+	public void preserveCustomGraphics() {
+		for (var cg : customGraphicsManager.getAllCustomGraphics())
+			customGraphicsManager.setUsedInCurrentSession(cg, true);
 	}
 
 	@Override
@@ -157,16 +256,20 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	
 	@Override
 	public Map<String, String> getArgMap() {
-		Map<String, String> argMap = super.getArgMap();
+		var argMap = super.getArgMap();
 		argMap.put(TYPE, ImageAnnotation.class.getName());
+		
 		if (url != null)
 			argMap.put(URL, url.toString());
+		
 		argMap.put(ImageAnnotation.WIDTH, Double.toString(width));
 		argMap.put(ImageAnnotation.HEIGHT, Double.toString(height));
 		argMap.put(OPACITY, Float.toString(opacity));
 		argMap.put(LIGHTNESS, Integer.toString(brightness));
 		argMap.put(CONTRAST, Integer.toString(contrast));
-		customGraphicsManager.setUsedInCurrentSession(cg, true);
+		
+		if (cg != null)
+			customGraphicsManager.setUsedInCurrentSession(cg, true);
 
 		return argMap;
 	}
@@ -174,34 +277,53 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	public void reloadImage() {
 		// Get the image from the image pool again
 		try {
-			this.cg = customGraphicsManager.getCustomGraphicsBySourceURL(this.url);
+			cg = customGraphicsManager.getCustomGraphicsBySourceURL(url);
+			
 			if (cg != null) {
-				this.image = ImageUtil.toBufferedImage(cg.getRenderedImage());
-				customGraphicsManager.addCustomGraphics(cg, this.url);
+				if (!isSVG())
+					image = ImageUtil.toBufferedImage(cg.getRenderedImage());
+				
+				customGraphicsManager.addCustomGraphics(cg, url);
 				customGraphicsManager.setUsedInCurrentSession(cg, true);
 			} else {
 				return;
 			}
 		} catch (Exception e) {
-			logger.warn("Unable to restore image '"+this.url+"'",e);
+			logger.warn("Unable to restore image '" + url + "'", e);
 			return;
 		}
 	}
 
 	@Override
 	public Image getImage() {
+		if (image == null)
+			return getModifiedImage();
+		
 		return image;
 	}
 
 	@Override
 	public void setImage(Image image) {
 		if (image instanceof BufferedImage)
-			this.image = (BufferedImage)image;
+			this.image = (BufferedImage) image;
 		else if (image instanceof VolatileImage)
-			this.image = ((VolatileImage)image).getSnapshot();
+			this.image = ((VolatileImage) image).getSnapshot();
 		else
 			return;
-		
+
+		svg = null;
+		update();
+	}
+	
+	@Override
+	public String getSVG() {
+		return svg;
+	}
+
+	@Override
+	public void setSVG(String svg) {
+		this.svg = svg;
+		image = null;
 		update();
 	}
 
@@ -225,35 +347,48 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 	@Override
 	public float getImageOpacity() {
-		return this.opacity;
+		return opacity;
 	}
 
 	@Override
 	public void setImageBrightness(int brightness) {
-		if(this.brightness != brightness) {
+		if (this.brightness != brightness) {
 			this.brightness = brightness;
-			this.modifiedImage = null;
+			modifiedImage = null;
 			update();
 		}
 	}
 
 	@Override
 	public int getImageBrightness() {
-		return this.brightness;
+		return brightness;
 	}
 
 	@Override
 	public void setImageContrast(int contrast) {
-		if(this.contrast != contrast) {
+		if (this.contrast != contrast) {
 			this.contrast = contrast;
-			this.modifiedImage = null;
+			modifiedImage = null;
 			update();
 		}
 	}
 
 	@Override
 	public int getImageContrast() {
-		return this.contrast;
+		return contrast;
+	}
+	
+	@Override
+	public void setSize(double width, double height) {
+		if (this.width != width || this.height != height) {
+			super.setSize(width, height);
+			
+			// We want to take advantage of the fact that SVG images scale and convert the SVG to bitmap again
+			if (isSVG()) {
+				modifiedImage = null;
+				update();
+			}
+		}
 	}
 
 	// Shape annotation methods. We add these so we can get resizeImage functionality
@@ -272,10 +407,12 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 	@Override
 	public void setCustomShape(Shape shape) {
+		// Not supported yet...
 	}
 
 	@Override
 	public void setShapeType(String type) {
+		// Not supported yet...
 	}
 
 	@Override
@@ -290,92 +427,140 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 	@Override
 	public void setFillColor(Paint fill) {
+		// Does this make sense here?
 	}
 
 	@Override
 	public void setFillOpacity(double opacity) {
+		// Does this make sense here?
 	}
 
 	@Override
 	public Shape getShape() {
 		return new Rectangle2D.Double((double) getX(), (double) getY(), width, height);
 	}
-	
+
 	@Override
 	protected String getDefaultName() {
 		if (url != null) {
 			try {
-				String fileName = Paths.get(new URI(url.toString()).getPath()).getFileName().toString();
+				var fileName = Paths.get(new URI(url.toString()).getPath()).getFileName().toString();
 				return fileName;
 			} catch (Exception e) {
 				// Just ignore...
 			}
 		}
-		
+
 		return super.getDefaultName();
 	}
 	
+	public boolean isSVG() {
+		return cg instanceof SVGCustomGraphics || svg != null;
+	}
+
 	public void dropImage() {
 		customGraphicsManager.setUsedInCurrentSession(cg, false);
 	}
 
 	@Override
-	public JDialog getModifyDialog() {
+	public ImageAnnotationDialog getModifyDialog() {
 		return new ImageAnnotationDialog(this, ViewUtil.getActiveWindow(re));
 	}
-
-
+	
 	private Image getModifiedImage() {
-		if(image == null)
-			return null;
+		if (modifiedImage != null)
+			return modifiedImage;
+
+		BufferedImage image = null;
+
+		if (isSVG()) {
+			var w = Math.max(1, (int) Math.round(getWidth())); // will throw exception if w <= 0
+			var h = Math.max(1, (int) Math.round(getHeight())); // will throw exception if h <= 0
+			var rect = new Rectangle2D.Float(w / 2.0f, h / 2.0f, w, h);
+			
+			image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+			var g = image.createGraphics();
+			
+			var layers = ((SVGCustomGraphics) cg).getLayers(null, null);
+			
+			for (var cgl : layers) {
+				// Much easier to use the SVGLayer draw method than have calculate and apply
+				// the same scale factor and translation transform already done by the layer!
+				if (cgl instanceof SVGLayer)
+					((SVGLayer) cgl).draw(g, rect, rect, null, null);
+			}
+			
+			g.dispose();
+		} else {
+			image = this.image;
+		}
 		
-		if(modifiedImage == null) {
-			if(brightness == 0 && contrast == 0) {
+		if (image != null) {
+			if (brightness == 0 && contrast == 0) {
 				modifiedImage = image;
 			} else {
-				BufferedImage rgbImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
-				Graphics2D g = rgbImage.createGraphics();
+				var rgbImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+				var g = rgbImage.createGraphics();
 				g.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), null);
 				modifiedImage = rgbImage;
 				g.dispose();
 
-				float offset = (float)brightness*255.0f/100.0f;
+				float offset = (float) brightness * 255.0f / 100.0f;
 				float scaleFactor = 1.0f;
-				// scaleFactor goes from 0 - 4.0 with a 
-				if(contrast <= 0)
-					scaleFactor = 1.0f + ((float)contrast)/100.0f;
+
+				// scaleFactor goes from 0 - 4.0 with a
+				if (contrast <= 0)
+					scaleFactor = 1.0f + ((float) contrast) / 100.0f;
 				else
-					scaleFactor = 1.0f + ((float)contrast)*3.0f/100.0f;
-				
-				RescaleOp op = new RescaleOp(scaleFactor, offset, null);
+					scaleFactor = 1.0f + ((float) contrast) * 3.0f / 100.0f;
+
+				var op = new RescaleOp(scaleFactor, offset, null);
 				op.filter(modifiedImage, modifiedImage);
 			}
 		}
+		
 		return modifiedImage;
 	}
 	
-	
 	@Override
-	public void paint(Graphics graphics, boolean showSelection) {
-		Image image = getModifiedImage();
-		if(image != null) {
-			Graphics2D g = (Graphics2D)graphics.create();
-	
-			g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
-			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-			g.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
-			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-	
-			g.drawImage(image, 
-					Math.round((float)getX()), 
-					Math.round((float)getY()), 
-					Math.round((float)getWidth()),
-					Math.round((float)getHeight()), 
-					null);
+	public void paint(Graphics g, boolean showSelection) {
+		var g2 = (Graphics2D) g.create();
+		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
+		
+		if (isSVG()) {
+			// SVG...
+			var w = Math.max(1.0, getWidth()); // will throw exception if w <= 0
+			var h = Math.max(1.0, getHeight()); // will throw exception if h <= 0
+			var rect = new Rectangle2D.Double(getX() + w / 2.0f, getY() + h / 2.0f, w, h);
 			
-			g.dispose();
+			var layers = ((SVGCustomGraphics) cg).getLayers(null, null);
+			
+			for (var cgl : layers) {
+				if (cgl instanceof SVGLayer)
+					((SVGLayer) cgl).draw(g2, rect, rect, null, null);
+			}
+		} else {
+			// Bitmap...
+			var image = getModifiedImage();
+	
+			if (image != null) {
+				g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+				g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+				g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+	
+				g2.drawImage(
+						image, 
+						Math.round((float) getX()), 
+						Math.round((float) getY()), 
+						Math.round((float) getWidth()),
+						Math.round((float) getHeight()), 
+						null
+				);
+			}
 		}
-		super.paint(graphics, showSelection); // draw the border over top
+		
+		g2.dispose();
+		
+		super.paint(g, showSelection); // draw the border over top
 	}
-
 }

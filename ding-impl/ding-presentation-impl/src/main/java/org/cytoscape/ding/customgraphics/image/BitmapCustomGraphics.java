@@ -35,6 +35,9 @@ import org.cytoscape.ding.internal.util.ImageUtil;
  * #L%
  */
 
+/**
+ * Creates bitmap images from URLs or Base64 Data URLs (e.g. "data:image/jpeg;base64,LzlqLzRBQ...").
+ */
 public class BitmapCustomGraphics extends AbstractURLImageCustomGraphics<BitmapLayer> {
 
 	// DO NOT change, or you can break saving/restoring image_metadata.props!
@@ -66,11 +69,6 @@ public class BitmapCustomGraphics extends AbstractURLImageCustomGraphics<BitmapL
 		buildCustomGraphics(originalImage);
 	}
 
-	/**
-	 * @param name display name of this object. NOT UNIQUE!
-	 * @param img
-	 * @throws IOException 
-	 */
 	public BitmapCustomGraphics(Long id, String name, BufferedImage img) {
 		super(id, name);
 
@@ -87,6 +85,12 @@ public class BitmapCustomGraphics extends AbstractURLImageCustomGraphics<BitmapL
 		tags.add(DEF_TAG);
 		this.originalImage = img;
 		buildCustomGraphics(originalImage);
+	}
+	
+	public BitmapCustomGraphics(Long id, String name, URL url, BufferedImage img) {
+		this(id, name, img);
+		
+		sourceUrl = url;
 	}
 	
 	@Override
@@ -110,6 +114,10 @@ public class BitmapCustomGraphics extends AbstractURLImageCustomGraphics<BitmapL
 			resizeImage(width, height);
 		
 		return scaledImage;
+	}
+	
+	public BufferedImage getOriginalImage() {
+		return originalImage;
 	}
 
 	public Image resetImage() {
@@ -161,5 +169,33 @@ public class BitmapCustomGraphics extends AbstractURLImageCustomGraphics<BitmapL
 		buildCustomGraphics(scaledImage);
 		
 		return scaledImage;
+	}
+	
+	@Override
+	public int hashCode() {
+		int prime = 31;
+		int result = 11;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!(obj instanceof BitmapCustomGraphics))
+			return false;
+		
+		var other = (BitmapCustomGraphics) obj;
+		
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id)) {
+			return false;
+		}
+		
+		return true;
 	}
 }

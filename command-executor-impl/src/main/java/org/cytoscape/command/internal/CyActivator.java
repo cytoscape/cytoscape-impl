@@ -98,7 +98,7 @@ public class CyActivator extends AbstractCyActivator {
 	public void start(BundleContext bc) {
 		final CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 		
-		CommandTunableInterceptorImpl interceptor = new CommandTunableInterceptorImpl();
+		CommandTunableInterceptorImpl interceptor = new CommandTunableInterceptorImpl(serviceRegistrar);
 
 		StringTunableHandlerFactory<FileTunableHandler> fileTHF = new SimpleStringTunableHandlerFactory<>(FileTunableHandler.class, File.class);
 		StringTunableHandlerFactory<IntTunableHandler> intTHF = new SimpleStringTunableHandlerFactory<>(IntTunableHandler.class, Integer.class, int.class);

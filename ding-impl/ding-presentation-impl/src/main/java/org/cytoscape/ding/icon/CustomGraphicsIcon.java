@@ -8,8 +8,8 @@ import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 
-import org.cytoscape.ding.customgraphics.image.SVGLayer;
 import org.cytoscape.ding.customgraphics.image.SVGCustomGraphics;
+import org.cytoscape.ding.customgraphics.image.SVGLayer;
 import org.cytoscape.view.presentation.customgraphics.Cy2DGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 
@@ -71,13 +71,38 @@ public class CustomGraphicsIcon extends VisualPropertyIcon<CyCustomGraphics<?>> 
 					((SVGLayer) cgl).draw(g2, rect, rect, null, null);
 			}
 		} else {
-			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			
 			var img = getImage();
 			
 			if (img != null) {
-				img = img.getScaledInstance(width, height, Image.SCALE_AREA_AVERAGING);
-				g2.drawImage(img, x, y, width, height, c);
+				// Bounds dimensions
+				var w = width;
+				var h = height;
+				// Original image width/height
+				var iw = img.getWidth(null);
+				var ih = img.getHeight(null);
+				// New image width/height
+				var nw = iw;
+				var nh = ih;
+				
+				if (iw > 0 && ih > 0) {
+					// Fit image to shape's bounds...
+					// - first check if we need to scale width
+					if (iw > w) {
+						nw = w; // scale width to fit
+						nh = (nw * ih) / iw; // scale height to maintain aspect ratio
+					}
+					
+					// - then check if we need to scale even with the new height
+					if (nh > h) {
+						nh = h; // scale height to fit instead
+						nw = (nh * iw) / ih; // scale width to maintain aspect ratio
+					}
+					
+					img = img.getScaledInstance(nw, nh, Image.SCALE_AREA_AVERAGING);
+					
+					g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+					g2.drawImage(img, (int) (x + (w - nw) / 2.0f), (int) (y + (h - nh) / 2.0f), nw, nh, c);
+				}
 			}
 		}
 		

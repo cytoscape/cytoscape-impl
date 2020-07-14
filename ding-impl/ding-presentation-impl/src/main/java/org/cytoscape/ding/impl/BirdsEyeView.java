@@ -228,6 +228,7 @@ public final class BirdsEyeView implements RenderingEngine<CyNetwork>, ContentCh
 	@Override
 	public void dispose() {
 		renderComponent.dispose();
+		contentChangedTimer.shutdown();
 		re = null;
 	}
 

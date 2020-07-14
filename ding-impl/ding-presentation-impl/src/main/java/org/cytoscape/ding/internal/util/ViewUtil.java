@@ -10,6 +10,8 @@ import javax.swing.FocusManager;
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.property.values.Position;
 import org.slf4j.Logger;
@@ -20,7 +22,7 @@ import org.slf4j.Logger;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -156,6 +158,25 @@ public final class ViewUtil {
 			case EAST:       return Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR);
 			default:         return null;
 		}
+	}
+	
+	/**
+	 * Force-select the passed annotation. If the annotation selection mode is off, this also turns it on.
+	 */
+	public static void selectAnnotation(DRenderingEngine re, DingAnnotation annotation) {
+		var lexicon = re.getVisualLexicon();
+		var vp = lexicon.lookup(CyNetwork.class, "NETWORK_ANNOTATION_SELECTION");
+		
+		if (vp != null) {
+			var view = re.getViewModel();
+			
+			if (view.getVisualProperty(vp) != Boolean.TRUE)
+				view.setLockedValue(vp, Boolean.TRUE);
+		}
+		
+		var cyAnnotator = re.getCyAnnotator();
+		cyAnnotator.addAnnotation(annotation);
+		cyAnnotator.setSelectedAnnotation(annotation, true);
 	}
 	
 	private ViewUtil() {

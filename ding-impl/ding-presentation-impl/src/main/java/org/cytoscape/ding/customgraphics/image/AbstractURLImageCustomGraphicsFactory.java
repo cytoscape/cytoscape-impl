@@ -4,6 +4,7 @@ import java.net.URL;
 
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
@@ -39,11 +40,13 @@ public abstract class AbstractURLImageCustomGraphicsFactory<T extends CustomGrap
 
 	protected String entry[];
 	protected final CustomGraphicsManager manager;
+	protected final CyServiceRegistrar serviceRegistrar;
 	
 	static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
-	public AbstractURLImageCustomGraphicsFactory(CustomGraphicsManager manager) {
+	public AbstractURLImageCustomGraphicsFactory(CustomGraphicsManager manager, CyServiceRegistrar serviceRegistrar) {
 		this.manager = manager;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override

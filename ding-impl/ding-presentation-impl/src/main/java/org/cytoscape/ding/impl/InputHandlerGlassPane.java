@@ -37,7 +37,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -91,8 +90,6 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.view.presentation.property.values.Bend;
-import org.cytoscape.view.presentation.property.values.Handle;
 import org.cytoscape.view.presentation.property.values.ObjectPosition;
 import org.cytoscape.view.presentation.property.values.Position;
 import org.cytoscape.work.TaskIterator;
@@ -466,25 +463,18 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				mutableNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, yPos);
 			}
 
-			Set<HandleInfo> handlesToMove = re.getBendStore().getSelectedHandles();
-			for (HandleInfo handleKey : handlesToMove) {
-				View<CyEdge> ev = snapshot.getEdgeView(handleKey.getSUID());				
-				Handle handle = handleKey.getHandle();
-				Point2D newPoint = handle.calculateHandleLocation(re.getViewModel(),ev);
-				
-				float x = (float) newPoint.getX();
-				float y = (float) newPoint.getY();
-
-				var bendStore = re.getBendStore();
+			if(re.getBendStore().areHandlesSelected()) {
+				float dx = 0, dy = 0;
 				switch(k.getKeyCode()) {
-					case VK_UP:    bendStore.moveHandle(handleKey, x, y - move); break;
-					case VK_DOWN:  bendStore.moveHandle(handleKey, x, y + move); break;
-					case VK_LEFT:  bendStore.moveHandle(handleKey, x - move, y); break;
-					case VK_RIGHT: bendStore.moveHandle(handleKey, x + move, y); break;
+					case VK_UP:    dy = -move; break;
+					case VK_DOWN:  dy = +move; break;
+					case VK_LEFT:  dx = -move; break;
+					case VK_RIGHT: dx = +move; break;
 				}
+				re.getBendStore().moveSelectedHandles(dx, dy);
 			}
 			
-			return !selectedNodes.isEmpty() || !handlesToMove.isEmpty();
+			return !selectedNodes.isEmpty() || re.getBendStore().areHandlesSelected();
 		}
 		
 		private boolean cancelAddingEdge() {
@@ -1057,7 +1047,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				
 			var selectedNodes = re.getViewModelSnapshot().getTrackedNodes(DingNetworkViewFactory.SELECTED_NODES);
 
-			var anchorsToMove = re.getBendStore().getSelectedHandles();
+//			var anchorsToMove = re.getBendStore().getSelectedHandles();
 			var annotationSelection = cyAnnotator.getAnnotationSelection();
 			
 			if(!annotationSelection.isEmpty()) {
@@ -1077,11 +1067,11 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				}
 			}
 			
-			if(!selectedNodes.isEmpty() || !anchorsToMove.isEmpty()) {
-				mouseDraggedHandleNodesAndEdges(selectedNodes, anchorsToMove, e);
+			if(!selectedNodes.isEmpty() || re.getBendStore().areHandlesSelected()) {
+				mouseDraggedHandleNodesAndEdges(selectedNodes, e);
 			}
 			
-			if(!selectedNodes.isEmpty() || !anchorsToMove.isEmpty()) {
+			if(!selectedNodes.isEmpty() || re.getBendStore().areHandlesSelected()) {
 				re.updateView(UpdateType.ALL_FAST);
 			} else {
 				re.updateView(UpdateType.JUST_ANNOTATIONS);
@@ -1106,7 +1096,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			}
 		}
 
-		private void mouseDraggedHandleNodesAndEdges(Collection<View<CyNode>> selectedNodes, Set<HandleInfo> anchorsToMove, MouseEvent e) {
+		private void mouseDraggedHandleNodesAndEdges(Collection<View<CyNode>> selectedNodes, MouseEvent e) {
 			if(moveNodesEdit == null)
 				moveNodesEdit = new ViewChangeEdit(re, ViewChangeEdit.SavedObjs.SELECTED, "Move", registrar);
 			
@@ -1142,27 +1132,10 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			
 			var snapshot = re.getViewModelSnapshot();
 			
-			if(!anchorsToMove.isEmpty()) {
-				for(HandleInfo handleKey : anchorsToMove) {
-					Bend bend = handleKey.getBend();
-	
-					//This test is necessary because in some instances, an anchor can still be present in the selected
-					//anchor list, even though the anchor has been removed. A better fix would be to remove the
-					//anchor from that list before this code is ever reached. However, this is not currently possible
-					//under the present API, so for now we just detect this situation and continue.
-					if(bend == null || bend.getAllHandles().isEmpty())
-						continue;
-					
-					Handle handle = handleKey.getHandle();
-					var ev = snapshot.getMutableEdgeView(handleKey.getSUID());
-					Point2D newPoint = handle.calculateHandleLocation(re.getViewModel(), ev);
-					
-					float x = (float) newPoint.getX();
-					float y = (float) newPoint.getY();
-					
-					re.getBendStore().moveHandle(handleKey, x + (float)deltaX, y + (float)deltaY);
-				}
-			} else { // If we are moving anchors of edges, no need to move nodes (bug #2360).
+			if(re.getBendStore().areHandlesSelected()) {
+				re.getBendStore().moveSelectedHandles((float)deltaX, (float)deltaY);
+			} 
+			else { // If we are moving anchors of edges, no need to move nodes (bug #2360).
 				for(var node : selectedNodes) {
 					View<CyNode> mutableNode = snapshot.getMutableNodeView(node.getSUID());
 					if(mutableNode != null) {
@@ -1176,7 +1149,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			    }
 			}
 			
-			if (!selectedNodes.isEmpty() || !re.getBendStore().getSelectedHandles().isEmpty()) {
+			if (!selectedNodes.isEmpty() || re.getBendStore().areHandlesSelected()) {
 				re.setContentChanged();
 			}
 		}
@@ -1627,6 +1600,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	}
 	
 	private boolean deselectAllEdges() {
+		re.getBendStore().unselectAllHandles();
 		if(edgeSelectionEnabled()) {
 			var table = re.getViewModel().getModel().getDefaultEdgeTable();
 			var rows = table.getMatchingRows(CyNetwork.SELECTED, true);

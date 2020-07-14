@@ -1,28 +1,10 @@
 package org.cytoscape.ding.impl.cyannotator.dialogs;
 
-import static javax.swing.GroupLayout.DEFAULT_SIZE;
-import static javax.swing.GroupLayout.PREFERRED_SIZE;
-import static javax.swing.GroupLayout.Alignment.LEADING;
-
-import java.awt.Point;
-import java.awt.Robot;
 import java.awt.Window;
-import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
 
-import javax.swing.AbstractAction;
-import javax.swing.GroupLayout;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-
 import org.cytoscape.ding.impl.DRenderingEngine;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.BoundedTextAnnotationImpl;
-import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
-import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
 /*
  * #%L
@@ -30,7 +12,7 @@ import org.cytoscape.view.presentation.annotations.TextAnnotation;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -49,137 +31,71 @@ import org.cytoscape.view.presentation.annotations.TextAnnotation;
  */
 
 @SuppressWarnings("serial")
-public class BoundedTextAnnotationDialog extends JDialog {
+public class BoundedTextAnnotationDialog extends AbstractAnnotationDialog<BoundedTextAnnotationImpl> {
 
+	private static final String NAME = "Bounded Text";
+	
 	private static final int PREVIEW_WIDTH = 500;
 	private static final int PREVIEW_HEIGHT = 220;
 	
-	private ShapeAnnotationPanel shapeAnnotationPanel;  
-	private TextAnnotationPanel textAnnotationPanel;
-	private JButton applyButton;
-	private JButton cancelButton;
-
-	private final CyAnnotator cyAnnotator;    
-	private final DRenderingEngine re;    
-	private final Point2D startingLocation;
-	private final BoundedTextAnnotationImpl mAnnotation;
 	private BoundedTextAnnotationImpl preview;
-	private final boolean create;
 	
-	public BoundedTextAnnotationDialog(final DRenderingEngine re, final Point2D start, final Window owner) {
-		super(owner);
-		this.re = re;
-		this.cyAnnotator = re.getCyAnnotator();
-		this.startingLocation = start != null ? start : re.getComponentCenter();
-		this.mAnnotation = new BoundedTextAnnotationImpl(re, false);
-		this.create = true;
-
-		initComponents();		        
+	public BoundedTextAnnotationDialog(DRenderingEngine re, Point2D start, Window owner) {
+		super(NAME, new BoundedTextAnnotationImpl(re, false), re, start, owner);
 	}
 
-	public BoundedTextAnnotationDialog(final BoundedTextAnnotationImpl mAnnotation, final Window owner) {
-		super(owner);
-		this.mAnnotation = mAnnotation;
-		this.cyAnnotator = mAnnotation.getCyAnnotator();
-		this.re = cyAnnotator.getRenderingEngine();
-		this.create = false;
-		this.startingLocation = null;
+	public BoundedTextAnnotationDialog(BoundedTextAnnotationImpl annotation, Window owner) {
+		super(NAME, annotation, owner);
+	}
+	
+	@Override
+	protected BoundedTextAnnotationPanel createControlPanel() {
+		return new BoundedTextAnnotationPanel(annotation, getPreviewPanel());
+	}
 
-		initComponents();	
+	@Override
+	protected BoundedTextAnnotationImpl getPreviewAnnotation() {
+		if (preview == null) {
+			preview = new BoundedTextAnnotationImpl(re, true);
+			preview.setText(annotation.getText());
+			preview.setFont(annotation.getFont());
+			preview.fitShapeToText();
+		}
+		
+		return preview;
+	}
+	
+	@Override
+	protected int getPreviewWidth() {
+		return PREVIEW_WIDTH;
+	}
+
+	@Override
+	protected int getPreviewHeight() {
+		return PREVIEW_HEIGHT;
 	}
     
-	private void initComponents() {
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setModalityType(DEFAULT_MODALITY_TYPE);
-		setResizable(false);
-		setTitle(create ? "Create Bounded Text Annotation" : "Modify Bounded Text Annotation");
-		
-		// Create the preview panel
-		preview = new BoundedTextAnnotationImpl(re, true);
-		preview.setText(mAnnotation.getText());
-		preview.setFont(mAnnotation.getFont());
-		preview.fitShapeToText();
-		
-		PreviewPanel previewPanel = new PreviewPanel(preview);
-
-		shapeAnnotationPanel = new ShapeAnnotationPanel((ShapeAnnotation)mAnnotation, previewPanel);
-		textAnnotationPanel = new TextAnnotationPanel((TextAnnotation)mAnnotation, previewPanel);
-
-		applyButton = new JButton(new AbstractAction("OK") {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				applyButtonActionPerformed(e);
-			}
-		});
-		cancelButton = new JButton(new AbstractAction("Cancel") {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				dispose();
-			}
-		});
-		
-		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(applyButton, cancelButton);
-
-		final JPanel contents = new JPanel();
-		final GroupLayout layout = new GroupLayout(contents);
-		contents.setLayout(layout);
-		layout.setAutoCreateContainerGaps(true);
-		layout.setAutoCreateGaps(true);
-		
-		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
-				.addComponent(textAnnotationPanel)
-				.addComponent(shapeAnnotationPanel)
-				.addComponent(previewPanel, DEFAULT_SIZE, PREVIEW_WIDTH, Short.MAX_VALUE)
-				.addComponent(buttonPanel)
-		);
-		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addComponent(textAnnotationPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				.addComponent(shapeAnnotationPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				.addComponent(previewPanel, DEFAULT_SIZE, PREVIEW_HEIGHT, Short.MAX_VALUE)
-				.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-		);
-		
-		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), applyButton.getAction(), cancelButton.getAction());
-		getRootPane().setDefaultButton(applyButton);
-		
-		getContentPane().add(contents);
-		pack();
-	}
-
-	private void applyButtonActionPerformed(ActionEvent evt) {
-		dispose();           
-		
-		cyAnnotator.markUndoEdit(create ? "Create Annotation" : "Edit Annotation");
-		
-		mAnnotation.setFont(textAnnotationPanel.getNewFont());
-		mAnnotation.setTextColor(textAnnotationPanel.getTextColor());
-		mAnnotation.setText(textAnnotationPanel.getText());
-		mAnnotation.setShapeType(preview.getShapeType());
-		mAnnotation.setFillColor(preview.getFillColor());
-		mAnnotation.setFillOpacity(preview.getFillOpacity());
-		mAnnotation.setBorderColor(preview.getBorderColor());
-		mAnnotation.setBorderOpacity(preview.getBorderOpacity());
-		mAnnotation.setBorderWidth((int)preview.getBorderWidth());
+	@Override
+	protected void apply() {
+		annotation.setFont(preview.getFont());
+		annotation.setTextColor(preview.getTextColor());
+		annotation.setText(preview.getText());
+		annotation.setShapeType(preview.getShapeType());
+		annotation.setFillColor(preview.getFillColor());
+		annotation.setFillOpacity(preview.getFillOpacity());
+		annotation.setBorderColor(preview.getBorderColor());
+		annotation.setBorderOpacity(preview.getBorderOpacity());
+		annotation.setBorderWidth((int)preview.getBorderWidth());
 		
 		if (!create) {
-			mAnnotation.update();
+			annotation.update();
 			cyAnnotator.postUndoEdit();
+			
 			return;
 		}
 
 		var nodePoint = re.getTransform().getNodeCoordinates(startingLocation);
-		mAnnotation.setLocation(nodePoint.getX(), nodePoint.getY());
-		mAnnotation.update();
-		cyAnnotator.addAnnotation(mAnnotation);
-
-		// Set this shape to be resized
-		cyAnnotator.resizeShape(mAnnotation);
-
-		try {
-			// Warp the mouse to the starting location (if supported)
-			Point start = re.getComponent().getLocationOnScreen();
-			Robot robot = new Robot();
-			robot.mouseMove((int) start.getX() + 100, (int) start.getY() + 100);
-		} catch (Exception e) {}
+		annotation.setLocation(nodePoint.getX(), nodePoint.getY());
+		annotation.update();
 	}
 }

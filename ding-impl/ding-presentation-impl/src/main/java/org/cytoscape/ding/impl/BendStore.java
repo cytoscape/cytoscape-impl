@@ -3,10 +3,10 @@ package org.cytoscape.ding.impl;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_BEND;
 
 import java.awt.geom.Point2D;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.event.CyEventHelper;
@@ -27,7 +27,7 @@ public class BendStore {
 	private final HandleFactory handleFactory;
 	private final CyEventHelper eventHelper;
 	
-	private Set<HandleInfo> selectedHandles = new HashSet<>();
+	private Map<Long,Set<HandleInfo>> selectedHandles = new HashMap<>();
 	
 	public BendStore(DRenderingEngine re, CyEventHelper eventHelper, HandleFactory handleFactory) {
 		this.re = re;
@@ -37,62 +37,141 @@ public class BendStore {
 	
 	
 	public boolean isHandleSelected(HandleInfo key) {
-		return selectedHandles.contains(key);
+		Set<HandleInfo> handles = selectedHandles.get(key.getSUID());
+		if(handles == null)
+			return false;
+		return handles.contains(key);
 	}
 	
 	public void selectHandle(HandleInfo key) {
-		if(key != null)
-			selectedHandles.add(key);
+		if(key == null)
+			return;
+		selectedHandles.computeIfAbsent(key.getSUID(), k->new HashSet<>()).add(key);
 	}
 	
 	public void unselectHandle(HandleInfo key) {
-		selectedHandles.remove(key);
+		Set<HandleInfo> handles = selectedHandles.get(key.getSUID());
+		if(handles == null)
+			return;
+		handles.remove(key);
+		if(handles.isEmpty())
+			selectedHandles.remove(key.getSUID());
 	}
 	
 	public void unselectAllHandles() {
 		selectedHandles.clear();
 	}
 	
-	public Set<HandleInfo> getSelectedHandles() {
-		// MKTODO only do this on content changed?
-		Iterator<HandleInfo> iter = selectedHandles.iterator();
-		var snapshot = re.getViewModelSnapshot();
-		while(iter.hasNext()) {
-			var handle = iter.next();
-			var ev = snapshot.getEdgeView(handle.getSUID());
-			if(!re.getEdgeDetails().isSelected(ev)) {
-				iter.remove();
+	public boolean areHandlesSelected() {
+		return !selectedHandles.isEmpty();
+	}
+	
+//	public Set<HandleInfo> getSelectedHandles() {
+//		// MKTODO only do this on content changed?
+//		Iterator<HandleInfo> iter = selectedHandles.iterator();
+//		var snapshot = re.getViewModelSnapshot();
+//		while(iter.hasNext()) {
+//			var handle = iter.next();
+//			var ev = snapshot.getEdgeView(handle.getSUID());
+//			if(!re.getEdgeDetails().isSelected(ev)) {
+//				iter.remove();
+//			}
+//		}
+//		
+//		return Collections.unmodifiableSet(selectedHandles);
+//	}
+	
+	
+//	for(HandleInfo handleKey : anchorsToMove) {
+//	Bend bend = handleKey.getBend();
+//
+//	//This test is necessary because in some instances, an anchor can still be present in the selected
+//	//anchor list, even though the anchor has been removed. A better fix would be to remove the
+//	//anchor from that list before this code is ever reached. However, this is not currently possible
+//	//under the present API, so for now we just detect this situation and continue.
+//	if(bend == null || bend.getAllHandles().isEmpty())
+//		continue;
+//	
+//	Handle handle = handleKey.getHandle();
+//	var ev = snapshot.getMutableEdgeView(handleKey.getSUID());
+//	Point2D newPoint = handle.calculateHandleLocation(re.getViewModel(), ev);
+//	
+//	float x = (float) newPoint.getX();
+//	float y = (float) newPoint.getY();
+//	
+//	re.getBendStore().moveHandle(handleKey, x + (float)deltaX, y + (float)deltaY);
+//}
+	
+	
+	
+	
+	public void moveSelectedHandles(float dx, float dy) {
+		bypassAllSelectedBends();
+		
+		for(Map.Entry<Long,Set<HandleInfo>> entry : selectedHandles.entrySet()) {
+			View<CyEdge> mutableEdgeView = re.getViewModelSnapshot().getMutableEdgeView(entry.getKey());
+			for(HandleInfo handleInfo : entry.getValue()) {
+				Handle handle = handleInfo.getHandle();
+				Point2D newPoint = handle.calculateHandleLocation(re.getViewModel(), mutableEdgeView);
+				handle.defineHandle(re.getViewModel(), mutableEdgeView, newPoint.getX() + dx, newPoint.getY() + dy);
 			}
 		}
-		
-		return Collections.unmodifiableSet(selectedHandles);
 	}
 	
 	
-	public void moveHandle(HandleInfo handleInfo, float x, float y) {
-		View<CyEdge> mutableEdgeView = re.getViewModelSnapshot().getMutableEdgeView(handleInfo.getSUID());
-		if(mutableEdgeView != null) {
-			Handle handle = handleInfo.getHandle();
-			handle.defineHandle(re.getViewModel(), mutableEdgeView, x, y);
+	private void bypassAllSelectedBends() {
+		for(long suid : new HashSet<>(selectedHandles.keySet())) {
+			View<CyEdge> mutableEdgeView = re.getViewModelSnapshot().getMutableEdgeView(suid);
+			if(mutableEdgeView == null) {
+				continue;
+			}
+			
+			// create a bypass
+			Bend lockedBend = createLockedBend(mutableEdgeView);
+			if(lockedBend != null) {
+				// update all the selected handles to use the bypass bend
+				Set<HandleInfo> newHandleKeys = new HashSet<>();
+				for(HandleInfo key : selectedHandles.get(suid)) {
+					List<Handle> allHandles = lockedBend.getAllHandles();
+					int index = key.getHandleIndex();
+					if(index >= 0 && index < allHandles.size()) {
+						Handle newHandle = allHandles.get(key.getHandleIndex());
+						HandleInfo newKey = new HandleInfo(suid, lockedBend, newHandle);
+						newHandleKeys.add(newKey);
+					}
+				}
+				
+				selectedHandles.put(suid, newHandleKeys);
+			}
 		}
 	}
 	
+
+	private Bend createLockedBend(View<CyEdge> mutableEdgeView) {
+		if(mutableEdgeView == null)
+			return null;
+		if(mutableEdgeView.isValueLocked(EDGE_BEND))
+			return null;
+		
+		// must be the default or a mapping (probably created by the "bundle edges" option)
+		final Bend bend = mutableEdgeView.getVisualProperty(EDGE_BEND);
+		final Bend lockedBend;
+		if(bend == EDGE_BEND.getDefault()) // The default Bend that's part of the lexicon is not an instance of BendImpl.
+			lockedBend = new BendImpl();
+		else
+			lockedBend = new BendImpl((BendImpl)bend); // copy handles
+		
+		mutableEdgeView.setLockedValue(EDGE_BEND, lockedBend);
+		return lockedBend;
+	}
 	
 	private Bend getOrCreateLockedBend(View<CyEdge> mutableEdgeView) {
 		if(mutableEdgeView == null)
 			return null;
 		if(mutableEdgeView.isValueLocked(EDGE_BEND))
 			return mutableEdgeView.getVisualProperty(EDGE_BEND);
-			
-		Bend defaultBend = re.getViewModelSnapshot().getViewDefault(EDGE_BEND);
-		Bend bend;
-		if(defaultBend == EDGE_BEND.getDefault())
-			bend = new BendImpl();
-		else
-			bend = new BendImpl((BendImpl)defaultBend); // copy handles from default bend
 		
-		mutableEdgeView.setLockedValue(EDGE_BEND, bend);
-		return bend;
+		return createLockedBend(mutableEdgeView);
 	}
 	
 	public HandleInfo addHandle(View<CyEdge> edge, Point2D pt) {
@@ -169,19 +248,15 @@ public class BendStore {
 		
 		return bestInx;
 	}
-
-	
-	
 	
 	public void removeHandle(HandleInfo key) {
-		selectedHandles.remove(key);
+		unselectHandle(key);
 		View<CyEdge> mutableEdgeView = re.getViewModelSnapshot().getMutableEdgeView(key.getSUID());
 		if(mutableEdgeView != null) {
 			Bend bend = getOrCreateLockedBend(mutableEdgeView);
 			if(bend != null) {
-				int index = bend.getIndex(key.getHandle());
+				int index = key.getHandleIndex();
 				bend.removeHandleAt(index);
-				
 				fireViewChangeEvent(mutableEdgeView, bend);
 			}
 		}

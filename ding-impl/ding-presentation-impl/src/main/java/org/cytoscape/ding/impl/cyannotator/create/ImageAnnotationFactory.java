@@ -1,16 +1,14 @@
 package org.cytoscape.ding.impl.cyannotator.create;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.geom.Point2D;
 import java.util.Map;
 
 import javax.swing.Icon;
-import javax.swing.JDialog;
 import javax.swing.UIManager;
 
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsBrowser;
 import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.dialogs.LoadImageDialog;
@@ -28,7 +26,7 @@ import org.cytoscape.view.presentation.annotations.ImageAnnotation;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -52,26 +50,34 @@ public class ImageAnnotationFactory extends AbstractDingAnnotationFactory<ImageA
 
 	private Icon icon;
 	
-	public ImageAnnotationFactory(final CyServiceRegistrar serviceRegistrar) {
+	private final CustomGraphicsBrowser browser;
+	
+	public ImageAnnotationFactory(CustomGraphicsBrowser browser, CyServiceRegistrar serviceRegistrar) {
 		super(ImageAnnotation.class, serviceRegistrar);
+		this.browser = browser;
 	}
 
 	@Override
-	public JDialog createAnnotationDialog(CyNetworkView view, Point2D location) {
-		final CustomGraphicsManager customGraphicsManager = serviceRegistrar.getService(CustomGraphicsManager.class);
-		DRenderingEngine re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
-		return new LoadImageDialog(re, location, customGraphicsManager, ViewUtil.getActiveWindow(re));
+	public LoadImageDialog createAnnotationDialog(CyNetworkView view, Point2D location) {
+		var re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
+		
+		return new LoadImageDialog(re, location, ViewUtil.getActiveWindow(re), browser, serviceRegistrar);
 	}
 
 	@Override
-	public ImageAnnotation createAnnotation(Class<? extends ImageAnnotation> type, CyNetworkView view, Map<String,String> argMap) {
+	public ImageAnnotation createAnnotation(Class<? extends ImageAnnotation> type, CyNetworkView view,
+			Map<String, String> argMap) {
 		if (!this.type.equals(type))
 			return null;
-		DRenderingEngine re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
-		if(re == null)
+		
+		var re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
+		
+		if (re == null)
 			return null;
-		final CustomGraphicsManager customGraphicsManager = serviceRegistrar.getService(CustomGraphicsManager.class);
-		return new ImageAnnotationImpl(re, argMap, customGraphicsManager);
+		
+		var cgManager = serviceRegistrar.getService(CustomGraphicsManager.class);
+		
+		return new ImageAnnotationImpl(re, argMap, cgManager);
 	}
 	
 	@Override
@@ -89,7 +95,7 @@ public class ImageAnnotationFactory extends AbstractDingAnnotationFactory<ImageA
 		if (icon == null) {
 			// Lazily initialize the icon here, because the LAF might not have been set yet
 			// and we need to get the correct colors
-			Font font = serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 16f);
+			var font = serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 16f);
 			icon = new TextIcon(
 					new String[] { IconUtil.ICON_ANNOTATION_IMAGE_1, IconUtil.ICON_ANNOTATION_IMAGE_2 },
 					font,

@@ -123,6 +123,10 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 		return selected.getFilter();
 	}
 
+	public boolean isInteractive() {
+		return isInteractive;
+	}
+	
 	public void setInteractive(boolean isInteractive, FilterPanel panel) {
 		modelMonitor.setInteractive(isInteractive);
 		worker.setInteractive(isInteractive);
@@ -134,7 +138,8 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 		
 		this.isInteractive = isInteractive;
 		CompositeFilterPanel<FilterPanel> root = panel.getRootPanel();
-		setInteractive(isInteractive, root);
+		if(root != null)
+			setInteractive(isInteractive, root);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -245,6 +250,11 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 		if(getElementByName(name) != null)
 			throw new IllegalArgumentException("Filter with name '" + name + "' already exists.");
 			
+		boolean interactive = isInteractive();
+		// Do not run the filter when it is first added, this creates race conditions with automation
+		if(interactive)
+			setInteractive(false, panel);
+		
 		FilterElement element = addNewElement(name);
 		List<Transformer<CyNetwork, CyIdentifiable>> transformers = namedTransformer.getTransformers();
 		if (transformers.size() == 1) {
@@ -263,6 +273,9 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 			return;
 		}
 		setFilter(selected.getFilter(), panel);
+		
+		if(interactive)
+			setInteractive(true, panel);
 	}
 	
 	private void addCompositeFilter(FilterElement element, CompositeFilter<CyNetwork, CyIdentifiable> composite) {

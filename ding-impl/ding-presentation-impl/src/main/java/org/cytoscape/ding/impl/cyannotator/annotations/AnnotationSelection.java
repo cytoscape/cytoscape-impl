@@ -244,6 +244,9 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 	 * Moves the selection to the given point, setMovingStartOffset() must be called first.
 	 */
 	public void moveSelection(int x, int y) {
+		if (movingStartOffset == null)
+			return;
+		
 		// Avoid moving the same annotation twice
 		Set<DingAnnotation> annotationsToMove = new HashSet<>(selectedAnnotations);
 		for(DingAnnotation annotation : selectedAnnotations) {

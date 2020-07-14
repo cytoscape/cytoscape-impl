@@ -67,8 +67,8 @@ public abstract class AbstractUnHideTaskFactory extends AbstractNetworkViewTaskF
 		// fast path
 		if(networkView.supportsSnapshots()) {
 			CyNetworkViewSnapshot snapshot = networkView.createSnapshot();
-			if(snapshot.isTrackedNodeKey("HIDDEN_EDGES")) {
-				return snapshot.getTrackedNodeCount("HIDDEN_EDGES") > 0;
+			if(snapshot.isTrackedEdgeKey("HIDDEN_EDGES")) {
+				return snapshot.getTrackedEdgeCount("HIDDEN_EDGES") > 0;
 			}
 		} 
 		

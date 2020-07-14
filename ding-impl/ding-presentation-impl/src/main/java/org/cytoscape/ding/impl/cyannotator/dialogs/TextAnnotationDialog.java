@@ -1,24 +1,10 @@
 package org.cytoscape.ding.impl.cyannotator.dialogs;
 
-import static javax.swing.GroupLayout.DEFAULT_SIZE;
-import static javax.swing.GroupLayout.PREFERRED_SIZE;
-import static javax.swing.GroupLayout.Alignment.LEADING;
-
 import java.awt.Window;
-import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
 
-import javax.swing.AbstractAction;
-import javax.swing.GroupLayout;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-
 import org.cytoscape.ding.impl.DRenderingEngine;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.TextAnnotationImpl;
-import org.cytoscape.util.swing.LookAndFeelUtil;
 
 /*
  * #%L
@@ -26,7 +12,7 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -45,123 +31,68 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
  */
 
 @SuppressWarnings("serial")
-public class TextAnnotationDialog extends JDialog {
+public class TextAnnotationDialog extends AbstractAnnotationDialog<TextAnnotationImpl> {
 
+	private static final String NAME = "Text";
+	
 	private static final int PREVIEW_WIDTH = 500;
 	private static final int PREVIEW_HEIGHT = 200;
 	
-	private TextAnnotationPanel textAnnotationPanel;
-	private JButton applyButton;
-	private JButton cancelButton;
-	
-	private final DRenderingEngine re;
-	private final CyAnnotator cyAnnotator;
-	private final Point2D startingLocation;
-	private final boolean create;
-	private final TextAnnotationImpl mAnnotation;
 	private TextAnnotationImpl preview;
 
-	public TextAnnotationDialog(final DRenderingEngine re, final Point2D start, final Window owner) {
-		super(owner);
-		this.re = re;
-		this.cyAnnotator = re.getCyAnnotator();
-		this.startingLocation = start != null ? start : re.getComponentCenter();
-		this.mAnnotation = new TextAnnotationImpl(re, false);
-		create = true;
-		initComponents();
+	public TextAnnotationDialog(DRenderingEngine re, Point2D start, Window owner) {
+		super(NAME, new TextAnnotationImpl(re, false), re, start, owner);
 	}
 
-	public TextAnnotationDialog(final TextAnnotationImpl mAnnotation, final Window owner) {
-		super(owner);
-		this.mAnnotation = mAnnotation;
-		this.cyAnnotator = mAnnotation.getCyAnnotator();
-		this.re = cyAnnotator.getRenderingEngine();
-		this.create = false;
-		this.startingLocation = null;
-
-		initComponents();
+	public TextAnnotationDialog(TextAnnotationImpl annotation, Window owner) {
+		super(NAME, annotation, owner);
+	}
+	
+	@Override
+	protected TextAnnotationPanel createControlPanel() {
+		return new TextAnnotationPanel(annotation, getPreviewPanel());
 	}
 
-	private void initComponents() {
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setModalityType(DEFAULT_MODALITY_TYPE);
-		setResizable(false);
-		setTitle(create ? "Create Text Annotation" : "Modify Text Annotation");
+	@Override
+	protected TextAnnotationImpl getPreviewAnnotation() {
+		if (preview == null) {
+			preview = new TextAnnotationImpl(re, true);
+			preview.setSize(PREVIEW_WIDTH - 10, PREVIEW_HEIGHT - 10);
+		}
 		
-		// Create the preview panel
-		preview = new TextAnnotationImpl(re, true);
-		preview.setSize(PREVIEW_WIDTH - 10, PREVIEW_HEIGHT - 10);
-		PreviewPanel previewPanel = new PreviewPanel(preview);
-
-		textAnnotationPanel = new TextAnnotationPanel(mAnnotation, previewPanel);
-
-		getContentPane().add(textAnnotationPanel);
-		getContentPane().add(previewPanel);
-
-		applyButton = new JButton(new AbstractAction("OK") {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				applyButtonActionPerformed(e);
-			}
-		});
-		cancelButton = new JButton(new AbstractAction("Cancel") {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				dispose();
-			}
-		});
-		
-		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(applyButton, cancelButton);
-
-		final JPanel contents = new JPanel();
-		final GroupLayout layout = new GroupLayout(contents);
-		contents.setLayout(layout);
-		layout.setAutoCreateContainerGaps(true);
-		layout.setAutoCreateGaps(true);
-		
-		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
-				.addComponent(textAnnotationPanel)
-				.addComponent(previewPanel, DEFAULT_SIZE, PREVIEW_WIDTH, Short.MAX_VALUE)
-				.addComponent(buttonPanel)
-		);
-		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addComponent(textAnnotationPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				.addComponent(previewPanel, DEFAULT_SIZE, PREVIEW_HEIGHT, Short.MAX_VALUE)
-				.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-		);
-		
-		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), applyButton.getAction(), cancelButton.getAction());
-		getRootPane().setDefaultButton(applyButton);
-		
-		getContentPane().add(contents);
-		pack();
+		return preview;
 	}
-			 
-	private void applyButtonActionPerformed(ActionEvent evt) {
-		dispose();
 
-		cyAnnotator.markUndoEdit(create ? "Create Annotation" : "Edit Annotation");
+	@Override
+	protected int getPreviewWidth() {
+		return PREVIEW_WIDTH;
+	}
+
+	@Override
+	protected int getPreviewHeight() {
+		return PREVIEW_HEIGHT;
+	}
+	
+	@Override
+	protected void apply() {
+		var cp = (TextAnnotationPanel) getControlPanel();
 		
-		mAnnotation.setFont(textAnnotationPanel.getNewFont());
-		mAnnotation.setTextColor(textAnnotationPanel.getTextColor());
-		mAnnotation.setText(textAnnotationPanel.getText());
+		annotation.setFont(cp.getNewFont());
+		annotation.setTextColor(cp.getTextColor());
+		annotation.setText(cp.getText());
 		
 		if (!create) {
-			mAnnotation.update();
+			annotation.update();
 			cyAnnotator.postUndoEdit();
+			
 			return;
 		}
 
 		// Apply
 		var nodePoint = re.getTransform().getNodeCoordinates(startingLocation);
-		mAnnotation.setLocation(nodePoint.getX(), nodePoint.getY());
+		annotation.setLocation(nodePoint.getX(), nodePoint.getY());
 		// We need to have bounds or it won't render
-		mAnnotation.setBounds(mAnnotation.getBounds());
-		mAnnotation.update();
-		cyAnnotator.addAnnotation(mAnnotation);
-		
-		mAnnotation.contentChanged();
-
-		cyAnnotator.postUndoEdit();
+		annotation.setBounds(annotation.getBounds());
+		annotation.update();
 	}
 }

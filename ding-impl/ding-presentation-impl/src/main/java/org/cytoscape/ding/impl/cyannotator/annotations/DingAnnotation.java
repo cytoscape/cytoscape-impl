@@ -5,9 +5,8 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeListener;
 
-import javax.swing.JDialog;
-
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
+import org.cytoscape.ding.impl.cyannotator.dialogs.AbstractAnnotationDialog;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 
@@ -17,7 +16,7 @@ import org.cytoscape.view.presentation.annotations.GroupAnnotation;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -64,7 +63,7 @@ public interface DingAnnotation extends Annotation {
 
 	void contentChanged();
 
-	JDialog getModifyDialog();
+	AbstractAnnotationDialog getModifyDialog();
 
 	// Overrides of Component
 	void paint(Graphics g, boolean showSelected);
@@ -104,21 +103,26 @@ public interface DingAnnotation extends Annotation {
 	
 	void setZOrder(int z);
 	
-	default void setZoom(double zoom) {}
+	@Override
+	default void setZoom(double zoom) {
+		// Nothing to do here...
+	}
 
-	default double getZoom() { return 1.0; }
-	
+	@Override
+	default double getZoom() {
+		return 1.0;
+	}
 
 	@Override
 	default void setSpecificZoom(double zoom) {
 		setZoom(zoom);
 	}
-	
+
 	@Override
 	default double getSpecificZoom() {
 		return getZoom();
 	}
-	
+
 	/**
 	 * Returns the bounds of this annotation in NODE COORDINATES.
 	 */

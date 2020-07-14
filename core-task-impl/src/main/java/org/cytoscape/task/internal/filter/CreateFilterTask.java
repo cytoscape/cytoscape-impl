@@ -1,5 +1,6 @@
 package org.cytoscape.task.internal.filter;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.filter.TransformerContainer;
 import org.cytoscape.filter.model.NamedTransformer;
 import org.cytoscape.io.read.CyTransformerReader;
@@ -17,6 +18,9 @@ public class CreateFilterTask extends AbstractTask {
 	@Tunable
 	public String name;
 	
+	@Tunable(description="If true the filter will be applied to the current network immediately after it is created. Default is true.")
+	public boolean apply = true;
+	
 	@ContainsTunables
 	public TransformerJsonTunable jsonTunable = new TransformerJsonTunable();
 	
@@ -30,9 +34,10 @@ public class CreateFilterTask extends AbstractTask {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 	
-	public CreateFilterTask(CyServiceRegistrar serviceRegistrar, String name) {
+	public CreateFilterTask(CyServiceRegistrar serviceRegistrar, String name, boolean apply) {
 		this(serviceRegistrar);
 		this.name = name;
+		this.apply = apply;
 	}
 	
 	@Override
@@ -68,8 +73,15 @@ public class CreateFilterTask extends AbstractTask {
 		if(!valid) {
 			return;
 		}
-			
+
 		container.addNamedTransformer(transformer);
+		
+		if(apply) {
+			CyNetwork network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
+			if(network != null) {
+				SelectFilterTask.applyFilter(serviceRegistrar, network, transformer, SelectTunable.Action.SELECT);
+			}
+		}
 	}
 
 }

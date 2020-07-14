@@ -2,8 +2,12 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
 
 import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
 
-import java.awt.Rectangle;
-import java.awt.Window;
+import java.awt.geom.Point2D;
+
+import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
 
 /*
  * #%L
@@ -11,7 +15,7 @@ import java.awt.Window;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -28,15 +32,6 @@ import java.awt.Window;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import java.awt.geom.Point2D;
-
-import javax.swing.JDialog;
-
-import org.cytoscape.ding.impl.DRenderingEngine;
-import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
 
 public class EditAnnotationTask extends AbstractTask {
 	
@@ -56,13 +51,13 @@ public class EditAnnotationTask extends AbstractTask {
 		
 		if (re != null) {
 			invokeOnEDT(() -> {
-				final JDialog dialog = annotation.getModifyDialog();
+				var dialog = annotation.getModifyDialog();
 				
 				if (dialog != null) {
-					Window owner = dialog.getOwner();
+					var owner = dialog.getOwner();
 					
 					if (location != null && owner != null) {
-						Rectangle screen = owner.getGraphicsConfiguration().getBounds();
+						var screen = owner.getGraphicsConfiguration().getBounds();
 						dialog.setLocation((int)location.getX() + screen.x, (int) location.getY() + screen.x);
 					} else {
 						dialog.setLocationRelativeTo(re.getComponent());

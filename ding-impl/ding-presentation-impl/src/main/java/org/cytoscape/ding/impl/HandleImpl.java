@@ -269,8 +269,10 @@ public class HandleImpl implements Handle {
 		
 	}
 
+	
 	@Override
 	public String toString() {
 		return "handle x:" + x + " y:" + y + " cosTheta: " + cosTheta + " sinTheta: " + sinTheta + " ratio: " + ratio;
 	}
+	
 }

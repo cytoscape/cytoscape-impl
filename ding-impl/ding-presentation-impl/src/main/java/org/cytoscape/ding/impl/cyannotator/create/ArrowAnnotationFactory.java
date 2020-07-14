@@ -1,17 +1,13 @@
 package org.cytoscape.ding.impl.cyannotator.create;
 
-import java.awt.Font;
 import java.awt.geom.Point2D;
 import java.util.Map;
 
 import javax.swing.Icon;
-import javax.swing.JDialog;
 import javax.swing.UIManager;
 
-import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ArrowAnnotationDialog;
 import org.cytoscape.ding.internal.util.IconUtil;
 import org.cytoscape.ding.internal.util.ViewUtil;
@@ -27,7 +23,7 @@ import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -51,38 +47,41 @@ public class ArrowAnnotationFactory extends AbstractDingAnnotationFactory<ArrowA
 
 	private Icon icon;
 
-	public ArrowAnnotationFactory(final CyServiceRegistrar serviceRegistrar) {
+	public ArrowAnnotationFactory(CyServiceRegistrar serviceRegistrar) {
 		super(ArrowAnnotation.class, serviceRegistrar);
 	}
 
 	@Override
-	public JDialog createAnnotationDialog(CyNetworkView view, Point2D location) {
+	public ArrowAnnotationDialog createAnnotationDialog(CyNetworkView view, Point2D location) {
 		// We need to be over an annotation
-		DRenderingEngine re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
-		DingAnnotation annotation = re.getPicker().getAnnotationAt(location);
+		var re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
+		var annotation = re.getPicker().getAnnotationAt(location);
 		
-		if (annotation == null || annotation instanceof ArrowAnnotationImpl) {
+		if (annotation == null || annotation instanceof ArrowAnnotationImpl)
 			return null;
-		}
 		
 		return new ArrowAnnotationDialog(re, location, ViewUtil.getActiveWindow(re));
 	}
 
 	@Override
-	public ArrowAnnotation createAnnotation(Class<? extends ArrowAnnotation> type, CyNetworkView view, Map<String,String> argMap) {
+	public ArrowAnnotation createAnnotation(Class<? extends ArrowAnnotation> type, CyNetworkView view,
+			Map<String, String> argMap) {
 		if (!this.type.equals(type))
 			return null;
-		DRenderingEngine re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
-		if(re == null)
+		
+		var re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
+		
+		if (re == null)
 			return null;
+		
 		return new ArrowAnnotationImpl(re, argMap);
 	}
-	
+
 	@Override
 	public String getId() {
 		return NAMESPACE + "Arrow";
 	}
-	
+
 	@Override
 	public String getName() {
 		return NAME;
@@ -93,7 +92,7 @@ public class ArrowAnnotationFactory extends AbstractDingAnnotationFactory<ArrowA
 		if (icon == null) {
 			// Lazily initialize the icon here, because the LAF might not have been set yet,
 			// and we need to get the correct colors
-			Font font = serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 14f);
+			var font = serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 14f);
 			icon = new TextIcon(
 					IconUtil.ICON_ANNOTATION_ARROW,
 					font,

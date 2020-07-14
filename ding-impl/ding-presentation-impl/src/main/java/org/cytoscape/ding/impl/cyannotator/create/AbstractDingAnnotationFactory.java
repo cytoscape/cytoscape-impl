@@ -2,8 +2,7 @@ package org.cytoscape.ding.impl.cyannotator.create;
 
 import java.awt.geom.Point2D;
 
-import javax.swing.JDialog;
-
+import org.cytoscape.ding.impl.cyannotator.dialogs.AbstractAnnotationDialog;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.Annotation;
@@ -15,7 +14,7 @@ import org.cytoscape.view.presentation.annotations.AnnotationFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -37,17 +36,17 @@ public abstract class AbstractDingAnnotationFactory<T extends Annotation> implem
 	
 	public static final int ICON_SIZE = 16;
 	protected static final String NAMESPACE = "org.cytoscape.annotation.";
-	
+
 	protected final Class<T> type;
 	protected final CyServiceRegistrar serviceRegistrar;
-	
+
 	protected AbstractDingAnnotationFactory(Class<T> type, CyServiceRegistrar serviceRegistrar) {
 		this.type = type;
 		this.serviceRegistrar = serviceRegistrar;
 	}
-	
-	public abstract JDialog createAnnotationDialog(CyNetworkView view, Point2D location); 
-	
+
+	public abstract AbstractAnnotationDialog createAnnotationDialog(CyNetworkView view, Point2D location);
+
 	@Override
 	public Class<T> getType() {
 		return type;
