@@ -255,7 +255,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 					if(vmProxy.isTableStyle(style)) {
 						CyColumn currentColumn = vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().getSelectedItem();
 						if(vmProxy.getVisualStyle(currentColumn) == style) {
-							updateTableVisualPropertySheets(currentColumn.getTable(), false, true);
+							updateTableVisualPropertySheets(currentColumn.getTable(), false, false);
 						}
 					} else {
 						if(style.equals(vmProxy.getCurrentVisualStyle())) {
@@ -290,6 +290,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			case CURRENT_TABLE_CHANGED:
 				CyTable table = (CyTable) body;
 				invokeOnEDT(() -> {
+					// Switching styles.  Need to reset the range tracer
 					updateTableVisualPropertySheets(table, false, false);
 				});
 				break;
@@ -833,6 +834,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	}
 	
 	private void onSelectedColumnChanged() {
+		ContinuousMappingEditorPanel.setTracer(new EditorValueRangeTracer(servicesUtil));
 		CyColumn col = vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().getSelectedItem();
 		selectedColumns.put(col.getTable().getSUID(), col.getSUID());
 		updateTableVisualPropertySheets(col.getTable(), false, true);
