@@ -82,6 +82,11 @@ public class CurrentTableService {
 		return vizMapperMediator.getCurrentVisualStyle(type);
 	}
 	
+	public VisualStyle getCurrentVisualStyle() {
+		var type = getCurrentVisualPropertySheetItem().getModel().getTargetDataType();
+		return getCurrentVisualStyle(type);
+	}
+	
 	public CyColumn getCurrentColumn() {
 		return vizMapperMediator.getCurrentColumn();
 	}
