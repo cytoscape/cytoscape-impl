@@ -831,7 +831,7 @@ System.out.println("\t>>> " + selected);
 		if (infoLabel == null) {
 			infoLabel = new JLabel(" ");
 			infoLabel.setHorizontalAlignment(JLabel.CENTER);
-			infoLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
+			infoLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
 			infoLabel.setEnabled(false);
 			makeSmall(infoLabel);
 		}

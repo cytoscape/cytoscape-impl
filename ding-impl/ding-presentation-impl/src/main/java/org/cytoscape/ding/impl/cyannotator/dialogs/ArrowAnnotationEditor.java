@@ -138,7 +138,7 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 		
 		var layout = new GroupLayout(this);
 		setLayout(layout);
-		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateContainerGaps(!isAquaLAF());
 		layout.setAutoCreateGaps(!isAquaLAF());
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
@@ -164,7 +164,7 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 			
 			var layout = new GroupLayout(linePanel);
 			linePanel.setLayout(layout);
-			layout.setAutoCreateContainerGaps(true);
+			layout.setAutoCreateContainerGaps(!isAquaLAF());
 			layout.setAutoCreateGaps(!isAquaLAF());
 			
 			layout.setHorizontalGroup(layout.createSequentialGroup()
@@ -404,7 +404,7 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 			
 			var layout = new GroupLayout(this);
 			setLayout(layout);
-			layout.setAutoCreateContainerGaps(true);
+			layout.setAutoCreateContainerGaps(!isAquaLAF());
 			layout.setAutoCreateGaps(!isAquaLAF());
 			
 			layout.setHorizontalGroup(layout.createSequentialGroup()

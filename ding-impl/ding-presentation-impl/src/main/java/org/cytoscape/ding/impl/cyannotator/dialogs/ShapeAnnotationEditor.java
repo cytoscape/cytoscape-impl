@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -111,13 +110,8 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 			int fillOpacity = (int) annotation.getFillOpacity();
 			
 			getFillColorCheck().setSelected(annotation.getFillColor() != null);
-			
 			getFillColorButton().setColor(fillColor != null ? fillColor : Color.BLACK);
-			getFillColorButton().setEnabled(getFillColorCheck().isSelected());	
-			
 			getFillOpacitySlider().setValue(fillOpacity);
-			getFillOpacitySlider().setEnabled(getFillColorCheck().isSelected());
-			fillOpacityLabel.setEnabled(getFillColorCheck().isSelected());
 			
 			// Border
 			int borderWidth = (int) annotation.getBorderWidth();
@@ -125,12 +119,7 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 			int borderOpacity = (int) annotation.getBorderOpacity();
 			
 			getBorderColorButton().setColor(borderColor != null ? borderColor : Color.BLACK);
-			getBorderColorButton().setEnabled(borderWidth > 0);
-			borderColorLabel.setEnabled(borderWidth > 0);
-			
 			getBorderOpacitySlider().setValue(borderOpacity);
-			getBorderOpacitySlider().setEnabled(borderWidth > 0);
-			borderOpacityLabel.setEnabled(borderWidth > 0);
 			
 			{
 				var model = getBorderWidthCombo().getModel();
@@ -143,6 +132,8 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 				}
 			}
 		}
+		
+		updateEnabled();
 	}
 
 	@Override
@@ -179,7 +170,7 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 		
 		var layout = new GroupLayout(this);
 		setLayout(layout);
-		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateContainerGaps(!isAquaLAF());
 		layout.setAutoCreateGaps(!isAquaLAF());
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
@@ -308,9 +299,7 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 		if (fillColorCheck == null) {
 			fillColorCheck = new JCheckBox();
 			fillColorCheck.addActionListener(evt -> {
-				getFillColorButton().setEnabled(fillColorCheck.isSelected());
-				fillOpacityLabel.setEnabled(fillColorCheck.isSelected());
-				getFillOpacitySlider().setEnabled(fillColorCheck.isSelected());
+				updateEnabled();
 				apply();
 			});
 		}
@@ -322,7 +311,6 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 		if (fillColorButton == null) {
 			fillColorButton = new ColorButton(Color.GRAY);
 			fillColorButton.setToolTipText("Select fill color...");
-			fillColorButton.setEnabled(getFillColorCheck().isSelected());
 			fillColorButton.addPropertyChangeListener("color", evt -> apply());
 		}
 		
@@ -333,7 +321,6 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 		if (borderColorButton == null) {
 			borderColorButton = new ColorButton(Color.BLACK);
 			borderColorButton.setToolTipText("Select border color...");
-			borderColorButton.setEnabled((int) getBorderWidthCombo().getSelectedItem() > 0);
 			borderColorButton.addPropertyChangeListener("color", evt -> apply());
 		}
 		
@@ -347,7 +334,6 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 			fillOpacitySlider.setMinorTickSpacing(25);
 			fillOpacitySlider.setPaintTicks(true);
 			fillOpacitySlider.setPaintLabels(true);
-			fillOpacitySlider.setEnabled(false);
 			fillOpacitySlider.addChangeListener(evt -> apply());
 		}
 		
@@ -361,7 +347,6 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 			borderOpacitySlider.setMinorTickSpacing(25);
 			borderOpacitySlider.setPaintTicks(true);
 			borderOpacitySlider.setPaintLabels(true);
-			borderOpacitySlider.setEnabled((int) getBorderWidthCombo().getSelectedItem() > 0);
 			borderOpacitySlider.addChangeListener(evt -> apply());
 		}
 		
@@ -370,20 +355,35 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 	
 	private JComboBox<Integer> getBorderWidthCombo() {
 		if (borderWidthCombo == null) {
-			borderWidthCombo = new JComboBox<>();
-			borderWidthCombo.setModel(new DefaultComboBoxModel<>(
-					new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 }));
+			borderWidthCombo = new JComboBox<>(new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 });
 			borderWidthCombo.setSelectedIndex(1);
 			borderWidthCombo.addActionListener(evt -> {
-				int borderWidth = (int) borderWidthCombo.getModel().getSelectedItem();
-				borderColorLabel.setEnabled(borderWidth > 0);
-				getBorderColorButton().setEnabled(borderWidth > 0);
-				borderOpacityLabel.setEnabled(borderWidth > 0);
-				getBorderOpacitySlider().setEnabled(borderWidth > 0);
+				updateEnabled();
 				apply();
 			});
 		}
 		
 		return borderWidthCombo;
+	}
+	
+	private void updateEnabled() {
+		// Fill
+		{
+			boolean enabled = getFillColorCheck().isSelected();
+			
+			getFillColorButton().setEnabled(enabled);	
+			getFillOpacitySlider().setEnabled(enabled);
+			fillOpacityLabel.setEnabled(enabled);
+		}
+		// Border
+		{
+			int borderWidth = (int) borderWidthCombo.getSelectedItem();
+			boolean enabled = borderWidth > 0;
+			
+			borderColorLabel.setEnabled(enabled);
+			getBorderColorButton().setEnabled(enabled);
+			borderOpacityLabel.setEnabled(enabled);
+			getBorderOpacitySlider().setEnabled(enabled);
+		}
 	}
 }

@@ -152,7 +152,7 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 	@Override
 	protected void init() {
 		var label1 = new JLabel("Text:");
-		var label2 = new JLabel("Font Family:");
+		var label2 = new JLabel("Font:");
 		var label3 = new JLabel("Style:");
 		var label4 = new JLabel("Size:");
 
@@ -160,7 +160,7 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 		
 		var layout = new GroupLayout(this);
 		setLayout(layout);
-		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateContainerGaps(!isAquaLAF());
 		layout.setAutoCreateGaps(!isAquaLAF());
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
