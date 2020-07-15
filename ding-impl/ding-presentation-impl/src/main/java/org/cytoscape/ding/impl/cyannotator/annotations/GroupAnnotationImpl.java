@@ -1,9 +1,6 @@
 package org.cytoscape.ding.impl.cyannotator.annotations;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -181,20 +178,10 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		super.changeCanvas(canvasId);
 	}
 
-	final static float dash1[] = { 10.0f };
-
 	@Override
 	public void paint(Graphics g, boolean showSelected) {
 		super.paint(g, showSelected);
 		updateBounds();
-
-		var g2 = (Graphics2D) g;
-
-		if (showSelected && isSelected()) {
-			g2.setColor(Color.YELLOW);
-			g2.setStroke(new BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash1, 0.0f));
-			g2.drawRect((int) getX(), (int) getY(), (int) getWidth(), (int) getHeight());
-		}
 	}
 
 	private void updateBounds() {

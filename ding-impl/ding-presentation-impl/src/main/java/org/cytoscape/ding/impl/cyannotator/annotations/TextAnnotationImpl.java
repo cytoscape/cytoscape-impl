@@ -2,7 +2,6 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
-import java.awt.Composite;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -13,7 +12,6 @@ import java.util.Objects;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
-import org.cytoscape.ding.impl.strokes.EqualDashStroke;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
@@ -298,34 +296,29 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	
 	
 	@Override
-	public void paint(Graphics graphics, boolean showSelection) {
+	public void paint(Graphics g, boolean showSelection) {
 		if (text == null || textColor == null || font == null) 
 			return;
 
-		super.paint(graphics, showSelection);
-		Graphics2D g = (Graphics2D)graphics.create();
+		super.paint(g, showSelection);
+		
+		var g2 = (Graphics2D) g.create();
 
-		g.setPaint(textColor);
-		g.setFont(font);
-		g.setClip(getBounds());
+		g2.setPaint(textColor);
+		g2.setFont(font);
+		g2.setClip(getBounds());
 
 		// Handle opacity
 		int alpha = textColor.getAlpha();
 		float opacity = (float)alpha/(float)255;
-		final Composite originalComposite = g.getComposite();
-		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
+		var originalComposite = g2.getComposite();
+		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
 
 		float ascent = font.getLineMetrics(text , new FontRenderContext(null, true, true)).getAscent();
-		g.drawString(text, (float)getX(), (float)getY()+ascent);
+		g2.drawString(text, (float)getX(), (float)getY()+ascent);
 
-		if(showSelection && isSelected()) {
-			g.setColor(Color.GRAY);
-			g.setStroke(new EqualDashStroke(2.0f));
-			g.draw(getBounds());
-		}
-		
-		g.setComposite(originalComposite);
-		g.dispose();
+		g2.setComposite(originalComposite);
+		g2.dispose();
 	}
 	
 	@Override
