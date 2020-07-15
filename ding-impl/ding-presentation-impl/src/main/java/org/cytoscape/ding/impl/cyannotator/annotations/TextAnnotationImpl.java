@@ -337,12 +337,14 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	double getTextWidth() {
 		if (text == null) 
 			return 0.0;
+		
 		return font.getStringBounds(text, new FontRenderContext(null, true, true)).getWidth();
 	}
 
 	double getTextHeight() {
 		if (text == null) 
 			return 0.0;
+		
 		return font.getStringBounds(text, new FontRenderContext(null, true, true)).getHeight();
 	}
 }
