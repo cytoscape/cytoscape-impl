@@ -182,6 +182,7 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 		setSize(bounds.getWidth(), bounds.getHeight());
 	}
 	
+	@Override
 	public Rectangle2D getBounds() {
 		return new Rectangle2D.Double(x, y, width, height);
 	}
