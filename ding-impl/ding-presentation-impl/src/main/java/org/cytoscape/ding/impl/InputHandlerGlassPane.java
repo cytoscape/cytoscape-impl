@@ -1203,6 +1203,8 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		public void beginClickToAddAnnotation(AnnotationFactory<? extends Annotation> factory, Runnable callback) {
 			this.annotationFactory = factory;
 			this.callback = callback;
+			
+			changeCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 		}
 		
 		public AnnotationFactory<?> getAnnotationFactory() {
@@ -1215,6 +1217,8 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			
 			annotationFactory = null;
 			callback = null;
+			
+			changeCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}
 		
 		@Override
@@ -1229,6 +1233,8 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			
 			annotationFactory = null;
 			callback = null;
+			
+			changeCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}
 		
 		private void createAnnotation(AnnotationFactory<? extends Annotation> f, Point point) {
