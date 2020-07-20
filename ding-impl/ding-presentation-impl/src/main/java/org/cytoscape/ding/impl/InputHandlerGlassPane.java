@@ -1074,9 +1074,10 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		
 		@Override
 		public void mouseDragged(MouseEvent e) {
-			if(!hit || !isLeftMouse(e))
+			if (!hit || !isLeftMouse(e))
 				return;
-			if(get(SelectionRectangleListener.class).isDragging() || maybe(SelectionLassoListener.class).map(l->l.isDragging()).orElse(false))
+			if (get(SelectionRectangleListener.class).isDragging()
+					|| maybe(SelectionLassoListener.class).map(l -> l.isDragging()).orElse(false))
 				return;
 			
 			if (selectedLabel != null) {				
@@ -1090,32 +1091,31 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 //			var anchorsToMove = re.getBendStore().getSelectedHandles();
 			var annotationSelection = cyAnnotator.getAnnotationSelection();
 			
-			if(!annotationSelection.isEmpty()) {
-				if(annotationSelection.isResizing()) {
-					if(annotationResizeEdit == null) {
+			if (!annotationSelection.isEmpty()) {
+				if (annotationSelection.isResizing()) {
+					if (annotationResizeEdit == null)
 						annotationResizeEdit = new AnnotationEdit("Resize Annotation", cyAnnotator, registrar);
-					}
-					annotationSelection.resizeAnnotationsRelative(e.getX(), e.getY());
+
+					annotationSelection.resizeAnnotationsRelative(e.getX(), e.getY(), e.isShiftDown());
 					re.updateView(UpdateType.JUST_ANNOTATIONS);
+
 					return;
 				} else {
-					if(annotationMovingEdit == null) {
+					if (annotationMovingEdit == null)
 						annotationMovingEdit = new AnnotationEdit("Move Annotation", cyAnnotator, registrar);
-					} 
+
 					annotationSelection.moveSelection(e.getPoint());
 					annotationSelection.setMovingStartOffset(e.getPoint());
 				}
 			}
 			
-			if(!selectedNodes.isEmpty() || re.getBendStore().areHandlesSelected()) {
+			if (!selectedNodes.isEmpty() || re.getBendStore().areHandlesSelected())
 				mouseDraggedHandleNodesAndEdges(selectedNodes, e);
-			}
-			
-			if(!selectedNodes.isEmpty() || re.getBendStore().areHandlesSelected()) {
+
+			if (!selectedNodes.isEmpty() || re.getBendStore().areHandlesSelected())
 				re.updateView(UpdateType.ALL_FAST);
-			} else {
+			else
 				re.updateView(UpdateType.JUST_ANNOTATIONS);
-			}
 		}
 		
 		public void resetLabelSelection() {
@@ -1256,7 +1256,8 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			if (resizeAnnotation != null) {
 				var initialBounds = cyAnnotator.getResizeBounds(); // node coords
 				var point = re.getTransform().getNodeCoordinates(e.getPoint());
-				var bounds = AnnotationSelection.resize(Position.SOUTH_EAST, initialBounds, point.getX(), point.getY());
+				var bounds = AnnotationSelection.resize(Position.SOUTH_EAST, initialBounds, point.getX(), point.getY(),
+						e.isShiftDown());
 				resizeAnnotation.setBounds(bounds);
 				resizeAnnotation.update();
 				re.updateView(UpdateType.JUST_ANNOTATIONS);

@@ -4,6 +4,14 @@ import static org.cytoscape.ding.impl.cyannotator.annotations.AnchorLocation.isE
 import static org.cytoscape.ding.impl.cyannotator.annotations.AnchorLocation.isNorth;
 import static org.cytoscape.ding.impl.cyannotator.annotations.AnchorLocation.isSouth;
 import static org.cytoscape.ding.impl.cyannotator.annotations.AnchorLocation.isWest;
+import static org.cytoscape.view.presentation.property.values.Position.EAST;
+import static org.cytoscape.view.presentation.property.values.Position.NORTH;
+import static org.cytoscape.view.presentation.property.values.Position.NORTH_EAST;
+import static org.cytoscape.view.presentation.property.values.Position.NORTH_WEST;
+import static org.cytoscape.view.presentation.property.values.Position.SOUTH;
+import static org.cytoscape.view.presentation.property.values.Position.SOUTH_EAST;
+import static org.cytoscape.view.presentation.property.values.Position.SOUTH_WEST;
+import static org.cytoscape.view.presentation.property.values.Position.WEST;
 
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
@@ -177,7 +185,7 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 		return resizingAnchor != null;
 	}
 	
-	public void resizeAnnotationsRelative(int mouseX, int mouseY) {
+	public void resizeAnnotationsRelative(int mouseX, int mouseY, boolean keepAspectRatio) {
 		// compensate for the difference between the anchor location and the mouse location
 		var position = resizingAnchor.getPosition();
 		
@@ -191,7 +199,7 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 			mouseX -= resizingAnchor.getMouseOffsetX();
 
 		var node = re.getTransform().getNodeCoordinates(mouseX, mouseY);
-		var newOutlineBounds = resize(position, savedUnion, node.getX(), node.getY());
+		var newOutlineBounds = resize(position, savedUnion, node.getX(), node.getY(), keepAspectRatio);
 
 		for (var a : this) {
 			((AbstractAnnotation) a).resizeAnnotationRelative(savedUnion, newOutlineBounds);
@@ -201,56 +209,80 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 		updateBounds();
 	}
 	
-	public static Rectangle2D resize(Position position, Rectangle2D bounds, double mouseX, double mouseY) {
-		final double boundsX = bounds.getX();
-		final double boundsY = bounds.getY();
-		final double boundsWidth = bounds.getWidth();
-		final double boundsHeight = bounds.getHeight();
-		final double boundsYBottom = boundsY + boundsHeight;
-		final double boundsXLeft = boundsX + boundsWidth;
+	public static Rectangle2D resize(Position position, Rectangle2D bounds, double mouseX, double mouseY,
+			boolean keepAspectRatio) {
+		keepAspectRatio = keepAspectRatio && (position == NORTH_WEST || position == NORTH_EAST || position == SOUTH_WEST
+				|| position == SOUTH_EAST);
+		
+		double boundsX = bounds.getX();
+		double boundsY = bounds.getY();
+		double boundsWidth = bounds.getWidth();
+		double boundsHeight = bounds.getHeight();
+		double boundsYBottom = boundsY + boundsHeight;
+		double boundsXRight = boundsX + boundsWidth;
 
 		double x = boundsX;
 		double y = boundsY;
-		double width = boundsWidth;
-		double height = boundsHeight;
+		double w = boundsWidth;
+		double h = boundsHeight;
 
 		// y and height
 		if (isNorth(position)) {
 			if (mouseY > boundsYBottom) {
 				y = boundsYBottom;
-				height = mouseY - boundsYBottom;
+				h = mouseY - boundsYBottom;
 			} else {
 				y = mouseY;
-				height = boundsYBottom - mouseY;
+				h = boundsYBottom - mouseY;
 			}
 		} else if (isSouth(position)) {
 			if (mouseY < boundsY) {
 				y = mouseY;
-				height = boundsY - mouseY;
+				h = boundsY - mouseY;
 			} else {
-				height = mouseY - boundsY;
+				h = mouseY - boundsY;
 			}
 		}
 
 		// x and width
 		if (isWest(position)) {
-			if (mouseX > boundsXLeft) {
-				x = boundsXLeft;
-				width = mouseX - boundsXLeft;
+			if (mouseX > boundsXRight) {
+				x = boundsXRight;
+				w = mouseX - boundsXRight;
 			} else {
 				x = mouseX;
-				width = boundsXLeft - mouseX;
+				w = boundsXRight - mouseX;
 			}
 		} else if (isEast(position)) {
 			if (mouseX < boundsX) {
 				x = mouseX;
-				width = boundsX - mouseX;
+				w = boundsX - mouseX;
 			} else {
-				width = mouseX - boundsX;
+				w = mouseX - boundsX;
 			}
 		}
 
-		return new Rectangle2D.Double(x, y, width, height);
+		if (keepAspectRatio) {
+			double f1 = w / boundsWidth;
+			double f2 = h / boundsHeight;
+			double f = Math.max(f1, f2);
+			w = boundsWidth * f;
+			h = boundsHeight * f;
+			
+			// y
+			if (isNorth(position) && mouseY < boundsYBottom)
+				y = boundsYBottom - h;
+			else if (isSouth(position) && mouseY < boundsY)
+				y = boundsY - h;
+
+			// x
+			if (isWest(position) && mouseX < boundsXRight)
+				x = boundsXRight - w;
+			else if (isEast(position) && mouseX < boundsX)
+				x = boundsX - w;
+		}
+		
+		return new Rectangle2D.Double(x, y, w, h);
 	}
 	
 	public void setMovingStartOffset(Point offset) {
@@ -373,14 +405,14 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 
 		anchors.clear();
 		
-		anchors.put(Position.NORTH_WEST, new Rectangle(xw, yn, s, s));
-		anchors.put(Position.NORTH,      new Rectangle(xc, yn, s, s));
-		anchors.put(Position.NORTH_EAST, new Rectangle(xe, yn, s, s));
-		anchors.put(Position.WEST,       new Rectangle(xw, yc, s, s));
-		anchors.put(Position.EAST,       new Rectangle(xe, yc, s, s));
-		anchors.put(Position.SOUTH_WEST, new Rectangle(xw, ys, s, s));
-		anchors.put(Position.SOUTH,      new Rectangle(xc, ys, s, s));
-		anchors.put(Position.SOUTH_EAST, new Rectangle(xe, ys, s, s));
+		anchors.put(NORTH_WEST, new Rectangle(xw, yn, s, s));
+		anchors.put(NORTH,      new Rectangle(xc, yn, s, s));
+		anchors.put(NORTH_EAST, new Rectangle(xe, yn, s, s));
+		anchors.put(WEST,       new Rectangle(xw, yc, s, s));
+		anchors.put(EAST,       new Rectangle(xe, yc, s, s));
+		anchors.put(SOUTH_WEST, new Rectangle(xw, ys, s, s));
+		anchors.put(SOUTH,      new Rectangle(xc, ys, s, s));
+		anchors.put(SOUTH_EAST, new Rectangle(xe, ys, s, s));
 
 		anchors.values().forEach(r -> r.translate(shape.x - s, shape.y - s));
 	}
