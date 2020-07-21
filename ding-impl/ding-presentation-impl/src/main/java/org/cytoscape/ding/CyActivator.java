@@ -284,6 +284,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
 			props.setProperty(MENU_GRAVITY, "1.2");
 			props.setProperty(TITLE, "Arrow Annotation...");
+			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
 			registerService(bc, factory, NetworkViewLocationTaskFactory.class, props);
 		}
 		{
