@@ -206,6 +206,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	@Override
 	public void setText(String text) {
 		if (!Objects.equals(text, this.text)) {
+			var oldValue = this.text;
 			this.text = text;
 
 			if (updateNameFromText)
@@ -216,6 +217,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 			updateBounds();
 			update();
+			firePropertyChange("text", oldValue, text);
 		}
 	}
 
@@ -227,8 +229,10 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	@Override
 	public void setTextColor(Color color) {
 		if (!Objects.equals(textColor, color)) {
+			var oldValue = textColor;
 			textColor = color;
 			update();
+			firePropertyChange("textColor", oldValue, textColor);
 		}
 	}
 
@@ -246,14 +250,18 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	 * A method that can be used for group resizing.
 	 */
 	public void setFontSize(double size, boolean updateBounds) {
-		if (font == null || font.getSize() != (int) size) {
+		if (fontSize != (float) size) {
+			var oldValue = fontSize;
 			fontSize = (float) size;
-			font = font.deriveFont((float) fontSize);
+			
+			if (font != null)
+				font = font.deriveFont(fontSize);
 
 			if (updateBounds)
 				updateBounds();
 
 			update();
+			firePropertyChange("fontSize", oldValue, fontSize);
 		}
 	}
 //
@@ -279,27 +287,31 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	@Override
 	public void setFontStyle(int style) {
 		if (font == null || style != font.getStyle()) {
+			var oldValue = font.getStyle();
 			font = font.deriveFont(style, fontSize);
 			update();
+			firePropertyChange("fontStyle", oldValue, style);
 		}
 	}
 
 	@Override
 	public int getFontStyle() {
-		return font.getStyle();
+		return font != null ? font.getStyle() : Font.PLAIN;
 	}
 
 	@Override
 	public void setFontFamily(String family) {
-		if (font == null || (family != null && family.equalsIgnoreCase(font.getFamily()))) {
-			font = new Font(family, font.getStyle(), (int) fontSize);
+		if (family != null && !family.equalsIgnoreCase(getFontFamily())) {
+			var oldValue = getFontFamily();
+			font = new Font(family, getFontStyle(), (int) fontSize);
 			update();
+			firePropertyChange("fontFamily", oldValue, family);
 		}
 	}
 
 	@Override
 	public String getFontFamily() {
-		return font.getFamily();
+		return font != null ? font.getFamily() : null;
 	}
 
 	@Override
@@ -310,10 +322,12 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	@Override
 	public void setFont(Font font) {
 		if (!Objects.equals(font, this.font)) {
+			var oldValue = this.font;
 			this.font = font;
 			this.fontSize = font.getSize2D();
 			updateBounds();
 			update();
+			firePropertyChange("font", oldValue, font);
 		}
 	}
 

@@ -113,24 +113,20 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 			{
 				int fontSize = annotation.getFont() != null ? annotation.getFont().getSize() : FONT_SIZES[2];
 
-				if (fontSize % 2 != 0)
-					fontSize++;
-
-				int i = 0;
-
-				var model = getFontSizeCombo().getModel();
-				var total = model.getSize();
-				
-				for (i = 0; i < total; i++) {
-					if (fontSize == model.getElementAt(i)) {
-						getFontSizeCombo().setSelectedItem(FONT_SIZES[i]);
-						
-						break;
+				if (fontSize % 2 == 0 && !(fontSize < FONT_SIZES[0] || fontSize > FONT_SIZES[FONT_SIZES.length - 1])) {
+					var model = getFontSizeCombo().getModel();
+					var total = model.getSize();
+					
+					for (int i = 0; i < total; i++) {
+						if (fontSize == model.getElementAt(i)) {
+							getFontSizeCombo().setSelectedItem(FONT_SIZES[i]);
+							
+							break;
+						}
 					}
+				} else {
+					getFontSizeCombo().getEditor().setItem(fontSize);
 				}
-
-				if (i == total)
-					getFontSizeCombo().setSelectedItem(FONT_SIZES[2]);
 			}
 			
 			// Text Color
@@ -250,6 +246,7 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 		if (fontSizeCombo == null) {
 			fontSizeCombo = new JComboBox<>();
 			fontSizeCombo.setModel(new DefaultComboBoxModel<>(FONT_SIZES));
+			fontSizeCombo.setEditable(true); // Unfortunately, this makes the component misaligned on macOS (https://bugs.openjdk.java.net/browse/JDK-8179076)  
 			fontSizeCombo.setSelectedItem(FONT_SIZES[2]);
 			fontSizeCombo.addActionListener(evt -> apply());
 		}

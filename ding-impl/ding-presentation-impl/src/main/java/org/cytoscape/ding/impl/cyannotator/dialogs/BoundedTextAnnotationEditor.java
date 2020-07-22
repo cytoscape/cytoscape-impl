@@ -4,6 +4,8 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 
+import java.util.Objects;
+
 import javax.swing.GroupLayout;
 import javax.swing.JSeparator;
 
@@ -53,30 +55,41 @@ public class BoundedTextAnnotationEditor extends AbstractAnnotationEditor<Bounde
 	
 	@Override
 	public void setAnnotation(BoundedTextAnnotation annotation) {
-		super.setAnnotation(annotation);
-		
-		if (annotation instanceof TextAnnotation)
-			getTextAnnotationEditor().setAnnotation((TextAnnotation) annotation);
-		
-		if (annotation instanceof ShapeAnnotation)
-			getShapeAnnotationEditor().setAnnotation(annotation);
+		if (!Objects.equals(this.annotation, annotation)) {
+			this.annotation = annotation;
+			
+			if (annotation instanceof TextAnnotation)
+				getTextAnnotationEditor().setAnnotation((TextAnnotation) annotation);
+			
+			if (annotation instanceof ShapeAnnotation)
+				getShapeAnnotationEditor().setAnnotation(annotation);
+		}
 	}
 	
 	@Override
-	protected void doUpdate() {
+	protected void update() {
 		// Do not call doUpdate() on the actual editors, because they have to set their 'adjusting' flags themselves!
 		getTextAnnotationEditor().update();
 		getShapeAnnotationEditor().update();
 	}
+	
+	@Override
+	protected void doUpdate() {
+		// Nothing to do here...
+	}
 
 	@Override
+	protected void apply() {
+		getTextAnnotationEditor().apply();
+		getShapeAnnotationEditor().apply();
+	}
+	
+	@Override
 	public void apply(BoundedTextAnnotation annotation) {
-		if (!adjusting) {
-			if (annotation instanceof TextAnnotation)
-				getTextAnnotationEditor().apply((TextAnnotation) annotation);
-			
-			getShapeAnnotationEditor().apply(annotation);
-		}
+		if (annotation instanceof TextAnnotation)
+			getTextAnnotationEditor().apply((TextAnnotation) annotation);
+		
+		getShapeAnnotationEditor().apply(annotation);
 	}
 	
 	@Override

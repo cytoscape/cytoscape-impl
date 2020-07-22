@@ -302,6 +302,8 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 	@Override
 	public void setImage(Image image) {
+		var oldValue = this.image;
+		
 		if (image instanceof BufferedImage)
 			this.image = (BufferedImage) image;
 		else if (image instanceof VolatileImage)
@@ -311,6 +313,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 		svg = null;
 		update();
+		firePropertyChange("image", oldValue, image);
 	}
 	
 	@Override
@@ -327,9 +330,11 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 	@Override
 	public void setImage(URL url) {
+		var oldValue = this.url;
 		this.url = url;
 		reloadImage();
 		update();
+		firePropertyChange("imageURL", oldValue, url);
 	}
 
 	@Override
@@ -340,8 +345,10 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	@Override
 	public void setImageOpacity(float opacity) {
 		if (this.opacity != opacity) {
+			var oldValue = this.opacity;
 			this.opacity = opacity;
 			update();
+			firePropertyChange("imageOpacity", oldValue, opacity);
 		}
 	}
 
@@ -353,9 +360,11 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	@Override
 	public void setImageBrightness(int brightness) {
 		if (this.brightness != brightness) {
+			var oldValue = this.brightness;
 			this.brightness = brightness;
 			modifiedImage = null;
 			update();
+			firePropertyChange("imageBrightness", oldValue, brightness);
 		}
 	}
 
@@ -367,9 +376,11 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	@Override
 	public void setImageContrast(int contrast) {
 		if (this.contrast != contrast) {
+			var oldValue = this.contrast;
 			this.contrast = contrast;
 			modifiedImage = null;
 			update();
+			firePropertyChange("imageContrast", oldValue, contrast);
 		}
 	}
 

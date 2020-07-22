@@ -174,12 +174,14 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 
 	public void setShapeType(ShapeType type) {
 		if (shapeType != type) {
+			var oldValue = shapeType;
 			shapeType = type;
 	
 			if (shapeType != ShapeType.CUSTOM)
 				shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, width, height);
 	
 			update();
+			firePropertyChange("shapeType", oldValue, type);
 		}
 	}
 
@@ -199,8 +201,10 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	@Override
 	public void setBorderWidth(double width) {
 		if (borderWidth != width) {
+			var oldValue = borderWidth;
 			borderWidth = width;
 			update();
+			firePropertyChange("borderWidth", oldValue, width);
 		}
 	}
 
@@ -227,40 +231,52 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	@Override
 	public void setBorderColor(Paint color) {
 		if (!Objects.equals(borderColor, color)) {
+			var oldValue = borderColor;
 			borderColor = color;
 			update();
+			firePropertyChange("borderColor", oldValue, color);
 		}
 	}
 
 	@Override
 	public void setBorderOpacity(double opacity) {
 		if (borderOpacity != opacity) {
+			var oldValue = borderOpacity;
 			borderOpacity = opacity;
 			update();
+			firePropertyChange("borderOpacity", oldValue, opacity);
 		}
 	}
 
 	@Override
 	public void setFillColor(Paint color) {
 		if (!Objects.equals(fillColor, color)) {
+			var oldValue = fillColor;
 			fillColor = color;
 			update();
+			firePropertyChange("fillColor", oldValue, color);
 		}
 	}
 
 	@Override
 	public void setFillOpacity(double opacity) {
 		if (fillOpacity != opacity) {
+			var oldValue = fillOpacity;
 			fillOpacity = opacity;
 			update();
+			firePropertyChange("fillOpacity", oldValue, opacity);
 		}
 	}
 	
 	@Override
 	public void setCustomShape(Shape shape) {
-		this.shapeType = ShapeType.CUSTOM;
-		this.shape = shape;
-		update();
+		if (!Objects.equals(this.shape, shape)) {
+			var oldValue = this.shape;
+			this.shapeType = ShapeType.CUSTOM;
+			this.shape = shape;
+			update();
+			firePropertyChange("shape", oldValue, shape);
+		}
 	}
 
 	@Override

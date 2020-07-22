@@ -366,11 +366,6 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 			updateEnabled();
 		}
 		
-		void apply() {
-			if (annotation != null && !adjusting)
-				apply(annotation);
-		}
-		
 		void apply(ArrowAnnotation annotation) {
 			if (annotation != null) {
 				var arrowType = (String) getArrowTypeCombo().getSelectedItem();
@@ -484,7 +479,7 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 				});
 				arrowTypeCombo.addActionListener(evt -> {
 					updateEnabled();
-					apply();
+					ArrowAnnotationEditor.this.apply();
 				});
 			}
 			
@@ -496,7 +491,7 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 				arrowColorCheck = new JCheckBox();
 				arrowColorCheck.addActionListener(evt -> {
 					updateEnabled();
-					apply();
+					ArrowAnnotationEditor.this.apply();
 				});
 			}
 			
@@ -507,7 +502,7 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 			if (arrowColorButton == null) {
 				arrowColorButton = new ColorButton(Color.BLACK);
 				arrowColorButton.setToolTipText("Select arrow color...");
-				arrowColorButton.addPropertyChangeListener("color", evt -> apply());
+				arrowColorButton.addPropertyChangeListener("color", evt -> ArrowAnnotationEditor.this.apply());
 			}
 			
 			return arrowColorButton;
@@ -520,7 +515,7 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 				arrowOpacitySlider.setMinorTickSpacing(25);
 				arrowOpacitySlider.setPaintTicks(true);
 				arrowOpacitySlider.setPaintLabels(true);
-				arrowOpacitySlider.addChangeListener(evt -> apply());
+				arrowOpacitySlider.addChangeListener(evt -> ArrowAnnotationEditor.this.apply());
 			}
 			
 			return arrowOpacitySlider;
@@ -531,7 +526,7 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 				arrowSizeCombo = new JComboBox<>(
 						new Integer[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 });
 				arrowSizeCombo.setSelectedIndex(0);
-				arrowSizeCombo.addActionListener(evt -> apply());
+				arrowSizeCombo.addActionListener(evt -> ArrowAnnotationEditor.this.apply());
 			}
 			
 			return arrowSizeCombo;
@@ -541,7 +536,7 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 			if (anchorTypeCombo == null) {
 				anchorTypeCombo = new JComboBox<>();
 				anchorTypeCombo.setModel(new DefaultComboBoxModel<>(new String[] { "Edge", "Center" }));
-				anchorTypeCombo.addActionListener(evt -> apply());
+				anchorTypeCombo.addActionListener(evt -> ArrowAnnotationEditor.this.apply());
 			}
 			
 			return anchorTypeCombo;

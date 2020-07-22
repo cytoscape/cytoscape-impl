@@ -2,10 +2,13 @@ package org.cytoscape.ding.impl.cyannotator.dialogs;
 
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Objects;
 
 import javax.swing.JPanel;
 
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
@@ -35,10 +38,11 @@ import org.cytoscape.view.presentation.annotations.AnnotationFactory;
  */
 
 @SuppressWarnings("serial")
-public abstract class AbstractAnnotationEditor<T extends Annotation> extends JPanel {
+public abstract class AbstractAnnotationEditor<T extends Annotation> extends JPanel implements PropertyChangeListener {
 	
 	protected T annotation;
 	protected boolean adjusting;
+	protected boolean applying;
 	
 	protected final AnnotationFactory<T> factory;
 	protected final CyServiceRegistrar serviceRegistrar;
@@ -65,7 +69,13 @@ public abstract class AbstractAnnotationEditor<T extends Annotation> extends JPa
 	 */
 	public void setAnnotation(T annotation) {
 		if (!Objects.equals(this.annotation, annotation)) {
-			this.annotation = (T) annotation;
+			if (this.annotation instanceof DingAnnotation)
+				((DingAnnotation) this.annotation).removePropertyChangeListener(this);
+			
+			if (annotation instanceof DingAnnotation)
+				((DingAnnotation) annotation).addPropertyChangeListener(this);
+			
+			this.annotation = annotation;
 			update();
 		}
 	}
@@ -75,6 +85,12 @@ public abstract class AbstractAnnotationEditor<T extends Annotation> extends JPa
 	 */
 	public T getAnnotation() {
 		return annotation;
+	}
+	
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		if (!applying)
+			update(); // Update the form if the current annotation's property values changed
 	}
 	
 	/**
@@ -101,8 +117,15 @@ public abstract class AbstractAnnotationEditor<T extends Annotation> extends JPa
 	 * so the change is applied to the current annotation right away.
 	 */
 	protected void apply() {
-		if (annotation != null && !adjusting)
-			apply(annotation);
+		if (annotation != null && !adjusting) {
+			applying = true;
+			
+			try {
+				apply(annotation);
+			} finally {
+				applying = false;
+			}
+		}
 	}
 	
 	/**

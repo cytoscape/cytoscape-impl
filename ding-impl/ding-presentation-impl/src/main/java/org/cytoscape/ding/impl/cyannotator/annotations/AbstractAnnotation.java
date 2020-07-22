@@ -324,8 +324,10 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	@Override
 	public void setName(String name) {
 		if (!Objects.equals(name, this.name)) {
+			var oldValue = this.name;
 			this.name = name;
 			update();
+			firePropertyChange("name", oldValue, name);
 		}
 	}
 
@@ -338,8 +340,8 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	public void setSelected(boolean selected) {
 		if (selected != isSelected()) {
 			cyAnnotator.setSelectedAnnotation(this, selected);
-			pcs.firePropertyChange("selected", !selected, selected);
 			update();
+			firePropertyChange("selected", !selected, selected);
 		}
 	}
 
@@ -424,12 +426,9 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 			re.setContentChanged();
 	}
 
+	@Override
 	public void addPropertyChangeListener(PropertyChangeListener listener) {
 		pcs.addPropertyChangeListener(listener);
-	}
-
-	public void removePropertyChangeListener(PropertyChangeListener listener) {
-		pcs.removePropertyChangeListener(listener);
 	}
 
 	@Override
@@ -438,6 +437,11 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	}
 
 	@Override
+	public void removePropertyChangeListener(PropertyChangeListener listener) {
+		pcs.removePropertyChangeListener(listener);
+	}
+	
+	@Override
 	public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
 		pcs.removePropertyChangeListener(propertyName, listener);
 	}
@@ -445,5 +449,17 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	@Override
 	public String toString() {
 		return getClass().getSimpleName() + "[" + getName() + "]";
+	}
+	
+	protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+		pcs.firePropertyChange(propertyName, oldValue, newValue);
+	}
+
+	protected void firePropertyChange(String propertyName, int oldValue, int newValue) {
+		pcs.firePropertyChange(propertyName, oldValue, newValue);
+	}
+
+	protected void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {
+		pcs.firePropertyChange(propertyName, oldValue, newValue);
 	}
 }

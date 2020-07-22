@@ -169,6 +169,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	@Override
 	public void setText(String text) {
 		if (!Objects.equals(text, this.text)) {
+			var oldValue = this.text;
 			this.text = text;
 			
 			if (updateNameFromText)
@@ -178,6 +179,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 				setSize(getAnnotationWidth(), getAnnotationHeight());
 			
 			update();
+			firePropertyChange("text", oldValue, text);
 		}
 	}
 
@@ -189,8 +191,10 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	@Override
 	public void setTextColor(Color color) {
 		if (!Objects.equals(textColor, color)) {
+			var oldValue = textColor;
 			textColor = color;
 			update();
+			firePropertyChange("textColor", oldValue, textColor);
 		}
 	}
 
@@ -201,64 +205,73 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 
 	@Override
 	public void setFontSize(double size) {
-		if (font == null || font.getSize() != (int) size) {
+		if (fontSize != (float) size) {
+			var oldValue = fontSize;
 			fontSize = (float) size;
-			font = font.deriveFont(fontSize);
+			
+			if (font != null)
+				font = font.deriveFont(fontSize);
 
 			if (!usedForPreviews)
 				setSize(getAnnotationWidth(), getAnnotationHeight());
 
 			update();
+			firePropertyChange("fontSize", oldValue, fontSize);
 		}
 	}
 
 	@Override
 	public double getFontSize() {
-		return this.fontSize;
+		return fontSize;
 	}
 
 	@Override
 	public void setFontStyle(int style) {
-		if (font == null || style != font.getStyle()) {
+		if (font != null && style != font.getStyle()) {
+			var oldValue = font.getStyle();
 			font = font.deriveFont(style, fontSize);
 			
 			if (!usedForPreviews)
 				setSize(getAnnotationWidth(), getAnnotationHeight());
 			
 			update();
+			firePropertyChange("fontStyle", oldValue, style);
 		}
 	}
 
 	@Override
 	public int getFontStyle() {
-		return font.getStyle();
+		return font != null ? font.getStyle() : Font.PLAIN;
 	}
 
 	@Override
 	public void setFontFamily(String family) {
-		if (font == null || (family != null && family.equalsIgnoreCase(font.getFamily()))) {
-			font = new Font(family, font.getStyle(), (int) fontSize);
+		if (family != null && !family.equalsIgnoreCase(getFontFamily())) {
+			var oldValue = getFontFamily();
+			font = new Font(family, getFontStyle(), (int) fontSize);
 			
 			if (!usedForPreviews)
 				setSize(getAnnotationWidth(), getAnnotationHeight());
 			
 			update();
+			firePropertyChange("fontFamily", oldValue, family);
 		}
 	}
 
 	@Override
 	public String getFontFamily() {
-		return font.getFamily();
+		return font != null ? font.getFamily() : null;
 	}
 
 	@Override
 	public Font getFont() {
-		return this.font;
+		return font;
 	}
 
 	@Override
 	public void setFont(Font font) {
-		if (!Objects.equals(this.font, font)) {
+		if (font != null && !font.equals(this.font)) {
+			var oldValue = this.font;
 			this.font = font;
 			this.fontSize = font.getSize2D();
 			
@@ -266,6 +279,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 				setSize(getAnnotationWidth(), getAnnotationHeight());
 			
 			update();
+			firePropertyChange("font", oldValue, font);
 		}
 	}
 
@@ -286,8 +300,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 			else
 				fontSize = (this.fontSize * factor);
 
-			this.fontSize = (float) fontSize;
-			this.font = font.deriveFont((float) fontSize);
+			setFontSize((float) fontSize);
 		}
 
 		super.setBounds(newBounds);

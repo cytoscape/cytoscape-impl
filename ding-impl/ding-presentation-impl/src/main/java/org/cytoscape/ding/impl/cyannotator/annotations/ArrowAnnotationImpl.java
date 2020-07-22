@@ -272,8 +272,10 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	@Override
 	public void setLineWidth(double width) {
 		if (lineWidth != (float) width) {
+			var oldValue = lineWidth;
 			lineWidth = (float) width;
 			update();
+			firePropertyChange("lineWidth", oldValue, width);
 		}
 	}
 
@@ -284,16 +286,26 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 	@Override
 	public void setArrowSize(ArrowEnd end, double width) {
+		String propName = null;
+		double oldValue = 0.0;
+		
 		if (end == ArrowEnd.SOURCE) {
 			if (sourceSize != width) {
+				oldValue = sourceSize;
 				sourceSize = width;
-				update();
+				propName = "sourceArrowSize";
 			}
 		} else {
 			if (targetSize != width) {
+				oldValue = targetSize;
 				targetSize = width;
-				update();
+				propName = "targetArrowSize";
 			}
+		}
+		
+		if (propName != null) { // Changed?
+			update();
+			firePropertyChange(propName, oldValue, width);
 		}
 	}
 
@@ -316,16 +328,26 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		if (aType == null)
 			return;
 
+		String propName = null;
+		ArrowType oldValue = null;
+		
 		if (end == ArrowEnd.SOURCE) {
 			if (sourceType != aType) {
+				oldValue = sourceType;
 				sourceType = aType;
-				update();
+				propName = "sourceArrowType";
 			}
 		} else {
 			if (targetType != aType) {
+				oldValue = targetType;
 				targetType = aType;
-				update();
+				propName = "targetArrowType";
 			}
+		}
+		
+		if (propName != null) { // Changed?
+			update();
+			firePropertyChange(propName, oldValue, type);
 		}
 	}
 
@@ -336,16 +358,26 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 	@Override
 	public void setAnchorType(ArrowEnd end, AnchorType type) {
+		String propName = null;
+		AnchorType oldValue = null;
+		
 		if (end == ArrowEnd.SOURCE) {
 			if (sourceAnchorType != type) {
+				oldValue = sourceAnchorType;
 				sourceAnchorType = type;
-				update();
+				propName = "sourceAnchorType";
 			}
 		} else {
 			if (targetAnchorType != type) {
+				oldValue = targetAnchorType;
 				targetAnchorType = type;
-				update();
+				propName = "targetAnchorType";
 			}
+		}
+		
+		if (propName != null) { // Changed?
+			update();
+			firePropertyChange(propName, oldValue, type);
 		}
 	}
 
@@ -357,8 +389,10 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	@Override
 	public void setLineColor(Paint color) {
 		if (!Objects.equals(lineColor, color)) {
+			var oldValue = lineColor;
 			lineColor = color;
 			update();
+			firePropertyChange("lineColor", oldValue, color);
 		}
 	}
 
@@ -369,16 +403,26 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 	@Override
 	public void setArrowColor(ArrowEnd end, Paint color) {
+		String propName = null;
+		Paint oldValue = null;
+		
 		if (end == ArrowEnd.SOURCE) {
 			if (!Objects.equals(sourceColor, color)) {
+				oldValue = sourceColor;
 				sourceColor = color;
-				update();
+				propName = "sourceArrowColor";
 			}
 		} else {
 			if (!Objects.equals(targetColor, color)) {
+				oldValue = targetColor;
 				targetColor = color;
-				update();
+				propName = "targetArrowColor";
 			}
+		}
+		
+		if (propName != null) { // Changed?
+			update();
+			firePropertyChange(propName, oldValue, color);
 		}
 	}
 
