@@ -63,6 +63,7 @@ import org.cytoscape.ding.impl.cyannotator.create.ShapeAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.TextAnnotationFactory;
 // Annotation edits and changes
 import org.cytoscape.ding.impl.cyannotator.tasks.AddAnnotationTaskFactory;
+import org.cytoscape.ding.impl.cyannotator.tasks.DuplicateAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.EditAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.GroupAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.RemoveAnnotationTaskFactory;
@@ -326,6 +327,19 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
 			props.setProperty(TITLE, "Bounded Text Annotation...");
 			registerService(bc, factory, NetworkViewLocationTaskFactory.class, props);
+		}
+		
+		// Annotation duplicate
+		{
+			var factory = new DuplicateAnnotationsTaskFactory(renderer, annotationFactoryManager);
+			var props = new Properties();
+			props.setProperty(ID, "duplicateAnnotationsTaskFactory");
+			props.setProperty(PREFERRED_ACTION, "NEW");
+			props.setProperty(MENU_GRAVITY, "1.7");
+			props.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
+			props.setProperty(TITLE, "Duplicate Selected Annotations");
+			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
+			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 		}
 
 		// Annotation edit

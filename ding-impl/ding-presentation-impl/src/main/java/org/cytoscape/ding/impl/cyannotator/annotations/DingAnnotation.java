@@ -35,6 +35,11 @@ import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 
 public interface DingAnnotation extends Annotation {
 	
+	public static final String ID = "id";
+	public static final String TYPE = "type";
+	public static final String ANNOTATION_ID = "uuid";
+	public static final String PARENT_ID = "parent";
+	
 	public static enum CanvasID {
 		FOREGROUND, 
 		BACKGROUND;

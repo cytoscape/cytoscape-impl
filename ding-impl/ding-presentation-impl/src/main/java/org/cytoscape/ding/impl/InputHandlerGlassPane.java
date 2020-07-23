@@ -1,6 +1,7 @@
 package org.cytoscape.ding.impl;
 
 import static java.awt.event.KeyEvent.VK_BACK_SPACE;
+import static java.awt.event.KeyEvent.VK_D;
 import static java.awt.event.KeyEvent.VK_DELETE;
 import static java.awt.event.KeyEvent.VK_DOWN;
 import static java.awt.event.KeyEvent.VK_ESCAPE;
@@ -87,8 +88,8 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
+import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.destroy.DeleteSelectedNodesAndEdgesTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -362,8 +363,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		
 		@Override
 		public void keyPressed(KeyEvent e) {
-			
-			//clear the label selection if it is enabled
+			// Clear the label selection if it is enabled
 			if (labelSelectionEnabled()) 
 			   get(SelecionClickAndDragListener.class).resetLabelSelection();
 			
@@ -373,38 +373,36 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			boolean annotationsChanged = false;
 			boolean moved = false;
 			
-			if(code == VK_UP || code == VK_DOWN || code == VK_LEFT || code == VK_RIGHT) {
-				if(isControlOrMetaDown(e)) {
+			if (code == VK_UP || code == VK_DOWN || code == VK_LEFT || code == VK_RIGHT) {
+				if (isControlOrMetaDown(e)) {
 					panCanvas(e);
 					moved = allChanged = true;
 				} else {
-					if(nodeSelectionEnabled()) {
+					if (nodeSelectionEnabled())
 						moved |= allChanged = moveNodesAndHandles(e);
-					}
-					if(annotationSelectionEnabled()) {
+					
+					if (annotationSelectionEnabled())
 						moved |= annotationsChanged = moveAnnotations(e);
-					}
 				}
-			} else if(code == VK_ESCAPE) {
+			} else if (code == VK_ESCAPE) {
 				allChanged = cancelAddingEdge();
-				if(annotationSelectionEnabled()) {
+				
+				if (annotationSelectionEnabled())
 					allChanged |= cancelAnnotations();
-				}
-			} else if(code == VK_BACK_SPACE) {
-				// in this case changing the model will trigger a render
+			} else if (code == VK_BACK_SPACE) {
+				// In this case changing the model will trigger a render
 				deleteSelected();
+			} else if (code == VK_D && isControlOrMetaDown(e)) {
+				duplicateSelected();
 			}
-			
 
-			if(allChanged) {
+			if (allChanged)
 				re.updateView(UpdateType.ALL_FULL);
-			} else if(annotationsChanged) {
+			else if (annotationsChanged)
 				re.updateView(UpdateType.JUST_ANNOTATIONS);
-			}
-			
-			if(moved) {
+
+			if (moved)
 				resetMoveTimer();
-			}
 		}
 		
 		@Override
@@ -412,11 +410,15 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			int code = e.getKeyCode();
 			var annotationSelection = cyAnnotator.getAnnotationSelection();
 
-			if(annotationSelectionEnabled() && !annotationSelection.isEmpty() && code == VK_DELETE) {
-				for(DingAnnotation a : annotationSelection) {
+			if (annotationSelectionEnabled() && !annotationSelection.isEmpty() && code == VK_DELETE) {
+				for (DingAnnotation a : annotationSelection)
 					a.removeAnnotation();
-				}
-			} 
+			}
+		}
+		
+		@Override
+		public void keyTyped(KeyEvent e) {
+			// Just ignore...
 		}
 		
 		private boolean moveAnnotations(KeyEvent e) {
@@ -518,41 +520,46 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		
 		private boolean cancelAddingEdge() {
 			var addEdgeListener = get(AddEdgeListener.class);
-			if(addEdgeListener.addingEdge()) {
+
+			if (addEdgeListener.addingEdge()) {
 				addEdgeListener.reset();
 				return true;
 			}
+
 			return false;
 		}
 		
 		private void deleteSelected() {
-			TaskIterator tasks = new TaskIterator();
-			
+			var tasks = new TaskIterator();
 			var annotationSelection = cyAnnotator.getAnnotationSelection();
-			if(!annotationSelection.isEmpty()) {
-				Collection<Annotation> annotations = new ArrayList<>(annotationSelection.getSelectedAnnotations());
+			
+			if (!annotationSelection.isEmpty()) {
+				var annotations = new ArrayList<Annotation>(annotationSelection.getSelectedAnnotations());
 				tasks.append(new RemoveAnnotationsTask(re, annotations, registrar));
 			}
-			
-			NetworkTaskFactory taskFactory = registrar.getService(DeleteSelectedNodesAndEdgesTaskFactory.class);
+
+			var taskFactory = registrar.getService(DeleteSelectedNodesAndEdgesTaskFactory.class);
 			tasks.append(taskFactory.createTaskIterator(re.getViewModel().getModel()));
-			
-			TaskManager<?,?> taskManager = registrar.getService(TaskManager.class);
+
+			var taskManager = registrar.getService(TaskManager.class);
 			taskManager.execute(tasks);
 		}
-
-		@Override
-		public void keyTyped(KeyEvent e) {
+		
+		private void duplicateSelected() {
+			var f = registrar.getService(NetworkViewTaskFactory.class, "(id=duplicateAnnotationsTaskFactory)");
+			
+			if (f.isReady(re.getViewModel())) {
+				var tm = registrar.getService(TaskManager.class);
+				tm.execute(f.createTaskIterator(re.getViewModel()));
+			}
 		}
 	}
-	
 	
 	private class CanvasMouseWheelListener implements MouseWheelListener {
 		
 		@Override
 		public void mouseWheelMoved(MouseWheelEvent e) {
-			
-			//clear the label selection if it is enabled
+			// Clear the label selection if it is enabled
 			if (labelSelectionEnabled()) 
 			   get(SelecionClickAndDragListener.class).resetLabelSelection();
 			

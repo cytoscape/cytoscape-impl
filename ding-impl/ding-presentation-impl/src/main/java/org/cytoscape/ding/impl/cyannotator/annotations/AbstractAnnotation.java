@@ -49,11 +49,6 @@ import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 
 public abstract class AbstractAnnotation implements DingAnnotation {
 	
-	protected static final String ID = "id";
-	protected static final String TYPE = "type";
-	protected static final String ANNOTATION_ID = "uuid";
-	protected static final String PARENT_ID = "parent";
-	
 	protected final CyAnnotator cyAnnotator;
 	private UUID uuid = UUID.randomUUID();
 	
