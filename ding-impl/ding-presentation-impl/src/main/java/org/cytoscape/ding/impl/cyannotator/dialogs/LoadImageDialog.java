@@ -22,8 +22,8 @@ import org.cytoscape.ding.customgraphics.image.SVGCustomGraphics;
 import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsBrowser;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
+import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.ding.impl.editor.ImageCustomGraphicsSelector;
-import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.slf4j.Logger;
@@ -140,7 +140,7 @@ public class LoadImageDialog extends AbstractAnnotationDialog<ImageAnnotationImp
 				annotation.update();
 				
 				cyAnnotator.clearSelectedAnnotations();
-				ViewUtil.selectAnnotation(re, annotation);
+				ViewUtils.selectAnnotation(re, annotation);
 			}
 		} catch (Exception ex) {
 			logger.warn("Unable to load the selected image", ex);

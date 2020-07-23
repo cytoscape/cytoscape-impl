@@ -30,6 +30,7 @@ import org.cytoscape.ding.impl.cyannotator.annotations.TextAnnotationImpl;
  * #L%
  */
 
+@Deprecated
 @SuppressWarnings("serial")
 public class TextAnnotationDialog extends AbstractAnnotationDialog<TextAnnotationImpl> {
 
@@ -49,8 +50,8 @@ public class TextAnnotationDialog extends AbstractAnnotationDialog<TextAnnotatio
 	}
 	
 	@Override
-	protected TextAnnotationPanel createControlPanel() {
-		return new TextAnnotationPanel(annotation, getPreviewPanel());
+	protected TextAnnotationEditor createControlPanel() {
+		return null;
 	}
 
 	@Override
@@ -75,11 +76,11 @@ public class TextAnnotationDialog extends AbstractAnnotationDialog<TextAnnotatio
 	
 	@Override
 	protected void apply() {
-		var cp = (TextAnnotationPanel) getControlPanel();
+		var cp = (TextAnnotationEditor) getControlPanel();
 		
-		annotation.setFont(cp.getNewFont());
-		annotation.setTextColor(cp.getTextColor());
-		annotation.setText(cp.getText());
+//		annotation.setFont(cp.getNewFont());
+//		annotation.setTextColor(cp.getTextColor());
+//		annotation.setText(cp.getText());
 		
 		if (!create) {
 			annotation.update();

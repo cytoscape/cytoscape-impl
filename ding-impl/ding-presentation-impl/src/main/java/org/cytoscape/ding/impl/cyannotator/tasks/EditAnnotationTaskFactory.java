@@ -4,6 +4,7 @@ import java.awt.geom.Point2D;
 
 import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.ding.impl.cyannotator.ui.AnnotationMediator;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
@@ -35,9 +36,11 @@ import org.cytoscape.work.TaskIterator;
 public class EditAnnotationTaskFactory implements NetworkViewLocationTaskFactory {
 	
 	private final DingRenderer dingRenderer;
+	private final AnnotationMediator mediator;
 	
-	public EditAnnotationTaskFactory(DingRenderer dingRenderer) {
+	public EditAnnotationTaskFactory(DingRenderer dingRenderer, AnnotationMediator mediator) {
 		this.dingRenderer = dingRenderer;
+		this.mediator = mediator;
 	}
 	
 	@Override
@@ -49,9 +52,18 @@ public class EditAnnotationTaskFactory implements NetworkViewLocationTaskFactory
 		
 		var annotation = re.getPicker().getAnnotationAt(javaPt);
 		
-		return new TaskIterator(new EditAnnotationTask(re, annotation, javaPt));
+		return new TaskIterator(new EditAnnotationTask(annotation, mediator));
 	}
 
+	public TaskIterator createTaskIterator(DingAnnotation annotation, CyNetworkView networkView) {
+		var re = dingRenderer.getRenderingEngine(networkView);
+		
+		if (re == null)
+			return null;
+		
+		return new TaskIterator(new EditAnnotationTask(annotation, mediator));
+	}
+	
 	@Override
 	public boolean isReady(CyNetworkView networkView, Point2D javaPt, Point2D xformPt) {
 		var re = dingRenderer.getRenderingEngine(networkView);
@@ -65,14 +77,5 @@ public class EditAnnotationTaskFactory implements NetworkViewLocationTaskFactory
 			return true;
 		
 		return false;
-	}
-
-	public TaskIterator createTaskIterator(CyNetworkView networkView, DingAnnotation annotation, Point2D javaPt) {
-		var re = dingRenderer.getRenderingEngine(networkView);
-		
-		if (re == null)
-			return null;
-		
-		return new TaskIterator(new EditAnnotationTask(re, annotation, javaPt));
 	}
 }

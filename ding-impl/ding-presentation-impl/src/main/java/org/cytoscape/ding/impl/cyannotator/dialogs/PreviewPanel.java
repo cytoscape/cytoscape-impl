@@ -39,6 +39,7 @@ import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
  * #L%
  */
 
+@Deprecated
 @SuppressWarnings("serial")
 public class PreviewPanel extends JPanel {
 	

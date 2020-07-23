@@ -1,29 +1,5 @@
 package org.cytoscape.ding.impl.cyannotator.annotations;
 
-/*
- * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -56,12 +32,37 @@ import org.cytoscape.view.presentation.annotations.ArrowAnnotation.ArrowEnd;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation.ShapeType;
 
-class GraphicsUtilities {
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
+public class GraphicsUtilities {
+	
 	private static double halfPI = Math.PI / 2.0;
 
-
-	static public Shape getShape(String shapeName, double x, double y, double width, double height) {
+	public static Shape getShape(String shapeName, double x, double y, double width, double height) {
 		ShapeType shapeType = getShapeType(shapeName);
+		
 		switch (shapeType) {
 			case RECTANGLE: return rectangleShape(x, y, width, height);
 			case ROUNDEDRECTANGLE: return roundedRectangleShape(x, y, width, height);
@@ -80,7 +81,7 @@ class GraphicsUtilities {
 		}
 	}
 
-	static public ShapeType getShapeType(String shapeName) {
+	public static ShapeType getShapeType(String shapeName) {
 		for(ShapeType type : ShapeType.values()) {
 			if (shapeName.equals(type.shapeName()))
 				return type;
@@ -88,7 +89,7 @@ class GraphicsUtilities {
 		return ShapeType.RECTANGLE; // If we can't do anything else...
 	}
 
-	static public ShapeType getShapeType(Map<String, String> argMap, String key, ShapeType defValue) {
+	public static ShapeType getShapeType(Map<String, String> argMap, String key, ShapeType defValue) {
 		if (!argMap.containsKey(key) || argMap.get(key) == null)
 			return defValue;
 		String shapeString = argMap.get(key);
@@ -100,12 +101,12 @@ class GraphicsUtilities {
 		return defValue;
 	}
 
-	static public List<String> getSupportedShapes() {
+	public static List<String> getSupportedShapes() {
 		return Arrays.stream(ShapeType.values()).map(ShapeType::shapeName).collect(Collectors.toList());
 	}
 
 	// Given a position and a size, draw a shape. We use the ShapeAnnotation to get the shape itself, colors, strokes, etc.
-	static public void drawShape(Graphics g, double x, double y, double width, double height, ShapeAnnotation annotation, boolean isPrinting) {
+	public static void drawShape(Graphics g, double x, double y, double width, double height, ShapeAnnotation annotation, boolean isPrinting) {
 		Graphics2D g2 = (Graphics2D) g;
 
 		float border = (float) (annotation.getBorderWidth() * annotation.getZoom());
@@ -167,7 +168,6 @@ class GraphicsUtilities {
 		}
 	}
 
-	
 	public static Shape copyCustomShape(Shape s, double width, double height) {
 		Rectangle bounds = s.getBounds();
 		var sx = width  / bounds.getWidth();
@@ -203,8 +203,7 @@ class GraphicsUtilities {
 		return path;
 	}
 	
-	
-	static public String serializeShape(final Shape s) {
+	public static String serializeShape(final Shape s) {
 		final StringBuffer buffer = new StringBuffer();
 		final PathIterator i = s.getPathIterator(null);
 		switch (i.getWindingRule()) {
@@ -269,7 +268,7 @@ class GraphicsUtilities {
 		return buffer.toString();
 	}
 
-	static public Shape deserializeShape(final String str) {
+	public static Shape deserializeShape(final String str) {
 		final Path2D.Double path = new Path2D.Double();
 
 		final String[] pieces = str.split("\\p{Space}+");
@@ -324,37 +323,37 @@ class GraphicsUtilities {
 		return expectedNum;
 	}
 
-	static public Shape getArrowShape(ArrowType arrowType, double size) {
+	public static Shape getArrowShape(ArrowType arrowType, double size) {
 		switch (arrowType) {
-		case CIRCLE:
-			return circleArrow(size);
-		case CLOSED:
-			return closedArrow(size);
-		case CONCAVE:
-			return concaveArrow(size);
-		case DIAMOND:
-			return diamondArrow(size);
-		case OPEN:
-			return openArrow(size);
-		case TRIANGLE:
-			return triangleArrow(size);
-		case TSHAPE:
-			return tshapeArrow(size);
-		default:
-			return null;
+			case CIRCLE:
+				return circleArrow(size);
+			case CLOSED:
+				return closedArrow(size);
+			case CONCAVE:
+				return concaveArrow(size);
+			case DIAMOND:
+				return diamondArrow(size);
+			case OPEN:
+				return openArrow(size);
+			case TRIANGLE:
+				return triangleArrow(size);
+			case TSHAPE:
+				return tshapeArrow(size);
+			default:
+				return null;
 		}
 	}
 
-	static public ArrowType getArrowType(String arrowName) {
+	public static ArrowType getArrowType(String arrowName) {
 		for (ArrowType type : ArrowType.values()) {
-			if (arrowName.equals(type.arrowName()))
+			if (arrowName.equals(type.getName()))
 				return type;
 		}
 		return ArrowType.NONE; // If we can't do anything else...
 	}
 
 
-	static public ArrowType getArrowType(Map<String, String> argMap, String key, ArrowType defValue) {
+	public static ArrowType getArrowType(Map<String, String> argMap, String key, ArrowType defValue) {
 		if (!argMap.containsKey(key) || argMap.get(key) == null)
 			return defValue;
 		int arrowNumber = Integer.parseInt(argMap.get(key));
@@ -365,15 +364,15 @@ class GraphicsUtilities {
 		return defValue;
 	}
 
-	static public ArrowType[] getSupportedArrowTypes() {
+	public static ArrowType[] getSupportedArrowTypes() {
 		return ArrowType.values();
 	}
 
-	static public List<String> getSupportedArrowTypeNames() {
-		return Arrays.stream(ArrowType.values()).map(ArrowType::arrowName).collect(Collectors.toList());
+	public static List<String> getSupportedArrowTypeNames() {
+		return Arrays.stream(ArrowType.values()).map(ArrowType::getName).collect(Collectors.toList());
 	}
 
-	static public void drawArrow(Graphics g, Line2D line, ArrowEnd end, Paint paint, double size, ArrowType type) {
+	public static void drawArrow(Graphics g, Line2D line, ArrowEnd end, Paint paint, double size, ArrowType type) {
 		if (line == null)
 			return;
 

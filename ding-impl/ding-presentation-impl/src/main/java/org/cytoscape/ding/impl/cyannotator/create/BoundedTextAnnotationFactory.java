@@ -1,7 +1,6 @@
 package org.cytoscape.ding.impl.cyannotator.create;
 
 import java.awt.Color;
-import java.awt.geom.Point2D;
 import java.util.Map;
 
 import javax.swing.Icon;
@@ -9,9 +8,8 @@ import javax.swing.UIManager;
 
 import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.cyannotator.annotations.BoundedTextAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.dialogs.BoundedTextAnnotationDialog;
+import org.cytoscape.ding.impl.cyannotator.dialogs.BoundedTextAnnotationEditor;
 import org.cytoscape.ding.internal.util.IconUtil;
-import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
@@ -53,10 +51,8 @@ public class BoundedTextAnnotationFactory extends AbstractDingAnnotationFactory<
 	}
 	
 	@Override
-	public BoundedTextAnnotationDialog createAnnotationDialog(CyNetworkView view, Point2D location) {
-		var re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
-		
-		return new BoundedTextAnnotationDialog(re, location, ViewUtil.getActiveWindow(re));
+	public BoundedTextAnnotationEditor createEditor() {
+		return new BoundedTextAnnotationEditor(this, serviceRegistrar);
 	}
 
 	@Override

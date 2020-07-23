@@ -7,7 +7,16 @@ import static java.awt.event.KeyEvent.VK_ESCAPE;
 import static java.awt.event.KeyEvent.VK_LEFT;
 import static java.awt.event.KeyEvent.VK_RIGHT;
 import static java.awt.event.KeyEvent.VK_UP;
-import static org.cytoscape.ding.internal.util.ViewUtil.*;
+import static org.cytoscape.ding.internal.util.ViewUtil.getResizeCursor;
+import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
+import static org.cytoscape.ding.internal.util.ViewUtil.isAdditiveSelect;
+import static org.cytoscape.ding.internal.util.ViewUtil.isControlOrMetaDown;
+import static org.cytoscape.ding.internal.util.ViewUtil.isDoubleLeftClick;
+import static org.cytoscape.ding.internal.util.ViewUtil.isDragSelectionKeyDown;
+import static org.cytoscape.ding.internal.util.ViewUtil.isLeftClick;
+import static org.cytoscape.ding.internal.util.ViewUtil.isLeftMouse;
+import static org.cytoscape.ding.internal.util.ViewUtil.isSingleLeftClick;
+import static org.cytoscape.ding.internal.util.ViewUtil.isSingleRightClick;
 
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
@@ -30,7 +39,6 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,16 +57,14 @@ import javax.swing.UIManager;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.AnchorLocation;
 import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
-import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
-import org.cytoscape.ding.impl.cyannotator.tasks.AddAnnotationTask;
 import org.cytoscape.ding.impl.cyannotator.tasks.EditAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.RemoveAnnotationsTask;
+import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.ding.impl.undo.AnnotationEdit;
 import org.cytoscape.ding.impl.undo.CompositeCyEdit;
 import org.cytoscape.ding.impl.undo.NodeLabelChangeEdit;
@@ -82,6 +88,7 @@ import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.NetworkTaskFactory;
+import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.task.destroy.DeleteSelectedNodesAndEdgesTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -95,6 +102,30 @@ import org.cytoscape.view.presentation.property.values.Position;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.swing.DialogTaskManager;
+
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  * This is a Swing glass pane that sits above the network canvas and handles all
@@ -116,12 +147,10 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	private DRenderingEngine re;
 	private CyAnnotator cyAnnotator;
 	
-	
 	public InputHandlerGlassPane(CyServiceRegistrar registrar, DRenderingEngine re) {
 		this.registrar = registrar;
 		this.re = re;
 		this.cyAnnotator = re.getCyAnnotator();
-		
 		
 		// Order matters, some listeners use MouseEvent.consume() to prevent subsequent listeners from running
 		this.orderedMouseAdapter = new OrderedMouseAdapter(
@@ -168,7 +197,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
         add(panel, BorderLayout.SOUTH);
         return progressBar;
 	}
-	
 	
 	/**
 	 * The progress monitor returned by this method cannot be restarted. 
@@ -237,7 +265,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		maybe(SelectionLassoListener.class).ifPresent(listener -> listener.drawSelectionLasso(g));
 	}
 	
-	
 	@Override
 	public void processMouseEvent(MouseEvent e) {
 		// expose so the birds-eye-view can pass mouse events here.
@@ -255,12 +282,26 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		get(AddEdgeListener.class).beginAddingEdge(nodeView);
 	}
 
-	// Called by the Annotation panel
-	public void beginClickToAddAnnotation(AnnotationFactory<? extends Annotation> annotationFactory, Runnable mousePressedCallback)	 {
-		get(AddAnnotationListener.class).beginClickToAddAnnotation(annotationFactory, mousePressedCallback);
+	/** 
+	 * Usually called by the Annotation UI.
+	 * 
+	 * @param factory
+	 * @param callback To be be called after the anottation is added
+	 */
+	public void beginClickToAddAnnotation(AnnotationFactory<? extends Annotation> factory, Runnable callback) {
+		get(AddAnnotationListener.class).beginClickToAddAnnotation(factory, callback);
 	}
-	
-	
+
+	/**
+	 * 
+	 * @param factory
+	 */
+	public void cancelClickToAddAnnotation(AnnotationFactory<? extends Annotation> factory) {
+		var listener = get(AddAnnotationListener.class);
+		
+		if (listener != null && factory.equals(listener.getAnnotationFactory()))
+			listener.cancel();
+	}
 	
 	private class CanvasKeyListener extends MouseAdapter implements KeyListener {
 
@@ -421,7 +462,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			return false;
 		}
 		
-		
 		private void panCanvas(KeyEvent k) {
 			if(panEdit == null) {
 				panEdit = new ViewChangeEdit(re, null, "Pan", registrar); 
@@ -435,7 +475,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				case VK_RIGHT: re.pan(-move, 0); break;
 			}
 		}
-		
 
 		private boolean moveNodesAndHandles(KeyEvent k) {
 			var snapshot = re.getViewModelSnapshot();
@@ -522,7 +561,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		}
 	}
 
-	
 	private class FocusRequestListener extends MouseAdapter {
 		
 		@Override
@@ -531,12 +569,11 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		}
 	}
 	
-	
 	private class ContextMenuListener extends MouseAdapter {
 		
 		@Override
 		public void mousePressed(MouseEvent e) {
-			if(isSingleRightClick(e)) {
+			if (isSingleRightClick(e)) {
 				showContextMenu(e.getPoint());
 				e.consume();
 				get(AddAnnotationListener.class).cancel();
@@ -545,38 +582,42 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		
 		private void showContextMenu(Point p) {
 			// Node menu
-			View<CyNode> nodeView = re.getPicker().getNodeAt(p);
-			if(nodeView != null) {
+			var nodeView = re.getPicker().getNodeAt(p);
+			
+			if (nodeView != null) {
 				popupMenuHelper.createNodeViewMenu(nodeView, p.x, p.y, PopupMenuHelper.ACTION_NEW);
 				return;
 			}
+			
 			// Edge menu
-			View<CyEdge> edgeView = re.getPicker().getEdgeAt(p);
-			if(edgeView != null) {
+			var edgeView = re.getPicker().getEdgeAt(p);
+			
+			if (edgeView != null) {
 				popupMenuHelper.createEdgeViewMenu(edgeView, p.x, p.y, PopupMenuHelper.ACTION_NEW);
 				return;
 			}
+			
 			// Network canvas menu
 			double[] loc = { p.getX(), p.getY() };
 			re.getTransform().xformImageToNodeCoords(loc);
-			Point xformP = new Point();
-			xformP.setLocation(loc[0], loc[1]); 
+			var xformP = new Point();
+			xformP.setLocation(loc[0], loc[1]);
 			popupMenuHelper.createNetworkViewMenu(p, xformP, PopupMenuHelper.ACTION_NEW);
 		}
 	}
-
 
 	private class DoubleClickListener extends MouseAdapter {
 		
 		@Override
 		public void mouseClicked(MouseEvent e) {
-			if(isDoubleLeftClick(e)) {
-				NetworkPicker picker = re.getPicker();
+			if (isDoubleLeftClick(e)) {
+				var picker = re.getPicker();
 				
-				if(annotationSelectionEnabled()) {
-					DingAnnotation annotation = picker.getAnnotationAt(e.getPoint());
-					if(annotation != null) {
-						editAnnotation(annotation, e.getPoint());
+				if (annotationSelectionEnabled()) {
+					var annotation = picker.getAnnotationAt(e.getPoint());
+					
+					if (annotation != null) {
+						editAnnotation(annotation);
 						e.consume();
 						return;
 					}
@@ -608,16 +649,16 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			popupMenuHelper.createNetworkViewMenu(p, xformPt, PopupMenuHelper.ACTION_OPEN);
 		}
 		
-		private void editAnnotation(DingAnnotation annotation, Point p) {
+		private void editAnnotation(DingAnnotation annotation) {
 			invokeOnEDT(() -> {
-				DingRenderer dingRenderer = registrar.getService(DingRenderer.class);
-				DialogTaskManager tm = registrar.getService(DialogTaskManager.class);
-				EditAnnotationTaskFactory taskFactory = new EditAnnotationTaskFactory(dingRenderer);
-				tm.execute(taskFactory.createTaskIterator(re.getViewModel(), annotation, p));
+				var tm = registrar.getService(DialogTaskManager.class);
+				var f = registrar.getService(NetworkViewLocationTaskFactory.class, "(id=editAnnotationTaskFactory)");
+
+				if (f instanceof EditAnnotationTaskFactory)
+					tm.execute(((EditAnnotationTaskFactory) f).createTaskIterator(annotation, re.getViewModel()));
 			});
 		}
 	}
-	
 	
 	private class AddEdgeListener extends MouseAdapter {
 		
@@ -748,7 +789,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			});
 		}
 	}
-	
 	
 	private class SelecionClickAndDragListener extends MouseAdapter {
 
@@ -1034,9 +1074,10 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		
 		@Override
 		public void mouseDragged(MouseEvent e) {
-			if(!hit || !isLeftMouse(e))
+			if (!hit || !isLeftMouse(e))
 				return;
-			if(get(SelectionRectangleListener.class).isDragging() || maybe(SelectionLassoListener.class).map(l->l.isDragging()).orElse(false))
+			if (get(SelectionRectangleListener.class).isDragging()
+					|| maybe(SelectionLassoListener.class).map(l -> l.isDragging()).orElse(false))
 				return;
 			
 			if (selectedLabel != null) {				
@@ -1050,32 +1091,31 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 //			var anchorsToMove = re.getBendStore().getSelectedHandles();
 			var annotationSelection = cyAnnotator.getAnnotationSelection();
 			
-			if(!annotationSelection.isEmpty()) {
-				if(annotationSelection.isResizing()) {
-					if(annotationResizeEdit == null) {
+			if (!annotationSelection.isEmpty()) {
+				if (annotationSelection.isResizing()) {
+					if (annotationResizeEdit == null)
 						annotationResizeEdit = new AnnotationEdit("Resize Annotation", cyAnnotator, registrar);
-					}
-					annotationSelection.resizeAnnotationsRelative(e.getX(), e.getY());
+
+					annotationSelection.resizeAnnotationsRelative(e.getX(), e.getY(), e.isShiftDown());
 					re.updateView(UpdateType.JUST_ANNOTATIONS);
+
 					return;
 				} else {
-					if(annotationMovingEdit == null) {
+					if (annotationMovingEdit == null)
 						annotationMovingEdit = new AnnotationEdit("Move Annotation", cyAnnotator, registrar);
-					} 
+
 					annotationSelection.moveSelection(e.getPoint());
 					annotationSelection.setMovingStartOffset(e.getPoint());
 				}
 			}
 			
-			if(!selectedNodes.isEmpty() || re.getBendStore().areHandlesSelected()) {
+			if (!selectedNodes.isEmpty() || re.getBendStore().areHandlesSelected())
 				mouseDraggedHandleNodesAndEdges(selectedNodes, e);
-			}
-			
-			if(!selectedNodes.isEmpty() || re.getBendStore().areHandlesSelected()) {
+
+			if (!selectedNodes.isEmpty() || re.getBendStore().areHandlesSelected())
 				re.updateView(UpdateType.ALL_FAST);
-			} else {
+			else
 				re.updateView(UpdateType.JUST_ANNOTATIONS);
-			}
 		}
 		
 		public void resetLabelSelection() {
@@ -1155,43 +1195,56 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		}
 	}
 	
-	
 	private class AddAnnotationListener extends MouseAdapter {
 		
-		private AnnotationFactory<?> annotationFactory = null;
-		private Runnable mousePressedCallback = null;
+		private AnnotationFactory<?> annotationFactory;
+		private Runnable callback;
 		
-		public void beginClickToAddAnnotation(AnnotationFactory<? extends Annotation> annotationFactory, Runnable mousePressedCallback) {
-			this.annotationFactory = annotationFactory;
-			this.mousePressedCallback = mousePressedCallback;
+		public void beginClickToAddAnnotation(AnnotationFactory<? extends Annotation> factory, Runnable callback) {
+			this.annotationFactory = factory;
+			this.callback = callback;
+			
+			changeCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+		}
+		
+		public AnnotationFactory<?> getAnnotationFactory() {
+			return annotationFactory;
 		}
 		
 		public void cancel() {
-			if(annotationFactory != null) {
+			if (annotationFactory != null)
 				cyAnnotator.fireAnnotations(); // tell the Annotation panel that we cancelled
-			}
-			this.annotationFactory = null;
-			this.mousePressedCallback = null;
+			
+			annotationFactory = null;
+			callback = null;
+			
+			changeCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}
 		
 		@Override
 		public void mousePressed(MouseEvent e) {
-			if(annotationFactory != null && isSingleLeftClick(e)) {
-				if(mousePressedCallback != null) {
-					mousePressedCallback.run();
-				}
+			if (annotationFactory != null && isSingleLeftClick(e)) {
 				createAnnotation(annotationFactory, e.getPoint());
 				e.consume();
+				
+				if (callback != null)
+					callback.run();
 			}
+			
 			annotationFactory = null;
-			mousePressedCallback = null;
+			callback = null;
+			
+			changeCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}
 		
 		private void createAnnotation(AnnotationFactory<? extends Annotation> f, Point point) {
-			if(!(f instanceof AbstractDingAnnotationFactory))  // For now, only DING annotations are supported!
+			if (!(f instanceof AbstractDingAnnotationFactory)) // For now, only DING annotations are supported!
 				return;
-			var task = new AddAnnotationTask(re, point, f);
-			registrar.getService(DialogTaskManager.class).execute(new TaskIterator(task));
+			
+			var filter = "(id=addAnnotationTaskFactory_" + f.getId() + ")";
+			var factory = registrar.getService(NetworkViewLocationTaskFactory.class, filter);
+			var iterator = factory.createTaskIterator(re.getViewModel(), point, null);
+			registrar.getService(DialogTaskManager.class).execute(iterator);
 		}
 		
 		@Override
@@ -1199,39 +1252,38 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			// This handles when you first add an annotation to the canvas and it auto-resizes
 			// This operation is initiated by the various annotation dialogs
 			
-			AbstractAnnotation resizeAnnotation = cyAnnotator.getResizeShape();
+			var resizeAnnotation = cyAnnotator.getResizeShape();
 			var annotationSelection = cyAnnotator.getAnnotationSelection();
-			ArrowAnnotationImpl repositionAnnotation = cyAnnotator.getRepositioningArrow();
+			var repositionAnnotation = cyAnnotator.getRepositioningArrow();
 			
-			if(resizeAnnotation == null && annotationSelection.isEmpty() && repositionAnnotation == null)
+			if (resizeAnnotation == null && annotationSelection.isEmpty() && repositionAnnotation == null)
 				return;
 
-
-			if(resizeAnnotation != null) {
-				Rectangle2D initialBounds = cyAnnotator.getResizeBounds(); // node coords
+			if (resizeAnnotation != null) {
+				var initialBounds = cyAnnotator.getResizeBounds(); // node coords
 				var point = re.getTransform().getNodeCoordinates(e.getPoint());
-				var bounds = AnnotationSelection.resize(Position.SOUTH_EAST, initialBounds, point.getX(), point.getY());
+				var bounds = AnnotationSelection.resize(Position.SOUTH_EAST, initialBounds, point.getX(), point.getY(),
+						e.isShiftDown());
 				resizeAnnotation.setBounds(bounds);
 				resizeAnnotation.update();
 				re.updateView(UpdateType.JUST_ANNOTATIONS);
+			} else if (repositionAnnotation != null) {
+				var mousePoint = e.getPoint();
+				var annotations = re.getPicker().getAnnotationsAt(mousePoint);
 				
-			} else if(repositionAnnotation != null) {
-				Point mousePoint = e.getPoint();
-
-				List<DingAnnotation> annotations = re.getPicker().getAnnotationsAt(mousePoint);
 				if (annotations.contains(repositionAnnotation))
 					annotations.remove(repositionAnnotation);
 
 				// Target can be another annotation, a node, or just a point.
-				if(annotations.size() > 0) {
+				if (!annotations.isEmpty()) {
 					repositionAnnotation.setTarget(annotations.get(0));
-				} else if(overNode(mousePoint)) {
-					View<CyNode> overNode = re.getPicker().getNodeAt(mousePoint);
-					// the node view must be mutable so that the coordinates will update when the node is moved
+				} else if (overNode(mousePoint)) {
+					var overNode = re.getPicker().getNodeAt(mousePoint);
+					// The node view must be mutable so that the coordinates will update when the node is moved
 					var mutableNodeView = re.getViewModelSnapshot().getMutableNodeView(overNode.getSUID());
 					repositionAnnotation.setTarget(mutableNodeView);
 				} else {
-					Point2D nodeCoordinates = re.getTransform().getNodeCoordinates(mousePoint);
+					var nodeCoordinates = re.getTransform().getNodeCoordinates(mousePoint);
 					repositionAnnotation.setTarget(nodeCoordinates);
 				}
 
@@ -1242,19 +1294,23 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		
 		@Override
 		public void mouseClicked(MouseEvent e) {
-			if(cyAnnotator.getResizeShape() != null) {
+			if (cyAnnotator.getResizeShape() != null) {
 				cyAnnotator.getResizeShape().contentChanged();
 				cyAnnotator.resizeShape(null);
 				cyAnnotator.postUndoEdit(); // markUndoEdit() is in the dialogs like ShapeAnnotationDialog
-			} else if(cyAnnotator.getRepositioningArrow() != null) {
+			} else if (cyAnnotator.getRepositioningArrow() != null
+					&& cyAnnotator.getRepositioningArrow().getTarget() != null) {
 				cyAnnotator.getRepositioningArrow().contentChanged();
+				
+				// Select only the new arrow annotation
+				cyAnnotator.clearSelectedAnnotations();
+				ViewUtils.selectAnnotation(re, cyAnnotator.getRepositioningArrow());
+				
 				cyAnnotator.positionArrow(null);
 				cyAnnotator.postUndoEdit(); // markUndoEdit() is in ArrowAnnotationDialog
 			}
 		}
-		
 	}
-	
 	
 	/**
 	 * MKTODO This listener is not finished and should not be enabled.

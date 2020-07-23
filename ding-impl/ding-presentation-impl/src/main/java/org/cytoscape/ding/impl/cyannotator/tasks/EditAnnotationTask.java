@@ -1,11 +1,8 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
-import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
-
-import java.awt.geom.Point2D;
-
-import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.ding.impl.cyannotator.ui.AnnotationMediator;
+import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -35,37 +32,29 @@ import org.cytoscape.work.TaskMonitor;
 
 public class EditAnnotationTask extends AbstractTask {
 	
-	private final DRenderingEngine re;
 	private final DingAnnotation annotation; 
-	private final Point2D location; 
+	private final AnnotationMediator mediator;
 
-	public EditAnnotationTask(DRenderingEngine re, DingAnnotation annotation, Point2D location) {
-		this.re = re;
-		this.annotation = annotation;
-		this.location = location;
+	public EditAnnotationTask(DingAnnotation a, AnnotationMediator mediator) {
+		this.annotation = a;
+		this.mediator = mediator;
 	}
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setTitle("Edit Annotation");
 		
-		if (re != null) {
-			invokeOnEDT(() -> {
-				var dialog = annotation.getModifyDialog();
+		if (annotation != null) {
+			if (annotation instanceof GroupAnnotation) {
+				tm.setStatusMessage("No annotation selected (group selected instead)!");
+			} else {
+				tm.setStatusMessage("Annotation: " + annotation.getName());
 				
-				if (dialog != null) {
-					var owner = dialog.getOwner();
-					
-					if (location != null && owner != null) {
-						var screen = owner.getGraphicsConfiguration().getBounds();
-						dialog.setLocation((int)location.getX() + screen.x, (int) location.getY() + screen.x);
-					} else {
-						dialog.setLocationRelativeTo(re.getComponent());
-					}
-					
-					dialog.setVisible(true);
-				}
-			});
+				mediator.editAnnotation(annotation);
+				mediator.showAnnotationPanel();
+			}
+		} else {
+			tm.setStatusMessage("No annotation selected!");
 		}
 	}
 }

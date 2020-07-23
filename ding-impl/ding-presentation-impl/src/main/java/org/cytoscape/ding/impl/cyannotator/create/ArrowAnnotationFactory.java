@@ -1,6 +1,5 @@
 package org.cytoscape.ding.impl.cyannotator.create;
 
-import java.awt.geom.Point2D;
 import java.util.Map;
 
 import javax.swing.Icon;
@@ -8,9 +7,8 @@ import javax.swing.UIManager;
 
 import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.dialogs.ArrowAnnotationDialog;
+import org.cytoscape.ding.impl.cyannotator.dialogs.ArrowAnnotationEditor;
 import org.cytoscape.ding.internal.util.IconUtil;
-import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
@@ -52,15 +50,16 @@ public class ArrowAnnotationFactory extends AbstractDingAnnotationFactory<ArrowA
 	}
 
 	@Override
-	public ArrowAnnotationDialog createAnnotationDialog(CyNetworkView view, Point2D location) {
+	public ArrowAnnotationEditor createEditor() {
 		// We need to be over an annotation
-		var re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
-		var annotation = re.getPicker().getAnnotationAt(location);
+		// TODO ???
+//		var re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
+//		var annotation = re.getPicker().getAnnotationAt(location);
+//		
+//		if (annotation == null || annotation instanceof ArrowAnnotationImpl)
+//			return null;
 		
-		if (annotation == null || annotation instanceof ArrowAnnotationImpl)
-			return null;
-		
-		return new ArrowAnnotationDialog(re, location, ViewUtil.getActiveWindow(re));
+		return new ArrowAnnotationEditor(this, serviceRegistrar);
 	}
 
 	@Override

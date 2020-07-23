@@ -2,18 +2,16 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
-import java.awt.Composite;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.font.FontRenderContext;
 import java.util.Map;
+import java.util.Objects;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
-import org.cytoscape.ding.impl.cyannotator.dialogs.BoundedTextAnnotationDialog;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
-import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.BoundedTextAnnotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
@@ -106,9 +104,9 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		
 		this.font = ViewUtils.getArgFont(argMap, "Arial", Font.PLAIN, initialFontSize);
 		double zoom = getLegacyZoom(argMap);
-		if(zoom != 1.0) {
-			font = font.deriveFont(font.getSize2D() / (float)zoom);
-		}
+		
+		if (zoom != 1.0)
+			font = font.deriveFont(font.getSize2D() / (float) zoom);
 		
 		this.textColor = (Color) ViewUtils.getColor(argMap, COLOR, Color.BLACK);
 		this.text = ViewUtils.getString(argMap, TEXT, "");
@@ -148,6 +146,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		argMap.put(FONTFAMILY, this.font.getFamily());
 		argMap.put(FONTSIZE, Integer.toString(this.font.getSize()));
 		argMap.put(FONTSTYLE, Integer.toString(this.font.getStyle()));
+		
 		return argMap;
 	}
 
@@ -158,23 +157,24 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		shapeIsFit = true;
 
 		// Different depending on the type...
-		ShapeType shapeType = getShapeTypeEnum();
+		var shapeType = getShapeTypeEnum();
+		
 		switch (shapeType) {
-		case ELLIPSE:
-			width = getTextWidth()*3/2+8;
-			height = getTextHeight()*2;
-			break;
-		case TRIANGLE:
-			width = getTextWidth()*3/2+8;
-			height = getTextHeight()*2;
-			break;
-		case PENTAGON:
-		case HEXAGON:
-		case STAR5:
-		case STAR6:
-			width = getTextWidth()*9/7+8;
-			height = width;
-			break;
+			case ELLIPSE:
+				width = getTextWidth()*3/2+8;
+				height = getTextHeight()*2;
+				break;
+			case TRIANGLE:
+				width = getTextWidth()*3/2+8;
+				height = getTextHeight()*2;
+				break;
+			case PENTAGON:
+			case HEXAGON:
+			case STAR5:
+			case STAR6:
+				width = getTextWidth()*9/7+8;
+				height = width;
+				break;
 		}
 
 		super.setSize(width, height);
@@ -182,45 +182,43 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	}
 	
 	@Override
-	public BoundedTextAnnotationDialog getModifyDialog() {
-		return new BoundedTextAnnotationDialog(this, ViewUtil.getActiveWindow(re));
-	}
-	
-	@Override
-	public void paint(Graphics graphics, boolean showSelection) {
-		super.paint(graphics, showSelection);
+	public void paint(Graphics g, boolean showSelection) {
+		super.paint(g, showSelection);
 
-		Graphics2D g = (Graphics2D)graphics.create();
-		g.setColor(textColor);
-		g.setFont(font);
-		g.setClip(getBounds());
+		var g2 = (Graphics2D) g.create();
+		g2.setColor(textColor);
+		g2.setFont(font);
+		g2.setClip(getBounds());
 
 		// Handle opacity
 		int alpha = textColor.getAlpha();
-		float opacity = (float)alpha/(float)255;
-		final Composite originalComposite = g.getComposite();
-		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
+		float opacity = (float) alpha / (float) 255;
+		var originalComposite = g2.getComposite();
+		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
 
-		int halfWidth  = (int)(getWidth() - getTextWidth())/2;
-		int halfHeight = (int)(getHeight() + getTextHeight()/2)/2; // Note, this is + because we start at the baseline
+		int halfWidth = (int) (getWidth() - getTextWidth()) / 2;
+		int halfHeight = (int) (getHeight() + getTextHeight() / 2) / 2; // Note, this is + because we start at the baseline
 
-		g.drawString(text, (int)getX() + halfWidth, (int)getY() + halfHeight);
-		g.setComposite(originalComposite);
+		g2.drawString(text, (int) getX() + halfWidth, (int) getY() + halfHeight);
+		g2.setComposite(originalComposite);
 	}
-
 
 	@Override
 	public void setText(String text) {
-		this.text = text;
+		if (!Objects.equals(text, this.text)) {
+			var oldValue = this.text;
+			this.text = text;
 
-		if (updateNameFromText)
-			name = text != null ? text.trim() : "";
-		
-		if (shapeIsFit)
-			fitShapeToText();
+			if (updateNameFromText)
+				name = text != null ? text.trim() : "";
 
-		updateBounds();
-		update();
+			if (shapeIsFit)
+				fitShapeToText();
+
+			updateBounds();
+			update();
+			firePropertyChange("text", oldValue, text);
+		}
 	}
 
 	@Override
@@ -230,8 +228,12 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	@Override
 	public void setTextColor(Color color) {
-		this.textColor = color;
-		update();
+		if (!Objects.equals(textColor, color)) {
+			var oldValue = textColor;
+			textColor = color;
+			update();
+			firePropertyChange("textColor", oldValue, textColor);
+		}
 	}
 
 	@Override
@@ -242,16 +244,25 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	@Override
 	public void setFontSize(double size) {
 		setFontSize(size, true);
-		update();
 	}
 
-	// A method that can be used for group resizing
+	/**
+	 * A method that can be used for group resizing.
+	 */
 	public void setFontSize(double size, boolean updateBounds) {
-		this.fontSize = (float) size;
-		font = font.deriveFont((float) (fontSize));
-		if (updateBounds)
-			updateBounds();
-		update();
+		if (fontSize != (float) size) {
+			var oldValue = fontSize;
+			fontSize = (float) size;
+			
+			if (font != null)
+				font = font.deriveFont(fontSize);
+
+			if (updateBounds)
+				updateBounds();
+
+			update();
+			firePropertyChange("fontSize", oldValue, fontSize);
+		}
 	}
 //
 //	public void setFontSizeRelative(double factor) {
@@ -264,7 +275,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	@Override
 	public double getFontSize() {
-		return this.fontSize;
+		return fontSize;
 	}
 
 //	@Override
@@ -275,24 +286,32 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	@Override
 	public void setFontStyle(int style) {
-		font = font.deriveFont(style, (float) (fontSize));
-		update();
+		if (font == null || style != font.getStyle()) {
+			var oldValue = font.getStyle();
+			font = font.deriveFont(style, fontSize);
+			update();
+			firePropertyChange("fontStyle", oldValue, style);
+		}
 	}
 
 	@Override
 	public int getFontStyle() {
-		return font.getStyle();
+		return font != null ? font.getStyle() : Font.PLAIN;
 	}
 
 	@Override
 	public void setFontFamily(String family) {
-		font = new Font(family, font.getStyle(), (int) fontSize);
-		update();
+		if (family != null && !family.equalsIgnoreCase(getFontFamily())) {
+			var oldValue = getFontFamily();
+			font = new Font(family, getFontStyle(), (int) fontSize);
+			update();
+			firePropertyChange("fontFamily", oldValue, family);
+		}
 	}
 
 	@Override
 	public String getFontFamily() {
-		return font.getFamily();
+		return font != null ? font.getFamily() : null;
 	}
 
 	@Override
@@ -302,10 +321,14 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	@Override
 	public void setFont(Font font) {
-		this.font = font;
-		this.fontSize = font.getSize2D();
-		updateBounds();
-		update();
+		if (!Objects.equals(font, this.font)) {
+			var oldValue = this.font;
+			this.font = font;
+			this.fontSize = font.getSize2D();
+			updateBounds();
+			update();
+			firePropertyChange("font", oldValue, font);
+		}
 	}
 
 	@Override
@@ -318,6 +341,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 			fitShapeToText();
 			return;
 		}
+		
 		// Our bounds should be the larger of the shape or the text
 		double xBound = Math.max(getTextWidth(),  width);
 		double yBound = Math.max(getTextHeight(), height);
