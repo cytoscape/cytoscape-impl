@@ -48,7 +48,7 @@ public class RemoveLockedValuesCommand extends SimpleCommand {
 		
 		if (netView != null && views == null) {
 			// Get the selected views
-			final Set<Class<? extends CyIdentifiable>> targetDataTypes = new HashSet<Class<? extends CyIdentifiable>>();
+			final Set<Class<? extends CyIdentifiable>> targetDataTypes = new HashSet<>();
 		
 			for (final VisualProperty<?> vp : visualProperties)
 				targetDataTypes.add(vp.getTargetDataType());
@@ -64,8 +64,7 @@ public class RemoveLockedValuesCommand extends SimpleCommand {
 		}
 		
 		if (views != null) {
-			final TaskIterator iterator = new TaskIterator(new RemoveLockedValuesTask(visualProperties, views, netView,
-					servicesUtil));
+			final TaskIterator iterator = new TaskIterator(new RemoveLockedValuesTask(visualProperties, views, netView, servicesUtil));
 			final DialogTaskManager taskManager = servicesUtil.get(DialogTaskManager.class);
 			taskManager.execute(iterator);
 		}

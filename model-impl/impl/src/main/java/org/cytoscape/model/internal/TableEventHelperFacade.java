@@ -110,10 +110,10 @@ public class TableEventHelperFacade implements CyEventHelper {
 			facadeEvent = new ColumnNameChangedEvent(facade, e.getOldColumnName(), e.getNewColumnName());
 		} else if (event instanceof ColumnDeletedEvent) {
 			ColumnDeletedEvent e = (ColumnDeletedEvent) event;
-			facadeEvent = new ColumnDeletedEvent(facade, e.getColumnName());
+			facadeEvent = new ColumnDeletedEvent(facade, e.getColumnName(), e.getSUID());
 		} else if (event instanceof ColumnCreatedEvent) {
 			ColumnCreatedEvent e = (ColumnCreatedEvent) event;
-			facadeEvent = new ColumnCreatedEvent(facade, e.getColumnName());
+			facadeEvent = new ColumnCreatedEvent(facade, e.getColumnName(), e.getSUID());
 		}
 
 		// fire the new facade event

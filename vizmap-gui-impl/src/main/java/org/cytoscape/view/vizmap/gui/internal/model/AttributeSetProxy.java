@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -78,8 +79,8 @@ public class AttributeSetProxy extends Proxy
 		graphObjects.add(CyNetwork.class);
 		
 		this.servicesUtil = servicesUtil;
-		this.attrSets = new WeakHashMap<CyNetwork, Map<Class<? extends CyIdentifiable>, AttributeSet>>();
-		this.tableSets = new WeakHashMap<CyNetwork, Map<Class<? extends CyIdentifiable>, Set<CyTable>>>();
+		this.attrSets  = new WeakHashMap<>();
+		this.tableSets = new WeakHashMap<>();
 	}
 
 	// ==[ PUBLIC METHODS ]=============================================================================================
@@ -93,11 +94,10 @@ public class AttributeSetProxy extends Proxy
 	}
 	
 	public AttributeSet getAttributeSet(final CyNetwork network, final Class<? extends CyIdentifiable> objectType) {
-		if (network == null || objectType == null)
-			throw new NullPointerException("Both parameters should not be null.");
+		Objects.requireNonNull(network);
+		Objects.requireNonNull(objectType);
 
-		final Map<Class<? extends CyIdentifiable>, AttributeSet> attrSetMap = this.attrSets.get(network);
-		
+		var attrSetMap = this.attrSets.get(network);
 		if (attrSetMap == null)
 			throw new NullPointerException("No such network registered in this mamager: " + network);
 
@@ -120,30 +120,43 @@ public class AttributeSetProxy extends Proxy
 		
 		return attributeSet;
 	}
+	
+	public AttributeSet getAttributeSet(CyTable table) {
+		Objects.requireNonNull(table);
+		AttributeSet attributeSet = new AttributeSet(CyColumn.class);
+		Map<String,Class<?>> attrs = attributeSet.getAttrMap();
+		
+		for(CyColumn col : table.getColumns()) {
+			var type = col.getType();
+			if(currentMappingType != ContinuousMapping.class || Number.class.isAssignableFrom(type)) {
+				attrs.put(col.getName(), type);
+			}
+		}
+		
+		return attributeSet;
+	}
 
 	@Override
 	public void handleEvent(final NetworkAddedEvent e) {
-		final CyNetwork network = e.getNetwork();
+		CyNetwork network = e.getNetwork();
 
-		final Map<Class<? extends CyIdentifiable>, Set<CyTable>> object2tableMap =
-				new HashMap<Class<? extends CyIdentifiable>, Set<CyTable>>();
-		final Map<Class<? extends CyIdentifiable>, AttributeSet> attrSetMap =
-				new HashMap<Class<? extends CyIdentifiable>, AttributeSet>();
+		var object2tableMap = new HashMap<Class<? extends CyIdentifiable>, Set<CyTable>>();
+		var attrSetMap = new HashMap<Class<? extends CyIdentifiable>, AttributeSet>();
 
-		final CyNetworkTableManager netTblMgr = servicesUtil.get(CyNetworkTableManager.class);
+		CyNetworkTableManager netTblMgr = servicesUtil.get(CyNetworkTableManager.class);
 		
-		for (final Class<? extends CyIdentifiable> objectType : graphObjects) {
-			final Map<String, CyTable> tableMap = netTblMgr.getTables(network, objectType);
-			final Collection<CyTable> tables = tableMap.values();
+		for(Class<? extends CyIdentifiable> objectType : graphObjects) {
+			Map<String, CyTable> tableMap = netTblMgr.getTables(network, objectType);
+			Collection<CyTable> tables = tableMap.values();
 
 			object2tableMap.put(objectType, new HashSet<CyTable>(tables));
-			final AttributeSet attrSet = new AttributeSet(objectType);
+			AttributeSet attrSet = new AttributeSet(objectType);
 			
 			for (CyTable table : tables) {
-				final Collection<CyColumn> columns = table.getColumns();
+				Collection<CyColumn> columns = table.getColumns();
 				
-				for (final CyColumn column : columns) {
-					final Class<?> type = column.getType();
+				for (CyColumn column : columns) {
+					Class<?> type = column.getType();
 					attrSet.getAttrMap().put(column.getName(), type);
 				}
 			}

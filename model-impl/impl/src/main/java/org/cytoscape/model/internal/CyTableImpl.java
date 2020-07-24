@@ -125,7 +125,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		this.primaryKeyType = primaryKeyType;
 		this.pub = pub;
 		this.isImmutable = !isMutable;
-		this.suid = Long.valueOf(SUIDFactory.getNextSUID());
+		this.suid = SUIDFactory.getNextSUID();
 		this.eventHelper = eventHelper;
 		this.columnFactory = columnFactory;
 		this.interpreter = interpreter;
@@ -365,6 +365,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 	@Override
 	public void deleteColumn(final String columnName) {
+		Long suid = null;
 		synchronized(lock) {
 			if (columnName == null)
 				throw new NullPointerException("\"columnName\" must not be null.");
@@ -374,6 +375,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			if (column == null)
 				return;
 
+			suid = column.getSUID();
 			if (column.isImmutable())
 				throw new IllegalArgumentException("cannot delete immutable column \"" + columnName + "\".");
 				
@@ -396,7 +398,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		}
 
 		// This event must be synchronous!
-		eventHelper.fireEvent(new ColumnDeletedEvent(this, columnName));
+		eventHelper.fireEvent(new ColumnDeletedEvent(this, columnName, suid));
 	}
 
 	private void addDependent(String columnName, CyColumn joinedColumn) {
@@ -426,6 +428,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	@Override
 	public <T> void createColumn(final String columnName, final Class<? extends T> type,
 				     final boolean isImmutable, final T defaultValue) {
+		Long suid;
 		synchronized(lock) {
 			if (columnName == null)
 				throw new NullPointerException("column name is null");
@@ -447,17 +450,20 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			checkClass(type);
 
 			VirtualColumnInfo virtualInfo = NonVirtualColumnInfo.create(isImmutable);
-			types.put(normalizedColName, new CyColumnImpl(this, columnName, type,
+			CyColumnImpl column = new CyColumnImpl(this, columnName, type,
 							                              /* listElementType = */ null,
 							                              virtualInfo ,
 							                              /* isPrimaryKey = */ false,
 							                              isImmutable,
-							                              defaultValue));
+							                              defaultValue);
+			suid = column.getSUID();
+			types.put(normalizedColName, column);
 			attributes.put(normalizedColName, columnFactory.create(primaryKeyType, type, null, defaultInitSize));
 			colList.add(types.get(normalizedColName));
+			
 		}
 		
-		eventHelper.fireEvent(new ColumnCreatedEvent(this, columnName));
+		eventHelper.fireEvent(new ColumnCreatedEvent(this, columnName, suid));
 	}
 	
 
@@ -470,6 +476,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	@Override
 	public <T> void createListColumn(final String columnName, final Class<T> listElementType,
 					 final boolean isImmutable, final List<T> defaultValue) {
+		Long suid;
 		synchronized(lock) {
 			if (columnName == null)
 				throw new NullPointerException("column name is null");
@@ -487,17 +494,19 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			checkClass(listElementType);
 
 			VirtualColumnInfo virtualInfo = NonVirtualColumnInfo.create(isImmutable);
-			types.put(normalizedColName, new CyColumnImpl(this, columnName, List.class,
+			CyColumnImpl column = new CyColumnImpl(this, columnName, List.class,
 							       listElementType,
 							       virtualInfo,
 							       /* isPrimaryKey = */ false,
 							       isImmutable,
-								   defaultValue));
+								   defaultValue);
+			types.put(normalizedColName, column);
+			suid = column.getSUID();
 			attributes.put(normalizedColName, columnFactory.create(primaryKeyType, List.class, listElementType, defaultInitSize));
 			colList.add(types.get(normalizedColName));
 		}
 
-		eventHelper.fireEvent(new ColumnCreatedEvent(this, columnName));
+		eventHelper.fireEvent(new ColumnCreatedEvent(this, columnName, suid));
 	}
 
 	<T> List<T> getColumnValues(final String columnName, final Class<? extends T> type) {
@@ -999,6 +1008,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 		String targetName = "failed to create column"; 
 
+		Long suid = null;
 		synchronized(lock) {
 			final String normalizedColName = normalizeColumnName(virtualColumnName);
 			if (types.containsKey(normalizedColName))
@@ -1026,6 +1036,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			                                               sourceColumn.getListElementType(), virtualColumn,
 			                                               /* isPrimaryKey = */ false, isImmutable, sourceColumn.getDefaultValue());
 			
+			suid = targetColumn.getSUID();
 			((CyTableImpl) sourceTable).addDependent(sourceColumnName, targetColumn);
 
 			final String normalizedTargetName = normalizeColumnName(targetName);
@@ -1035,7 +1046,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			colList.add(types.get(normalizedTargetName));
 		}
 
-		eventHelper.fireEvent(new ColumnCreatedEvent(this, targetName));
+		eventHelper.fireEvent(new ColumnCreatedEvent(this, targetName, suid));
 		return targetName;
 	}
 
@@ -1169,9 +1180,15 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	
 	private final class InternalRow implements CyRow {
 		private final Object key;
+		private final Long suid = SUIDFactory.getNextSUID();
 
 		InternalRow(final Object key) {
 			this.key = key;
+		}
+		
+		@Override
+		public Long getSUID() {
+			return suid;
 		}
 
 		@Override

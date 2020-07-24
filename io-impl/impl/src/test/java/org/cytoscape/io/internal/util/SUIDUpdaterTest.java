@@ -23,14 +23,13 @@ package org.cytoscape.io.internal.util;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
-import org.cytoscape.io.internal.util.SUIDUpdater;
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyColumnTest;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.VirtualColumnInfo;
 import org.junit.Test;
@@ -79,6 +78,9 @@ public class SUIDUpdaterTest {
 		private Class<?> listType;
 		private boolean isPK;
 		private VirtualColumnInfo virtualInfo;
+		private final Long suid;
+		
+		private static final AtomicLong suidGenerator = new AtomicLong();
 
 		public DummyColumn(String name, Class<?> type, Class<?> listType, boolean isPK, VirtualColumnInfo virtualInfo) {
 			this.name = name;
@@ -86,6 +88,12 @@ public class SUIDUpdaterTest {
 			this.listType = listType;
 			this.isPK = isPK;
 			this.virtualInfo = virtualInfo;
+			this.suid = suidGenerator.getAndIncrement();
+		}
+		
+		@Override
+		public Long getSUID() {
+			return suid;
 		}
 
 		@Override

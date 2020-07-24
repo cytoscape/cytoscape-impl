@@ -2,23 +2,21 @@ package org.cytoscape.browser.internal;
 
 import static org.cytoscape.work.ServiceProperties.TITLE;
 
-import java.awt.event.ActionListener;
 import java.util.Properties;
 
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
 import org.cytoscape.browser.internal.task.ClearAllErrorsTaskFactory;
+import org.cytoscape.browser.internal.task.ColorColumnTestTaskFactory;
 import org.cytoscape.browser.internal.task.HideColumnTaskFactory;
 import org.cytoscape.browser.internal.task.SetColumnFormatTaskFactory;
 import org.cytoscape.browser.internal.view.DefaultTableBrowser;
 import org.cytoscape.browser.internal.view.GlobalTableBrowser;
-import org.cytoscape.browser.internal.view.PopupMenuHelper;
 import org.cytoscape.browser.internal.view.TableBrowserMediator;
+import org.cytoscape.browser.internal.view.TableBrowserStyleMediator;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.events.RowsDeletedListener;
-import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.model.events.TableAboutToBeDeletedListener;
 import org.cytoscape.model.events.TableAddedListener;
 import org.cytoscape.model.events.TablePrivacyChangedListener;
@@ -26,8 +24,9 @@ import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedListener;
-import org.cytoscape.task.TableCellTaskFactory;
 import org.cytoscape.task.TableColumnTaskFactory;
+import org.cytoscape.view.vizmap.events.VisualStyleChangedListener;
+import org.cytoscape.view.vizmap.events.table.ColumnVisualStyleSetListener;
 import org.osgi.framework.BundleContext;
 
 /*
@@ -59,29 +58,22 @@ public class CyActivator extends AbstractCyActivator {
 	@Override
 	public void start(BundleContext bc) {
 		var serviceRegistrar = getService(bc, CyServiceRegistrar.class);
-		var popupMenuHelper = new PopupMenuHelper(serviceRegistrar);
 		
-		var nodeTableBrowser = new DefaultTableBrowser("Node Table", CyNode.class, serviceRegistrar, popupMenuHelper);
-		var edgeTableBrowser = new DefaultTableBrowser("Edge Table", CyEdge.class, serviceRegistrar, popupMenuHelper);
-		var networkTableBrowser = new DefaultTableBrowser("Network Table", CyNetwork.class, serviceRegistrar, popupMenuHelper);
-		var globalTableBrowser = new GlobalTableBrowser("Unassigned Tables", serviceRegistrar, popupMenuHelper);
+		var nodeTableBrowser = new DefaultTableBrowser("Node Table", CyNode.class, serviceRegistrar);
+		var edgeTableBrowser = new DefaultTableBrowser("Edge Table", CyEdge.class, serviceRegistrar);
+		var networkTableBrowser = new DefaultTableBrowser("Network Table", CyNetwork.class, serviceRegistrar);
+		var globalTableBrowser = new GlobalTableBrowser("Unassigned Tables", serviceRegistrar);
 		
 		registerAllServices(bc, nodeTableBrowser);
 		registerAllServices(bc, edgeTableBrowser);
 		registerAllServices(bc, networkTableBrowser);
 
-		registerService(bc, globalTableBrowser, ActionListener.class);
 		registerService(bc, globalTableBrowser, SessionLoadedListener.class);
 		registerService(bc, globalTableBrowser, SessionAboutToBeSavedListener.class);
 		registerService(bc, globalTableBrowser, TableAboutToBeDeletedListener.class);
 		registerService(bc, globalTableBrowser, TableAddedListener.class);
 		registerService(bc, globalTableBrowser, TablePrivacyChangedListener.class);
-		registerService(bc, globalTableBrowser, RowsSetListener.class);
-		registerService(bc, globalTableBrowser, RowsDeletedListener.class);
 
-		registerServiceListener(bc, popupMenuHelper::addTableColumnTaskFactory, popupMenuHelper::removeTableColumnTaskFactory, TableColumnTaskFactory.class);
-		registerServiceListener(bc, popupMenuHelper::addTableCellTaskFactory, popupMenuHelper::removeTableCellTaskFactory, TableCellTaskFactory.class);
-		
 		{
 			var factory = new ClearAllErrorsTaskFactory(serviceRegistrar);
 			var props = new Properties();
@@ -94,9 +86,14 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(TITLE, "Format Column...");
 			registerService(bc, factory, TableColumnTaskFactory.class, props);
 		}
+		{
+			var factory = new ColorColumnTestTaskFactory(serviceRegistrar);
+			var props = new Properties();
+			props.setProperty(TITLE, "Test Cell Background Color...");
+			registerService(bc, factory, TableColumnTaskFactory.class, props);
+		}
 		
-		var mediator = new TableBrowserMediator(nodeTableBrowser, edgeTableBrowser, networkTableBrowser,
-				globalTableBrowser, serviceRegistrar);
+		var mediator = new TableBrowserMediator(nodeTableBrowser, edgeTableBrowser, networkTableBrowser, globalTableBrowser, serviceRegistrar);
 		registerService(bc, mediator, SetCurrentNetworkListener.class);
 		registerService(bc, mediator, CytoPanelComponentSelectedListener.class);
 		
@@ -104,9 +101,11 @@ public class CyActivator extends AbstractCyActivator {
 			var factory = new HideColumnTaskFactory(mediator);
 			var props = new Properties();
 			props.setProperty(TITLE, "Hide Column");
-			// Do not register the factory as an OSGI service unless it's necessary.
-			// We just need to add it to the menu helper for now.
-			popupMenuHelper.addTableColumnTaskFactory(factory, props);
+			registerService(bc, factory, TableColumnTaskFactory.class, props);
 		}
+		
+		var styleMediator = new TableBrowserStyleMediator(serviceRegistrar);
+		registerService(bc, styleMediator, VisualStyleChangedListener.class);
+		registerService(bc, styleMediator, ColumnVisualStyleSetListener.class);
 	}
 }

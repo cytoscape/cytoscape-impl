@@ -33,11 +33,8 @@ import java.util.TreeSet;
 import javax.swing.JOptionPane;
 import javax.swing.event.TableModelListener;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
@@ -45,6 +42,7 @@ import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.event.VizMapEventHandler;
+import org.cytoscape.view.vizmap.gui.internal.CurrentTableService;
 import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSet;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
@@ -86,6 +84,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		this.vizMapperMediator = vizMapperMediator;
 	}
 
+	
 	/**
 	 * Execute commands based on PropertyEditor's local event.
 	 * 
@@ -109,15 +108,15 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		// Same value. No change required.
 		if (Objects.equals(newVal, oldVal))
 			return;
-
-		final VisualPropertySheetItem<?> vpSheetItem = vizMapperMediator.getCurrentVisualPropertySheetItem();
-		final PropertySheetPanel propSheetPnl = vpSheetItem != null ? vpSheetItem.getPropSheetPnl() : null;
 		
+		var currentTableService = servicesUtil.get(CurrentTableService.class);
+
+		final VisualPropertySheetItem<?> vpSheetItem = currentTableService.getCurrentVisualPropertySheetItem();
+		final PropertySheetPanel propSheetPnl = vpSheetItem != null ? vpSheetItem.getPropSheetPnl() : null;
 		if (propSheetPnl == null)
 			return;
 		
-		final VizMapperProperty<?, ?, ?> prop = vizMapperMediator.getCurrentVizMapperProperty();
-
+		final VizMapperProperty<?, ?, ?> prop = currentTableService.getCurrentVizMapperProperty();
 		if (prop == null)
 			return;
 		
@@ -196,12 +195,8 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		final VisualProperty<?> vp = (VisualProperty<?>) prop.getKey();
 		VisualMappingFunction<?, ?> mapping = currentStyle.getVisualMappingFunction(vp);
 
-		// Ignore if not compatible.
-		final CyNetworkTableManager netTblMgr = servicesUtil.get(CyNetworkTableManager.class);
-		final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
-		Class<? extends CyIdentifiable> type = (Class<? extends CyIdentifiable>) editor.getTargetObjectType();
-		final CyTable table = netTblMgr.getTable(appMgr.getCurrentNetwork(), type, CyNetwork.DEFAULT_ATTRS);
-
+		var currentTableService = servicesUtil.get(CurrentTableService.class);
+		CyTable table = currentTableService.getCurrentTable((Class<? extends CyIdentifiable>)editor.getTargetObjectType());
 		final CyColumn column = table.getColumn(columnName);
 		
 		if (column == null) {
@@ -247,14 +242,9 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		
 		if (mapping == null || mapping.getClass() != newMappingType 
 				|| !mapping.getMappingColumnName().equals(controllingAttrName)) {
-			final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
-			final CyNetwork currentNet = appMgr.getCurrentNetwork();
-			
-			if (currentNet == null)
-				return newMapping;
-				
-			// Mapping does not exist. Need to create new one.
-			final AttributeSet attrSet = attrProxy.getAttributeSet(currentNet, vp.getTargetDataType());
+
+			var currentTableService = servicesUtil.get(CurrentTableService.class);
+			final AttributeSet attrSet = currentTableService.getAttributeSet(vp);
 			Class<?> attributeDataType = attrSet.getAttrMap().get(controllingAttrName);
 
 			if (attributeDataType == null) {
@@ -331,9 +321,12 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void copyMappingValues(final VisualMappingFunction<?, ?> source, final VisualMappingFunction<?, ?> target) {
 		if (source instanceof ContinuousMapping && target instanceof ContinuousMapping) {
-			final CyNetwork curNet = servicesUtil.get(CyApplicationManager.class).getCurrentNetwork();
 			
-			if (curNet != null) {
+			final VisualProperty<?> vp = source.getVisualProperty();
+			var currentTableService = servicesUtil.get(CurrentTableService.class);
+			final CyTable dataTable = currentTableService.getCurrentTable(vp.getTargetDataType());
+			
+			if (dataTable != null) {
 				final ContinuousMapping cm1 = (ContinuousMapping<?, ?>) source;
 				final ContinuousMapping cm2 = (ContinuousMapping<?, ?>) target;
 				final List<ContinuousMappingPoint<?, ?>> points1 = cm1.getAllPoints();
@@ -351,8 +344,6 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 						return; // Do not copy!
 				}
 				
-				final VisualProperty<?> vp = source.getVisualProperty();
-				final CyTable dataTable = curNet.getTable(vp.getTargetDataType(), CyNetwork.DEFAULT_ATTRS);
 				final CyColumn col = dataTable.getColumn(target.getMappingColumnName());
 
 				if (col == null)

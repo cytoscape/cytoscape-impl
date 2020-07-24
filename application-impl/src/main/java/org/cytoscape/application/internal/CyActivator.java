@@ -10,6 +10,7 @@ import java.util.Properties;
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.NetworkViewRenderer;
+import org.cytoscape.application.TableViewRenderer;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -69,6 +70,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, cyApplicationConfiguration, new Properties());
 
 		registerServiceListener(bc, cyApplicationManager::addNetworkViewRenderer, cyApplicationManager::removeNetworkViewRenderer, NetworkViewRenderer.class);
+		registerServiceListener(bc, cyApplicationManager::addTableViewRenderer, cyApplicationManager::removeTableViewRenderer, TableViewRenderer.class);
 		
 		DefaultNetworkViewFactory viewFactory = new DefaultNetworkViewFactory(cyApplicationManager);
 		Properties viewFactoryProperties = new Properties();
@@ -76,8 +78,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, viewFactory, CyNetworkViewFactory.class, viewFactoryProperties);
 
 		// For telemetry
-		final CyProperty<Properties> cyPropertyServiceRef = getService(bc, CyProperty.class,
-				"(cyPropertyName=cytoscape3.props)");
+		final CyProperty<Properties> cyPropertyServiceRef = getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 
 		checkIsntallOptions(cyApplicationConfiguration, cyPropertyServiceRef);
 	}

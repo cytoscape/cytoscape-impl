@@ -10,6 +10,7 @@ import java.util.Set;
 
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -69,6 +70,7 @@ public class VisualStyleImpl
 	private final ApplyToNetworkHandler applyToNetworkHandler;
 	private final ApplyToNodeHandler applyToNodeHandler;
 	private final ApplyToEdgeHandler applyToEdgeHandler;
+	private final ApplyToColumnHandler applyToColumnHandler;
 
 	private String title;
 	private final CyEventHelper eventHelper;
@@ -78,18 +80,19 @@ public class VisualStyleImpl
 	private final Object lock = new Object();
 	
 
-	public VisualStyleImpl(final String title, final CyServiceRegistrar serviceRegistrar) {
+	public VisualStyleImpl(final String title, final CyServiceRegistrar registrar) {
 		this.title = title == null ? DEFAULT_TITLE : title;
-		this.eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		this.eventHelper = registrar.getService(CyEventHelper.class);
 
-		applyToNetworkHandler = new ApplyToNetworkHandler(this, serviceRegistrar);
-		applyToNodeHandler = new ApplyToNodeHandler(this, serviceRegistrar);
-		applyToEdgeHandler = new ApplyToEdgeHandler(this, serviceRegistrar);
+		applyToNetworkHandler = new ApplyToNetworkHandler(this, registrar);
+		applyToNodeHandler = new ApplyToNodeHandler(this, registrar);
+		applyToEdgeHandler = new ApplyToEdgeHandler(this, registrar);
+		applyToColumnHandler = new ApplyToColumnHandler(this, registrar);
 		
 		// Listening to dependencies
-		serviceRegistrar.registerServiceListener(this, "registerDependencyFactory", "unregisterDependencyFactory", VisualPropertyDependencyFactory.class);
-		serviceRegistrar.registerService(this, VisualMappingFunctionChangedListener.class, new Properties());
-		serviceRegistrar.registerService(this, VisualPropertyDependencyChangedListener.class, new Properties());
+		registrar.registerServiceListener(this, "registerDependencyFactory", "unregisterDependencyFactory", VisualPropertyDependencyFactory.class);
+		registrar.registerService(this, VisualMappingFunctionChangedListener.class, new Properties());
+		registrar.registerService(this, VisualPropertyDependencyChangedListener.class, new Properties());
 	}
 	
 	private void setUpdateDependencyMaps() {
@@ -175,6 +178,12 @@ public class VisualStyleImpl
 		eventHelper.flushPayloadEvents();
 		applyToNetworkHandler.apply(null, networkView);
 	}
+	
+	@Override
+	public void apply(final View<CyColumn> columnView) {
+		eventHelper.flushPayloadEvents();
+		applyToColumnHandler.apply(null, columnView);
+	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
@@ -194,6 +203,8 @@ public class VisualStyleImpl
 				handler = applyToNodeHandler;
 			} else if(CyEdge.class.isAssignableFrom(viewClass)) {
 				handler = applyToEdgeHandler;
+			} else if(CyColumn.class.isAssignableFrom(viewClass)) {
+				handler = applyToColumnHandler;
 			}
 		}
 

@@ -1,5 +1,8 @@
 package org.cytoscape.view.vizmap.gui.internal.view;
 
+import java.util.Objects;
+
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.VisualLexicon;
@@ -31,17 +34,11 @@ public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 										final VisualStyle style,
 										final RenderingEngine<?> engine,
 										final VisualLexicon lexicon) {
-		if (visualProperty == null)
-			throw new IllegalArgumentException("'visualProperty' must not be null");
-		if (style == null)
-			throw new IllegalArgumentException("'style' must not be null");
-		if (lexicon == null)
-			throw new IllegalArgumentException("'lexicon' must not be null");
 
-		this.visualProperty = visualProperty;
-		this.style = style;
-		this.engine = engine;
-		this.lexicon = lexicon;
+		this.visualProperty = Objects.requireNonNull(visualProperty, "'visualProperty' must not be null");
+		this.style = Objects.requireNonNull(style, "'style' must not be null");
+		this.engine = Objects.requireNonNull(engine);
+		this.lexicon = Objects.requireNonNull(lexicon, "'lexicon' must not be null");
 
 		defaultValue = style.getDefaultValue(visualProperty);
 		setVisualMappingFunction(style.getVisualMappingFunction(visualProperty));
@@ -53,18 +50,12 @@ public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 										final VisualStyle style,
 										final RenderingEngine<?> engine,
 										final VisualLexicon lexicon) {
-		if (dependency == null)
-			throw new IllegalArgumentException("'dependency' must not be null");
-		if (style == null)
-			throw new IllegalArgumentException("'style' must not be null");
-		if (lexicon == null)
-			throw new IllegalArgumentException("'lexicon' must not be null");
 
-		this.dependency = dependency;
+		this.dependency = Objects.requireNonNull(dependency, "'dependency' must not be null");
 		this.visualProperty = dependency.getParentVisualProperty();
-		this.style = style;
-		this.engine = engine;
-		this.lexicon = lexicon;
+		this.style = Objects.requireNonNull(style, "'style' must not be null");
+		this.engine = Objects.requireNonNull(engine);
+		this.lexicon = Objects.requireNonNull(lexicon, "'lexicon' must not be null");
 
 		title = dependency.getDisplayName();
 	}
@@ -172,11 +163,14 @@ public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 	}
 	
 	public boolean isVisualMappingAllowed() {
+		// MKTODO temp hack
+		if(visualProperty.getIdString().equals("CELL_FORMAT"))
+			return false;
 		return getTargetDataType() != CyNetwork.class && getVisualPropertyDependency() == null;
 	}
 	
 	public boolean isLockedValueAllowed() {
-		return getVisualPropertyDependency() == null;
+		return getTargetDataType() != CyColumn.class && getVisualPropertyDependency() == null;
 	}
 
 	public static String createTitle(final VisualProperty<?> vp) {
@@ -203,7 +197,7 @@ public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void update(final RenderingEngine<CyNetwork> engine) {
+	public void update(final RenderingEngine<?> engine) {
 		setRenderingEngine(engine);
 		
 		if (dependency == null) {

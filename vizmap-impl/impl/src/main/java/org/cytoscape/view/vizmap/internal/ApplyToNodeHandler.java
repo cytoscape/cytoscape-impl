@@ -26,11 +26,12 @@ package org.cytoscape.view.vizmap.internal;
 
 import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualStyle;
 
 public class ApplyToNodeHandler extends AbstractApplyHandler<CyNode> {
 
 	ApplyToNodeHandler(final VisualStyle style, final CyServiceRegistrar serviceRegistrar) {
-		super(style, serviceRegistrar, CyNode.class);
+		super(style, serviceRegistrar, CyNode.class, BasicVisualLexicon.NODE);
 	}
 }

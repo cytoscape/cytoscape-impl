@@ -33,12 +33,12 @@ public final class AttributeSet {
 	private final Class<?> targetObjectType;
 	private final Map<String, Class<?>> attrNameTypeMap;
 
-	public AttributeSet(final Class<?> targetObjectType) {
+	public AttributeSet(Class<?> targetObjectType) {
 		this.targetObjectType = targetObjectType;
-		this.attrNameTypeMap = new HashMap<String, Class<?>>();
+		this.attrNameTypeMap = new HashMap<>();
 	}
 	
-	public AttributeSet(final AttributeSet clone) {
+	public AttributeSet(AttributeSet clone) {
 		this(clone.getObjectType());
 		attrNameTypeMap.putAll(clone.getAttrMap());
 	}
@@ -53,7 +53,7 @@ public final class AttributeSet {
 	/**
 	 * Map from column name to column data type
 	 */
-	public Map<String, Class<?>> getAttrMap() {
+	public Map<String,Class<?>> getAttrMap() {
 		return attrNameTypeMap;
 	}
 }

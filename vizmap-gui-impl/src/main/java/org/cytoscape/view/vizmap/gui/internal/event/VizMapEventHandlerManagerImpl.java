@@ -100,11 +100,9 @@ public class VizMapEventHandlerManagerImpl implements VizMapEventHandlerManager,
 			invokeOnEDT(() -> handler.processEvent(e));
 	}
 
-	private void createHandlers(final VizMapPropertyBuilder vizMapPropertyBuilder,
-			final VizMapperMediator vizMapperMediator) {
+	private void createHandlers(VizMapPropertyBuilder vizMapPropertyBuilder, VizMapperMediator vizMapperMediator) {
 		// Create handler for local property editor event.
-		eventHandlers.put(VALUE, new CellEditorEventHandler(attrManager, servicesUtil, vizMapPropertyBuilder,
-				vizMapperMediator));
+		eventHandlers.put(VALUE, new CellEditorEventHandler(attrManager, servicesUtil, vizMapPropertyBuilder, vizMapperMediator));
 	}
 
 	/**

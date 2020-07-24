@@ -67,8 +67,7 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 	private final Object lock = new Object();
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public ContinuousMappingImpl(final String attrName, final Class<K> attrType, final VisualProperty<V> vp,
-			final CyEventHelper eventHelper) {
+	public ContinuousMappingImpl(final String attrName, final Class<K> attrType, final VisualProperty<V> vp, final CyEventHelper eventHelper) {
 		super(attrName, attrType, vp, eventHelper);
 		
 		// Validate type.  K is always a number.
@@ -97,9 +96,7 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 		synchronized (lock) {
 			points.add(new ContinuousMappingPoint<>(value, brv, this, eventHelper));
 		}
-
-		eventHelper.addEventPayload(this, new VisualMappingFunctionChangeRecord(),
-				VisualMappingFunctionChangedEvent.class);
+		eventHelper.addEventPayload(this, new VisualMappingFunctionChangeRecord(), VisualMappingFunctionChangedEvent.class);
 	}
 
 	@Override
@@ -107,9 +104,7 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 		synchronized (lock) {
 			points.remove(index);
 		}
-		
-		eventHelper.addEventPayload(this, new VisualMappingFunctionChangeRecord(),
-				VisualMappingFunctionChangedEvent.class);
+		eventHelper.addEventPayload(this, new VisualMappingFunctionChangeRecord(), VisualMappingFunctionChangedEvent.class);
 	}
 
 	@Override

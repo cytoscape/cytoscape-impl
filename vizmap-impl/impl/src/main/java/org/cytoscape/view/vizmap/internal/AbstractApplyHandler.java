@@ -33,16 +33,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.NetworkViewRenderer;
-import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -64,25 +61,27 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 	AbstractApplyHandler(
 			final VisualStyle style,
 			final CyServiceRegistrar serviceRegistrar,
-			final Class<T> targetDataType
+			final Class<T> targetDataType,
+			final VisualProperty<?> rootVisualProperty
 	) {
 		this.style = style;
 		this.serviceRegistrar = serviceRegistrar;
 		this.targetDataType = targetDataType;
+		this.rootVisualProperty = rootVisualProperty;
 		
-		if (targetDataType == CyNode.class)
-			rootVisualProperty = BasicVisualLexicon.NODE;
-		else if (targetDataType == CyEdge.class)
-			rootVisualProperty = BasicVisualLexicon.EDGE;
-		else
-			rootVisualProperty = BasicVisualLexicon.NETWORK;
-		
-		dependencyParents = new ConcurrentHashMap<VisualProperty<?>, Set<VisualPropertyDependency<?>>>(16, 0.75f, 2);
-		dependencyChildren = new ConcurrentHashMap<VisualProperty<?>, Set<VisualPropertyDependency<?>>>(16, 0.75f, 2);
+		dependencyParents = new ConcurrentHashMap<>(16, 0.75f, 2);
+		dependencyChildren = new ConcurrentHashMap<>(16, 0.75f, 2);
 	}
 
 	public void setUpdateDependencyMaps() {
 		updateDependencyMaps = true;
+	}
+	
+	protected VisualLexicon getVisualLexicon() {
+		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+		return appMgr.getCurrentNetworkViewRenderer()
+			.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT)
+			.getVisualLexicon();
 	}
 
 	@Override
@@ -95,12 +94,9 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 			view.clearVisualProperties();
 			
 			// Get current Visual Lexicon
-			final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
-			final VisualLexicon lexicon = appMgr.getCurrentNetworkViewRenderer()
-					.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT)
-					.getVisualLexicon();
+			final VisualLexicon lexicon = getVisualLexicon();
 			
-			final LinkedList<VisualLexiconNode> descendants = new LinkedList<VisualLexiconNode>();
+			final LinkedList<VisualLexiconNode> descendants = new LinkedList<>();
 			descendants.addAll(lexicon.getVisualLexiconNode(rootVisualProperty).getChildren());
 			
 			while (!descendants.isEmpty()) {
@@ -126,7 +122,7 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 		});
 	}
 
-	private void applyDefaultValue(final View<T> view, final VisualProperty<?> vp, final VisualLexicon lexicon) {
+	protected void applyDefaultValue(final View<T> view, final VisualProperty<?> vp, final VisualLexicon lexicon) {
 		// This is the view default value.
 		Object value = style.getDefaultValue(vp);
 
@@ -152,7 +148,7 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 		}
 	}
 
-	private void applyMappedValue(final View<T> view, final VisualProperty<?> vp, final Object value) {
+	protected void applyMappedValue(final View<T> view, final VisualProperty<?> vp, final Object value) {
 		final Set<VisualPropertyDependency<?>> depSet = dependencyParents.get(vp);
 		
 		// If this property has already received a propagated value from a previous

@@ -13,6 +13,7 @@ public final class ServicePropertiesUtil implements ServiceProperties {
 	
 	public static final String MAIN_MENU = "main";
 	public static final String CONTEXT_MENU = "context";
+	public static final String TABLE_MAIN_MENU = "table";
 
 	public static String getServiceType(final Map<?, ?> properties) {
 		return getString(properties, SERVICE_TYPE, null);

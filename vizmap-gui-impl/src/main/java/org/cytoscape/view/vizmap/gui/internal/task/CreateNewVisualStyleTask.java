@@ -68,7 +68,6 @@ public class CreateNewVisualStyleTask extends AbstractTask implements TunableVal
 	public void run(final TaskMonitor tm) {
 		if (vsName != null) {
 			createVisualStyle();
-			
 			final UndoSupport undo = servicesUtil.get(UndoSupport.class);
 			undo.postEdit(new CreateNewVisualStyleEdit());
 		}

@@ -9,17 +9,12 @@ import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.swing.AbstractButton;
@@ -47,7 +42,6 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyColumnPresentationManager;
 import org.cytoscape.application.swing.CyColumnSelector;
 import org.cytoscape.browser.internal.util.IconUtil;
-import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -63,6 +57,8 @@ import org.cytoscape.task.read.LoadTableFileTaskFactory;
 import org.cytoscape.task.write.ExportTableTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 /*
@@ -93,12 +89,11 @@ import org.cytoscape.work.swing.DialogTaskManager;
  * Toolbar for the Browser.  All buttons related to this should be placed here.
  */
 @SuppressWarnings("serial")
-public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
+public class TableBrowserToolBar extends JPanel {
 	
 	public static final float ICON_FONT_SIZE = 22.0f;
-	
-	private BrowserTable browserTable;
-	private BrowserTableModel browserTableModel;
+
+	private TableRenderer tableRenderer;
 	
 	/* GUI components */
 	private JPopupMenu columnSelectorPopupMenu;
@@ -119,15 +114,12 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 	private JButton exportButton;
 	
 	private final JComboBox<CyTable> tableChooser;
-
-	private AttributeListModel attrListModel;
-	
 	private final List<JComponent> components;
-	
 	private final Class<? extends CyIdentifiable> objType;
 
 	private final CyServiceRegistrar serviceRegistrar;
 	private final IconManager iconMgr;
+	
 
 	public TableBrowserToolBar(
 			final CyServiceRegistrar serviceRegistrar,
@@ -136,82 +128,51 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 	) {
 		this.components = new ArrayList<>();
 		this.tableChooser = tableChooser;
-		this.attrListModel = new AttributeListModel(null);
 		this.objType = objType;
 		this.serviceRegistrar = serviceRegistrar;
 		this.iconMgr = serviceRegistrar.getService(IconManager.class);
-		
-		serviceRegistrar.registerAllServices(attrListModel, new Properties());
-
 		initializeGUI();
 	}
 
-	public void setBrowserTable(final BrowserTable browserTable) {
-		this.browserTable = browserTable;
-		browserTableModel = browserTable != null ? (BrowserTableModel) browserTable.getModel() : null;
-		attrListModel.setBrowserTableModel(browserTableModel);
+	public void setTableRenderer(TableRenderer tableRenderer) {
+		this.tableRenderer = tableRenderer;
 		updateEnableState();
 		
-		if (browserTable != null) {
-			browserTable.getSelectionModel().addListSelectionListener(e -> {
-				if (!e.getValueIsAdjusting())
-					updateEnableState(fnBuilderButton);
-			});
-			browserTable.getColumnModel().getSelectionModel().addListSelectionListener(e -> {
-				if (!e.getValueIsAdjusting())
-					updateEnableState(fnBuilderButton);
-			});
-		}
+		// MKTODO this needs to happen via VisualProperty events
+//		if (browserTable != null) {
+//			browserTable.getSelectionModel().addListSelectionListener(e -> {
+//				if (!e.getValueIsAdjusting())
+//					updateEnableState(fnBuilderButton);
+//			});
+//			browserTable.getColumnModel().getSelectionModel().addListSelectionListener(e -> {
+//				if (!e.getValueIsAdjusting())
+//					updateEnableState(fnBuilderButton);
+//			});
+//		}
 	}
 
-	@Override
-	public void popupMenuCanceled(PopupMenuEvent e) {
-		// Do nothing
-	}
-	
-	@Override
-	public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-		// Update actual table
-		try {
-			final Set<String> visibleAttributes = getColumnSelector().getSelectedColumnNames();
-			browserTable.setVisibleAttributeNames(visibleAttributes);
-			updateEnableState();
-		} catch (Exception ex) {
-		}
-	}
-
-	@Override
-	public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-		// Do nothing
-	}
 	
 	protected void updateEnableState() {
-		for (final JComponent comp : components)
-			updateEnableState(comp);
+		components.forEach(this::updateEnableState);
 	}
 	
-	protected void updateEnableState(final JComponent comp) {
+	protected void updateEnableState(JComponent comp) {
 		if (comp == null)
 			return;
 		
 		boolean enabled = false;
 		
-		if (browserTableModel != null) {
-			final CyTable attrs = browserTableModel.getDataTable();
-			
+		if(tableRenderer != null) {
 			if (comp == deleteTableButton) {
-				enabled = browserTableModel.getDataTable().getMutability() == Mutability.MUTABLE;
+				enabled = tableRenderer.getDataTable().getMutability() == Mutability.MUTABLE;
 			} else if (comp == deleteColumnsButton) {
-				for (final CyColumn column : attrs.getColumns()) {
-					if (!column.isImmutable()) {
-						enabled = true;
-						break;
-					}
-				}
+				enabled = tableRenderer.getDataTable().getColumns().stream().anyMatch(col -> !col.isImmutable());
 			} else if (comp == fnBuilderButton) {
-				final int row = browserTable.getSelectedRow();
-				final int column = browserTable.getSelectedColumn();
-				enabled = row >=0 && column >= 0 && browserTableModel.isCellEditable(row, column);
+				// MKTODO how to get this information from the renderer?
+				enabled = true;
+//				final int row = browserTable.getSelectedRow();
+//				final int column = browserTable.getSelectedColumn();
+//				enabled = row >=0 && column >= 0 && browserTableModel.isCellEditable(row, column);
 			} else if (comp == tableChooser) {
 				enabled = tableChooser.getItemCount() > 0;
 			} else {
@@ -281,7 +242,7 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 		if (columnSelectorPopupMenu == null) {
 			columnSelectorPopupMenu = new JPopupMenu();
 			columnSelectorPopupMenu.add(getColumnSelector());
-			columnSelectorPopupMenu.addPopupMenuListener(this);
+			columnSelectorPopupMenu.addPopupMenuListener(new MenuListener());
 			columnSelectorPopupMenu.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent e) {
@@ -291,9 +252,31 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 				}
 			});
 		}
-
 		return columnSelectorPopupMenu;
 	}
+	
+	private class MenuListener implements PopupMenuListener {
+		@Override
+		public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+			// Update actual table
+			try {
+				final Set<String> visibleAttributes = getColumnSelector().getSelectedColumnNames();
+				Collection<View<CyColumn>> columnViews = tableRenderer.getTableView().getColumnViews();
+				
+				for(View<CyColumn> columnView : columnViews) {
+					boolean visible = visibleAttributes.contains(columnView.getModel().getName());
+					TableRenderer.setColumnVisible(columnView, visible);
+				}
+				
+				updateEnableState();
+			} catch (Exception ex) { }
+		}
+		@Override
+		public void popupMenuWillBecomeVisible(PopupMenuEvent e) { }
+		@Override
+		public void popupMenuCanceled(PopupMenuEvent e) { }
+	}
+	
 	
 	private CyColumnSelector getColumnSelector() {
 		if (columnSelector == null) {
@@ -437,9 +420,21 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 			styleButton(showColumnsButton, iconMgr.getIconFont(IconUtil.CY_FONT_NAME, TableBrowserToolBar.ICON_FONT_SIZE));
 
 			showColumnsButton.addActionListener(e -> {
-				if (browserTableModel != null) {
-					getColumnSelector().update(browserTableModel.getDataTable().getColumns(),
-							browserTable.getVisibleAttributeNames());
+				if (tableRenderer != null) {
+					
+					Collection<View<CyColumn>> columnViews = tableRenderer.getTableView().getColumnViews();
+					
+					List<CyColumn> columns = new ArrayList<>();
+					List<String> visibleColumns = new ArrayList<>();
+					
+					for(View<CyColumn> columnView : columnViews) {
+						columns.add(columnView.getModel());
+						if(Boolean.TRUE.equals(columnView.getVisualProperty(BasicTableVisualLexicon.COLUMN_VISIBLE))) {
+							visibleColumns.add(columnView.getModel().getName());
+						}
+					}
+					
+					getColumnSelector().update(columns, visibleColumns);
 					getColumnSelectorPopupMenu().pack();
 					getColumnSelectorPopupMenu().show(showColumnsButton, 0, showColumnsButton.getHeight());
 				}
@@ -467,58 +462,59 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 
 			final JFrame rootFrame = (JFrame) SwingUtilities.getRoot(this);
 
-			fnBuilderButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					// Do not allow opening of the formula builder dialog while a cell is being edited!
-					if (browserTableModel == null || browserTable.getCellEditor() != null)
-						return;
-
-					final int cellRow = browserTable.getSelectedRow();
-					final int cellColumn = browserTable.getSelectedColumn();
-					int colIndex = -1;
-
-					// Map the screen index of column to internal index of the table model
-					if (cellRow >= 0 && cellColumn >= 0) {
-						String colName = browserTable.getColumnName(cellColumn);
-						colIndex = browserTableModel.mapColumnNameToColumnIndex(colName);
-					}
-					
-					if (cellRow == -1 || cellColumn == -1 || !browserTableModel.isCellEditable(cellRow, colIndex)) {
-						JOptionPane.showMessageDialog(rootFrame, "Can't enter a formula w/o a selected cell.",
-								"Information", JOptionPane.INFORMATION_MESSAGE);
-					} else {
-						final String attrName = getColumnName(cellRow, cellColumn);
-						final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
-						final CyTable dataTable = browserTableModel.getDataTable();
-						initAttribNameToTypeMap(dataTable, attrName, attribNameToTypeMap);
-						
-						final EquationCompiler compiler = serviceRegistrar.getService(EquationCompiler.class);
-						
-						final FormulaBuilderDialog formulaBuilderDialog = new FormulaBuilderDialog(compiler,
-								browserTable, rootFrame, attrName);
-						formulaBuilderDialog.setLocationRelativeTo(rootFrame);
-						formulaBuilderDialog.setVisible(true);
-					}
-				}
-
-				private void initAttribNameToTypeMap(final CyTable dataTable, final String attrName,
-						final Map<String, Class<?>> attribNameToTypeMap) {
-					for (final CyColumn column : dataTable.getColumns())
-						attribNameToTypeMap.put(column.getName(), column.getType());
-					
-					attribNameToTypeMap.remove(attrName);
-				}
-			});
+			// MKTODO
+//			fnBuilderButton.addActionListener(new ActionListener() {
+//				@Override
+//				public void actionPerformed(final ActionEvent e) {
+//					// Do not allow opening of the formula builder dialog while a cell is being edited!
+//					if (browserTableModel == null || browserTable.getCellEditor() != null)
+//						return;
+//
+//					final int cellRow = browserTable.getSelectedRow();
+//					final int cellColumn = browserTable.getSelectedColumn();
+//					int colIndex = -1;
+//
+//					// Map the screen index of column to internal index of the table model
+//					if (cellRow >= 0 && cellColumn >= 0) {
+//						String colName = browserTable.getColumnName(cellColumn);
+//						colIndex = browserTableModel.mapColumnNameToColumnIndex(colName);
+//					}
+//					
+//					if (cellRow == -1 || cellColumn == -1 || !browserTableModel.isCellEditable(cellRow, colIndex)) {
+//						JOptionPane.showMessageDialog(rootFrame, "Can't enter a formula w/o a selected cell.",
+//								"Information", JOptionPane.INFORMATION_MESSAGE);
+//					} else {
+//						final String attrName = getColumnName(cellRow, cellColumn);
+//						final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
+//						final CyTable dataTable = browserTableModel.getDataTable();
+//						initAttribNameToTypeMap(dataTable, attrName, attribNameToTypeMap);
+//						
+//						final EquationCompiler compiler = serviceRegistrar.getService(EquationCompiler.class);
+//						
+//						final FormulaBuilderDialog formulaBuilderDialog = new FormulaBuilderDialog(compiler,
+//								browserTable, rootFrame, attrName);
+//						formulaBuilderDialog.setLocationRelativeTo(rootFrame);
+//						formulaBuilderDialog.setVisible(true);
+//					}
+//				}
+//
+//				private void initAttribNameToTypeMap(final CyTable dataTable, final String attrName,
+//						final Map<String, Class<?>> attribNameToTypeMap) {
+//					for (final CyColumn column : dataTable.getColumns())
+//						attribNameToTypeMap.put(column.getName(), column.getType());
+//					
+//					attribNameToTypeMap.remove(attrName);
+//				}
+//			});
 		}
 		
 		return fnBuilderButton;
 	}
 
-	private String getColumnName(final int cellRow, final int cellColumn) {
-		int colIndexModel = browserTable.convertColumnIndexToModel(cellColumn);
-		return browserTableModel.getColumnName( colIndexModel);
-	}
+//	private String getColumnName(final int cellRow, final int cellColumn) {
+//		int colIndexModel = browserTable.convertColumnIndexToModel(cellColumn);
+//		return browserTableModel.getColumnName( colIndexModel);
+//	}
 
 	private JButton getDeleteColumnsButton() {
 		if (deleteColumnsButton == null) {
@@ -551,7 +547,7 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 	
 	private void showColumnDeletionDialog() {
 		final JFrame frame = (JFrame) SwingUtilities.getRoot(this);
-		final DeletionDialog dDialog = new DeletionDialog(frame, browserTableModel.getDataTable());
+		final DeletionDialog dDialog = new DeletionDialog(frame, tableRenderer.getDataTable());
 
 		dDialog.pack();
 		dDialog.setLocationRelativeTo(toolBar);
@@ -559,7 +555,7 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 	}
 
 	private void deleteTable() {
-		final CyTable table = browserTableModel.getDataTable();
+		final CyTable table = tableRenderer.getDataTable();
 
 		if (table.getMutability() == CyTable.Mutability.MUTABLE) {
 			String title = "Please confirm this action";
@@ -587,7 +583,7 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 	}
 
 	private String[] getAttributeArray() {
-		final CyTable attrs = browserTableModel.getDataTable();
+		final CyTable attrs = tableRenderer.getDataTable();
 		final Collection<CyColumn> columns = attrs.getColumns();
 		final String[] attributeArray = new String[columns.size() - 1];
 		int index = 0;
@@ -617,7 +613,7 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 			styleButton(createColumnButton, iconMgr.getIconFont(IconUtil.CY_FONT_NAME, TableBrowserToolBar.ICON_FONT_SIZE));
 			
 			createColumnButton.addActionListener(e -> {
-				if (browserTableModel != null)
+				if (tableRenderer != null)
 					getCreateColumnMenu().show(createColumnButton, 0, createColumnButton.getHeight());
 			});
 			
@@ -673,7 +669,7 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 			exportButton.addActionListener(e -> {
 				ExportTableTaskFactory factory = serviceRegistrar.getService(ExportTableTaskFactory.class);
 				DialogTaskManager taskManager = serviceRegistrar.getService(DialogTaskManager.class);
-				taskManager.execute(factory.createTaskIterator(browserTableModel.getDataTable()));
+				taskManager.execute(factory.createTaskIterator(tableRenderer.getDataTable()));
 			});
 		}
 		
@@ -730,7 +726,7 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 					throw new IllegalArgumentException("This is not a CySubNetwork and there is no shared table.");
 				}
 			} else {
-				attrs = browserTableModel.getDataTable();
+				attrs = tableRenderer.getDataTable();
 			}
 		
 			if (type.equals("String"))

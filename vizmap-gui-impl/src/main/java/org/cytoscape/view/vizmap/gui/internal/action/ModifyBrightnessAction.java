@@ -49,7 +49,6 @@ public class ModifyBrightnessAction  {
 	 * User wants to Seed the Discrete Mapper with Random Color Values.
 	 */
 	public void actionPerformed(ActionEvent e) {
-		//final CyNetwork targetNetwork = applicationManager.getCurrentNetwork();
 
 		//FIXME
 //		/*

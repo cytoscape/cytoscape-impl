@@ -49,7 +49,7 @@ public class SetLockedValuesCommand extends SimpleCommand {
 		
 		if (netView != null && views == null) {
 			// Get the selected views
-			final Set<Class<? extends CyIdentifiable>> targetDataTypes = new HashSet<Class<? extends CyIdentifiable>>();
+			final Set<Class<? extends CyIdentifiable>> targetDataTypes = new HashSet<>();
 		
 			for (final VisualProperty<?> vp : values.keySet())
 				targetDataTypes.add(vp.getTargetDataType());
@@ -65,8 +65,7 @@ public class SetLockedValuesCommand extends SimpleCommand {
 		}
 		
 		if (views != null) {
-			final TaskIterator iterator = new TaskIterator(new SetLockedValuesTask(values, views, netView,
-					servicesUtil));
+			final TaskIterator iterator = new TaskIterator(new SetLockedValuesTask(values, views, netView, servicesUtil));
 			final DialogTaskManager taskManager = servicesUtil.get(DialogTaskManager.class);
 			taskManager.execute(iterator);
 		}

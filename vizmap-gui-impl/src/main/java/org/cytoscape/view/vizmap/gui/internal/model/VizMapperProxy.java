@@ -2,6 +2,7 @@ package org.cytoscape.view.vizmap.gui.internal.model;
 
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_NETWORK_CHANGED;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_NETWORK_VIEW_CHANGED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_TABLE_CHANGED;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_VISUAL_STYLE_CHANGED;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.LOAD_DEFAULT_VISUAL_STYLES;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_ADDED;
@@ -26,9 +27,13 @@ import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
+import org.cytoscape.application.events.SetCurrentTableEvent;
+import org.cytoscape.application.events.SetCurrentTableListener;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
@@ -40,9 +45,13 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.model.table.CyColumnView;
+import org.cytoscape.view.model.table.CyTableView;
+import org.cytoscape.view.model.table.CyTableViewManager;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.vizmap.TableVisualMappingManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -87,7 +96,7 @@ import org.puremvc.java.multicore.patterns.proxy.Proxy;
 public class VizMapperProxy extends Proxy
 							implements VisualStyleAddedListener, VisualStyleAboutToBeRemovedListener,
 							  		   VisualStyleChangedListener, SetCurrentVisualStyleListener,
-							  		   SetCurrentNetworkListener, SetCurrentNetworkViewListener,
+							  		   SetCurrentNetworkListener, SetCurrentNetworkViewListener, SetCurrentTableListener,
 							  		   SessionAboutToBeLoadedListener, SessionLoadedListener, CyStartListener {
 
 	public static final String NAME = "VisualStyleProxy";
@@ -187,12 +196,20 @@ public class VizMapperProxy extends Proxy
 		}
 	}
 	
+	public boolean isTableStyle(VisualStyle style) {
+		// MKTODO getAllVisualStyles builds a new set, perhaps optimize this
+		return servicesUtil.get(TableVisualMappingManager.class).getAllVisualStyles().contains(style);
+	}
+	
+	
+	@Deprecated
 	public VisualStyle getCurrentVisualStyle() {
 		synchronized (lock) {
 			return servicesUtil.get(VisualMappingManager.class).getCurrentVisualStyle();
 		}
 	}
 
+	@Deprecated
 	public void setCurrentVisualStyle(VisualStyle vs) {
 		final VisualStyle curVs = getCurrentVisualStyle();
 		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
@@ -203,6 +220,62 @@ public class VizMapperProxy extends Proxy
 
 	public VisualStyle getVisualStyle(CyNetworkView view) {
 		return servicesUtil.get(VisualMappingManager.class).getVisualStyle(view);
+	}
+	
+	
+	
+	public CyTableView getTableView(CyColumn column) {
+		CyTableViewManager tableViewManager = servicesUtil.get(CyTableViewManager.class);
+		return tableViewManager.getTableView(column.getTable());
+	}
+	
+	public CyColumnView getColumnView(CyColumn column) {
+		var tableView = getTableView(column);
+		if(tableView == null)
+			return null;
+		var colView = tableView.getColumnView(column);
+		if(colView instanceof CyColumnView)
+			return (CyColumnView) colView;
+		return null;
+	}
+	
+	public RenderingEngine<CyTable> getRenderingEngine(CyColumn column) {
+		var tableView = getTableView(column);
+		if(tableView == null)
+			return null;
+		var renderingEngineManager = servicesUtil.get(RenderingEngineManager.class);
+		return (RenderingEngine<CyTable>) renderingEngineManager.getRenderingEngines(tableView).iterator().next();
+	}
+	
+	public RenderingEngine<CyTable> getCurrentTableRenderingEngine() {
+		CyTable table = getCurrentTable();
+		CyTableViewManager tableViewManager = servicesUtil.get(CyTableViewManager.class);
+		CyTableView tableView = tableViewManager.getTableView(table);
+		
+		var renderingEngineManager = servicesUtil.get(RenderingEngineManager.class);
+		return (RenderingEngine<CyTable>) renderingEngineManager.getRenderingEngines(tableView).iterator().next();
+	}
+	
+	public CyTable getCurrentTable() {
+		CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
+		return appMgr.getCurrentTable();
+	}
+	
+	public VisualStyle getVisualStyle(CyColumn column) {
+		if(column == null)
+			return null;
+		var colView = getColumnView(column);
+		if(colView == null)
+			return null;
+		
+		TableVisualMappingManager tableMappingManager = servicesUtil.get(TableVisualMappingManager.class);
+		VisualStyle style = tableMappingManager.getVisualStyle(colView);
+		if(style == null) {
+			VisualStyleFactory factory = servicesUtil.get(VisualStyleFactory.class);
+			style = factory.createVisualStyle("default");
+			tableMappingManager.setVisualStyle(style, colView);
+		}
+		return style;
 	}
 	
 	public CyNetwork getCurrentNetwork() {
@@ -321,16 +394,16 @@ public class VizMapperProxy extends Proxy
 		return count;
 	}
 	
-	public boolean isSupported(final VisualProperty<?> vp) {
-		return PropertySheetUtil.isCompatible(vp) && getCurrentVisualLexicon().isSupported(vp);
+	public static boolean isSupported(VisualLexicon lexicon, VisualProperty<?> vp) {
+		return PropertySheetUtil.isCompatible(vp) && lexicon.isSupported(vp);
 	}
 	
-	public boolean isSupported(final VisualPropertyDependency<?> dependency) {
-		if (!isSupported(dependency.getParentVisualProperty()))
+	public static boolean isSupported(VisualLexicon lexicon, VisualPropertyDependency<?> dependency) {
+		if (!isSupported(lexicon, dependency.getParentVisualProperty()))
 			return false;
 		
 		for (final VisualProperty<?> vp : dependency.getVisualProperties()) {
-			if (!isSupported(vp))
+			if (!isSupported(lexicon, vp))
 				return false;
 		}
 		
@@ -408,6 +481,12 @@ public class VizMapperProxy extends Proxy
 	public void handleEvent(final SetCurrentNetworkViewEvent e) {
 		if (cytoscapeStarted && !loadingSession)
 			sendNotification(CURRENT_NETWORK_VIEW_CHANGED, e.getNetworkView());
+	}
+
+	@Override
+	public void handleEvent(SetCurrentTableEvent e) {
+		if (cytoscapeStarted && !loadingSession)
+			sendNotification(CURRENT_TABLE_CHANGED, e.getTable());
 	}
 	
 	@Override

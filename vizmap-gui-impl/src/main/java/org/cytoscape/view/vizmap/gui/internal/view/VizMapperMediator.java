@@ -1,6 +1,7 @@
 package org.cytoscape.view.vizmap.gui.internal.view;
 
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_NETWORK_VIEW_CHANGED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_TABLE_CHANGED;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_VISUAL_STYLE_CHANGED;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_ADDED;
 import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_NAME_CHANGED;
@@ -13,6 +14,7 @@ import static org.cytoscape.view.vizmap.gui.internal.view.util.ViewUtil.invokeOn
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ItemEvent;
@@ -20,6 +22,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,6 +33,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
@@ -67,6 +72,7 @@ import org.cytoscape.view.model.events.UpdateNetworkPresentationListener;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.DefaultVisualizableVisualProperty;
+import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
@@ -135,8 +141,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 
 	public static final String NAME = "VizMapperMediator";
 	
-	private static final Class<? extends CyIdentifiable>[] SHEET_TYPES = 
-			new Class[] { CyNode.class, CyEdge.class, CyNetwork.class };
+	private static final List<Class<? extends CyIdentifiable>> NETWORK_SHEET_TYPES = Arrays.asList(CyNode.class, CyEdge.class, CyNetwork.class);
+	private static final List<Class<? extends CyIdentifiable>> TABLE_SHEET_TYPES   = Arrays.asList(CyColumn.class);
 	
 	private VizMapperProxy vmProxy;
 	private AttributeSetProxy attrProxy;
@@ -147,6 +153,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	
 	private VisualPropertySheetItem<?> curVpSheetItem;
 	private VizMapperProperty<?, ?, ?> curVizMapperProperty;
+	private Map<Long,Long> selectedColumns;
+	private ActionListener columnChangeListener;
+	
+	// MKTODO Current network renderer
 	private String curRendererId;
 	
 	private final ServicesUtil servicesUtil;
@@ -171,26 +181,17 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 							 final VizMapPropertyBuilder vizMapPropertyBuilder) {
 		super(NAME, vizMapperMainPanel);
 		
-		if (vizMapperMainPanel == null)
-			throw new IllegalArgumentException("'vizMapperMainPanel' must not be null");
-		if (servicesUtil == null)
-			throw new IllegalArgumentException("'servicesUtil' must not be null");
-		if (vizMapPropertyBuilder == null)
-			throw new IllegalArgumentException("'vizMapPropertyBuilder' must not be null");
+		this.vizMapperMainPanel = Objects.requireNonNull(vizMapperMainPanel, "'vizMapperMainPanel' must not be null");
+		this.servicesUtil = Objects.requireNonNull(servicesUtil, "'servicesUtil' must not be null");
+		this.vizMapPropertyBuilder = Objects.requireNonNull(vizMapPropertyBuilder, "'vizMapPropertyBuilder' must not be null");
 		
-		this.vizMapperMainPanel = vizMapperMainPanel;
-		this.servicesUtil = servicesUtil;
-		this.vizMapPropertyBuilder = vizMapPropertyBuilder;
-		
-		final Collator collator = Collator.getInstance(Locale.getDefault());
-		mappingGenerators = new TreeMap<>((s1, s2) -> {
-			return collator.compare(s1, s2);
-		});
+		mappingGenerators = new TreeMap<>(Collator.getInstance(Locale.getDefault())::compare);
 		
 		taskFactories = new HashMap<>();
 		actions = new HashMap<>();
 		userProps = new HashMap<>();
 		defVisibleProps = new HashMap<>();
+		selectedColumns = new HashMap<>();
 		
 		setViewComponent(vizMapperMainPanel);
 	}
@@ -217,7 +218,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 							 CURRENT_VISUAL_STYLE_CHANGED,
 							 VISUAL_STYLE_UPDATED,
 							 CURRENT_NETWORK_VIEW_CHANGED,
-							 VISUAL_STYLE_NAME_CHANGED };
+							 VISUAL_STYLE_NAME_CHANGED,
+							 CURRENT_TABLE_CHANGED};
 	}
 	
 	@Override
@@ -225,49 +227,126 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		final String id = notification.getName();
 		final Object body = notification.getBody();
 		
-		if (id.equals(VISUAL_STYLE_SET_CHANGED)) {
-			updateVisualStyleList((SortedSet<VisualStyle>) body, true);
-		} else if (id.equals(VISUAL_STYLE_ADDED) || id.equals(VISUAL_STYLE_REMOVED)) {
-			updateVisualStyleList(vmProxy.getVisualStyles(), false);
-		} else if (id.equals(CURRENT_VISUAL_STYLE_CHANGED)) {
-			invokeOnEDTAndWait(() -> {
-				ignoreVisualStyleSelectedEvents = true;
-				
-				try {
-					selectCurrentVisualStyle((VisualStyle) body);
-				} finally {
-					ignoreVisualStyleSelectedEvents = false;
+		switch(id) {
+			case VISUAL_STYLE_SET_CHANGED:
+				updateVisualStyleList((SortedSet<VisualStyle>) body, true);
+				break;
+			case VISUAL_STYLE_ADDED: 
+			case VISUAL_STYLE_REMOVED:
+				updateVisualStyleList(vmProxy.getVisualStyles(), false);
+				break;
+			case CURRENT_VISUAL_STYLE_CHANGED:
+				invokeOnEDTAndWait(() -> {
+					ignoreVisualStyleSelectedEvents = true;
+					try {
+						selectCurrentVisualStyle((VisualStyle) body);
+					} finally {
+						ignoreVisualStyleSelectedEvents = false;
+					}
+				});
+				invokeOnEDT(() -> {
+					VisualStyle vs = (VisualStyle) body;
+					updateNetworkVisualPropertySheets(vs, false);
+				});
+				break;
+			case VISUAL_STYLE_UPDATED:
+				if(body != null) {
+					VisualStyle style = (VisualStyle) body;
+					if(vmProxy.isTableStyle(style)) {
+						CyColumn currentColumn = vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().getSelectedItem();
+						if(vmProxy.getVisualStyle(currentColumn) == style) {
+							updateTableVisualPropertySheets(currentColumn.getTable(), false, false);
+						}
+					} else {
+						if(style.equals(vmProxy.getCurrentVisualStyle())) {
+							updateNetworkVisualPropertySheets(style, false);
+						}
+					}
 				}
-			});
-			invokeOnEDT(() -> {
-				updateVisualPropertySheets((VisualStyle) body, false);
-			});
-		} else if (id.equals(VISUAL_STYLE_UPDATED) && body != null && body.equals(vmProxy.getCurrentVisualStyle())) {
-			updateVisualPropertySheets((VisualStyle) body, false);
-		} else if (id.equals(CURRENT_NETWORK_VIEW_CHANGED)) {
-			final CyNetworkView view = (CyNetworkView) body;
-			final String newRendererId = view != null ? view.getRendererId() : null;
-			
-			if (view != null && newRendererId != null && !newRendererId.equals(curRendererId)) {
-				updateVisualPropertySheets(vmProxy.getVisualStyle(view), false);
-				curRendererId = newRendererId;
-			} else if (view == null || vmProxy.getVisualStyle(view).equals(vizMapperMainPanel.getSelectedVisualStyle())) {
-				// Ignore it, if the selected style is not the current one,
-				// because it should change the selection style first and then recreate all the items, anyway.
-				updateLockedValues((CyNetworkView) body);
+				break;
+			case CURRENT_NETWORK_VIEW_CHANGED:
+				final CyNetworkView view = (CyNetworkView) body;
+				final String newRendererId = view != null ? view.getRendererId() : null;
 				
-				if (body instanceof CyNetworkView) {
-					updateMappings(CyNode.class, view.getModel().getDefaultNodeTable());
-					updateMappings(CyEdge.class, view.getModel().getDefaultEdgeTable());
+				if (view != null && newRendererId != null && !newRendererId.equals(curRendererId)) {
+					updateNetworkVisualPropertySheets(vmProxy.getVisualStyle(view), false);
+					curRendererId = newRendererId;
+				} else if (view == null || vmProxy.getVisualStyle(view).equals(vizMapperMainPanel.getSelectedVisualStyle())) {
+					// Ignore it, if the selected style is not the current one,
+					// because it should change the selection style first and then recreate all the items, anyway.
+					updateLockedValues((CyNetworkView) body);
+					
+					if (body instanceof CyNetworkView) {
+						updateMappings(CyNode.class, view.getModel().getDefaultNodeTable());
+						updateMappings(CyEdge.class, view.getModel().getDefaultEdgeTable());
+					}
+					
+					updateItemsStatus();
 				}
-				
-				updateItemsStatus();
-			}
-		} else if (id.equals(VISUAL_STYLE_NAME_CHANGED)) {
-			vizMapperMainPanel.getStylesBtn().update();
+				break;
+			case VISUAL_STYLE_NAME_CHANGED:
+				vizMapperMainPanel.getStylesBtn().update();
+				break;
+			case CURRENT_TABLE_CHANGED:
+				CyTable table = (CyTable) body;
+				invokeOnEDT(() -> {
+					// Switching styles.  Need to reset the range tracer
+					updateTableVisualPropertySheets(table, false, false);
+				});
+				break;
 		}
 	}
+	
+	private RenderingEngine<?> getRenderingEngine(Class<? extends CyIdentifiable> type) {
+		if(NETWORK_SHEET_TYPES.contains(type))
+			return vmProxy.getCurrentRenderingEngine();
+		else
+			return vmProxy.getCurrentTableRenderingEngine();
+	}
+	
+	private VisualProperty<?> getRootVP(Class<? extends CyIdentifiable> type) {
+		if(NETWORK_SHEET_TYPES.contains(type))
+			return BasicVisualLexicon.NETWORK;
+		else
+			return BasicTableVisualLexicon.CELL;
+	}
+	
+	public VisualStyle getCurrentVisualStyle(Class<? extends CyIdentifiable> type) {
+		if(NETWORK_SHEET_TYPES.contains(type))
+			return vmProxy.getCurrentVisualStyle();
+		else {
+			var col = vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().getSelectedItem();
+			return vmProxy.getVisualStyle(col);
+		}
+	}
+	
+	public CyColumn getCurrentColumn() {
+		return vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().getSelectedItem();
+	}
+	
+	private CyTable getTable(Class<? extends CyIdentifiable> type) {
+		if(type == CyNode.class) {
+			var curNet = vmProxy.getCurrentNetwork();
+			return curNet == null ? null : curNet.getDefaultNodeTable();
+		}
+		else if(type == CyEdge.class) {
+			var curNet = vmProxy.getCurrentNetwork();
+			return curNet == null ? null : curNet.getDefaultEdgeTable();
+		}
+		else if(type == CyNetwork.class) {
+			var curNet = vmProxy.getCurrentNetwork();
+			return curNet == null ? null : curNet.getDefaultNetworkTable();
+		}
+		
+		if(type == CyColumn.class) {
+			return vmProxy.getCurrentTable();
+		}
+		
+		return null;
+	}
+	
 
+	// MKTODO possibly get rid of this method
 	@Override
 	public void handleEvent(final LexiconStateChangedEvent e) {
 		// Update Network Views
@@ -306,54 +385,71 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		final CyNetwork curNet = vmProxy.getCurrentNetwork();
 		
 		if (curNet != null) {
-			VisualPropertySheet vpSheet = null;
+			List<VisualPropertySheet> vpSheets = new ArrayList<>(2);
 			
 			if (tbl.equals(curNet.getDefaultEdgeTable()))
-				vpSheet = vizMapperMainPanel.getVisualPropertySheet(CyEdge.class);
+				vpSheets.add(vizMapperMainPanel.getVisualPropertySheet(CyEdge.class));
 			else if (tbl.equals(curNet.getDefaultNodeTable()))
-				vpSheet = vizMapperMainPanel.getVisualPropertySheet(CyNode.class);
+				vpSheets.add(vizMapperMainPanel.getVisualPropertySheet(CyNode.class));
 			else if (tbl.equals(curNet.getDefaultNetworkTable()))
-				vpSheet = vizMapperMainPanel.getVisualPropertySheet(CyNetwork.class);
+				vpSheets.add(vizMapperMainPanel.getVisualPropertySheet(CyNetwork.class));
 			
-			if (vpSheet != null) {
+			if (tbl.equals(vmProxy.getCurrentTable()))
+				vpSheets.add(vizMapperMainPanel.getVisualPropertySheet(CyColumn.class));
+			
+			if (!vpSheets.isEmpty()) {
 				final Set<String> columns = e.getColumns();
 				
-				for (final VisualPropertySheetItem<?> item : vpSheet.getItems()) {
-					final VisualMappingFunction<?, ?> mapping = item.getModel().getVisualMappingFunction();
-					
-					if (mapping != null) {
-						for (String columnName : columns) {
-							if (mapping.getMappingColumnName().equalsIgnoreCase(columnName)) {
-								invokeOnEDT(() -> item.updateMapping());
-								break;
+				for (VisualPropertySheet vpSheet : vpSheets) {
+					for (VisualPropertySheetItem<?> item : vpSheet.getItems()) {
+						VisualMappingFunction<?, ?> mapping = item.getModel().getVisualMappingFunction();
+						if (mapping != null) {
+							for (String columnName : columns) {
+								if (mapping.getMappingColumnName().equalsIgnoreCase(columnName)) {
+									invokeOnEDT(() -> item.updateMapping());
+									break;
+								}
 							}
 						}
 					}
 				}
 			}
+			
 		}
 	}
 	
 	@Override
 	public void handleEvent(final ColumnDeletedEvent e) {
-		onColumnChanged(e.getColumnName(), e.getSource());
+		CyTable table = e.getSource();
+		if(table == getTable(CyColumn.class)) {
+			selectedColumns.remove(table.getSUID());
+			updateTableVisualPropertySheets(table, false, false);
+		}
+		onColumnChangedUpdateMappings(e.getColumnName(), table);
 	}
 
 	@Override
 	public void handleEvent(final ColumnCreatedEvent e) {
-		onColumnChanged(e.getColumnName(), e.getSource());
+		CyTable table = e.getSource();
+		if(table == getTable(CyColumn.class)) {
+			updateTableVisualPropertySheets(table, false, false);
+		}
+		onColumnChangedUpdateMappings(e.getColumnName(), table);
 	}
 	
 	@Override
 	public void handleEvent(final ColumnNameChangedEvent e) {
-		onColumnChanged(e.getOldColumnName(), e.getSource());
-		onColumnChanged(e.getNewColumnName(), e.getSource());
+		CyTable table = e.getSource();
+		if(table == getTable(CyColumn.class)) {
+			updateTableVisualPropertySheets(table, false, false);
+		}
+		onColumnChangedUpdateMappings(e.getOldColumnName(), table);
+		onColumnChangedUpdateMappings(e.getNewColumnName(), table);
 	}
 
 	@Override
 	public void handleEvent(final UpdateNetworkPresentationEvent e) {
 		final CyNetworkView view = e.getSource();
-		
 		if (view.equals(vmProxy.getCurrentNetworkView()))
 			updateLockedValues(view);
 	}
@@ -362,7 +458,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	public void handleEvent(final VisualMappingFunctionChangedEvent e) {
 		final VisualMappingFunction<?, ?> vm = e.getSource();
 		final VisualProperty<?> vp = vm.getVisualProperty();
-		final VisualStyle curStyle = vmProxy.getCurrentVisualStyle();
+		final VisualStyle curStyle = getCurrentVisualStyle(vp.getTargetDataType());
 		
 		// If the source mapping belongs to the current visual style, update the correspondent property sheet item
 		if (vm.equals(curStyle.getVisualMappingFunction(vp))) {
@@ -376,7 +472,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			}
 		}
 	}
-	
+
 	public VisualPropertySheetItem<?> getCurrentVisualPropertySheetItem() {
 		return curVpSheetItem;
 	}
@@ -393,12 +489,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	 * Custom listener for adding registered VizMapper CyActions to the main menu.
 	 */
 	public synchronized void onCyActionRegistered(final CyAction action, final Map<?, ?> properties) {
-		final String serviceType = ServicePropertiesUtil.getServiceType(properties);
-		
-		if (serviceType != null && serviceType.toString().startsWith("vizmapUI")) {
+		String serviceType = ServicePropertiesUtil.getServiceType(properties);
+		if (serviceType != null && serviceType.startsWith("vizmapUI")) {
 			invokeOnEDT(() -> {
-				final JMenuItem menuItem = createMenuItem(action, properties);
-				
+				JMenuItem menuItem = createMenuItem(action, properties);
 				if (menuItem != null)
 					actions.put(action, menuItem);
 			});
@@ -408,7 +502,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	/**
 	 * Custom listener for removing unregistered VizMapper CyActions from the main and context menus.
 	 */
-	public synchronized void onCyActionUnregistered(final CyAction action, final Map<?, ?> properties) {
+	public synchronized void onCyActionUnregistered(final CyAction action, final Map<?,?> properties) {
 		final JMenuItem menuItem = actions.remove(action);
 		
 		if (menuItem != null) {
@@ -422,10 +516,9 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	/**
 	 * Create menu items for related registered Task Factories.
 	 */
-	public void onTaskFactoryRegistered(final TaskFactory taskFactory, final Map<?, ?> properties) {
+	public void onTaskFactoryRegistered(final TaskFactory taskFactory, final Map<?,?> properties) {
 		// First filter the service...
 		final String serviceType = ServicePropertiesUtil.getServiceType(properties);
-		
 		if (serviceType == null || !serviceType.toString().startsWith("vizmapUI"))
 			return;
 
@@ -451,8 +544,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		};
 		
 		invokeOnEDT(() -> {
-			final JMenuItem menuItem = createMenuItem(action, properties);
-			
+			JMenuItem menuItem = createMenuItem(action, properties);
 			if (menuItem != null)
 				taskFactories.put(taskFactory, menuItem);
 		});
@@ -460,7 +552,6 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 
 	public void onTaskFactoryUnregistered(final TaskFactory taskFactory, final Map<?, ?> properties) {
 		final JMenuItem menuItem = taskFactories.remove(taskFactory);
-		
 		if (menuItem != null) {
 			invokeOnEDT(() -> {
 				vizMapperMainPanel.removeOption(menuItem);
@@ -516,9 +607,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 
 	private void updateDefaultProps() {
 		defVisibleProps.clear();
-		defVisibleProps.put(CyNode.class, propsProxy.getDefaultVisualProperties(CyNode.class));
-		defVisibleProps.put(CyEdge.class, propsProxy.getDefaultVisualProperties(CyEdge.class));
+		defVisibleProps.put(CyNode.class,    propsProxy.getDefaultVisualProperties(CyNode.class));
+		defVisibleProps.put(CyEdge.class,    propsProxy.getDefaultVisualProperties(CyEdge.class));
 		defVisibleProps.put(CyNetwork.class, propsProxy.getDefaultVisualProperties(CyNetwork.class));
+		defVisibleProps.put(CyColumn.class,  propsProxy.getDefaultVisualProperties(CyColumn.class));
 	}
 	
 	private void initView() {
@@ -530,6 +622,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		// Switching the current Visual Style
 		var stylesBtn = vizMapperMainPanel.getStylesBtn();
 		stylesBtn.addPropertyChangeListener("selectedStyle", evt -> onSelectedVisualStyleChanged(evt));
+		columnChangeListener = e -> onSelectedColumnChanged();
+		vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().addActionListener(columnChangeListener);
 	}
 	
 	private void addViewListeners(final VisualPropertySheet vpSheet) {
@@ -676,10 +770,13 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		
 		invokeOnEDT(() -> {
 			ignoreVisualStyleSelectedEvents = true;
-			final VisualStyle vs = vmProxy.getCurrentVisualStyle();
+			VisualStyle vs = vmProxy.getCurrentVisualStyle();
+			CyTable table = vmProxy.getCurrentTable();
 			vizMapperMainPanel.updateVisualStyles(styles, vs);
 			selectCurrentVisualStyle(vs);
-			updateVisualPropertySheets(vs, resetDefaultVisibleItems);
+			updateNetworkVisualPropertySheets(vs, resetDefaultVisibleItems);
+			if(table != null)
+				updateTableVisualPropertySheets(table, resetDefaultVisibleItems, false);
 			ignoreVisualStyleSelectedEvents = false;
 		});
 	}
@@ -696,22 +793,58 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		});
 	}
 	
+	
+	private void updateNetworkVisualPropertySheets(VisualStyle vs, boolean resetDefaultVisibleItems) {
+		boolean rebuild = shouldRebuildNetworkVisualPropertySheets(vs);
+		updateVisualPropertySheets(vs, NETWORK_SHEET_TYPES, resetDefaultVisibleItems, rebuild);
+	}
+	
+	private void updateTableVisualPropertySheets(CyTable table, boolean resetDefaultVisibleItems, boolean forceRebuild) {
+		Collection<CyColumn> columns = table.getColumns();
+		CyColumn columnToUse = getSelectedColumn(table);
+		var vs = vmProxy.getVisualStyle(columnToUse);
+		boolean rebuild = forceRebuild || shouldRebuildTableVisualPropertySheets(vs);
+		updateVisualPropertySheets(vs, TABLE_SHEET_TYPES, resetDefaultVisibleItems, rebuild);
+		
+		vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().removeActionListener(columnChangeListener);
+		vizMapperMainPanel.updateColumns(table.getTitle(), columns, columnToUse);
+		vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().addActionListener(columnChangeListener);
+	}
+	
+	private CyColumn getSelectedColumn(CyTable table) {
+		Collection<CyColumn> columns = table.getColumns();
+		// MKTODO what if the column isn't visible?
+		Long colSuid = selectedColumns.get(table.getSUID());
+		if(colSuid == null) {
+			for(CyColumn col : columns) {
+				if(!"SUID".equals(col.getName())) {
+					return col;
+				}
+			}
+		} else {
+			for(CyColumn col : columns) {
+				if(colSuid.equals(col.getSUID())) {
+					return col;
+				}
+			}
+		}
+		
+		// table must have at least a primary key column
+		return columns.iterator().next();
+	}
+	
+	private void onSelectedColumnChanged() {
+		ContinuousMappingEditorPanel.setTracer(new EditorValueRangeTracer(servicesUtil));
+		CyColumn col = vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().getSelectedItem();
+		selectedColumns.put(col.getTable().getSUID(), col.getSUID());
+		updateTableVisualPropertySheets(col.getTable(), false, true);
+	}
+	
+	
 	@SuppressWarnings("rawtypes")
-	private void updateVisualPropertySheets(final VisualStyle vs, final boolean resetDefaultVisibleItems) {
+	private void updateVisualPropertySheets(VisualStyle vs, List<Class<? extends CyIdentifiable>> sheetTypes, boolean resetDefaultVisibleItems, boolean rebuild) {
 		if (vs == null)
 			return;
-		
-		final VisualPropertySheet curNetSheet = vizMapperMainPanel.getVisualPropertySheet(CyNetwork.class);
-		final VisualPropertySheetModel curModel = curNetSheet != null ? curNetSheet.getModel() : null;
-		final VisualStyle curStyle = curModel != null ? curModel.getVisualStyle() : null;
-		final CyNetworkView curNetView = vmProxy.getCurrentNetworkView();
-		final String newRendererId = curNetView != null ? curNetView.getRendererId() : "";
-		
-		// If a different style or renderer, rebuild all property sheets
-		boolean rebuild = !vs.equals(curStyle) || !newRendererId.equals(curRendererId);
-		
-		if (curNetView != null)
-			curRendererId = curNetView.getRendererId();
 
 		if (!rebuild) {
 			// Also check if dependencies have changed
@@ -749,7 +882,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		}
 		
 		if (rebuild) {
-			createVisualPropertySheets(resetDefaultVisibleItems);
+			createVisualPropertySheets(vs, sheetTypes, resetDefaultVisibleItems);
 		} else {
 			// Just update the current Visual Property sheets
 			final Set<VisualPropertySheet> vpSheets = vizMapperMainPanel.getVisualPropertySheets();
@@ -758,7 +891,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				for (final VisualPropertySheetItem<?> item : sheet.getItems()) {
 					// Update values
 					final VisualPropertySheetItemModel model = item.getModel();
-					model.update(vizMapperMainPanel.getRenderingEngine());
+					model.update(getRenderingEngine(model.getTargetDataType()));
 					
 					if (model.getVisualPropertyDependency() != null)
 						item.update();
@@ -774,24 +907,50 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		}
 	}
 	
-	private void createVisualPropertySheets(final boolean resetDefaultVisibleItems) {
-		final VisualStyle style = vmProxy.getCurrentVisualStyle();
-		final VisualLexicon lexicon = vmProxy.getCurrentVisualLexicon();
+	private boolean shouldRebuildNetworkVisualPropertySheets(VisualStyle vs) {
+		final VisualPropertySheet curNetSheet = vizMapperMainPanel.getVisualPropertySheet(CyNetwork.class);
+		final VisualPropertySheetModel curModel = curNetSheet != null ? curNetSheet.getModel() : null;
+		final VisualStyle curStyle = curModel != null ? curModel.getVisualStyle() : null;
+		final CyNetworkView curNetView = vmProxy.getCurrentNetworkView();
+		final String newRendererId = curNetView != null ? curNetView.getRendererId() : "";
 		
+		// If a different style or renderer, rebuild all property sheets
+		boolean rebuild = !vs.equals(curStyle) || !newRendererId.equals(curRendererId);
+		
+		if (curNetView != null)
+			curRendererId = curNetView.getRendererId();
+		
+		return rebuild;
+	}
+	
+	private boolean shouldRebuildTableVisualPropertySheets(VisualStyle vs) {
+		var col = vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().getSelectedItem();
+		VisualStyle curStyle = vmProxy.getVisualStyle(col);
+		boolean rebuild = !vs.equals(curStyle);
+		return rebuild;
+	}
+	
+	
+	private void createVisualPropertySheets(VisualStyle style, List<Class<? extends CyIdentifiable>> sheetTypes, boolean resetDefaultVisibleItems) {
 		invokeOnEDT(() -> {
 			final VisualPropertySheet selVpSheet = getSelectedVisualPropertySheet();
 			final Class<? extends CyIdentifiable> selectedTargetDataType = selVpSheet != null ?
 					selVpSheet.getModel().getTargetDataType() : null;
 			
-			for (final Class<? extends CyIdentifiable> type : SHEET_TYPES) {
+			for (final Class<? extends CyIdentifiable> type : sheetTypes) {
 				// Create Visual Property Sheet
+				RenderingEngine<?> re = getRenderingEngine(type);
+				if(re == null)
+					continue;
+				
+				final VisualLexicon lexicon = re.getVisualLexicon();
+				
 				final VisualPropertySheetModel model = new VisualPropertySheetModel(type, style, lexicon);
 				final VisualPropertySheet vpSheet = new VisualPropertySheet(model, servicesUtil);
 				vizMapperMainPanel.addVisualPropertySheet(vpSheet);
 				
 				// Create Visual Property Sheet Items
-				final Set<VisualPropertySheetItem<?>> vpSheetItems = 
-						createVisualPropertySheetItems(vpSheet.getModel().getTargetDataType(), lexicon, style);
+				var vpSheetItems = createVisualPropertySheetItems(vpSheet.getModel().getTargetDataType(), lexicon, style);
 				vpSheet.setItems(vpSheetItems);
 				
 				// Add event listeners to the new components
@@ -836,7 +995,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			}
 			
 			vizMapperMainPanel.setPreferredSize(
-					new Dimension(vizMapperMainPanel.getPropertiesPn().getMinimumSize().width + 20,
+					new Dimension(vizMapperMainPanel.getPropertiesPnl().getComponent().getMinimumSize().width + 20,
 								  vizMapperMainPanel.getPreferredSize().height));
 			
 			// Select the same sheet that was selected before
@@ -846,25 +1005,19 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private Set<VisualPropertySheetItem<?>> createVisualPropertySheetItems(final Class<? extends CyIdentifiable> type,
-			final VisualLexicon lexicon, final VisualStyle style) {
+	private Set<VisualPropertySheetItem<?>> createVisualPropertySheetItems(final Class<? extends CyIdentifiable> type, final VisualLexicon lexicon, final VisualStyle style) {
 		final Set<VisualPropertySheetItem<?>> items = new HashSet<>();
 		
 		if (lexicon == null || style == null)
 			return items;
 		
-		final Collection<VisualProperty<?>> vpList = lexicon.getAllDescendants(BasicVisualLexicon.NETWORK);
-		final CyNetworkView curNetView = vmProxy.getCurrentNetworkView();
-		final Set<View<CyNode>> selectedNodeViews = vmProxy.getSelectedNodeViews(curNetView);
-		final Set<View<CyEdge>> selectedEdgeViews = vmProxy.getSelectedEdgeViews(curNetView);
-		final Set<View<CyNetwork>> selectedNetViews = curNetView != null ?
-				Collections.singleton((View<CyNetwork>) curNetView) : Collections.EMPTY_SET;
-		final RenderingEngine<CyNetwork> engine = vizMapperMainPanel.getRenderingEngine();
+		final Collection<VisualProperty<?>> vpList = lexicon.getAllDescendants(getRootVP(type));
+		final RenderingEngine<?> engine = getRenderingEngine(type);
 		
 		for (final VisualProperty<?> vp : vpList) {
 			if (vp.getTargetDataType() != type || vp instanceof DefaultVisualizableVisualProperty)
 				continue;
-			if (!vmProxy.isSupported(vp))
+			if (!VizMapperProxy.isSupported(lexicon, vp))
 				continue;
 			
 			// Create model
@@ -872,19 +1025,24 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			final Set values;
 			
 			if (vp.getTargetDataType() == CyNode.class) {
+				final CyNetworkView curNetView = vmProxy.getCurrentNetworkView();
+				final Set<View<CyNode>> selectedNodeViews = vmProxy.getSelectedNodeViews(curNetView);
 				values = getDistinctLockedValues(vp, selectedNodeViews);
 				updateVpInfoLockedState(model, values, selectedNodeViews);
 			} else if (vp.getTargetDataType() == CyEdge.class) {
+				final CyNetworkView curNetView = vmProxy.getCurrentNetworkView();
+				final Set<View<CyEdge>> selectedEdgeViews = vmProxy.getSelectedEdgeViews(curNetView);
 				values = getDistinctLockedValues(vp, selectedEdgeViews);
 				updateVpInfoLockedState(model, values, selectedEdgeViews);
-			} else {
+			} else if (vp.getTargetDataType() == CyNetwork.class) {
+				final CyNetworkView curNetView = vmProxy.getCurrentNetworkView();
+				final Set<View<CyNetwork>> selectedNetViews = curNetView != null ? Collections.singleton((View<CyNetwork>)curNetView) : Collections.EMPTY_SET;
 				values = getDistinctLockedValues(vp, selectedNetViews);
 				updateVpInfoLockedState(model, values, selectedNetViews);
 			}
 			
 			// Create View
-			final VisualPropertySheetItem<?> sheetItem = new VisualPropertySheetItem(model, vizMapPropertyBuilder,
-					servicesUtil);
+			final VisualPropertySheetItem<?> sheetItem = new VisualPropertySheetItem(model, vizMapPropertyBuilder, servicesUtil);
 			items.add(sheetItem);
 			
 			// Add listeners to item and model:
@@ -918,12 +1076,11 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		for (final VisualPropertyDependency<?> dep : dependencies) {
 			if (dep.getParentVisualProperty().getTargetDataType() != type)
 				continue;
-			if (!vmProxy.isSupported(dep))
+			if (!VizMapperProxy.isSupported(lexicon, dep))
 				continue;
 			
 			final VisualPropertySheetItemModel<?> model = new VisualPropertySheetItemModel(dep, style, engine, lexicon);
-			final VisualPropertySheetItem<?> sheetItem = new VisualPropertySheetItem(model, vizMapPropertyBuilder,
-					servicesUtil);
+			final VisualPropertySheetItem<?> sheetItem = new VisualPropertySheetItem(model, vizMapPropertyBuilder, servicesUtil);
 			items.add(sheetItem);
 		}
 		
@@ -1066,16 +1223,14 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		if (!item.isEnabled())
 			return;
 		
-		final CyNetwork net = vmProxy.getCurrentNetwork();
 		final Class<? extends CyIdentifiable> targetDataType = item.getModel().getTargetDataType();
 		
-		if (net != null && targetDataType != CyNetwork.class) {
-			final CyTable netTable = targetDataType == CyNode.class ?
-					net.getDefaultNodeTable() : net.getDefaultEdgeTable();
+		if (targetDataType != CyNetwork.class) {
 			String msg = null;
 			MessageType msgType = null;
 			
-			if (netTable != null) {
+			CyTable table = getTable(targetDataType);
+			if (table != null) {
 				final VizMapperProperty<VisualProperty<?>, String, VisualMappingFunctionFactory> columnProp =
 						vizMapPropertyBuilder.getColumnProperty(item.getPropSheetPnl());
 				final String colName = (columnProp != null && columnProp.getValue() != null) ?
@@ -1084,7 +1239,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				if (colName != null) {
 					final VisualMappingFunction<?, ?> mapping = item.getModel().getVisualMappingFunction();
 					Class<?> mapColType = mapping != null ? mapping.getMappingColumnType() : null;
-					final CyColumn column = netTable.getColumn(colName);
+					final CyColumn column = table.getColumn(colName);
 					Class<?> colType = column != null ? column.getType() : null;
 					
 					// Ignore "List" type
@@ -1094,7 +1249,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 						colType = String.class;
 					
 					if (column == null || (mapColType != null && !mapColType.isAssignableFrom(colType))) {
-						String tableName = netTable != null ? targetDataType.getSimpleName().replace("Cy", "") : null;
+						String tableName = table != null ? targetDataType.getSimpleName().replace("Cy", "") : null;
 						msg = "<html>Visual Mapping cannot be applied to current network:<br>" + tableName +
 								" table does not have column <b>\"" + colName + "\"</b>" +
 								(mapColType != null ? " (" + mapColType.getSimpleName() + ")" : "") + "</html>";
@@ -1178,17 +1333,15 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	
 	private JMenuItem createMenuItem(final CyAction action, final Map<?, ?> properties) {
 		String title = ServicePropertiesUtil.getTitle(properties);
-		
 		if (title == null)
 			title = action.getName();
-			
 		if (title == null) {
 			logger.error("Cannot create VizMapper menu item for: " + action + 
 					"; \"" + ServicePropertiesUtil.TITLE +  "\" metadata is missing from properties: " + properties);
 			return null;
 		}
 		
-		final JMenuItem menuItem = new JMenuItem(action);
+		JMenuItem menuItem = new JMenuItem(action);
 		menuItem.setText(title);
 		
 		final double gravity = ServicePropertiesUtil.getGravity(properties);
@@ -1198,6 +1351,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		
 		if (menuId.equals(ServicePropertiesUtil.CONTEXT_MENU))
 			vizMapperMainPanel.addContextMenuItem(menuItem, gravity, insertSeparatorBefore, insertSeparatorAfter);
+		else if(menuId.equals(ServicePropertiesUtil.TABLE_MAIN_MENU))
+			vizMapperMainPanel.addTableOption(menuItem, gravity, insertSeparatorBefore, insertSeparatorAfter);
 		else
 			vizMapperMainPanel.addOption(menuItem, gravity, insertSeparatorBefore, insertSeparatorAfter);
 		
@@ -1209,7 +1364,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		final VisualPropertySheetItemModel model = vpSheetItem.getModel();
 		final VisualProperty vp = model.getVisualProperty();
 
-		final VisualStyle style = vmProxy.getCurrentVisualStyle();
+		final VisualStyle style = vpSheetItem.getModel().getVisualStyle();
 		final Object oldValue = style.getDefaultValue(vp);
 		Object val = null;
 		
@@ -1300,25 +1455,30 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		invokeOnEDT(() -> updateItemsStatus());
 	}
 	
-	private void onColumnChanged(final String colName, final CyTable tbl) {
+	private void onColumnChangedUpdateMappings(final String colName, final CyTable tbl) {
 		final CyNetwork curNet = vmProxy.getCurrentNetwork();
 		if (curNet == null) return;
-		VisualPropertySheet vpSheet = null;
+		
+		List<VisualPropertySheet> vpSheets = new ArrayList<>(2);
 		
 		if (tbl.equals(curNet.getDefaultEdgeTable()))
-			vpSheet = vizMapperMainPanel.getVisualPropertySheet(CyEdge.class);
+			vpSheets.add(vizMapperMainPanel.getVisualPropertySheet(CyEdge.class));
 		else if (tbl.equals(curNet.getDefaultNodeTable()))
-			vpSheet = vizMapperMainPanel.getVisualPropertySheet(CyNode.class);
+			vpSheets.add(vizMapperMainPanel.getVisualPropertySheet(CyNode.class));
 		else if (tbl.equals(curNet.getDefaultNetworkTable()))
-			vpSheet = vizMapperMainPanel.getVisualPropertySheet(CyNetwork.class);
+			vpSheets.add(vizMapperMainPanel.getVisualPropertySheet(CyNetwork.class));
 		
-		if (vpSheet != null) {
-			// Update mapping status of this sheet's properties, if necessary
-			for (final VisualPropertySheetItem<?> item : vpSheet.getItems()) {
-				final VisualMappingFunction<?, ?> mapping = item.getModel().getVisualMappingFunction();
-				
-				if (mapping != null && mapping.getMappingColumnName().equalsIgnoreCase(colName))
-					updateMappingStatus(item);
+		if (tbl.equals(vmProxy.getCurrentTable()))
+			vpSheets.add(vizMapperMainPanel.getVisualPropertySheet(CyColumn.class));
+		
+		if (!vpSheets.isEmpty()) {
+			for (VisualPropertySheet vpSheet : vpSheets) {
+				// Update mapping status of this sheet's properties, if necessary
+				for (final VisualPropertySheetItem<?> item : vpSheet.getItems()) {
+					final VisualMappingFunction<?, ?> mapping = item.getModel().getVisualMappingFunction();
+					if (mapping != null && mapping.getMappingColumnName().equalsIgnoreCase(colName))
+						updateMappingStatus(item);
+				}
 			}
 		}
 	}
