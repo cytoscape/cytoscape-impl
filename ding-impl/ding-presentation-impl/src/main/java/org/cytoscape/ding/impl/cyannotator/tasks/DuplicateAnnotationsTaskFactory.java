@@ -7,6 +7,7 @@ import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 import org.cytoscape.work.TaskIterator;
 
 /*
@@ -47,6 +48,7 @@ public class DuplicateAnnotationsTaskFactory implements NetworkViewTaskFactory {
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public TaskIterator createTaskIterator(CyNetworkView view) {
 		DRenderingEngine re = dingRenderer.getRenderingEngine(view);
 		
@@ -71,6 +73,22 @@ public class DuplicateAnnotationsTaskFactory implements NetworkViewTaskFactory {
 		var cyAnnotator = re.getCyAnnotator();
 		var annotations = cyAnnotator.getAnnotationSelection().getSelectedAnnotations();
 
-		return annotations != null && !annotations.isEmpty();
+		if (annotations != null && !annotations.isEmpty()) {
+			for (var a : annotations) {
+				// It cannot contain only arrows without at least their sources being duplicated as well
+				if (a instanceof ArrowAnnotation) {
+					// Check the source of the arrow (is it also included in the list?)
+					var src = ((ArrowAnnotation) a).getSource();
+					
+					if (src == null || !annotations.contains(src))
+						continue;
+				} else {
+					// Not an arrow, so always ok
+					return true;
+				}
+			}
+		}
+		
+		return false;
 	}
 }

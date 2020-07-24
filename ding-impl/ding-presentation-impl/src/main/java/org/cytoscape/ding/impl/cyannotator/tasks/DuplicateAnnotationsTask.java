@@ -3,12 +3,18 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.ding.impl.cyannotator.AnnotationTree.Shift;
+import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -63,22 +69,45 @@ public class DuplicateAnnotationsTask extends AbstractTask {
 			var annotator = re.getCyAnnotator();
 			annotator.markUndoEdit("Duplicate Selected Annotations");
 			
-			var newList = new ArrayList<DingAnnotation>();
+			var oldNewMap = new HashMap<DingAnnotation, DingAnnotation>();
+			var newArrows = new HashSet<ArrowAnnotationImpl>();
 			
 			// Duplicate annotations
 			for (var a : annotations) {
 				var copy = duplicate(a);
 				annotator.addAnnotation(copy);
-				newList.add(copy);
+				oldNewMap.put(a, copy);
+				
+				if (copy instanceof ArrowAnnotationImpl)
+					newArrows.add((ArrowAnnotationImpl) copy);
+			}
+			
+			// Update target/source of new Arrows, because they are created with the original references
+			for (var arrow : newArrows) {
+				var src = oldNewMap.get(arrow.getSource());
+				
+				if (src != null && annotator.contains(src)/*it could be an arrow we just removed*/) {
+					arrow.setSource(src);
+					
+					var tgt = arrow.getTarget();
+					
+					if (tgt instanceof DingAnnotation) // It could also be a CyNode!
+						arrow.setTarget(oldNewMap.get(tgt));
+				} else {
+					// The source annotation is mandatory, but it was not duplicated,
+					// so this arrow cannot be duplicated either and must be deleted
+					arrow.removeAnnotation();
+					oldNewMap.values().remove(arrow);
+				}
 			}
 			
 			// Bring new annotations to front
-			ViewUtils.reorder(newList, Shift.TO_FRONT, re);
+			ViewUtils.reorder(new ArrayList<>(oldNewMap.values()), Shift.TO_FRONT, re);
 			
 			// Select new annotations only
 			annotator.clearSelectedAnnotations();
 			
-			for (var copy : newList)
+			for (var copy : oldNewMap.values())
 				copy.setSelected(true);
 			
 			annotator.postUndoEdit();
@@ -95,8 +124,23 @@ public class DuplicateAnnotationsTask extends AbstractTask {
 		// Create annotation
 		var copy = (DingAnnotation) annotationFactoryManager.createAnnotation(type, re.getViewModel(), argMap);
 		
-		// Move it a few pixels, so it does not hide the copied one
-		copy.moveAnnotation(new Point2D.Double(a.getX() + SHIFT, a.getY() + SHIFT));
+		if (copy instanceof ArrowAnnotation) {
+			// Force source/target to be same references as the ones from the original arrow,
+			// because, for some reason, the copy seems to get different ones sometimes (???)
+			((ArrowAnnotation) copy).setSource(((ArrowAnnotation) a).getSource());
+			
+			var tgt = ((ArrowAnnotation) a).getTarget();
+			
+			if (tgt instanceof Annotation)
+				((ArrowAnnotation) copy).setTarget((Annotation) tgt);
+			else if (tgt instanceof CyNode)
+				((ArrowAnnotation) copy).setTarget((CyNode) tgt);
+			else if (tgt instanceof Point2D)
+				((ArrowAnnotation) copy).setTarget((Point2D) tgt);
+		} else {
+			// Move it a few pixels, so it does not hide the copied one
+			copy.moveAnnotation(new Point2D.Double(a.getX() + SHIFT, a.getY() + SHIFT));
+		}
 		
 		return copy;
 	}
