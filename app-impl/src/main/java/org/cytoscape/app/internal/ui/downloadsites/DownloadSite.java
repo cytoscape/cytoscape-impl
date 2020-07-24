@@ -1,5 +1,7 @@
 package org.cytoscape.app.internal.ui.downloadsites;
 
+import org.cytoscape.app.internal.net.WebQuerier;
+
 /*
  * #%L
  * Cytoscape App Impl (app-impl)
@@ -55,8 +57,9 @@ public class DownloadSite {
 		return siteUrl;
 	}
 
-	public void setSiteUrl(String siteUrl) {
-		this.siteUrl = siteUrl;
+	public void setSiteUrl(final String siteUrl) {
+		final String newUrl = siteUrl.trim().equals("http://apps.cytoscape.org/") || siteUrl.trim().equals("http://apps.cytoscape.org") ? WebQuerier.DEFAULT_APP_STORE_URL : siteUrl;
+		this.siteUrl = newUrl;
 	}
 
 	

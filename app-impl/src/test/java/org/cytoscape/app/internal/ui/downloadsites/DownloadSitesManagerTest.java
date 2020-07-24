@@ -42,6 +42,19 @@ import org.mockito.MockitoAnnotations;
 public class DownloadSitesManagerTest {
 	
 	@Test
+	public void testHttpsConvert() {
+		DownloadSite downloadSite = new DownloadSite();
+		downloadSite.setSiteUrl("http://test1");
+		assertEquals("http://test1", downloadSite.getSiteUrl());
+		
+		downloadSite.setSiteUrl("http://apps.cytoscape.org/");
+		assertEquals("https://apps.cytoscape.org/", downloadSite.getSiteUrl());
+		
+		downloadSite.setSiteUrl("http://apps.cytoscape.org");
+		assertEquals("https://apps.cytoscape.org/", downloadSite.getSiteUrl());
+	}
+	
+	@Test
 	public void testSaveLoad() {
 		
 		// Create new DownloadSitesManager
