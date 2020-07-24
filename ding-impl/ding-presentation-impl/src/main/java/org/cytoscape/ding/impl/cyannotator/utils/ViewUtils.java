@@ -7,9 +7,15 @@ import java.awt.MultipleGradientPaint.CycleMethod;
 import java.awt.Paint;
 import java.awt.RadialGradientPaint;
 import java.awt.geom.Point2D;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
+import org.cytoscape.ding.impl.cyannotator.AnnotationTree.Shift;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
@@ -19,7 +25,7 @@ import org.cytoscape.view.presentation.annotations.TextAnnotation;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -195,4 +201,44 @@ public class ViewUtils {
 		return new Point2D.Double(nextLocn[0], nextLocn[1]);
 	}
 
+	/**
+	 * Force-select the passed annotation. If the annotation selection mode is off, this also turns it on.
+	 */
+	public static void selectAnnotation(DRenderingEngine re, DingAnnotation annotation) {
+		var lexicon = re.getVisualLexicon();
+		var vp = lexicon.lookup(CyNetwork.class, "NETWORK_ANNOTATION_SELECTION");
+		
+		if (vp != null) {
+			var view = re.getViewModel();
+			
+			if (view.getVisualProperty(vp) != Boolean.TRUE)
+				view.setLockedValue(vp, Boolean.TRUE);
+		}
+		
+		annotation.setSelected(true);
+		
+		var cyAnnotator = re.getCyAnnotator();
+		cyAnnotator.addAnnotation(annotation);
+		cyAnnotator.setSelectedAnnotation(annotation, true);
+	}
+
+	public static void reorder(List<DingAnnotation> annotations, Shift shift, DRenderingEngine re) {
+		var cyAnnotator = re.getCyAnnotator();
+		var tree = cyAnnotator.getAnnotationTree();
+
+		var byCanvas = annotations.stream().collect(Collectors.groupingBy(DingAnnotation::getCanvasName));
+
+		var fga = byCanvas.get(Annotation.FOREGROUND);
+
+		if (fga != null && !fga.isEmpty())
+			tree.shift(shift, Annotation.FOREGROUND, fga);
+
+		var bga = byCanvas.get(Annotation.BACKGROUND);
+
+		if (bga != null && !bga.isEmpty())
+			tree.shift(shift, Annotation.BACKGROUND, bga);
+
+		tree.resetZOrder();
+		re.updateView(UpdateType.JUST_ANNOTATIONS);
+	}
 }

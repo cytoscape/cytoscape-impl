@@ -9,10 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
-import org.cytoscape.ding.impl.cyannotator.dialogs.AbstractAnnotationDialog;
-import org.cytoscape.ding.impl.cyannotator.dialogs.ShapeAnnotationDialog;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
-import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 
@@ -176,12 +173,16 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	}
 
 	public void setShapeType(ShapeType type) {
-		shapeType = type;
-
-		if (shapeType != ShapeType.CUSTOM)
-			this.shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, width, height);
-
-		update();
+		if (shapeType != type) {
+			var oldValue = shapeType;
+			shapeType = type;
+	
+			if (shapeType != ShapeType.CUSTOM)
+				shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, width, height);
+	
+			update();
+			firePropertyChange("shapeType", oldValue, type);
+		}
 	}
 
 	@Override
@@ -199,8 +200,12 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 
 	@Override
 	public void setBorderWidth(double width) {
-		borderWidth = width;
-		update();
+		if (borderWidth != width) {
+			var oldValue = borderWidth;
+			borderWidth = width;
+			update();
+			firePropertyChange("borderWidth", oldValue, width);
+		}
 	}
 
 	@Override
@@ -224,27 +229,54 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	}
 
 	@Override
-	public void setBorderColor(Paint border) {
-		borderColor = border;
-		update();
+	public void setBorderColor(Paint color) {
+		if (!Objects.equals(borderColor, color)) {
+			var oldValue = borderColor;
+			borderColor = color;
+			update();
+			firePropertyChange("borderColor", oldValue, color);
+		}
 	}
 
 	@Override
 	public void setBorderOpacity(double opacity) {
-		borderOpacity = opacity;
-		update();
+		if (borderOpacity != opacity) {
+			var oldValue = borderOpacity;
+			borderOpacity = opacity;
+			update();
+			firePropertyChange("borderOpacity", oldValue, opacity);
+		}
 	}
 
 	@Override
-	public void setFillColor(Paint fill) {
-		fillColor = fill;
-		update();
+	public void setFillColor(Paint color) {
+		if (!Objects.equals(fillColor, color)) {
+			var oldValue = fillColor;
+			fillColor = color;
+			update();
+			firePropertyChange("fillColor", oldValue, color);
+		}
 	}
 
 	@Override
 	public void setFillOpacity(double opacity) {
-		fillOpacity = opacity;
-		update();
+		if (fillOpacity != opacity) {
+			var oldValue = fillOpacity;
+			fillOpacity = opacity;
+			update();
+			firePropertyChange("fillOpacity", oldValue, opacity);
+		}
+	}
+	
+	@Override
+	public void setCustomShape(Shape shape) {
+		if (!Objects.equals(this.shape, shape)) {
+			var oldValue = this.shape;
+			this.shapeType = ShapeType.CUSTOM;
+			this.shape = shape;
+			update();
+			firePropertyChange("shape", oldValue, shape);
+		}
 	}
 
 	@Override
@@ -256,18 +288,6 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 //			GraphicsUtilities.drawShape(g, getX(), getY(), getWidth() - 1, getHeight() - 1, this, true);
 //		else
 			GraphicsUtilities.drawShape(g, getX(), getY(), getWidth() - 1, getHeight() - 1, this, false);
-	}
-
-	@Override
-	public void setCustomShape(Shape shape) {
-		this.shapeType = ShapeType.CUSTOM;
-		this.shape = shape;
-		update();
-	}
-
-	@Override
-	public AbstractAnnotationDialog getModifyDialog() {
-		return new ShapeAnnotationDialog(this, ViewUtil.getActiveWindow(re));
 	}
 
 	private ShapeType getShapeFromString(String shapeName) {

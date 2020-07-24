@@ -16,6 +16,31 @@ import java.util.Set;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
+
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 /**
  * This class is a wrapper for the annotation tree, the actual root of the tree is stored in the 'root' field.
  * This class contains methods and fields that only make sense to be called on the root of the tree.
@@ -30,7 +55,6 @@ public class AnnotationTree {
 	private Map<Annotation,AnnotationNode> backgroundLookup;
 	
 	private CyAnnotator cyAnnotator;
-	
 	
 	public static enum Shift {
 		UP_ONE, 
@@ -47,7 +71,6 @@ public class AnnotationTree {
 		this.backgroundTree = backgroundTree;
 	}
 
-	
 	public AnnotationNode getForegroundRoot() {
 		return foregroundTree;
 	}
@@ -71,7 +94,6 @@ public class AnnotationTree {
 			default: return null;
 		}
 	}
-	
 	
 	public void shift(Shift shift, String canvas, Collection<? extends Annotation> annotations) {
 		groupByParent(canvas, annotations).forEach((parent, childrenToShift) -> parent.shift(shift, childrenToShift));
@@ -98,7 +120,6 @@ public class AnnotationTree {
 			.collect(groupingBy(AnnotationNode::getParent)); // doesn't matter which tree they are already separate
 	}
 	
-	
 	/**
 	 * This method can only be called on the root.
 	 */
@@ -123,7 +144,6 @@ public class AnnotationTree {
 			}
 		});
 	}
-	
 	
 	/**
 	 * This method will not detect cycles in the given Set of annotations. The reason is that however unlikely
@@ -256,7 +276,6 @@ public class AnnotationTree {
 		return false;
 	}
 	
-	
 	public static boolean hasSameParent(Collection<? extends Annotation> annotations) {
 		if(annotations.isEmpty())
 			return false;
@@ -286,7 +305,6 @@ public class AnnotationTree {
 		}
 		return ancestors;
 	}
-
 	
 	private static void sortAnnotations(List<Annotation> annotations) {
 		// Sort the annotations by existing z-order.
@@ -308,5 +326,4 @@ public class AnnotationTree {
 		};
 		Collections.sort(annotations, comparator);
 	}
-	
 }

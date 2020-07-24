@@ -4,16 +4,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
-import org.cytoscape.ding.impl.cyannotator.AnnotationTree;
 import org.cytoscape.ding.impl.cyannotator.AnnotationTree.Shift;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
+import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.cytoscape.work.AbstractTask;
@@ -76,50 +73,29 @@ public class ReorderAnnotationsTask extends AbstractTask {
 		if (canvasName == null && shift == null)
 			return;
 		
-		if (canvasName != null) {
+		if (canvasName != null)
 			changeCanvas();
-		} else if (shift != null) {
-			reorder(shift);
-		}
+		else if (shift != null)
+			ViewUtils.reorder(annotations, shift, re);
 		
-		CyAnnotator cyAnnotator = re.getCyAnnotator();
+		var cyAnnotator = re.getCyAnnotator();
 		cyAnnotator.fireAnnotationsReordered();
 	}
 
 	private void changeCanvas() {
 		for (int i = annotations.size() - 1; i >= 0; i--) {
-			DingAnnotation da = annotations.get(i);
+			var da = annotations.get(i);
+			
 			// group annotations must stay on the foreground canvas
-			if(!(da instanceof GroupAnnotation && Annotation.BACKGROUND.equals(canvasName))) {
+			if (!(da instanceof GroupAnnotation && Annotation.BACKGROUND.equals(canvasName)))
 				da.changeCanvas(CanvasID.fromArgName(canvasName));
-			}
 		}
 		
 		// need to rebuild the tree AFTER changing the canvas
-		CyAnnotator cyAnnotator = re.getCyAnnotator();
-		AnnotationTree tree = cyAnnotator.getAnnotationTree();
+		var cyAnnotator = re.getCyAnnotator();
+		var tree = cyAnnotator.getAnnotationTree();
 		tree.resetZOrder();
+		
 		re.updateView(UpdateType.JUST_ANNOTATIONS);
 	}
-	
-
-	private void reorder(Shift shift) {
-		CyAnnotator cyAnnotator = re.getCyAnnotator();
-		AnnotationTree tree = cyAnnotator.getAnnotationTree();
-		
-		Map<String,List<DingAnnotation>> byCanvas = 
-				annotations.stream().collect(Collectors.groupingBy(DingAnnotation::getCanvasName));
-		
-		List<DingAnnotation> fga = byCanvas.get(Annotation.FOREGROUND);
-		if(fga != null && !fga.isEmpty())
-			tree.shift(shift, Annotation.FOREGROUND, fga);
-		
-		List<DingAnnotation> bga = byCanvas.get(Annotation.BACKGROUND);
-		if(bga != null && !bga.isEmpty())
-			tree.shift(shift, Annotation.BACKGROUND, bga);
-		
-		tree.resetZOrder();
-		re.updateView(UpdateType.JUST_ANNOTATIONS);
-	}
-	
 }

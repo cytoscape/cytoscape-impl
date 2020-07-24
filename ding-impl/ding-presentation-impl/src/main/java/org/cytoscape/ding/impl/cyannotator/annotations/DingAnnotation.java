@@ -6,7 +6,6 @@ import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeListener;
 
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.dialogs.AbstractAnnotationDialog;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 
@@ -36,6 +35,11 @@ import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 
 public interface DingAnnotation extends Annotation {
 	
+	public static final String ID = "id";
+	public static final String TYPE = "type";
+	public static final String ANNOTATION_ID = "uuid";
+	public static final String PARENT_ID = "parent";
+	
 	public static enum CanvasID {
 		FOREGROUND, 
 		BACKGROUND;
@@ -63,8 +67,6 @@ public interface DingAnnotation extends Annotation {
 
 	void contentChanged();
 
-	AbstractAnnotationDialog getModifyDialog();
-
 	// Overrides of Component
 	void paint(Graphics g, boolean showSelected);
 	
@@ -75,11 +77,14 @@ public interface DingAnnotation extends Annotation {
 
 	Class<? extends Annotation> getType();
 	
+	void addPropertyChangeListener(PropertyChangeListener listener);
+	
 	void addPropertyChangeListener(String propertyName, PropertyChangeListener listener);
+	
+	void removePropertyChangeListener(PropertyChangeListener listener);
 	
 	void removePropertyChangeListener(String propertyName, PropertyChangeListener listener);
 
-	
 	double getX();
 	
 	double getY();

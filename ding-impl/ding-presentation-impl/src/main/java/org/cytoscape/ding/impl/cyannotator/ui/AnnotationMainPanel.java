@@ -8,6 +8,7 @@ import static org.cytoscape.util.swing.LookAndFeelUtil.equalizeSize;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -27,7 +28,9 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.Stack;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
@@ -42,6 +45,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JTree;
@@ -49,7 +53,6 @@ import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
-import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
@@ -68,8 +71,10 @@ import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.AnnotationNode;
 import org.cytoscape.ding.impl.cyannotator.AnnotationTree;
 import org.cytoscape.ding.impl.cyannotator.AnnotationTree.Shift;
+import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
+import org.cytoscape.ding.impl.cyannotator.dialogs.AbstractAnnotationEditor;
 import org.cytoscape.ding.internal.util.IconUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
@@ -78,7 +83,9 @@ import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
+import org.cytoscape.view.presentation.annotations.BoundedTextAnnotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
+import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
 
 /*
@@ -87,7 +94,7 @@ import org.cytoscape.view.presentation.annotations.GroupAnnotation;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -108,6 +115,8 @@ import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 @SuppressWarnings("serial")
 public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 
+	public static final CytoPanelName CYTOPANEL_NAME = CytoPanelName.WEST;
+	
 	private static final String TITLE = "Annotation";
 	private static final String ID = "org.cytoscape.Annotation";
 	
@@ -116,7 +125,10 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	private static final Color TREE_SEL_BG_COLOR = UIManager.getColor("Table.selectionBackground");
 	private static final Color TREE_SEL_FG_COLOR = UIManager.getColor("Table.selectionForeground");
 	
-	private JPanel buttonPanel;
+	private JPanel toolBarPanel;
+	private JTabbedPane contentTabbedPane;
+	private JPanel layersPanel;
+	private JPanel editPanel;
 	private JLabel infoLabel;
 	private JLabel selectionLabel;
 	private JButton groupAnnotationsButton;
@@ -128,7 +140,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	private LayerPanel backgroundLayerPanel;
 	private JButton selectAllButton;
 	private JButton selectNoneButton;
-	private final Map<String, AnnotationToggleButton> buttonMap = new LinkedHashMap<>();
+	private final Map<Class<? extends Annotation>, AnnotationToggleButton> buttonMap = new LinkedHashMap<>();
 	private final Map<Class<? extends Annotation>, Icon> iconMap = new LinkedHashMap<>();
 	private final ButtonGroup buttonGroup;
 	
@@ -144,7 +156,11 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	
 	/** Tab icon */
 	private TextIcon icon;
+	
 	private DRenderingEngine re;
+	
+	private boolean createMode;
+	private Annotation editingAnnotation;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -158,7 +174,9 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			
 			@Override
 			public void setSelected(ButtonModel m, boolean b) {
-				if (isAdjusting) return;
+				if (isAdjusting)
+					return;
+				
 				if (m != null && m.equals(prevModel)) {
 					isAdjusting = true;
 					clearSelection();
@@ -166,6 +184,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 				} else {
 					super.setSelected(m, b);
 				}
+				
 				prevModel = getSelection();
 				updateInfoLabel();
 			}
@@ -181,7 +200,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 
 	@Override
 	public CytoPanelName getCytoPanelName() {
-		return CytoPanelName.WEST;
+		return CYTOPANEL_NAME;
 	}
 
 	@Override
@@ -197,7 +216,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	@Override
 	public Icon getIcon() {
 		if (icon == null) {
-			Font font = serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 16f);
+			var font = serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 16f);
 			icon = new TextIcon(IconUtil.ICON_ANNOTATION_BOUNDED_TEXT_2, font, 16, 16);
 		}
 		
@@ -221,13 +240,77 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		getForegroundLayerPanel().setEnabled(enabled);
 	}
 	
+	boolean isCreateMode() {
+		return createMode;
+	}
+	
+	void setCreateMode(boolean createMode) {
+		if (this.createMode != createMode) {
+			this.createMode = createMode;
+			
+			if (createMode)
+				editingAnnotation = null;
+			
+			updateEditPanel();
+		}
+		
+		updateInfoLabel();
+	}
+	
+	boolean isEditMode() {
+		return !createMode && editingAnnotation != null;
+	}
+	
+	Annotation getEditingAnnotation() {
+		return editingAnnotation;
+	}
+	
+	void setEditingAnnotation(Annotation a) {
+		if (a != null)
+			setCreateMode(false);
+		
+		if (!Objects.equals(a, editingAnnotation)) {
+			editingAnnotation = a;
+			updateEditPanel();
+		}
+		
+		updateInfoLabel();
+	}
+	
+	/**
+	 * Calls {@link #setEditingAnnotation(Annotation)} and shows the edit panel.
+	 */
+	void editAnnotation(Annotation a) {
+		if (a != null) {
+			setEditingAnnotation(a);
+			getContentTabbedPane().setSelectedComponent(getEditPanel());
+		}
+	}
+	
+	void renameAnnotation(Annotation a) {
+		if (a != null) {
+			var tree = getLayerTree(a.getCanvasName());
+			var model = (AnnotationTreeModel) tree.getModel();
+			var path = model.pathTo(a);
+
+			if (path != null) {
+				tree.startEditingAtPath(path);
+				getContentTabbedPane().setSelectedComponent(getLayersPanel());
+			}
+		}
+	}
+	
+	/**
+	 * Adds a buttons that creates annotations through the passed factory and also
+	 * adds an corresponding editor panel if one is returned by {@link AbstractDingAnnotationFactory#createEditor()}.
+	 */
 	JToggleButton addAnnotationButton(AnnotationFactory<? extends Annotation> f) {
-		final AnnotationToggleButton btn = new AnnotationToggleButton(f);
+		var btn = new AnnotationToggleButton(f);
 		btn.setFocusable(false);
 		btn.setFocusPainted(false);
 		
 		buttonGroup.add(btn);
-		buttonMap.put(f.getId(), btn);
+		buttonMap.put(f.getType(), btn);
 		iconMap.put(f.getType(), f.getIcon());
 		
 		btnHGroup.addComponent(btn, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
@@ -240,15 +323,25 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	void removeAnnotationButton(AnnotationFactory<? extends Annotation> f) {
-		JToggleButton btn = buttonMap.remove(f.getId());
+		var btn = buttonMap.remove(f.getType());
 		iconMap.remove(f.getType());
 		
 		if (btn != null)
-			getButtonPanel().remove(btn);
+			getToolBarPanel().remove(btn);
+		
+		if (f instanceof AbstractDingAnnotationFactory) {
+			var comp = ((AbstractDingAnnotationFactory<?>) f).getEditor();
+			
+			if (comp != null) {
+				getEditPanel().remove(comp);
+				updateEditPanel();
+				updateInfoLabel();
+			}
+		}
 	}
 	
 	Set<Annotation> getAllAnnotations() {
-		final Set<Annotation> set = new HashSet<>();
+		var set = new HashSet<Annotation>();
 		set.addAll(((AnnotationTreeModel) getBackgroundTree().getModel()).getData());
 		set.addAll(((AnnotationTreeModel) getForegroundTree().getModel()).getData());
 		
@@ -256,7 +349,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	Collection<Annotation> getSelectedAnnotations() {
-		final Set<Annotation> set = new HashSet<>();
+		var set = new HashSet<Annotation>();
 		set.addAll(getSelectedAnnotations(getBackgroundTree()));
 		set.addAll(getSelectedAnnotations(getForegroundTree()));
 		
@@ -268,7 +361,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	<T extends Annotation> Collection<T> getSelectedAnnotations(Class<T> type) {
-		final Set<T> set = new LinkedHashSet<>();
+		var set = new LinkedHashSet<T>();
 		set.addAll(getSelectedAnnotations(getBackgroundTree(), type));
 		set.addAll(getSelectedAnnotations(getForegroundTree(), type));
 		
@@ -277,12 +370,12 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	
 	@SuppressWarnings("unchecked")
 	<T extends Annotation> List<T> getSelectedAnnotations(JTree tree, Class<T> type) {
-		final List<T> set = new ArrayList<>();
-		final TreePath[] treePaths = tree.getSelectionModel().getSelectionPaths();
+		var set = new ArrayList<T>();
+		var treePaths = tree.getSelectionModel().getSelectionPaths();
 		
-		for (TreePath path : treePaths) {
-			AnnotationNode node = (AnnotationNode) path.getLastPathComponent();
-			Object obj = node.getAnnotation();
+		for (var path : treePaths) {
+			var node = (AnnotationNode) path.getLastPathComponent();
+			var obj = node.getAnnotation();
 			
 			if (type.isAssignableFrom(obj.getClass()))
 				set.add((T) obj);
@@ -310,11 +403,11 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	
 	int getSelectedAnnotationCount(JTree tree, Class<? extends Annotation> type) {
 		int count = 0;
-		final TreePath[] treePaths = tree.getSelectionModel().getSelectionPaths();
+		var treePaths = tree.getSelectionModel().getSelectionPaths();
 		
-		for (TreePath path : treePaths) {
-			AnnotationNode node = (AnnotationNode) path.getLastPathComponent();
-			Object obj = node.getAnnotation();
+		for (var path : treePaths) {
+			var node = (AnnotationNode) path.getLastPathComponent();
+			var obj = node.getAnnotation();
 			
 			if (type.isAssignableFrom(obj.getClass()))
 				count++;
@@ -328,17 +421,19 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	void setSelected(Annotation a, boolean selected) {
-		if (re == null || getAnnotationCount() == 0)
-			return;
-
-		// group annotations can be on both canvases at the same time
-		setSelected(a, selected, getForegroundTree());
-		setSelected(a, selected, getBackgroundTree());
+System.out.println("AnnotationMainPanel.setSelected(): " + a + " -- " + selected);
+		if (re != null && getAnnotationCount() > 0) {
+			// group annotations can be on both canvases at the same time
+			setSelected(a, selected, getForegroundTree());
+			setSelected(a, selected, getBackgroundTree());
+		}
+		
+		maybeUpdateEditingAnnotation(a);
 	}
 	
 	private void setSelected(Annotation a, boolean selected, JTree tree) {
-		AnnotationTreeModel model = (AnnotationTreeModel) tree.getModel();
-		TreePath path = model.pathTo(a);
+		var model = (AnnotationTreeModel) tree.getModel();
+		var path = model.pathTo(a);
 		
 		if (path == null)
 			return;
@@ -349,12 +444,14 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		} else {
 			tree.removeSelectionPath(path);
 		}
+		
+		a.setSelected(selected);
 	}
 	
 	void update(DRenderingEngine re) {
 		this.re = re;
 		
-		final List<DingAnnotation> annotations = re != null ? re.getCyAnnotator().getAnnotations() : Collections.emptyList();
+		List<DingAnnotation> annotations = re != null ? re.getCyAnnotator().getAnnotations() : Collections.emptyList();
 		
 		// Always clear the toggle button selection when annotations are added or removed
 		clearAnnotationButtonSelection();
@@ -362,20 +459,21 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		setEnabled(re != null);
 		
 		// Update annotation trees
-		AnnotationTree annotationTree = AnnotationTree.buildTree(annotations, re == null ? null : re.getCyAnnotator());
+		var annotationTree = AnnotationTree.buildTree(annotations, re == null ? null : re.getCyAnnotator());
 		getBackgroundLayerPanel().update(annotationTree, Annotation.BACKGROUND);
 		getForegroundLayerPanel().update(annotationTree, Annotation.FOREGROUND);
 		
 		// Enable/disable annotation add buttons
 		if (isEnabled()) {
-			for (AnnotationToggleButton btn : buttonMap.values()) {
-				if (ArrowAnnotation.class.equals(btn.getFactory().getType())) {
-					// The ArrowAnnotation requires at least one other annotation before it can be added
-					btn.setEnabled(getAnnotationCount() > 0);
-					break;
-				}
-			}
+			// The ArrowAnnotation requires at least one other annotation before it can be added
+			var btn = buttonMap.get(ArrowAnnotation.class);
+
+			if (btn != null)
+				btn.setEnabled(getAnnotationCount() > 0);
 		}
+		
+		// Editor panel
+		updateEditPanel();
 		
 		// Labels and other components
 		updateInfoLabel();
@@ -384,30 +482,106 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		updateMoveToCanvasButtons();
 	}
 	
-	private void updateInfoLabel() {
-		if (buttonGroup.getSelection() == null) {
-			getInfoLabel().setText(isEnabled() ? "Select the Annotation you want to add..." : " ");
-		} else {
-			for (AnnotationToggleButton btn : buttonMap.values()) {
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	void updateEditPanel() {
+		var editComp = ((BorderLayout) getEditPanel().getLayout()).getLayoutComponent(BorderLayout.CENTER);
+		
+		// Remove annotation from current editor
+		if (editComp instanceof AbstractAnnotationEditor)
+			((AbstractAnnotationEditor<?>) editComp).setAnnotation(null);
+		
+		// Remove current editor
+		if (editComp != null)
+			getEditPanel().remove(editComp);
+		
+		if (isCreateMode()) {
+			for (var entry : buttonMap.entrySet()) {
+				var btn = entry.getValue();
+				
 				if (btn.isSelected()) {
-					if (ArrowAnnotation.class.equals(btn.getFactory().getType()))
-						getInfoLabel().setText("Click another Annotation in the view...");
-					else
-						getInfoLabel().setText("Click anywhere on the view...");
+					var f = btn.getFactory();
+					
+					if (f instanceof AbstractDingAnnotationFactory) {
+						var comp = ((AbstractDingAnnotationFactory<?>) f).getEditor();
+						
+						if (comp != null) {
+							getEditPanel().add(comp, BorderLayout.CENTER);
+							getContentTabbedPane().setSelectedComponent(getEditPanel());
+						}
+					}
 					
 					break;
 				}
 			}
+		} else {
+			var selectedList = getSelectedAnnotations();
+			var annotation = selectedList.size() == 1 ? selectedList.iterator().next() : null;
+			
+			if (annotation instanceof DingAnnotation) {
+				var btn = buttonMap.get(((DingAnnotation) annotation).getType());
+				
+				if (btn != null) {
+					var f = btn.getFactory();
+					
+					if (f instanceof AbstractDingAnnotationFactory) {
+						var comp = ((AbstractDingAnnotationFactory) f).getEditor();
+					
+						if (comp != null) {
+							comp.setAnnotation(annotation);
+							getEditPanel().add(comp);
+						}
+					}
+				}
+			}
 		}
+		
+		getContentTabbedPane().revalidate();
+		getContentTabbedPane().repaint();
+	}
+	
+	private void updateInfoLabel() {
+		var text = " ";
+		
+		if (isCreateMode()) {
+			for (var btn : buttonMap.values()) {
+				if (btn.isSelected()) {
+					text = "New " + (btn.getFactory().getName()) + ": ";
+					
+					if (ArrowAnnotation.class.equals(btn.getFactory().getType()))
+						text += "Click another annotation in the view...";
+					else
+						text += "Click anywhere on the view to add it...";
+					
+					break;
+				}
+			}
+		} else if (editingAnnotation instanceof ArrowAnnotationImpl
+				&& ((ArrowAnnotationImpl) editingAnnotation).getCyAnnotator().getRepositioningArrow() != null) {
+			text += "Click another annotation or node to create the arrow...";
+		} else if (isEditMode()) {
+			var name = editingAnnotation.getName();
+			text = "Edit ";
+			
+			if (editingAnnotation instanceof TextAnnotation || editingAnnotation instanceof BoundedTextAnnotation)
+				text += (editingAnnotation instanceof BoundedTextAnnotation ? "Bounded Text" : "Text");
+			else
+				text += (name != null && !name.isBlank() ? "\"" + name + "\"" : "");
+			
+			text += ":";
+		} else if (isEnabled()) {
+			text = "Select the annotation you want to add or modify...";
+		}
+		
+		getInfoLabel().setText(text);
 	}
 	
 	void updateSelectionLabel() {
-		final int total = getAnnotationCount();
+		int total = getAnnotationCount();
 		
 		if (total == 0) {
 			getSelectionLabel().setText(null);
 		} else {
-			final int selected = getSelectedAnnotationCount();
+			int selected = getSelectedAnnotationCount();
 			getSelectionLabel().setText(selected + " of " + total + " Annotation" + (total == 1 ? "" : "s") + " selected");
 		}
 	}
@@ -417,14 +591,14 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	private void updateGroupUngroupButton() {
-		Collection<Annotation> annotations = getSelectedAnnotations();
+		var annotations = getSelectedAnnotations();
 		getGroupAnnotationsButton().setEnabled(isEnabled() && annotations.size() > 1 && AnnotationTree.hasSameParent(annotations));
 		getUngroupAnnotationsButton().setEnabled(isEnabled() && getSelectedAnnotationCount(GroupAnnotation.class) > 0);
 	}
 	
 	void updateSelectionButtons() {
-		final int total = getAnnotationCount();
-		final int selected = getSelectedAnnotationCount();
+		int total = getAnnotationCount();
+		int selected = getSelectedAnnotationCount();
 		getSelectAllButton().setEnabled(isEnabled() && selected < total);
 		getSelectNoneButton().setEnabled(isEnabled() && selected > 0);
 	}
@@ -437,12 +611,12 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	void updateAnnotationsOrder() {
-		Collection<Annotation> selectedAnnotations = getSelectedAnnotations();
+		var selectedAnnotations = getSelectedAnnotations();
 		
 		// Update all annotation trees, because an annotation may have been moved to another layer
-		final List<DingAnnotation> annotations = re != null ? re.getCyAnnotator().getAnnotations() : Collections.emptyList();
+		List<DingAnnotation> annotations = re != null ? re.getCyAnnotator().getAnnotations() : Collections.emptyList();
 		{
-			AnnotationTree annotationTree = AnnotationTree.buildTree(annotations, re.getCyAnnotator());
+			var annotationTree = AnnotationTree.buildTree(annotations, re.getCyAnnotator());
 			getBackgroundLayerPanel().update(annotationTree, Annotation.BACKGROUND);
 			getForegroundLayerPanel().update(annotationTree, Annotation.FOREGROUND);
 		}
@@ -450,12 +624,53 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		getBackgroundTree().clearSelection();
 		getForegroundTree().clearSelection();
 		
-		for(Annotation a : selectedAnnotations) {
+		for (var a : selectedAnnotations)
 			setSelected(a, true);
-		}
 		
 		getBackgroundLayerPanel().updateButtons();
 		getForegroundLayerPanel().updateButtons();
+	}
+	
+	void maybeUpdateEditingAnnotation(Annotation candidate) {
+		// Do not edit if in creation mode; and ignore if already editing this annotation
+		if (isCreateMode() || (candidate != null && candidate.isSelected() && candidate.equals(editingAnnotation)))
+			return;
+		
+		Annotation selected = null;
+		
+		if (candidate != null && candidate.isSelected() && candidate instanceof GroupAnnotation == false) {
+			// The passed one can be edited...
+			selected = candidate;
+		} else {
+			// There may be another selected annotation...
+			var stack = new Stack<Annotation>();
+			
+			if (candidate != null && candidate.isSelected())
+				stack.add(candidate);
+			
+			stack.addAll(getSelectedAnnotations(getForegroundTree()));
+			stack.addAll(getSelectedAnnotations(getBackgroundTree()));
+			
+			// Traverse the selection tree to find the fist non-GroupAnnotation that is selected
+System.out.println("===============");
+			while (!stack.isEmpty()) {
+				var a = stack.pop();
+				
+				System.out.println(". " + a.getName());
+//				if (a instanceof GroupAnnotation) {
+//					for (var aa : ((GroupAnnotation) a).getMembers())
+//						stack.push(aa);
+//				}
+				
+				if (a.isSelected()) {
+					selected = a;
+					break;
+				}
+			}
+		}
+		
+System.out.println("\t>>> " + selected);
+		setEditingAnnotation(selected);
 	}
 	
 	void stopTreeCellEditing() {
@@ -468,93 +683,41 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			tree.stopEditing();
 	}
 	
-	
 	private void init() {
-		if (isAquaLAF())
-			setOpaque(false);
+		setOpaque(!isAquaLAF());
 		
 		equalizeSize(getGroupAnnotationsButton(), getUngroupAnnotationsButton(), getRemoveAnnotationsButton());
 		equalizeSize(getSelectAllButton(), getSelectNoneButton());
 		
-		// I don't know of a better way to center the selection label perfectly
-		// other than by using this "filler" panel hack...
-		JPanel rightFiller = new JPanel();
-		rightFiller.setPreferredSize(getRemoveAnnotationsButton().getPreferredSize());
-		
-		if (isAquaLAF())
-			rightFiller.setOpaque(false);
-		
-		final GroupLayout layout = new GroupLayout(this);
+		var layout = new GroupLayout(this);
 		setLayout(layout);
-		layout.setAutoCreateContainerGaps(false);
-		layout.setAutoCreateGaps(false);
+		layout.setAutoCreateContainerGaps(!isAquaLAF());
+		layout.setAutoCreateGaps(!isAquaLAF());
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
-				.addComponent(getButtonPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addGroup(layout.createSequentialGroup()
-						.addContainerGap()
-						.addComponent(getGroupAnnotationsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(getUngroupAnnotationsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addPreferredGap(ComponentPlacement.UNRELATED)
-						.addComponent(getSelectionLabel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-						.addPreferredGap(ComponentPlacement.UNRELATED)
-						.addComponent(rightFiller, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(getRemoveAnnotationsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addContainerGap()
-				)
-				.addComponent(getForegroundLayerPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addGroup(layout.createSequentialGroup()
-						.addGap(0, 0, Short.MAX_VALUE)
-						.addComponent(getPushToBackgroundButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addPreferredGap(ComponentPlacement.UNRELATED)
-						.addComponent(getPullToForegroundButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addGap(0, 0, Short.MAX_VALUE)
-				)
-				.addComponent(getBackgroundLayerPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addGroup(layout.createSequentialGroup()
-						.addContainerGap()
-						.addComponent(getSelectAllButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addPreferredGap(ComponentPlacement.RELATED)
-						.addComponent(getSelectNoneButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addContainerGap()
-				)
+				.addComponent(getToolBarPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getContentTabbedPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addComponent(getButtonPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				.addGroup(layout.createParallelGroup(CENTER, true)
-						.addComponent(getGroupAnnotationsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(getUngroupAnnotationsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(getSelectionLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(rightFiller, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(getRemoveAnnotationsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				)
-				.addComponent(getForegroundLayerPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addGroup(layout.createParallelGroup(CENTER, false)
-						.addComponent(getPushToBackgroundButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(getPullToForegroundButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				)
-				.addComponent(getBackgroundLayerPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addGroup(layout.createParallelGroup(CENTER, false)
-						.addComponent(getSelectAllButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(getSelectNoneButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				)
+				.addComponent(getToolBarPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(getContentTabbedPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 		);
 		
 		setEnabled(false);
 	}
 	
-	JPanel getButtonPanel() {
-		if (buttonPanel == null) {
-			buttonPanel = new JPanel();
-			buttonPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground")));
+	JPanel getToolBarPanel() {
+		if (toolBarPanel == null) {
+			toolBarPanel = new JPanel();
+			toolBarPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground")));
 			
 			if (isAquaLAF())
-				buttonPanel.setOpaque(false);
+				toolBarPanel.setOpaque(false);
 			
-			final GroupLayout layout = new GroupLayout(buttonPanel);
-			buttonPanel.setLayout(layout);
-			layout.setAutoCreateContainerGaps(true);
-			layout.setAutoCreateGaps(false);
+			var layout = new GroupLayout(toolBarPanel);
+			toolBarPanel.setLayout(layout);
+			layout.setAutoCreateContainerGaps(!isAquaLAF());
+			layout.setAutoCreateGaps(!isAquaLAF());
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
 					.addGroup(layout.createSequentialGroup()
@@ -562,21 +725,113 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 							.addGroup(btnHGroup = layout.createSequentialGroup())
 							.addGap(0, 0, Short.MAX_VALUE)
 					)
-					.addComponent(getInfoLabel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addGroup(btnVGroup = layout.createParallelGroup(CENTER, true))
-					.addComponent(getInfoLabel())
 			);
 		}
 		
-		return buttonPanel;
+		return toolBarPanel;
+	}
+	
+	JTabbedPane getContentTabbedPane() {
+		if (contentTabbedPane == null) {
+			contentTabbedPane = new JTabbedPane(JTabbedPane.TOP);
+			contentTabbedPane.addTab("Layers", getLayersPanel());
+			contentTabbedPane.addTab("Appearance", getEditPanel());
+			makeSmall(contentTabbedPane);
+		}
+		
+		return contentTabbedPane;
+	}
+	
+	JPanel getEditPanel() {
+		if (editPanel == null) {
+			editPanel = new JPanel();
+			editPanel.setLayout(new BorderLayout());
+			editPanel.setOpaque(!isAquaLAF());
+			editPanel.add(getInfoLabel(), BorderLayout.NORTH);
+		}
+		
+		return editPanel;
+	}
+	
+	JPanel getLayersPanel() {
+		if (layersPanel == null) {
+			layersPanel = new JPanel();
+			layersPanel.setOpaque(!isAquaLAF());
+			
+			var layout = new GroupLayout(layersPanel);
+			layersPanel.setLayout(layout);
+			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(false);
+			
+			// I don't know of a better way to center the selection label perfectly (with this layout manager)
+			// other than by using this "filler" panel hack...
+			var rightFiller = new JPanel();
+			rightFiller.setPreferredSize(getRemoveAnnotationsButton().getPreferredSize());
+			
+			if (isAquaLAF())
+				rightFiller.setOpaque(false);
+			
+			layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
+					.addGroup(layout.createSequentialGroup()
+							.addContainerGap()
+							.addComponent(getGroupAnnotationsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getUngroupAnnotationsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addPreferredGap(ComponentPlacement.UNRELATED)
+							.addComponent(getSelectionLabel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							.addPreferredGap(ComponentPlacement.UNRELATED)
+							.addComponent(rightFiller, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getRemoveAnnotationsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addContainerGap()
+					)
+					.addComponent(getForegroundLayerPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addGroup(layout.createSequentialGroup()
+							.addGap(0, 0, Short.MAX_VALUE)
+							.addComponent(getPushToBackgroundButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addPreferredGap(ComponentPlacement.UNRELATED)
+							.addComponent(getPullToForegroundButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addGap(0, 0, Short.MAX_VALUE)
+					)
+					.addComponent(getBackgroundLayerPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addGroup(layout.createSequentialGroup()
+							.addContainerGap()
+							.addComponent(getSelectAllButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(getSelectNoneButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addContainerGap()
+					)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addGroup(layout.createParallelGroup(CENTER, true)
+							.addComponent(getGroupAnnotationsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getUngroupAnnotationsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getSelectionLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(rightFiller, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getRemoveAnnotationsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
+					.addComponent(getForegroundLayerPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addGroup(layout.createParallelGroup(CENTER, false)
+							.addComponent(getPushToBackgroundButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getPullToForegroundButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
+					.addComponent(getBackgroundLayerPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addGroup(layout.createParallelGroup(CENTER, false)
+							.addComponent(getSelectAllButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getSelectNoneButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
+			);
+		}
+		
+		return layersPanel;
 	}
 	
 	private JLabel getInfoLabel() {
 		if (infoLabel == null) {
 			infoLabel = new JLabel(" ");
 			infoLabel.setHorizontalAlignment(JLabel.CENTER);
+			infoLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
 			infoLabel.setEnabled(false);
 			makeSmall(infoLabel);
 		}
@@ -599,7 +854,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			groupAnnotationsButton = new JButton(IconManager.ICON_OBJECT_GROUP);
 			groupAnnotationsButton.setToolTipText("Group Selected Annotations");
 			
-			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+			var iconManager = serviceRegistrar.getService(IconManager.class);
 			styleToolBarButton(groupAnnotationsButton, iconManager.getIconFont(16f));
 		}
 		
@@ -611,7 +866,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			ungroupAnnotationsButton = new JButton(IconManager.ICON_OBJECT_UNGROUP);
 			ungroupAnnotationsButton.setToolTipText("Ungroup Selected Annotations");
 			
-			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+			var iconManager = serviceRegistrar.getService(IconManager.class);
 			styleToolBarButton(ungroupAnnotationsButton, iconManager.getIconFont(16f));
 		}
 		
@@ -623,7 +878,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			removeAnnotationsButton = new JButton(IconManager.ICON_TRASH_O);
 			removeAnnotationsButton.setToolTipText("Remove Selected Annotations");
 			
-			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+			var iconManager = serviceRegistrar.getService(IconManager.class);
 			styleToolBarButton(removeAnnotationsButton, iconManager.getIconFont(18f));
 		}
 		
@@ -635,7 +890,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			pushToBackgroundButton = new JButton(IconManager.ICON_ARROW_DOWN);
 			pushToBackgroundButton.setToolTipText("Push Annotations to Background Layer");
 			
-			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+			var iconManager = serviceRegistrar.getService(IconManager.class);
 			styleToolBarButton(pushToBackgroundButton, iconManager.getIconFont(12f));
 		}
 		
@@ -647,7 +902,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			pullToForegroundButton = new JButton(IconManager.ICON_ARROW_UP);
 			pullToForegroundButton.setToolTipText("Pull Annotations to Foreground Layer");
 			
-			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+			var iconManager = serviceRegistrar.getService(IconManager.class);
 			styleToolBarButton(pullToForegroundButton, iconManager.getIconFont(12f));
 		}
 		
@@ -690,6 +945,8 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 					getBackgroundTree().setSelectionInterval(0, getBackgroundTree().getRowCount() - 1);
 				if (getForegroundTree().getRowCount() > 0)
 					getForegroundTree().setSelectionInterval(0, getForegroundTree().getRowCount() - 1);
+				
+				maybeUpdateEditingAnnotation(editingAnnotation);
 			});
 			
 			makeSmall(selectAllButton);
@@ -709,6 +966,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			selectNoneButton.addActionListener(evt -> {
 				getBackgroundTree().clearSelection();
 				getForegroundTree().clearSelection();
+				maybeUpdateEditingAnnotation(null);
 			});
 			
 			makeSmall(selectNoneButton);
@@ -739,7 +997,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		if (defIcon == null) {
 			// Lazily initialize the icon here, because the LAF might not have been set yet,
 			// and we need to get the correct colors
-			Font font = serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 16f);
+			var font = serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 16f);
 			defIcon = new TextIcon(
 					new String[] { IconUtil.ICON_ANNOTATION_1, IconUtil.ICON_ANNOTATION_2 },
 					font,
@@ -757,7 +1015,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		if (closedAnnotationIcon == null) {
 			// Lazily initialize the icon here, because the LAF might not have been set yet,
 			// and we need to get the correct colors
-			Font font = serviceRegistrar.getService(IconManager.class).getIconFont(16f);
+			var font = serviceRegistrar.getService(IconManager.class).getIconFont(16f);
 			closedAnnotationIcon = new TextIcon(
 					IconManager.ICON_FOLDER,
 					font,
@@ -774,7 +1032,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		if (openAnnotationIcon == null) {
 			// Lazily initialize the icon here, because the LAF might not have been set yet,
 			// and we need to get the correct colors
-			Font font = serviceRegistrar.getService(IconManager.class).getIconFont(16f);
+			var font = serviceRegistrar.getService(IconManager.class).getIconFont(16f);
 			openAnnotationIcon = new TextIcon(
 					IconManager.ICON_FOLDER_OPEN,
 					font,
@@ -836,7 +1094,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 				forwardButton = new JButton(IconManager.ICON_CARET_UP);
 				forwardButton.setToolTipText("Bring Annotations Forward");
 				
-				final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+				var iconManager = serviceRegistrar.getService(IconManager.class);
 				styleToolBarButton(forwardButton, iconManager.getIconFont(17f));
 			}
 			
@@ -848,7 +1106,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 				backwardButton = new JButton(IconManager.ICON_CARET_DOWN);
 				backwardButton.setToolTipText("Send Annotations Backward");
 				
-				final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+				var iconManager = serviceRegistrar.getService(IconManager.class);
 				styleToolBarButton(backwardButton, iconManager.getIconFont(17f));
 			}
 			
@@ -878,7 +1136,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		
 		JTree getTree() {
 			if (tree == null) {
-				final AnnotationTreeCellRenderer annotationCellRenderer = new AnnotationTreeCellRenderer();
+				var annotationCellRenderer = new AnnotationTreeCellRenderer();
 				
 				tree = new JTree(new AnnotationTreeModel(null, null)) {
 					@Override
@@ -950,12 +1208,12 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 				tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "startEditing");
 				tree.setInvokesStopCellEditing(true); // this helps stop editing within focus of tree
 				
-				final JTextField textField = new JTextField();
+				var textField = new JTextField();
 				textField.setEditable(true);
 				makeSmall(textField);
 				
-				TreeCellEditor txtEditor = new DefaultCellEditor(textField);
-				TreeCellEditor editor = new AnnotationTreeCellEditor(tree, annotationCellRenderer, txtEditor);
+				var txtEditor = new DefaultCellEditor(textField);
+				var editor = new AnnotationTreeCellEditor(tree, annotationCellRenderer, txtEditor);
 				editor.addCellEditorListener(new CellEditorListener() {
 					@Override
 					public void editingStopped(ChangeEvent evt) {
@@ -988,7 +1246,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 					@Override
 					public void mouseClicked(MouseEvent evt) {
 						if (evt.getClickCount() == 2) {
-							TreePath selectionPath = tree.getSelectionPath();
+							var selectionPath = tree.getSelectionPath();
 
 							if (selectionPath != null)
 								tree.startEditingAtPath(selectionPath);
@@ -1004,7 +1262,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			if (isAquaLAF())
 				setOpaque(false);
 			
-			final GroupLayout layout = new GroupLayout(this);
+			var layout = new GroupLayout(this);
 			setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
 			layout.setAutoCreateGaps(false);
@@ -1031,14 +1289,14 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		
 		private JLabel getTitleLabel() {
 			if (titleLabel == null) {
-				String text = canvasName.toLowerCase() + " Layer";
+				var text = canvasName.toLowerCase() + " Layer";
 				text = text.substring(0, 1).toUpperCase() + text.substring(1); // capitalize the first letter
 				
 				titleLabel = new JLabel(text);
 				titleLabel.setVerticalAlignment(SwingConstants.BOTTOM);
 				titleLabel.setBorder(BorderFactory.createEmptyBorder(0, 6, 2, 12));
 				
-				Border tb = LookAndFeelUtil.createTitledBorder(text);
+				var tb = LookAndFeelUtil.createTitledBorder(text);
 				
 				if (tb instanceof TitledBorder)
 					titleLabel.setFont(((TitledBorder) tb).getTitleFont());
@@ -1051,13 +1309,13 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		
 		private void update(AnnotationTree annotationTree, String canvas) {
 			// Save collapsed groups
-			JTree tree = getTree();
-			Set<GroupAnnotation> collapsedGroups = new HashSet<>();
+			var tree = getTree();
+			var collapsedGroups = new HashSet<GroupAnnotation>();
 			
 			for (int i = 0; i < tree.getRowCount(); i++) {
-				TreePath path = tree.getPathForRow(i);
-				AnnotationNode node = (AnnotationNode) path.getLastPathComponent();
-				Annotation a = node.getAnnotation();
+				var path = tree.getPathForRow(i);
+				var node = (AnnotationNode) path.getLastPathComponent();
+				var a = node.getAnnotation();
 				
 				if (a instanceof GroupAnnotation && tree.isCollapsed(path))
 					collapsedGroups.add((GroupAnnotation) a);
@@ -1069,9 +1327,9 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			// Collapse groups that were collapsed before the update and expand all other groups by default.
 			// IMPORTANT: getRowCount() increases after each expansion, so don't store it in a variable!
 			for (int i = 0; i < tree.getRowCount(); i++) {
-				TreePath path = tree.getPathForRow(i);
-				AnnotationNode node = (AnnotationNode) path.getLastPathComponent();
-				Annotation a = node.getAnnotation();
+				var path = tree.getPathForRow(i);
+				var node = (AnnotationNode) path.getLastPathComponent();
+				var a = node.getAnnotation();
 				
 				if (a instanceof GroupAnnotation) {
 					if (collapsedGroups.contains(a))
@@ -1089,11 +1347,11 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			getForwardButton().setEnabled(false);
 			getBackwardButton().setEnabled(false);
 			
-			JTree tree = getTree();
-			AnnotationTree annotationTree = ((AnnotationTreeModel)tree.getModel()).tree;
+			var tree = getTree();
+			var annotationTree = ((AnnotationTreeModel)tree.getModel()).tree;
 			
-			if(annotationTree != null) {
-				List<Annotation> selectedAnnotations = getSelectedAnnotations(tree);
+			if (annotationTree != null) {
+				var selectedAnnotations = getSelectedAnnotations(tree);
 				
 				boolean forward  = annotationTree.shiftAllowed(Shift.UP_ONE, canvasName, selectedAnnotations);
 				boolean backward = annotationTree.shiftAllowed(Shift.DOWN_ONE, canvasName, selectedAnnotations);
@@ -1110,10 +1368,10 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 
 		public AnnotationToggleButton(AnnotationFactory<? extends Annotation> f) {
 			this.factory = f;
-			Icon icon = f.getIcon();
 			
+			var icon = f.getIcon();
 			setIcon(icon != null ? icon : getDefIcon());
-			setToolTipText(f.getName());
+			setToolTipText("<html>Add <b>" + f.getName() + " Annotation</b>...</html>");
 			setHorizontalTextPosition(SwingConstants.CENTER);
 		}
 		
@@ -1129,8 +1387,9 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		
 		public AnnotationTreeModel(AnnotationTree tree, String canvas) {
 			super(null);
-			if(tree != null && canvas != null) {
-				AnnotationNode root = tree.getRoot(canvas);
+			
+			if (tree != null && canvas != null) {
+				var root = tree.getRoot(canvas);
 				setRoot(root);
 				this.tree = tree;
 				this.canvas = canvas;
@@ -1147,7 +1406,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		}
 		
 		public TreePath pathTo(Annotation a) {
-			AnnotationNode node = tree.get(canvas, a);
+			var node = tree.get(canvas, a);
 			return node == null ? null : new TreePath(node.getPath());
 		}
 	}
@@ -1164,19 +1423,19 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			setHorizontalAlignment(LEFT);
 			
 			if (value instanceof AnnotationNode) {
-				Annotation annotation = ((AnnotationNode) value).getAnnotation();
-				if(annotation != null) {
-//					DingAnnotation da = (DingAnnotation)annotation;
-//					setText(annotation.getName() + " (" + da.getCanvasName() + " z:" + da.getCanvas().getComponentZOrder(da.getComponent()) + ")");
+				var annotation = ((AnnotationNode) value).getAnnotation();
+				
+				if (annotation != null) {
 					setText(annotation.getName());
 					setToolTipText(annotation.getName());
 					setIconTextGap(8);
 				}
+				
 				if (annotation instanceof GroupAnnotation) {
 					setOpenIcon(getOpenAnnotationIcon());
 					setClosedIcon(getClosedAnnotationIcon());
 				} else {
-					Icon icon = getAnnotationIcon(annotation);
+					var icon = getAnnotationIcon(annotation);
 					setLeafIcon(icon);
 					setIcon(icon);
 				}
@@ -1224,19 +1483,18 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	        			// actual leaf icon for the editing row when double-clicking to edit the annotation name
 	        			// (no problem when pressing SPACE), so let's force it to get the icon again
 	        			// right before painting it.
-	        			if (lastPath != null) {
-	        				Object obj = lastPath.getLastPathComponent();
-	        				
-	        				if (obj instanceof AnnotationNode) {
-	        					if (((AnnotationNode) obj).getAnnotation() instanceof GroupAnnotation == false)
-	        						editingIcon = getAnnotationIcon(((AnnotationNode) obj).getAnnotation());
-	        				}
-	        			}
-					
-					super.paint(g);
-	        		}
+						if (lastPath != null) {
+							Object obj = lastPath.getLastPathComponent();
+
+							if (obj instanceof AnnotationNode) {
+								if (((AnnotationNode) obj).getAnnotation() instanceof GroupAnnotation == false)
+									editingIcon = getAnnotationIcon(((AnnotationNode) obj).getAnnotation());
+							}
+						}
+
+						super.paint(g);
+					}
 	        };
 	    }
 	}
-
 }

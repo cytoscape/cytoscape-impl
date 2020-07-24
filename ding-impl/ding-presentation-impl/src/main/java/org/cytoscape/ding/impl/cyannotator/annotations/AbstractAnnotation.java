@@ -17,7 +17,6 @@ import java.util.UUID;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.dialogs.AbstractAnnotationDialog;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.Annotation;
@@ -49,11 +48,6 @@ import org.cytoscape.view.presentation.annotations.GroupAnnotation;
  */
 
 public abstract class AbstractAnnotation implements DingAnnotation {
-	
-	protected static final String ID = "id";
-	protected static final String TYPE = "type";
-	protected static final String ANNOTATION_ID = "uuid";
-	protected static final String PARENT_ID = "parent";
 	
 	protected final CyAnnotator cyAnnotator;
 	private UUID uuid = UUID.randomUUID();
@@ -183,6 +177,7 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 		setSize(bounds.getWidth(), bounds.getHeight());
 	}
 	
+	@Override
 	public Rectangle2D getBounds() {
 		return new Rectangle2D.Double(x, y, width, height);
 	}
@@ -324,8 +319,10 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	@Override
 	public void setName(String name) {
 		if (!Objects.equals(name, this.name)) {
+			var oldValue = this.name;
 			this.name = name;
 			update();
+			firePropertyChange("name", oldValue, name);
 		}
 	}
 
@@ -338,7 +335,8 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	public void setSelected(boolean selected) {
 		if (selected != isSelected()) {
 			cyAnnotator.setSelectedAnnotation(this, selected);
-			pcs.firePropertyChange("selected", !selected, selected);
+			update();
+			firePropertyChange("selected", !selected, selected);
 		}
 	}
 
@@ -418,22 +416,14 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	}
 
 	@Override
-	public AbstractAnnotationDialog getModifyDialog() {
-		return null;
-	}
-
-	@Override
 	public void contentChanged() {
 		if (re != null)
 			re.setContentChanged();
 	}
 
+	@Override
 	public void addPropertyChangeListener(PropertyChangeListener listener) {
 		pcs.addPropertyChangeListener(listener);
-	}
-
-	public void removePropertyChangeListener(PropertyChangeListener listener) {
-		pcs.removePropertyChangeListener(listener);
 	}
 
 	@Override
@@ -442,6 +432,11 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	}
 
 	@Override
+	public void removePropertyChangeListener(PropertyChangeListener listener) {
+		pcs.removePropertyChangeListener(listener);
+	}
+	
+	@Override
 	public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
 		pcs.removePropertyChangeListener(propertyName, listener);
 	}
@@ -449,5 +444,17 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	@Override
 	public String toString() {
 		return getClass().getSimpleName() + "[" + getName() + "]";
+	}
+	
+	protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+		pcs.firePropertyChange(propertyName, oldValue, newValue);
+	}
+
+	protected void firePropertyChange(String propertyName, int oldValue, int newValue) {
+		pcs.firePropertyChange(propertyName, oldValue, newValue);
+	}
+
+	protected void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {
+		pcs.firePropertyChange(propertyName, oldValue, newValue);
 	}
 }

@@ -30,6 +30,7 @@ import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
  * #L%
  */
 
+@Deprecated
 @SuppressWarnings("serial")
 public class ImageAnnotationDialog extends AbstractAnnotationDialog<ImageAnnotationImpl> {
 
@@ -46,7 +47,7 @@ public class ImageAnnotationDialog extends AbstractAnnotationDialog<ImageAnnotat
 	
 	@Override
 	protected JPanel createControlPanel() {
-		return new ImageAnnotationPanel(annotation, getPreviewPanel());
+		return null;
 	}
 
 	@Override

@@ -63,7 +63,7 @@ import org.cytoscape.ding.impl.cyannotator.create.ShapeAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.TextAnnotationFactory;
 // Annotation edits and changes
 import org.cytoscape.ding.impl.cyannotator.tasks.AddAnnotationTaskFactory;
-import org.cytoscape.ding.impl.cyannotator.tasks.AddArrowTaskFactory;
+import org.cytoscape.ding.impl.cyannotator.tasks.DuplicateAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.EditAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.GroupAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.RemoveAnnotationTaskFactory;
@@ -278,17 +278,20 @@ public class CyActivator extends AbstractCyActivator {
 		
 		// Annotation Task Factories
 		{
-			var factory = new AddArrowTaskFactory(arrowAnnotationFactory, renderer);
+			var factory = new AddAnnotationTaskFactory(arrowAnnotationFactory, renderer, annotationMediator);
 			var props = new Properties();
+			props.setProperty(ID, "addAnnotationTaskFactory_" + arrowAnnotationFactory.getId());
 			props.setProperty(PREFERRED_ACTION, "NEW");
 			props.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
 			props.setProperty(MENU_GRAVITY, "1.2");
 			props.setProperty(TITLE, "Arrow Annotation...");
+			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
 			registerService(bc, factory, NetworkViewLocationTaskFactory.class, props);
 		}
 		{
-			var factory = new AddAnnotationTaskFactory(imageAnnotationFactory, renderer);
+			var factory = new AddAnnotationTaskFactory(imageAnnotationFactory, renderer, annotationMediator);
 			var props = new Properties();
+			props.setProperty(ID, "addAnnotationTaskFactory_" + imageAnnotationFactory.getId());
 			props.setProperty(PREFERRED_ACTION, "NEW");
 			props.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
 			props.setProperty(MENU_GRAVITY, "1.3");
@@ -296,8 +299,9 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, NetworkViewLocationTaskFactory.class, props);
 		}
 		{
-			var factory = new AddAnnotationTaskFactory(shapeAnnotationFactory, renderer);
+			var factory = new AddAnnotationTaskFactory(shapeAnnotationFactory, renderer, annotationMediator);
 			var props = new Properties();
+			props.setProperty(ID, "addAnnotationTaskFactory_" + shapeAnnotationFactory.getId());
 			props.setProperty(PREFERRED_ACTION, "NEW");
 			props.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
 			props.setProperty(MENU_GRAVITY, "1.4");
@@ -305,8 +309,9 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, NetworkViewLocationTaskFactory.class, props);
 		}
 		{
-			var factory = new AddAnnotationTaskFactory(textAnnotationFactory, renderer);
+			var factory = new AddAnnotationTaskFactory(textAnnotationFactory, renderer, annotationMediator);
 			var props = new Properties();
+			props.setProperty(ID, "addAnnotationTaskFactory_" + textAnnotationFactory.getId());
 			props.setProperty(PREFERRED_ACTION, "NEW");
 			props.setProperty(MENU_GRAVITY, "1.5");
 			props.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
@@ -314,19 +319,34 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, NetworkViewLocationTaskFactory.class, props);
 		}
 		{
-			var factory = new AddAnnotationTaskFactory(boundedAnnotationFactory, renderer);
+			var factory = new AddAnnotationTaskFactory(boundedAnnotationFactory, renderer, annotationMediator);
 			var props = new Properties();
+			props.setProperty(ID, "addAnnotationTaskFactory_" + boundedAnnotationFactory.getId());
 			props.setProperty(PREFERRED_ACTION, "NEW");
 			props.setProperty(MENU_GRAVITY, "1.6");
 			props.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
 			props.setProperty(TITLE, "Bounded Text Annotation...");
 			registerService(bc, factory, NetworkViewLocationTaskFactory.class, props);
 		}
+		
+		// Annotation duplicate
+		{
+			var factory = new DuplicateAnnotationsTaskFactory(renderer, annotationFactoryManager);
+			var props = new Properties();
+			props.setProperty(ID, "duplicateAnnotationsTaskFactory");
+			props.setProperty(PREFERRED_ACTION, "NEW");
+			props.setProperty(MENU_GRAVITY, "1.7");
+			props.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
+			props.setProperty(TITLE, "Duplicate Selected Annotations");
+			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
+			registerService(bc, factory, NetworkViewTaskFactory.class, props);
+		}
 
 		// Annotation edit
 		{
-			var factory = new EditAnnotationTaskFactory(renderer);
+			var factory = new EditAnnotationTaskFactory(renderer, annotationMediator);
 			var props = new Properties();
+			props.setProperty(ID, "editAnnotationTaskFactory");
 			props.setProperty(PREFERRED_ACTION, "NEW");
 			props.setProperty(MENU_GRAVITY, "2.0");
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);

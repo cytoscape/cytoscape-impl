@@ -33,6 +33,7 @@ import org.cytoscape.view.presentation.annotations.ArrowAnnotation.ArrowEnd;
  * #L%
  */
 
+@Deprecated
 @SuppressWarnings("serial")
 public class ArrowAnnotationDialog extends AbstractAnnotationDialog<ArrowAnnotationImpl> {
 	
@@ -55,8 +56,8 @@ public class ArrowAnnotationDialog extends AbstractAnnotationDialog<ArrowAnnotat
 	}
     
 	@Override
-	protected ArrowAnnotationPanel createControlPanel() {
-		return new ArrowAnnotationPanel(annotation, getPreviewPanel());
+	protected ArrowAnnotationEditor createControlPanel() {
+		return null;
 	}
 
 	@Override

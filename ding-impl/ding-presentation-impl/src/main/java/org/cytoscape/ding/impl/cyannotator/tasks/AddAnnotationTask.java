@@ -1,12 +1,21 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
+import static java.util.Collections.emptyMap;
 import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
 
 import java.awt.Point;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
+import org.cytoscape.ding.impl.cyannotator.create.ArrowAnnotationFactory;
+import org.cytoscape.ding.impl.cyannotator.create.ImageAnnotationFactory;
+import org.cytoscape.ding.impl.cyannotator.ui.AnnotationMediator;
+import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
+import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -38,27 +47,89 @@ public class AddAnnotationTask extends AbstractTask {
 
 	private final DRenderingEngine re;
 	private final Point location;
-	private final AnnotationFactory<?> annotationFactory; 
+	private final AnnotationFactory annotationFactory;
+	private final AnnotationMediator annotationMediator;
 
-	public AddAnnotationTask(DRenderingEngine re, Point location, AnnotationFactory<?> annotationFactory) {
+	public AddAnnotationTask(
+			DRenderingEngine re,
+			Point location,
+			AnnotationFactory<?> annotationFactory,
+			AnnotationMediator annotationMediator
+	) {
 		this.re = re;
-		this.location = location;
+		this.location = location != null ? location : re.getComponentCenter();
 		this.annotationFactory = annotationFactory;
+		this.annotationMediator = annotationMediator;
 	}
 
 	@Override
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setTitle("Add Annotation");
 		
 		if (re != null && annotationFactory instanceof AbstractDingAnnotationFactory) {
 			invokeOnEDT(() -> {
-				var dialog = ((AbstractDingAnnotationFactory<?>) annotationFactory)
-						.createAnnotationDialog(re.getViewModel(), location);
+				var cyAnnotator = re.getCyAnnotator();
+				cyAnnotator.markUndoEdit("Create " + annotationFactory.getName() + " Annotation"); // FIXME
 				
-				if (dialog != null) {
-					dialog.setLocationRelativeTo(re.getComponent());
+				var view = re.getViewModel();
+				var source = re.getPicker().getAnnotationAt(location); // For ArrowAnnotations only!
+				
+				final Annotation annotation;
+				
+				if (annotationFactory instanceof ImageAnnotationFactory) {
+					var dialog = ((ImageAnnotationFactory) annotationFactory).createLoadImageDialog(view, location);
 					dialog.setVisible(true);
+					annotation = dialog.getAnnotation();
+					
+					if (annotation == null)
+						return;
+				} else {
+					if (annotationFactory instanceof ArrowAnnotationFactory
+							&& (source == null || source instanceof ArrowAnnotation))
+						return; // e.g. cannot create an arrow when the user did not click another annotation first!
+					
+					annotation = annotationFactory.createAnnotation(annotationFactory.getType(), view, emptyMap());
+					tm.setStatusMessage("Created annotation: " + annotation.getName());
 				}
+				
+				var editor = ((AbstractDingAnnotationFactory) annotationFactory).getEditor();
+				
+				// No need to set the new annotation to the editor now,
+				// so just ask the editor to apply the previous styles
+				if (editor != null)
+					editor.apply(annotation);
+				
+				if (annotation instanceof ArrowAnnotationImpl) {
+					// Arrow...
+					((ArrowAnnotationImpl) annotation).setSource(source);
+					
+					cyAnnotator.addAnnotation(annotation);
+					
+					// NOTE: Do not select arrow annotation now! It should be done only after the arrow's target is set.
+					
+					cyAnnotator.positionArrow((ArrowAnnotationImpl) annotation);
+					annotation.update();
+				} else {
+					// Other annotations types...
+					if (annotation instanceof DingAnnotation) {
+						var annotationLocation = re.getTransform().getNodeCoordinates(location);
+						((DingAnnotation) annotation).setLocation(annotationLocation.getX(), annotationLocation.getY());
+						annotation.update();
+					}
+					
+					cyAnnotator.addAnnotation(annotation);
+					
+					if (annotation instanceof DingAnnotation) {
+						// Select only the new annotation
+						cyAnnotator.clearSelectedAnnotations();
+						ViewUtils.selectAnnotation(re, (DingAnnotation) annotation);
+					}
+				}
+				
+				// The can now be changed by the user, now that it has been created
+				annotationMediator.editAnnotation(annotation);
+				annotationMediator.showAnnotationPanel();
 			});
 		}
 	}

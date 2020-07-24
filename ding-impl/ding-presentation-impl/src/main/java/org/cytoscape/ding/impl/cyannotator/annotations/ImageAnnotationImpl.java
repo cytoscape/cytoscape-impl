@@ -25,10 +25,8 @@ import org.cytoscape.ding.customgraphics.image.BitmapCustomGraphics;
 import org.cytoscape.ding.customgraphics.image.SVGCustomGraphics;
 import org.cytoscape.ding.customgraphics.image.SVGLayer;
 import org.cytoscape.ding.impl.DRenderingEngine;
-import org.cytoscape.ding.impl.cyannotator.dialogs.ImageAnnotationDialog;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.ding.internal.util.ImageUtil;
-import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.ImageAnnotation;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
@@ -304,6 +302,8 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 	@Override
 	public void setImage(Image image) {
+		var oldValue = this.image;
+		
 		if (image instanceof BufferedImage)
 			this.image = (BufferedImage) image;
 		else if (image instanceof VolatileImage)
@@ -313,6 +313,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 		svg = null;
 		update();
+		firePropertyChange("image", oldValue, image);
 	}
 	
 	@Override
@@ -329,9 +330,11 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 	@Override
 	public void setImage(URL url) {
+		var oldValue = this.url;
 		this.url = url;
 		reloadImage();
 		update();
+		firePropertyChange("imageURL", oldValue, url);
 	}
 
 	@Override
@@ -341,8 +344,12 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 	@Override
 	public void setImageOpacity(float opacity) {
-		this.opacity = opacity;
-		update();
+		if (this.opacity != opacity) {
+			var oldValue = this.opacity;
+			this.opacity = opacity;
+			update();
+			firePropertyChange("imageOpacity", oldValue, opacity);
+		}
 	}
 
 	@Override
@@ -353,9 +360,11 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	@Override
 	public void setImageBrightness(int brightness) {
 		if (this.brightness != brightness) {
+			var oldValue = this.brightness;
 			this.brightness = brightness;
 			modifiedImage = null;
 			update();
+			firePropertyChange("imageBrightness", oldValue, brightness);
 		}
 	}
 
@@ -367,9 +376,11 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	@Override
 	public void setImageContrast(int contrast) {
 		if (this.contrast != contrast) {
+			var oldValue = this.contrast;
 			this.contrast = contrast;
 			modifiedImage = null;
 			update();
+			firePropertyChange("imageContrast", oldValue, contrast);
 		}
 	}
 
@@ -462,11 +473,6 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		customGraphicsManager.setUsedInCurrentSession(cg, false);
 	}
 
-	@Override
-	public ImageAnnotationDialog getModifyDialog() {
-		return new ImageAnnotationDialog(this, ViewUtil.getActiveWindow(re));
-	}
-	
 	private Image getModifiedImage() {
 		if (modifiedImage != null)
 			return modifiedImage;

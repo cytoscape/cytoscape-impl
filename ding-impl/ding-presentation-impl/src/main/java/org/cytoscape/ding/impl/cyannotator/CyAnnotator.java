@@ -270,13 +270,11 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 	
 	public void checkCycle(Collection<DingAnnotation> annotations) throws IllegalAnnotationStructureException {
-		if(annotations.isEmpty())
+		if (annotations.isEmpty())
 			return;
-		if(AnnotationTree.containsCycle(annotationSet, annotations)) {
+		if (AnnotationTree.containsCycle(annotationSet, annotations))
 			throw new IllegalAnnotationStructureException("Adding annotation would create a cycle. Group annotations must be a tree.");
-		}
 	}
-	
 	
 	public void addAnnotation(Annotation annotation) {
 		if (annotationSet.contains(annotation))
@@ -297,7 +295,6 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		}
 	}
 	
-	
 	public void addAnnotations(Collection<? extends Annotation> annotations) {
 		if (annotationSet.containsAll(annotations))
 			return;
@@ -317,7 +314,6 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 			propChangeSupport.firePropertyChange(PROP_ANNOTATIONS, oldValue, new HashSet<>(annotationSet));
 		}
 	}
-
 	
 	public void removeAnnotation(Annotation annotation) {
 		Set<DingAnnotation> oldValue = new HashSet<>(annotationSet);
@@ -335,11 +331,11 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		boolean changed = false;
 		Set<DingAnnotation> oldValue = new HashSet<>(annotationSet);
 		
-		for (Annotation annotation : annotations) {
-			if (annotationSet.remove((DingAnnotation) annotation))
+		for (var a : annotations) {
+			if (annotationSet.remove((DingAnnotation) a))
 				changed = true;
 			
-			annotationSelection.remove(annotation);
+			annotationSelection.remove(a);
 		}
 		
 		if (changed && !loading) {
@@ -354,25 +350,21 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 	
 	public boolean contains(Annotation a) {
-		if(a == null)
-			return false;
-		return annotationSet.contains(a);
+		return a == null ? false : annotationSet.contains(a);
 	}
 
 	public void setSelectedAnnotation(DingAnnotation a, boolean selected) {
-		if (selected) {
+		if (selected)
 			annotationSelection.add(a);
-		} else {
+		else
 			annotationSelection.remove(a);
-		}
 	}
 
 	public void clearSelectedAnnotations() {
-		if(annotationSelection.isEmpty())
+		if (annotationSelection.isEmpty())
 			return;
-		for(var a : annotationSelection.getSelectedAnnotations()) {
-			a.setSelected(false);
-		}
+
+		annotationSelection.getSelectedAnnotations().forEach(a -> a.setSelected(false));
 		annotationSelection.clear();
 	}
 
@@ -381,7 +373,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 
 	public void resizeShape(AbstractAnnotation shape) {
-		if(shape == null) {
+		if (shape == null) {
 			resizing = null;
 			resizeBounds = null;
 		} else {
@@ -509,7 +501,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		for (String s: annotations) {
 			Map<String, String> argMap = createArgMap(s);
 			DingAnnotation annotation = null;
-			String type = argMap.get("type");
+			String type = argMap.get(DingAnnotation.TYPE);
 			
 			if (type == null)
 				continue;
@@ -524,7 +516,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 			if (a == null || !(a instanceof DingAnnotation))
 				continue;
 
-			annotation = (DingAnnotation)a;
+			annotation = (DingAnnotation) a;
 
 			uuidMap.put(annotation.getUUID().toString(), annotation);
 			CanvasID canvas;
@@ -559,26 +551,26 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 	
 	private void loadGroups(Map<GroupAnnotation, String> groupMap, Map<String, Annotation> uuidMap) {
-		for (GroupAnnotation group: groupMap.keySet()) {
-			String uuids = groupMap.get(group);
-			String[] uuidArray = uuids.split(",");
-			
-			for (String uuid: uuidArray) {
+		for (var group : groupMap.keySet()) {
+			var uuids = groupMap.get(group);
+			var uuidArray = uuids.split(",");
+
+			for (var uuid : uuidArray) {
 				if (uuidMap.containsKey(uuid)) {
-					Annotation child = uuidMap.get(uuid);
-					group.addMember(child);
+					var annotation = uuidMap.get(uuid);
+					group.addMember(annotation);
 				}
 			}
 		}
 	}
 	
 	private void loadArrows(List<Map<String, String>> arrowList, Map<CanvasID, Map<Integer, DingAnnotation>> zOrderMap) {
-		for (Map<String, String> argMap : arrowList) {
-			String type = argMap.get("type");
-			Annotation annotation = annotationFactoryManager.createAnnotation(type, re.getViewModel(), argMap);
+		for (var argMap : arrowList) {
+			var type = argMap.get(DingAnnotation.TYPE);
+			var annotation = annotationFactoryManager.createAnnotation(type, re.getViewModel(), argMap);
 			
 			if (annotation instanceof ArrowAnnotationImpl) {
-				ArrowAnnotationImpl arrow = (ArrowAnnotationImpl)annotation;
+				var arrow = (ArrowAnnotationImpl) annotation;
 				arrow.getSource().addArrow(arrow);
 				CanvasID canvas;
 				
@@ -607,11 +599,12 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 	
 	private void restoreZOrder(Map<CanvasID, Map<Integer, DingAnnotation>> zOrderMap) {
-		for (Map<Integer, DingAnnotation> map: zOrderMap.values()) {
-			for (Integer zOrder: map.keySet()) {
-				DingAnnotation a = map.get(zOrder);
-				if (a.getCanvas() != null)
-					a.setZOrder(zOrder);
+		for (var map : zOrderMap.values()) {
+			for (var zOrder : map.keySet()) {
+				var annotation = map.get(zOrder);
+				
+				if (annotation.getCanvas() != null)
+					annotation.setZOrder(zOrder);
 //				else
 //					foreGroundCanvas.setZOrder(a, zOrder);
 			}
