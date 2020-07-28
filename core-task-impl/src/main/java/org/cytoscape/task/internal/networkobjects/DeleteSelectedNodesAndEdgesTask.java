@@ -70,7 +70,7 @@ public class DeleteSelectedNodesAndEdgesTask extends AbstractTask implements Obs
 
 	@Override
 	public void run(final TaskMonitor tm) {
-		tm.setTitle("Delete Selected Nodes and Edges");
+		tm.setTitle("Remove Selected Nodes and Edges");
 		tm.setProgress(0.0);
 
 		List<CyNode> nodeList = tunables.getNodeList(false);

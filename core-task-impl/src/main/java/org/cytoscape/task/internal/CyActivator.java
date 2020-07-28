@@ -779,7 +779,7 @@ public class CyActivator extends AbstractCyActivator {
 			var props = new Properties();
 			props.setProperty(PREFERRED_MENU, "Edit");
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_SELECTED_NODES_OR_EDGES);
-			props.setProperty(TITLE, "Delete Selected Nodes and Edges");
+			props.setProperty(TITLE, "Remove Selected Nodes and Edges");
 			props.setProperty(MENU_GRAVITY, "5.0");
 			props.setProperty(ACCELERATOR, "DELETE");
 			props.setProperty(COMMAND, "delete");
@@ -2128,22 +2128,24 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 			registerService(bc, factory, LoadNetworkURLTaskFactory.class, props);
 		}
+		// Rename Network (Command & Network Context-Menu)
 		{
 			var factory = new EditNetworkTitleTaskFactoryImpl(serviceRegistrar);
 			var props = new Properties();
+			props.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU, "true");
+			props.setProperty(IN_CONTEXT_MENU, "false");
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_SINGLE_NETWORK);
-			props.setProperty(PREFERRED_MENU, "Edit");
 			props.setProperty(MENU_GRAVITY, "5.5");
 			props.setProperty(TITLE, "Rename Network...");
-			props.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU, "true");
+			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
 			props.setProperty(COMMAND, "rename");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Rename a network");
 			props.setProperty(COMMAND_LONG_DESCRIPTION,  "Rename an existing network.  The SUID of the network is returned");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"network\":101, \"title\":\"My title\"}");
-			registerService(bc, factory, NetworkTaskFactory.class, props);
 			registerService(bc, factory, EditNetworkTitleTaskFactory.class, props);
+			registerService(bc, factory, NetworkTaskFactory.class, props);
 		}
 		{
 			var factory = new ExportSelectedNetworkTaskFactoryImpl(serviceRegistrar);
