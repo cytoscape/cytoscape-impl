@@ -64,7 +64,6 @@ import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.EditAnnotationTaskFactory;
-import org.cytoscape.ding.impl.cyannotator.tasks.RemoveAnnotationsTask;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.ding.impl.undo.AnnotationEdit;
 import org.cytoscape.ding.impl.undo.CompositeCyEdit;
@@ -293,10 +292,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		get(AddAnnotationListener.class).beginClickToAddAnnotation(factory, callback);
 	}
 
-	/**
-	 * 
-	 * @param factory
-	 */
 	public void cancelClickToAddAnnotation(AnnotationFactory<? extends Annotation> factory) {
 		var listener = get(AddAnnotationListener.class);
 		
@@ -389,7 +384,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				
 				if (annotationSelectionEnabled())
 					allChanged |= cancelAnnotations();
-			} else if (code == VK_BACK_SPACE) {
+			} else if (code == VK_BACK_SPACE || code == VK_DELETE) {
 				// In this case changing the model will trigger a render
 				deleteSelected();
 			} else if (code == VK_D && isControlOrMetaDown(e)) {
@@ -531,15 +526,18 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		
 		private void deleteSelected() {
 			var tasks = new TaskIterator();
-			var annotationSelection = cyAnnotator.getAnnotationSelection();
-			
-			if (!annotationSelection.isEmpty()) {
-				var annotations = new ArrayList<Annotation>(annotationSelection.getSelectedAnnotations());
-				tasks.append(new RemoveAnnotationsTask(re, annotations, registrar));
+			{
+				var f = registrar.getService(NetworkViewTaskFactory.class, "(id=removeSelectedAnnotationsTaskFactory)");
+				
+				if (f.isReady(re.getViewModel()))
+					tasks.append(f.createTaskIterator(re.getViewModel()));
 			}
-
-			var taskFactory = registrar.getService(DeleteSelectedNodesAndEdgesTaskFactory.class);
-			tasks.append(taskFactory.createTaskIterator(re.getViewModel().getModel()));
+			{
+				var f = registrar.getService(DeleteSelectedNodesAndEdgesTaskFactory.class);
+				
+				if (f.isReady(re.getViewModel().getModel()))
+					tasks.append(f.createTaskIterator(re.getViewModel().getModel()));
+			}
 
 			var taskManager = registrar.getService(TaskManager.class);
 			taskManager.execute(tasks);

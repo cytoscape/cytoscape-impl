@@ -2,12 +2,9 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.presentation.annotations.Annotation;
@@ -40,13 +37,13 @@ import org.cytoscape.work.TaskMonitor;
  * #L%
  */
 
-public class RemoveAnnotationsTask extends AbstractTask {
+public class RemoveSelectedAnnotationsTask extends AbstractTask {
 	
 	private final DRenderingEngine re;
 	private final Collection<Annotation> annotations;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public RemoveAnnotationsTask(DRenderingEngine re, Collection<Annotation> annotations, CyServiceRegistrar serviceRegistrar) {
+	public RemoveSelectedAnnotationsTask(DRenderingEngine re, Collection<Annotation> annotations, CyServiceRegistrar serviceRegistrar) {
 		this.re = re;
 		this.annotations = annotations;
 		this.serviceRegistrar = serviceRegistrar;
@@ -57,8 +54,10 @@ public class RemoveAnnotationsTask extends AbstractTask {
 		tm.setTitle("Remove Annotations");
 		tm.setProgress(-1);
 
-		if (re != null) {
-			CyAnnotator annotator = re.getCyAnnotator();
+		if (re != null && annotations != null && !annotations.isEmpty()) {
+			tm.setStatusMessage("Deleting " + annotations.size() + " annotation(s)...");
+			
+			var annotator = re.getCyAnnotator();
 			annotator.markUndoEdit("Remove Annotations");
 			
 			Collection<? extends Annotation> newList = annotations;
@@ -73,17 +72,17 @@ public class RemoveAnnotationsTask extends AbstractTask {
 
 	private Collection<? extends Annotation> remove(Collection<? extends Annotation> list) {
 		// Save the groups from the annotations to be removed
-		Set<GroupAnnotation> groups = getGroups(list);
+		var groups = getGroups(list);
 		
 		// Remove the annotations
 		serviceRegistrar.getService(AnnotationManager.class).removeAnnotations(list);
 
 		// Check if there are groups with one or no members
-		Iterator<GroupAnnotation> iter = groups.iterator();
+		var iter = groups.iterator();
 		
 		while (iter.hasNext()) {
-			GroupAnnotation g = iter.next();
-			List<Annotation> members = g.getMembers();
+			var g = iter.next();
+			var members = g.getMembers();
 
 			if (members != null) {
 				if (members.size() > 1)
@@ -97,11 +96,11 @@ public class RemoveAnnotationsTask extends AbstractTask {
 	}
 	
 	private Set<GroupAnnotation> getGroups(Collection<? extends Annotation> list) {
-		Set<GroupAnnotation> groups = new HashSet<>();
+		var groups = new HashSet<GroupAnnotation>();
 		
 		list.forEach(a -> {
 			if (a instanceof DingAnnotation) {
-				GroupAnnotation g = ((DingAnnotation) a).getGroupParent();
+				var g = ((DingAnnotation) a).getGroupParent();
 			
 				if (g != null)
 					groups.add(g);

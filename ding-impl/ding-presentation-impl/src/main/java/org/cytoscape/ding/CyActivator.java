@@ -67,6 +67,7 @@ import org.cytoscape.ding.impl.cyannotator.tasks.DuplicateAnnotationsTaskFactory
 import org.cytoscape.ding.impl.cyannotator.tasks.EditAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.GroupAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.RemoveAnnotationTaskFactory;
+import org.cytoscape.ding.impl.cyannotator.tasks.RemoveSelectedAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.ReorderSelectedAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.UngroupAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.ui.AnnotationMediator;
@@ -329,32 +330,52 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, NetworkViewLocationTaskFactory.class, props);
 		}
 		
-		// Annotation duplicate
-		{
-			var factory = new DuplicateAnnotationsTaskFactory(renderer, annotationFactoryManager);
-			var props = new Properties();
-			props.setProperty(ID, "duplicateAnnotationsTaskFactory");
-			props.setProperty(PREFERRED_ACTION, "NEW");
-			props.setProperty(MENU_GRAVITY, "1.7");
-			props.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
-			props.setProperty(TITLE, "Duplicate Selected Annotations");
-			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
-			registerService(bc, factory, NetworkViewTaskFactory.class, props);
-		}
-
 		// Annotation edit
 		{
 			var factory = new EditAnnotationTaskFactory(renderer, annotationMediator);
 			var props = new Properties();
 			props.setProperty(ID, "editAnnotationTaskFactory");
 			props.setProperty(PREFERRED_ACTION, "NEW");
-			props.setProperty(MENU_GRAVITY, "2.0");
+			props.setProperty(MENU_GRAVITY, "6.0");
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
 			props.setProperty(TITLE, "Modify Annotation...");
 			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
 			registerService(bc, factory, NetworkViewLocationTaskFactory.class, props);
 		}
-
+		// Annotation (right-clicked one) delete (context-menu only)
+		{
+			var factory = new RemoveAnnotationTaskFactory(renderer);
+			var props = new Properties();
+			props.setProperty(PREFERRED_ACTION, "NEW");
+			props.setProperty(MENU_GRAVITY, "1.1");
+			props.setProperty(PREFERRED_MENU, NETWORK_DELETE_MENU);
+			props.setProperty(TITLE, "Annotation");
+			registerService(bc, factory, NetworkViewLocationTaskFactory.class, props);
+		}
+		// Delete Selected Annotations
+		{
+			var factory = new RemoveSelectedAnnotationsTaskFactory(renderer, serviceRegistrar);
+			var props = new Properties();
+			props.setProperty(ID, "removeSelectedAnnotationsTaskFactory");
+			props.setProperty(MENU_GRAVITY, "5.1");
+			props.setProperty(PREFERRED_MENU, "Edit");
+			props.setProperty(TITLE, "Remove Selected Annotations");
+			props.setProperty(IN_CONTEXT_MENU, "false");
+			registerService(bc, factory, NetworkViewTaskFactory.class, props);
+		}
+		// Annotation duplicate
+		{
+			var factory = new DuplicateAnnotationsTaskFactory(renderer, annotationFactoryManager);
+			var props = new Properties();
+			props.setProperty(ID, "duplicateAnnotationsTaskFactory");
+			props.setProperty(PREFERRED_ACTION, "NEW");
+			props.setProperty(MENU_GRAVITY, "6.1");
+			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
+			props.setProperty(TITLE, "Duplicate Selected Annotations");
+			props.setProperty(ACCELERATOR, "cmd D");
+			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
+			registerService(bc, factory, NetworkViewTaskFactory.class, props);
+		}
 		// Reorder Selected Annotations - Edit Menu
 		{
 			var factory = new ReorderSelectedAnnotationsTaskFactory(renderer, Shift.TO_FRONT);
@@ -362,7 +383,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
 			props.setProperty(TITLE, "Bring Annotations to Front");
 			props.setProperty(ACCELERATOR, "shift cmd CLOSE_BRACKET");
-			props.setProperty(MENU_GRAVITY, "6.1");
+			props.setProperty(MENU_GRAVITY, "6.2");
 			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 		}
@@ -372,7 +393,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
 			props.setProperty(TITLE, "Bring Annotations Forward");
 			props.setProperty(ACCELERATOR, "cmd CLOSE_BRACKET");
-			props.setProperty(MENU_GRAVITY, "6.2");
+			props.setProperty(MENU_GRAVITY, "6.3");
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 		}
 		{
@@ -381,7 +402,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
 			props.setProperty(TITLE, "Send Annotations Backward");
 			props.setProperty(ACCELERATOR, "cmd OPEN_BRACKET");
-			props.setProperty(MENU_GRAVITY, "6.3");
+			props.setProperty(MENU_GRAVITY, "6.4");
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 		}
 		{
@@ -390,7 +411,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
 			props.setProperty(TITLE, "Send Annotations to Back");
 			props.setProperty(ACCELERATOR, "shift cmd OPEN_BRACKET");
-			props.setProperty(MENU_GRAVITY, "6.4");
+			props.setProperty(MENU_GRAVITY, "6.5");
 			props.setProperty(INSERT_SEPARATOR_AFTER, "true");
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 		}
@@ -398,7 +419,7 @@ public class CyActivator extends AbstractCyActivator {
 			var factory = new ReorderSelectedAnnotationsTaskFactory(renderer, Annotation.FOREGROUND);
 			var props = new Properties();
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
-			props.setProperty(MENU_GRAVITY, "6.5");
+			props.setProperty(MENU_GRAVITY, "6.6");
 			props.setProperty(TITLE, "Pull Annotations to Foreground Layer");
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 		}
@@ -407,20 +428,9 @@ public class CyActivator extends AbstractCyActivator {
 			var props = new Properties();
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
 			props.setProperty(TITLE, "Push Annotations to Background Layer");
-			props.setProperty(MENU_GRAVITY, "6.6");
+			props.setProperty(MENU_GRAVITY, "6.7");
 			props.setProperty(INSERT_SEPARATOR_AFTER, "true");
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
-		}
-		
-		// Annotation delete
-		{
-			var factory = new RemoveAnnotationTaskFactory(renderer);
-			var props = new Properties();
-			props.setProperty(PREFERRED_ACTION, "NEW");
-			props.setProperty(MENU_GRAVITY, "1.1");
-			props.setProperty(PREFERRED_MENU, NETWORK_DELETE_MENU);
-			props.setProperty(TITLE, "Annotation");
-			registerService(bc, factory, NetworkViewLocationTaskFactory.class, props);
 		}
 		
 		// Annotation group

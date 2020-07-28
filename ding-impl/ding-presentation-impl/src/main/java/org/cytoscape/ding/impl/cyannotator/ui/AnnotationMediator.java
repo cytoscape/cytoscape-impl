@@ -42,7 +42,7 @@ import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.GroupAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.GroupAnnotationsTask;
-import org.cytoscape.ding.impl.cyannotator.tasks.RemoveAnnotationsTask;
+import org.cytoscape.ding.impl.cyannotator.tasks.RemoveSelectedAnnotationsTask;
 import org.cytoscape.ding.impl.cyannotator.tasks.ReorderAnnotationsTask;
 import org.cytoscape.ding.impl.cyannotator.tasks.ReorderSelectedAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.UngroupAnnotationsTask;
@@ -429,7 +429,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		var selList = mainPanel.getSelectedAnnotations();
 		
 		if (!selList.isEmpty()) {
-			var iterator = new TaskIterator(new RemoveAnnotationsTask(re, selList, serviceRegistrar));
+			var iterator = new TaskIterator(new RemoveSelectedAnnotationsTask(re, selList, serviceRegistrar));
 			serviceRegistrar.getService(DialogTaskManager.class).execute(iterator);
 		}
 	}

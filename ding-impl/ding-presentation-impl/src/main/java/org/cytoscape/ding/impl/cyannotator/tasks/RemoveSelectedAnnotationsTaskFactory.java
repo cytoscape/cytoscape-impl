@@ -3,10 +3,9 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
 import java.util.Collections;
 
 import org.cytoscape.ding.impl.DingRenderer;
-import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 import org.cytoscape.work.TaskIterator;
 
 /*
@@ -33,17 +32,14 @@ import org.cytoscape.work.TaskIterator;
  * #L%
  */
 
-public class DuplicateAnnotationsTaskFactory implements NetworkViewTaskFactory {
+public class RemoveSelectedAnnotationsTaskFactory implements NetworkViewTaskFactory {
 
 	private final DingRenderer dingRenderer;
-	private final AnnotationFactoryManager annotationFactoryManager;
-
-	public DuplicateAnnotationsTaskFactory(
-			DingRenderer dingRenderer,
-			AnnotationFactoryManager annotationFactoryManager
-	) {
+	private final CyServiceRegistrar serviceRegistrar;
+	
+	public RemoveSelectedAnnotationsTaskFactory(DingRenderer dingRenderer, CyServiceRegistrar serviceRegistrar) {
 		this.dingRenderer = dingRenderer;
-		this.annotationFactoryManager = annotationFactoryManager;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
@@ -59,7 +55,7 @@ public class DuplicateAnnotationsTaskFactory implements NetworkViewTaskFactory {
 				? cyAnnotator.getAnnotationSelection().getSelectedAnnotations()
 				: Collections.EMPTY_LIST;
 
-		return new TaskIterator(new DuplicateAnnotationsTask(re, annotations, annotationFactoryManager));
+		return new TaskIterator(new RemoveSelectedAnnotationsTask(re, annotations, serviceRegistrar));
 	}
 
 	@Override
@@ -70,24 +66,8 @@ public class DuplicateAnnotationsTaskFactory implements NetworkViewTaskFactory {
 			return false;
 
 		var cyAnnotator = re.getCyAnnotator();
-		var annotations = cyAnnotator.getAnnotationSelection().getSelectedAnnotations();
+		var annotations = cyAnnotator != null ? cyAnnotator.getAnnotationSelection().getSelectedAnnotations() : null;
 
-		if (annotations != null && !annotations.isEmpty()) {
-			for (var a : annotations) {
-				// It cannot contain only arrows without at least their sources being duplicated as well
-				if (a instanceof ArrowAnnotation) {
-					// Check the source of the arrow (is it also included in the list?)
-					var src = ((ArrowAnnotation) a).getSource();
-					
-					if (src == null || !annotations.contains(src))
-						continue;
-				} else {
-					// Not an arrow, so always ok
-					return true;
-				}
-			}
-		}
-		
-		return false;
+		return annotations != null && !annotations.isEmpty();
 	}
 }
