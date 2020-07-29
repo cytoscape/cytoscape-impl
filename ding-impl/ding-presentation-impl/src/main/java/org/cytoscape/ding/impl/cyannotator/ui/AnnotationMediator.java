@@ -4,8 +4,12 @@ import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.view.presentation.annotations.Annotation.BACKGROUND;
 import static org.cytoscape.view.presentation.annotations.Annotation.FOREGROUND;
 
+import java.awt.AWTEvent;
 import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.event.AWTEventListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -97,6 +101,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 
 	private AnnotationMainPanel mainPanel;
 	private final Map<String, AnnotationFactory<? extends Annotation>> factories = new LinkedHashMap<>();
+	private final EscapePressedListener escapePressedListener = new EscapePressedListener();
 	private boolean appStarted;
 	private boolean loadingSession;
 	private boolean ignoreSelectedPropChangeEvents;
@@ -353,10 +358,13 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 			if (re != null) {
 				var ihGlassPane = re.getInputHandlerGlassPane();
 				
-				if (state == ItemEvent.SELECTED)
+				if (state == ItemEvent.SELECTED) {
+					addEscapePressedListener();
 					ihGlassPane.beginClickToAddAnnotation(factory, () -> mainPanel.clearAnnotationButtonSelection());
-				else
+				} else {
 					ihGlassPane.cancelClickToAddAnnotation(factory);
+					removeEscapePressedListener();
+				}
 			}
 			
 			mainPanel.setCreateMode(state == ItemEvent.SELECTED);
@@ -571,5 +579,32 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		var path = tree.getPathForLocation(point.x, point.y);
 		
 		return path == null ? null : (AnnotationNode) path.getLastPathComponent();
+	}
+	
+	private void addEscapePressedListener() {
+	    Toolkit.getDefaultToolkit().addAWTEventListener(escapePressedListener, AWTEvent.KEY_EVENT_MASK);
+	}
+	
+	private void removeEscapePressedListener() {
+		Toolkit.getDefaultToolkit().removeAWTEventListener(escapePressedListener);
+	}
+	
+	private class EscapePressedListener implements AWTEventListener {
+		
+		@Override
+		public void eventDispatched(AWTEvent evt) {
+			if (evt instanceof KeyEvent) {
+				var key = (KeyEvent) evt;
+				
+				if (key.getID() == KeyEvent.KEY_PRESSED && key.getKeyCode() == KeyEvent.VK_ESCAPE) {
+					// Deselect the currently selected add button, if there's one,
+					// in order to cancel the click-to-add-annotation action
+					var btn = mainPanel.getSelectedAnnotationButton();
+					
+					if (btn != null && btn.isEnabled() && btn.isSelected())
+						btn.doClick();
+				}
+			}
+		}
 	}
 }

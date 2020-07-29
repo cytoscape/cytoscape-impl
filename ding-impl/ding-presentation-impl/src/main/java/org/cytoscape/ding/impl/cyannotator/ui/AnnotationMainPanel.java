@@ -340,6 +340,15 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		}
 	}
 	
+	AnnotationToggleButton getSelectedAnnotationButton() {
+		for (var btn : buttonMap.values()) {
+			if (btn.isSelected())
+				return btn;
+		}
+		
+		return null;
+	}
+	
 	Set<Annotation> getAllAnnotations() {
 		var set = new HashSet<Annotation>();
 		set.addAll(((AnnotationTreeModel) getBackgroundTree().getModel()).getData());
