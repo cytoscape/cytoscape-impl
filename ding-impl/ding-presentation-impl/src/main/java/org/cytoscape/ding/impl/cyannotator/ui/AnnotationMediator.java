@@ -8,6 +8,7 @@ import java.awt.AWTEvent;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.AWTEventListener;
+import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -20,9 +21,12 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.swing.AbstractAction;
+import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
+import javax.swing.KeyStroke;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
@@ -132,7 +136,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 			mainPanel.setEnabled(false);
 			mainPanel.getGroupAnnotationsButton().addActionListener(e -> groupAnnotations());
 			mainPanel.getUngroupAnnotationsButton().addActionListener(e -> ungroupAnnotations());
-			mainPanel.getRemoveAnnotationsButton().addActionListener(e -> removeAnnotations());
+			mainPanel.getRemoveAnnotationsButton().addActionListener(e -> removeSelectedAnnotations());
 			mainPanel.getPushToBackgroundButton().addActionListener(e -> moveAnnotationsToCanvas(BACKGROUND));
 			mainPanel.getPullToForegroundButton().addActionListener(e -> moveAnnotationsToCanvas(FOREGROUND));
 			mainPanel.getBackgroundLayerPanel().getForwardButton().addActionListener(e -> reorderAnnotations(BACKGROUND, mainPanel.getBackgroundTree(), Shift.UP_ONE));
@@ -173,6 +177,9 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 					maybeShowPopupMenu(mainPanel.getForegroundTree(), e);
 				}
 			});
+			
+			setKeyBindings(mainPanel.getBackgroundTree());
+			setKeyBindings(mainPanel.getForegroundTree());
 		});
 		
 		appStarted = true;
@@ -428,7 +435,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		}
 	}
 	
-	private void removeAnnotations() {
+	private void removeSelectedAnnotations() {
 		var re = mainPanel.getRenderingEngine();
 		
 		if (re == null)
@@ -587,6 +594,35 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 	
 	private void removeEscapePressedListener() {
 		Toolkit.getDefaultToolkit().removeAWTEventListener(escapePressedListener);
+	}
+	
+	private void setKeyBindings(JComponent comp) {
+		var actionMap = comp.getActionMap();
+		var inputMap = comp.getInputMap(JComponent.WHEN_FOCUSED);
+
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), KeyAction.VK_DELETE);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0), KeyAction.VK_DELETE);
+		
+		actionMap.put(KeyAction.VK_DELETE, new KeyAction(KeyAction.VK_DELETE));
+	}
+	
+	@SuppressWarnings("serial")
+	private class KeyAction extends AbstractAction {
+
+		final static String VK_DELETE = "VK_DELETE";
+		
+		KeyAction(String actionCommand) {
+			putValue(ACTION_COMMAND_KEY, actionCommand);
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent evt) {
+			var cmd = evt.getActionCommand();
+			
+			if (cmd.equals(VK_DELETE)) {
+				removeSelectedAnnotations();
+			}
+		}
 	}
 	
 	private class EscapePressedListener implements AWTEventListener {
