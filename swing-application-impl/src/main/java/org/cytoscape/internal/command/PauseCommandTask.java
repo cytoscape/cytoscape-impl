@@ -38,12 +38,15 @@ public class PauseCommandTask extends AbstractTask {
 		
 		JFrame parent = swingApplication.getJFrame();
 		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Paused...");
-		showDialog(parent, message);
+		showMessageDialog(parent, message);
 		taskMonitor.showMessage(TaskMonitor.Level.INFO, "continuing");
 	}
 	
 	
-	private static void showDialog(JFrame parent, String message) {
+	// MKTODO This should be in the swing-util-api bundle as a utility. Can't do that right now because we
+	// are not updating API for the 3.8.1 release. 
+	// There is a similar copy of this method in CommandTunableInterceptorImpl.
+	private static void showMessageDialog(JFrame parent, String message) {
 		// Can't use JOptionPane because it doesn't work when run from automation script (CYTOSCAPE-12730).
 		JLabel label = new JLabel(message);
 		JButton okButton = new JButton("OK");
