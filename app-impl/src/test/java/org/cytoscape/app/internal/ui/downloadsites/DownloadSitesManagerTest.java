@@ -1,12 +1,23 @@
 package org.cytoscape.app.internal.ui.downloadsites;
 
+import static org.cytoscape.property.CyProperty.SavePolicy.DO_NOT_SAVE;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Properties;
+
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.SimpleCyProperty;
+import org.junit.Test; 
+
 /*
  * #%L
  * Cytoscape App Impl (app-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2008 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2008 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,26 +35,10 @@ package org.cytoscape.app.internal.ui.downloadsites;
  * #L%
  */
 
-import static org.cytoscape.property.CyProperty.SavePolicy.DO_NOT_SAVE;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import java.util.Properties;
-
-import org.cytoscape.model.SavePolicy;
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.property.SimpleCyProperty;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 public class DownloadSitesManagerTest {
 	
 	@Test
 	public void testSaveLoad() {
-		
 		// Create new DownloadSitesManager
 		Properties properties = new Properties();
 		
