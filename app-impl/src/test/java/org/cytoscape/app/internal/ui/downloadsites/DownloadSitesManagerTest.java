@@ -104,4 +104,17 @@ public class DownloadSitesManagerTest {
 		assertEquals("test2", downloadSitesManager.getDownloadSites().get(1).getSiteName());
 		assertEquals("http://test2", downloadSitesManager.getDownloadSites().get(1).getSiteUrl());
 	}
+	
+	@Test
+	public void testHttpsConvert() {
+		DownloadSite downloadSite = new DownloadSite();
+		downloadSite.setSiteUrl("http://test1");
+		assertEquals("http://test1", downloadSite.getSiteUrl());
+
+		downloadSite.setSiteUrl("http://apps.cytoscape.org/");
+		assertEquals("https://apps.cytoscape.org/", downloadSite.getSiteUrl());
+
+		downloadSite.setSiteUrl("http://apps.cytoscape.org");
+		assertEquals("https://apps.cytoscape.org/", downloadSite.getSiteUrl());
+	}
 }
