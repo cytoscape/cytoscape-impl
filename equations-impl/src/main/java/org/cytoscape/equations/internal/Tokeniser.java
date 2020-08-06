@@ -36,6 +36,7 @@ public class Tokeniser {
 	private long previousIntConstant, currentIntConstant;
 	private String previousIdent, currentIdent;
 	private double previousFloatConstant, currentFloatConstant;
+	private String previousFloatString, currentFloatString;
 	private boolean previousBooleanConstant, currentBooleanConstant;
 	private String previousStringConstant, currentStringConstant;
 	private String errorMsg;
@@ -59,6 +60,7 @@ public class Tokeniser {
 
 			currentIntConstant = previousIntConstant;
 			currentFloatConstant = previousFloatConstant;
+			currentFloatString = previousFloatString;
 			currentBooleanConstant = previousBooleanConstant;
 			currentStringConstant = previousStringConstant;
 			currentIdent = previousIdent;
@@ -149,6 +151,7 @@ public class Tokeniser {
 		previousToken = token;
 		previousIntConstant = currentIntConstant;
 		previousFloatConstant = currentFloatConstant;
+		previousFloatString = currentFloatString;
 		previousBooleanConstant = currentBooleanConstant;
 		previousStringConstant = currentStringConstant;
 		previousIdent = currentIdent;
@@ -163,6 +166,10 @@ public class Tokeniser {
 		return tokenStartPos;
 	}
 
+	public int getCurrentPos() {
+		return currentPos;
+	}
+	
 	/**
 	 *  Returns a representation of the next token as a string.  Used primarily for testing.
 	 *  You should stop calling this after it returned "EOS"!
@@ -188,6 +195,10 @@ public class Tokeniser {
 
 	public double getFloatConstant() {
 		return currentFloatConstant;
+	}
+	
+	public String getFloatString() {
+		return currentFloatString;
 	}
 
 	public boolean getBooleanConstant() {
@@ -288,8 +299,10 @@ public class Tokeniser {
 
 		if (ch == -1 || ((char)ch != 'e' && (char)ch != 'E' && (char)ch != '.')) {
 			try {
-				final double d = Double.parseDouble(builder.toString());
+				String s = builder.toString();
+				final double d = Double.parseDouble(s);
 				currentFloatConstant = d;
+				currentFloatString = s;
 				ungetChar(ch);
 				return Token.FLOAT_CONSTANT;
 			} catch (final NumberFormatException e2) {
@@ -335,8 +348,10 @@ public class Tokeniser {
 		ungetChar(ch);
 
 		try {
-			final double d = Double.parseDouble(builder.toString());
+			String s = builder.toString();
+			final double d = Double.parseDouble(s);
 			currentFloatConstant = d;
+			currentFloatString = s;
 			return Token.FLOAT_CONSTANT;
 		} catch (final NumberFormatException e3) {
 			errorMsg = "invalid numeric constant.";

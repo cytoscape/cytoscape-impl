@@ -1,9 +1,8 @@
 package org.cytoscape.equations.internal;
 
-import java.util.Properties;
-
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.equations.EquationParser;
+import org.cytoscape.equations.EquationTokeniser;
 import org.cytoscape.equations.Function;
 import org.cytoscape.equations.Interpreter;
 import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
@@ -42,12 +41,14 @@ public class CyActivator extends AbstractCyActivator {
 		final CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 
 		InterpreterImpl interpreter = new InterpreterImpl();
+		EquationTokeniserImpl tokeniser = new EquationTokeniserImpl();
 		EquationParserImpl parser = new EquationParserImpl(serviceRegistrar);
 		EquationCompilerImpl compiler = new EquationCompilerImpl(parser);
 
-		registerService(bc, compiler, EquationCompiler.class, new Properties());
-		registerService(bc, interpreter, Interpreter.class, new Properties());
-		registerService(bc, parser, EquationParser.class, new Properties());
+		registerService(bc, tokeniser, EquationTokeniser.class);
+		registerService(bc, compiler, EquationCompiler.class);
+		registerService(bc, interpreter, Interpreter.class);
+		registerService(bc, parser, EquationParser.class);
 
 		// For dynamically add functions.
 		registerServiceListener(bc, parser::registerFunctionService, parser::unregisterFunctionService, Function.class);
