@@ -205,6 +205,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			throw new IllegalArgumentException("'customGraphicsManager' must not be null.");
 		
 		this.customGraphicsManager = customGraphicsManager;
+		
 		opacity = ViewUtils.getFloat(argMap, OPACITY, 1.0f);
 		brightness = ViewUtils.getInteger(argMap, LIGHTNESS, 0);
 		contrast = ViewUtils.getInteger(argMap, CONTRAST, 0);

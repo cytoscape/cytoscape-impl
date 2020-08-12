@@ -121,7 +121,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 	}
 	
 	@Override
-	public Map<String,String> getArgMap() {
+	public Map<String, String> getArgMap() {
 		var argMap = super.getArgMap();
 		argMap.put(TYPE, GroupAnnotation.class.getName());
 		String members = "";

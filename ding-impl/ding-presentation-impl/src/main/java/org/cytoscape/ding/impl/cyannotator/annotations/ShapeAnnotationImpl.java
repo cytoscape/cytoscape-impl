@@ -94,29 +94,28 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		this.shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, width, height);
 	}
 
-	public ShapeAnnotationImpl(DRenderingEngine re, Map<String,String> argMap) {
+	public ShapeAnnotationImpl(DRenderingEngine re, Map<String, String> argMap) {
 		super(re, argMap);
 
-		this.fillColor = ViewUtils.getColor(argMap, FILLCOLOR, null);
-		this.fillOpacity = ViewUtils.getDouble(argMap, FILLOPACITY, 100.0);
-		
 		double zoom = getLegacyZoom(argMap);
 
 		// If this is an old bounded text, we might not (yet) have a width or height
-		this.width  = ViewUtils.getDouble(argMap, ShapeAnnotation.WIDTH,  100.0) / zoom;
-		this.height = ViewUtils.getDouble(argMap, ShapeAnnotation.HEIGHT, 100.0) / zoom;
-		
-		this.borderWidth = ViewUtils.getDouble(argMap, EDGETHICKNESS, 1.0) / zoom;
-		
-		this.borderColor = ViewUtils.getColor(argMap, EDGECOLOR, Color.BLACK);
-		this.borderOpacity = ViewUtils.getDouble(argMap, EDGEOPACITY, 100.0);
+		width = ViewUtils.getDouble(argMap, ShapeAnnotation.WIDTH, 100.0) / zoom;
+		height = ViewUtils.getDouble(argMap, ShapeAnnotation.HEIGHT, 100.0) / zoom;
 
-		this.shapeType = GraphicsUtilities.getShapeType(argMap, SHAPETYPE, ShapeType.RECTANGLE);
+		fillColor = ViewUtils.getColor(argMap, FILLCOLOR, null);
+		fillOpacity = ViewUtils.getDouble(argMap, FILLOPACITY, 100.0);
+		
+		borderWidth = ViewUtils.getDouble(argMap, EDGETHICKNESS, 1.0) / zoom;
+		borderColor = ViewUtils.getColor(argMap, EDGECOLOR, Color.BLACK);
+		borderOpacity = ViewUtils.getDouble(argMap, EDGEOPACITY, 100.0);
 
-		if (this.shapeType != ShapeType.CUSTOM)
-			this.shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, width, height);
+		shapeType = GraphicsUtilities.getShapeType(argMap, SHAPETYPE, ShapeType.RECTANGLE);
+
+		if (shapeType != ShapeType.CUSTOM)
+			shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, width, height);
 		else if (argMap.containsKey(CUSTOMSHAPE))
-			this.shape = GraphicsUtilities.deserializeShape(argMap.get(CUSTOMSHAPE));
+			shape = GraphicsUtilities.deserializeShape(argMap.get(CUSTOMSHAPE));
 	}
 
 	@Override

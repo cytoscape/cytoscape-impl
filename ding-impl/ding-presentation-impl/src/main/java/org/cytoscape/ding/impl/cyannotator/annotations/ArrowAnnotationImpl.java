@@ -116,13 +116,13 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		super(re, usedForPreviews);
 	}
 
-	public ArrowAnnotationImpl(DRenderingEngine re, Map<String,String> argMap) {
+	public ArrowAnnotationImpl(DRenderingEngine re, Map<String, String> argMap) {
 		super(re, argMap);
 
-		this.lineColor = ViewUtils.getColor(argMap, ARROWCOLOR, Color.BLACK);
+		lineColor = ViewUtils.getColor(argMap, ARROWCOLOR, Color.BLACK);
 		
 		double zoom = getLegacyZoom(argMap);
-		this.lineWidth = ViewUtils.getFloat(argMap, ARROWTHICKNESS, 1.0f) / (float)zoom;
+		lineWidth = ViewUtils.getFloat(argMap, ARROWTHICKNESS, 1.0f) / (float)zoom;
 
 		// Source
 		if (argMap.containsKey(SOURCEANN)) {
@@ -131,14 +131,14 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		}
 
 		// Source Arrow
-		this.sourceType = GraphicsUtilities.getArrowType(argMap, SOURCETYPE, ArrowType.NONE);
-		this.sourceSize = ViewUtils.getDouble(argMap, SOURCESIZE, 5.0);
-		this.sourceColor = ViewUtils.getColor(argMap, SOURCECOLOR, null); // A null color = line color
+		sourceType = GraphicsUtilities.getArrowType(argMap, SOURCETYPE, ArrowType.NONE);
+		sourceSize = ViewUtils.getDouble(argMap, SOURCESIZE, 5.0);
+		sourceColor = ViewUtils.getColor(argMap, SOURCECOLOR, null); // A null color = line color
 
 		// Target Arrow
-		this.targetType = GraphicsUtilities.getArrowType(argMap, TARGETTYPE, ArrowType.NONE);
-		this.targetSize = ViewUtils.getDouble(argMap, TARGETSIZE, 5.0);
-		this.targetColor = ViewUtils.getColor(argMap, TARGETCOLOR, null); // A null color = line color
+		targetType = GraphicsUtilities.getArrowType(argMap, TARGETTYPE, ArrowType.NONE);
+		targetSize = ViewUtils.getDouble(argMap, TARGETSIZE, 5.0);
+		targetColor = ViewUtils.getColor(argMap, TARGETCOLOR, null); // A null color = line color
 
 		// Figure out the target
 		if (argMap.containsKey(TARGETPOINT)) {
@@ -172,19 +172,19 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		var argMap = super.getArgMap();
 		argMap.put(TYPE, ArrowAnnotation.class.getName());
 
-		if (this.lineColor != null)
-			argMap.put(ARROWCOLOR, ViewUtils.convertColor(this.lineColor));
+		if (lineColor != null)
+			argMap.put(ARROWCOLOR, ViewUtils.convertColor(lineColor));
 
-		argMap.put(ARROWTHICKNESS, Float.toString(this.lineWidth));
+		argMap.put(ARROWTHICKNESS, Float.toString(lineWidth));
 
 		if (source != null)
 			argMap.put(SOURCEANN, source.getUUID().toString());
 
-		argMap.put(SOURCETYPE, Integer.toString(this.sourceType.ordinal()));
-		argMap.put(SOURCESIZE, Double.toString(this.sourceSize));
+		argMap.put(SOURCETYPE, Integer.toString(sourceType.ordinal()));
+		argMap.put(SOURCESIZE, Double.toString(sourceSize));
 
-		if (this.sourceColor != null)
-			argMap.put(SOURCECOLOR, ViewUtils.convertColor(this.sourceColor));
+		if (sourceColor != null)
+			argMap.put(SOURCECOLOR, ViewUtils.convertColor(sourceColor));
 
 		if (target instanceof Point2D) {
 			var xy = (Point2D) target;
@@ -201,11 +201,11 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			}
 		}
 
-		argMap.put(TARGETTYPE, Integer.toString(this.targetType.ordinal()));
-		argMap.put(TARGETSIZE, Double.toString(this.targetSize));
+		argMap.put(TARGETTYPE, Integer.toString(targetType.ordinal()));
+		argMap.put(TARGETSIZE, Double.toString(targetSize));
 
-		if (this.targetColor != null)
-			argMap.put(TARGETCOLOR, ViewUtils.convertColor(this.targetColor));
+		if (targetColor != null)
+			argMap.put(TARGETCOLOR, ViewUtils.convertColor(targetColor));
 
 		return argMap;
 	}

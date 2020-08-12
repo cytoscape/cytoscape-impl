@@ -99,7 +99,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		this.fontSize = (float) initialFontSize;
 	}
 
-	public BoundedTextAnnotationImpl(DRenderingEngine re, Map<String,String> argMap) {
+	public BoundedTextAnnotationImpl(DRenderingEngine re, Map<String, String> argMap) {
 		super(re, argMap);
 		
 		this.font = ViewUtils.getArgFont(argMap, "Arial", Font.PLAIN, initialFontSize);

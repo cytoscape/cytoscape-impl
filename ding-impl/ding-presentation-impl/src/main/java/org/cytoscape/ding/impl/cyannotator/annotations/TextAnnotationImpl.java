@@ -65,7 +65,10 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		text = c.getText();
 		textColor = c.getTextColor();
 		fontSize = (float) c.getFontSize();
-		font = c.getFont();
+		
+		if (c.getFont() != null)
+			font = c.getFont();
+		
 		name = c.getName() != null ? c.getName() : getDefaultName();
 	}
 
@@ -112,6 +115,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		argMap.put(FONTFAMILY, font.getFamily());
 		argMap.put(FONTSIZE, Integer.toString(font.getSize()));
 		argMap.put(FONTSTYLE, Integer.toString(font.getStyle()));
+		
 		return argMap;
 	}
 

@@ -1,12 +1,9 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /*
  * #%L
@@ -14,7 +11,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 200 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -37,8 +34,6 @@ public class RemoveAnnotationTask extends AbstractTask {
 	private final DRenderingEngine re;
 	private final DingAnnotation annotation;
 
-	private static final Logger logger = LoggerFactory.getLogger(RemoveAnnotationTask.class);
-
 	public RemoveAnnotationTask(DRenderingEngine re, DingAnnotation annotation) {
 		this.re = re;
 		this.annotation = annotation;
@@ -49,8 +44,8 @@ public class RemoveAnnotationTask extends AbstractTask {
 		tm.setTitle("Remove Annotation");
 		
 		if (re != null) {
-			CyAnnotator annotator = annotation.getCyAnnotator();
-			annotator.markUndoEdit("Delete Annotation");
+			var annotator = annotation.getCyAnnotator();
+			annotator.markUndoEdit("Remove Annotation");
 			
 			annotation.removeAnnotation();
 			
