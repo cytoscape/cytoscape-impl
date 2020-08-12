@@ -209,6 +209,27 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 		return argMap;
 	}
+	
+	@Override
+	public void setStyle(Map<String, String> argMap) {
+		if (argMap != null) {
+			// Stroke
+			setLineColor(ViewUtils.getColor(argMap, ARROWCOLOR, Color.BLACK));
+
+			double zoom = getLegacyZoom(argMap);
+			setLineWidth(ViewUtils.getFloat(argMap, ARROWTHICKNESS, 1.0f) / (float) zoom);
+
+			// Source Arrow
+			setArrowType(ArrowEnd.SOURCE, GraphicsUtilities.getArrowType(argMap, SOURCETYPE, ArrowType.NONE).getName());
+			setArrowSize(ArrowEnd.SOURCE, ViewUtils.getDouble(argMap, SOURCESIZE, 5.0));
+			setArrowColor(ArrowEnd.SOURCE, ViewUtils.getColor(argMap, SOURCECOLOR, null));
+
+			// Target Arrow
+			setArrowType(ArrowEnd.TARGET, GraphicsUtilities.getArrowType(argMap, TARGETTYPE, ArrowType.NONE).getName());
+			setArrowSize(ArrowEnd.TARGET, ViewUtils.getDouble(argMap, TARGETSIZE, 5.0));
+			setArrowColor(ArrowEnd.TARGET, ViewUtils.getColor(argMap, TARGETCOLOR, null));
+		}
+	}
 
 	@Override
 	public Annotation getSource() { 

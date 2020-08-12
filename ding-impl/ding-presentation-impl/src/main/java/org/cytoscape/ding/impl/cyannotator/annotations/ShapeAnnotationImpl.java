@@ -152,6 +152,25 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 
 		return argMap;
 	}
+	
+	/**
+	 * Width and height are not applied, only colors, shape, etc.
+	 */
+	@Override
+	public void setStyle(Map<String, String> argMap) {
+		if (argMap != null) {
+			double zoom = getLegacyZoom(argMap);
+
+			setFillColor(ViewUtils.getColor(argMap, FILLCOLOR, null));
+			setFillOpacity(ViewUtils.getDouble(argMap, FILLOPACITY, 100.0));
+			
+			setBorderWidth(ViewUtils.getDouble(argMap, EDGETHICKNESS, 1.0) / zoom);
+			setBorderColor(ViewUtils.getColor(argMap, EDGECOLOR, Color.BLACK));
+			setBorderOpacity(ViewUtils.getDouble(argMap, EDGEOPACITY, 100.0));
+
+			setShapeType(GraphicsUtilities.getShapeType(argMap, SHAPETYPE, ShapeType.RECTANGLE));
+		}
+	}
 
 	@Override
 	public List<String> getSupportedShapes() {

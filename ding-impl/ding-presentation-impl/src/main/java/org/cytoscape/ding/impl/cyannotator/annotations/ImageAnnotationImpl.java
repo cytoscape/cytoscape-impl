@@ -271,6 +271,20 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 		return argMap;
 	}
+	
+	/**
+	 * Width and height are not applied, only colors, shape, image adjustments, etc.
+	 */
+	@Override
+	public void setStyle(Map<String, String> argMap) {
+		super.setStyle(argMap);
+		
+		if (argMap != null) {
+			setImageOpacity(ViewUtils.getFloat(argMap, OPACITY, 1.0f));
+			setImageBrightness(ViewUtils.getInteger(argMap, LIGHTNESS, 0));
+			setImageContrast(ViewUtils.getInteger(argMap, CONTRAST, 0));
+		}
+	}
 
 	public void reloadImage() {
 		// Get the image from the image pool again

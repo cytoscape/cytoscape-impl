@@ -138,6 +138,17 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		return argMap;
 	}
 
+	/**
+	 * Just calls the same method on all the child annotations.
+	 */
+	@Override
+	public void setStyle(Map<String, String> argMap) {
+		if (argMap != null) {
+			for (var a : annotations)
+				a.setStyle(argMap);
+		}
+	}
+	
 	@Override
 	public void setLocation(double x, double y) {
 		double deltaX = getX() - x;

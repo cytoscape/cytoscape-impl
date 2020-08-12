@@ -42,24 +42,21 @@ import org.cytoscape.view.presentation.annotations.TextAnnotation;
 public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnotation {
 	
 	public static final String DEF_TEXT = "Text";
+	
+	protected static final Font DEF_FONT = new Font("Arial", Font.PLAIN, 12);
 
-	private String text = "";
+	private String text = DEF_TEXT;
+	private Font font = DEF_FONT;
+	private float fontSize = DEF_FONT.getSize();
+	private Color textColor = Color.BLACK;
 
-	protected float fontSize;
-	protected float savedFontSize;
-	protected Font font;
-	protected int initialFontSize = 12;
-	protected Color textColor = Color.BLACK;
-
+	private float savedFontSize;
+	
 	/** Initially, the name is the same as the text */
 	private boolean updateNameFromText = true;
 
 	public TextAnnotationImpl(DRenderingEngine re, boolean usedForPreviews) { 
 		super(re, usedForPreviews); 
-		
-		this.font = new Font("Arial", Font.PLAIN, initialFontSize);
-		this.fontSize = (float) initialFontSize;
-		this.text = DEF_TEXT;
 	}
 
 	public TextAnnotationImpl(TextAnnotationImpl c, boolean usedForPreviews) {
@@ -83,30 +80,26 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		super(re, x, y);
 
 		this.text = text;
-		this.font = new Font("Arial", Font.PLAIN, initialFontSize);
-		this.fontSize = (float) initialFontSize;
 		setSize(getAnnotationWidth(), getAnnotationHeight());
 	}
 
-	// This constructor is used to construct a text annotation from an
-	// argument map.
-	// Need to make sure all arguments have reasonable options
 	public TextAnnotationImpl(DRenderingEngine re, Map<String,String> argMap) {
 		super(re, argMap);
-		
-		font = ViewUtils.getArgFont(argMap, "Arial", Font.PLAIN, initialFontSize);
-		double zoom = getLegacyZoom(argMap);
-		if(zoom != 1.0) {
-			font = font.deriveFont(font.getSize2D() / (float)zoom);
-		}
-		
-		textColor = (Color) ViewUtils.getColor(argMap, COLOR, Color.BLACK);
-		text = ViewUtils.getString(argMap, TEXT, "");
-		fontSize = font.getSize();
 		
 		if (name == null && text != null && !text.trim().isEmpty())
 			name = text.trim();
 		
+		text = ViewUtils.getString(argMap, TEXT, "");
+		
+		textColor = (Color) ViewUtils.getColor(argMap, COLOR, Color.BLACK);
+		
+		font = ViewUtils.getArgFont(argMap, font.getFamily(), font.getStyle(), font.getSize());
+		double zoom = getLegacyZoom(argMap);
+		
+		if (zoom != 1.0)
+			font = font.deriveFont(font.getSize2D() / (float) zoom);
+		
+		fontSize = font.getSize();
 		setSize(getAnnotationWidth(), getAnnotationHeight());
 	}
 
@@ -307,6 +300,23 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		update();
 	}
 	
+	/**
+	 * This applies only text color and font.
+	 */
+	@Override
+	public void setStyle(Map<String, String> argMap) {
+		if (argMap != null) {
+			setTextColor((Color) ViewUtils.getColor(argMap, COLOR, Color.BLACK));
+			
+			var newFont = ViewUtils.getArgFont(argMap, font.getFamily(), font.getStyle(), font.getSize());
+			double zoom = getLegacyZoom(argMap);
+			
+			if (zoom != 1.0)
+				newFont = newFont.deriveFont(newFont.getSize2D() / (float) zoom);
+			
+			setFont(newFont);
+		}
+	}
 	
 	@Override
 	public void paint(Graphics g, boolean showSelection) {

@@ -4,6 +4,7 @@ import java.awt.Graphics;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeListener;
+import java.util.Map;
 
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.view.presentation.annotations.Annotation;
@@ -140,4 +141,15 @@ public interface DingAnnotation extends Annotation {
 	void saveBounds();
 
 	Rectangle2D getInitialBounds();
+	
+	/**
+	 * These keys must be ignored by the implementation:
+	 * {@link Annotation#X}, {@link Annotation#Y}, {@link Annotation#Z}, {@link Annotation#CANVAS},
+	 * {@link Annotation#NAME}, {@link #TYPE}, {@link #ANNOTATION_ID}, {@link #PARENT_ID}.
+	 * Others which do not refer to style properties must be ignored as well.<br>
+	 * Invalid key or values for the specific annotation should also be ignored.
+	 * 
+	 * @param argMap Has most of the same keys as the map returned by {@link #getArgMap()}. Ignored if null.
+	 */
+	void setStyle(Map<String, String> argMap);
 }
