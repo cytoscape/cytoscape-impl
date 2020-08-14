@@ -401,7 +401,6 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		for(CyNetworkViewListener listener : listeners) {
 			listener.handleFitContent();
 		}
-		setDirty();
 	}
 
 	@Override
@@ -409,7 +408,6 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		for(CyNetworkViewListener listener : listeners) {
 			listener.handleFitSelected();
 		}
-		setDirty();
 	}
 
 	@Override
@@ -422,7 +420,6 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		for(CyNetworkViewListener listener : listeners) {
 			listener.handleUpdateView();
 		}
-		setDirty();
 	}
 	
 	@Override

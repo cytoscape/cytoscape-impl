@@ -282,6 +282,11 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 	
 	
+	private void updateModelAndView() {	
+		updateModel();	
+		updateView(UpdateType.ALL_FULL);	
+	}
+	
 	public void updateView(UpdateType updateType) {
 		renderComponent.updateView(updateType);
 		
@@ -476,6 +481,14 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 				}
 			});
 		}
+		
+		updateModelAndView();
+	}
+	
+	
+	@Override	
+	public void handleUpdateView() {	
+		updateModelAndView();	
 	}
 	
 	public void zoom(int ticks) {
@@ -589,6 +602,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 				netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, yCenter);
 			}
 		});
+		
+		updateModelAndView();
 	}
 
 	
