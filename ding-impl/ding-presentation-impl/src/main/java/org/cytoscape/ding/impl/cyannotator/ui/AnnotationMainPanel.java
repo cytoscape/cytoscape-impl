@@ -503,26 +503,7 @@ System.out.println("AnnotationMainPanel.setSelected(): " + a + " -- " + selected
 		if (editComp != null)
 			getEditPanel().remove(editComp);
 		
-		if (isCreateMode()) {
-			for (var entry : buttonMap.entrySet()) {
-				var btn = entry.getValue();
-				
-				if (btn.isSelected()) {
-					var f = btn.getFactory();
-					
-					if (f instanceof AbstractDingAnnotationFactory) {
-						var comp = ((AbstractDingAnnotationFactory<?>) f).getEditor();
-						
-						if (comp != null) {
-							getEditPanel().add(comp, BorderLayout.CENTER);
-							getContentTabbedPane().setSelectedComponent(getEditPanel());
-						}
-					}
-					
-					break;
-				}
-			}
-		} else {
+		if (!isCreateMode()) {
 			var selectedList = getSelectedAnnotations();
 			var annotation = selectedList.size() == 1 ? selectedList.iterator().next() : null;
 			
