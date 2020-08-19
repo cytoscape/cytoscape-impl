@@ -1,5 +1,6 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
+import java.awt.Point;
 import java.awt.geom.Point2D;
 
 import org.cytoscape.ding.impl.DingRenderer;
@@ -51,17 +52,20 @@ public class EditAnnotationTaskFactory implements NetworkViewLocationTaskFactory
 			return null;
 		
 		var annotation = re.getPicker().getAnnotationAt(javaPt);
+		var p = new Point((int) javaPt.getX(), (int) javaPt.getY());
 		
-		return new TaskIterator(new EditAnnotationTask(annotation, mediator));
+		return new TaskIterator(new EditAnnotationTask(annotation, mediator, p));
 	}
 
-	public TaskIterator createTaskIterator(DingAnnotation annotation, CyNetworkView networkView) {
+	public TaskIterator createTaskIterator(DingAnnotation annotation, CyNetworkView networkView, Point2D javaPt) {
 		var re = dingRenderer.getRenderingEngine(networkView);
 		
 		if (re == null)
 			return null;
 		
-		return new TaskIterator(new EditAnnotationTask(annotation, mediator));
+		var p = javaPt != null ? new Point((int) javaPt.getX(), (int) javaPt.getY()) : null;
+		
+		return new TaskIterator(new EditAnnotationTask(annotation, mediator, p));
 	}
 	
 	@Override

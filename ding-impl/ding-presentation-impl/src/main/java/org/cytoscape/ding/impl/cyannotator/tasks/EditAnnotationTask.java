@@ -1,5 +1,7 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
+import java.awt.Point;
+
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.ui.AnnotationMediator;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
@@ -34,10 +36,16 @@ public class EditAnnotationTask extends AbstractTask {
 	
 	private final DingAnnotation annotation; 
 	private final AnnotationMediator mediator;
+	private final Point location;
 
 	public EditAnnotationTask(DingAnnotation a, AnnotationMediator mediator) {
+		this(a, mediator, null);
+	}
+	
+	public EditAnnotationTask(DingAnnotation a, AnnotationMediator mediator, Point location) {
 		this.annotation = a;
 		this.mediator = mediator;
+		this.location = location;
 	}
 
 	@Override
@@ -50,8 +58,7 @@ public class EditAnnotationTask extends AbstractTask {
 			} else {
 				tm.setStatusMessage("Annotation: " + annotation.getName());
 				
-				mediator.editAnnotation(annotation);
-				mediator.showAnnotationPanel();
+				mediator.editAnnotation(annotation, location);
 			}
 		} else {
 			tm.setStatusMessage("No annotation selected!");

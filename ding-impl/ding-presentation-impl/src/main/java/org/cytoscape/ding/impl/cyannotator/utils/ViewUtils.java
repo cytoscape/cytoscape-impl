@@ -1,6 +1,7 @@
 package org.cytoscape.ding.impl.cyannotator.utils;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.LinearGradientPaint;
 import java.awt.MultipleGradientPaint.CycleMethod;
@@ -10,6 +11,9 @@ import java.awt.geom.Point2D;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
@@ -276,5 +280,18 @@ public class ViewUtils {
 
 		tree.resetZOrder();
 		re.updateView(UpdateType.JUST_ANNOTATIONS);
+	}
+	
+	public static void styleWindowStateButton(AbstractButton btn) {
+		final int size = 16;
+		
+		btn.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+		btn.setMinimumSize(new Dimension(size, size));
+		btn.setPreferredSize(new Dimension(size, size));
+		btn.setSize(new Dimension(size, size));
+		btn.setRolloverEnabled(false);
+		btn.setFocusPainted(false);
+		btn.setFocusable(false);
+		btn.setContentAreaFilled(false);
 	}
 }

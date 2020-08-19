@@ -4,6 +4,7 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
+import static org.cytoscape.util.swing.IconManager.ICON_WINDOW_MAXIMIZE;
 import static org.cytoscape.util.swing.LookAndFeelUtil.equalizeSize;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
@@ -15,6 +16,7 @@ import java.awt.Container;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Insets;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -42,6 +44,7 @@ import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -52,6 +55,7 @@ import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.CellEditorListener;
@@ -75,6 +79,7 @@ import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.dialogs.AbstractAnnotationEditor;
+import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.ding.internal.util.IconUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
@@ -86,7 +91,6 @@ import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 import org.cytoscape.view.presentation.annotations.BoundedTextAnnotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
-
 
 /*
  * #%L
@@ -125,11 +129,12 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	private static final Color TREE_SEL_BG_COLOR = UIManager.getColor("Table.selectionBackground");
 	private static final Color TREE_SEL_FG_COLOR = UIManager.getColor("Table.selectionForeground");
 	
+	public static final float STATE_ICON_FONT_SIZE = 11.0f;
+	
 	private JPanel toolBarPanel;
 	private JTabbedPane contentTabbedPane;
 	private JPanel layersPanel;
-	private JPanel editPanel;
-	private JLabel infoLabel;
+	private AppearancePanel appearancePanel;
 	private JLabel selectionLabel;
 	private JButton groupAnnotationsButton;
 	private JButton ungroupAnnotationsButton;
@@ -143,6 +148,8 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	private final Map<Class<? extends Annotation>, AnnotationToggleButton> buttonMap = new LinkedHashMap<>();
 	private final Map<Class<? extends Annotation>, Icon> iconMap = new LinkedHashMap<>();
 	private final ButtonGroup buttonGroup;
+	
+	private JFrame appearanceFrame;
 	
 	private SequentialGroup btnHGroup;
 	private ParallelGroup btnVGroup;
@@ -186,7 +193,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 				}
 				
 				prevModel = getSelection();
-				updateInfoLabel();
+				getAppearancePanel().update();
 			}
 		};
 		
@@ -251,10 +258,10 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			if (createMode)
 				editingAnnotation = null;
 			
-			updateEditPanel();
+			updateEditor();
 		}
 		
-		updateInfoLabel();
+		getAppearancePanel().update();
 	}
 	
 	boolean isEditMode() {
@@ -271,19 +278,55 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		
 		if (!Objects.equals(a, editingAnnotation)) {
 			editingAnnotation = a;
-			updateEditPanel();
+			updateEditor();
 		}
 		
-		updateInfoLabel();
+		getAppearancePanel().update();
 	}
 	
 	/**
 	 * Calls {@link #setEditingAnnotation(Annotation)} and shows the edit panel.
 	 */
-	void editAnnotation(Annotation a) {
+	void editAnnotation(Annotation a, Point location) {
 		if (a != null) {
 			setEditingAnnotation(a);
-			getContentTabbedPane().setSelectedComponent(getEditPanel());
+			
+			if (getAppearancePanel().getParent() == getContentTabbedPane()) {
+				getContentTabbedPane().setSelectedComponent(getAppearancePanel());
+			} else if (getAppearancePanel().isFloating()) {
+				var frame = getAppearanceFrame();
+				
+				if (!frame.isVisible()) {
+					if (a instanceof DingAnnotation) {
+						var re = ((DingAnnotation) a).getCyAnnotator().getRenderingEngine();
+						var comp = re != null ? re.getComponent() : null;
+						var gc = comp != null ? comp.getGraphicsConfiguration() : null;
+						
+						if (gc != null) {
+							var w = SwingUtilities.windowForComponent(comp);
+							
+							int x = gc.getBounds().x + (w != null ? w.getX() : 0);
+							int y = gc.getBounds().y + (w != null ? w.getY() : 0);
+							
+							if (location != null) {
+								// TODO The frame should be moved a bit more if it's hiding the annotation
+								// TODO The frame should be moved a bit more if it's it's too close or passed the screen edge
+								x += location.x;
+								y += location.y;
+							}
+							
+							frame.setLocation(x, y);
+						}
+					}
+					
+					// var location = re.getTransform().getNodeCoordinates(startingLocation);
+					frame.pack();
+					frame.setVisible(true);
+				}
+				
+				frame.toFront();
+				frame.requestFocus();
+			}
 		}
 	}
 	
@@ -332,11 +375,8 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		if (f instanceof AbstractDingAnnotationFactory) {
 			var comp = ((AbstractDingAnnotationFactory<?>) f).getEditor();
 			
-			if (comp != null) {
-				getEditPanel().remove(comp);
-				updateEditPanel();
-				updateInfoLabel();
-			}
+			if (comp != null)
+				updateEditor();
 		}
 	}
 	
@@ -457,6 +497,42 @@ System.out.println("AnnotationMainPanel.setSelected(): " + a + " -- " + selected
 		a.setSelected(selected);
 	}
 	
+	void dockAppearancePanel() {
+		getAppearanceFrame().getContentPane().removeAll();
+		getAppearanceFrame().setVisible(false);
+		
+		if (getAppearancePanel().getParent() != getContentTabbedPane())
+			getContentTabbedPane().addTab(AppearancePanel.TITLE, getAppearancePanel());
+		
+		getContentTabbedPane().setSelectedComponent(getAppearancePanel());
+	}
+	
+	void floatAppearancePanel() {
+		if (getAppearancePanel().getParent() == getContentTabbedPane())
+			getContentTabbedPane().remove(getAppearancePanel());
+		
+		var frame = getAppearanceFrame();
+		
+		if (SwingUtilities.getWindowAncestor(getAppearancePanel()) != frame) {
+			frame.getContentPane().removeAll();
+			frame.getContentPane().add(getAppearancePanel(), BorderLayout.CENTER);
+			frame.pack();
+		}
+		
+		// Move to the same monitor where this panel is showing, if necessary
+		var gc = getGraphicsConfiguration();
+		
+		if (gc != null && !gc.equals(frame.getGraphicsConfiguration())) {
+			int x = gc.getBounds().x;
+			int y = gc.getBounds().y;
+			frame.setLocation(x, y);
+		}
+		
+		frame.setVisible(true);
+		frame.toFront();
+		frame.requestFocus();
+	}
+	
 	void update(DRenderingEngine re) {
 		this.re = re;
 		
@@ -482,26 +558,23 @@ System.out.println("AnnotationMainPanel.setSelected(): " + a + " -- " + selected
 		}
 		
 		// Editor panel
-		updateEditPanel();
+		updateEditor();
 		
 		// Labels and other components
-		updateInfoLabel();
 		updateSelectionLabel();
 		updateSelectionButtons();
 		updateMoveToCanvasButtons();
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	void updateEditPanel() {
-		var editComp = ((BorderLayout) getEditPanel().getLayout()).getLayoutComponent(BorderLayout.CENTER);
+	void updateEditor() {
+		getAppearancePanel().removeEditor();
+		
+		var editComp = ((BorderLayout) getAppearancePanel().getLayout()).getLayoutComponent(BorderLayout.CENTER);
 		
 		// Remove annotation from current editor
 		if (editComp instanceof AbstractAnnotationEditor)
 			((AbstractAnnotationEditor<?>) editComp).setAnnotation(null);
-		
-		// Remove current editor
-		if (editComp != null)
-			getEditPanel().remove(editComp);
 		
 		if (!isCreateMode()) {
 			var selectedList = getSelectedAnnotations();
@@ -518,51 +591,20 @@ System.out.println("AnnotationMainPanel.setSelected(): " + a + " -- " + selected
 					
 						if (comp != null) {
 							comp.setAnnotation(annotation);
-							getEditPanel().add(comp);
+							getAppearancePanel().setEditor(comp);
+							
+							if (getAppearancePanel().isFloating())
+								getAppearanceFrame().pack();
 						}
 					}
 				}
 			}
 		}
 		
+		getAppearancePanel().update();
+		
 		getContentTabbedPane().revalidate();
 		getContentTabbedPane().repaint();
-	}
-	
-	private void updateInfoLabel() {
-		var text = " ";
-		
-		if (isCreateMode()) {
-			for (var btn : buttonMap.values()) {
-				if (btn.isSelected()) {
-					text = "New " + (btn.getFactory().getName()) + ": ";
-					
-					if (ArrowAnnotation.class.equals(btn.getFactory().getType()))
-						text += "Click another annotation in the view...";
-					else
-						text += "Click anywhere on the view to add it...";
-					
-					break;
-				}
-			}
-		} else if (editingAnnotation instanceof ArrowAnnotationImpl
-				&& ((ArrowAnnotationImpl) editingAnnotation).getCyAnnotator().getRepositioningArrow() != null) {
-			text += "Click another annotation or node to create the arrow...";
-		} else if (isEditMode()) {
-			var name = editingAnnotation.getName();
-			text = "Edit ";
-			
-			if (editingAnnotation instanceof TextAnnotation || editingAnnotation instanceof BoundedTextAnnotation)
-				text += (editingAnnotation instanceof BoundedTextAnnotation ? "Bounded Text" : "Text");
-			else
-				text += (name != null && !name.isBlank() ? "\"" + name + "\"" : "");
-			
-			text += ":";
-		} else if (isEnabled()) {
-			text = "Select the annotation you want to add or modify...";
-		}
-		
-		getInfoLabel().setText(text);
 	}
 	
 	void updateSelectionLabel() {
@@ -728,22 +770,19 @@ System.out.println("\t>>> " + selected);
 		if (contentTabbedPane == null) {
 			contentTabbedPane = new JTabbedPane(JTabbedPane.TOP);
 			contentTabbedPane.addTab("Layers", getLayersPanel());
-			contentTabbedPane.addTab("Appearance", getEditPanel());
+			contentTabbedPane.addTab(AppearancePanel.TITLE, getAppearancePanel());
 			makeSmall(contentTabbedPane);
 		}
 		
 		return contentTabbedPane;
 	}
 	
-	JPanel getEditPanel() {
-		if (editPanel == null) {
-			editPanel = new JPanel();
-			editPanel.setLayout(new BorderLayout());
-			editPanel.setOpaque(!isAquaLAF());
-			editPanel.add(getInfoLabel(), BorderLayout.NORTH);
+	AppearancePanel getAppearancePanel() {
+		if (appearancePanel == null) {
+			appearancePanel = new AppearancePanel();
 		}
 		
-		return editPanel;
+		return appearancePanel;
 	}
 	
 	JPanel getLayersPanel() {
@@ -760,9 +799,7 @@ System.out.println("\t>>> " + selected);
 			// other than by using this "filler" panel hack...
 			var rightFiller = new JPanel();
 			rightFiller.setPreferredSize(getRemoveAnnotationsButton().getPreferredSize());
-			
-			if (isAquaLAF())
-				rightFiller.setOpaque(false);
+			rightFiller.setOpaque(!isAquaLAF());
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
 					.addGroup(layout.createSequentialGroup()
@@ -815,18 +852,6 @@ System.out.println("\t>>> " + selected);
 		}
 		
 		return layersPanel;
-	}
-	
-	private JLabel getInfoLabel() {
-		if (infoLabel == null) {
-			infoLabel = new JLabel(" ");
-			infoLabel.setHorizontalAlignment(JLabel.CENTER);
-			infoLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
-			infoLabel.setEnabled(false);
-			makeSmall(infoLabel);
-		}
-		
-		return infoLabel;
 	}
 	
 	private JLabel getSelectionLabel() {
@@ -968,6 +993,15 @@ System.out.println("\t>>> " + selected);
 		}
 		
 		return selectNoneButton;
+	}
+	
+	JFrame getAppearanceFrame() {
+		if (appearanceFrame == null) {
+			appearanceFrame = new JFrame("Annotation " + AppearancePanel.TITLE);
+			appearanceFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+		}
+		
+		return appearanceFrame;
 	}
 	
 	private void styleToolBarButton(AbstractButton btn, Font font) {
@@ -1486,5 +1520,167 @@ System.out.println("\t>>> " + selected);
 					}
 	        };
 	    }
+	}
+	
+	class AppearancePanel extends JPanel {
+		
+		static final String TITLE = "Appearance";
+		
+		private JPanel topPanel;
+		private JLabel infoLabel;
+		private JButton windowStateButton;
+		
+		private AppearancePanel() {
+			this.setOpaque(!isAquaLAF());
+			
+			this.setLayout(new BorderLayout(10, 10));
+			this.add(getTopPanel(), BorderLayout.NORTH);
+			this.add(new JLabel(""), BorderLayout.SOUTH); // Just to create a bottom padding when floating
+			
+			this.update();
+		}
+		
+		@Override
+		public void addNotify() {
+			super.addNotify();
+			updateWindowStateButton();
+		}
+		
+		void removeEditor() {
+			var editComp = ((BorderLayout) getLayout()).getLayoutComponent(BorderLayout.CENTER);
+			
+			// Remove current editor
+			if (editComp != null)
+				remove(editComp);
+		}
+
+		@SuppressWarnings("rawtypes")
+		void setEditor(AbstractAnnotationEditor comp) {
+			removeEditor();
+			
+			if (comp != null)
+				add(comp, BorderLayout.CENTER);
+		}
+		
+		boolean isFloating() {
+			return SwingUtilities.getWindowAncestor(this) == getAppearanceFrame();
+		}
+		
+		void update() {
+			updateWindowStateButton();
+			updateInfoLabel();
+		}
+		
+		private void updateWindowStateButton() {
+			var iconManager = serviceRegistrar.getService(IconManager.class);
+			var font = isFloating() ? iconManager.getIconFont(IconUtil.CY_FONT_NAME, STATE_ICON_FONT_SIZE)
+					: iconManager.getIconFont(STATE_ICON_FONT_SIZE);
+			getWindowStateButton().setFont(font);
+			getWindowStateButton().setText(isFloating() ? IconUtil.ICON_PIN : ICON_WINDOW_MAXIMIZE);
+			getWindowStateButton().setToolTipText(isFloating() ? "Dock" : "Float");
+		}
+		
+		private void updateInfoLabel() {
+			var text = " ";
+			
+			if (isCreateMode()) {
+				for (var btn : buttonMap.values()) {
+					if (btn.isSelected()) {
+						text = "New " + (btn.getFactory().getName()) + ": ";
+						
+						if (ArrowAnnotation.class.equals(btn.getFactory().getType()))
+							text += "Click another annotation in the view...";
+						else
+							text += "Click anywhere on the view to add it...";
+						
+						break;
+					}
+				}
+			} else if (editingAnnotation instanceof ArrowAnnotationImpl
+					&& ((ArrowAnnotationImpl) editingAnnotation).getCyAnnotator().getRepositioningArrow() != null) {
+				text += "Click another annotation or node to create the arrow...";
+			} else if (isEditMode()) {
+				var name = editingAnnotation.getName();
+				text = "Edit ";
+				
+				if (editingAnnotation instanceof TextAnnotation || editingAnnotation instanceof BoundedTextAnnotation)
+					text += (editingAnnotation instanceof BoundedTextAnnotation ? "Bounded Text" : "Text");
+				else
+					text += (name != null && !name.isBlank() ? "\"" + name + "\"" : "");
+				
+				text += ":";
+			} else if (isEnabled()) {
+				text = "Select the annotation you want to add or modify...";
+			}
+			
+			getInfoLabel().setText(text);
+		}
+		
+		private JPanel getTopPanel() {
+			if (topPanel == null) {
+				topPanel = new JPanel();
+				topPanel.setOpaque(!isAquaLAF());
+				topPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 1, 0, UIManager.getColor("Separator.foreground")));
+				
+				var layout = new GroupLayout(topPanel);
+				topPanel.setLayout(layout);
+				layout.setAutoCreateContainerGaps(false);
+				layout.setAutoCreateGaps(true);
+				
+				// I don't know of a better way to center the info label perfectly (with this layout manager)
+				// other than by using this "filler" panel hack...
+				var leftFiller = new JPanel();
+				leftFiller.setPreferredSize(getWindowStateButton().getPreferredSize());
+				leftFiller.setOpaque(!isAquaLAF());
+				
+				layout.setHorizontalGroup(layout.createSequentialGroup()
+						.addContainerGap()
+						.addComponent(leftFiller, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getInfoLabel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(getWindowStateButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addContainerGap()
+				);
+				layout.setVerticalGroup(layout.createSequentialGroup()
+						.addGap(5)
+						.addGroup(layout.createParallelGroup(CENTER, true)
+							.addComponent(leftFiller, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getInfoLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getWindowStateButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						)
+						.addGap(5)
+				);
+			}
+			
+			return topPanel;
+		}
+		
+		private JLabel getInfoLabel() {
+			if (infoLabel == null) {
+				infoLabel = new JLabel(" ");
+				infoLabel.setHorizontalAlignment(JLabel.CENTER);
+				infoLabel.setEnabled(false);
+				makeSmall(infoLabel);
+			}
+			
+			return infoLabel;
+		}
+		
+		private JButton getWindowStateButton() {
+			if (windowStateButton == null) {
+				windowStateButton = new JButton(ICON_WINDOW_MAXIMIZE);
+				windowStateButton.setToolTipText("Float");
+				ViewUtils.styleWindowStateButton(windowStateButton);
+				windowStateButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(STATE_ICON_FONT_SIZE));
+				
+				windowStateButton.addActionListener(evt -> {
+					if (isFloating())
+						dockAppearancePanel();
+					else
+						floatAppearancePanel();
+				});
+			}
+			
+			return windowStateButton;
+		}
 	}
 }

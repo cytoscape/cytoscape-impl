@@ -622,7 +622,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 					var annotation = picker.getAnnotationAt(e.getPoint());
 					
 					if (annotation != null) {
-						editAnnotation(annotation);
+						editAnnotation(annotation, e.getPoint());
 						e.consume();
 						return;
 					}
@@ -654,13 +654,13 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			popupMenuHelper.createNetworkViewMenu(p, xformPt, PopupMenuHelper.ACTION_OPEN);
 		}
 		
-		private void editAnnotation(DingAnnotation annotation) {
+		private void editAnnotation(DingAnnotation annotation, Point p) {
 			invokeOnEDT(() -> {
 				var tm = registrar.getService(DialogTaskManager.class);
 				var f = registrar.getService(NetworkViewLocationTaskFactory.class, "(id=editAnnotationTaskFactory)");
 
 				if (f instanceof EditAnnotationTaskFactory)
-					tm.execute(((EditAnnotationTaskFactory) f).createTaskIterator(annotation, re.getViewModel()));
+					tm.execute(((EditAnnotationTaskFactory) f).createTaskIterator(annotation, re.getViewModel(), p));
 			});
 		}
 	}
