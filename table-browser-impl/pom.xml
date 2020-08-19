@@ -13,8 +13,8 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>table-browser-impl</artifactId>
-  <version>3.9.0-SNAPSHOT</version>
-    <name>Cytoscape Table Browser Impl (${project.artifactId})</name>
+	<version>3.9.0-SNAPSHOT</version>
+	<name>Cytoscape Table Browser Impl (${project.artifactId})</name>
 	<packaging>bundle</packaging>
 
 	<build>
@@ -36,6 +36,7 @@
 						<Export-Package>!${bundle.namespace}.*</Export-Package>
 						<Private-Package>${bundle.namespace}.*</Private-Package>
 						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
+						<Embed-Dependency>rsyntaxtextarea</Embed-Dependency>
 					</instructions>
 				</configuration>
 			</plugin>
@@ -110,7 +111,14 @@
 			<artifactId>vizmap-gui-api</artifactId>
 		</dependency>
 		
+		<!-- 3rd party -->
+		<dependency>
+			<groupId>com.fifesoft</groupId>
+			<artifactId>rsyntaxtextarea</artifactId>
+			<version>3.1.1</version>
+		</dependency>
 		
+		<!-- test -->
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>event-api</artifactId>

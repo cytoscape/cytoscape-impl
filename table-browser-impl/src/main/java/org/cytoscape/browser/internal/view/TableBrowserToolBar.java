@@ -41,6 +41,7 @@ import javax.swing.event.PopupMenuListener;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyColumnPresentationManager;
 import org.cytoscape.application.swing.CyColumnSelector;
+import org.cytoscape.browser.internal.equation.EquationEditorMediator;
 import org.cytoscape.browser.internal.util.IconUtil;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
@@ -460,9 +461,20 @@ public class TableBrowserToolBar extends JPanel {
 			
 			styleButton(fnBuilderButton, iconFont.deriveFont(18.0f));
 
-			final JFrame rootFrame = (JFrame) SwingUtilities.getRoot(this);
+//			final JFrame rootFrame = (JFrame) SwingUtilities.getRoot(this);
 
-			// MKTODO
+			fnBuilderButton.addActionListener(e -> {
+				EquationEditorMediator mediator = serviceRegistrar.getService(EquationEditorMediator.class);
+				CyTable table = serviceRegistrar.getService(CyApplicationManager.class).getCurrentTable();
+				if(table == null)
+					return;
+				
+				SwingUtilities.invokeLater(() -> {
+					mediator.openEquationEditorDialog(table, null, null);
+				});
+			});
+			
+			
 //			fnBuilderButton.addActionListener(new ActionListener() {
 //				@Override
 //				public void actionPerformed(final ActionEvent e) {

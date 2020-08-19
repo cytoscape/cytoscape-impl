@@ -93,6 +93,7 @@ enum ApplicationDomain {
 }
 
 
+@Deprecated
 @SuppressWarnings("serial")
 public class FormulaBuilderDialog extends JDialog {
 	
