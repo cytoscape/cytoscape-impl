@@ -20,6 +20,7 @@ import javax.swing.event.AncestorListener;
 
 import org.cytoscape.application.swing.CyColumnPresentationManager;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.browser.internal.view.TableRenderer;
 import org.cytoscape.equations.EquationParser;
 import org.cytoscape.equations.Function;
 import org.cytoscape.model.CyColumn;
@@ -28,18 +29,29 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 
 public class EquationEditorMediator {
 	
+	public enum ApplyScope {
+		CURRENT_CELL("Current cell only"),
+		CURRENT_SELECTION("Current selection"),
+		ENTIRE_COLUMN("Entire column");
+
+		private final String text;
+		ApplyScope(String text) { this.text = text; }
+		@Override public String toString() { return text; }
+	}
+	
+	
 	private final CyServiceRegistrar registrar;
 	
 	public EquationEditorMediator(CyServiceRegistrar registrar) {
 		this.registrar = registrar;
 	}
 	
-	public void openEquationEditorDialog(CyTable table, String column, Object rowPk) {
+	public void openEquationEditorDialog(TableRenderer tableRenderer) {
 		JFrame parent = registrar.getService(CySwingApplication.class).getJFrame();
 		JDialog dialog = new JDialog(parent);
 		EquationEditorPanel builderPanel = new EquationEditorPanel(registrar);
 		
-		wireTogether(dialog, builderPanel, table);
+		wireTogether(dialog, builderPanel, tableRenderer);
 		
 		dialog.setTitle("Equation Builder");
 		dialog.getContentPane().setLayout(new BorderLayout());
@@ -66,10 +78,10 @@ public class EquationEditorMediator {
 	}
 	
 	
-	private void wireTogether(JDialog dialog, EquationEditorPanel builderPanel, CyTable table) {
+	private void wireTogether(JDialog dialog, EquationEditorPanel builderPanel, TableRenderer tableRenderer) {
 		initializeTutorialList(builderPanel);
 		initializeFunctionList(builderPanel);
-		initializeAttributeList(builderPanel, table);
+		initializeAttributeList(builderPanel, tableRenderer);
 		
 		builderPanel.getCloseButton().addActionListener(e -> dialog.dispose());
 		
@@ -78,11 +90,13 @@ public class EquationEditorMediator {
 		syntaxPanel.getRedoButton().addActionListener(e -> syntaxPanel.redo());
 		
 		builderPanel.getInfoPanel().getInsertButton().addActionListener(e -> handleInsert(builderPanel));
+		
+		syntaxPanel.getApplyButton().addActionListener(e -> handleApply(builderPanel, tableRenderer));
 	}
 	
 	
 	private void initializeTutorialList(EquationEditorPanel builderPanel) {
-		builderPanel.getTutorialPanel().setElements(TutorialItems.getItems());
+		builderPanel.getTutorialPanel().setElements(TutorialItems.getTutorialItems());
 		
 		JList<String> list = builderPanel.getTutorialPanel().getList();
 		list.addListSelectionListener(e -> {
@@ -90,7 +104,7 @@ public class EquationEditorMediator {
 			if(item != null) {
 				builderPanel.getAttributePanel().clearSelection();
 				builderPanel.getFunctionPanel().clearSelection();
-				String docs = getTutorialDocs(item);
+				String docs = TutorialItems.getTutorialDocs(item);
 				builderPanel.getInfoPanel().setText(docs);
 				builderPanel.getInfoPanel().getInsertButton().setEnabled(false);
 			}
@@ -114,7 +128,7 @@ public class EquationEditorMediator {
 				builderPanel.getAttributePanel().clearSelection();
 				builderPanel.getTutorialPanel().clearSelection();
 				Function f = functions.get(name);
-				String docs = getFunctionDocs(f);
+				String docs = TutorialItems.getFunctionDocs(f);
 				builderPanel.getInfoPanel().setText(docs);
 				builderPanel.getInfoPanel().getInsertButton().setEnabled(true);
 			}
@@ -123,7 +137,7 @@ public class EquationEditorMediator {
 	
 	
 	@SuppressWarnings("serial")
-	private void initializeAttributeList(EquationEditorPanel builderPanel, CyTable table) {
+	private void initializeAttributeList(EquationEditorPanel builderPanel, TableRenderer tableRenderer) {
 		builderPanel.getAttributePanel().getList().setCellRenderer(new DefaultListCellRenderer() {
 			CyColumnPresentationManager presentationManager = registrar.getService(CyColumnPresentationManager.class);
 			@Override
@@ -136,6 +150,7 @@ public class EquationEditorMediator {
 			}
 		});
 		
+		CyTable table = tableRenderer.getDataTable();
 		Collection<CyColumn> columns = table.getColumns();
 		List<CyColumn> sortedCols = new ArrayList<>(columns);
 		sortedCols.sort(Comparator.comparing(CyColumn::getName));
@@ -147,46 +162,11 @@ public class EquationEditorMediator {
 			if(col != null) {
 				builderPanel.getFunctionPanel().clearSelection();
 				builderPanel.getTutorialPanel().clearSelection();
-				String docs = getColumnDocs(col);
+				String docs = TutorialItems.getColumnDocs(col);
 				builderPanel.getInfoPanel().setText(docs);
 				builderPanel.getInfoPanel().getInsertButton().setEnabled(true);
 			}
 		});
-	}
-	
-	private static String getTutorialDocs(String item) {
-		return TutorialItems.getDocs(item);
-	}
-	
-	private static String getFunctionDocs(Function f) {
-		return f.getFunctionSummary() + "\n\n" + f.getUsageDescription();
-	}
-	
-	
-	private static String getColumnDocs(CyColumn f) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("Full Name: ").append(f.getName()).append("\n");
-		sb.append("Namespace: ").append(f.getNamespace() == null ? "-none-" : f.getNamespace()).append("\n");
-		sb.append("Type: ");
-		
-		var t = f.getType();
-		if(List.class.equals(t)) {
-			sb.append("List of ");
-			t = f.getListElementType();
-		}
-		
-		if(String.class.equals(t))
-			sb.append("String");
-		else if(Long.class.equals(t))
-			sb.append("Long Integer");
-		else if(Integer.class.equals(t))
-			sb.append("Integer");
-		else if(Double.class.equals(t))
-			sb.append("Floating Point");
-		else if(Boolean.class.equals(t))
-			sb.append("Boolean");
-		
-		return sb.toString();
 	}
 	
 	
@@ -210,6 +190,13 @@ public class EquationEditorMediator {
 			syntaxPanel.insertText(offset, ref, null);
 			return;
 		}
+	}
+	
+	private void handleApply(EquationEditorPanel builderPanel, TableRenderer tableRenderer) {
+		String formula = builderPanel.getSyntaxPanel().getText();
+//		String attribName = tableRenderer.getRenderingEngine().getSelectedColumn().getModel().getName();
+		// MKTODO
+		
 	}
 	
 

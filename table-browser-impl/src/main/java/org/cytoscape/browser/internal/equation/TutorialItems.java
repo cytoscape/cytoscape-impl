@@ -3,6 +3,9 @@ package org.cytoscape.browser.internal.equation;
 import java.util.Arrays;
 import java.util.List;
 
+import org.cytoscape.equations.Function;
+import org.cytoscape.model.CyColumn;
+
 public class TutorialItems {
 
 	public static final String FUNCTIONS = "functions";
@@ -10,11 +13,17 @@ public class TutorialItems {
 	public static final String OPERATORS = "operators";
 	public static final String LITERALS = "literal values";
 	
-	public static List<String> getItems() {
+	public static List<String> getTutorialItems() {
 		return Arrays.asList(FUNCTIONS, ATTRIBUTES, OPERATORS, LITERALS);
 	}
 	
-	public static String getDocs(String item) {
+	
+	public static String getFunctionDocs(Function f) {
+		return f.getFunctionSummary() + "\n\n" + f.getUsageDescription();
+	}
+	
+	
+	public static String getTutorialDocs(String item) {
 		switch(item) {
 		case FUNCTIONS:
 			return 
@@ -50,5 +59,32 @@ public class TutorialItems {
 				"Boolean (logical) literals: true, false \n";
 		}
 		return null;
+	}
+	
+	
+	public static String getColumnDocs(CyColumn f) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Full Name: ").append(f.getName()).append("\n");
+		sb.append("Namespace: ").append(f.getNamespace() == null ? "-none-" : f.getNamespace()).append("\n");
+		sb.append("Type: ");
+		
+		var t = f.getType();
+		if(List.class.equals(t)) {
+			sb.append("List of ");
+			t = f.getListElementType();
+		}
+		
+		if(String.class.equals(t))
+			sb.append("String");
+		else if(Long.class.equals(t))
+			sb.append("Long Integer");
+		else if(Integer.class.equals(t))
+			sb.append("Integer");
+		else if(Double.class.equals(t))
+			sb.append("Floating Point");
+		else if(Boolean.class.equals(t))
+			sb.append("Boolean");
+		
+		return sb.toString();
 	}
 }

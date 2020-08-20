@@ -470,7 +470,7 @@ public class TableBrowserToolBar extends JPanel {
 					return;
 				
 				SwingUtilities.invokeLater(() -> {
-					mediator.openEquationEditorDialog(table, null, null);
+					mediator.openEquationEditorDialog(tableRenderer);
 				});
 			});
 			

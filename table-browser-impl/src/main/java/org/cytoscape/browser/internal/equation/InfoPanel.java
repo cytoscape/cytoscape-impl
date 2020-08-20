@@ -2,12 +2,15 @@ package org.cytoscape.browser.internal.equation;
 
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
+import java.awt.Color;
+
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.UIManager;
 
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
@@ -46,6 +49,8 @@ public class InfoPanel extends JPanel {
 		if(textArea == null) {
 			textArea = new JTextArea();
 			textArea.setEditable(false);
+			Color color = UIManager.getColor("Panel.background");
+			textArea.setBackground(color);
 		}
 		return textArea;
 	}
@@ -54,7 +59,7 @@ public class InfoPanel extends JPanel {
 	private JScrollPane getScrollPane() {
 		if(scrollPane == null) {
 			scrollPane = new JScrollPane(getTextArea());
-			scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+			scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 			scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		}
 		return scrollPane;

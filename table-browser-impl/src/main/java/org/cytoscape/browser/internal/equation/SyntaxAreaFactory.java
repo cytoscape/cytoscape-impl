@@ -47,7 +47,6 @@ public class SyntaxAreaFactory {
 		scheme.setStyle(Token.LITERAL_BOOLEAN,             new Style(literal));
 		scheme.setStyle(Token.LITERAL_NUMBER_FLOAT,        new Style(literal));
 		
-		
 		// All token types must have a Style object to avoid NPEs
 		for(int i = 0; i < scheme.getStyleCount(); i++) {
 			if(scheme.getStyle(i) == null) {
@@ -56,7 +55,6 @@ public class SyntaxAreaFactory {
 		}
 		
 		textArea.setSyntaxScheme(scheme);
-		textArea.setFont(font);
 	}
 
 }

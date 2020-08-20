@@ -26,8 +26,6 @@ public class EquationEditorPanel extends JPanel {
 	// Maybe these should be part of the dialog?
 	private JPanel buttonPanel;
 	private JButton closeButton;
-	private JButton applyCellButton;
-	private JButton applyAllButton;
 	
 	
 	public EquationEditorPanel(CyServiceRegistrar registrar) {
@@ -108,7 +106,7 @@ public class EquationEditorPanel extends JPanel {
 	private JPanel getButtonPanel() {
 		if(buttonPanel == null) {
 			String help = "http://manual.cytoscape.org/en/stable/Column_Data_Functions_and_Equations.html";
-			buttonPanel = LookAndFeelUtil.createOkCancelPanel(null, getCloseButton(), help, getApplyCellButton(), getApplyAllButton());
+			buttonPanel = LookAndFeelUtil.createOkCancelPanel(null, getCloseButton(), help);
 		}
 		return buttonPanel;
 	}
@@ -118,20 +116,6 @@ public class EquationEditorPanel extends JPanel {
 			closeButton = new JButton("Close");
 		}
 		return closeButton;
-	}
-	
-	private JButton getApplyCellButton() {
-		if(applyCellButton == null) {
-			applyCellButton = new JButton("Apply to Current Cell");
-		}
-		return applyCellButton;
-	}
-	
-	private JButton getApplyAllButton() {
-		if(applyAllButton == null) {
-			applyAllButton = new JButton("Apply to Entire Column");
-		}
-		return applyAllButton;
 	}
 	
 }

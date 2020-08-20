@@ -2,16 +2,21 @@ package org.cytoscape.browser.internal.equation;
 
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
+import java.awt.Color;
+
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.text.BadLocationException;
 
+import org.cytoscape.browser.internal.equation.EquationEditorMediator.ApplyScope;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -28,6 +33,12 @@ public class SyntaxAreaPanel extends JPanel {
 	private JButton undoButton;
 	private JButton redoButton;
 	
+	private JLabel applyLabel;
+	private JComboBox<ApplyScope> applyScopeCombo; 
+	private JButton applyButton;
+	private JLabel applyResultLabel;
+	private Color defaultLabelColor;
+	
 	
 	public SyntaxAreaPanel(CyServiceRegistrar registrar) {
 		this.registrar = registrar;
@@ -40,18 +51,42 @@ public class SyntaxAreaPanel extends JPanel {
 		setLayout(layout);
 		
 		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addComponent(getTopPanel())
-				.addComponent(getSyntaxAreaScrollPane()));
-		layout.setHorizontalGroup(layout.createParallelGroup()
-				.addComponent(getTopPanel())
-				.addComponent(getSyntaxAreaScrollPane()));
+			.addComponent(getTopPanel())
+			.addComponent(getSyntaxAreaScrollPane())
+			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
+				.addComponent(getApplyLabel())
+				.addComponent(getApplyScopeCombo())
+				.addComponent(getApplyButton())
+				.addComponent(getApplyResultLabel())
+			)
+		);
 		
+		layout.setHorizontalGroup(layout.createParallelGroup()
+			.addComponent(getTopPanel())
+			.addComponent(getSyntaxAreaScrollPane())
+			.addGroup(layout.createSequentialGroup()
+				.addComponent(getApplyLabel())
+				.addComponent(getApplyScopeCombo(), 0, 150, 150)
+				.addComponent(getApplyButton())
+				.addComponent(getApplyResultLabel())
+			)
+		);
+
+		this.defaultLabelColor = getApplyResultLabel().getForeground();
 		// Want the caret to be visible and flasing
 		setCaret(0);
 	}
 	
+	public ApplyScope getApplyScope() {
+		return (ApplyScope) getApplyScopeCombo().getSelectedItem();
+	}
+	
 	public int getCaretPosition() {
 		return getSyntaxTextArea().getCaretPosition();
+	}
+	
+	public String getText() {
+		return getSyntaxTextArea().getText().trim();
 	}
 	
 	public void insertText(int offset, String text, String post) {
@@ -66,6 +101,17 @@ public class SyntaxAreaPanel extends JPanel {
 		} catch (BadLocationException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public void setResults(String text, boolean error) {
+		JLabel label = getApplyResultLabel();
+		label.setText(text);
+		label.setToolTipText(text);
+		label.setForeground(error ? Color.RED : defaultLabelColor);
+	}
+	
+	public void clearResults() {
+		setResults("", false);
 	}
 	
 	private void setCaret(int offset) {
@@ -125,6 +171,38 @@ public class SyntaxAreaPanel extends JPanel {
 		return redoButton;
 	}
 	
+	private JLabel getApplyLabel() {
+		if(applyLabel == null) {
+			applyLabel = new JLabel("Apply to:");
+			LookAndFeelUtil.makeSmall(applyLabel);
+		}
+		return applyLabel;
+	}
+	
+	private JComboBox<ApplyScope> getApplyScopeCombo() {
+		if(applyScopeCombo == null) {
+			applyScopeCombo = new JComboBox<>(ApplyScope.values());
+			LookAndFeelUtil.makeSmall(applyScopeCombo);
+		}
+		return applyScopeCombo;
+	}
+	
+	public JButton getApplyButton() {
+		if(applyButton == null) {
+			applyButton = new JButton("Apply");
+			LookAndFeelUtil.makeSmall(applyButton);
+		}
+		return applyButton;
+	}
+	
+	private JLabel getApplyResultLabel() {
+		if(applyResultLabel == null) {
+			applyResultLabel = new JLabel("");
+			LookAndFeelUtil.makeSmall(applyResultLabel);
+		}
+		return applyResultLabel;
+	}
+	
 	private JButton createIconButton(String icon, String tooltip) {
 		IconManager iconManager = registrar.getService(IconManager.class);
 		JButton button = new JButton(icon);
@@ -136,5 +214,6 @@ public class SyntaxAreaPanel extends JPanel {
 		button.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
 		return button;
 	}
+	
 
 }
