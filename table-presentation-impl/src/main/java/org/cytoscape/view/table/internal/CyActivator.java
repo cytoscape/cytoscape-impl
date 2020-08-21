@@ -1,13 +1,18 @@
 package org.cytoscape.view.table.internal;
 
+import java.util.Properties;
+
 import org.cytoscape.application.TableViewRenderer;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.TableCellTaskFactory;
 import org.cytoscape.task.TableColumnTaskFactory;
+import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.view.model.table.CyTableViewFactory;
 import org.cytoscape.view.model.table.CyTableViewFactoryProvider;
 import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
+import org.cytoscape.view.table.internal.equation.EquationEditorMediator;
+import org.cytoscape.view.table.internal.equation.EquationEditorTaskFactory;
 import org.cytoscape.view.table.internal.impl.PopupMenuHelper;
 import org.osgi.framework.BundleContext;
 
@@ -37,6 +42,17 @@ public class CyActivator extends AbstractCyActivator {
 		
 		TableViewRendererImpl renderer = new TableViewRendererImpl(registrar, tableViewFactory, lexicon, popupMenuHelper);
 		registerService(bc, renderer, TableViewRenderer.class);
+		
+		// Equations
+		{
+			var equationMediator = new EquationEditorMediator(registrar);
+			registerService(bc, equationMediator, EquationEditorMediator.class);
+			
+			EquationEditorTaskFactory editorTaskFactory = new EquationEditorTaskFactory(registrar);
+			Properties props = new Properties();
+			props.setProperty("task", "equationEditor");
+			registerService(bc, editorTaskFactory, TableTaskFactory.class, props);
+		}
 	}
 
 }

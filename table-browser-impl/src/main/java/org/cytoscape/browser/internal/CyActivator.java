@@ -6,7 +6,6 @@ import java.util.Properties;
 
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
-import org.cytoscape.browser.internal.equation.EquationEditorMediator;
 import org.cytoscape.browser.internal.task.ClearAllErrorsTaskFactory;
 import org.cytoscape.browser.internal.task.ColorColumnTestTaskFactory;
 import org.cytoscape.browser.internal.task.HideColumnTaskFactory;
@@ -108,9 +107,5 @@ public class CyActivator extends AbstractCyActivator {
 		var styleMediator = new TableBrowserStyleMediator(serviceRegistrar);
 		registerService(bc, styleMediator, VisualStyleChangedListener.class);
 		registerService(bc, styleMediator, ColumnVisualStyleSetListener.class);
-		
-		// Equations
-		var equationMediator = new EquationEditorMediator(serviceRegistrar);
-		registerService(bc, equationMediator, EquationEditorMediator.class);
 	}
 }

@@ -99,6 +99,10 @@ public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 		registerServices();
 	}
 	
+	public BrowserTable getBrowserTable() {
+		return this.browserTable;
+	}
+	
 	
 	@Override
 	public void dispose() {

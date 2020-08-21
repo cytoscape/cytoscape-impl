@@ -41,7 +41,6 @@ import javax.swing.event.PopupMenuListener;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyColumnPresentationManager;
 import org.cytoscape.application.swing.CyColumnSelector;
-import org.cytoscape.browser.internal.equation.EquationEditorMediator;
 import org.cytoscape.browser.internal.util.IconUtil;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
@@ -53,6 +52,7 @@ import org.cytoscape.model.CyTable.Mutability;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.task.destroy.DeleteTableTaskFactory;
 import org.cytoscape.task.read.LoadTableFileTaskFactory;
 import org.cytoscape.task.write.ExportTableTaskFactory;
@@ -60,6 +60,8 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
+import org.cytoscape.work.SynchronousTaskManager;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 /*
@@ -461,63 +463,14 @@ public class TableBrowserToolBar extends JPanel {
 			
 			styleButton(fnBuilderButton, iconFont.deriveFont(18.0f));
 
-//			final JFrame rootFrame = (JFrame) SwingUtilities.getRoot(this);
-
 			fnBuilderButton.addActionListener(e -> {
-				EquationEditorMediator mediator = serviceRegistrar.getService(EquationEditorMediator.class);
-				CyTable table = serviceRegistrar.getService(CyApplicationManager.class).getCurrentTable();
-				if(table == null)
-					return;
-				
-				SwingUtilities.invokeLater(() -> {
-					mediator.openEquationEditorDialog(tableRenderer);
-				});
+				TableTaskFactory factory = serviceRegistrar.getService(TableTaskFactory.class, "(task=equationEditor)");
+				if(factory != null) {
+					SynchronousTaskManager<?> taskManager = serviceRegistrar.getService(SynchronousTaskManager.class);
+					TaskIterator iter = factory.createTaskIterator(tableRenderer.getDataTable());
+					taskManager.execute(iter);
+				}
 			});
-			
-			
-//			fnBuilderButton.addActionListener(new ActionListener() {
-//				@Override
-//				public void actionPerformed(final ActionEvent e) {
-//					// Do not allow opening of the formula builder dialog while a cell is being edited!
-//					if (browserTableModel == null || browserTable.getCellEditor() != null)
-//						return;
-//
-//					final int cellRow = browserTable.getSelectedRow();
-//					final int cellColumn = browserTable.getSelectedColumn();
-//					int colIndex = -1;
-//
-//					// Map the screen index of column to internal index of the table model
-//					if (cellRow >= 0 && cellColumn >= 0) {
-//						String colName = browserTable.getColumnName(cellColumn);
-//						colIndex = browserTableModel.mapColumnNameToColumnIndex(colName);
-//					}
-//					
-//					if (cellRow == -1 || cellColumn == -1 || !browserTableModel.isCellEditable(cellRow, colIndex)) {
-//						JOptionPane.showMessageDialog(rootFrame, "Can't enter a formula w/o a selected cell.",
-//								"Information", JOptionPane.INFORMATION_MESSAGE);
-//					} else {
-//						final String attrName = getColumnName(cellRow, cellColumn);
-//						final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
-//						final CyTable dataTable = browserTableModel.getDataTable();
-//						initAttribNameToTypeMap(dataTable, attrName, attribNameToTypeMap);
-//						
-//						final EquationCompiler compiler = serviceRegistrar.getService(EquationCompiler.class);
-//						
-//						final FormulaBuilderDialog formulaBuilderDialog = new FormulaBuilderDialog(compiler,
-//								browserTable, rootFrame, attrName);
-//						formulaBuilderDialog.setLocationRelativeTo(rootFrame);
-//						formulaBuilderDialog.setVisible(true);
-//					}
-//				}
-//
-//				private void initAttribNameToTypeMap(final CyTable dataTable, final String attrName,
-//						final Map<String, Class<?>> attribNameToTypeMap) {
-//					for (final CyColumn column : dataTable.getColumns())
-//						attribNameToTypeMap.put(column.getName(), column.getType());
-//					
-//					attribNameToTypeMap.remove(attrName);
-//				}
-//			});
 		}
 		
 		return fnBuilderButton;

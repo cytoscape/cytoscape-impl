@@ -182,6 +182,10 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			}
 		}
 	}
+
+	public BrowserTableModel getBrowserTableModel() {
+		return (BrowserTableModel) getModel();
+	}
 	
 	@Override
 	public synchronized void addMouseListener(final MouseListener listener) {

@@ -1,4 +1,4 @@
-package org.cytoscape.browser.internal.equation;
+package org.cytoscape.view.table.internal.equation;
 
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 

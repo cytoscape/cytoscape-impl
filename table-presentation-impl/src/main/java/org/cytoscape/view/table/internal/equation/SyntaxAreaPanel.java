@@ -1,4 +1,4 @@
-package org.cytoscape.browser.internal.equation;
+package org.cytoscape.view.table.internal.equation;
 
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
@@ -13,13 +13,14 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.text.BadLocationException;
 
-import org.cytoscape.browser.internal.equation.EquationEditorMediator.ApplyScope;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.table.internal.equation.EquationEditorMediator.ApplyScope;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
 @SuppressWarnings("serial")
@@ -85,6 +86,10 @@ public class SyntaxAreaPanel extends JPanel {
 		return getSyntaxTextArea().getCaretPosition();
 	}
 	
+	public void setText(String text) {
+		getSyntaxTextArea().setText(text);
+	}
+	
 	public String getText() {
 		return getSyntaxTextArea().getText().trim();
 	}
@@ -103,7 +108,21 @@ public class SyntaxAreaPanel extends JPanel {
 		}
 	}
 	
-	public void setResults(String text, boolean error) {
+	public void showError(String message) {
+		JLabel label = new JLabel(" " + message + " ");
+		label.setForeground(Color.RED);
+		LookAndFeelUtil.makeSmall(label);
+		JPopupMenu popup = new JPopupMenu();
+		popup.add(label);
+		JButton comp = getApplyButton();
+		popup.show(comp, 0, comp.getHeight());
+	}
+	
+	public void showResutls(String message) {
+		setResults(message, false);
+	}
+	
+	private void setResults(String text, boolean error) {
 		JLabel label = getApplyResultLabel();
 		label.setText(text);
 		label.setToolTipText(text);
