@@ -5,6 +5,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,7 @@ import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.equations.EquationParser;
 import org.cytoscape.equations.Function;
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -238,32 +240,29 @@ public class EquationEditorMediator {
 			return;
 		}
 		
-//		ApplyScope scope = builderPanel.getSyntaxPanel().getApplyScope();
-//		switch (scope) {
-//		case CURRENT_CELL:
-//			// MKTODO why is this different?
-//			int cellRow = browserTable.convertRowIndexToModel(browserTable.getSelectedRow());
-//			tableModel.setValueAt(formula, cellRow, cellCol);
-//			break;
-//		case CURRENT_SELECTION:
-//			Collection<CyRow> selectedRows = tableModel.getDataTable().getMatchingRows(CyNetwork.SELECTED, true);
-//			for(CyRow row : selectedRows) {
-//				if(!setAttribute(row, attribName, equation, errorMessage)) {
-//					builderPanel.getSyntaxPanel().showError(errorMessage.toString());
-//					break;
-//				}
-//			}
-//			break;
-//		case ENTIRE_COLUMN:
-//			List<CyRow> rows = tableModel.getDataTable().getAllRows();
-//			for(CyRow row : rows) {
-//				if(!setAttribute(row, attribName, equation, errorMessage)) {
-//					builderPanel.getSyntaxPanel().showError(errorMessage.toString());
-//					break;
-//				}
-//			}
-//			break;
-//		}
+		Collection<CyRow> rows = Collections.emptyList();
+		
+		ApplyScope scope = builderPanel.getSyntaxPanel().getApplyScope();
+		switch (scope) {
+			case CURRENT_CELL:
+				int cellRow = browserTable.convertRowIndexToModel(browserTable.getSelectedRow());
+				rows = Collections.singletonList(tableModel.getCyRow(cellRow));
+				break;
+			case CURRENT_SELECTION:
+				rows = tableModel.getDataTable().getMatchingRows(CyNetwork.SELECTED, true);
+				break;
+			case ENTIRE_COLUMN:
+				rows = tableModel.getDataTable().getAllRows();
+				break;
+		}
+		
+		for(CyRow row : rows) {
+			if(!setAttribute(row, attribName, equation, errorMessage)) {
+				builderPanel.getSyntaxPanel().showError(errorMessage.toString());
+				break;
+			}
+		}
+		
 	}
 	
 	private Equation compileEquation(EquationCompiler compiler, CyTable table, String attribName, String formula, StringBuilder errorMessage) {
