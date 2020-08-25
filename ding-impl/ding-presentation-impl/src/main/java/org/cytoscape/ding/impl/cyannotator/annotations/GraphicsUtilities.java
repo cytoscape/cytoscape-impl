@@ -345,22 +345,25 @@ public class GraphicsUtilities {
 	}
 
 	public static ArrowType getArrowType(String arrowName) {
-		for (ArrowType type : ArrowType.values()) {
+		for (var type : ArrowType.values()) {
 			if (arrowName.equals(type.getName()))
 				return type;
 		}
+		
 		return ArrowType.NONE; // If we can't do anything else...
 	}
 
-
 	public static ArrowType getArrowType(Map<String, String> argMap, String key, ArrowType defValue) {
-		if (!argMap.containsKey(key) || argMap.get(key) == null)
+		if (argMap.get(key) == null)
 			return defValue;
+		
 		int arrowNumber = Integer.parseInt(argMap.get(key));
-		for (ArrowType type : ArrowType.values()) {
+		
+		for (var type : ArrowType.values()) {
 			if (arrowNumber == type.ordinal())
 				return type;
 		}
+		
 		return defValue;
 	}
 

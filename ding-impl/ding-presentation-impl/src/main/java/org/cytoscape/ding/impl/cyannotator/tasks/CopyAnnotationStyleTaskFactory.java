@@ -1,11 +1,9 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
-import java.awt.Point;
 import java.awt.geom.Point2D;
 
 import org.cytoscape.ding.impl.DingRenderer;
-import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
-import org.cytoscape.ding.impl.cyannotator.ui.AnnotationMediator;
+import org.cytoscape.ding.impl.cyannotator.AnnotationClipboard;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
@@ -34,52 +32,29 @@ import org.cytoscape.work.TaskIterator;
  * #L%
  */
 
-public class EditAnnotationTaskFactory implements NetworkViewLocationTaskFactory {
-	
+public class CopyAnnotationStyleTaskFactory implements NetworkViewLocationTaskFactory {
+
 	private final DingRenderer dingRenderer;
-	private final AnnotationMediator mediator;
-	
-	public EditAnnotationTaskFactory(DingRenderer dingRenderer, AnnotationMediator mediator) {
+	private final AnnotationClipboard clipboard;
+
+	public CopyAnnotationStyleTaskFactory(DingRenderer dingRenderer, AnnotationClipboard clipboard) {
 		this.dingRenderer = dingRenderer;
-		this.mediator = mediator;
+		this.clipboard = clipboard;
 	}
-	
+
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView networkView, Point2D javaPt, Point2D xformPt) {
 		var re = dingRenderer.getRenderingEngine(networkView);
+		var annotation = re != null ? re.getPicker().getAnnotationAt(javaPt) : null;
 		
-		if (re == null)
-			return null;
-		
-		var annotation = re.getPicker().getAnnotationAt(javaPt);
-		var p = new Point((int) javaPt.getX(), (int) javaPt.getY());
-		
-		return new TaskIterator(new EditAnnotationTask(annotation, mediator, p));
+		return annotation != null ? new TaskIterator(new CopyAnnotationStyleTask(annotation, clipboard)) : null;
 	}
 
-	public TaskIterator createTaskIterator(DingAnnotation annotation, CyNetworkView networkView, Point2D javaPt) {
-		var re = dingRenderer.getRenderingEngine(networkView);
-		
-		if (re == null)
-			return null;
-		
-		var p = javaPt != null ? new Point((int) javaPt.getX(), (int) javaPt.getY()) : null;
-		
-		return new TaskIterator(new EditAnnotationTask(annotation, mediator, p));
-	}
-	
 	@Override
 	public boolean isReady(CyNetworkView networkView, Point2D javaPt, Point2D xformPt) {
 		var re = dingRenderer.getRenderingEngine(networkView);
+		var annotation = re != null ? re.getPicker().getAnnotationAt(javaPt) : null;
 		
-		if (re == null)
-			return false;
-		
-		var annotation = re.getPicker().getAnnotationAt(javaPt);
-		
-		if (annotation != null)
-			return true;
-		
-		return false;
+		return annotation != null && annotation.getArgMap() != null;
 	}
 }

@@ -51,6 +51,7 @@ import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.HandleFactoryImpl;
 import org.cytoscape.ding.impl.NVLTFActionSupport;
 import org.cytoscape.ding.impl.ViewTaskFactoryListener;
+import org.cytoscape.ding.impl.cyannotator.AnnotationClipboard;
 // Annotation creation
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.ding.impl.cyannotator.AnnotationManagerImpl;
@@ -63,9 +64,11 @@ import org.cytoscape.ding.impl.cyannotator.create.ShapeAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.TextAnnotationFactory;
 // Annotation edits and changes
 import org.cytoscape.ding.impl.cyannotator.tasks.AddAnnotationTaskFactory;
+import org.cytoscape.ding.impl.cyannotator.tasks.CopyAnnotationStyleTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.DuplicateAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.EditAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.GroupAnnotationsTaskFactory;
+import org.cytoscape.ding.impl.cyannotator.tasks.PasteAnnotationStyleTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.RemoveAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.RemoveSelectedAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.ReorderSelectedAnnotationsTaskFactory;
@@ -374,6 +377,29 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(TITLE, "Duplicate Selected Annotations");
 			props.setProperty(ACCELERATOR, "cmd D");
 			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
+			registerService(bc, factory, NetworkViewTaskFactory.class, props);
+		}
+		// Copy/Paste Annotation Style
+		var annotationClipboard = new AnnotationClipboard();
+		{
+			var factory = new CopyAnnotationStyleTaskFactory(renderer, annotationClipboard);
+			var props = new Properties();
+			props.setProperty(ID, "copyAnnotationStyleTaskFactory");
+			props.setProperty(PREFERRED_ACTION, "NEW");
+			props.setProperty(MENU_GRAVITY, "6.11");
+			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
+			props.setProperty(TITLE, "Copy Annotation Style");
+			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
+			registerService(bc, factory, NetworkViewLocationTaskFactory.class, props);
+		}
+		{
+			var factory = new PasteAnnotationStyleTaskFactory(renderer, annotationClipboard);
+			var props = new Properties();
+			props.setProperty(ID, "pasteAnnotationStyleTaskFactory");
+			props.setProperty(PREFERRED_ACTION, "NEW");
+			props.setProperty(MENU_GRAVITY, "6.12");
+			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
+			props.setProperty(TITLE, "Paste Annotation Style");
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 		}
 		// Reorder Selected Annotations - Edit Menu

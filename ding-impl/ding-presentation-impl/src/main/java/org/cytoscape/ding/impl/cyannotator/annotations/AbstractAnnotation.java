@@ -19,7 +19,6 @@ import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 
@@ -98,12 +97,27 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	protected AbstractAnnotation(DRenderingEngine re, Map<String, String> argMap) {
 		this(re, false);
 
-		if (argMap.containsKey(Annotation.X))
-			x = Double.parseDouble(argMap.get(Annotation.X));
-		if (argMap.containsKey(Annotation.Y))
-			y = Double.parseDouble(argMap.get(Annotation.Y));
+		if (argMap.get(X) != null) {
+			try {
+				x = Double.parseDouble(argMap.get(X));
+			} catch (Exception e) {
+				// Ignore...
+			}
+		}
+		
+		if (argMap.get(Y) != null) {
+			try {
+				y = Double.parseDouble(argMap.get(Y));
+			} catch (Exception e) {
+				// Ignore...
+			}
+		}
 
-		this.zOrder = ViewUtils.getDouble(argMap, Z, 0.0).intValue();
+		try {
+			zOrder = ViewUtils.getDouble(argMap, Z, 0.0).intValue();
+		} catch (Exception e) {
+			// Ignore...
+		}
 
 		if (argMap.get(NAME) != null)
 			name = argMap.get(NAME);
@@ -111,10 +125,10 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 		var canvasString = ViewUtils.getString(argMap, CANVAS, FOREGROUND);
 
 		if (canvasString != null && canvasString.equals(BACKGROUND))
-			this.canvas = CanvasID.BACKGROUND;
+			canvas = CanvasID.BACKGROUND;
 
 		if (argMap.containsKey(ANNOTATION_ID))
-			this.uuid = UUID.fromString(argMap.get(ANNOTATION_ID));
+			uuid = UUID.fromString(argMap.get(ANNOTATION_ID));
 	}
 
 	protected static double getLegacyZoom(Map<String, String> argMap) {
@@ -358,12 +372,12 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	}
 
 	@Override
-	public Map<String,String> getArgMap() {
+	public Map<String, String> getArgMap() {
 		var argMap = new HashMap<String, String>();
-		
+
 		if (name != null)
 			argMap.put(NAME, name);
-		
+
 		argMap.put(X, Double.toString(getX()));
 		argMap.put(Y, Double.toString(getY()));
 		argMap.put(CANVAS, canvas.toArgName());
@@ -373,7 +387,7 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 			argMap.put(PARENT_ID, groupParent.getUUID().toString());
 
 		argMap.put(Z, Integer.toString(getZOrder()));
-		
+
 		return argMap;
 	}
 	

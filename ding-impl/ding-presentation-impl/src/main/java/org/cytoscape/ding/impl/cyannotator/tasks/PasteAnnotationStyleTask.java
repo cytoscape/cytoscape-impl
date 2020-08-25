@@ -1,10 +1,9 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
-import java.awt.Point;
+import java.util.Collection;
 
+import org.cytoscape.ding.impl.cyannotator.AnnotationClipboard;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
-import org.cytoscape.ding.impl.cyannotator.ui.AnnotationMediator;
-import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -14,7 +13,7 @@ import org.cytoscape.work.TaskMonitor;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2020 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -32,36 +31,29 @@ import org.cytoscape.work.TaskMonitor;
  * #L%
  */
 
-public class EditAnnotationTask extends AbstractTask {
-	
-	private final DingAnnotation annotation; 
-	private final AnnotationMediator mediator;
-	private final Point location;
+public class PasteAnnotationStyleTask extends AbstractTask {
 
-	public EditAnnotationTask(DingAnnotation a, AnnotationMediator mediator) {
-		this(a, mediator, null);
-	}
-	
-	public EditAnnotationTask(DingAnnotation a, AnnotationMediator mediator, Point location) {
-		this.annotation = a;
-		this.mediator = mediator;
-		this.location = location;
+	private final Collection<DingAnnotation> annotations;
+	private final AnnotationClipboard clipboard;
+
+	public PasteAnnotationStyleTask(Collection<DingAnnotation> annotations, AnnotationClipboard clipboard) {
+		this.annotations = annotations;
+		this.clipboard = clipboard;
 	}
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		tm.setTitle("Edit Annotation");
+		tm.setTitle("Paste Annotation Style");
 		
-		if (annotation != null) {
-			if (annotation instanceof GroupAnnotation) {
-				tm.setStatusMessage("No annotation selected (group selected instead)!");
-			} else {
-				tm.setStatusMessage("Annotation: " + annotation.getName());
-				
-				mediator.editAnnotation(annotation, location);
-			}
-		} else {
-			tm.setStatusMessage("No annotation selected!");
+		if (annotations != null && !annotations.isEmpty()) {
+			tm.setStatusMessage("Pasting settings to at least " + annotations.size() + " annotation(s)...");
+			
+			var annotator = annotations.iterator().next().getCyAnnotator();
+			annotator.markUndoEdit("Paste Style to Annotations");
+			
+			clipboard.pasteStyle(annotations);
+			
+			annotator.postUndoEdit();
 		}
 	}
 }

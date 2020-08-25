@@ -30,7 +30,7 @@ import org.cytoscape.view.presentation.annotations.GroupAnnotation;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -55,23 +55,23 @@ public class AnnotationManagerImpl implements AnnotationManager {
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public AnnotationManagerImpl(final CyServiceRegistrar serviceRegistrar) {
+	public AnnotationManagerImpl(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
-	public void addAnnotation(final Annotation annotation) {
+	public void addAnnotation(Annotation annotation) {
 		addAnnotations(Arrays.asList(annotation));
 	}
-	
-	
+
 	@Override
 	public void addAnnotations(Collection<? extends Annotation> annotations) {
-		Map<CyNetworkView,Map<CanvasID,List<DingAnnotation>>> annotationsByView = groupByViewAndCanvasAndFlatten(annotations, false);
+		var annotationsByView = groupByViewAndCanvasAndFlatten(annotations, false);
+		
 		if (annotationsByView.isEmpty())
 			return;
 		
-		DingRenderer dingRenderer = serviceRegistrar.getService(DingRenderer.class);
+		var dingRenderer = serviceRegistrar.getService(DingRenderer.class);
 		
 		// checkCycle throws IllegalAnnotationStructureException
 		// we don't want this thrown from inside the invokeOnEDTAndWait call because it will get wrapped
@@ -121,7 +121,6 @@ public class AnnotationManagerImpl implements AnnotationManager {
 	public void removeAnnotation(final Annotation annotation) {
 		removeAnnotations(Arrays.asList(annotation));
 	}
-	
 
 	@Override
 	public void removeAnnotations(Collection<? extends Annotation> annotations) {
@@ -151,8 +150,6 @@ public class AnnotationManagerImpl implements AnnotationManager {
 			
 		});
 		
-		
-		
 		// TODO
 //		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 //		annotationsByView.values().forEach(list -> {
@@ -160,6 +157,15 @@ public class AnnotationManagerImpl implements AnnotationManager {
 //		});
 	}
 	
+	@Override
+	public List<Annotation> getAnnotations(CyNetworkView networkView) {
+		var re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(networkView);
+		
+		if (re != null)
+			return new ArrayList<>(re.getCyAnnotator().getAnnotations()); // just to shut up the type checker
+		
+		return Collections.emptyList();
+	}
 	
 	private Map<CyNetworkView,Map<CanvasID,List<DingAnnotation>>> groupByViewAndCanvasAndFlatten(Collection<? extends Annotation> annotations, boolean incudeExisting) {
 		Map<CyNetworkView,Map<CanvasID,List<DingAnnotation>>> map = new HashMap<>();
@@ -171,7 +177,6 @@ public class AnnotationManagerImpl implements AnnotationManager {
 		
 		return map;
 	}
-	
 	
 	private Map<CyNetworkView,List<DingAnnotation>> groupByView(Collection<? extends Annotation> annotations) {
 		return annotations.stream()
@@ -193,7 +198,7 @@ public class AnnotationManagerImpl implements AnnotationManager {
 	}
 	
 	private void flattenAnnotations(CyNetworkView view, DingAnnotation a, Set<DingAnnotation> collector, boolean includeExisting) {
-		DRenderingEngine re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
+		var re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
 
 		if(!includeExisting && re.getCyAnnotator().contains(a))
 			return;
@@ -207,7 +212,6 @@ public class AnnotationManagerImpl implements AnnotationManager {
 			}
 		}
 	}
-	
 
 	private static CanvasID getCanvas(CyNetworkView view, DingAnnotation annotation) {
 		return annotation.getCanvas() == null ? CanvasID.FOREGROUND : annotation.getCanvas();
@@ -215,13 +219,5 @@ public class AnnotationManagerImpl implements AnnotationManager {
 	
 	private static List<DingAnnotation> getArrows(Collection<DingAnnotation> annotations) {
 		return annotations.stream().flatMap(a -> a.getArrows().stream()).map(a -> (DingAnnotation)a).collect(toList());
-	}
-	
-	@Override
-	public List<Annotation> getAnnotations(CyNetworkView networkView) {
-		DRenderingEngine re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(networkView);
-		if(re != null)
-			return new ArrayList<>(re.getCyAnnotator().getAnnotations()); // just to shut up the type checker
-		return Collections.emptyList();
 	}
 }

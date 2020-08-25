@@ -322,8 +322,22 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 	 * Asks the editor to be updated with the passed annotation and show the editor.
 	 */
 	public void editAnnotation(Annotation a) {
-		if (a != null)
-			invokeOnEDT(() -> mainPanel.editAnnotation(a));
+		editAnnotation(a, null);
+	}
+	
+	/**
+	 * Asks the editor to be updated with the passed annotation and show the editor near the passed location,
+	 * if that makes sense.
+	 */
+	public void editAnnotation(Annotation a, Point location) {
+		if (a != null) {
+			invokeOnEDT(() -> {
+				mainPanel.editAnnotation(a, location);
+				
+				if (!mainPanel.getAppearancePanel().isFloating())
+					showAnnotationPanel();
+			});
+		}
 	}
 	
 	/**

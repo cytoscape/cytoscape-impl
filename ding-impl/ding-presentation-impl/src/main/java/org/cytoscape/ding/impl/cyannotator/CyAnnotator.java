@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -103,15 +103,13 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 	
 	public void postUndoEdit() {
-		if(undoEdit != null) {
+		if (undoEdit != null)
 			undoEdit.post();
-		}
 	}
 	
 	public void clearUndoEdit() {
 		undoEdit = null;
 	}
-	
 	
 	public void addPropertyChangeListener(PropertyChangeListener listener) {
 		propChangeSupport.addPropertyChangeListener(listener);
@@ -129,7 +127,6 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		propChangeSupport.removePropertyChangeListener(propertyName, listener);
 	}
 	
-	
 	public void dispose() {
 	}
 
@@ -137,16 +134,17 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	 * Adjusts the extents to also include annotations.
 	 */
 	public boolean adjustBoundsToIncludeAnnotations(double[] extents) {
-		List<DingAnnotation> annotations = getAnnotations();
-		if(annotations.isEmpty())
+		var annotations = getAnnotations();
+
+		if (annotations.isEmpty())
 			return false;
 
-		for(DingAnnotation a : annotations) {
-			if (a.getX() < extents[0]) 
+		for (DingAnnotation a : annotations) {
+			if (a.getX() < extents[0])
 				extents[0] = a.getX();
-			if (a.getY() < extents[1]) 
+			if (a.getY() < extents[1])
 				extents[1] = a.getY();
-			
+
 			double x2 = a.getX() + a.getWidth();
 			double y2 = a.getY() + a.getHeight();
 
@@ -155,6 +153,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 			if (y2 > extents[3])
 				extents[3] = y2;
 		}
+		
 		return true;
 	}
 	
@@ -214,7 +213,6 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		return registrar;
 	}
 	
-	
 	/**
 	 * Returns the annotations on the given canvas sorted by z-order ascending.
 	 */
@@ -249,7 +247,6 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 			.sorted(zComparator)
 			.collect(Collectors.toList());
 	}
-	
 
 	public AnnotationTree getAnnotationTree() {
 		return AnnotationTree.buildTree(annotationSet, this);
@@ -299,11 +296,11 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		if (annotationSet.containsAll(annotations))
 			return;
 		
-		Set<DingAnnotation> oldValue = new HashSet<>(annotationSet);
+		var oldValue = new HashSet<DingAnnotation>(annotationSet);
 		
-		for(Annotation a : annotations) {
-			if(a instanceof DingAnnotation) {
-				annotationSet.add((DingAnnotation)a);
+		for (Annotation a : annotations) {
+			if (a instanceof DingAnnotation) {
+				annotationSet.add((DingAnnotation) a);
 			}
 		}
 		
@@ -316,7 +313,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 	
 	public void removeAnnotation(Annotation annotation) {
-		Set<DingAnnotation> oldValue = new HashSet<>(annotationSet);
+		var oldValue = new HashSet<DingAnnotation>(annotationSet);
 		
 		boolean changed = annotationSet.remove((DingAnnotation) annotation);
 		annotationSelection.remove(annotation);
@@ -329,7 +326,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 
 	public void removeAnnotations(Collection<? extends Annotation> annotations) {
 		boolean changed = false;
-		Set<DingAnnotation> oldValue = new HashSet<>(annotationSet);
+		var oldValue = new HashSet<DingAnnotation>(annotationSet);
 		
 		for (var a : annotations) {
 			if (annotationSet.remove((DingAnnotation) a))

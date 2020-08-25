@@ -1,10 +1,7 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
-import java.awt.Point;
-
+import org.cytoscape.ding.impl.cyannotator.AnnotationClipboard;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
-import org.cytoscape.ding.impl.cyannotator.ui.AnnotationMediator;
-import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -14,7 +11,7 @@ import org.cytoscape.work.TaskMonitor;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2020 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -32,36 +29,23 @@ import org.cytoscape.work.TaskMonitor;
  * #L%
  */
 
-public class EditAnnotationTask extends AbstractTask {
-	
-	private final DingAnnotation annotation; 
-	private final AnnotationMediator mediator;
-	private final Point location;
+public class CopyAnnotationStyleTask extends AbstractTask {
 
-	public EditAnnotationTask(DingAnnotation a, AnnotationMediator mediator) {
-		this(a, mediator, null);
-	}
-	
-	public EditAnnotationTask(DingAnnotation a, AnnotationMediator mediator, Point location) {
-		this.annotation = a;
-		this.mediator = mediator;
-		this.location = location;
+	private final DingAnnotation annotation;
+	private final AnnotationClipboard clipboard;
+
+	public CopyAnnotationStyleTask(DingAnnotation annotation, AnnotationClipboard clipboard) {
+		this.annotation = annotation;
+		this.clipboard = clipboard;
 	}
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		tm.setTitle("Edit Annotation");
+		tm.setTitle("Copy Annotation Style");
 		
 		if (annotation != null) {
-			if (annotation instanceof GroupAnnotation) {
-				tm.setStatusMessage("No annotation selected (group selected instead)!");
-			} else {
-				tm.setStatusMessage("Annotation: " + annotation.getName());
-				
-				mediator.editAnnotation(annotation, location);
-			}
-		} else {
-			tm.setStatusMessage("No annotation selected!");
+			tm.setStatusMessage("Copying settings from " + annotation.getName() + "...");
+			clipboard.copyStyle(annotation);
 		}
 	}
 }

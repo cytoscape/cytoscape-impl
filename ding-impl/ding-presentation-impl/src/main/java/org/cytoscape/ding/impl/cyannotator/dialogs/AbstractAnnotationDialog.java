@@ -51,7 +51,6 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 public abstract class AbstractAnnotationDialog<T extends AbstractAnnotation> extends JDialog {
 
 	protected JComponent controlPanel;
-	protected PreviewPanel previewPanel;
 	protected JButton applyButton;
 	protected JButton cancelButton;
 	
@@ -134,13 +133,6 @@ public abstract class AbstractAnnotationDialog<T extends AbstractAnnotation> ext
 		hGroup.addComponent(getControlPanel());
 		vGroup.addComponent(getControlPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
 
-		var previewPanel = getPreviewPanel();
-
-		if (previewPanel != null) {
-			hGroup.addComponent(previewPanel, DEFAULT_SIZE, getPreviewWidth(), Short.MAX_VALUE);
-			vGroup.addComponent(previewPanel, getPreviewHeight(), getPreviewHeight(), getPreviewHeight());
-		}
-
 		hGroup.addComponent(buttonPanel);
 		vGroup.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
 
@@ -160,17 +152,6 @@ public abstract class AbstractAnnotationDialog<T extends AbstractAnnotation> ext
 		}
 		
 		return controlPanel;
-	}
-	
-	protected PreviewPanel getPreviewPanel() {
-		if (previewPanel == null) {
-			T pa = getPreviewAnnotation();
-			
-			if (pa != null)
-				previewPanel = new PreviewPanel(getPreviewAnnotation());
-		}
-		
-		return previewPanel;
 	}
 	
 	protected JButton getApplyButton() {

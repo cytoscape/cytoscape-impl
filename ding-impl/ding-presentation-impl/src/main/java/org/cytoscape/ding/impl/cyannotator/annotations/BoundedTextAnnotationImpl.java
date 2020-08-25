@@ -99,7 +99,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		this.fontSize = (float) initialFontSize;
 	}
 
-	public BoundedTextAnnotationImpl(DRenderingEngine re, Map<String,String> argMap) {
+	public BoundedTextAnnotationImpl(DRenderingEngine re, Map<String, String> argMap) {
 		super(re, argMap);
 		
 		this.font = ViewUtils.getArgFont(argMap, "Arial", Font.PLAIN, initialFontSize);
@@ -148,6 +148,26 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		argMap.put(FONTSTYLE, Integer.toString(this.font.getStyle()));
 		
 		return argMap;
+	}
+	
+	/**
+	 * This applies only text color, font and the ShapeAnnotation's style properties.
+	 */
+	@Override
+	public void setStyle(Map<String, String> argMap) {
+		super.setStyle(argMap);
+		
+		if (argMap != null) {
+			setTextColor((Color) ViewUtils.getColor(argMap, COLOR, Color.BLACK));
+			
+			var newFont = ViewUtils.getArgFont(argMap, font.getFamily(), font.getStyle(), font.getSize());
+			double zoom = getLegacyZoom(argMap);
+			
+			if (zoom != 1.0)
+				newFont = newFont.deriveFont(newFont.getSize2D() / (float) zoom);
+			
+			setFont(newFont);
+		}
 	}
 
 	@Override
