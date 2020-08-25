@@ -3,21 +3,24 @@ package org.cytoscape.view.table.internal.equation;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.Color;
+import java.awt.Font;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
+import javax.swing.JEditorPane;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.UIManager;
+import javax.swing.text.html.HTMLDocument;
 
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 @SuppressWarnings("serial")
 public class InfoPanel extends JPanel {
 
-	private JTextArea textArea;
+	private JEditorPane textArea;
 	private JScrollPane scrollPane;
 	private JButton insertButton;
 	
@@ -43,14 +46,22 @@ public class InfoPanel extends JPanel {
 	
 	public void setText(String s) {
 		getTextArea().setText(s);
+		getTextArea().setCaretPosition(0); // scroll to top
 	}
 	
-	public JTextArea getTextArea() {
+	public JEditorPane getTextArea() {
 		if(textArea == null) {
-			textArea = new JTextArea();
+			textArea = new JEditorPane("text/html", "");
 			textArea.setEditable(false);
+			
 			Color color = UIManager.getColor("Panel.background");
 			textArea.setBackground(color);
+			
+			JLabel label = new JLabel();
+			LookAndFeelUtil.makeSmall(label);
+			Font font = label.getFont();
+			String bodyRule = "body { font-family: " + font.getFamily() + "; " + "font-size: " + font.getSize() + "pt; }";
+		    ((HTMLDocument)textArea.getDocument()).getStyleSheet().addRule(bodyRule);
 		}
 		return textArea;
 	}
