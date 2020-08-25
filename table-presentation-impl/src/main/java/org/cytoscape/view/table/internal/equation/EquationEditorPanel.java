@@ -11,11 +11,13 @@ import javax.swing.JPanel;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.table.internal.impl.BrowserTable;
 
 @SuppressWarnings("serial")
 public class EquationEditorPanel extends JPanel {
 	
 	private final CyServiceRegistrar registrar;
+	private final BrowserTable browserTable;
 	
 	private SyntaxAreaPanel syntaxPanel;
 	private ItemListPanel<String> tutorialPanel;
@@ -28,8 +30,9 @@ public class EquationEditorPanel extends JPanel {
 	private JButton closeButton;
 	
 	
-	public EquationEditorPanel(CyServiceRegistrar registrar) {
+	public EquationEditorPanel(CyServiceRegistrar registrar, BrowserTable browserTable) {
 		this.registrar = registrar;
+		this.browserTable = browserTable;
 		init();
 	}
 	
@@ -68,7 +71,7 @@ public class EquationEditorPanel extends JPanel {
 	
 	public SyntaxAreaPanel getSyntaxPanel() {
 		if(syntaxPanel == null) {
-			syntaxPanel = new SyntaxAreaPanel(registrar);
+			syntaxPanel = new SyntaxAreaPanel(registrar, browserTable);
 			Dimension p = syntaxPanel.getPreferredSize();
 			syntaxPanel.setPreferredSize(new Dimension(p.width, 50));
 		}

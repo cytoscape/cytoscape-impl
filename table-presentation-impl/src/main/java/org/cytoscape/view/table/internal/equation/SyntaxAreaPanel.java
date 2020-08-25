@@ -17,16 +17,20 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.text.BadLocationException;
 
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.table.internal.equation.EquationEditorMediator.ApplyScope;
+import org.cytoscape.view.table.internal.impl.BrowserTable;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
 @SuppressWarnings("serial")
 public class SyntaxAreaPanel extends JPanel {
 	
 	private final CyServiceRegistrar registrar;
+	private final BrowserTable browserTable;
 	
 	private JPanel topPanel;
 	private RSyntaxTextArea textArea;
@@ -37,12 +41,11 @@ public class SyntaxAreaPanel extends JPanel {
 	private JLabel applyLabel;
 	private JComboBox<ApplyScope> applyScopeCombo; 
 	private JButton applyButton;
-	private JLabel applyResultLabel;
-	private Color defaultLabelColor;
 	
 	
-	public SyntaxAreaPanel(CyServiceRegistrar registrar) {
+	public SyntaxAreaPanel(CyServiceRegistrar registrar, BrowserTable browserTable) {
 		this.registrar = registrar;
+		this.browserTable = browserTable;
 		init();
 	}
 	
@@ -58,7 +61,6 @@ public class SyntaxAreaPanel extends JPanel {
 				.addComponent(getApplyLabel())
 				.addComponent(getApplyScopeCombo())
 				.addComponent(getApplyButton())
-				.addComponent(getApplyResultLabel())
 			)
 		);
 		
@@ -69,11 +71,9 @@ public class SyntaxAreaPanel extends JPanel {
 				.addComponent(getApplyLabel())
 				.addComponent(getApplyScopeCombo(), 0, 150, 150)
 				.addComponent(getApplyButton())
-				.addComponent(getApplyResultLabel())
 			)
 		);
 
-		this.defaultLabelColor = getApplyResultLabel().getForeground();
 		// Want the caret to be visible and flasing
 		setCaret(0);
 	}
@@ -116,21 +116,6 @@ public class SyntaxAreaPanel extends JPanel {
 		popup.add(label);
 		JButton comp = getApplyButton();
 		popup.show(comp, 0, comp.getHeight());
-	}
-	
-	public void showResutls(String message) {
-		setResults(message, false);
-	}
-	
-	private void setResults(String text, boolean error) {
-		JLabel label = getApplyResultLabel();
-		label.setText(text);
-		label.setToolTipText(text);
-		label.setForeground(error ? Color.RED : defaultLabelColor);
-	}
-	
-	public void clearResults() {
-		setResults("", false);
 	}
 	
 	private void setCaret(int offset) {
@@ -200,7 +185,8 @@ public class SyntaxAreaPanel extends JPanel {
 	
 	private JComboBox<ApplyScope> getApplyScopeCombo() {
 		if(applyScopeCombo == null) {
-			applyScopeCombo = new JComboBox<>(ApplyScope.values());
+			ApplyScope[] scopes = ApplyScope.values(tableHasSelected());
+			applyScopeCombo = new JComboBox<>(scopes);
 			LookAndFeelUtil.makeSmall(applyScopeCombo);
 		}
 		return applyScopeCombo;
@@ -214,14 +200,6 @@ public class SyntaxAreaPanel extends JPanel {
 		return applyButton;
 	}
 	
-	private JLabel getApplyResultLabel() {
-		if(applyResultLabel == null) {
-			applyResultLabel = new JLabel("");
-			LookAndFeelUtil.makeSmall(applyResultLabel);
-		}
-		return applyResultLabel;
-	}
-	
 	private JButton createIconButton(String icon, String tooltip) {
 		IconManager iconManager = registrar.getService(IconManager.class);
 		JButton button = new JButton(icon);
@@ -232,6 +210,11 @@ public class SyntaxAreaPanel extends JPanel {
 		button.setFont(iconManager.getIconFont(14.0f));
 		button.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
 		return button;
+	}
+	
+	private boolean tableHasSelected() {
+		CyColumn selectedColumn = browserTable.getBrowserTableModel().getDataTable().getColumn(CyNetwork.SELECTED);
+		return selectedColumn != null && selectedColumn.getType() == Boolean.class;
 	}
 	
 
