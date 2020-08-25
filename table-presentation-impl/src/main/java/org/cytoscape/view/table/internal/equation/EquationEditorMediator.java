@@ -91,8 +91,8 @@ public class EquationEditorMediator {
 	
 	
 	private static String getCurrentFormula(BrowserTable browserTable) {
-		int cellRow = browserTable.convertRowIndexToModel(browserTable.getSelectedRow());
-		int cellCol = browserTable.convertColumnIndexToModel(browserTable.getSelectedColumn());
+		int cellRow = browserTable.getSelectedRow();
+		int cellCol = browserTable.getSelectedColumn();
 		
 		String colName = browserTable.getColumnName(cellCol);
 		CyRow row = browserTable.getBrowserTableModel().getCyRow(cellRow);
