@@ -171,11 +171,10 @@ public class TableBrowserToolBar extends JPanel {
 			} else if (comp == deleteColumnsButton) {
 				enabled = tableRenderer.getDataTable().getColumns().stream().anyMatch(col -> !col.isImmutable());
 			} else if (comp == fnBuilderButton) {
-				// MKTODO how to get this information from the renderer?
 				enabled = true;
-//				final int row = browserTable.getSelectedRow();
-//				final int column = browserTable.getSelectedColumn();
-//				enabled = row >=0 && column >= 0 && browserTableModel.isCellEditable(row, column);
+				// MKTODO need an event to inform toolbar that the enanled state has changed
+//				TableTaskFactory factory = serviceRegistrar.getService(TableTaskFactory.class, "(task=equationEditor)");
+//				enabled = factory.isReady(tableRenderer.getDataTable());
 			} else if (comp == tableChooser) {
 				enabled = tableChooser.getItemCount() > 0;
 			} else {

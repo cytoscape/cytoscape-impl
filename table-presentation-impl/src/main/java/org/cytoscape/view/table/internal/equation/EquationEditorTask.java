@@ -11,7 +11,7 @@ import org.cytoscape.view.model.table.CyTableViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.table.internal.TableRenderingEngineImpl;
 import org.cytoscape.view.table.internal.TableViewRendererImpl;
-import org.cytoscape.view.table.internal.impl.BrowserTableModel;
+import org.cytoscape.view.table.internal.impl.BrowserTable;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -27,21 +27,23 @@ public class EquationEditorTask extends AbstractTask {
 	}
 
 	
+	public boolean isReady() {
+		var browserTable = getBrowserTable(table);
+		var browserTableModel = browserTable.getBrowserTableModel();
+		final int row = browserTable.getSelectedRow();
+		final int column = browserTable.getSelectedColumn();
+		return row >=0 && column >= 0 && browserTableModel.isCellEditable(row, column);
+	}
+	
+	
 	@Override
 	public void run(TaskMonitor tm) {
-		var tableViewManager = registrar.getService(CyTableViewManager.class);
-		CyTableView view = tableViewManager.getTableView(table);
-		
-		var re = getRenderingEngine(view);
-		if(re == null)
-			return;
-		
-		var browserTable = re.getBrowserTable();
+		var browserTable = getBrowserTable(table);
 		if(browserTable == null)
 			return;
 		
 		// Do not allow opening of the formula builder dialog while a cell is being edited!
-		var browserTableModel = (BrowserTableModel) browserTable.getModel();
+		var browserTableModel = browserTable.getBrowserTableModel();
 		if (browserTableModel == null || browserTable.getCellEditor() != null)
 			return;
 
@@ -69,8 +71,20 @@ public class EquationEditorTask extends AbstractTask {
 			mediator.openEquationEditorDialog(browserTable);
 		});
 	}
-
 	
+	
+	public BrowserTable getBrowserTable(CyTable table) {
+		var tableViewManager = registrar.getService(CyTableViewManager.class);
+		CyTableView view = tableViewManager.getTableView(table);
+		
+		var re = getRenderingEngine(view);
+		if(re == null)
+			return null;
+		
+		return re.getBrowserTable();
+	}
+	
+
 	private TableRenderingEngineImpl getRenderingEngine(CyTableView view) {
 		var renderingEngineManager = registrar.getService(RenderingEngineManager.class);
 		var renderingEngines = renderingEngineManager.getRenderingEngines(view);
@@ -81,6 +95,4 @@ public class EquationEditorTask extends AbstractTask {
 		}
 		return null;
 	}
-	
-	
 }

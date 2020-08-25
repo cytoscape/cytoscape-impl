@@ -2,11 +2,10 @@ package org.cytoscape.view.table.internal.equation;
 
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.AbstractTableTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class EquationEditorTaskFactory extends AbstractTableTaskFactory implements TableTaskFactory {
+public class EquationEditorTaskFactory implements TableTaskFactory {
 
 	private final CyServiceRegistrar registrar;
 	
@@ -20,5 +19,11 @@ public class EquationEditorTaskFactory extends AbstractTableTaskFactory implemen
 		return new TaskIterator(new EquationEditorTask(registrar, table));
 	}
 
+	@Override
+	public boolean isReady(CyTable table) {
+		var t = new EquationEditorTask(registrar, table);
+		return t.isReady();
+	}
 
+	
 }
