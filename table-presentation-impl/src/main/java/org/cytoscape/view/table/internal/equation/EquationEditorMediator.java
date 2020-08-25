@@ -19,6 +19,7 @@ import javax.swing.JList;
 import javax.swing.WindowConstants;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
+import javax.swing.event.HyperlinkEvent.EventType;
 
 import org.cytoscape.application.swing.CyColumnPresentationManager;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -65,7 +66,7 @@ public class EquationEditorMediator {
 		dialog.setTitle("Equation Builder");
 		dialog.getContentPane().setLayout(new BorderLayout());
 		dialog.getContentPane().add(builderPanel, BorderLayout.CENTER);
-		dialog.setPreferredSize(new Dimension(550, 500));
+		dialog.setPreferredSize(new Dimension(550, 430)); 
 		dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		dialog.pack();
 		dialog.setLocationRelativeTo(parent);
@@ -118,7 +119,11 @@ public class EquationEditorMediator {
 		syntaxPanel.getUndoButton().addActionListener(e -> syntaxPanel.undo());
 		syntaxPanel.getRedoButton().addActionListener(e -> syntaxPanel.redo());
 		
-		builderPanel.getInfoPanel().getInsertButton().addActionListener(e -> handleInsert(builderPanel));
+		builderPanel.getInfoPanel().getTextArea().addHyperlinkListener(e -> {
+			if(e.getEventType() == EventType.ACTIVATED) {
+				handleInsert(builderPanel);	
+			}
+		});
 		
 		syntaxPanel.getApplyButton().addActionListener(e -> handleApply(builderPanel, browserTable));
 	}
@@ -135,7 +140,6 @@ public class EquationEditorMediator {
 				builderPanel.getFunctionPanel().clearSelection();
 				String docs = TutorialItems.getTutorialDocs(item);
 				builderPanel.getInfoPanel().setText(docs);
-				builderPanel.getInfoPanel().getInsertButton().setEnabled(false);
 			}
 		});
 	}
@@ -159,7 +163,6 @@ public class EquationEditorMediator {
 				Function f = functions.get(name);
 				String docs = TutorialItems.getFunctionDocs(f);
 				builderPanel.getInfoPanel().setText(docs);
-				builderPanel.getInfoPanel().getInsertButton().setEnabled(true);
 			}
 		});
 	}
@@ -194,7 +197,6 @@ public class EquationEditorMediator {
 				builderPanel.getTutorialPanel().clearSelection();
 				String docs = TutorialItems.getColumnDocs(col);
 				builderPanel.getInfoPanel().setText(docs);
-				builderPanel.getInfoPanel().getInsertButton().setEnabled(true);
 			}
 		});
 	}

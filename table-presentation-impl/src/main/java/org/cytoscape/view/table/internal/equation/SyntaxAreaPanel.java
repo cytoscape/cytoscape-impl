@@ -65,7 +65,7 @@ public class SyntaxAreaPanel extends JPanel {
 		layout.setHorizontalGroup(layout.createParallelGroup()
 			.addComponent(getTopPanel())
 			.addComponent(getSyntaxAreaScrollPane())
-			.addGroup(layout.createSequentialGroup()
+			.addGroup(Alignment.TRAILING, layout.createSequentialGroup()
 				.addComponent(getApplyLabel())
 				.addComponent(getApplyScopeCombo(), 0, 150, 150)
 				.addComponent(getApplyButton())

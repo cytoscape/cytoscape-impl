@@ -24,7 +24,7 @@ public class TutorialItems {
 			usage = usage.substring(10);
 		if(usage.endsWith("."))
 			usage = usage.substring(0, usage.length()-1);
-		return "<html><b>" + usage + "</b><br><br>" + f.getFunctionSummary() + "</html>";
+		return "<html><b>" + usage + "</b>&nbsp;&nbsp;&nbsp;<a href=\"\">insert</a><br><br>" + f.getFunctionSummary() + "</html>";
 	}
 	
 	
@@ -72,7 +72,7 @@ public class TutorialItems {
 	
 	public static String getColumnDocs(CyColumn f) {
 		StringBuilder sb = new StringBuilder("<html>");
-		sb.append("<b>${").append(f.getName()).append("}</b><br><br>");
+		sb.append("<b>${").append(f.getName()).append("}</b>&nbsp;&nbsp;&nbsp;<a href=\"\">insert</a><br><br>");
 		sb.append("Full Name: ").append(f.getName()).append("<br>");
 		sb.append("Namespace: ").append(f.getNamespace() == null ? "-none-" : f.getNamespace()).append("<br>");
 		sb.append("Type: ");

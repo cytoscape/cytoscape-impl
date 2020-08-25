@@ -6,8 +6,6 @@ import java.awt.Color;
 import java.awt.Font;
 
 import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -22,7 +20,6 @@ public class InfoPanel extends JPanel {
 
 	private JEditorPane textArea;
 	private JScrollPane scrollPane;
-	private JButton insertButton;
 	
 	
 	public InfoPanel() {
@@ -36,11 +33,9 @@ public class InfoPanel extends JPanel {
 		
 		layout.setVerticalGroup(layout.createSequentialGroup()
 			.addComponent(getScrollPane())
-			.addComponent(getInsertButton())
 		);
 		layout.setHorizontalGroup(layout.createParallelGroup()
 			.addComponent(getScrollPane())
-			.addComponent(getInsertButton(), Alignment.TRAILING)
 		);
 	}
 	
@@ -66,7 +61,6 @@ public class InfoPanel extends JPanel {
 		return textArea;
 	}
 	
-	
 	private JScrollPane getScrollPane() {
 		if(scrollPane == null) {
 			scrollPane = new JScrollPane(getTextArea());
@@ -75,14 +69,5 @@ public class InfoPanel extends JPanel {
 		}
 		return scrollPane;
 	}
-	
-	public JButton getInsertButton() {
-		if(insertButton == null) {
-			insertButton = new JButton("Insert");
-			LookAndFeelUtil.makeSmall(insertButton);
-		}
-		return insertButton;
-	}
-	
 	
 }
