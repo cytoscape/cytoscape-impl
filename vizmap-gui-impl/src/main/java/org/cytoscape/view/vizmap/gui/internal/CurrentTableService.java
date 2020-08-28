@@ -10,30 +10,49 @@ import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSet;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
+import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheetItem;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMediator;
 
+/**
+ * This class is kind of a mess. It gets data from all over the place.
+ * Should probably put these methods in vmProxy and just delegate to that?
+ */
 public class CurrentTableService {
 	
 	private final ServicesUtil servicesUtil;
 	private final VizMapperMediator vizMapperMediator;
 	private final AttributeSetProxy attrProxy;
+	private final VizMapperProxy vmProxy;
 	
 
 	public CurrentTableService(
 			ServicesUtil servicesUtil, 
 			VizMapperMediator vizMapperMediator, 
-			AttributeSetProxy attrProxy
+			AttributeSetProxy attrProxy,
+			VizMapperProxy vmProxy
 	) {
 		this.servicesUtil = servicesUtil;
 		this.vizMapperMediator = vizMapperMediator;
 		this.attrProxy = attrProxy;
+		this.vmProxy = vmProxy;
 	}
 
+	
+	public RenderingEngine<?> getRenderingEngine(VisualProperty<?> vp) {
+		Class<?> type = vp.getTargetDataType();
+		if(type == CyColumn.class || type == CyTable.class)
+			return vmProxy.getCurrentTableRenderingEngine();
+		else
+			return vmProxy.getCurrentRenderingEngine();
+	}
+	
+	
 	public VisualLexicon getCurrentVisualLexicon(VisualProperty<?> vp) {
 		Class<?> type = vp.getTargetDataType();
 		CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);

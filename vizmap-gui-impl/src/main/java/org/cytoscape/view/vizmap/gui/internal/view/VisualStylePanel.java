@@ -15,6 +15,8 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 
@@ -132,6 +134,10 @@ public class VisualStylePanel {
 			
 			if (styleSelector.isEditMode())
 				update(vs);
+		}
+		
+		public RenderingEngine<CyNetwork> getRenderingEngine(VisualStyle vs) {
+			return styleSelector.getRenderingEngine(vs);
 		}
 		
 		public void update() {

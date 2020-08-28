@@ -301,7 +301,7 @@ public class VisualStyleSelector extends JPanel {
 		return defViewPanelsMap.get(vs.getTitle());
 	}
 	
-	private RenderingEngine<CyNetwork> getRenderingEngine(VisualStyle vs) {
+	protected RenderingEngine<CyNetwork> getRenderingEngine(VisualStyle vs) {
 		return vs != null ? engineMap.get(vs.getTitle()) : null;
 	}
 	

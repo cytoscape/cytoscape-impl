@@ -65,7 +65,6 @@ import org.cytoscape.view.vizmap.gui.internal.view.VizMapPropertyBuilder;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMainPanel;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMediator;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMenuMediator;
-import org.cytoscape.view.vizmap.gui.internal.view.VizMapperTableDialog;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.BooleanVisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.ColorVisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.EditorManagerImpl;
@@ -334,7 +333,6 @@ public class CyActivator extends AbstractCyActivator {
 		// Create the main GUI component
 		// -------------------------------------------------------------------------------------------------------------
 		var vizMapperMainPanel = new VizMapperMainPanel(servicesUtil);
-		var vizMapperTableDialog = new VizMapperTableDialog(servicesUtil);
 		
 		// Start the PureMVC components
 		// -------------------------------------------------------------------------------------------------------------
@@ -353,7 +351,7 @@ public class CyActivator extends AbstractCyActivator {
 												vizMapperMenuMediator,
 												servicesUtil);
 		
-		var currentTableService = new CurrentTableService(servicesUtil, vizMapperMediator, attributeSetProxy);
+		var currentTableService = new CurrentTableService(servicesUtil, vizMapperMediator, attributeSetProxy, vizMapperProxy);
 		registerService(bc, currentTableService, CurrentTableService.class);
 		
 		

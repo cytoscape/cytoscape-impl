@@ -141,8 +141,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 
 	public static final String NAME = "VizMapperMediator";
 	
-	private static final List<Class<? extends CyIdentifiable>> NETWORK_SHEET_TYPES = Arrays.asList(CyNode.class, CyEdge.class, CyNetwork.class);
-	private static final List<Class<? extends CyIdentifiable>> TABLE_SHEET_TYPES   = Arrays.asList(CyColumn.class);
+	static final List<Class<? extends CyIdentifiable>> NETWORK_SHEET_TYPES = Arrays.asList(CyNode.class, CyEdge.class, CyNetwork.class);
+	static final List<Class<? extends CyIdentifiable>> TABLE_SHEET_TYPES   = Arrays.asList(CyColumn.class);
 	
 	private VizMapperProxy vmProxy;
 	private AttributeSetProxy attrProxy;
@@ -297,7 +297,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		}
 	}
 	
-	private RenderingEngine<?> getRenderingEngine(Class<? extends CyIdentifiable> type) {
+	protected RenderingEngine<?> getRenderingEngine(Class<? extends CyIdentifiable> type) {
 		if(NETWORK_SHEET_TYPES.contains(type))
 			return vmProxy.getCurrentRenderingEngine();
 		else

@@ -25,11 +25,14 @@ import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
+import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.DefaultViewEditor;
+import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
 import org.cytoscape.view.vizmap.gui.VizMapGUI;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.VisualStylePanel.VisualStyleDropDownButton;
@@ -62,7 +65,7 @@ import org.cytoscape.view.vizmap.gui.internal.view.VisualStylePanel.VisualStyleD
  * VizMapper UI main panel.
  */
 @SuppressWarnings("serial")
-public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultViewEditor,
+public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultViewPanel, DefaultViewEditor,
 														  CytoPanelComponent2, VisualPropertySheetContainer {
 
 	private static final String TITLE = "Style";
@@ -127,6 +130,12 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	@Deprecated
 	public DefaultViewEditor getDefaultViewEditor() {
 		return this;
+	}
+	
+	@Override
+	@Deprecated
+	public RenderingEngine<CyNetwork> getRenderingEngine() {
+		return getStylesBtn().getRenderingEngine(getSelectedVisualStyle());
 	}
 	
 	
