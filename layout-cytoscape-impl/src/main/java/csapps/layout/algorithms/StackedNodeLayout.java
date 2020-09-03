@@ -52,4 +52,9 @@ public class StackedNodeLayout extends AbstractLayoutAlgorithm {
 	public StackedNodeLayoutContext createLayoutContext() {
 		return new StackedNodeLayoutContext();
 	}
+
+	@Override
+	public boolean getSupportsSelectedOnly() {
+		return true;
+	}
 }

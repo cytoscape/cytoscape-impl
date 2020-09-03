@@ -47,21 +47,40 @@ public class StackedNodeLayoutTask extends AbstractLayoutTask {
 	final protected void doLayout(final TaskMonitor taskMonitor) {
 		construct(nodesToLayOut);
 	}
-	
+
 	/**
 	 *  DOCUMENT ME!
 	 * @param nodes 
 	 */
 	public void construct(Set<View<CyNode>> nodes) {
-		double yPosition = context.y_start_position;
-		
+		double yPosition = 0.0;
+		double xPosition = 0.0;
+
 		for (View<CyNode> nodeView : nodes) {
-			nodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, context.x_position);
-			nodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, yPosition);
-			
+			// Initialize X and Y position (in case we're doing selected only)
+			if (xPosition == 0.0 && yPosition == 0.0) {
+					xPosition = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
+					yPosition = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
+			}
+
+			// If the x offset is 0, we may be trying to do a horizontal line, so don't offset by the height
 			int y = new Float((nodeView.getVisualProperty(BasicVisualLexicon.NODE_HEIGHT).toString())).intValue();
-			
-			yPosition += y * 2;
+			int x = new Float((nodeView.getVisualProperty(BasicVisualLexicon.NODE_WIDTH).toString())).intValue();
+			if (context.y_offset > 0.0)
+				yPosition += y/2;
+			if (context.x_offset > 0.0)
+				xPosition += x/2;
+
+			nodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, xPosition);
+			nodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, yPosition);
+
+			if (context.y_offset > 0.0)
+				yPosition += y/2;
+			if (context.x_offset > 0.0)
+				xPosition += x/2;
+
+			yPosition += context.y_offset;
+			xPosition += context.x_offset;
 		}
 	}
 }
