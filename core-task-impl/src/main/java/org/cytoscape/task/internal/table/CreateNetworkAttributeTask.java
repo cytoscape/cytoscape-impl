@@ -62,8 +62,13 @@ public class CreateNetworkAttributeTask extends AbstractTableDataTask implements
 
 	@Override
 	public void run(final TaskMonitor tm) {
-		if (network == null)
+		if (network == null) {
 			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
+			if (network == null) {
+				tm.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
+				return;
+			}
+		}
 
 		CyTable networkTable = getNetworkTable(network, CyNetwork.class, columnTunable.getNamespace());
 

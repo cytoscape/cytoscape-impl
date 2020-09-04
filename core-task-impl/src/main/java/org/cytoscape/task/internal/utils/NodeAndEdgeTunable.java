@@ -49,8 +49,12 @@ public class NodeAndEdgeTunable {
 	@Tunable(description="List of nodes", context="nogui", longDescription=StringToModel.CY_NODE_LIST_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NODE_LIST_EXAMPLE_STRING)
 	public NodeList getnodeList() {
 		CyNetwork net;
-		if (network == null)
+		if (network == null) {
 			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
+			if (network == null) {
+				return null;
+			}
+		}
 
 		if (useRootNetwork)
 			net = ((CySubNetwork)network).getRootNetwork();

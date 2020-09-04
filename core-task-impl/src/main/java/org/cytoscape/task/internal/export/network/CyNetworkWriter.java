@@ -96,8 +96,12 @@ public final class CyNetworkWriter
 
 	@Override
 	protected CyWriter getWriter(CyFileFilter filter) throws Exception {
-		if (network == null)
+		if (network == null) {
 			network = cyApplicationManager.getCurrentNetwork();
+			if (network == null) {
+				return null;
+			}
+		}
 		
 		return writerManager.getWriter(network, filter, outputStream);
 	}

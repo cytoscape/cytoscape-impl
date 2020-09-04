@@ -70,7 +70,13 @@ public class GetGroupTask extends AbstractGroupTask implements ObservableTask {
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setProgress(0.0);
-		if (network == null) network = appMgr.getCurrentNetwork();
+		if (network == null) {
+			network = appMgr.getCurrentNetwork();
+			if (network == null) {
+				tm.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
+				return;
+			}
+		}
 		net = network;
 
 		group = getGroup(node);

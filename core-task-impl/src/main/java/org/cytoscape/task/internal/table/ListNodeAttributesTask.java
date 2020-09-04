@@ -60,8 +60,13 @@ public class ListNodeAttributesTask extends AbstractTableDataTask implements Obs
 
 	@Override
 	public void run(final TaskMonitor tm) {
-		if (network == null)
+		if (network == null) {
 			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
+			if (network == null) {
+				tm.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
+				return;
+			}
+		}
 
 		CyTable networkTable = getNetworkTable(network, CyNode.class, namespace);
 

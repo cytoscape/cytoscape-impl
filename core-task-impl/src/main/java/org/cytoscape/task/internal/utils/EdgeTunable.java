@@ -45,8 +45,12 @@ public class EdgeTunable {
 
 	@Tunable(description = "List of edges", context = "nogui", longDescription = StringToModel.CY_EDGE_LIST_LONG_DESCRIPTION, exampleStringValue = StringToModel.CY_EDGE_LIST_EXAMPLE_STRING)
 	public EdgeList getedgeList() {
-		if (network == null)
+		if (network == null) {
 			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
+			if (network == null) {
+				return null;
+			}
+		}
 		
 		edgeList.setNetwork(network);
 		

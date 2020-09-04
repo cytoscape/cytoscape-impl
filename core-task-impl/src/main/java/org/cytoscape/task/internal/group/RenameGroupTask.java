@@ -58,8 +58,13 @@ public class RenameGroupTask extends AbstractGroupTask {
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		if (network != null)
+		if (network != null) {
 			net = network;
+			if (network == null) {
+				tm.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
+				return;
+			}
+		}
 
 		if (groupName == null) {
 			tm.showMessage(TaskMonitor.Level.ERROR, "Group must be specified");

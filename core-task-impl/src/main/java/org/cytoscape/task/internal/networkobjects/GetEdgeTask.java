@@ -68,8 +68,13 @@ public class GetEdgeTask extends AbstractGetTask implements ObservableTask {
 	
 	@Override
 	public void run(final TaskMonitor tm) {
-		if (network == null)
+		if (network == null) {
 			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
+			if (network == null) {
+				tm.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
+				return;
+			}
+		}
 
 		if (edge == null && (sourceNode == null || targetNode == null)) {
 			tm.showMessage(TaskMonitor.Level.ERROR, "Edge name, suid or source/target must be specified");

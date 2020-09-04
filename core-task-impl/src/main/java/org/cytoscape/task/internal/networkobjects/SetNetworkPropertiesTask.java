@@ -65,8 +65,13 @@ public class SetNetworkPropertiesTask extends AbstractPropertyTask {
 
 	@Override
 	public void run(final TaskMonitor tm) {
-		if (network == null)
+		if (network == null) {
 			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
+			if (network == null) {
+				tm.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
+				return;
+			}
+		}
 
 		if (propertyList == null || propertyList.length() == 0) {
 			tm.showMessage(TaskMonitor.Level.ERROR, "Property list must be specified");

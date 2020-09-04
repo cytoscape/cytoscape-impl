@@ -56,8 +56,13 @@ public class GetNodeTask extends AbstractGetTask implements ObservableTask {
 
 	@Override
 	public void run(final TaskMonitor tm) {
-		if (network == null)
+		if (network == null) {
 			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
+			if (network == null) {
+				tm.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
+				return;
+			}
+		}
 
 		if (node == null) {
 			tm.showMessage(TaskMonitor.Level.ERROR, "Node name or suid must be specified");

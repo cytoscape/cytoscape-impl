@@ -44,8 +44,13 @@ public class ApplyFilterTask extends AbstractTask {
 			return;
 		}
 
-		if(network == null)
+		if(network == null) {
 			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
+			if (network == null) {
+				taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
+				return;
+			}
+		}
 		
 		TransformerContainer<CyNetwork,CyIdentifiable> container = containerTunable.getContainer(serviceRegistrar);
 		if(container == null) {

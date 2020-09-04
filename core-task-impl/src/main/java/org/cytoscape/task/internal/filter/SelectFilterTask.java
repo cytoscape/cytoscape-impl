@@ -66,8 +66,13 @@ public class SelectFilterTask extends AbstractTask {
 	
 	@Override
 	public void run(TaskMonitor tm) throws IOException {
-		if (network == null)
+		if (network == null) {
 			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
+			if (network == null) {
+				tm.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
+				return;
+			}
+		}
 
 		CyTransformerReader transformerReader = serviceRegistrar.getService(CyTransformerReader.class);
 
