@@ -43,6 +43,7 @@ import csapps.layout.algorithms.bioLayout.BioLayoutKKAlgorithm;
 import csapps.layout.algorithms.circularLayout.CircularLayoutAlgorithm;
 import csapps.layout.algorithms.cose.CoSELayoutAlgorithm;
 import csapps.layout.algorithms.graphPartition.AttributeCircleLayout;
+import csapps.layout.algorithms.graphPartition.AttributeGridLayout;
 import csapps.layout.algorithms.graphPartition.DegreeSortedCircleLayout;
 import csapps.layout.algorithms.graphPartition.ISOMLayout;
 import csapps.layout.algorithms.hierarchicalLayout.HierarchicalLayoutAlgorithm;
@@ -81,6 +82,14 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			final AttributeCircleLayout layout = new AttributeCircleLayout(undoSupport);
+			final Properties props = new Properties();
+			props.setProperty("preferredTaskManager", "menu");
+			props.setProperty(TITLE, layout.toString());
+			props.setProperty(MENU_GRAVITY, "10.4");
+			registerService(bc, layout, CyLayoutAlgorithm.class, props);
+		}
+		{
+			final AttributeGridLayout layout = new AttributeGridLayout(undoSupport);
 			final Properties props = new Properties();
 			props.setProperty("preferredTaskManager", "menu");
 			props.setProperty(TITLE, layout.toString());

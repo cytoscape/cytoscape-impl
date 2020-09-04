@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.AbstractPartitionLayoutTask;
 import org.cytoscape.view.layout.LayoutNode;
@@ -83,6 +84,7 @@ public class AttributeCircleLayoutTask extends AbstractPartitionLayoutTask {
 				/* FIXME Error. */
 			}
 		}
+
 
 		// Compute angle step
 		double phi = (2 * Math.PI) / count;

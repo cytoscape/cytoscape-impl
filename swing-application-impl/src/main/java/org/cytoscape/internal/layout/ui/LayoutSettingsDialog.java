@@ -482,6 +482,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 				
 				JPanel panel = null;
 				if (haveEdgeAttribute) {
+					layoutNodeAttrTunable = null;
 					layoutEdgeAttrTunable = new LayoutEdgeAttributeTunable();
 					layoutEdgeAttrTunable.layoutAttribute = new ListSingleSelection<String>(attributeList);
 					layoutEdgeAttrTunable.layoutAttribute.setSelectedValue(selectedAttribute);
@@ -493,6 +494,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 					});
 					panel = taskMgr.getConfiguration(null, layoutEdgeAttrTunable);
 				} else if (haveNodeAttribute) {
+					layoutEdgeAttrTunable = null;
 					layoutNodeAttrTunable = new LayoutNodeAttributeTunable();
 					layoutNodeAttrTunable.layoutAttribute = new ListSingleSelection<String>(attributeList);
 					layoutNodeAttrTunable.layoutAttribute.setSelectedValue(selectedAttribute);
@@ -554,6 +556,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	}
 	
 	private String getLayoutAttribute() {
+		if (layoutNodeAttrTunable != null)
 		if ((layoutEdgeAttrTunable != null && layoutEdgeAttrTunable.layoutAttribute != null)) {
 			if (layoutEdgeAttrTunable.layoutAttribute.getSelectedValue().equals(UNWEIGHTED))
 				return null;
