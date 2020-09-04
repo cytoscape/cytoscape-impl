@@ -40,7 +40,12 @@ public class AttributeGridLayoutContext  implements TunableValidator {
 	@Tunable(description="Horizontal spacing between nodes:", context="both", longDescription="Horizontal spacing between nodes, in numeric value", exampleStringValue="80.0")
 	public double nodeHorizontalSpacing = 80.0;
 
-	public double spacing = 100.0;
+	@Tunable(description="Number of columns in the grid:", context="both", 
+	         tooltip="Use 0 for a square grid",
+	         longDescription="Number of columns in the grid, in numeric value.  If <= 0 make the grid square.", 
+	         exampleStringValue="0", format="####")
+	public int nColumns = 0;
+
 	@Tunable(description="Don't partition graph before layout:", groups="Standard Settings", context="both", longDescription="Don't partition graph before layout, only boolean values allowed: ```true``` or ```false```", exampleStringValue="false")
 	public boolean singlePartition;
 

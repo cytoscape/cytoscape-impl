@@ -91,7 +91,10 @@ public class AttributeGridLayoutTask extends AbstractPartitionLayoutTask {
 		double nodeVerticalSpacing = context.nodeVerticalSpacing;
     double nodeHorizontalSpacing = context.nodeHorizontalSpacing;
 
-		int columns = (int) Math.sqrt(nodeCount);
+		int columns = context.nColumns;
+		if (columns <= 0)
+			columns = (int) Math.sqrt(nodeCount);
+
 		for (LayoutNode node: nodes) {
       initialX += node.getX()/nodeCount;
       initialY += node.getY()/nodeCount;
