@@ -401,6 +401,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				final Set<String> columns = e.getColumns();
 				
 				for (VisualPropertySheet vpSheet : vpSheets) {
+					if(vpSheet == null) continue; // Shouldn't happen
 					for (VisualPropertySheetItem<?> item : vpSheet.getItems()) {
 						VisualMappingFunction<?, ?> mapping = item.getModel().getVisualMappingFunction();
 						if (mapping != null) {
@@ -855,6 +856,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				final Class<? extends CyIdentifiable> type = dep.getParentVisualProperty().getTargetDataType();
 				final VisualPropertySheet sheet = vizMapperMainPanel.getVisualPropertySheet(type);
 				
+				if (sheet == null) continue; // Shouldn't happen
+
 				if (sheet.getItem(dep) == null) {
 					// There's a new dependency!
 					rebuild = true;
@@ -1471,9 +1474,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		if (tbl.equals(vmProxy.getCurrentTable()))
 			vpSheets.add(vizMapperMainPanel.getVisualPropertySheet(CyColumn.class));
 		
-		if (!vpSheets.isEmpty()) {
+		if (vpSheets != null && !vpSheets.isEmpty()) {
 			for (VisualPropertySheet vpSheet : vpSheets) {
 				// Update mapping status of this sheet's properties, if necessary
+				if (vpSheet == null) continue;
 				for (final VisualPropertySheetItem<?> item : vpSheet.getItems()) {
 					final VisualMappingFunction<?, ?> mapping = item.getModel().getVisualMappingFunction();
 					if (mapping != null && mapping.getMappingColumnName().equalsIgnoreCase(colName))

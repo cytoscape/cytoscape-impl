@@ -1,6 +1,7 @@
 package org.cytoscape.task.internal.view;
 
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_CENTER_X_LOCATION;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_CENTER_Z_LOCATION;
@@ -22,6 +23,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
@@ -99,11 +101,22 @@ public class CopyExistingViewTask extends AbstractTask implements ObservableTask
 		var engines = renderingEngineMgr.getAllRenderingEngines();
 		Collection<VisualProperty<?>> nodeProps = null;
 		Collection<VisualProperty<?>> edgeProps = null;
+
+		// XXX FIXME: need to copy table visual properties also
 		
 		if (!engines.isEmpty()) {
-			final VisualLexicon lexicon = engines.iterator().next().getVisualLexicon();
-			nodeProps = lexicon.getAllDescendants(NODE);
-			edgeProps = lexicon.getAllDescendants(EDGE);
+			var engineIter = engines.iterator();
+			while (engineIter.hasNext()) {
+				RenderingEngine<?> engine = engineIter.next();
+				if (engine.getRendererId().equals(sourceView.getRendererId())) {
+					VisualLexicon lexicon = engine.getVisualLexicon();
+					nodeProps = lexicon.getAllDescendants(NODE);
+					edgeProps = lexicon.getAllDescendants(EDGE);
+				}
+			}
+			if (nodeProps == null || nodeProps.isEmpty()) {
+				throw new IllegalArgumentException("Couldn't find network visual lexicon");
+			}
 		}
 
 		// Copy some network view properties
