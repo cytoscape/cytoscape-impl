@@ -1,12 +1,15 @@
 package org.cytoscape.view.table.internal.equation;
 
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.naturalOrder;
+import static java.util.Comparator.nullsFirst;
+import static java.util.stream.Collectors.toList;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -192,10 +195,13 @@ public class EquationEditorMediator {
 		
 		BrowserTableModel model = (BrowserTableModel) browserTable.getModel();
 		CyTable table = model.getDataTable();
-		Collection<CyColumn> columns = table.getColumns();
-		List<CyColumn> sortedCols = new ArrayList<>(columns);
-		sortedCols.sort(Comparator.comparing(CyColumn::getName));
-		builderPanel.getAttributePanel().setElements(sortedCols);
+		
+		List<CyColumn> colsToShow = table.getColumns().stream()
+				.filter(col -> !"SUID".equals(col.getName()))
+				.sorted(comparing(CyColumn::getNamespace, nullsFirst(naturalOrder())).thenComparing(CyColumn::getNameOnly))
+				.collect(toList());
+		
+		builderPanel.getAttributePanel().setElements(colsToShow);
 		
 		JList<CyColumn> list = builderPanel.getAttributePanel().getList();
 		list.addListSelectionListener(e -> {
