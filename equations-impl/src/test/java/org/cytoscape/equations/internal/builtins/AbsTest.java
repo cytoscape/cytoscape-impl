@@ -34,7 +34,7 @@ public class AbsTest extends TestCase {
 		assertTrue(Framework.executeTest("=ABS(+1.3)", 1.3));
 		assertTrue(Framework.executeTest("=ABS(-3)",   3.0));
 		assertTrue(Framework.executeTest("=ABS(0)",    0.0));
-		assertTrue(Framework.executeTest("=ABS(3)",    3));
-		assertTrue(Framework.executeTest("=ABS(+3)",   3));
+		assertTrue(Framework.executeTest("=ABS(3)",    3.0));
+		assertTrue(Framework.executeTest("=ABS(+3)",   3.0));
 	}
 }
