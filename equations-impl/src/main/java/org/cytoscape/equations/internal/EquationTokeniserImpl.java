@@ -1,5 +1,8 @@
 package org.cytoscape.equations.internal;
 
+import static org.cytoscape.equations.Token.Type.EOS;
+import static org.cytoscape.equations.Token.Type.ERROR;
+
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -27,7 +30,7 @@ public class EquationTokeniserImpl implements EquationTokeniser {
 				
 				Token t = getNextApiToken(tokeniser);
 				
-				if(t == null || t.getType() == Token.Type.EOS || t.getType() == Token.Type.ERROR)
+				if(t == null || t.getType() == EOS || t.getType() == ERROR)
 					done = true;
 				
 				return t;

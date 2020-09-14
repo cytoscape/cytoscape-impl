@@ -17,60 +17,52 @@ public class EquationTokenMaker extends AbstractTokenMaker {
 	
 	private final CyServiceRegistrar registrar;
 	
+	
 	public EquationTokenMaker(CyServiceRegistrar registrar) {
 		super();
 		this.registrar = registrar;
-		// Need to call this explicitly because getWordsToHighlight() requires the registrar.
+		// Need to call getWordsToHighlight() here because it requires the registrar.
 		super.wordsToHighlight = getWordsToHighlight();
 	}
 
+	
 	@Override
-	public Token getTokenList(Segment text, int initialTokenType, final int startOffset) {
-		System.out.println("EquationTokenMaker.getTokenList: text, initialTokenType, startOffset: " + java.util.Arrays.asList(text.toString(), initialTokenType, startOffset));
-		
+	public Token getTokenList(Segment text, int initialTokenType, final int startOffset) {	
 		resetTokenList();
 		
-		EquationTokeniser tokeniser = registrar.getService(EquationTokeniser.class);
 		String equation = text.toString();
-		var tokenIterator = tokeniser.getTokenIterator(equation);
+		EquationTokeniser tokeniser = registrar.getService(EquationTokeniser.class);
+		var tokens = tokeniser.getTokenList(equation); // token list always ends with EOS
 
 		final int offset = text.offset;
-		final int endOffset = equation.length() + offset - 1;
+		final int newStartOffset = startOffset - offset;
+		int prevEnd = offset-1;
 		
-		int prevEnd = 0;
-		
-		while(tokenIterator.hasNext()) {
-			var t = tokenIterator.next();
-			var tokenType = getTokenType(t.getType());
-			if(tokenType > 0) {
+		for(var t : tokens) {
+			var tokenType = getTokenType(t);
+			if(tokenType >= 0) {
 				int start = t.getStart() + offset;
-				int end = start + (t.getEnd() - t.getStart());
+				int end = start + t.getLength();
 				
-				if(start - prevEnd > 1) { // whitespace!!!
+				if(start - prevEnd > 1) { // need to create tokens for whitespace
 					int wsStart = prevEnd + 1;
-					addToken(text, wsStart, start - 1, TokenTypes.WHITESPACE, startOffset + wsStart - offset);
+					addToken(text, wsStart, start-1, TokenTypes.WHITESPACE, newStartOffset + wsStart);
 				}
-				
-				addToken(text, start, end, tokenType, startOffset + t.getStart());
+				if(tokenType != TokenTypes.NULL) {
+					addToken(text, start, end, tokenType, newStartOffset + start);
+				}
 				prevEnd = end;
 			}
 		}
-		
-		
-		if(prevEnd < endOffset) {
-			int wsStart = prevEnd + 1;
-			addToken(text, wsStart, endOffset, TokenTypes.WHITESPACE, startOffset + wsStart - offset);
-		}
-		
+	
 		addNullToken();
 		return firstToken;
 	}
 	
-	
 
 	@Override
 	public void addToken(Segment segment, int start, int end, int tokenType, int startOffset) {
-		System.out.println("addToken: '" + segment + "' (" + start + "," + end + ") " + tokenType + " '" + segment.toString().substring(start, end+1) + "'");
+		//System.out.println("addToken: '" + segment + "' (" + start + "," + end + "," + startOffset + ") " + tokenType);
 		// This assumes all keywords, etc. were parsed as "identifiers."
 		if (tokenType == Token.IDENTIFIER) {
 			int value = wordsToHighlight.get(segment, start, end);
@@ -82,9 +74,8 @@ public class EquationTokenMaker extends AbstractTokenMaker {
 	}
 
 	
-	@SuppressWarnings("incomplete-switch")
-	private static int getTokenType(org.cytoscape.equations.Token.Type tokenType) {
-		switch(tokenType) {
+	private static int getTokenType(org.cytoscape.equations.Token token) {
+		switch(token.getType()) {
 			case ERROR:
 				return TokenTypes.ERROR_IDENTIFIER; // ???
 			case CLOSE_BRACE:
@@ -116,6 +107,8 @@ public class EquationTokenMaker extends AbstractTokenMaker {
 				return TokenTypes.LITERAL_NUMBER_FLOAT;
 			case STRING_CONSTANT: 
 				return TokenTypes.LITERAL_STRING_DOUBLE_QUOTE;
+			case EOS:
+				return TokenTypes.NULL;
 		}
 		return -1;
 	}

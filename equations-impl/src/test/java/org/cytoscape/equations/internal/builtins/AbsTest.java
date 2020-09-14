@@ -23,20 +23,18 @@ package org.cytoscape.equations.internal.builtins;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-
-import junit.framework.*;
+import junit.framework.TestCase;
 
 
 public class AbsTest extends TestCase {
 	public void testAll() throws Exception {
-		assertTrue(Framework.executeTest("=ABS(-1.3)", new Double(1.3)));
-		assertTrue(Framework.executeTest("=ABS(0.0)", new Double(0.0)));
-		assertTrue(Framework.executeTest("=ABS(1.3)", new Double(1.3)));
-		assertTrue(Framework.executeTest("=ABS(+1.3)", new Double(+1.3)));
-		assertTrue(Framework.executeTest("=ABS(-3)", new Double(3.0)));
-		assertTrue(Framework.executeTest("=ABS(0)", new Double(0.0)));
-		assertTrue(Framework.executeTest("=ABS(3)", new Double(3)));
-		assertTrue(Framework.executeTest("=ABS(+3)", new Double(3)));
+		assertTrue(Framework.executeTest("=ABS(-1.3)", 1.3));
+		assertTrue(Framework.executeTest("=ABS(0.0)",  0.0));
+		assertTrue(Framework.executeTest("=ABS(1.3)",  1.3));
+		assertTrue(Framework.executeTest("=ABS(+1.3)", 1.3));
+		assertTrue(Framework.executeTest("=ABS(-3)",   3.0));
+		assertTrue(Framework.executeTest("=ABS(0)",    0.0));
+		assertTrue(Framework.executeTest("=ABS(3)",    3));
+		assertTrue(Framework.executeTest("=ABS(+3)",   3));
 	}
 }

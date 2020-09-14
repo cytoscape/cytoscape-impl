@@ -32,6 +32,7 @@ public class SyntaxAreaFactory {
 	private static void installSyntaxScheme(RSyntaxTextArea textArea) {
 		textArea.setCodeFoldingEnabled(false);
 		textArea.setHighlightCurrentLine(false);
+		textArea.setAutoIndentEnabled(false);
 		
 		Font font = RSyntaxTextArea.getDefaultFont();
 		Font bold = font.deriveFont(Font.BOLD);

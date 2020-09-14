@@ -6,7 +6,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
-import java.util.Map;
 
 import org.cytoscape.equations.EquationParser;
 import org.cytoscape.event.CyEventHelper;
@@ -57,117 +56,117 @@ public class AttribParserTest {
 
 	@Test
 	public void testSimpleExpr() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
-		attribNameToTypeMap.put("BOB", Double.class);
-		assertTrue(parser.parse("=42 - 12 + 3 * (4 - 2) + ${BOB:12}", attribNameToTypeMap));
+		var types = new HashMap<String, Class<?>>();
+		types.put("BOB", Double.class);
+		assertTrue(parser.parse("=42 - 12 + 3 * (4 - 2) + ${BOB:12}", types));
 	}
 	
 	@Test
 	public void testColumnStartsWithNumber() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
-		attribNameToTypeMap.put("1BOB", Double.class);
-		assertTrue(parser.parse("=${1BOB}", attribNameToTypeMap));
+		var types = new HashMap<String, Class<?>>();
+		types.put("1BOB", Double.class);
+		assertTrue(parser.parse("=${1BOB}", types));
 	}
 	@Test
 	public void testColumnStartsWithNumberDefault() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
-		attribNameToTypeMap.put("1BOB", Double.class);
-		assertTrue(parser.parse("=${1BOB:12}", attribNameToTypeMap));
+		var types = new HashMap<String, Class<?>>();
+		types.put("1BOB", Double.class);
+		assertTrue(parser.parse("=${1BOB:12}", types));
 	}
 
 	@Test
 	public void testStringVarDefault() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
-		attribNameToTypeMap.put("STR", String.class);
-		assertTrue(parser.parse("=${STR:\"xyz\"}", attribNameToTypeMap));
+		var types = new HashMap<String, Class<?>>();
+		types.put("STR", String.class);
+		assertTrue(parser.parse("=${STR:\"xyz\"}", types));
 	}
 
 	@Test
 	public void testUnaryPlusAndMinus() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
-		attribNameToTypeMap.put("attr1", Double.class);
-		attribNameToTypeMap.put("attr2", Double.class);
-		assertTrue(parser.parse("=-17.8E-14", attribNameToTypeMap));
-		assertTrue(parser.parse("=+(${attr1} + ${attr2})", attribNameToTypeMap));
+		var types = new HashMap<String, Class<?>>();
+		types.put("attr1", Double.class);
+		types.put("attr2", Double.class);
+		assertTrue(parser.parse("=-17.8E-14", types));
+		assertTrue(parser.parse("=+(${attr1} + ${attr2})", types));
 	}
 
 	@Test
 	public void testFunctionCall() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
-		assertTrue(parser.parse("=42 + log(4 - 2)", attribNameToTypeMap));
+		var types = new HashMap<String, Class<?>>();
+		assertTrue(parser.parse("=42 + log(4 - 2)", types));
 	}
 
 	@Test
 	public void testExponentiation() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
-		assertTrue(parser.parse("=2^3^4 - 0.0002", attribNameToTypeMap));
+		var types = new HashMap<String, Class<?>>();
+		assertTrue(parser.parse("=2^3^4 - 0.0002", types));
 	}
 
 	@Test
 	public void testComparisons() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
-		attribNameToTypeMap.put("x", Double.class);
-		attribNameToTypeMap.put("y", Double.class);
-		attribNameToTypeMap.put("limit", Double.class);
-		assertTrue(parser.parse("=${x} <= ${y}", attribNameToTypeMap));
-		assertTrue(parser.parse("=-15.4^3 > ${limit}", attribNameToTypeMap));
+		var types = new HashMap<String, Class<?>>();
+		types.put("x", Double.class);
+		types.put("y", Double.class);
+		types.put("limit", Double.class);
+		assertTrue(parser.parse("=${x} <= ${y}", types));
+		assertTrue(parser.parse("=-15.4^3 > ${limit}", types));
 	}
 
 	@Test
 	public void testVarargs() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
-		assertFalse(parser.parse("=LOG()", attribNameToTypeMap));
-		assertTrue(parser.parse("=LOG(1)", attribNameToTypeMap));
-		assertTrue(parser.parse("=LOG(1,2)", attribNameToTypeMap));
-		assertFalse(parser.parse("=LOG(1,2,3)", attribNameToTypeMap));
+		var types = new HashMap<String, Class<?>>();
+		assertFalse(parser.parse("=LOG()", types));
+		assertTrue(parser.parse("=LOG(1)", types));
+		assertTrue(parser.parse("=LOG(1,2)", types));
+		assertFalse(parser.parse("=LOG(1,2,3)", types));
 	}
 
 	@Test
 	public void testFixedargs() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
-		assertFalse(parser.parse("=ABS()", attribNameToTypeMap));
-		assertTrue(parser.parse("=ABS(1)", attribNameToTypeMap));
-		assertFalse(parser.parse("=ABS(1,2)", attribNameToTypeMap));
+		var types = new HashMap<String, Class<?>>();
+		assertFalse(parser.parse("=ABS()", types));
+		assertTrue(parser.parse("=ABS(1)", types));
+		assertFalse(parser.parse("=ABS(1,2)", types));
 	}
 
 	@Test
 	public void testNOT() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
-		attribNameToTypeMap.put("logical", Boolean.class);
-		assertFalse(parser.parse("=NOT()", attribNameToTypeMap));
-		assertTrue(parser.parse("=NOT(true)", attribNameToTypeMap));
-		assertTrue(parser.parse("=NOT(false)", attribNameToTypeMap));
-		assertTrue(parser.parse("=NOT(3.2 < 12)", attribNameToTypeMap));
-		assertTrue(parser.parse("=NOT(${logical})", attribNameToTypeMap));
-		assertFalse(parser.parse("=NOT(true, true)", attribNameToTypeMap));
+		var types = new HashMap<String, Class<?>>();
+		types.put("logical", Boolean.class);
+		assertFalse(parser.parse("=NOT()", types));
+		assertTrue(parser.parse("=NOT(true)", types));
+		assertTrue(parser.parse("=NOT(false)", types));
+		assertTrue(parser.parse("=NOT(3.2 < 12)", types));
+		assertTrue(parser.parse("=NOT(${logical})", types));
+		assertFalse(parser.parse("=NOT(true, true)", types));
 	}
 
 	@Test
 	public void testUPPERandLOWER() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
-		assertTrue(parser.parse("=UPPER(\"Fred\")", attribNameToTypeMap));
-		assertTrue(parser.parse("=\"bozo\"&LOWER(\"UPPER\")", attribNameToTypeMap));
+		var types = new HashMap<String, Class<?>>();
+		assertTrue(parser.parse("=UPPER(\"Fred\")", types));
+		assertTrue(parser.parse("=\"bozo\"&LOWER(\"UPPER\")", types));
 	}
 
 	@Test
 	public void testBracelessAttribReferences() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
-		attribNameToTypeMap.put("BOB", Double.class);
-		attribNameToTypeMap.put("FRED", Double.class);
-		assertTrue(parser.parse("=$BOB+$FRED", attribNameToTypeMap));
+		var types = new HashMap<String, Class<?>>();
+		types.put("BOB", Double.class);
+		types.put("FRED", Double.class);
+		assertTrue(parser.parse("=$BOB+$FRED", types));
 	}
 
 	@Test
 	public void testIntegerToFloatingPointConversion() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
-		attribNameToTypeMap.put("BOB", Long.class);
-		assertTrue(parser.parse("=$BOB > 5.3", attribNameToTypeMap));
+		var types = new HashMap<String, Class<?>>();
+		types.put("BOB", Long.class);
+		assertTrue(parser.parse("=$BOB > 5.3", types));
 	}
 
 	@Test
 	public void testMixedModeArithmetic() throws Exception {
-		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
-		attribNameToTypeMap.put("x", Long.class);
-		assertTrue(parser.parse("=$x + 2.0", attribNameToTypeMap));
+		var types = new HashMap<String, Class<?>>();
+		types.put("x", Long.class);
+		assertTrue(parser.parse("=$x + 2.0", types));
 	}
 }
