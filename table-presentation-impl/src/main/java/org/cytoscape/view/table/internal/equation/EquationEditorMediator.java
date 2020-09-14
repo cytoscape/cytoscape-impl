@@ -241,13 +241,14 @@ public class EquationEditorMediator {
 	
 	private void handleApply(EquationEditorPanel builderPanel, BrowserTable browserTable) {
 		BrowserTableModel tableModel = browserTable.getBrowserTableModel();
-		String formula = builderPanel.getSyntaxPanel().getText();
+		String equationText = builderPanel.getSyntaxPanel().getText();
 		String attribName = getColumnName(browserTable);
 		CyTable attribs = tableModel.getDataTable();
 
 		EquationCompiler compiler = registrar.getService(EquationCompiler.class);
 		StringBuilder errorMessage = new StringBuilder();
-		Equation equation = compileEquation(compiler, attribs, attribName, formula, errorMessage);
+		Equation equation = compileEquation(compiler, attribs, attribName, equationText, errorMessage);
+		
 		if(equation == null) {
 			builderPanel.getSyntaxPanel().showError(errorMessage.toString());
 			return;
@@ -278,10 +279,13 @@ public class EquationEditorMediator {
 		
 	}
 	
-	private Equation compileEquation(EquationCompiler compiler, CyTable table, String attribName, String formula, StringBuilder errorMessage) {
-		formula = "=" + formula;
+	private Equation compileEquation(EquationCompiler compiler, CyTable table, String attribName, String equationText, StringBuilder errorMessage) {
+		equationText = equationText.trim();
+		if(!equationText.startsWith("="))
+			equationText = "=" + equationText;
+		
 		Map<String,Class<?>> attrNameToTypeMap = TableBrowserUtil.getAttNameToTypeMap(table, attribName);
-		if(compiler.compile(formula, attrNameToTypeMap))
+		if(compiler.compile(equationText, attrNameToTypeMap))
 			return compiler.getEquation();
 		errorMessage.append(compiler.getLastErrorMsg());
 		return null;

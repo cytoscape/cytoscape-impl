@@ -91,7 +91,7 @@ public class SyntaxAreaPanel extends JPanel {
 	}
 	
 	public String getText() {
-		return getSyntaxTextArea().getText().trim();
+		return getSyntaxTextArea().getText();
 	}
 	
 	public void insertText(int offset, String text, String post) {
