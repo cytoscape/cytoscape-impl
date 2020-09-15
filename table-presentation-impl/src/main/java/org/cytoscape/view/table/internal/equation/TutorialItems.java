@@ -36,9 +36,18 @@ public class TutorialItems {
 				"Example:  <b>MAX(10, 20)</b></html>\n";
 		case ATTRIBUTES:
 			return
-				"<html>Attributes are named references to columns in the same table as the equation. <br><br>" +
-				"Example: <b>$columnName</b> <br>" +
-				"Example: <b>${column name with spaces}</b> </html>";
+				"<html>" +
+				"Attributes are named references to columns in the same table as the equation. " +
+				"An attribute reference is written by placing the column name after a dollarsign (<b>$</b>). <br><br>" +
+				"Example: <b>$columnName</b> <br><br>" +
+				"If the column name contains spaces, special characters or a namespace identifier then the name must be placed between curly braces.<br><br> " +
+				"Example: <b>${column name with spaces}</b> <br>" +
+				"Example: <b>${namespace::columnName}</b> <br><br>" +
+				"Special characters such as commas must be escaped with a leading backslash.<br><br>" +
+				"Example: <b>${name with \\, comma}</b> <br><br>" +
+				"You may provide a default value that will be used if the column value is blank. Place a colon (<b>:</b>) and the value after the column name. <br><br>" +
+				"Example: <b>${columnName:0.0}</b> <br>" +
+				"</html>";
 		case OPERATORS:
 			return
 				"<html>" +
@@ -70,17 +79,18 @@ public class TutorialItems {
 	}
 	
 	
-	public static String getColumnDocs(CyColumn f) {
+	public static String getColumnDocs(CyColumn col) {
 		StringBuilder sb = new StringBuilder("<html>");
-		sb.append("<b>${").append(f.getName()).append("}</b>&nbsp;&nbsp;&nbsp;<a href=\"\">insert</a><br><br>");
-		sb.append("Full Name: ").append(f.getName()).append("<br>");
-		sb.append("Namespace: ").append(f.getNamespace() == null ? "-none-" : f.getNamespace()).append("<br>");
+		String name = EquationEditorMediator.getAttributeReference(col);
+		sb.append("<b>").append(name).append("</b>&nbsp;&nbsp;&nbsp;<a href=\"\">insert</a><br><br>");
+		sb.append("Full Name: ").append(col.getName()).append("<br>");
+		sb.append("Namespace: ").append(col.getNamespace() == null ? "-none-" : col.getNamespace()).append("<br>");
 		sb.append("Type: ");
 		
-		var t = f.getType();
+		var t = col.getType();
 		if(List.class.equals(t)) {
 			sb.append("List of ");
-			t = f.getListElementType();
+			t = col.getListElementType();
 		}
 		
 		if(String.class.equals(t))

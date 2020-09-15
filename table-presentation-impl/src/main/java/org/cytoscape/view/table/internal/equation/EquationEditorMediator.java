@@ -231,11 +231,19 @@ public class EquationEditorMediator {
 		// MKTODO need to figure out exactly how to reference column names
 		CyColumn col = builderPanel.getAttributePanel().getSelectedValue();
 		if(col != null) {
-			String name = col.getNameOnly();
-			String ref = "$" + name;
+			String ref = getAttributeReference(col);
 			syntaxPanel.insertText(offset, ref, null);
 			return;
 		}
+	}
+	
+	public static String getAttributeReference(CyColumn column) {
+		String name = column.getName();
+		boolean simple = name.chars().allMatch(Character::isAlphabetic);
+		if(simple)
+			return "$" + name;
+		else
+			return "${" + name + "}";
 	}
 	
 	private static String getColumnName(BrowserTable browserTable) {
@@ -282,7 +290,6 @@ public class EquationEditorMediator {
 				break;
 			}
 		}
-		
 	}
 	
 	private Equation compileEquation(EquationCompiler compiler, CyTable table, String attribName, String equationText, StringBuilder errorMessage) {
@@ -306,5 +313,6 @@ public class EquationEditorMediator {
 			return false;
 		}
 	}
+	
 	
 }
