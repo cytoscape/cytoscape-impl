@@ -1,7 +1,6 @@
 package org.cytoscape.equations.internal;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -35,25 +34,52 @@ public class EquationUpgradeTest {
 		parser = new EquationParserImpl(serviceRegistrar);
 	}
 
+	private void assertVariable(String name, String equation, boolean expectingSuccess) {
+		var types = new HashMap<String,Class<?>>();
+		types.put(name, Double.class);
+		boolean success = parser.parse(equation, types);
+		if(expectingSuccess != success)
+			fail(parser.getErrorMsg());
+	}
+	
+	private void assertVariable(String name, String equation) {
+		assertVariable(name, equation, true);
+	}
+	
 	/**
 	 * Text existing whitespace rules.
 	 */
 	@Test
 	public void testWhitespace() {
-		var types = new HashMap<String,Class<?>>();
-		types.put("x", Long.class);
+		assertVariable("x", "= $x + 2.0");
+		assertVariable("x", "=$x + 2.0");
+		assertVariable("x", "=$x + 2. 0", false);
+		assertVariable("x", "=$ x + 2.0");
+		assertVariable("x", "=$x\n+\n2.0");
+	}
+
+
+	@Test
+	public void testVariableNamesAndEscaping() {
+		assertVariable("x", "=${x}");
+		assertVariable("x", "=${x:2}");
+		assertVariable("x ", "=${x }");
+		assertVariable("x ", "=${x :2}");
 		
-		assertTrue(parser.parse("=$x + 2.0", types));
-		assertTrue(parser.parse("= $x + 2.0", types));
-		assertTrue(parser.parse("=$x + 2.0", types));
+		assertVariable("x:", "=${x\\:}");
+		assertVariable("x:", "=${x:}", false);
 		
-		assertFalse(parser.parse("=$x + 2. 0", types));
+		assertVariable("x\\", "=${x\\\\}");
 		
-		// MKTODO a space between the $ and the attribute name is allowed ?!?!?
-		assertTrue(parser.parse("=$ x + 2.0", types));
+		assertVariable("ns::x", "=${ns::x}");
+		assertVariable("ns::x", "=${ns::x:9}");
+		assertVariable("ns::x", "=${ns\\:\\:x}");
+		assertVariable("ns::x  ", "=${ns::x  }");
 		
-		// Newlines must be supported
-		assertTrue(parser.parse("=$x\n+\n2.0", types));
+		assertVariable("ns::x", "=$ns::x", false);
+		
+		// CyColumn allows this
+		assertVariable("ns::x::y", "=${ns::x::y}");
 		
 	}
 	

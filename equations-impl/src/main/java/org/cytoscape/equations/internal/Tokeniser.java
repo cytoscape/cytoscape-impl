@@ -238,6 +238,17 @@ public class Tokeniser {
 
 		return retval;
 	}
+	
+	private char peek() {
+		try {
+			reader.mark(1);
+			char c = (char) reader.read();
+			reader.reset();
+			return c;
+		} catch (IOException e) {
+			return (char) -1;
+		}
+	}
 
 	private void ungetChar(final int ch) {
 		if (putBackChar)
@@ -373,16 +384,23 @@ public class Tokeniser {
 		boolean escaped = false;
 		int ch;
 		while ((ch = getChar()) != -1 &&
-		       (((char)ch != '}' && (char)ch != ':' && (char)ch != ',' && (char)ch != '(' && (char)ch != ')') || escaped))
+		       (((char)ch != '}' && (char)ch != ',' && (char)ch != '(' && (char)ch != ')') || escaped))
 		{
 			if (escaped) {
 				escaped = false;
 				builder.append((char)ch);
-			}
-			else if ((char)ch == '\\')
+			} else if ((char)ch == ':') {
+				if (peek() == ':') {
+					getChar(); 
+					builder.append("::");
+				} else {
+					break;
+				}
+			} else if (ch == '\\') {
 				escaped = true;
-			else
+			} else {
 				builder.append((char)ch);
+			}
 		}
 		if (escaped) {
 			errorMsg = "invalid column name at end of formula.";
