@@ -30,9 +30,9 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.cytoscape.equations.CodeAndSourceLocation;
+import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.equations.EquationParser;
-import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.TreeNode;
 
 
@@ -40,17 +40,21 @@ public class EquationCompilerImpl implements EquationCompiler {
 	private final EquationParser parser;
 	private Equation equation;
 	private String errorMsg;
+	private int errorLocation;
 
 	public EquationCompilerImpl(final EquationParser parser) {
 		this.parser = parser;
 	}
 
+	@Override
 	public boolean compile(final String equation, final Map<String, Class<?>> variableNameToTypeMap) {
 		this.equation = null;
 		this.errorMsg = null;
+		this.errorLocation = -1;
 
 		if (!parser.parse(equation, variableNameToTypeMap)) {
 			errorMsg = parser.getErrorMsg();
+			errorLocation = parser.getErrorLocation();
 			return false;
 		}
 
@@ -79,10 +83,16 @@ public class EquationCompilerImpl implements EquationCompiler {
 		return true;
 	}
 
+	@Override
 	public String getLastErrorMsg() { return errorMsg; }
+	
+	@Override
+	public int getErrorLocation() { return errorLocation; }
 
+	@Override
 	public Equation getEquation() { return equation; }
 
+	@Override
 	public EquationParser getParser() { return parser; }
 
 	/**
@@ -92,6 +102,7 @@ public class EquationCompilerImpl implements EquationCompiler {
 	 *  @param type          the return type of the error equation
 	 *  @param errorMessage  the runtime error message that the returned equation will produce
 	 */
+	@Override
 	public Equation getErrorEquation(final String equation, final Class<?> type, final String errorMessage) {
 		final Map<String, Class<?>> variableNameToTypeMap = new HashMap<String, Class<?>>();
 		if (!compile("=ERROR(\"" + escapeQuotes(errorMessage) + "\")", variableNameToTypeMap))
@@ -103,7 +114,7 @@ public class EquationCompilerImpl implements EquationCompiler {
 		                    errorEquation.getSourceLocations(), type);
 	}
 
-	private static  String escapeQuotes(final String s) {
+	private static String escapeQuotes(final String s) {
 		final StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < s.length(); ++i) {
 			final char ch = s.charAt(i);

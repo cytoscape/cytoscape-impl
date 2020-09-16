@@ -3,6 +3,7 @@ package org.cytoscape.view.table.internal.equation;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.Color;
+import java.awt.Rectangle;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -22,6 +23,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.table.internal.equation.EquationEditorMediator.ApplyScope;
 import org.cytoscape.view.table.internal.impl.BrowserTable;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
@@ -30,6 +32,7 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 public class SyntaxAreaPanel extends JPanel {
 	
 	private final CyServiceRegistrar registrar;
+	private final IconManager iconManager;
 	private final BrowserTable browserTable;
 	
 	private JPanel topPanel;
@@ -41,11 +44,14 @@ public class SyntaxAreaPanel extends JPanel {
 	private JLabel applyLabel;
 	private JComboBox<ApplyScope> applyScopeCombo; 
 	private JButton applyButton;
+	private JLabel resultLabel;
+	private Color defaultLabelForeground;
 	
 	
 	public SyntaxAreaPanel(CyServiceRegistrar registrar, BrowserTable browserTable) {
 		this.registrar = registrar;
 		this.browserTable = browserTable;
+		this.iconManager = registrar.getService(IconManager.class);
 		init();
 	}
 	
@@ -61,21 +67,29 @@ public class SyntaxAreaPanel extends JPanel {
 				.addComponent(getApplyLabel())
 				.addComponent(getApplyScopeCombo())
 				.addComponent(getApplyButton())
+				.addComponent(getResultLabel())
 			)
 		);
 		
 		layout.setHorizontalGroup(layout.createParallelGroup()
 			.addComponent(getTopPanel())
 			.addComponent(getSyntaxAreaScrollPane())
-			.addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+			.addGroup(Alignment.LEADING, layout.createSequentialGroup()
 				.addComponent(getApplyLabel())
 				.addComponent(getApplyScopeCombo(), 0, 150, 150)
 				.addComponent(getApplyButton())
+				.addComponent(getResultLabel())
 			)
 		);
-
-		// Want the caret to be visible and flasing
-		setCaret(0);
+		
+		this.defaultLabelForeground = getResultLabel().getForeground();
+		
+		getUndoButton().addActionListener(e -> undo());
+		getRedoButton().addActionListener(e -> redo());
+		
+		getSyntaxTextArea().addCaretListener(e -> clearResultLabel());
+		
+		setCaret(0); // Want the caret to be visible and flashing
 	}
 	
 	public ApplyScope getApplyScope() {
@@ -108,14 +122,38 @@ public class SyntaxAreaPanel extends JPanel {
 		}
 	}
 	
-	public void showError(String message) {
+	@SuppressWarnings("deprecation")
+	public void showSyntaxError(int location, String message) {
+		registrar.getService(IconManager.class);
+		
+		clearResultLabel();
+		getResultLabel().setForeground(Color.RED);
+		getResultLabel().setText("Syntax error, cannot apply");
+		
+		// Show syntax error as a popup
 		JLabel label = new JLabel(" " + message + " ");
+		label.setIcon(new TextIcon(IconManager.ICON_EXCLAMATION_CIRCLE, iconManager.getIconFont(11f), Color.RED, 10, 10));
 		label.setForeground(Color.RED);
 		LookAndFeelUtil.makeSmall(label);
+		label.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
+		
 		JPopupMenu popup = new JPopupMenu();
 		popup.add(label);
-		JButton comp = getApplyButton();
-		popup.show(comp, 0, comp.getHeight());
+		
+		// MKTODO what if the cursor is not on the screen (ie the user scrolled the cursor off)
+		try {
+			RSyntaxTextArea textArea = getSyntaxTextArea();
+			Rectangle rectangle = textArea.modelToView(location);
+			textArea.scrollRectToVisible(rectangle);
+			rectangle = textArea.modelToView(location);
+			popup.show(textArea, rectangle.x, rectangle.y + rectangle.height);
+		} catch (BadLocationException e) {
+		}
+	}
+	
+	public void showMessage(String message) {
+		clearResultLabel();
+		getResultLabel().setText(message);
 	}
 	
 	private void setCaret(int offset) {
@@ -181,6 +219,19 @@ public class SyntaxAreaPanel extends JPanel {
 			LookAndFeelUtil.makeSmall(applyLabel);
 		}
 		return applyLabel;
+	}
+	
+	private JLabel getResultLabel() {
+		if(resultLabel == null) {
+			resultLabel = new JLabel();
+			LookAndFeelUtil.makeSmall(resultLabel);
+		}
+		return resultLabel;
+	}
+	
+	private void clearResultLabel() {
+		getResultLabel().setText("");
+		getResultLabel().setForeground(defaultLabelForeground);
 	}
 	
 	private JComboBox<ApplyScope> getApplyScopeCombo() {

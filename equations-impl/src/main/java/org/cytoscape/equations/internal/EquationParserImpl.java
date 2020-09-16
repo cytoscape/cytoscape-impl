@@ -122,6 +122,7 @@ public class EquationParserImpl implements EquationParser {
 	private Tokeniser tokeniser;
 	private Map<String, Function> nameToFunctionMap;
 	private String lastErrorMessage;
+	private int lastErrorLocation = -1;
 	private TreeNode parseTree;
 	private Map<String, Class<?>> variableNameToTypeMap;
 	private Set<String> variableReferences;
@@ -184,23 +185,19 @@ public class EquationParserImpl implements EquationParser {
 		this.defaultVariableValues = new TreeMap<>();
 		this.tokeniser = new Tokeniser(formula.substring(1));
 		this.lastErrorMessage = null;
+		this.lastErrorLocation = -1;
 
 		try {
 			parseTree = parseExpr();
-			final Token token = tokeniser.getToken();
-			final int tokenStartPos = tokeniser.getStartPos();
+			Token token = tokeniser.getToken();
+			int tokenStartPos = tokeniser.getStartPos();
 			if (token != Token.EOS)
-				throw new IllegalStateException(
-					tokenStartPos
-					+ ": premature end of expression: expected end-of-string, but found "
-					+ token + ".");
-		} catch (final IllegalStateException e) {
-			lastErrorMessage = e.getMessage();
+				throw new ParseException(tokenStartPos, "premature end of expression: expected end-of-string, but found " + token + ".");
+		} catch (ParseException e) {
+			lastErrorMessage = e.getErrorMsg();
+			lastErrorLocation = e.getErrorLocation();
 			return false;
-		} catch (final ArithmeticException e) {
-			lastErrorMessage = e.getMessage();
-			return false;
-		} catch (final IllegalArgumentException e) {
+		} catch (IllegalStateException | ArithmeticException | IllegalArgumentException e) {
 			lastErrorMessage = e.getMessage();
 			return false;
 		}
@@ -216,6 +213,11 @@ public class EquationParserImpl implements EquationParser {
 	@Override
 	public String getErrorMsg() {
 		return lastErrorMessage;
+	}
+	
+	@Override
+	public int getErrorLocation() {
+		return lastErrorLocation;
 	}
 
 	@Override
@@ -327,13 +329,12 @@ public class EquationParserImpl implements EquationParser {
 				sourceLocation = tokeniser.getStartPos();
 			}
 			if (token != Token.IDENTIFIER)
-				throw new IllegalStateException(sourceLocation + ": identifier expected.");
+				throw new ParseException(sourceLocation, "identifier expected");
 
 			final String ident = tokeniser.getIdent();
 			final Class<?> varRefType = variableNameToTypeMap.get(ident);
 			if (varRefType == null)
-				throw new IllegalStateException(sourceLocation + ": unknown variable reference name: \""
-				                                + ident + "\".");
+				throw new ParseException(sourceLocation, "unknown variable reference name: \"" + ident + "\"");
 			variableReferences.add(ident);
 
 			Object defaultValue = null;
@@ -344,16 +345,16 @@ public class EquationParserImpl implements EquationParser {
 					token = tokeniser.getToken();
 					sourceLocation = tokeniser.getStartPos();
 					if (token != Token.FLOAT_CONSTANT && token != Token.STRING_CONSTANT && token != Token.BOOLEAN_CONSTANT)
-						throw new IllegalStateException(sourceLocation + ": expected default value for variable reference.");
+						throw new ParseException(sourceLocation, "expected default value for variable reference");
 					switch (token) {
 					case FLOAT_CONSTANT:
-						defaultValue = new Double(tokeniser.getFloatConstant());
+						defaultValue = Double.valueOf(tokeniser.getFloatConstant());
 						break;
 					case BOOLEAN_CONSTANT:
-						defaultValue = new Boolean(tokeniser.getBooleanConstant());
+						defaultValue = Boolean.valueOf(tokeniser.getBooleanConstant());
 						break;
 					case STRING_CONSTANT:
-						defaultValue = new String(tokeniser.getStringConstant());
+						defaultValue = String.valueOf(tokeniser.getStringConstant());
 						break;
 					}
 					token = tokeniser.getToken();
@@ -361,7 +362,7 @@ public class EquationParserImpl implements EquationParser {
 				}
 
 				if (token != Token.CLOSE_BRACE)
-					throw new IllegalStateException(sourceLocation + ": closing brace expected.");
+					throw new ParseException(sourceLocation, "closing brace expected");
 
 				defaultVariableValues.put(ident, defaultValue);
 			}
@@ -374,7 +375,7 @@ public class EquationParserImpl implements EquationParser {
 			final AbstractNode exprNode = parseExpr();
 			token = tokeniser.getToken();
 			if (token != Token.CLOSE_PAREN)
-				throw new IllegalStateException(sourceLocation + ": '(' expected.");
+				throw new ParseException(sourceLocation, "'(' expected");
 
 			return exprNode;
 		}
@@ -392,17 +393,16 @@ public class EquationParserImpl implements EquationParser {
 		}
 
 		if (token == Token.ERROR)
-			throw new IllegalStateException(sourceLocation + ": " + tokeniser.getErrorMsg());
+			throw new ParseException(sourceLocation, tokeniser.getErrorMsg());
 
-		throw new IllegalStateException(sourceLocation + ": unexpected input token: " + token + ".");
+		throw new ParseException(sourceLocation, "unexpected input token: " + token);
 	}
 
 	private AbstractNode handleUnaryOp(final int sourceLocation, final Token operator, final TreeNode operand) {
 		final Class<?> operandType = operand.getType();
 		if (operandType == Boolean.class || operandType == String.class
 		    || FunctionUtil.isTypeOfList(operandType))
-			throw new ArithmeticException(sourceLocation + ": can't apply a unary " + operator.asString()
-			                              + " a boolean, string or list operand.");
+			throw new ParseException(sourceLocation, "can't apply a unary " + operator.asString() + " a boolean, string or list operand");
 		if (operandType == Double.class)
 			return new UnaryOpNode(sourceLocation, operator, operand);
 		else
@@ -416,7 +416,7 @@ public class EquationParserImpl implements EquationParser {
 		Token token = tokeniser.getToken();
 		final int functionNameStartPos = tokeniser.getStartPos();
 		if (token != Token.IDENTIFIER)
-			throw new IllegalStateException(functionNameStartPos + ": function name expected.");
+			throw new ParseException(functionNameStartPos, "function name expected");
 
 		final String originalName = tokeniser.getIdent();
 		final String functionNameCandidate = originalName.toUpperCase();
@@ -426,18 +426,15 @@ public class EquationParserImpl implements EquationParser {
 		final Function func = nameToFunctionMap.get(functionNameCandidate);
 		if (func == null) {
 			if (tokeniser.getToken() == Token.OPEN_PAREN)
-				throw new IllegalStateException(functionNameStartPos + ": call to unknown function "
-								+ originalName + "().");
+				throw new ParseException(functionNameStartPos, "call to unknown function " + originalName + "()");
 			else
-				throw new IllegalStateException(functionNameStartPos + ": unknown text \""
-								+ originalName + "\", maybe you forgot to put quotes around this text?");
+				throw new ParseException(functionNameStartPos, "unknown text \"" + originalName + "\", maybe you forgot to put quotes around this text?");
 		}
 
 		token = tokeniser.getToken();
 		final int openParenPos = tokeniser.getStartPos();
 		if (token != Token.OPEN_PAREN)
-			throw new IllegalStateException(openParenPos + ": expected '(' after function name \""
-			                                + functionNameCandidate + "\".");
+			throw new ParseException(openParenPos, "expected '(' after function name \"" + functionNameCandidate + "\"");
 
 		// Parse the comma-separated argument list.
 		final ArrayList<Class<?>> argTypes = new ArrayList<>();
@@ -462,12 +459,10 @@ public class EquationParserImpl implements EquationParser {
 
 		final Class<?> returnType = func.validateArgTypes(argTypes.toArray(new Class<?>[argTypes.size()]));
 		if (returnType == null)
-			throw new IllegalStateException((openParenPos + 1) + ": invalid number or type of arguments in call to "
-			                                + functionNameCandidate + "().");
+			throw new ParseException((openParenPos + 1), "invalid number or type of arguments in call to " + functionNameCandidate + "()");
 
 		if (token != Token.CLOSE_PAREN)
-			throw new IllegalStateException(sourceLocation + ": expected the closing parenthesis of a call to "
-			                                + functionNameCandidate + ".");
+			throw new ParseException(sourceLocation, "expected the closing parenthesis of a call to " + functionNameCandidate);
 
 		AbstractNode[] nodeArray = new AbstractNode[args.size()];
 		return new FuncCallNode(functionNameStartPos, func, returnType, args.toArray(nodeArray));
@@ -481,39 +476,38 @@ public class EquationParserImpl implements EquationParser {
 		Token token = tokeniser.getToken();
 		final int definedStart = tokeniser.getStartPos();
 		if (token != Token.OPEN_PAREN)
-			throw new IllegalStateException(definedStart + ": \"(\" expected after \"DEFINED\".");
+			throw new ParseException(definedStart, "\"(\" expected after \"DEFINED\"");
 
 		token = tokeniser.getToken();
 		int sourceLocation = tokeniser.getStartPos();
 		Class<?> varRefType;
 		if (token != Token.DOLLAR) {
 			if (token != Token.IDENTIFIER)
-				throw new IllegalStateException(sourceLocation + ": variable reference expected after \"DEFINED(\".");
+				throw new ParseException(sourceLocation, "variable reference expected after \"DEFINED(\"");
 			varRefType = variableNameToTypeMap.get(tokeniser.getIdent());
 		}
 		else {
 			token = tokeniser.getToken();
 			sourceLocation = tokeniser.getStartPos();
 			if (token != Token.OPEN_BRACE)
-				throw new IllegalStateException(sourceLocation + ": \"{\" expected after \"DEFINED($\".");
+				throw new ParseException(sourceLocation, "\"{\" expected after \"DEFINED($\"");
 
 			token = tokeniser.getToken();
 			sourceLocation = tokeniser.getStartPos();
 			if (token != Token.IDENTIFIER)
-				throw new IllegalStateException(sourceLocation + ": variable reference expected after \"DEFINED(${\".");
+				throw new ParseException(sourceLocation, "variable reference expected after \"DEFINED(${\"");
 
 			varRefType = variableNameToTypeMap.get(tokeniser.getIdent());
 			token = tokeniser.getToken();
 			sourceLocation = tokeniser.getStartPos();
 			if (token != Token.CLOSE_BRACE)
-				throw new IllegalStateException(sourceLocation + ":\"}\" expected after after \"DEFINED(${"
-				                                + tokeniser.getIdent() + "\".");
+				throw new ParseException(sourceLocation, "\"}\" expected after after \"DEFINED(${"  + tokeniser.getIdent() + "\"");
 		}
 
 		token = tokeniser.getToken();
 		sourceLocation = tokeniser.getStartPos();
 		if (token != Token.CLOSE_PAREN)
-			throw new IllegalStateException(sourceLocation + ": missing \")\" in call to DEFINED().");
+			throw new ParseException(sourceLocation, "missing \")\" in call to DEFINED()");
 
 		return new BooleanConstantNode(definedStart, varRefType != null);
 	}
@@ -554,7 +548,7 @@ public class EquationParserImpl implements EquationParser {
 		    && (rhs.getType() == Long.class || lhs.getType() == Boolean.class || lhs.getType() == String.class))
 			return new BinOpNode(sourceLocation, operator, new FConvNode(lhs), new FConvNode(rhs));
 
-		throw new ArithmeticException(sourceLocation + ": incompatible operands for \""
+		throw new ParseException(sourceLocation, "incompatible operands for \""
 			                      + operator.asString() + "\". (lhs="
 			                      + lhs.toString() + ":" + lhs.getType() + ", rhs="
 			                      + rhs.toString() + ":" + rhs.getType() + ")");
@@ -598,7 +592,7 @@ public class EquationParserImpl implements EquationParser {
 		    && (rhs.getType() == Double.class || rhs.getType() == Long.class || rhs.getType() == Boolean.class))
 			return new BinOpNode(sourceLocation, operator, lhs, new SConvNode(rhs));
 
-		throw new IllegalArgumentException(sourceLocation + ": incompatible operands for \""
+		throw new ParseException(sourceLocation, "incompatible operands for \""
 			                           + operator.asString() + "\". (lhs="
 			                           + lhs.toString() + ":" + lhs.getType() + ", rhs="
 			                           + rhs.toString() + ":" + rhs.getType() + ")");

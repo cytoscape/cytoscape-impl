@@ -14,32 +14,28 @@ public class SyntaxAreaFactory {
 	
 	public static RSyntaxTextArea createEquationTextArea(CyServiceRegistrar registrar) {
 		RSyntaxTextArea textArea = new RSyntaxTextArea();
-		installEquationSupport(textArea, registrar);
-		textArea.setText(""); // avoids a bug
+		installTokeniser(textArea, registrar);
+		installSyntaxScheme(textArea);
 		return textArea;
 	}
 	
-	private static void installEquationSupport(RSyntaxTextArea textArea, CyServiceRegistrar registrar) {
-		installTokeniser(textArea, registrar);
-		installSyntaxScheme(textArea);
-	}
-	
+
 	private static void installTokeniser(RSyntaxTextArea textArea, CyServiceRegistrar registrar) {
 		EquationTokenMaker tokenMaker = new EquationTokenMaker(registrar);
 		((RSyntaxDocument)textArea.getDocument()).setSyntaxStyle(tokenMaker);
 	}
 	
+	
 	private static void installSyntaxScheme(RSyntaxTextArea textArea) {
 		textArea.setCodeFoldingEnabled(false);
 		textArea.setHighlightCurrentLine(false);
-		textArea.setAutoIndentEnabled(false);
+		textArea.setAutoIndentEnabled(false); // important, auto indent doesn't work with our tokeniser
 		
-		Font font = RSyntaxTextArea.getDefaultFont();
-		Font bold = font.deriveFont(Font.BOLD);
+		Font bold = RSyntaxTextArea.getDefaultFont().deriveFont(Font.BOLD);
 		
 		Color function = Style.DEFAULT_FOREGROUND;
+		Color identifier = Style.DEFAULT_FOREGROUND;
 		Color literal = new Color(50, 109, 168);
-		Color identifier = Style.DEFAULT_FOREGROUND; //new Color(168, 143, 50);
 		
 		SyntaxScheme scheme = new SyntaxScheme(false);
 		scheme.setStyle(Token.FUNCTION,                    new Style(function, null, bold));
@@ -56,6 +52,7 @@ public class SyntaxAreaFactory {
 		}
 		
 		textArea.setSyntaxScheme(scheme);
+		textArea.setText(""); // important, avoids a bug
 	}
 
 }

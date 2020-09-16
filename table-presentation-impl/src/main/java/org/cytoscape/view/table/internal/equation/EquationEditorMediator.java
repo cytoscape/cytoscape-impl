@@ -11,7 +11,6 @@ import java.awt.Dimension;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -127,16 +126,13 @@ public class EquationEditorMediator {
 		builderPanel.getCloseButton().addActionListener(e -> dialog.dispose());
 		
 		SyntaxAreaPanel syntaxPanel = builderPanel.getSyntaxPanel();
-		syntaxPanel.getUndoButton().addActionListener(e -> syntaxPanel.undo());
-		syntaxPanel.getRedoButton().addActionListener(e -> syntaxPanel.redo());
+		syntaxPanel.getApplyButton().addActionListener(e -> handleApply(builderPanel, browserTable));
 		
 		builderPanel.getInfoPanel().getTextArea().addHyperlinkListener(e -> {
 			if(e.getEventType() == EventType.ACTIVATED) {
 				handleInsert(builderPanel);	
 			}
 		});
-		
-		syntaxPanel.getApplyButton().addActionListener(e -> handleApply(builderPanel, browserTable));
 	}
 	
 	
@@ -253,23 +249,32 @@ public class EquationEditorMediator {
 		return attribName;
 	}
 	
+	private static String getEquationText(EquationEditorPanel builderPanel) {
+		String equation = builderPanel.getSyntaxPanel().getText();
+		equation = equation.trim();
+		if(!equation.startsWith("="))
+			equation = "=" + equation;
+		return equation;
+	}
+	
 	private void handleApply(EquationEditorPanel builderPanel, BrowserTable browserTable) {
 		BrowserTableModel tableModel = browserTable.getBrowserTableModel();
-		String equationText = builderPanel.getSyntaxPanel().getText();
+		String equationText = getEquationText(builderPanel);
 		String attribName = getColumnName(browserTable);
 		CyTable attribs = tableModel.getDataTable();
-
-		EquationCompiler compiler = registrar.getService(EquationCompiler.class);
-		StringBuilder errorMessage = new StringBuilder();
-		Equation equation = compileEquation(compiler, attribs, attribName, equationText, errorMessage);
 		
-		if(equation == null) {
-			builderPanel.getSyntaxPanel().showError(errorMessage.toString());
+		EquationCompiler compiler = registrar.getService(EquationCompiler.class);
+		
+		var attrNameToTypeMap = TableBrowserUtil.getAttNameToTypeMap(attribs, attribName);
+		boolean success = compiler.compile(equationText, attrNameToTypeMap);
+		if(!success) {
+			builderPanel.getSyntaxPanel().showSyntaxError(compiler.getErrorLocation(), compiler.getLastErrorMsg());
 			return;
 		}
 		
-		Collection<CyRow> rows = Collections.emptyList();
+		Equation equation = compiler.getEquation();
 		
+		Collection<CyRow> rows = Collections.emptyList();
 		ApplyScope scope = builderPanel.getSyntaxPanel().getApplyScope();
 		switch (scope) {
 			case CURRENT_CELL:
@@ -284,32 +289,18 @@ public class EquationEditorMediator {
 				break;
 		}
 		
+		// MKTODO what if there's an error???
 		for(CyRow row : rows) {
-			if(!setAttribute(row, attribName, equation, errorMessage)) {
-				builderPanel.getSyntaxPanel().showError(errorMessage.toString());
-				break;
-			}
+			setAttribute(row, attribName, equation);
 		}
 	}
 	
-	private Equation compileEquation(EquationCompiler compiler, CyTable table, String attribName, String equationText, StringBuilder errorMessage) {
-		equationText = equationText.trim();
-		if(!equationText.startsWith("="))
-			equationText = "=" + equationText;
-		
-		Map<String,Class<?>> attrNameToTypeMap = TableBrowserUtil.getAttNameToTypeMap(table, attribName);
-		if(compiler.compile(equationText, attrNameToTypeMap))
-			return compiler.getEquation();
-		errorMessage.append(compiler.getLastErrorMsg());
-		return null;
-	}
 
-	private boolean setAttribute(CyRow row, String attribName, Equation newValue, StringBuilder errorMessage) {
+	private boolean setAttribute(CyRow row, String attribName, Equation newValue) {
 		try {
 			row.set(attribName, newValue);
 			return true;
 		} catch(Exception e) {
-			errorMessage.append(e.getMessage());
 			return false;
 		}
 	}
