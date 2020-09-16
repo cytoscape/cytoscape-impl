@@ -11,7 +11,7 @@ import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.view.model.table.CyTableViewFactory;
 import org.cytoscape.view.model.table.CyTableViewFactoryProvider;
 import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
-import org.cytoscape.view.table.internal.equation.EquationEditorMediator;
+import org.cytoscape.view.table.internal.equation.EquationEditorDialogFactory;
 import org.cytoscape.view.table.internal.equation.EquationEditorTaskFactory;
 import org.cytoscape.view.table.internal.impl.PopupMenuHelper;
 import org.osgi.framework.BundleContext;
@@ -45,8 +45,8 @@ public class CyActivator extends AbstractCyActivator {
 		
 		// Equations
 		{
-			var equationMediator = new EquationEditorMediator(registrar);
-			registerService(bc, equationMediator, EquationEditorMediator.class);
+			var factory = new EquationEditorDialogFactory(registrar);
+			registerService(bc, factory, EquationEditorDialogFactory.class);
 			
 			EquationEditorTaskFactory editorTaskFactory = new EquationEditorTaskFactory(registrar);
 			Properties props = new Properties();

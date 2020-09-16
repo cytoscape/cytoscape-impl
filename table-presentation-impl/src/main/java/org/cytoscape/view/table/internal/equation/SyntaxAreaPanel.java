@@ -107,7 +107,7 @@ public class SyntaxAreaPanel extends JPanel {
 	}
 	
 	public void setText(String text) {
-		getSyntaxTextArea().setText(text);
+		getSyntaxTextArea().setText(text == null ? "" : text);
 		updateApplyButtonEnablement();
 	}
 	

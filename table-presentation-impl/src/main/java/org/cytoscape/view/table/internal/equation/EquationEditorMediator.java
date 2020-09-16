@@ -38,6 +38,9 @@ import org.cytoscape.view.table.internal.impl.BrowserTable;
 import org.cytoscape.view.table.internal.impl.BrowserTableModel;
 import org.cytoscape.view.table.internal.util.TableBrowserUtil;
 
+/**
+ * This mediator is not a singleton, there is one instance per BrowserTable.
+ */
 public class EquationEditorMediator {
 	
 	public enum ApplyScope {
@@ -58,20 +61,26 @@ public class EquationEditorMediator {
 	
 	
 	private final CyServiceRegistrar registrar;
+	private final BrowserTable browserTable;
+	private final EquationEditorPanel builderPanel;
 	
-	public EquationEditorMediator(CyServiceRegistrar registrar) {
+	
+	private EquationEditorMediator(BrowserTable browserTable, EquationEditorPanel builderPanel, CyServiceRegistrar registrar) {
+		this.browserTable = browserTable;
 		this.registrar = registrar;
+		this.builderPanel = builderPanel;
 	}
 	
-	public void openEquationEditorDialog(BrowserTable browserTable) {
+	public static void openEquationEditorDialog(BrowserTable browserTable, String equation, CyServiceRegistrar registrar) {
 		JFrame parent = registrar.getService(CySwingApplication.class).getJFrame();
 		JDialog dialog = new JDialog(parent);
 		
-		EquationEditorPanel builderPanel = new EquationEditorPanel(registrar, browserTable);
+		var builderPanel = new EquationEditorPanel(registrar, browserTable);
 		
-		wireTogether(dialog, builderPanel, browserTable);
+		EquationEditorMediator mediator = new EquationEditorMediator(browserTable, builderPanel, registrar);
+		mediator.wireTogether(dialog);
 		
-		String attribName = getColumnName(browserTable);
+		String attribName = mediator.getColumnName();
 		
 		dialog.setTitle("Equation Builder for " + attribName);
 		dialog.setModal(true);
@@ -83,31 +92,12 @@ public class EquationEditorMediator {
 		dialog.setLocationRelativeTo(parent);
 		
 		builderPanel.getSyntaxPanel().getSyntaxTextArea().addAncestorListener(new RequestFocusListener());
-		
-		String formula = getCurrentFormula(browserTable);
-		if(formula != null)
-			builderPanel.getSyntaxPanel().setText(formula);
+		builderPanel.getSyntaxPanel().setText(equation);
 		
 		dialog.setVisible(true);
 	}
 	
-	
-	private static String getCurrentFormula(BrowserTable browserTable) {
-		int cellRow = browserTable.getSelectedRow();
-		int cellCol = browserTable.getSelectedColumn();
-		
-		String colName = browserTable.getColumnName(cellCol);
-		CyRow row = browserTable.getBrowserTableModel().getCyRow(cellRow);
-		
-		Object obj = row.getRaw(colName);
-		if(obj instanceof Equation) {
-			Equation equation = (Equation) obj;
-			return equation.toString().trim().substring(1);
-		}
-		return null;
-	}
-
-	private class RequestFocusListener implements AncestorListener {
+	private static class RequestFocusListener implements AncestorListener {
 		public void ancestorAdded(AncestorEvent e) {
 			var c = e.getComponent();
 			c.requestFocusInWindow();
@@ -118,25 +108,25 @@ public class EquationEditorMediator {
 	}
 	
 	
-	private void wireTogether(JDialog dialog, EquationEditorPanel builderPanel, BrowserTable browserTable) {
-		initializeTutorialList(builderPanel);
-		initializeFunctionList(builderPanel);
-		initializeAttributeList(builderPanel, browserTable);
+	private void wireTogether(JDialog dialog) {
+		initializeTutorialList();
+		initializeFunctionList();
+		initializeAttributeList();
 		
 		builderPanel.getCloseButton().addActionListener(e -> dialog.dispose());
 		
 		SyntaxAreaPanel syntaxPanel = builderPanel.getSyntaxPanel();
-		syntaxPanel.getApplyButton().addActionListener(e -> handleApply(builderPanel, browserTable));
+		syntaxPanel.getApplyButton().addActionListener(e -> handleApply());
 		
 		builderPanel.getInfoPanel().getTextArea().addHyperlinkListener(e -> {
 			if(e.getEventType() == EventType.ACTIVATED) {
-				handleInsert(builderPanel);	
+				handleInsert();	
 			}
 		});
 	}
 	
 	
-	private void initializeTutorialList(EquationEditorPanel builderPanel) {
+	private void initializeTutorialList() {
 		builderPanel.getTutorialPanel().setElements(TutorialItems.getTutorialItems());
 		
 		JList<String> list = builderPanel.getTutorialPanel().getList();
@@ -152,8 +142,7 @@ public class EquationEditorMediator {
 	}
 	
 	
-	private void initializeFunctionList(EquationEditorPanel builderPanel) {
-		// Get list of functions
+	private void initializeFunctionList() {
 		EquationParser equationParser = registrar.getService(EquationParser.class);
 		
 		SortedMap<String,Function> functions = new TreeMap<>();
@@ -176,7 +165,7 @@ public class EquationEditorMediator {
 	
 	
 	@SuppressWarnings("serial")
-	private void initializeAttributeList(EquationEditorPanel builderPanel, BrowserTable browserTable) {
+	private void initializeAttributeList() {
 		builderPanel.getAttributePanel().getList().setCellRenderer(new DefaultListCellRenderer() {
 			CyColumnPresentationManager presentationManager = registrar.getService(CyColumnPresentationManager.class);
 			@Override
@@ -212,7 +201,7 @@ public class EquationEditorMediator {
 	}
 	
 	
-	private void handleInsert(EquationEditorPanel builderPanel) {
+	private void handleInsert() {
 		SyntaxAreaPanel syntaxPanel = builderPanel.getSyntaxPanel();
 		int offset = syntaxPanel.getCaretPosition();
 		if(offset < 0)
@@ -242,14 +231,14 @@ public class EquationEditorMediator {
 			return "${" + name + "}";
 	}
 	
-	private static String getColumnName(BrowserTable browserTable) {
+	private String getColumnName() {
 		BrowserTableModel tableModel = browserTable.getBrowserTableModel();
 		int cellCol = browserTable.convertColumnIndexToModel(browserTable.getSelectedColumn());
 		String attribName = tableModel.getColumnName(cellCol);
 		return attribName;
 	}
 	
-	private static String getEquationText(EquationEditorPanel builderPanel) {
+	private String getEquationText() {
 		String equation = builderPanel.getSyntaxPanel().getText();
 		equation = equation.trim();
 		if(!equation.startsWith("="))
@@ -257,38 +246,46 @@ public class EquationEditorMediator {
 		return equation;
 	}
 	
-	private void handleApply(EquationEditorPanel builderPanel, BrowserTable browserTable) {
-		BrowserTableModel tableModel = browserTable.getBrowserTableModel();
-		String equationText = getEquationText(builderPanel);
-		String attribName = getColumnName(browserTable);
-		CyTable attribs = tableModel.getDataTable();
+	private void handleApply() {
+		String attribName = getColumnName();
+		Equation equation = compileEquation(attribName);
+		Collection<CyRow> rows = getRowsForApply();
+		applyToRows(equation, attribName, rows);
 		
+	}
+	
+	private Equation compileEquation(String attribName) {
+		BrowserTableModel tableModel = browserTable.getBrowserTableModel();
+		CyTable attribs = tableModel.getDataTable();
+		String equationText = getEquationText();
 		EquationCompiler compiler = registrar.getService(EquationCompiler.class);
 		
 		var attrNameToTypeMap = TableBrowserUtil.getAttNameToTypeMap(attribs, attribName);
 		boolean success = compiler.compile(equationText, attrNameToTypeMap);
 		if(!success) {
 			builderPanel.getSyntaxPanel().showSyntaxError(compiler.getErrorLocation(), compiler.getLastErrorMsg());
-			return;
+			return null;
 		}
 		
-		Equation equation = compiler.getEquation();
-		
-		Collection<CyRow> rows = Collections.emptyList();
+		return compiler.getEquation();
+	}
+	
+	private Collection<CyRow> getRowsForApply() {
+		BrowserTableModel tableModel = browserTable.getBrowserTableModel();
 		ApplyScope scope = builderPanel.getSyntaxPanel().getApplyScope();
 		switch (scope) {
 			case CURRENT_CELL:
 				int cellRow = browserTable.convertRowIndexToModel(browserTable.getSelectedRow());
-				rows = Collections.singletonList(tableModel.getCyRow(cellRow));
-				break;
+				return Collections.singletonList(tableModel.getCyRow(cellRow));
 			case CURRENT_SELECTION:
-				rows = tableModel.getDataTable().getMatchingRows(CyNetwork.SELECTED, true);
-				break;
+				return tableModel.getDataTable().getMatchingRows(CyNetwork.SELECTED, true);
 			case ENTIRE_COLUMN:
-				rows = tableModel.getDataTable().getAllRows();
-				break;
+				return tableModel.getDataTable().getAllRows();
 		}
-		
+		return Collections.emptyList();
+	}
+	
+	private void applyToRows(Equation equation, String attribName, Collection<CyRow> rows) {
 		// MKTODO what if there's an error???
 		for(CyRow row : rows) {
 			setAttribute(row, attribName, equation);
@@ -304,6 +301,4 @@ public class EquationEditorMediator {
 			return false;
 		}
 	}
-	
-	
 }

@@ -66,7 +66,7 @@ public class EquationEditorTask extends AbstractTask {
 			return;
 		}
 		
-		var mediator = registrar.getService(EquationEditorMediator.class);
+		var mediator = registrar.getService(EquationEditorDialogFactory.class);
 		SwingUtilities.invokeLater(() -> {
 			mediator.openEquationEditorDialog(browserTable);
 		});
