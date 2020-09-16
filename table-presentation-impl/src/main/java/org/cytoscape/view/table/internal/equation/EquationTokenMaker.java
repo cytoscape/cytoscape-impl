@@ -28,7 +28,7 @@ public class EquationTokenMaker extends AbstractTokenMaker {
 	
 	@Override
 	public Token getTokenList(Segment text, int initialTokenType, final int startOffset) {
-		System.out.println("EquationTokenMaker.getTokenList()");
+//		System.out.println("EquationTokenMaker.getTokenList()");
 		resetTokenList();
 		
 		String equation = text.toString();
@@ -63,7 +63,7 @@ public class EquationTokenMaker extends AbstractTokenMaker {
 
 	@Override
 	public void addToken(Segment segment, int start, int end, int tokenType, int startOffset) {
-		System.out.println("addToken: '" + segment + "' (" + start + "," + end + "," + startOffset + ") " + tokenType);
+//		System.out.println("addToken: '" + segment + "' (" + start + "," + end + "," + startOffset + ") " + tokenType);
 		// This assumes all keywords, etc. were parsed as "identifiers."
 		if (tokenType == Token.IDENTIFIER) {
 			int value = wordsToHighlight.get(segment, start, end);

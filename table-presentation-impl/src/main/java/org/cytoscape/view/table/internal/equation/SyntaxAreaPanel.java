@@ -16,6 +16,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 
 import org.cytoscape.model.CyColumn;
@@ -88,7 +90,11 @@ public class SyntaxAreaPanel extends JPanel {
 		getRedoButton().addActionListener(e -> redo());
 		
 		getSyntaxTextArea().addCaretListener(e -> clearResultLabel());
+		getSyntaxTextArea().getDocument().addDocumentListener((DocumentListenerAdapter)(e) -> {
+			updateApplyButtonEnablement();
+		});
 		
+		updateApplyButtonEnablement();
 		setCaret(0); // Want the caret to be visible and flashing
 	}
 	
@@ -102,6 +108,7 @@ public class SyntaxAreaPanel extends JPanel {
 	
 	public void setText(String text) {
 		getSyntaxTextArea().setText(text);
+		updateApplyButtonEnablement();
 	}
 	
 	public String getText() {
@@ -251,6 +258,10 @@ public class SyntaxAreaPanel extends JPanel {
 		return applyButton;
 	}
 	
+	private void updateApplyButtonEnablement() {
+		getApplyButton().setEnabled(!getText().isBlank());
+	}
+	
 	private JButton createIconButton(String icon, String tooltip) {
 		IconManager iconManager = registrar.getService(IconManager.class);
 		JButton button = new JButton(icon);
@@ -269,4 +280,12 @@ public class SyntaxAreaPanel extends JPanel {
 	}
 	
 
+	@FunctionalInterface
+	private interface DocumentListenerAdapter extends DocumentListener {
+		@Override default void insertUpdate(DocumentEvent e) { update(e); }
+		@Override default void removeUpdate(DocumentEvent e) { update(e); }
+		@Override default void changedUpdate(DocumentEvent e) { update(e); }
+		void update(DocumentEvent e);
+	}
+	
 }
