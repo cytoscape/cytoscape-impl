@@ -10,7 +10,9 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -80,7 +82,7 @@ public class EquationEditorMediator {
 		EquationEditorMediator mediator = new EquationEditorMediator(browserTable, builderPanel, registrar);
 		mediator.wireTogether(dialog);
 		
-		String attribName = mediator.getColumnName();
+		String attribName = mediator.getColumn().getName();
 		
 		dialog.setTitle("Equation Builder for " + attribName);
 		dialog.setModal(true);
@@ -231,11 +233,10 @@ public class EquationEditorMediator {
 			return "${" + name + "}";
 	}
 	
-	private String getColumnName() {
+	private CyColumn getColumn() {
 		BrowserTableModel tableModel = browserTable.getBrowserTableModel();
 		int cellCol = browserTable.convertColumnIndexToModel(browserTable.getSelectedColumn());
-		String attribName = tableModel.getColumnName(cellCol);
-		return attribName;
+		return tableModel.getColumn(cellCol);
 	}
 	
 	private String getEquationText() {
@@ -247,23 +248,29 @@ public class EquationEditorMediator {
 	}
 	
 	private void handleApply() {
-		String attribName = getColumnName();
-		Equation equation = compileEquation(attribName);
-		Collection<CyRow> rows = getRowsForApply();
-		applyToRows(equation, attribName, rows);
+		CyColumn col = getColumn();
+		Equation equation = compileEquation(col);
+		if(equation != null) {
+			Collection<CyRow> rows = getRowsForApply();
+			applyToRows(equation, col, rows);
+		}
 		
 	}
 	
-	private Equation compileEquation(String attribName) {
+	private Equation compileEquation(CyColumn col) {
 		BrowserTableModel tableModel = browserTable.getBrowserTableModel();
 		CyTable attribs = tableModel.getDataTable();
 		String equationText = getEquationText();
 		EquationCompiler compiler = registrar.getService(EquationCompiler.class);
 		
+		String attribName = col.getName();
 		var attrNameToTypeMap = TableBrowserUtil.getAttNameToTypeMap(attribs, attribName);
 		boolean success = compiler.compile(equationText, attrNameToTypeMap);
+		
 		if(!success) {
-			builderPanel.getSyntaxPanel().showSyntaxError(compiler.getErrorLocation(), compiler.getLastErrorMsg());
+			int location = compiler.getErrorLocation();
+			String msg = compiler.getLastErrorMsg();
+			builderPanel.getSyntaxPanel().showSyntaxError(location, msg);
 			return null;
 		}
 		
@@ -285,20 +292,31 @@ public class EquationEditorMediator {
 		return Collections.emptyList();
 	}
 	
-	private void applyToRows(Equation equation, String attribName, Collection<CyRow> rows) {
-		// MKTODO what if there's an error???
+	private void applyToRows(Equation equation, CyColumn col, Collection<CyRow> rows) {
+		Set<String> errors = new HashSet<>();
+		int numErrors = 0;
+		
 		for(CyRow row : rows) {
-			setAttribute(row, attribName, equation);
+			row.set(col.getName(), equation);
+			
+			// We really need a better way to detect if an Equation evaluation results in an error.
+			// Note, this is NOT thread safe.
+			Object x = row.get(col.getName(), col.getType());
+			if(x == null) {
+				String error = row.getTable().getLastInternalError();
+				if(error != null) {
+					// There 
+					numErrors++;
+					errors.add(error);
+				}
+			}
+		}
+		
+		if(errors.isEmpty()) {
+			builderPanel.getSyntaxPanel().showEvalSuccess(rows.size());
+		} else {
+			builderPanel.getSyntaxPanel().showEvalError(rows.size(), numErrors, errors);
 		}
 	}
-	
 
-	private boolean setAttribute(CyRow row, String attribName, Equation newValue) {
-		try {
-			row.set(attribName, newValue);
-			return true;
-		} catch(Exception e) {
-			return false;
-		}
-	}
 }

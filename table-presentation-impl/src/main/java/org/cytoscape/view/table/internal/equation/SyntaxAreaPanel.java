@@ -3,7 +3,9 @@ package org.cytoscape.view.table.internal.equation;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.Color;
+import java.awt.GridLayout;
 import java.awt.Rectangle;
+import java.util.Collection;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -47,7 +49,6 @@ public class SyntaxAreaPanel extends JPanel {
 	private JComboBox<ApplyScope> applyScopeCombo; 
 	private JButton applyButton;
 	private JLabel resultLabel;
-	private Color defaultLabelForeground;
 	
 	
 	public SyntaxAreaPanel(CyServiceRegistrar registrar, BrowserTable browserTable) {
@@ -84,8 +85,6 @@ public class SyntaxAreaPanel extends JPanel {
 			)
 		);
 		
-		this.defaultLabelForeground = getResultLabel().getForeground();
-		
 		getUndoButton().addActionListener(e -> undo());
 		getRedoButton().addActionListener(e -> redo());
 		
@@ -97,6 +96,7 @@ public class SyntaxAreaPanel extends JPanel {
 		updateApplyButtonEnablement();
 		setCaret(0); // Want the caret to be visible and flashing
 	}
+	
 	
 	public ApplyScope getApplyScope() {
 		return (ApplyScope) getApplyScopeCombo().getSelectedItem();
@@ -115,6 +115,7 @@ public class SyntaxAreaPanel extends JPanel {
 		return getSyntaxTextArea().getText();
 	}
 	
+	
 	public void insertText(int offset, String text, String post) {
 		try {
 			getSyntaxTextArea().getDocument().insertString(offset, text, null);
@@ -129,25 +130,24 @@ public class SyntaxAreaPanel extends JPanel {
 		}
 	}
 	
+	
+	public void showEvalSuccess(int numRows) {
+		clearResultLabel();
+		if(numRows == 1)
+			showResult("1 row updated");
+		else if(numRows > 1)
+			showResult(numRows + " rows updated");
+	}
+	
 	@SuppressWarnings("deprecation")
 	public void showSyntaxError(int location, String message) {
-		registrar.getService(IconManager.class);
-		
 		clearResultLabel();
-		getResultLabel().setForeground(Color.RED);
-		getResultLabel().setText("Syntax error, cannot apply");
 		
 		// Show syntax error as a popup
-		JLabel label = new JLabel(" " + message + " ");
-		label.setIcon(new TextIcon(IconManager.ICON_EXCLAMATION_CIRCLE, iconManager.getIconFont(11f), Color.RED, 10, 10));
-		label.setForeground(Color.RED);
-		LookAndFeelUtil.makeSmall(label);
-		label.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
-		
 		JPopupMenu popup = new JPopupMenu();
-		popup.add(label);
+		popup.add(createErrorPopupLabel(message, true));
 		
-		// MKTODO what if the cursor is not on the screen (ie the user scrolled the cursor off)
+		// Show popup over the text area in the location where syntax error was encountered.
 		try {
 			RSyntaxTextArea textArea = getSyntaxTextArea();
 			Rectangle rectangle = textArea.modelToView(location);
@@ -158,10 +158,48 @@ public class SyntaxAreaPanel extends JPanel {
 		}
 	}
 	
-	public void showMessage(String message) {
+	public void showEvalError(int numRows, int numErrors, Collection<String> messages) {
 		clearResultLabel();
-		getResultLabel().setText(message);
+		// Show syntax error as a popup
+		JPanel panel = new JPanel();
+		panel.setOpaque(false);
+		panel.setLayout(new GridLayout(messages.size(), 1));
+		
+		if(numRows == 1) {
+			panel.setLayout(new GridLayout(1, 1));
+			panel.add(createErrorPopupLabel(messages.iterator().next(), true));
+		} else {
+			panel.setLayout(new GridLayout(messages.size() + 1, 1));
+			
+			StringBuilder sb = new StringBuilder("Applied to ").append(numRows).append(" rows, ");
+			if(numErrors == 1)
+				sb.append("1 row had an error");
+			else
+				sb.append(numErrors).append(" rows had errors");
+			
+			panel.add(createErrorPopupLabel(sb.toString(), true));
+			
+			for(String error : messages) {
+				panel.add(createErrorPopupLabel(error, false));
+			}
+		}
+		
+		JPopupMenu popup = new JPopupMenu();
+		popup.add(panel);
+		JButton comp = getApplyButton();
+		popup.show(comp, 0, comp.getHeight());
 	}
+	
+	private JLabel createErrorPopupLabel(String text, boolean includeIcon) {
+		JLabel label = new JLabel(text);
+		label.setForeground(Color.RED);
+		LookAndFeelUtil.makeSmall(label);
+		label.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
+		if(includeIcon)
+			label.setIcon(new TextIcon(IconManager.ICON_EXCLAMATION_CIRCLE, iconManager.getIconFont(11f), Color.RED, 10, 10));
+		return label;
+	}
+	
 	
 	private void setCaret(int offset) {
 		getSyntaxTextArea().setCaretPosition(offset);
@@ -238,7 +276,10 @@ public class SyntaxAreaPanel extends JPanel {
 	
 	private void clearResultLabel() {
 		getResultLabel().setText("");
-		getResultLabel().setForeground(defaultLabelForeground);
+	}
+	
+	private void showResult(String text) {
+		getResultLabel().setText(text);
 	}
 	
 	private JComboBox<ApplyScope> getApplyScopeCombo() {

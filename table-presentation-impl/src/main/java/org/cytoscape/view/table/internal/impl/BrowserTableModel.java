@@ -192,9 +192,8 @@ public final class BrowserTableModel extends AbstractTableModel
 		return getValidatedObjectAndEditString(row, columnName);
 	}
 
-	CyColumn getColumn(final int columnIndex)  {
+	public CyColumn getColumn(int columnIndex)  {
 		final String columnName = getColumnName(columnIndex);
-
 		return dataTable.getColumn(columnName);
 	}
 
@@ -248,7 +247,7 @@ public final class BrowserTableModel extends AbstractTableModel
 
 		// Optimisation hack:
 		final boolean isEquation = raw instanceof Equation;
-		final Object cooked = !isEquation ? raw : getColumnValue(row, columnName);
+		final Object cooked = isEquation ? getColumnValue(row, columnName) : raw;
 		final String editString = createEditString(raw);
 		
 		if (cooked != null)

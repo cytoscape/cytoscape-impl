@@ -62,16 +62,8 @@ public class ValidatedObjectAndEditString implements Comparable<Object> {
 		return "";
 	}
 
-	public void setErrorText(final String newErrorText) {
-		errorText = newErrorText;
-	}
-	
 	public String getErrorText() {
 		return errorText;
-	}
-
-	public void setEquation(boolean isEquation) {
-		this.isEquation = isEquation;
 	}
 	
 	public boolean isEquation() {
