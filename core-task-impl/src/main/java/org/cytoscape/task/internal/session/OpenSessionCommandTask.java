@@ -1,21 +1,24 @@
 package org.cytoscape.task.internal.session;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.net.URI;
+import java.net.URL;
+import java.nio.channels.Channels;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
-import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * #%L
@@ -23,7 +26,7 @@ import org.cytoscape.work.Tunable;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -47,6 +50,8 @@ import org.cytoscape.work.Tunable;
  */
 public class OpenSessionCommandTask extends AbstractOpenSessionTask {
 
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
+	
 	@ProvidesTitle
 	public String getTitle() {
 		return "Open Session";
@@ -73,27 +78,59 @@ public class OpenSessionCommandTask extends AbstractOpenSessionTask {
 	public OpenSessionCommandTask(CyServiceRegistrar serviceRegistrar) {
 		super(serviceRegistrar);
 	}
+	
+	private File tmpFile;
 
 	@Override
-	public void run(final TaskMonitor tm) throws Exception {
-		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
-		final CySessionManager sessionManager = serviceRegistrar.getService(CySessionManager.class);
+	public void run(TaskMonitor tm) throws Exception {
+		var eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		var sessionManager = serviceRegistrar.getService(CySessionManager.class);
 		
 		try {
 			try {
 				tm.setTitle("Open Session");
 				tm.setStatusMessage("Opening Session File.\n\nIt may take a while.\nPlease wait...");
 				tm.setProgress(0.0);
+				
+				if (url != null)
+					url = url.trim();
 		
-				if (file == null && (url == null || url.trim().isEmpty()))
+				if (file == null && (url == null || url.isEmpty()))
 					throw new NullPointerException("No file or URL specified.");
 				
-				final CySessionReaderManager readerMgr = serviceRegistrar.getService(CySessionReaderManager.class);
+				var readerMgr = serviceRegistrar.getService(CySessionReaderManager.class);
+				
+				if (url != null && file == null && !url.toLowerCase().startsWith("file://")) {
+					// Download it as a temp file in order to prevent errors when trying to read parts of the zip file
+					// over a network connection or when calling InputStream.markSupported()
+					// -- see: https://cytoscape.atlassian.net/browse/CYTOSCAPE-12556
+					FileOutputStream tmpStream = null;
+					
+					try (var channel = Channels.newChannel(new URL(url).openStream())) {
+						tmpFile = File.createTempFile(url, ".cys");
+						tmpFile.deleteOnExit();
+						
+						tmpStream = new FileOutputStream(tmpFile);
+						tmpStream.getChannel().transferFrom(channel, 0, Long.MAX_VALUE);
+						
+						file = tmpFile;
+					} catch (Exception e) {
+						logger.error("Cannot create temp file for remote session file.", e);
+					} finally {
+						if (tmpStream != null) {
+							try {
+								tmpStream.close();
+							} catch (Exception e) {
+								// Ignore...
+							}
+						}
+					}
+				}
 				
 				if (file != null)
 					reader = readerMgr.getReader(file.toURI(), file.getName());
 				else
-					reader = readerMgr.getReader(new URI(url.trim()), url);
+					reader = readerMgr.getReader(new URI(url), url);
 				
 				if (reader == null)
 					throw new NullPointerException("Failed to find appropriate reader for file: " + file);
@@ -114,6 +151,18 @@ public class OpenSessionCommandTask extends AbstractOpenSessionTask {
 			} catch (Exception e) {
 				disposeCancelledSession(e, sessionManager);
 				throw e;
+			} finally {
+				// Delete the tmp file now, otherwise the user could inadvertently save the session
+				// to the temp directory later -- we don't want to pass the filename to the CySessionManager!
+				if (tmpFile != null) {
+					try {
+						tmpFile.delete();
+					} catch (Exception e) {
+						logger.error("Cannot delete temp cys file.", e);
+					}
+					
+					tmpFile = file = null;
+				}
 			}
 			
 			if (cancelled)
@@ -127,17 +176,17 @@ public class OpenSessionCommandTask extends AbstractOpenSessionTask {
 	}
 		
 	private void changeCurrentSession(CySessionManager sessionManager, TaskMonitor tm) throws Exception {
-		final CySession newSession = reader.getSession();
+		var newSession = reader.getSession();
 		
 		if (newSession == null)
-			throw new NullPointerException("Session could not be read for file: " + file);
+			throw new NullPointerException("Session could not be read for: " + (file != null ? file : url));
 
-		String fileName = file != null ? file.getAbsolutePath() : new URI(url).getPath().replace("/", "");
+		var fileName = file != null ? file.getAbsolutePath() : new URI(url).getPath().replace("/", "");
 		sessionManager.setCurrentSession(newSession, fileName);
 		
 		// Set Current network: this is necessary to update GUI
-		final CyApplicationManager appManager = serviceRegistrar.getService(CyApplicationManager.class);
-		final RenderingEngine<CyNetwork> currentEngine = appManager.getCurrentRenderingEngine();
+		var appManager = serviceRegistrar.getService(CyApplicationManager.class);
+		var currentEngine = appManager.getCurrentRenderingEngine();
 		
 		if (currentEngine != null)
 			appManager.setCurrentRenderingEngine(currentEngine);
