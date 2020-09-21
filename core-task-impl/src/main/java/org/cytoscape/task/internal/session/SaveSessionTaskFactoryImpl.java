@@ -1,5 +1,7 @@
 package org.cytoscape.task.internal.session;
 
+import java.io.File;
+
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.task.write.SaveSessionTaskFactory;
@@ -12,7 +14,7 @@ import org.cytoscape.work.TaskIterator;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -40,13 +42,14 @@ public class SaveSessionTaskFactoryImpl extends AbstractTaskFactory implements S
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		// Check session file name is set or not.
-		final String sessionFileName = serviceRegistrar.getService(CySessionManager.class).getCurrentSessionFileName();		
+		// Check whether the session file name is set and the file exists
+		var fileName = serviceRegistrar.getService(CySessionManager.class).getCurrentSessionFileName();
+		var file = fileName != null && !fileName.isBlank() ? new File(fileName) : null;
 		
 		// If there is no file name, use Save As task.  Otherwise, overwrite the current session.
-		if (sessionFileName == null)
-			return new TaskIterator(new SaveSessionAsTask(serviceRegistrar));
-		else
+		if (file != null && file.exists())
 			return new TaskIterator(new SaveSessionTask(serviceRegistrar));
+		else
+			return new TaskIterator(new SaveSessionAsTask(serviceRegistrar));
 	}
 }

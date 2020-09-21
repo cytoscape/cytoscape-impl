@@ -20,7 +20,7 @@ import org.cytoscape.work.Tunable;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -67,7 +67,7 @@ public class SaveSessionAsTask extends AbstractTask {
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		CySession session = null;
-		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		var eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 		
 		try {
 			tm.setProgress(0.05);

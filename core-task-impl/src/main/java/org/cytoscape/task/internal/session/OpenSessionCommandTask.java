@@ -6,6 +6,7 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.channels.Channels;
 
+import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.event.CyEventHelper;
@@ -180,8 +181,8 @@ public class OpenSessionCommandTask extends AbstractOpenSessionTask {
 		
 		if (newSession == null)
 			throw new NullPointerException("Session could not be read for: " + (file != null ? file : url));
-
-		var fileName = file != null ? file.getAbsolutePath() : new URI(url).getPath().replace("/", "");
+		
+		var fileName = file != null ? file.getAbsolutePath() : FilenameUtils.getName(new URL(url).getPath());
 		sessionManager.setCurrentSession(newSession, fileName);
 		
 		// Set Current network: this is necessary to update GUI
