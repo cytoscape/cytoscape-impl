@@ -15,6 +15,7 @@ import java.util.zip.ZipInputStream;
 
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.io.internal.read.MarkSupportedInputStream;
+import org.cytoscape.io.internal.read.ZipInputStreamWrapper;
 import org.cytoscape.io.internal.util.GroupUtil;
 import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.internal.util.session.SessionUtil;
@@ -227,10 +228,9 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 		sourceInputStream.mark(Integer.MAX_VALUE);
 		inputStreamRead = true;
 		
-		ZipInputStream zis = new ZipInputStream(sourceInputStream);
 		int count = 0;
 	
-		try {
+		try(ZipInputStream zis = new ZipInputStream(sourceInputStream)) {
 			ZipEntry zen = null;
 	
 			// Extract cysession.xml and the other files, except the XGMML ones:
@@ -238,29 +238,14 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 				tm.setStatusMessage("Extracting zip entry #" + ++count);
 				
 				String entryName = zen.getName();
-				InputStream is = new MarkSupportedInputStream(zis);
 	
 				try {
-					this.handleEntry(is, entryName);
+					var wrapper = new ZipInputStreamWrapper(zis); // protect against someone else calling close() too early 
+					handleEntry(wrapper, entryName);
 				} catch (Exception e) {
 					logger.error("Failed reading session entry: " + entryName, e);
-				} finally {
-					if (is != null) {
-						try {
-							is.close();
-						} catch (final Exception ex) {
-							logger.error("Unable to close ZIP entry's input stream.", ex);
-						}
-						is = null;
-					}
 				}
-	
-				zis.closeEntry();
 			}
-		} finally {
-			if (zis != null)
-				zis.close();
-			zis = null;
 		}
 	}
 	
@@ -272,6 +257,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	 */
 	abstract void handleEntry(InputStream is, String entryName) throws Exception;
 	
+	@Deprecated
 	protected InputStream findEntry(String entry) throws IOException {
 		InputStream is = null;
 		ZipInputStream zis = null;
