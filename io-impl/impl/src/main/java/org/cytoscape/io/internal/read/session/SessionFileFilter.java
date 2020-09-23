@@ -27,8 +27,6 @@ package org.cytoscape.io.internal.read.session;
 import static org.cytoscape.io.internal.util.session.SessionUtil.APPS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.VERSION_EXT;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.util.Set;
 import java.util.zip.ZipEntry;
@@ -37,7 +35,6 @@ import java.util.zip.ZipInputStream;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.io.BasicCyFileFilter;
 import org.cytoscape.io.DataCategory;
-import org.cytoscape.io.internal.read.MarkSupportedInputStream;
 import org.cytoscape.io.util.StreamUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,21 +70,16 @@ public class SessionFileFilter extends BasicCyFileFilter {
 
 	protected String extractVersion(URI uri) {
 		String version = "";
-		ZipInputStream zis = null;
 
-		try {
+		try(ZipInputStream zis = new ZipInputStream(uri.toURL().openStream())) {
 			// Extract list of entries until it finds the version file.
-			zis = new ZipInputStream(uri.toURL().openStream());
 			ZipEntry zen = null;
 			String entryName = null;
 
 			while ((zen = zis.getNextEntry()) != null) {
 				entryName = zen.getName();
-				InputStream tmpIs = null;
 
 				try {
-					tmpIs = new MarkSupportedInputStream(zis);
-					
 					if (!entryName.contains(APPS_FOLDER) && entryName.endsWith(VERSION_EXT)) {
 						version = parseVersion(entryName);
 						logger.debug("CYS version: " + version);
@@ -95,31 +87,10 @@ public class SessionFileFilter extends BasicCyFileFilter {
 					}
 				} catch (Exception e) {
 					logger.warn("Failed reading session entry: " + entryName, e);
-				} finally {
-					if (tmpIs != null) {
-						try {
-							tmpIs.close();
-						} catch (IOException e) {
-						}
-					}
-					tmpIs = null;
-				}
-
-				try {
-					zis.closeEntry();
-				} catch (IOException e) {
 				}
 			}
 		} catch (Exception ex) {
 			logger.error("Failed reading session file: " + uri.getPath(), ex);
-		} finally {
-			if (zis != null) {
-				try {
-					zis.close();
-				} catch (IOException e) {
-				}
-			}
-			zis = null;
 		}
 		
 		return version;
