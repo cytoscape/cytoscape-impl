@@ -1,5 +1,32 @@
 package org.cytoscape.view.table.internal.impl;
 
+/*
+ * #%L
+ * Cytoscape Table Browser Impl (table-browser-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.ALL;
+import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.AUTO;
+import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.SELECTED;
+
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -83,30 +110,6 @@ import org.cytoscape.view.table.internal.util.TableBrowserUtil;
 import org.cytoscape.view.table.internal.util.ValidatedObjectAndEditString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-/*
- * #%L
- * Cytoscape Table Browser Impl (table-browser-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2019 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
 
 @SuppressWarnings("serial")
 public class BrowserTable extends JTable implements MouseListener, ActionListener, MouseMotionListener,
@@ -612,8 +615,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		if (e.getSource() != dataTable)
 			return;		
 
-		if (model.getViewMode() == BrowserTableModel.ViewMode.SELECTED
-				|| model.getViewMode() == BrowserTableModel.ViewMode.AUTO) {
+		if (model.getViewMode() == SELECTED || model.getViewMode() == AUTO) {
 			model.clearSelectedRows();
 			boolean foundANonSelectedColumnName = false;
 			
@@ -633,14 +635,12 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		final Collection<RowSetRecord> rows = e.getPayloadCollection();
 
 		synchronized (this) {
-			if (model.getViewMode() == BrowserTableModel.ViewMode.SELECTED
-					|| model.getViewMode() == BrowserTableModel.ViewMode.AUTO) {
-				model.fireTableDataChanged();
-			} else {
-				final CyTableManager tableManager = serviceRegistrar.getService(CyTableManager.class);
-				
-				if (!tableManager.getGlobalTables().contains(dataTable))
+			model.fireTableDataChanged();
+			if(model.getViewMode() == ALL) {
+				CyTableManager tableManager = serviceRegistrar.getService(CyTableManager.class);
+				if (!tableManager.getGlobalTables().contains(dataTable)) {
 					bulkUpdate(rows);
+				}
 			}
 		}
 	}

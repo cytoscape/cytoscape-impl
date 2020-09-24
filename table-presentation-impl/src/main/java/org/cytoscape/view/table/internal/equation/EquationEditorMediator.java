@@ -66,23 +66,33 @@ public class EquationEditorMediator {
 	private final BrowserTable browserTable;
 	private final EquationEditorPanel builderPanel;
 	
+	// The selected column/row can change as the BrowserTable reacts to events, so we need to store these values up front.
+	private final CyColumn column;
+	private final int currentRowIndex;
 	
-	private EquationEditorMediator(BrowserTable browserTable, EquationEditorPanel builderPanel, CyServiceRegistrar registrar) {
+	
+	private EquationEditorMediator(CyColumn column, BrowserTable browserTable, EquationEditorPanel builderPanel, CyServiceRegistrar registrar) {
 		this.browserTable = browserTable;
 		this.registrar = registrar;
 		this.builderPanel = builderPanel;
+		this.column = column;
+		this.currentRowIndex = browserTable.convertRowIndexToModel(browserTable.getSelectedRow());
 	}
 	
 	public static void openEquationEditorDialog(BrowserTable browserTable, String equation, CyServiceRegistrar registrar) {
 		JFrame parent = registrar.getService(CySwingApplication.class).getJFrame();
 		JDialog dialog = new JDialog(parent);
 		
+		BrowserTableModel tableModel = browserTable.getBrowserTableModel();
+		int cellCol = browserTable.convertColumnIndexToModel(browserTable.getSelectedColumn());
+		CyColumn column =  tableModel.getColumn(cellCol);
+		
 		var builderPanel = new EquationEditorPanel(registrar, browserTable);
 		
-		EquationEditorMediator mediator = new EquationEditorMediator(browserTable, builderPanel, registrar);
+		EquationEditorMediator mediator = new EquationEditorMediator(column, browserTable, builderPanel, registrar);
 		mediator.wireTogether(dialog);
 		
-		String attribName = mediator.getColumn().getName();
+		String attribName = column.getName();
 		
 		dialog.setTitle("Equation Builder for " + attribName);
 		dialog.setModal(true);
@@ -233,11 +243,6 @@ public class EquationEditorMediator {
 			return "${" + name + "}";
 	}
 	
-	private CyColumn getColumn() {
-		BrowserTableModel tableModel = browserTable.getBrowserTableModel();
-		int cellCol = browserTable.convertColumnIndexToModel(browserTable.getSelectedColumn());
-		return tableModel.getColumn(cellCol);
-	}
 	
 	private String getEquationText() {
 		String equation = builderPanel.getSyntaxPanel().getText();
@@ -248,11 +253,10 @@ public class EquationEditorMediator {
 	}
 	
 	private void handleApply() {
-		CyColumn col = getColumn();
-		Equation equation = compileEquation(col);
+		Equation equation = compileEquation(column);
 		if(equation != null) {
 			Collection<CyRow> rows = getRowsForApply();
-			applyToRows(equation, col, rows);
+			applyToRows(equation, column, rows);
 		}
 		
 	}
@@ -282,8 +286,7 @@ public class EquationEditorMediator {
 		ApplyScope scope = builderPanel.getSyntaxPanel().getApplyScope();
 		switch (scope) {
 			case CURRENT_CELL:
-				int cellRow = browserTable.convertRowIndexToModel(browserTable.getSelectedRow());
-				return Collections.singletonList(tableModel.getCyRow(cellRow));
+				return Collections.singletonList(tableModel.getCyRow(currentRowIndex));
 			case CURRENT_SELECTION:
 				return tableModel.getDataTable().getMatchingRows(CyNetwork.SELECTED, true);
 			case ENTIRE_COLUMN:
