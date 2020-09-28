@@ -515,87 +515,82 @@ public class EquationParserImpl implements EquationParser {
 	//
 	// Helper functions for the parseXXX() methods.
 	//
+	
+	private TreeNode handleFConv(final TreeNode tn) {
+		Class<?> type = tn.getType();
+		if(type == Long.class || type == Integer.class || type == Boolean.class || type == String.class) {
+			return new FConvNode(tn);
+		} else if(type == Double.class) {
+			return tn;
+		} else {
+			return null;
+		}
+	}
 
 	/**
 	 *  Deals w/ any necessary type conversions for any binary arithmetic operation on numbers.
 	 */
 	private AbstractNode handleBinaryArithmeticOp(final Token operator, final int sourceLocation, final TreeNode lhs, final TreeNode rhs) {
-		// First operand is Double:
-		if (lhs.getType() == Double.class && rhs.getType() == Double.class)
-			return new BinOpNode(sourceLocation, operator, lhs, rhs);
-		if (lhs.getType() == Double.class
-		    && (rhs.getType() == Long.class || rhs.getType() == Boolean.class || rhs.getType() == String.class))
-			return new BinOpNode(sourceLocation, operator, lhs, new FConvNode(rhs));
-
-		// First operand is Long:
-		if (lhs.getType() == Long.class && rhs.getType() == Double.class)
-			return new BinOpNode(sourceLocation, operator, new FConvNode(lhs), rhs);
-		if (lhs.getType() == Long.class
-		    && (rhs.getType() == Long.class || rhs.getType() == Boolean.class || rhs.getType() == String.class))
-			return new BinOpNode(sourceLocation, operator, new FConvNode(lhs), new FConvNode(rhs));
-
-		// First operand is Boolean:
-		if (lhs.getType() == Boolean.class && rhs.getType() == Double.class)
-			return new BinOpNode(sourceLocation, operator, new FConvNode(lhs), rhs);
-		if (lhs.getType() == Boolean.class
-		    && (rhs.getType() == Long.class || rhs.getType() == Boolean.class || rhs.getType() == String.class))
-			return new BinOpNode(sourceLocation, operator, new FConvNode(lhs), new FConvNode(rhs));
-
-		// First operand is String:
-		if (lhs.getType() == String.class && rhs.getType() == Double.class)
-			return new BinOpNode(sourceLocation, operator, new FConvNode(lhs), rhs);
-		if (lhs.getType() == String.class
-		    && (rhs.getType() == Long.class || lhs.getType() == Boolean.class || lhs.getType() == String.class))
-			return new BinOpNode(sourceLocation, operator, new FConvNode(lhs), new FConvNode(rhs));
-
-		throw new ParseException(sourceLocation, "incompatible operands for \""
-			                      + operator.asString() + "\". (lhs="
-			                      + lhs.toString() + ":" + lhs.getType() + ", rhs="
-			                      + rhs.toString() + ":" + rhs.getType() + ")");
+		Class<?> lhsType = lhs.getType();
+		Class<?> rhsType = rhs.getType();
+		
+		TreeNode newLhs = handleFConv(lhs);
+		TreeNode newRhs = handleFConv(rhs);
+		
+		if(newLhs == null || newRhs == null) {
+			throw new ParseException(sourceLocation, "incompatible operands for \"" + operator.asString() + "\". "
+					+ "(lhs=" + lhsType.getSimpleName() + ", "
+                    +  "rhs=" + rhsType.getSimpleName() + ")");
+		}
+			
+		return new BinOpNode(sourceLocation, operator, newLhs, newRhs);
 	}
 
 	/**
 	 *  Deals w/ any necessary type conversions for any binary comparison operation.
 	 */
 	private AbstractNode handleComparisonOp(final Token operator, final int sourceLocation, final TreeNode lhs, final TreeNode rhs) {
+		Class<?> lhsType = lhs.getType();
+		Class<?> rhsType = rhs.getType();
+		
 		// First operand is Double:
-		if (lhs.getType() == Double.class && rhs.getType() == Double.class)
+		if (lhsType == Double.class && rhsType == Double.class)
 			return new BinOpNode(sourceLocation, operator, lhs, rhs);
-		if (lhs.getType() == Double.class && rhs.getType() == Long.class)
+		if (lhsType == Double.class && (rhsType == Long.class || rhsType == Integer.class))
 			return new BinOpNode(sourceLocation, operator, lhs, new FConvNode(rhs));
-		if (lhs.getType() == Double.class && rhs.getType() == Boolean.class)
+		if (lhsType == Double.class && rhsType == Boolean.class)
 			return new BinOpNode(sourceLocation, operator, lhs, new FConvNode(rhs));
-		if (lhs.getType() == Double.class && rhs.getType() == Long.class)
+		if (lhsType == Double.class && (rhsType == Long.class || rhsType == Integer.class))
 			return new BinOpNode(sourceLocation, operator, lhs, new FConvNode(rhs));
 
 		// First operand is Long:
-		if (lhs.getType() == Long.class && rhs.getType() == Double.class)
+		if ((lhsType == Long.class || lhsType == Integer.class) && rhsType == Double.class)
 			return new BinOpNode(sourceLocation, operator, new FConvNode(lhs), rhs);
-		if (lhs.getType() == Long.class
-		    && (rhs.getType() == Long.class || rhs.getType() == Boolean.class || rhs.getType() == String.class))
+		if ((lhsType == Long.class || lhsType == Integer.class)
+		    && (rhsType == Long.class || rhsType == Integer.class || rhsType == Boolean.class || rhsType == String.class))
 			return new BinOpNode(sourceLocation, operator, new FConvNode(lhs), new FConvNode(rhs));
 
 		// First operand is Boolean:
-		if (lhs.getType() == Boolean.class && rhs.getType() == Boolean.class)
+		if (lhsType == Boolean.class && rhsType == Boolean.class)
 			return new BinOpNode(sourceLocation, operator, lhs, rhs);
-		if (lhs.getType() == Boolean.class && rhs.getType() == Double.class)
+		if (lhsType == Boolean.class && rhsType == Double.class)
 			return new BinOpNode(sourceLocation, operator, new FConvNode(lhs), rhs);
-		if (lhs.getType() == Boolean.class && rhs.getType() == Long.class)
+		if (lhsType == Boolean.class && (rhsType == Long.class || rhsType == Integer.class))
 			return new BinOpNode(sourceLocation, operator, new FConvNode(lhs), new FConvNode(rhs));
-		if (lhs.getType() == Boolean.class && rhs.getType() == String.class)
+		if (lhsType == Boolean.class && rhsType == String.class)
 			return new BinOpNode(sourceLocation, operator, new SConvNode(lhs), rhs);
 
 		// First operand is String:
-		if (lhs.getType() == String.class && rhs.getType() == String.class)
+		if (lhsType == String.class && rhsType == String.class)
 			return new BinOpNode(sourceLocation, operator, lhs, rhs);
-		if (lhs.getType() == String.class
-		    && (rhs.getType() == Double.class || rhs.getType() == Long.class || rhs.getType() == Boolean.class))
+		if (lhsType == String.class
+		    && (rhsType == Double.class || rhsType == Long.class || rhsType == Integer.class || rhsType == Boolean.class))
 			return new BinOpNode(sourceLocation, operator, lhs, new SConvNode(rhs));
 
 		throw new ParseException(sourceLocation, "incompatible operands for \""
 			                           + operator.asString() + "\". (lhs="
-			                           + lhs.toString() + ":" + lhs.getType() + ", rhs="
-			                           + rhs.toString() + ":" + rhs.getType() + ")");
+			                           + lhs.toString() + ":" + lhsType + ", rhs="
+			                           + rhs.toString() + ":" + rhsType + ")");
 	}
 
 	private void registerBuiltins() {

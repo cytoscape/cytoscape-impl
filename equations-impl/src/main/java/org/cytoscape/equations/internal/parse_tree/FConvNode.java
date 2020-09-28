@@ -27,8 +27,8 @@ package org.cytoscape.equations.internal.parse_tree;
 
 import java.util.Stack;
 
-import org.cytoscape.equations.CodeAndSourceLocation;
 import org.cytoscape.equations.AbstractNode;
+import org.cytoscape.equations.CodeAndSourceLocation;
 import org.cytoscape.equations.TreeNode;
 import org.cytoscape.equations.internal.interpreter.Instruction;
 
@@ -46,8 +46,8 @@ public class FConvNode extends AbstractNode {
 			throw new IllegalArgumentException("convertee must not be null.");
 
 		final Class type = convertee.getType();
-		if (type != Long.class && type != Boolean.class && type != String.class)
-			throw new IllegalArgumentException("convertee must be of type Long, Boolean or String.");
+		if (type != Long.class && type != Boolean.class && type != String.class && type != Integer.class)
+			throw new IllegalArgumentException("convertee must be of type Long, Integer, Boolean or String.");
 
 		this.convertee = convertee;
 	}
@@ -72,7 +72,7 @@ public class FConvNode extends AbstractNode {
 		convertee.genCode(codeStack);
 
 		final Class type = convertee.getType();
-		if (type == Long.class)
+		if (type == Long.class || type == Integer.class)
 			codeStack.push(new CodeAndSourceLocation(Instruction.FCONVI, getSourceLocation()));
 		else if (type == Boolean.class)
 			codeStack.push(new CodeAndSourceLocation(Instruction.FCONVB, getSourceLocation()));
