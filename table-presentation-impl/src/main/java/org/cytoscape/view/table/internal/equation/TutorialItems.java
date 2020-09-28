@@ -12,9 +12,10 @@ public class TutorialItems {
 	public static final String ATTRIBUTES = "attributes";
 	public static final String OPERATORS = "operators";
 	public static final String LITERALS = "literal values";
+	public static final String CONDITIONAL = "conditional IF";
 	
 	public static List<String> getTutorialItems() {
-		return Arrays.asList(FUNCTIONS, ATTRIBUTES, OPERATORS, LITERALS);
+		return Arrays.asList(FUNCTIONS, ATTRIBUTES, OPERATORS, LITERALS, CONDITIONAL);
 	}
 	
 	
@@ -74,6 +75,12 @@ public class TutorialItems {
 				"Numeric literals, example: <b>123</b> <br>" +
 				"Floating point literals, example:  <b>123.45</b> <br>" +
 				"Boolean (logical) literals: <b>true</b>, <b>false</b> <br>";
+		case CONDITIONAL:
+			return
+				"A conditional is written as a function named 'IF' with three arguments: <b>IF(condition, a, b)</b><br>" +
+				"If the condition evaluates to <b>true</b> then the value of the <b>a</b> argument is returned, " +
+				"otherwise the <b>b</b> argument is returned.<br><br>" +
+				"Example: <b>IF($x = $y, \"equal\", \"different\")</b> <br>";
 		}
 		return null;
 	}
