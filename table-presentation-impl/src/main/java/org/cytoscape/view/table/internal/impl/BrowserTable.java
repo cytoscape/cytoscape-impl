@@ -100,6 +100,7 @@ import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.util.swing.TextWrapToolTip;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.events.AboutToRemoveColumnViewEvent;
 import org.cytoscape.view.model.events.AboutToRemoveColumnViewListener;
@@ -336,10 +337,9 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	
 	@Override
 	public JToolTip createToolTip() {
-		MultiLineToolTip tip = new MultiLineToolTip();
+		TextWrapToolTip tip = new TextWrapToolTip();
 		tip.setMaximumSize(new Dimension(480, 320));
 		tip.setComponent(this);
-		
 		return tip;
 	}
 	

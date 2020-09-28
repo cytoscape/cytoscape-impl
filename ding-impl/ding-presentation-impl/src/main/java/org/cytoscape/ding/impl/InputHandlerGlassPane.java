@@ -1,23 +1,7 @@
 package org.cytoscape.ding.impl;
 
-import static java.awt.event.KeyEvent.VK_BACK_SPACE;
-import static java.awt.event.KeyEvent.VK_D;
-import static java.awt.event.KeyEvent.VK_DELETE;
-import static java.awt.event.KeyEvent.VK_DOWN;
-import static java.awt.event.KeyEvent.VK_ESCAPE;
-import static java.awt.event.KeyEvent.VK_LEFT;
-import static java.awt.event.KeyEvent.VK_RIGHT;
-import static java.awt.event.KeyEvent.VK_UP;
-import static org.cytoscape.ding.internal.util.ViewUtil.getResizeCursor;
-import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
-import static org.cytoscape.ding.internal.util.ViewUtil.isAdditiveSelect;
-import static org.cytoscape.ding.internal.util.ViewUtil.isControlOrMetaDown;
-import static org.cytoscape.ding.internal.util.ViewUtil.isDoubleLeftClick;
-import static org.cytoscape.ding.internal.util.ViewUtil.isDragSelectionKeyDown;
-import static org.cytoscape.ding.internal.util.ViewUtil.isLeftClick;
-import static org.cytoscape.ding.internal.util.ViewUtil.isLeftMouse;
-import static org.cytoscape.ding.internal.util.ViewUtil.isSingleLeftClick;
-import static org.cytoscape.ding.internal.util.ViewUtil.isSingleRightClick;
+import static java.awt.event.KeyEvent.*;
+import static org.cytoscape.ding.internal.util.ViewUtil.*;
 
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
@@ -51,6 +35,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JToolTip;
 import javax.swing.Timer;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
@@ -92,6 +77,7 @@ import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.destroy.DeleteSelectedNodesAndEdgesTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.util.swing.TextWrapToolTip;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.annotations.Annotation;
@@ -180,6 +166,14 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	public void dispose() {
 		re = null;
 		cyAnnotator = null;
+	}
+	
+	@Override
+	public JToolTip createToolTip() {
+		TextWrapToolTip tip = new TextWrapToolTip();
+		tip.setMaximumSize(new Dimension(480, 320));
+		tip.setComponent(this);
+		return tip;
 	}
 	
 	private JProgressBar addProgressBar() {
