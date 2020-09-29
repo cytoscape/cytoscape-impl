@@ -267,16 +267,18 @@ public class PopupMenuHelper {
 	}
 
 	// Preset menu item: open browser
-	protected JMenuItem getOpenLinkMenu(Object urlString) {
+	protected JMenuItem getOpenLinkMenu(Object url) {
 		var openLinkItem = new JMenuItem();
 		openLinkItem.setText("Open URL in web browser...");
 
-		if (urlString == null || urlString.toString().startsWith("http:") == false) {
+		if (url == null) {
+			openLinkItem.setEnabled(false);
+		} else if(!url.toString().startsWith("http:") && !url.toString().startsWith("https:")) {
 			openLinkItem.setEnabled(false);
 		} else {
 			openLinkItem.addActionListener(evt -> {
 				var openBrowser = serviceRegistrar.getService(OpenBrowser.class);
-				openBrowser.openURL(urlString.toString());
+				openBrowser.openURL(url.toString());
 			});
 		}
 
