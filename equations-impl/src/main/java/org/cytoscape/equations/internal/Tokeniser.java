@@ -39,6 +39,7 @@ public class Tokeniser {
 	private String previousFloatString, currentFloatString;
 	private boolean previousBooleanConstant, currentBooleanConstant;
 	private String previousStringConstant, currentStringConstant;
+	private int currentStringLiteralLength;
 	private String errorMsg;
 	private int previousChar;
 	private boolean putBackChar;
@@ -53,6 +54,10 @@ public class Tokeniser {
 		identifierInBraces = false;
 	}
 
+	public String getEquation() {
+		return equationAsString;
+	}
+	
 	public Token getToken() {
 		if (previousToken != null) {
 			final Token retval = previousToken;
@@ -192,6 +197,10 @@ public class Tokeniser {
 	public String getStringConstant() {
 		return currentStringConstant;
 	}
+	
+	public int getCurrentStringLiteralLength() {
+		return currentStringLiteralLength;
+	}
 
 	public double getFloatConstant() {
 		return currentFloatConstant;
@@ -259,40 +268,37 @@ public class Tokeniser {
 	}
 	
 	private Token parseStringConstant() {
-		final int INITIAL_CAPACITY = 20;
-		final StringBuilder builder = new StringBuilder(INITIAL_CAPACITY);
+		currentStringLiteralLength = 1;
+		StringBuilder builder = new StringBuilder();
 
 		boolean escaped = false;
 		int nextCh;
 		while ((nextCh = getChar()) != -1) {
+			currentStringLiteralLength++;
 			final char ch = (char)nextCh;
-			if (ch == '\\')
+			if(escaped) {
+				escaped = false;
+				switch (ch) {
+				case '\\':
+					builder.append('\\');
+					break;
+				case '"':
+					builder.append('"');
+					break;
+				case 'n':
+					builder.append('\n');
+					break;
+				default:
+					errorMsg = "unknown escape character '" + Character.toString(ch) + "'";
+					return Token.ERROR;
+				}
+			} else if(ch == '\\') {
 				escaped = true;
-			else {
-				if (escaped) {
-					switch (ch) {
-					case '\\':
-						builder.append('\\');
-						break;
-					case '"':
-						builder.append('"');
-						break;
-					case 'n':
-						builder.append('\n');
-						break;
-					default:
-						errorMsg = "unknown escape character '" + Character.toString(ch) + "'.";
-						return Token.ERROR;
-					}
-
-					escaped = false;
-				}
-				else if (ch == '"') {
-					currentStringConstant = builder.toString();
-					return Token.STRING_CONSTANT;
-				}
-				else
-					builder.append(ch);
+			} else if (ch == '"') {
+				currentStringConstant = builder.toString();
+				return Token.STRING_CONSTANT;
+			} else {
+				builder.append(ch);
 			}
 		}
 

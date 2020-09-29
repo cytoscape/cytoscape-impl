@@ -52,7 +52,7 @@ public class EquationTokeniserImpl implements EquationTokeniser {
 				end += tokeniser.getIdent().length() - 1;
 				break;
 			case STRING_CONSTANT:
-				end += tokeniser.getStringConstant().length() - 1 + 2;
+				end += tokeniser.getCurrentStringLiteralLength() - 1;
 				break;
 			case BOOLEAN_CONSTANT:
 				end += tokeniser.getBooleanConstant() ? 3 : 4;
@@ -64,6 +64,9 @@ public class EquationTokeniserImpl implements EquationTokeniser {
 			case GREATER_OR_EQUAL:
 			case NOT_EQUAL:
 				end += 1;
+				break;
+			case ERROR:
+				end = tokeniser.getEquation().length() - 1;
 				break;
 		}
 		return new Token(type, start, end);
