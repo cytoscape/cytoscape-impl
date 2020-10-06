@@ -50,7 +50,7 @@ public class OutDegree extends AbstractFunction {
 
 	@Override
 	public String getFunctionSummary() {
-		return "Returns indegree of a node.";
+		return "Returns outdegree of a node.";
 	}
 
 	@Override
