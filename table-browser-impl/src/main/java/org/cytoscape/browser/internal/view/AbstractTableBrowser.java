@@ -191,9 +191,6 @@ public abstract class AbstractTableBrowser extends JPanel
 		if (renderer == null)
 			return;
 		
-		var tableViewManager = serviceRegistrar.getService(CyTableViewManager.class);
-		tableViewManager.destroyTableView(renderer.getTableView());
-		
 		renderer.dispose();
 		
 		if (currentTable == cyTable) {

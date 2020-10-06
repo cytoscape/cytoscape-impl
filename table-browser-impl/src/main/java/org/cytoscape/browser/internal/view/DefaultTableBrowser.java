@@ -211,11 +211,9 @@ public class DefaultTableBrowser extends AbstractTableBrowser
 	@Override
 	public void handleEvent(final TableAboutToBeDeletedEvent e) {
 		final CyTable cyTable = e.getTable();
-		final var table = getTableRenderer(cyTable);
 		
-		if (table != null) {
+		if (((DefaultComboBoxModel<CyTable>)getTableChooser().getModel()).getIndexOf(cyTable) >= 0) {
 			((DefaultComboBoxModel<CyTable>)getTableChooser().getModel()).removeElement(cyTable);
-			
 			// We need this to happen synchronously or we get royally messed up by the new table selection
 			invokeOnEDTAndWait(() -> {
 				getToolBar().updateEnableState(getTableChooser());

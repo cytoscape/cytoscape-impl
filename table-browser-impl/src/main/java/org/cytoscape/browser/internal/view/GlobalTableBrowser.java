@@ -9,7 +9,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
@@ -132,8 +131,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 			
 			if (tableChooser.getItemCount() == 1) {
 				invokeOnEDT(() -> {
-					serviceRegistrar.registerService(GlobalTableBrowser.this, CytoPanelComponent.class,
-							new Properties());
+					serviceRegistrar.registerService(GlobalTableBrowser.this, CytoPanelComponent.class);
 				});
 			}
 		}
