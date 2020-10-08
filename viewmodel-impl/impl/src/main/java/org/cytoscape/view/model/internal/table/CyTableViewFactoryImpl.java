@@ -4,6 +4,7 @@ import java.util.Properties;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -21,6 +22,16 @@ public class CyTableViewFactoryImpl implements CyTableViewFactory {
 		this.registrar = registrar;
 		this.visualLexicon = visualLexicon;
 		this.rendererId = rendererId;
+	}
+	
+	@Override
+	public CyTableView createTableView(CyTable table) {
+		Class<? extends CyIdentifiable> tableType = null;
+		CyNetworkTableManager networkTableManager = registrar.getService(CyNetworkTableManager.class);
+		if(networkTableManager != null) {
+			tableType = networkTableManager.getTableType(table); // get the table type, may be null
+		}
+		return createTableView(table, tableType);
 	}
 	
 	@Override

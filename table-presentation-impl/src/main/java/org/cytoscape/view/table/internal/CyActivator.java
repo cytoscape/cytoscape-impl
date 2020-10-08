@@ -42,6 +42,8 @@ public class CyActivator extends AbstractCyActivator {
 		
 		TableViewRendererImpl renderer = new TableViewRendererImpl(registrar, tableViewFactory, lexicon, popupMenuHelper);
 		registerService(bc, renderer, TableViewRenderer.class);
+		registerService(bc, tableViewFactory, CyTableViewFactory.class); // register the default CyTableViewFactory
+		
 		
 		// Equations
 		{
