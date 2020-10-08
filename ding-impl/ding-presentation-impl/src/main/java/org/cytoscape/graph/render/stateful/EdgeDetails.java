@@ -205,6 +205,14 @@ public interface EdgeDetails {
 	 */
 	public Font getLabelFont(View<CyEdge> edgeView);
 
+  /**
+   * Returns the angle (in degrees) to rotate the label.
+	 * This method is only called by the rendering engine
+	 * if labelCount(edge) returns a value greater than zero. It is an error to
+	 * return null if this method is called by the rendering engine.
+	 */
+	default Double getLabelRotation(View<CyEdge> edge) { return 0d; }
+
 	/**
 	 * Returns an additional scaling factor that is to be applied to the font
 	 * used to render this label; this scaling factor, applied to the point

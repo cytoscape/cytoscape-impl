@@ -24,6 +24,7 @@ package org.cytoscape.ding.impl;
  * #L%
  */
 import static org.cytoscape.ding.DVisualLexicon.EDGE_CURVED;
+import static org.cytoscape.ding.DVisualLexicon.EDGE_LABEL_ROTATION;
 import static org.cytoscape.ding.DVisualLexicon.EDGE_SOURCE_ARROW_UNSELECTED_PAINT;
 import static org.cytoscape.ding.DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
@@ -258,6 +259,12 @@ public final class DEdgeDetails implements EdgeDetails {
 	@Override
 	public double getLabelWidth(View<CyEdge> edgeView) {
 		return edgeView.getVisualProperty(EDGE_LABEL_WIDTH);
+	}
+
+	@Override
+	public Double getLabelRotation(View<CyEdge> edgeView) {
+		Double dAngle = edgeView.getVisualProperty(EDGE_LABEL_ROTATION);
+		return dAngle;
 	}
 
 	@Override

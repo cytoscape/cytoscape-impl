@@ -107,6 +107,9 @@ public class DVisualLexicon extends BasicVisualLexicon {
 			ObjectPosition.DEFAULT_POSITION, "NODE_LABEL_POSITION",
 			"Node Label Position", CyNode.class);
 
+	public static final VisualProperty<Double> NODE_LABEL_ROTATION = new DoubleVisualProperty(
+			0.0, ANGLE_DOUBLE_RANGE, "NODE_LABEL_ROTATION", "Node Label Rotation", CyNode.class);
+
 	// Range object for custom graphics.
 	private static final CustomGraphicsRange CG_RANGE = new CustomGraphicsRange();
 
@@ -259,6 +262,9 @@ public class DVisualLexicon extends BasicVisualLexicon {
 	
 	public static final VisualProperty<Boolean> EDGE_CURVED = new BooleanVisualProperty(true, "EDGE_CURVED",
 			"Edge Curved", CyEdge.class);
+
+	public static final VisualProperty<Double> EDGE_LABEL_ROTATION = new DoubleVisualProperty(
+			0.0, ANGLE_DOUBLE_RANGE, "EDGE_LABEL_ROTATION", "Edge Label Rotation", CyEdge.class);
 	
 
 	// TODO: Implement if possible (in rendering engine)
@@ -399,6 +405,7 @@ public class DVisualLexicon extends BasicVisualLexicon {
 		addVisualProperty(NETWORK_NODE_LABEL_SELECTION, NETWORK);
 
 		addVisualProperty(NODE_LABEL_POSITION, NODE);
+		addVisualProperty(NODE_LABEL_ROTATION, NODE);
 		addVisualProperty(COMPOUND_NODE_SHAPE, NODE);
 		addVisualProperty(COMPOUND_NODE_PADDING, NODE);
 		// addVisualProperty(COMPOUND_NODE_TRANSPARENCY, NODE);
@@ -455,6 +462,7 @@ public class DVisualLexicon extends BasicVisualLexicon {
 		addVisualProperty(EDGE_CURVED, EDGE);
 
 		//addVisualProperty(EDGE_LABEL_POSITION, EDGE);
+		addVisualProperty(EDGE_LABEL_ROTATION, EDGE);
 
 		createLookupMap();
 	}
@@ -487,9 +495,12 @@ public class DVisualLexicon extends BasicVisualLexicon {
 		
 		addIdentifierMapping(CyNode.class, "nodeLabelPosition", NODE_LABEL_POSITION);
 
+		addIdentifierMapping(CyNode.class, "nodeLabelRotation", NODE_LABEL_ROTATION);
+
 		addIdentifierMapping(CyEdge.class, "edgeSourceArrowColor", EDGE_SOURCE_ARROW_UNSELECTED_PAINT);
 		addIdentifierMapping(CyEdge.class, "edgeTargetArrowColor", EDGE_TARGET_ARROW_UNSELECTED_PAINT);
 		addIdentifierMapping(CyEdge.class, "edgeCurved", EDGE_CURVED);
+		addIdentifierMapping(CyEdge.class, "edgeLabelRotation", EDGE_LABEL_ROTATION);
 	}
 
 	static Set<VisualProperty<ObjectPosition>> getGraphicsPositionVP() {

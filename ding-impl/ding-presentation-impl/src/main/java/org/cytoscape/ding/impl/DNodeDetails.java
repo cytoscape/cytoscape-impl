@@ -25,6 +25,7 @@ package org.cytoscape.ding.impl;
  */
 
 import static org.cytoscape.ding.DVisualLexicon.NODE_LABEL_POSITION;
+import static org.cytoscape.ding.DVisualLexicon.NODE_LABEL_ROTATION;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
 
 import java.awt.Color;
@@ -231,6 +232,11 @@ public class DNodeDetails implements NodeDetails {
 		return getTransparentColor(paint, trans);
 	}
 
+	@Override
+	public Double getLabelRotation(View<CyNode> nodeView) {
+		Double dAngle = nodeView.getVisualProperty(NODE_LABEL_ROTATION);
+		return dAngle;
+	}
 
 	private CustomGraphicsInfo getCustomGraphicsInfo(VisualProperty<CyCustomGraphics> cgVP, View<CyNode> node) {
 		CyCustomGraphics<CustomGraphicLayer> cg = (CyCustomGraphics<CustomGraphicLayer>) node.getVisualProperty(cgVP);

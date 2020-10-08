@@ -188,6 +188,14 @@ public interface NodeDetails {
 	 */
 	Font getLabelFont(View<CyNode> node);
 
+  /**
+   * Returns the angle (in degrees) to rotate the label.
+	 * This method is only called by the rendering engine
+	 * if labelCount(node) returns a value greater than zero. It is an error to
+	 * return null if this method is called by the rendering engine.
+	 */
+	default Double getLabelRotation(View<CyNode> node) { return 0d; }
+
 	/**
 	 * Returns an additional scaling factor that is to be applied to the font
 	 * used to render this label; this scaling factor, applied to the point size

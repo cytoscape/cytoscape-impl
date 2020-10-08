@@ -349,6 +349,7 @@ public final class GraphRenderer {
 								final Position edgeAnchor = edgeDetails.getLabelEdgeAnchor(edge);
 								final float offsetVectorX = edgeDetails.getLabelOffsetVectorX(edge);
 								final float offsetVectorY = edgeDetails.getLabelOffsetVectorY(edge);
+                final double theta = edgeDetails.getLabelRotation(edge)*.01745329252;
 								final Justification justify;
 
 								if (text.indexOf('\n') >= 0)
@@ -468,12 +469,12 @@ public final class GraphRenderer {
 
 								final double textXCenter = edgeAnchorPointX - doubleBuff2[0] + offsetVectorX;
 								final double textYCenter = edgeAnchorPointY - doubleBuff2[1] + offsetVectorY;
-								TextRenderingUtils.renderHorizontalText(grafx, measuredText, 
-								                                        font, fontScaleFactor,
-								                                        (float) textXCenter,
-								                                        (float) textYCenter,
-								                                        justify, paint,
-								                                        flags.has(LOD_TEXT_AS_SHAPE));
+								TextRenderingUtils.renderText(grafx, measuredText, 
+								                              font, fontScaleFactor,
+								                              (float) textXCenter,
+								                              (float) textYCenter,
+								                              justify, paint, theta,
+								                              flags.has(LOD_TEXT_AS_SHAPE));
 							}
 						}
 						
@@ -565,6 +566,7 @@ public final class GraphRenderer {
 						final Position nodeAnchor = nodeDetails.getLabelNodeAnchor(cyNode);
 						final float offsetVectorX = nodeDetails.getLabelOffsetVectorX(cyNode);
 						final float offsetVectorY = nodeDetails.getLabelOffsetVectorY(cyNode);
+            final double theta = nodeDetails.getLabelRotation(cyNode)*.01745329252;
 						final Justification justify;
 
 						if (text.indexOf('\n') >= 0)
@@ -594,12 +596,12 @@ public final class GraphRenderer {
 
 						final double textXCenter = nodeAnchorPointX - doubleBuff2[0] + offsetVectorX;
 						final double textYCenter = nodeAnchorPointY - doubleBuff2[1] + offsetVectorY;
-						TextRenderingUtils.renderHorizontalText(grafx, measuredText, font,
-						                                        fontScaleFactor,
-						                                        (float) textXCenter,
-						                                        (float) textYCenter, justify,
-						                                        paint,
-						                                        flags.has(LOD_TEXT_AS_SHAPE));
+						TextRenderingUtils.renderText(grafx, measuredText, font,
+						                              fontScaleFactor,
+						                              (float) textXCenter,
+						                              (float) textYCenter, justify,
+						                              paint,theta,
+						                              flags.has(LOD_TEXT_AS_SHAPE));
 					}
 				}
 				
