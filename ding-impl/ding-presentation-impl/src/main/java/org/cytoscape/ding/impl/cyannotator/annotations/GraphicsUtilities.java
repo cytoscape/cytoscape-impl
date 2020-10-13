@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl.ArrowType;
+import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation.ArrowEnd;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation.ShapeType;
@@ -105,8 +106,21 @@ public class GraphicsUtilities {
 		return Arrays.stream(ShapeType.values()).map(ShapeType::shapeName).collect(Collectors.toList());
 	}
 
+  public static Rectangle2D getRotatedBounds(Annotation annotation) {
+    Rectangle2D bounds = ((DingAnnotation)annotation).getBounds();
+
+    if (annotation.getRotation() != 0d) {
+      AffineTransform transform = AffineTransform.getRotateInstance(Math.toRadians(annotation.getRotation()), 
+                                                                    bounds.getX()+bounds.getWidth()/2, 
+                                                                    bounds.getY()+bounds.getHeight()/2);
+      bounds = transform.createTransformedShape(bounds).getBounds2D();
+    }
+    return bounds;
+  }
+
 	// Given a position and a size, draw a shape. We use the ShapeAnnotation to get the shape itself, colors, strokes, etc.
-	public static void drawShape(Graphics g, double x, double y, double width, double height, ShapeAnnotation annotation, boolean isPrinting) {
+	public static void drawShape(Graphics g, double x, double y, double width, double height, double rotation,
+                               ShapeAnnotation annotation, boolean isPrinting) {
 		Graphics2D g2 = (Graphics2D) g;
 
 		float border = (float) (annotation.getBorderWidth() * annotation.getZoom());
@@ -130,9 +144,18 @@ public class GraphicsUtilities {
 			transform.translate(destX, destY);
 			transform.scale(widthScale, heightScale);
 			transform.translate(-originalBounds.getX(), -originalBounds.getY());
+      // This needs to be tested!
+      transform.rotate(Math.toRadians(rotation), destX + destW/2, destY + destH/2);
 			shape = transform.createTransformedShape(shape);
 		} else {
-			shape = getShape(annotation.getShapeType(), x, y, width, height);
+      if (rotation == 0)
+			  shape = getShape(annotation.getShapeType(), x, y, width, height);
+      else {
+			  shape = getShape(annotation.getShapeType(), x, y, width, height);
+			  AffineTransform transform = new AffineTransform();
+        transform.rotate(Math.toRadians(rotation), x + width/2, y+height/2);
+			  shape = transform.createTransformedShape(shape);
+      }
 		}
 
 		// Set our fill color

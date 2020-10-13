@@ -76,6 +76,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 			DRenderingEngine re,
 			double x,
 			double y,
+      double rotation,
 			ShapeType shapeType,
 			double width,
 			double height,
@@ -83,7 +84,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 			Paint edgeColor,
 			float edgeThickness
 	) {
-		super(re, x, y);
+		super(re, x, y, rotation);
 
 		this.shapeType = shapeType;
 		this.fillColor = fillColor;
@@ -305,7 +306,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 //		if (canvas.isPrinting())
 //			GraphicsUtilities.drawShape(g, getX(), getY(), getWidth() - 1, getHeight() - 1, this, true);
 //		else
-			GraphicsUtilities.drawShape(g, getX(), getY(), getWidth() - 1, getHeight() - 1, this, false);
+			GraphicsUtilities.drawShape(g, getX(), getY(), getWidth() - 1, getHeight() - 1, getRotation(), this, false);
 	}
 
 	private ShapeType getShapeFromString(String shapeName) {

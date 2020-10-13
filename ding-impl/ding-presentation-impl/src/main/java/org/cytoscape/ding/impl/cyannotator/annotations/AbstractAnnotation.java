@@ -4,6 +4,7 @@ import java.awt.AlphaComposite;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeListener;
@@ -63,6 +64,7 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	protected double y;
 	protected double width;
 	protected double height;
+  protected double rotation;
 	
 	protected int zOrder;
 	protected Rectangle2D initialBounds;
@@ -89,9 +91,10 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 		this.canvas = c.canvas;
 	}
 
-	protected AbstractAnnotation(DRenderingEngine re, double x, double y) {
+	protected AbstractAnnotation(DRenderingEngine re, double x, double y, double rotation) {
 		this(re, false);
 		setLocation(x, y);
+    this.rotation = rotation;
 	}
 
 	protected AbstractAnnotation(DRenderingEngine re, Map<String, String> argMap) {
@@ -112,6 +115,16 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 				// Ignore...
 			}
 		}
+
+		if (argMap.get(ROTATION) != null) {
+			try {
+				rotation = Double.parseDouble(argMap.get(ROTATION));
+			} catch (Exception e) {
+				// Ignore...
+			}
+    } else {
+      rotation = 0d;
+    }
 
 		try {
 			zOrder = ViewUtils.getDouble(argMap, Z, 0.0).intValue();
@@ -183,6 +196,23 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	@Override
 	public double getHeight() {
 		return height;
+	}
+
+	@Override
+	public double getRotation() {
+		return rotation;
+	}
+
+	public void setRotation(double rotation) {
+		if (this.rotation != rotation) {
+			var oldValue = this.rotation;
+			this.rotation = rotation;
+			update();
+      if (isSelected()) {
+		    cyAnnotator.getAnnotationSelection().getBounds(); // This forces an update to the bounds
+      }
+			firePropertyChange("rotation", oldValue, rotation);
+		}
 	}
 	
 	public void setBounds(Rectangle2D bounds) {
@@ -380,6 +410,7 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 
 		argMap.put(X, Double.toString(getX()));
 		argMap.put(Y, Double.toString(getY()));
+		argMap.put(ROTATION, Double.toString(getRotation()));
 		argMap.put(CANVAS, canvas.toArgName());
 		argMap.put(ANNOTATION_ID, uuid.toString());
 

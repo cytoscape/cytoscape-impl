@@ -88,6 +88,8 @@ public interface DingAnnotation extends Annotation {
 	double getX();
 	
 	double getY();
+
+	double getRotation();
 	
 	/** Set location in node coordinates */
 	void setLocation(double x, double y);

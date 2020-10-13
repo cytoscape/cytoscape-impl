@@ -28,6 +28,7 @@ import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
+import org.cytoscape.ding.impl.cyannotator.annotations.GraphicsUtilities;
 import org.cytoscape.ding.impl.cyannotator.tasks.ReloadImagesTask;
 import org.cytoscape.ding.impl.undo.AnnotationEdit;
 import org.cytoscape.model.CyNetwork;
@@ -140,13 +141,15 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 			return false;
 
 		for (DingAnnotation a : annotations) {
-			if (a.getX() < extents[0])
-				extents[0] = a.getX();
-			if (a.getY() < extents[1])
-				extents[1] = a.getY();
+      var bounds = GraphicsUtilities.getRotatedBounds(a);
 
-			double x2 = a.getX() + a.getWidth();
-			double y2 = a.getY() + a.getHeight();
+			if (bounds.getX() < extents[0])
+				extents[0] = bounds.getX();
+			if (bounds.getY() < extents[1])
+				extents[1] = bounds.getY();
+
+			double x2 = bounds.getX() + bounds.getWidth();
+			double y2 = bounds.getY() + bounds.getHeight();
 
 			if (x2 > extents[2])
 				extents[2] = x2;

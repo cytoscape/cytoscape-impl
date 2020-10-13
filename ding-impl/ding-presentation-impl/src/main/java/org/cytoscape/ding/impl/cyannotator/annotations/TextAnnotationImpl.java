@@ -76,11 +76,12 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 			DRenderingEngine re,
 			int x,
 			int y,
+			double rotation,
 			String text,
 			int compCount,
 			double zoom
 	) {
-		super(re, x, y);
+		super(re, x, y, rotation);
 
 		this.text = text;
 		setSize(getAnnotationWidth(), getAnnotationHeight());
@@ -333,7 +334,6 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 
 		g2.setPaint(textColor);
 		g2.setFont(font);
-		g2.setClip(getBounds());
 
 		// Handle opacity
 		int alpha = textColor.getAlpha();
@@ -342,7 +342,16 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
 
 		float ascent = font.getLineMetrics(text , new FontRenderContext(null, true, true)).getAscent();
-		g2.drawString(text, (float)getX(), (float)getY()+ascent);
+    var currentTransform = g2.getTransform();
+    if (rotation != 0) {
+      g2.rotate(Math.toRadians(rotation), (int) (getX() + getWidth()/2), (int) (getY() + getHeight()/2));
+		  g2.setClip(getBounds());
+		  g2.drawString(text, (float)getX(), (float)getY()+ascent);
+      g2.setTransform(currentTransform);
+    } else {
+		  g2.setClip(getBounds());
+	  	g2.drawString(text, (float)getX(), (float)getY()+ascent);
+    }
 
 		g2.setComposite(originalComposite);
 		g2.dispose();

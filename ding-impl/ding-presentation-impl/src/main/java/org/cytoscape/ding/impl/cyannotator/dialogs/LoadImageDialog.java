@@ -224,6 +224,7 @@ public class LoadImageDialog extends AbstractAnnotationDialog<ImageAnnotationImp
 					re,
 					(int) startingLocation.getX(),
 					(int) startingLocation.getY(),
+          0d, // rotation
 					url,
 					svg,
 					re.getZoom(),
@@ -239,6 +240,7 @@ public class LoadImageDialog extends AbstractAnnotationDialog<ImageAnnotationImp
 					re,
 					(int) startingLocation.getX(),
 					(int) startingLocation.getY(),
+          0d, // rotation
 					url,
 					image,
 					re.getZoom(),
@@ -262,6 +264,7 @@ public class LoadImageDialog extends AbstractAnnotationDialog<ImageAnnotationImp
 					(SVGCustomGraphics) cg,
 					(int) startingLocation.getX(),
 					(int) startingLocation.getY(),
+          0d, // rotation
 					re.getZoom(),
 					cgManager
 			);
@@ -273,6 +276,7 @@ public class LoadImageDialog extends AbstractAnnotationDialog<ImageAnnotationImp
 					(BitmapCustomGraphics) cg,
 					(int) startingLocation.getX(),
 					(int) startingLocation.getY(),
+          0d, // rotation
 					re.getZoom(),
 					cgManager
 			);
