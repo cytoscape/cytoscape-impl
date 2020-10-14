@@ -25,6 +25,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.TableColumnTaskFactory;
+import org.cytoscape.view.model.events.TableViewAddedListener;
 import org.cytoscape.view.vizmap.events.VisualStyleChangedListener;
 import org.cytoscape.view.vizmap.events.table.ColumnVisualStyleSetListener;
 import org.osgi.framework.BundleContext;
@@ -73,6 +74,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, globalTableBrowser, TableAboutToBeDeletedListener.class);
 		registerService(bc, globalTableBrowser, TableAddedListener.class);
 		registerService(bc, globalTableBrowser, TablePrivacyChangedListener.class);
+		registerService(bc, globalTableBrowser, TableViewAddedListener.class);
 
 		{
 			var factory = new ClearAllErrorsTaskFactory(serviceRegistrar);

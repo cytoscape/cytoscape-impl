@@ -35,13 +35,13 @@ public class CyTableViewManagerImpl implements CyTableViewManager, TableAboutToB
 	}
 	
 	
-	@Override
-	public void reset() {
-		synchronized (lock) {
-			tableViewMap.clear();
-		}
-	}
-	
+//	@Override
+//	public void reset() {
+//		synchronized (lock) {
+//			tableViewMap.clear();
+//		}
+//	}
+//	
 	
 	@Override
 	public void handleEvent(TableAboutToBeDeletedEvent e) {
@@ -73,7 +73,7 @@ public class CyTableViewManagerImpl implements CyTableViewManager, TableAboutToB
 
 	
 	@Override
-	public void addTableView(CyTableView view) {
+	public void setTableView(CyTableView view) {
 		if(view == null)
 			return;
 		
@@ -82,11 +82,12 @@ public class CyTableViewManagerImpl implements CyTableViewManager, TableAboutToB
 		
 		synchronized (lock) {
 			if(tableManager.getTable(table.getSUID()) == null) {
-				throw new IllegalArgumentException(
-						"Table view cannot be added, because its table ("+ table + ") is not registered");
+				throw new IllegalArgumentException("Table view cannot be added, because its table (" + table + ") is not registered");
 			}
-			if(tableViewMap.get(table) != null) {
-				throw new IllegalArgumentException("There is already a table view registered for table  (" + table + ")");
+			
+			CyTableView existingView = getTableView(table);
+			if(existingView != null) {
+				destroyTableView(existingView);
 			}
 			
 			tableViewMap.put(table, view);
@@ -96,8 +97,8 @@ public class CyTableViewManagerImpl implements CyTableViewManager, TableAboutToB
 	}
 
 	
-	@Override
-	public void destroyTableView(CyTableView view) {
+//	@Override
+	private void destroyTableView(CyTableView view) {
 		if(view == null) {
 			return;
 		}

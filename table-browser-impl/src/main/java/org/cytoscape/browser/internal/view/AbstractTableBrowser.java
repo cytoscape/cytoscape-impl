@@ -153,6 +153,9 @@ public abstract class AbstractTableBrowser extends JPanel
 		
 		update();
 	}
+	
+	protected abstract boolean containsTable(CyTable table);
+	
 
 	@Override
 	public Component getComponent() {
@@ -297,7 +300,7 @@ public abstract class AbstractTableBrowser extends JPanel
 		}
 		
 		if (renderer == null && currentTable != null)
-			 createTableView();
+			 createDefaultTableView();
 		
 		synchronized (lock) {
 			renderer = tableRenderers.get(currentTable);
@@ -308,38 +311,54 @@ public abstract class AbstractTableBrowser extends JPanel
 	}
 
 	
-	private void createTableView() {
+	private void createDefaultTableView() {
 		var tableViewManager = serviceRegistrar.getService(CyTableViewManager.class);
 		
-		// automatically create a table view using the default renderer
+		// If no table view exists yet then automatically create one using the default renderer.
 		var tableView = tableViewManager.getTableView(currentTable);
-		if(tableView == null) {			
+		if(tableView == null) {
 			CyTableViewFactory tableViewFactory = serviceRegistrar.getService(CyTableViewFactory.class);
 			tableView = tableViewFactory.createTableView(currentTable);
 			
-			// this will fire the event that runs the below handler synchronously
-			tableViewManager.addTableView(tableView);
+			// this will fire the event that runs the below handler
+			tableViewManager.setTableView(tableView);
 		}
 	}
 	
 	@Override
 	public void handleEvent(TableViewAddedEvent event) {
+		CyTableView tableView = event.getTableView();
+		
+		if(!containsTable(tableView.getModel()))
+			return;
+		
+		// a renderer may already exist
+		TableRenderer exitingRenderer = null;
+		synchronized (lock) {
+			exitingRenderer = tableRenderers.remove(tableView.getModel());
+		}
+		if(exitingRenderer != null) {
+			exitingRenderer.dispose();
+		}
+		
 		var renderingEngineManager = serviceRegistrar.getService(RenderingEngineManager.class);
 		var applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
 		
 		JComponent container = new JPanel();
 		
-		CyTableView tableView = event.getTableView();
+		// create a rendering engine for the table view
 		var tableViewRenderer = applicationManager.getTableViewRenderer(tableView.getRendererId());
 		var renderingEngineFactory = tableViewRenderer.getRenderingEngineFactory(TableViewRenderer.DEFAULT_CONTEXT);
 		var renderingEngine = renderingEngineFactory.createRenderingEngine(container, tableView);
 		renderingEngineManager.addRenderingEngine(renderingEngine);
 		
-		var tableRenderer = new TableRenderer(renderingEngine, container);
+		var renderer = new TableRenderer(renderingEngine, container);
 		
 		synchronized (lock) {
-			tableRenderers.put(tableView.getModel(), tableRenderer);
+			tableRenderers.put(tableView.getModel(), renderer);
 		}
+		
+		showSelectedTable();
 	}
 	
 	
