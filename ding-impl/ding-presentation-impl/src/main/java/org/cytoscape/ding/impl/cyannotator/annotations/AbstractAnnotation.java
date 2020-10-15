@@ -23,6 +23,9 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -488,8 +491,42 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	
 	@Override
 	public String toString() {
-		return getClass().getSimpleName() + "[" + getName() + "]";
+    Map<String, String> args = getArgMap();
+    String type = args.get(TYPE);
+    if (type.endsWith("BoundedTextAnnotation"))
+      return "Bounded Text annotation at "+(int)x+","+(int)y+" named \""+getName()+"\" with ID: "+getUUID();
+    if (type.endsWith("TextAnnotation"))
+      return "Text annotation at "+(int)x+","+(int)y+" named \""+getName()+"\" with ID: "+getUUID();
+    if (type.endsWith("ShapeAnnotation"))
+      return "Shape annotation at "+(int)x+","+(int)y+" named \""+getName()+"\" with ID: "+getUUID();
+    if (type.endsWith("ImageAnnotation"))
+      return "Image annotation at "+(int)x+","+(int)y+" named \""+getName()+"\" with ID: "+getUUID();
+    if (type.endsWith("ArrowAnnotation"))
+      return "Arrow annotation named \""+getName()+"\" with ID: "+getUUID();
+    if (type.endsWith("GroupAnnotation"))
+      return "Group annotation at "+(int)x+","+(int)y+" named \""+getName()+"\" with ID: "+getUUID();
+
+    return "Unknown annotation type";
 	}
+
+  @Override
+  public String toJSON() {
+    Map<String, String> args = getArgMap();
+    ObjectMapper objectMapper = new ObjectMapper();
+
+    try {
+      return objectMapper.writeValueAsString(args);
+    } catch (JsonProcessingException e) {
+      return "{\"error\":\""+e.getMessage()+"\"}";
+    }
+  }
+
+  private String getValue(Object value) {
+    if (value instanceof String)
+      return "\""+(String)value+"\"";
+    else
+      return value.toString();
+  }
 	
 	protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
 		pcs.firePropertyChange(propertyName, oldValue, newValue);

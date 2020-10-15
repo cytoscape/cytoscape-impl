@@ -2,6 +2,12 @@ package org.cytoscape.ding;
 
 import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
 import static org.cytoscape.work.ServiceProperties.ID;
+import static org.cytoscape.work.ServiceProperties.COMMAND;
+import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
+import static org.cytoscape.work.ServiceProperties.COMMAND_EXAMPLE_JSON;
+import static org.cytoscape.work.ServiceProperties.COMMAND_LONG_DESCRIPTION;
+import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
+import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
 import static org.cytoscape.work.ServiceProperties.IN_CONTEXT_MENU;
@@ -68,11 +74,13 @@ import org.cytoscape.ding.impl.cyannotator.tasks.CopyAnnotationStyleTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.DuplicateAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.EditAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.GroupAnnotationsTaskFactory;
+import org.cytoscape.ding.impl.cyannotator.tasks.ListAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.PasteAnnotationStyleTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.RemoveAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.RemoveSelectedAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.ReorderSelectedAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.UngroupAnnotationsTaskFactory;
+import org.cytoscape.ding.impl.cyannotator.tasks.UpdateAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.ui.AnnotationMediator;
 import org.cytoscape.ding.impl.editor.CustomGraphicsVisualPropertyEditor;
 import org.cytoscape.ding.impl.editor.CyCustomGraphicsValueEditor;
@@ -95,11 +103,16 @@ import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewFactoryProvider;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
+import org.cytoscape.view.presentation.annotations.BoundedTextAnnotation;
+import org.cytoscape.view.presentation.annotations.ImageAnnotation;
+import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
+import org.cytoscape.view.presentation.annotations.TextAnnotation;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
@@ -110,6 +123,7 @@ import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
 import org.cytoscape.view.vizmap.mappings.ValueTranslator;
+import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
 
 /*
@@ -181,6 +195,7 @@ public class CyActivator extends AbstractCyActivator {
 				new ObjectPositionEditor(objectPositionValueEditor, continuousMappingCellRendererFactory, serviceRegistrar);
 
 		var netViewFactoryProvider = getService(bc, CyNetworkViewFactoryProvider.class);
+		var netViewManager = getService(bc, CyNetworkViewManager.class);
 		var viewFactoryConfig = DingNetworkViewFactory.getNetworkViewConfig(netViewFactoryProvider, dVisualLexicon);
 		var netViewFactory = netViewFactoryProvider.createNetworkViewFactory(dVisualLexicon, DingRenderer.ID, viewFactoryConfig);
 		
@@ -481,6 +496,147 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_MENU, NETWORK_GROUP_MENU);
 			props.setProperty(TITLE, "Ungroup Annotations");
 			registerService(bc, factory, NetworkViewLocationTaskFactory.class, props);
+		}
+
+    // -------------------------- Annotation Commands ----------------------------- //
+    {
+			// Annotation list
+			var factory = new ListAnnotationsTaskFactory(annotationManager, netViewManager);
+			var props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "annotation");
+			props.setProperty(COMMAND, "list");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_DESCRIPTION, ""); // FIXME
+			props.setProperty(COMMAND_LONG_DESCRIPTION, ""); // FIXME
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{}"); // FIXME
+
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+
+    {
+			// Annotation add shape
+			var factory = new AddAnnotationTaskFactory(annotationManager, shapeAnnotationFactory);
+			var props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "annotation");
+			props.setProperty(COMMAND, "add shape");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_DESCRIPTION, ""); // FIXME
+			props.setProperty(COMMAND_LONG_DESCRIPTION, ""); // FIXME
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{}"); // FIXME
+
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+
+    {
+			// Annotation add text
+			var factory = new AddAnnotationTaskFactory(annotationManager, textAnnotationFactory);
+			var props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "annotation");
+			props.setProperty(COMMAND, "add text");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_DESCRIPTION, ""); // FIXME
+			props.setProperty(COMMAND_LONG_DESCRIPTION, ""); // FIXME
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{}"); // FIXME
+
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+
+    {
+			// Annotation add bounded text
+			var factory = new AddAnnotationTaskFactory(annotationManager, boundedAnnotationFactory);
+			var props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "annotation");
+			props.setProperty(COMMAND, "add bounded text");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_DESCRIPTION, ""); // FIXME
+			props.setProperty(COMMAND_LONG_DESCRIPTION, ""); // FIXME
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{}"); // FIXME
+
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+
+    {
+			// Annotation add image
+			var factory = new AddAnnotationTaskFactory(annotationManager, imageAnnotationFactory);
+			var props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "annotation");
+			props.setProperty(COMMAND, "add image");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_DESCRIPTION, ""); // FIXME
+			props.setProperty(COMMAND_LONG_DESCRIPTION, ""); // FIXME
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{}"); // FIXME
+
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+
+    {
+			// Annotation remove
+			var factory = new RemoveAnnotationTaskFactory(annotationManager, netViewManager);
+			var props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "annotation");
+			props.setProperty(COMMAND, "delete");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_DESCRIPTION, ""); // FIXME
+			props.setProperty(COMMAND_LONG_DESCRIPTION, ""); // FIXME
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{}"); // FIXME
+
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+
+    {
+			// Annotation update shape
+			var factory = new UpdateAnnotationTaskFactory(ShapeAnnotation.class, annotationManager, netViewManager);
+			var props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "annotation");
+			props.setProperty(COMMAND, "update shape");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_DESCRIPTION, ""); // FIXME
+			props.setProperty(COMMAND_LONG_DESCRIPTION, ""); // FIXME
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{}"); // FIXME
+
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+
+    {
+			// Annotation update text
+			var factory = new UpdateAnnotationTaskFactory(TextAnnotation.class, annotationManager, netViewManager);
+			var props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "annotation");
+			props.setProperty(COMMAND, "update text");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_DESCRIPTION, ""); // FIXME
+			props.setProperty(COMMAND_LONG_DESCRIPTION, ""); // FIXME
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{}"); // FIXME
+
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+
+    {
+			// Annotation update bounded text
+			var factory = new UpdateAnnotationTaskFactory(BoundedTextAnnotation.class, annotationManager, netViewManager);
+			var props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "annotation");
+			props.setProperty(COMMAND, "update bounded text");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_DESCRIPTION, ""); // FIXME
+			props.setProperty(COMMAND_LONG_DESCRIPTION, ""); // FIXME
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{}"); // FIXME
+
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+
+    {
+			// Annotation update image
+			var factory = new UpdateAnnotationTaskFactory(ImageAnnotation.class, annotationManager, netViewManager);
+			var props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "annotation");
+			props.setProperty(COMMAND, "update image");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_DESCRIPTION, ""); // FIXME
+			props.setProperty(COMMAND_LONG_DESCRIPTION, ""); // FIXME
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{}"); // FIXME
+
+			registerService(bc, factory, TaskFactory.class, props);
 		}
 
 		// Set mouse drag selection modes
