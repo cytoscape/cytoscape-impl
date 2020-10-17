@@ -46,6 +46,9 @@ public class ShapeAnnotationTunables extends AbstractAnnotationTunables {
   @Tunable(context="nogui", description="The type of the shape")
   public String type = null;
 
+  @Tunable(context="nogui", description="If a custom shape, this is the text of the shape")
+  public String customShape = null;
+
   public ShapeAnnotationTunables () {
   }
 
@@ -60,8 +63,10 @@ public class ShapeAnnotationTunables extends AbstractAnnotationTunables {
     putIfNotNull(tm, args, ShapeAnnotation.EDGEOPACITY, borderOpacity);
     putIfNotNull(tm, args, ShapeAnnotation.SHAPETYPE, type, getShapeTypes());
     putIfNotNull(tm, args, ShapeAnnotation.EDGETHICKNESS, borderThickness);
+    // Handle custom shapes
+    if (type.equalsIgnoreCase(ShapeAnnotation.ShapeType.CUSTOM.toString()))
+      putIfNotNull(tm, args, ShapeAnnotation.CUSTOMSHAPE, customShape);
 
-    // TODO: what to do about custom shapes?
     return args;
   }
 
@@ -84,6 +89,11 @@ public class ShapeAnnotationTunables extends AbstractAnnotationTunables {
     if (opacity != null) { sAnn.setFillOpacity(opacity); }
     if (borderOpacity != null) { sAnn.setBorderOpacity(borderOpacity); }
     if (borderThickness != null) { sAnn.setBorderWidth(borderThickness); }
+    /*
+     * Need an API to set the custom shape as a string
+     */
+    if (sAnn.getShapeType().equalsIgnoreCase("custom"))
+      if (customShape != null) { sAnn.setCustomShape(customShape); }
   }
 
   public List<String> getShapeTypes() {
