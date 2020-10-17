@@ -57,8 +57,9 @@ public class TextAnnotationTunables extends AbstractAnnotationTunables {
     var args = new HashMap<String, String>();
     putIfNotNull(tm, args, TextAnnotation.TEXT, text);
     putIfNotNull(tm, args, TextAnnotation.COLOR, getColor(color));
-    putIfNotNull(tm, args, TextAnnotation.FONTSTYLE, fontStyle, Arrays.asList(FONT_STYLES));
+    putIfNotNull(tm, args, TextAnnotation.FONTSTYLE, Integer.valueOf(getFontStyle(fontStyle)));
     putIfNotNull(tm, args, TextAnnotation.FONTFAMILY, fontFamily, fontFamilies);
+    putIfNotNull(tm, args, TextAnnotation.FONTSIZE, fontSize);
 
     return args;
   }
@@ -77,15 +78,19 @@ public class TextAnnotationTunables extends AbstractAnnotationTunables {
     if (text != null) tAnnotation.setText(text);
     if (fontFamily != null) tAnnotation.setFontFamily(fontFamily);
     if (color != null) tAnnotation.setTextColor(ColorUtil.parseColor(color));
-    if (fontStyle != null) {
-      if (fontStyle.equalsIgnoreCase("bold"))
-        tAnnotation.setFontStyle(Font.BOLD);
-      else if (fontStyle.equalsIgnoreCase("plain"))
-        tAnnotation.setFontStyle(Font.PLAIN);
-      else if (fontStyle.equalsIgnoreCase("italic"))
-        tAnnotation.setFontStyle(Font.ITALIC);
-      else if (fontStyle.equalsIgnoreCase("bolditalic"))
-        tAnnotation.setFontStyle(Font.BOLD|Font.ITALIC);
-    }
+    if (fontStyle != null) { tAnnotation.setFontStyle(getFontStyle(fontStyle)); }
+    if (fontSize != null) { tAnnotation.setFontSize(fontSize); }
+  }
+
+  private int getFontStyle(String style) {
+    if (style.equalsIgnoreCase("bold"))
+      return Font.BOLD;
+    else if (style.equalsIgnoreCase("plain"))
+      return Font.PLAIN;
+    else if (style.equalsIgnoreCase("italic"))
+      return Font.ITALIC;
+    else if (style.equalsIgnoreCase("bolditalic"))
+      return Font.BOLD|Font.ITALIC;
+    return Font.PLAIN;
   }
 }

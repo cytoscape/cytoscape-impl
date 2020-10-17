@@ -178,6 +178,11 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	}
 
 	@Override
+	public double getZ() {
+		return zOrder;
+	}
+
+	@Override
 	public void setLocation(double x, double y) {
 		this.x = x;
 		this.y = y;
@@ -189,6 +194,11 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 
 	public void setY(double y) {
 		this.y = y;
+	}
+
+  @Override
+	public void setZ(double z) {
+		this.zOrder = (int)z;
 	}
 	
 	@Override
