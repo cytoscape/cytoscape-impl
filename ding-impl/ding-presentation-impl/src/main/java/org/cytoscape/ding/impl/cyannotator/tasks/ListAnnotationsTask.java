@@ -109,7 +109,7 @@ public class ListAnnotationsTask extends AbstractTask implements ObservableTask 
           sb.append(((DingAnnotation)a).toJSON()+",");
 
         int len = sb.length();
-        sb.insert(len-1,"]");
+        sb.replace(len-1,len,"]");
         return sb.toString();
       };
       return (R)res;

@@ -508,7 +508,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_DESCRIPTION, ""); // FIXME
 			props.setProperty(COMMAND_LONG_DESCRIPTION, ""); // FIXME
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{}"); // FIXME
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[]"); // FIXME
 
 			registerService(bc, factory, TaskFactory.class, props);
 		}
