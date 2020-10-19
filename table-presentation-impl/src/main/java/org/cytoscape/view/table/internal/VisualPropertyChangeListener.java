@@ -15,10 +15,8 @@ import org.cytoscape.view.model.events.TableViewChangedListener;
 import org.cytoscape.view.model.table.CyColumnView;
 import org.cytoscape.view.model.table.CyTableView;
 import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
-import org.cytoscape.view.presentation.property.table.CellFormat;
 import org.cytoscape.view.presentation.property.table.TableMode;
 import org.cytoscape.view.table.internal.impl.BrowserTable;
-import org.cytoscape.view.table.internal.impl.BrowserTableColumnModel;
 import org.cytoscape.view.table.internal.impl.BrowserTableModel;
 import org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode;
 
@@ -59,20 +57,8 @@ public class VisualPropertyChangeListener implements TableViewChangedListener {
 			browserTable.setColumnVisibility(colView.getModel().getName(), visible);
 		} else if(vp == BasicTableVisualLexicon.CELL_BACKGROUND_PAINT) {
 			browserTable.repaint();
-		} else if (vp == BasicTableVisualLexicon.CELL_FORMAT) {
-			BrowserTableModel tableModel = (BrowserTableModel) browserTable.getModel();
-			BrowserTableColumnModel columnModel = (BrowserTableColumnModel) browserTable.getColumnModel();
-			String format = null;
-			if(value instanceof CellFormat) {
-				format = ((CellFormat)value).getFormat();
-			}
-			if(format != null && format.isEmpty()) {
-				format = null;
-			}
-			boolean complete = columnModel.setColumnFormat(colView.getModel().getName(), format);
-			if (complete) {
-				tableModel.fireTableDataChanged();
-			}
+		} else if (vp == BasicTableVisualLexicon.COLUMN_FORMAT) {
+			browserTable.repaint();
 		}
 	}
 	

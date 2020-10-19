@@ -25,6 +25,7 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.table.CyColumnView;
 import org.cytoscape.view.model.table.CyTableView;
 import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
+import org.cytoscape.view.presentation.property.table.CellFormat;
 import org.cytoscape.view.table.internal.util.ValidatedObjectAndEditString;
 
 /*
@@ -145,15 +146,13 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 			else if (validatedObj instanceof Boolean)
 				displayText = validatedObj == Boolean.TRUE ? IconManager.ICON_CHECK_SQUARE : IconManager.ICON_SQUARE_O;
 			else if (validatedObj instanceof Double) {
-				final BrowserTableColumnModel columModel = (BrowserTableColumnModel) table.getColumnModel();
-				final String colName = table.getColumnName(colIndex);
-				String formatStr = columModel.getColumnFormat(colName);
+				String formatStr = null;
+				CellFormat format = colView.getVisualProperty(BasicTableVisualLexicon.COLUMN_FORMAT);
+				if(format != null) {
+					formatStr = format.getFormat();
+				}
 
-				// MKTODO make column format a VisualProperty
-//				if (formatStr == null)
-//					formatStr = propManager.getProperties().getProperty(SetColumnFormatDialog.FLOAT_FORMAT_PROPERTY);
-				
-				if (formatStr == null)
+				if (formatStr == null || formatStr.isBlank())
 					displayText = validatedObj.toString();
 				else
 					displayText = String.format(formatStr, validatedObj);
