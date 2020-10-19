@@ -57,7 +57,7 @@ public class TextAnnotationTunables extends AbstractAnnotationTunables {
     var args = new HashMap<String, String>();
     putIfNotNull(tm, args, TextAnnotation.TEXT, text);
     putIfNotNull(tm, args, TextAnnotation.COLOR, getColor(color));
-    putIfNotNull(tm, args, TextAnnotation.FONTSTYLE, Integer.valueOf(getFontStyle(fontStyle)));
+    putIfNotNull(tm, args, TextAnnotation.FONTSTYLE, getFontStyle(fontStyle));
     putIfNotNull(tm, args, TextAnnotation.FONTFAMILY, fontFamily, fontFamilies);
     putIfNotNull(tm, args, TextAnnotation.FONTSIZE, fontSize);
 
@@ -82,15 +82,16 @@ public class TextAnnotationTunables extends AbstractAnnotationTunables {
     if (fontSize != null) { tAnnotation.setFontSize(fontSize); }
   }
 
-  private int getFontStyle(String style) {
+  private Integer getFontStyle(String style) {
+    if (style == null) return null;
     if (style.equalsIgnoreCase("bold"))
-      return Font.BOLD;
+      return Integer.valueOf(Font.BOLD);
     else if (style.equalsIgnoreCase("plain"))
-      return Font.PLAIN;
+      return Integer.valueOf(Font.PLAIN);
     else if (style.equalsIgnoreCase("italic"))
-      return Font.ITALIC;
+      return Integer.valueOf(Font.ITALIC);
     else if (style.equalsIgnoreCase("bolditalic"))
-      return Font.BOLD|Font.ITALIC;
-    return Font.PLAIN;
+      return Integer.valueOf(Font.BOLD|Font.ITALIC);
+    return Integer.valueOf(Font.PLAIN);
   }
 }
