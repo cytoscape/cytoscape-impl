@@ -65,7 +65,7 @@ public class TableRenderer implements CyDisposable {
 	public void setColumnGravity(String name, double grav) {
 		View<CyColumn> colView = getTableView().getColumnView(name);
 		if(colView != null) {
-			colView.setLockedValue(BasicTableVisualLexicon.COLUMN_GRAVITY, grav);
+			colView.setVisualProperty(BasicTableVisualLexicon.COLUMN_GRAVITY, grav);
 		}
 	}
 	

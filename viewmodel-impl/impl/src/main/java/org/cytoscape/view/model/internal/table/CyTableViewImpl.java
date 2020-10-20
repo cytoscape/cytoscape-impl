@@ -13,6 +13,8 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.model.events.TableViewAddedEvent;
+import org.cytoscape.view.model.events.TableViewAddedListener;
 import org.cytoscape.view.model.events.TableViewChangedEvent;
 import org.cytoscape.view.model.events.ViewChangeRecord;
 import org.cytoscape.view.model.internal.base.CyViewBase;
@@ -24,9 +26,11 @@ import io.vavr.Tuple2;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
 
-public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView {
+public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView, TableViewAddedListener {
 
+	private final CyServiceRegistrar registrar;
 	private final CyEventHelper eventHelper;
+	
 	private final String rendererId;
 	private final VisualLexicon visualLexicon;
 	private final Class<? extends CyIdentifiable> tableType; // may be null
@@ -48,6 +52,8 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView 
 	protected final VPStore columnVPs;
 	protected final VPStore rowVPs;
 	
+	private boolean fireEvents = false;
+	
 	private CopyOnWriteArrayList<Runnable> disposeListeners = new CopyOnWriteArrayList<>(); 
 	
 	
@@ -59,6 +65,7 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView 
 			Class<? extends CyIdentifiable> tableType
 	) {
 		super(model);
+		this.registrar = registrar;
 		this.eventHelper = registrar.getService(CyEventHelper.class);
 		this.rendererId = rendererId;
 		this.visualLexicon = visualLexicon;
@@ -71,15 +78,35 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView 
 		this.tableVPs  = new VPStore(CyTable.class,  visualLexicon, null);
 		this.columnVPs = new VPStore(CyColumn.class, visualLexicon, null);
 		this.rowVPs    = new VPStore(CyRow.class,    visualLexicon, null);
+		
+		registrar.registerService(this, TableViewAddedListener.class);
 	}
 
 	@Override
-	public String getRendererId() {
-		return rendererId;
+	public void handleEvent(TableViewAddedEvent e) {
+		if(e.getTableView() == this) {
+			fireEvents = true;
+		}
 	}
 	
-	public CyEventHelper getEventHelper() {
-		return eventHelper;
+	@SuppressWarnings("unchecked")
+	protected void addEventPayload(ViewChangeRecord<?> record) {
+		if(fireEvents) {
+			eventHelper.addEventPayload(this, record, TableViewChangedEvent.class);
+		}
+	}
+	
+	@Override
+	public void dispose() {
+		registrar.unregisterService(this, TableViewAddedListener.class);
+		for(Runnable runnable : disposeListeners) {
+			runnable.run();
+		}
+	}
+	
+	@Override
+	public String getRendererId() {
+		return rendererId;
 	}
 	
 	@Override
@@ -104,13 +131,6 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView 
 	
 	public void addDisposeListener(Runnable runnable) {
 		disposeListeners.add(runnable);
-	}
-	
-	@Override
-	public void dispose() {
-		for(Runnable runnable : disposeListeners) {
-			runnable.run();
-		}
 	}
 	
 	public View<CyColumn> addColumn(CyColumn model) {
@@ -243,11 +263,9 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView 
 	}
 	
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	protected void fireViewChangedEvent(VisualProperty<?> vp, Object value, boolean lockedValue) {
-		var record = new ViewChangeRecord<>(this, vp, value, lockedValue);
-		eventHelper.addEventPayload(this, record, TableViewChangedEvent.class);
+		addEventPayload(new ViewChangeRecord<>(this, vp, value, lockedValue));
 	}
 
 }

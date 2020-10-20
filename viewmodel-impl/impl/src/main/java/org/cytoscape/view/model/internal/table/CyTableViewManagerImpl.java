@@ -1,5 +1,8 @@
 package org.cytoscape.view.model.internal.table;
 
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_GRAVITY;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_VISIBLE;
+
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -8,6 +11,7 @@ import java.util.WeakHashMap;
 
 import org.cytoscape.event.CyEvent;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
@@ -18,6 +22,7 @@ import org.cytoscape.view.model.events.TableViewAddedEvent;
 import org.cytoscape.view.model.events.TableViewDestroyedEvent;
 import org.cytoscape.view.model.table.CyTableView;
 import org.cytoscape.view.model.table.CyTableViewManager;
+
 
 public class CyTableViewManagerImpl implements CyTableViewManager, TableAboutToBeDeletedListener {
 
@@ -88,6 +93,29 @@ public class CyTableViewManagerImpl implements CyTableViewManager, TableAboutToB
 			CyTableView existingView = getTableView(table);
 			if(existingView != null) {
 				destroyTableView(existingView);
+			}
+			
+			var suidCol = view.getColumnView(CyNetwork.SUID);
+			var selectedCol = view.getColumnView(CyNetwork.SELECTED);
+			if(suidCol != null)
+				suidCol.setVisualProperty(COLUMN_VISIBLE, false);
+			if(selectedCol != null)
+				selectedCol.setVisualProperty(COLUMN_VISIBLE, false);
+			
+			boolean gravitySet = view.getColumnViews().stream()
+					.anyMatch(c -> !COLUMN_GRAVITY.getDefault().equals(c.getVisualProperty(COLUMN_GRAVITY)));
+			
+			if(!gravitySet) {
+				if(suidCol != null)
+					suidCol.setVisualProperty(COLUMN_GRAVITY, COLUMN_GRAVITY.getDefault() - 2.0);
+				if(selectedCol != null)
+					selectedCol.setVisualProperty(COLUMN_GRAVITY, COLUMN_GRAVITY.getDefault() - 1.0);
+				
+//				for(var colView : view.getColumnViews()) {
+//					if(colView != suidCol && colView != selectedCol) {
+//						colView.setVisualProperty(COLUMN_GRAVITY, 1.0);
+//					}
+//				}
 			}
 			
 			tableViewMap.put(table, view);

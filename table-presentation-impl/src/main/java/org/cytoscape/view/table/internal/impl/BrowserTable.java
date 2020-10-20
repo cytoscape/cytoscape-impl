@@ -48,7 +48,6 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EventObject;
@@ -102,11 +101,13 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.TextWrapToolTip;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.events.AboutToRemoveColumnViewEvent;
 import org.cytoscape.view.model.events.AboutToRemoveColumnViewListener;
 import org.cytoscape.view.model.events.AddedColumnViewEvent;
 import org.cytoscape.view.model.events.AddedColumnViewListener;
 import org.cytoscape.view.model.table.CyTableView;
+import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
 import org.cytoscape.view.table.internal.util.TableBrowserUtil;
 import org.cytoscape.view.table.internal.util.ValidatedObjectAndEditString;
 import org.slf4j.Logger;
@@ -172,19 +173,26 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		assert(dataModel instanceof BrowserTableModel);
 		super.setModel(dataModel);
 		
- 		BrowserTableColumnModel columnModel = new BrowserTableColumnModel();
+		BrowserTableColumnModel columnModel = new BrowserTableColumnModel();
 		setColumnModel(columnModel);
 
 		if (dataModel instanceof BrowserTableModel) {
 			BrowserTableModel model = (BrowserTableModel) dataModel;
 			
 			for (int i = 0; i < model.getColumnCount(); i++) {
+				String name = model.getColumnName(i);
+				View<CyColumn> view = model.getTableView().getColumnView(name);
+				boolean visible = view.getVisualProperty(BasicTableVisualLexicon.COLUMN_VISIBLE);
+				double gravity  = view.getVisualProperty(BasicTableVisualLexicon.COLUMN_GRAVITY);
+				
 				TableColumn tableColumn = new TableColumn(i);
-				tableColumn.setHeaderValue(model.getColumnName(i));
+				tableColumn.setHeaderValue(name);
 				tableColumn.setHeaderRenderer(new BrowserTableHeaderRenderer(serviceRegistrar));
-				columnModel.addColumn(tableColumn);
+				columnModel.addColumn(tableColumn, view.getSUID(), visible, gravity);
 			}
 		}
+		
+		columnModel.reorderColumnsToRespectGravity();
 	}
 
 	public BrowserTableModel getBrowserTableModel() {
@@ -474,42 +482,6 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		}
 	}
 	
-	public void setVisibleAttributeNames(final Collection<String> visibleAttributes) {
-		var model = (BrowserTableModel) getModel();
-		var columnModel = (BrowserTableColumnModel) getColumnModel();
-		
-		for (String name : model.getAllAttributeNames()) {
-			int col = model.mapColumnNameToColumnIndex(name);
-			TableColumn column = columnModel.getColumnByModelIndex(col);
-			columnModel.setColumnVisible(column, visibleAttributes.contains(name));
-		}
-		
-		// Don't fire this, it will reset all the columns based on model
-		// fireTableStructureChanged();
-	}
-	
-	
-	
-
-	public List<String> getVisibleAttributeNames() {
-		var model = (BrowserTableModel) getModel();
-		List<String> visibleAttrNames = new ArrayList<>();
-		
-		for (String name : model.getAllAttributeNames()) {
-			if (isColumnVisible(name))
-				visibleAttrNames.add(name);
-		}
-		
-		return visibleAttrNames;
-	}
-
-	public boolean isColumnVisible(String name) {
-		var model = (BrowserTableModel) getModel();
-		var columnModel = (BrowserTableColumnModel) getColumnModel();
-		TableColumn column = columnModel.getColumnByModelIndex(model.mapColumnNameToColumnIndex(name));
-		
-		return columnModel.isColumnVisible(column);
-	}
 	
 	public void setColumnVisibility(String columnName, boolean visible) {
 		var model = (BrowserTableModel) getModel();
@@ -535,16 +507,24 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 		model.fireTableStructureChanged();
 		
-		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) getColumnModel();
+		var columnModel = (BrowserTableColumnModel) getColumnModel();
 
 		CyColumn col = e.getColumnView().getModel();
 		model.addColumn(col.getName());
 		
-		int colIndex = columnModel.getColumnCount(false);
-		TableColumn newCol = new TableColumn(colIndex);
-		newCol.setHeaderValue(col.getName());
-		newCol.setHeaderRenderer(new BrowserTableHeaderRenderer(serviceRegistrar));
-		addColumn(newCol);
+		int colIndex = columnModel.getColumnCount();
+		
+		String name = col.getName();
+		View<CyColumn> view = model.getTableView().getColumnView(name);
+		boolean visible = view.getVisualProperty(BasicTableVisualLexicon.COLUMN_VISIBLE);
+		double gravity  = view.getVisualProperty(BasicTableVisualLexicon.COLUMN_GRAVITY);
+		
+		TableColumn tableColumn = new TableColumn(colIndex);
+		tableColumn.setHeaderValue(name);
+		tableColumn.setHeaderRenderer(new BrowserTableHeaderRenderer(serviceRegistrar));
+		columnModel.addColumn(tableColumn, view.getSUID(), visible, gravity);
+		
+		columnModel.reorderColumnsToRespectGravity();
 	}
 
 	@Override
@@ -557,7 +537,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 		model.fireTableStructureChanged();
 
-		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) getColumnModel();
+		var columnModel = (BrowserTableColumnModel) getColumnModel();
 		final String columnName = e.getColumnView().getModel().getName();
 		boolean columnFound = false;
 		int removedColIndex = -1;
@@ -863,7 +843,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	}
 	
 	private void renameColumnName(final String oldName, final String newName) {
-		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) getColumnModel();
+		var columnModel = (BrowserTableColumnModel) getColumnModel();
 		BrowserTableModel model = (BrowserTableModel) getModel();
 		
 		int index = model.mapColumnNameToColumnIndex(oldName);
