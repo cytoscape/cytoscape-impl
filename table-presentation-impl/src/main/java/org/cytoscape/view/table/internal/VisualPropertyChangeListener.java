@@ -68,7 +68,9 @@ public class VisualPropertyChangeListener implements TableViewChangedListener {
 	private void updateColumnVP(CyColumnView colView, VisualProperty<?> vp, Object value) {
 		if(vp == COLUMN_VISIBLE) {
 			boolean visible = !Boolean.FALSE.equals(value);
-			browserTable.setColumnVisibility(colView.getModel().getName(), visible);
+			var colModel = (BrowserTableColumnModel) browserTable.getColumnModel();
+			TableColumn col = colModel.getTableColumn(colView.getSUID());
+			colModel.setColumnVisible(col, visible);
 		} else if(vp == CELL_BACKGROUND_PAINT) {
 			browserTable.repaint();
 		} else if (vp == COLUMN_FORMAT) {

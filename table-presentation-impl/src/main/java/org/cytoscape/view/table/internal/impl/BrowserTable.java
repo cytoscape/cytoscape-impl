@@ -170,7 +170,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	
 	@Override
 	public void setModel(final TableModel dataModel) {
-		assert(dataModel instanceof BrowserTableModel);
+//		assert(dataModel instanceof BrowserTableModel);
 		super.setModel(dataModel);
 		
 		BrowserTableColumnModel columnModel = new BrowserTableColumnModel();
@@ -482,20 +482,6 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		}
 	}
 	
-	
-	public void setColumnVisibility(String columnName, boolean visible) {
-		var model = (BrowserTableModel) getModel();
-		var columnModel = (BrowserTableColumnModel) getColumnModel();
-		
-		for (String name : model.getAllAttributeNames()) {
-			if (name.equals(columnName)) {
-				int col = model.mapColumnNameToColumnIndex(name);
-				TableColumn column = columnModel.getColumnByModelIndex(col);
-				columnModel.setColumnVisible(column, visible);
-				break;
-			}
-		}
-	}
 
 	@Override
 	public void handleEvent(final AddedColumnViewEvent e) {
