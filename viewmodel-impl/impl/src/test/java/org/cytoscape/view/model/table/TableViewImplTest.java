@@ -89,5 +89,20 @@ public class TableViewImplTest {
 		assertEquals(colStr.getVisualProperty(COLUMN_FORMAT), "zxcv");
 	}
 	
+	@Test
+	public void testColumnViewOrder() {
+		CyTable table = tableSupport.getTableFactory().createTable("test", "col0", Long.class, true, true);
+		for(int i = 1; i < 100; i++) {
+			table.createColumn("col" + i, Integer.class, false);
+		}
+		CyTableView tableView = TableViewTestUtils.createTableView(table);
+		
+		int i = 0;
+		for(var colView : tableView.getColumnViews()) {
+			assertEquals("col"+i, colView.getModel().getName());
+			i++;
+		}
+	}
+	
 	
 }

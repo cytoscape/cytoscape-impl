@@ -179,6 +179,10 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView,
 		return null;
 	}
 	
+	/**
+	 * This should return columns in the same order as the underlying table model. 
+	 * It avoids strange errors where the columns are returned in an unexpected order.
+	 */
 	@Override
 	public Collection<View<CyColumn>> getColumnViews() {
 		// The asJava() method returns a collection that is unbearably slow, so we create our own collection instead.
@@ -186,6 +190,25 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView,
 		for(var col : dataSuidToCol.values()) {
 			colList.add(col);
 		}
+				
+		// assume this collection is in a well defined order that we want to preserve
+		Collection<CyColumn> modelCols = getModel().getColumns(); 
+		
+		// Sort the column views by their index in the table model
+		java.util.Map<Long,Integer> indexMap = new java.util.HashMap<>();
+		int i = 0;
+		for(CyColumn col : modelCols) {
+			indexMap.put(col.getSUID(), i++);
+		}
+		
+		colList.sort((cv1, cv2) -> {
+			var index1 = indexMap.get(cv1.getModel().getSUID());
+			var index2 = indexMap.get(cv2.getModel().getSUID());
+			if(index1 == null) return -1;
+            if(index2 == null) return  1;
+			return Integer.compare(index1, index2);
+		});
+		
 		return colList;
 	}
 	

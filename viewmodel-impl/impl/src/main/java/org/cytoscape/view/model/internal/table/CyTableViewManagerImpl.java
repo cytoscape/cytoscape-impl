@@ -105,17 +105,23 @@ public class CyTableViewManagerImpl implements CyTableViewManager, TableAboutToB
 			boolean gravitySet = view.getColumnViews().stream()
 					.anyMatch(c -> !COLUMN_GRAVITY.getDefault().equals(c.getVisualProperty(COLUMN_GRAVITY)));
 			
+			// If the gravities were not set before the table view is registered then initialize them here.
 			if(!gravitySet) {
 				if(suidCol != null)
 					suidCol.setVisualProperty(COLUMN_GRAVITY, COLUMN_GRAVITY.getDefault() - 2.0);
 				if(selectedCol != null)
 					selectedCol.setVisualProperty(COLUMN_GRAVITY, COLUMN_GRAVITY.getDefault() - 1.0);
 				
-//				for(var colView : view.getColumnViews()) {
-//					if(colView != suidCol && colView != selectedCol) {
-//						colView.setVisualProperty(COLUMN_GRAVITY, 1.0);
-//					}
-//				}
+				// The CyTableView.getColumnViews() method does not maintain the same order as in the underlying model.
+				// Initialize the gravities to be the same order that the columns were created, that way existing
+				// app code that creates tables doesn't have the columns show up in an unexpected order.
+				double grav = COLUMN_GRAVITY.getDefault();
+				for(var colView : view.getColumnViews()) {
+					if(colView != null && colView != suidCol && colView != selectedCol) {
+						colView.setVisualProperty(COLUMN_GRAVITY, grav);
+						grav += 1.0;
+					}
+				}
 			}
 			
 			tableViewMap.put(table, view);
