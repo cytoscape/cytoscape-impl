@@ -57,8 +57,20 @@ public abstract class AbstractCyWriter<S extends CyWriterFactory,T extends CyWri
 	/** The file to be written. */
 	protected File outputFile;
 	/** The output stream used to write the file */
-	protected ByteArrayOutputStream outputStream;
-
+	/*
+	 * We have an issue with ordering that requires a special output stream.
+	 * 
+	 * The CyWriter objects are created too early because they contain Tunables that need to be displayed
+	 * in the UI. At the point that CyWriters are created we don't yet have a FileOutputStream because 
+	 * the user can still change the file path in the UI. However the API requires an OutputStream to be
+	 * passed to the CyWriter when it is created. The solution is to pass this DelegatingOutputStream to
+	 * the CyWriter as a placeholder, and then set the actual FileOutputStream to the delegate right before
+	 * the CyWriter run() method is called.
+	 * 
+	 * Note: Using ByteArrayOutputStream to buffer the output in memory before writing it to a file 
+	 * is NOT an acceptable solution. It results in OutOfMemoryErrors when exporting large networks.
+	 */
+	protected DelegatingOutputStream outputStream;
 
 	/**
 	 * An implementation method gets the file to be written.  This method should not
@@ -117,7 +129,7 @@ public abstract class AbstractCyWriter<S extends CyWriterFactory,T extends CyWri
 		this.writerManager = writerManager;
 		this.cyApplicationManager = cyApplicationManager;
 		
-		outputStream = new ByteArrayOutputStream();
+		outputStream = new DelegatingOutputStream();
 		
 		descriptionFilterMap = new TreeMap<String,CyFileFilter>();
 		extensionFilterMap = new TreeMap<String,CyFileFilter>();
@@ -130,12 +142,13 @@ public abstract class AbstractCyWriter<S extends CyWriterFactory,T extends CyWri
 	}
 
 	/**
-	 * This method processes the chosen input file and output type and attempts
-	 * to write the file.
+	 * This method processes the chosen input file and output type and attempts to write the file.
 	 * @param tm The {@link org.cytoscape.work.TaskMonitor} provided by the TaskManager execution environment.
 	 */
 	public final void run(final TaskMonitor tm) throws Exception {
-		insertTasksAfterCurrentTask(getWriter(), new FileWriterTask());
+		// Create the FileOutputStream here.
+		outputStream.setDelegate(new FileOutputStream(outputFile));
+		insertTasksAfterCurrentTask(getWriter());
 	}
 
 	/**
@@ -236,12 +249,12 @@ public abstract class AbstractCyWriter<S extends CyWriterFactory,T extends CyWri
 		return new File(fileName);
 	}
 	
-	public class FileWriterTask extends AbstractTask {
-		@Override
-		public void run(TaskMonitor taskMonitor) throws Exception {
-			FileOutputStream fos = new FileOutputStream(outputFile);
-			outputStream.writeTo(fos);
-			fos.close();
-		}
-	}
+//	public class FileWriterTask extends AbstractTask {
+//		@Override
+//		public void run(TaskMonitor taskMonitor) throws Exception {
+//			FileOutputStream fos = new FileOutputStream(outputFile);
+//			outputStream.writeTo(fos);
+//			fos.close();
+//		}
+//	}
 }

@@ -1,7 +1,5 @@
 package org.cytoscape.io.internal.read;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 /*
@@ -30,41 +28,27 @@ import java.io.IOException;
 
 
 import java.io.InputStream;
+import java.util.zip.ZipInputStream;
 
 /**
- * An InputStream that copies another InputStream into a ByteArrayInputStream.
- * The purpose is to allow the InputStream to be reset so that it can be read
- * mulitple times.
+ * This is a wrapper for ZipInputStream that makes it safe to pass around without it getting
+ * accidentally closed. The original creator of the ZipInputStream is responsible for
+ * closing the stream.
  */
-public class MarkSupportedInputStream extends InputStream {
+public class ZipInputStreamWrapper extends InputStream {
 
 	private final InputStream is;
 
-	public MarkSupportedInputStream(final InputStream eis) throws IOException {
-		if(eis.markSupported()) {
-			is = eis;
-		} else {
-			// TODO This is a bad idea, it requires copying the entire input stream 
-			// into memory, which doesn't scale for large session files.
-			ByteArrayOutputStream copy = new ByteArrayOutputStream();
-			int chunk = 0;
-			byte[] data = new byte[1024];
-			
-			while(-1 != (chunk = eis.read(data))) { 
-				copy.write(data, 0, chunk);
-			}
-	
-			is = new ByteArrayInputStream( copy.toByteArray() );
-		}
-	}
-
-
-	public int available() throws IOException {
-		return is.available();
+	public ZipInputStreamWrapper(final ZipInputStream eis) throws IOException {
+		this.is = eis;
 	}
 
 	public void close() throws IOException {
-		is.close();
+		// DO NOTHING!!!
+	}
+
+	public int available() throws IOException {
+		return is.available();
 	}
 
 	public void mark(int readlimit) {
