@@ -490,15 +490,13 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		
 		if (e.getSource() != tableView)
 			return;
-
-		model.fireTableStructureChanged();
 		
 		var columnModel = (BrowserTableColumnModel) getColumnModel();
 
 		CyColumn col = e.getColumnView().getModel();
 		model.addColumn(col.getName());
 		
-		int colIndex = columnModel.getColumnCount();
+		int colIndex = columnModel.getColumnCount(false);
 		
 		String name = col.getName();
 		View<CyColumn> view = model.getTableView().getColumnView(name);

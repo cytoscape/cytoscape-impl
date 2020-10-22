@@ -45,14 +45,12 @@ public class TableModelListener implements ColumnCreatedListener, ColumnDeletedL
 		CyTable table = e.getSource();
 		CyColumn column = table.getColumn(e.getColumnName());
 		if(column != null) {
-			View<CyColumn> view = tableView.addColumn(column);
-			
-			if(view != null) {
-				eventHelper.fireEvent(new AddedColumnViewEvent(tableView, view));
-			}
+			CyColumnViewImpl view = tableView.addColumn(column);
 			
 			CyTableViewManager tableViewManager = registrar.getService(CyTableViewManager.class);
 			
+			// Set the gravity so that the column shows up at the right end of the table browser.
+			// Don't fire an event for this.
 			if(tableViewManager.getTableView(tableView.getModel()) != null && 
 					tableView.getVisualLexicon() instanceof BasicTableVisualLexicon) {
 				
@@ -61,9 +59,13 @@ public class TableModelListener implements ColumnCreatedListener, ColumnDeletedL
 				if(!colViews.isEmpty()) {
 					var lastGrav = colViews.get(colViews.size()-1).getVisualProperty(BasicTableVisualLexicon.COLUMN_GRAVITY);
 					if(lastGrav != null) {
-						view.setVisualProperty(BasicTableVisualLexicon.COLUMN_GRAVITY, lastGrav + 1.0);
+						view.setVisualProperty(BasicTableVisualLexicon.COLUMN_GRAVITY, lastGrav + 1.0, false);
 					}
 				}
+			}
+			
+			if(view != null) {
+				eventHelper.fireEvent(new AddedColumnViewEvent(tableView, view));
 			}
 		}
 	}

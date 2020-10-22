@@ -95,10 +95,16 @@ public class BrowserTableColumnModel extends DefaultTableColumnModel {
         	TableColumn curCol = entry.getKey();
         	if(isVisible(curCol)) {
 	        	int index = super.getColumnIndex(curCol.getIdentifier());
-	        	super.moveColumn(index, i);
+	        	if(index != i) {
+	        		super.moveColumn(index, i);
+	        	}
 	        	i++;
         	}
         }
+	}
+	
+	public int getColumnCount(boolean onlyVisible) {
+		return onlyVisible ? super.getColumnCount() : gravities.size();
 	}
 	
 	@Override
