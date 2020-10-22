@@ -133,6 +133,10 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView,
 		disposeListeners.add(runnable);
 	}
 	
+	public int getColumnCount() {
+		return viewSuidToCol.size();
+	}
+	
 	public View<CyColumn> addColumn(CyColumn model) {
 		if(dataSuidToCol.containsKey(model.getSUID()))
 			return null;
@@ -184,7 +188,7 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView,
 	 * It avoids strange errors where the columns are returned in an unexpected order.
 	 */
 	@Override
-	public Collection<View<CyColumn>> getColumnViews() {
+	public java.util.List<View<CyColumn>> getColumnViews() {
 		// The asJava() method returns a collection that is unbearably slow, so we create our own collection instead.
 		java.util.List<View<CyColumn>> colList = new ArrayList<>();
 		for(var col : dataSuidToCol.values()) {
