@@ -22,7 +22,7 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.internal.table.CyTableViewFactoryImpl;
 import org.cytoscape.view.model.table.CyTableView;
-import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
+import org.cytoscape.view.table.internal.BrowserTableVisualLexicon;
 import org.cytoscape.view.table.internal.impl.BrowserTable;
 import org.cytoscape.view.table.internal.impl.BrowserTableColumnModel;
 import org.cytoscape.view.table.internal.impl.BrowserTableModel;
@@ -66,7 +66,7 @@ public class BrowserTableColumnModelTest {
 		
 		browserTable = new BrowserTable(equationCompiler, popupMenuHelper, registrar);
 		
-		CyTableViewFactoryImpl factory = new CyTableViewFactoryImpl(registrar, BasicTableVisualLexicon.getInstance(), "id");
+		CyTableViewFactoryImpl factory = new CyTableViewFactoryImpl(registrar, new BrowserTableVisualLexicon(), "id");
 		tableView = factory.createTableView(table, CyNode.class);
 
 		BrowserTableModel model = new BrowserTableModel(tableView, equationCompiler);

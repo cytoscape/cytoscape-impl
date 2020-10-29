@@ -44,7 +44,12 @@ public class VizmapWriterFactoryImpl extends AbstractCyWriterFactory implements 
     }
 
     @Override
-    public CyWriter createWriter(OutputStream outputStream, Set<VisualStyle> styles) {
-        return new VizmapWriterImpl(outputStream, visualStyleSerializer, styles);
+    public CyWriter createWriter(OutputStream os, Set<VisualStyle> networkStyles) {
+        return new VizmapWriterImpl(os, visualStyleSerializer, networkStyles, null);
+    }
+    
+    @Override
+    public CyWriter createWriter(OutputStream os, Set<VisualStyle> networkStyles, Set<VisualStyle> tableStyles) {
+    	return new VizmapWriterImpl(os, visualStyleSerializer, networkStyles, tableStyles);
     }
 }

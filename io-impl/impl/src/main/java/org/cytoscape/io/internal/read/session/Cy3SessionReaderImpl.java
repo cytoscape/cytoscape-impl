@@ -1,14 +1,6 @@
 package org.cytoscape.io.internal.read.session;
 
-import static org.cytoscape.io.internal.util.session.SessionUtil.APPS_FOLDER;
-import static org.cytoscape.io.internal.util.session.SessionUtil.CYTABLE_STATE_FILE;
-import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORKS_FOLDER;
-import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORK_VIEWS_FOLDER;
-import static org.cytoscape.io.internal.util.session.SessionUtil.PROPERTIES_FOLDER;
-import static org.cytoscape.io.internal.util.session.SessionUtil.TABLE_EXT;
-import static org.cytoscape.io.internal.util.session.SessionUtil.VERSION_EXT;
-import static org.cytoscape.io.internal.util.session.SessionUtil.VIZMAP_XML_FILE;
-import static org.cytoscape.io.internal.util.session.SessionUtil.XGMML_EXT;
+import static org.cytoscape.io.internal.util.session.SessionUtil.*;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -65,6 +57,7 @@ import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.TaskMonitor;
 
 /*
@@ -252,6 +245,12 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		try {
 			reader.run(taskMonitor);
 			virtualColumns.addAll(reader.getCyTables().getVirtualColumns().getVirtualColumn());
+			
+//			List<StyleMapping> mappings = reader.getCyTables().getStyleMappings().getStyleMapping();
+//			for(StyleMapping mapping : mappings) {
+//				columnStyleMap.put(mapping.get)
+//			}
+			
 		} catch (Exception e) {
 			throw new IOException(e);
 		}
@@ -277,8 +276,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			Class<?> type = Class.forName(SessionUtil.unescape(matcher.group(4)));
 			String title = SessionUtil.unescape(matcher.group(5));
 			table.setTitle(title);
-			CyTableMetadataBuilder builder = new CyTableMetadataBuilder().setCyTable(table).setNamespace(namespace)
-					.setType(type);
+			CyTableMetadataBuilder builder = new CyTableMetadataBuilder().setCyTable(table).setNamespace(namespace).setType(type);
 			Set<CyTableMetadataBuilder> builders = networkTableMap.get(oldNetId);
 			
 			if (builders == null) {
@@ -428,7 +426,13 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	private void extractVizmap(InputStream is, String entryName) throws Exception {
 		VizmapReader reader = vizmapReaderMgr.getReader(is, entryName);
 		reader.run(taskMonitor);
-		visualStyles.addAll(reader.getVisualStyles());
+		
+		networkStyles.addAll(reader.getVisualStyles());
+		
+		Set<VisualStyle> tableVisualStyles = reader.getTableVisualStyles();
+		if(tableVisualStyles != null) {
+			tableStyles.addAll(tableVisualStyles);
+		}
 	}
 
 	private void extractProperties(InputStream is, String entryName) throws Exception {

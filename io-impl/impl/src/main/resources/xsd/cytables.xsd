@@ -4,6 +4,7 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element minOccurs="0" ref="virtualColumns"/>
+        <xs:element minOccurs="0" ref="styleMappings"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -11,6 +12,13 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element maxOccurs="unbounded" ref="virtualColumn"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="styleMappings">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="styleMapping"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -23,6 +31,12 @@
       <xs:attribute name="targetTable" use="required" type="xs:string"/>
       <xs:attribute name="targetJoinKey" use="required" type="xs:string"/>
       <xs:attribute name="immutable" use="required" type="xs:boolean"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="styleMapping">
+    <xs:complexType>
+      <xs:attribute name="suid" use="required" type="xs:long"/>
+      <xs:attribute name="title" use="required" type="xs:string"/>
     </xs:complexType>
   </xs:element>
 </xs:schema>

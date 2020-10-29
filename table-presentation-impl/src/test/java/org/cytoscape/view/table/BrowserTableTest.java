@@ -34,7 +34,7 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.model.internal.table.CyTableViewFactoryImpl;
 import org.cytoscape.view.model.table.CyTableView;
-import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
+import org.cytoscape.view.table.internal.BrowserTableVisualLexicon;
 import org.cytoscape.view.table.internal.impl.BrowserTable;
 import org.cytoscape.view.table.internal.impl.BrowserTableColumnModel;
 import org.cytoscape.view.table.internal.impl.BrowserTableModel;
@@ -82,7 +82,7 @@ public class BrowserTableTest {
 		createTable();
 		assertEquals(4, table.getColumns().size());
 
-		CyTableViewFactoryImpl factory = new CyTableViewFactoryImpl(registrar, BasicTableVisualLexicon.getInstance(), "id");
+		CyTableViewFactoryImpl factory = new CyTableViewFactoryImpl(registrar, new BrowserTableVisualLexicon(), "id");
 		CyTableView tableView = factory.createTableView(table, CyNode.class);
 
 		btm = new BrowserTableModel(tableView, equationCompiler);

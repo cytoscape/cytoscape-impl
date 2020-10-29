@@ -1,15 +1,6 @@
 package org.cytoscape.io.internal.write.session;
 
-import static org.cytoscape.io.internal.util.session.SessionUtil.APPS_FOLDER;
-import static org.cytoscape.io.internal.util.session.SessionUtil.BOOKMARKS_FILE;
-import static org.cytoscape.io.internal.util.session.SessionUtil.CYS_VERSION;
-import static org.cytoscape.io.internal.util.session.SessionUtil.CYTABLE_STATE_FILE;
-import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORKS_FOLDER;
-import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORK_VIEWS_FOLDER;
-import static org.cytoscape.io.internal.util.session.SessionUtil.PROPERTIES_EXT;
-import static org.cytoscape.io.internal.util.session.SessionUtil.PROPERTIES_FOLDER;
-import static org.cytoscape.io.internal.util.session.SessionUtil.TABLES_FOLDER;
-import static org.cytoscape.io.internal.util.session.SessionUtil.VERSION_EXT;
+import static org.cytoscape.io.internal.util.session.SessionUtil.*;
 
 import java.awt.Graphics;
 import java.awt.Image;
@@ -98,6 +89,7 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	private static final String VIZMAP_FILE = "session_vizmap.xml";
+	private static final String VIZMAP_TABLE_FILE = "session_vizmap_tables.xml";
 	private static final String THUMBNAIL_FILE = "session_thumbnail.png";
 	
 	private static final int THUMBNAIL_WIDTH = 96;
@@ -264,11 +256,12 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	 * Writes the vizmap.props file to the session zip.
 	 */
 	private void zipVizmap() throws Exception {
-		Set<VisualStyle> styles = session.getVisualStyles();
+		Set<VisualStyle> networkStyles = session.getVisualStyles();
+		Set<VisualStyle> tableStyles = session.getTableStyles();
 
 		zos.putNextEntry(new ZipEntry(sessionDir + VIZMAP_FILE));
 
-		CyWriter vizmapWriter = vizmapWriterMgr.getWriter(styles, vizmapFilter, zos);
+		CyWriter vizmapWriter = vizmapWriterMgr.getWriter(networkStyles, tableStyles, vizmapFilter, zos);
 		vizmapWriter.run(taskMonitor);
 
 		zos.closeEntry();
@@ -442,7 +435,7 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 		zos.putNextEntry(new ZipEntry(sessionDir + TABLES_FOLDER + CYTABLE_STATE_FILE));
 		
 		try {
-			CyTablesXMLWriter writer = new CyTablesXMLWriter(session.getTables(), tableFilenamesBySUID, zos);
+			CyTablesXMLWriter writer = new CyTablesXMLWriter(session.getTables(), session.getTableVisualStyleMap(), tableFilenamesBySUID, zos);
 			writer.run(taskMonitor);
 		} finally {
 			zos.closeEntry();

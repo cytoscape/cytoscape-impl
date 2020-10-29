@@ -1,14 +1,6 @@
 package org.cytoscape.view.vizmap.gui.internal.model;
 
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_NETWORK_CHANGED;
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_NETWORK_VIEW_CHANGED;
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_TABLE_CHANGED;
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_VISUAL_STYLE_CHANGED;
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.LOAD_DEFAULT_VISUAL_STYLES;
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_ADDED;
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_REMOVED;
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_SET_CHANGED;
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_UPDATED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.*;
 
 import java.text.Collator;
 import java.util.Comparator;
@@ -18,6 +10,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.UUID;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.NetworkViewRenderer;
@@ -272,7 +265,10 @@ public class VizMapperProxy extends Proxy
 		VisualStyle style = tableMappingManager.getVisualStyle(colView);
 		if(style == null) {
 			VisualStyleFactory factory = servicesUtil.get(VisualStyleFactory.class);
-			style = factory.createVisualStyle("default");
+			
+			// MKTODO Setting the title to the UUID is a temporary hack
+			style = factory.createVisualStyle(UUID.randomUUID().toString());
+			
 			tableMappingManager.setVisualStyle(style, colView);
 		}
 		return style;

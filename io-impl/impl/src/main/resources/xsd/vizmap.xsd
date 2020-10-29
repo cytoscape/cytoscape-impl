@@ -5,6 +5,7 @@
 		<xs:complexType>
 			<xs:sequence>
 				<xs:element maxOccurs="unbounded" ref="visualStyle" />
+				<xs:element maxOccurs="unbounded" ref="tableStyle" />
 			</xs:sequence>
 			<xs:attribute name="id" use="required" type="xs:NCName" />
 			<xs:attribute name="documentVersion" use="optional" default="3.0" type="xs:normalizedString"/>
@@ -18,6 +19,22 @@
 				<xs:element ref="edge" minOccurs="1" maxOccurs="1" />
 			</xs:all>
 			<xs:attribute name="name" use="required" type="xs:NCName" />
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="tableStyle">
+		<xs:complexType>
+			<xs:all>
+				<xs:element ref="cell" minOccurs="1" maxOccurs="1" />
+			</xs:all>
+			<xs:attribute name="name" use="required" type="xs:NCName" />
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="cell">
+		<xs:complexType>
+			<xs:sequence>
+                <xs:element ref="dependency" maxOccurs="unbounded" />
+				<xs:element ref="visualProperty" maxOccurs="unbounded" />
+			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
 	<xs:element name="network">

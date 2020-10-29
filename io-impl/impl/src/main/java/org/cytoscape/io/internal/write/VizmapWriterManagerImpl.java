@@ -43,17 +43,25 @@ public class VizmapWriterManagerImpl extends AbstractWriterManager<VizmapWriterF
     }
 
 	@Override
-	public CyWriter getWriter(Set<VisualStyle> styles, CyFileFilter filter, File file) throws Exception {
-		return getWriter(styles, filter, new FileOutputStream(file));
+	public CyWriter getWriter(Set<VisualStyle> networkStyles, CyFileFilter filter, File file) throws Exception {
+		return getWriter(networkStyles, null, filter, new FileOutputStream(file));
 	}
 
 	@Override
-	public CyWriter getWriter(Set<VisualStyle> styles, CyFileFilter filter, OutputStream os) throws Exception {
-		VizmapWriterFactory vf = getMatchingFactory(filter);
+	public CyWriter getWriter(Set<VisualStyle> networkStyles, CyFileFilter filter, OutputStream os) throws Exception {
+		return getWriter(networkStyles, null, filter, os);
+	}
 
+	@Override
+	public CyWriter getWriter(Set<VisualStyle> networkStyles, Set<VisualStyle> tableStyles, CyFileFilter filter, File file) throws Exception {
+		return getWriter(networkStyles, tableStyles, filter, new FileOutputStream(file));
+	}
+	
+	@Override
+	public CyWriter getWriter(Set<VisualStyle> networkStyles, Set<VisualStyle> tableStyles, CyFileFilter filter, OutputStream os) throws Exception {
+		VizmapWriterFactory vf = getMatchingFactory(filter);
         if (vf == null)
             throw new NullPointerException("Couldn't find matching factory for filter: " + filter);
-        
-        return vf.createWriter(os,styles);
+        return vf.createWriter(os, networkStyles, tableStyles);
 	}
 }

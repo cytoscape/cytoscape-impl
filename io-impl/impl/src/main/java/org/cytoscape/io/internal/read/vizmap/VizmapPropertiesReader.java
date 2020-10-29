@@ -43,7 +43,7 @@ public class VizmapPropertiesReader extends AbstractVizmapReader {
         props.load(inputStream);
 		tm.setProgress(0.3);
         // Convert properties to list of visual visualStyles:
-        this.visualStyles = visualStyleSerializer.createVisualStyles(props);
+        this.networkStyles = visualStyleSerializer.createVisualStyles(props);
 		tm.setProgress(1.0);
     }
 }

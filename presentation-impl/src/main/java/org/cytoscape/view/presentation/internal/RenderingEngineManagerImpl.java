@@ -54,8 +54,10 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 	
 	private static final String FACTORY_ID_TAG = "id";
 	private static final String DEFAULT_FACTORY_ID = "ding";
+	private static final String DEFAULT_TABLE_FACTORY_ID = "org.cytoscape.view.table.renderer";
 	
 	private VisualLexicon defaultLexicon;
+	private VisualLexicon defaultTableLexicon;
 
 	private final Map<String, RenderingEngineFactory<?>> factoryMap;
 	
@@ -138,7 +140,17 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 			if(defaultLexicon == null)
 				throw new IllegalStateException("Lexicon is not ready yet.");
 			
-			return this.defaultLexicon;
+			return defaultLexicon;
+		}
+	}
+	
+	@Override
+	public VisualLexicon getDefaultTableVisualLexicon() {
+		synchronized (lock) {
+			if(defaultTableLexicon == null)
+				throw new IllegalStateException("Lexicon is not ready yet.");
+			
+			return defaultTableLexicon;
 		}
 	}
 	
@@ -146,8 +158,7 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 		final Object idObject = metadata.get(FACTORY_ID_TAG);
 
 		if (idObject == null)
-			throw new IllegalArgumentException(
-					"Could not add factory: ID metadata is missing for RenderingEngineFactory.");
+			throw new IllegalArgumentException("Could not add factory: ID metadata is missing for RenderingEngineFactory.");
 
 		final String id = idObject.toString();
 
@@ -157,6 +168,8 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 			// Register default lexicon
 			if (id.equals(DEFAULT_FACTORY_ID))
 				defaultLexicon = factory.getVisualLexicon();
+			if (id.equals(DEFAULT_TABLE_FACTORY_ID))
+				defaultTableLexicon = factory.getVisualLexicon();
 		}
 		
 		logger.debug("New engine registered: " + factory.getClass());

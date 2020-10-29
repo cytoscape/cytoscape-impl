@@ -40,13 +40,12 @@ public class CyTableViewManagerImpl implements CyTableViewManager, TableAboutToB
 	}
 	
 	
-//	@Override
-//	public void reset() {
-//		synchronized (lock) {
-//			tableViewMap.clear();
-//		}
-//	}
-//	
+	@Override
+	public void reset() {
+		synchronized (lock) {
+			tableViewMap.clear();
+		}
+	}
 	
 	@Override
 	public void handleEvent(TableAboutToBeDeletedEvent e) {
@@ -131,8 +130,8 @@ public class CyTableViewManagerImpl implements CyTableViewManager, TableAboutToB
 	}
 
 	
-//	@Override
-	private void destroyTableView(CyTableView view) {
+	@Override
+	public void destroyTableView(CyTableView view) {
 		if(view == null) {
 			return;
 		}

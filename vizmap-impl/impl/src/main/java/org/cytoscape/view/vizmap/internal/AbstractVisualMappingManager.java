@@ -65,8 +65,10 @@ public abstract class AbstractVisualMappingManager<V> {
 		view2VisualStyleMap = new WeakHashMap<>();
 
 		this.defaultStyle = buildGlobalDefaultStyle(factory);
-		this.visualStyles.add(defaultStyle);
-		this.currentStyle = defaultStyle;
+		if(defaultStyle != null) {
+			this.visualStyles.add(defaultStyle);
+			this.currentStyle = defaultStyle;
+		}
 	}
 	
 	protected abstract VisualStyle buildGlobalDefaultStyle(final VisualStyleFactory factory);

@@ -1,11 +1,6 @@
 package org.cytoscape.io.internal.read.session;
 
-import static org.cytoscape.io.internal.util.session.SessionUtil.BOOKMARKS_FILE;
-import static org.cytoscape.io.internal.util.session.SessionUtil.CYSESSION_FILE;
-import static org.cytoscape.io.internal.util.session.SessionUtil.IMAGES_FOLDER;
-import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORK_ROOT;
-import static org.cytoscape.io.internal.util.session.SessionUtil.VIZMAP_PROPS_FILE;
-import static org.cytoscape.io.internal.util.session.SessionUtil.XGMML_EXT;
+import static org.cytoscape.io.internal.util.session.SessionUtil.*;
 import static org.cytoscape.model.CyNetwork.DEFAULT_ATTRS;
 import static org.cytoscape.model.CyNetwork.SELECTED;
 
@@ -412,7 +407,7 @@ public class Cy2SessionReaderImpl extends AbstractSessionReader {
 	private void extractVizmap(InputStream is, String entryName) throws Exception {
 		VizmapReader reader = vizmapReaderMgr.getReader(is, entryName);
 		reader.run(taskMonitor);
-		visualStyles.addAll(reader.getVisualStyles());
+		networkStyles.addAll(reader.getVisualStyles());
 	}
 
 	private void extractProperties(InputStream is, String entryName) throws Exception {

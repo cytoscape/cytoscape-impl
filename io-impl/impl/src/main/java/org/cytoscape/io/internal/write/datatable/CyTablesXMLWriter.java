@@ -33,6 +33,8 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
 import org.cytoscape.io.internal.util.cytables.model.CyTables;
+import org.cytoscape.io.internal.util.cytables.model.StyleMapping;
+import org.cytoscape.io.internal.util.cytables.model.StyleMappings;
 import org.cytoscape.io.internal.util.cytables.model.VirtualColumn;
 import org.cytoscape.io.internal.util.cytables.model.VirtualColumns;
 import org.cytoscape.io.write.CyWriter;
@@ -40,19 +42,23 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableMetadata;
 import org.cytoscape.model.VirtualColumnInfo;
+import org.cytoscape.view.model.View;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
 public class CyTablesXMLWriter extends AbstractTask implements CyWriter {
 
 	private final Set<CyTableMetadata> tables;
+	private final Map<View<CyColumn>,String> tableStyleMap;
 	private final OutputStream outputStream;
 	private Map<Long, String> tableFileNamesBySUID;
 	
-	public CyTablesXMLWriter(Set<CyTableMetadata> tables, Map<Long, String> tableFileNamesBySUID, OutputStream outputStream) {
+	public CyTablesXMLWriter(Set<CyTableMetadata> tables, Map<View<CyColumn>,String> tableStyleMap,
+			Map<Long, String> tableFileNamesBySUID, OutputStream outputStream) {
 		this.tables = tables;
 		this.outputStream = outputStream;
 		this.tableFileNamesBySUID = tableFileNamesBySUID;
+		this.tableStyleMap = tableStyleMap;
 	}
 	
 	@Override
@@ -105,6 +111,20 @@ public class CyTablesXMLWriter extends AbstractTask implements CyWriter {
 				columns.add(column);
 			}
 		}
+		
+		StyleMappings styleMappings = new StyleMappings();
+		model.setStyleMappings(styleMappings);
+		List<StyleMapping>	styles = styleMappings.getStyleMapping();
+		for(var entry : tableStyleMap.entrySet()) {
+			View<CyColumn> colView = entry.getKey();
+			String styleTitle = entry.getValue();
+			
+			StyleMapping style = new StyleMapping();
+			style.setSuid(colView.getSUID());
+			style.setTitle(styleTitle);
+			styles.add(style);
+		}
+		
 		return model;
 	}
 

@@ -47,12 +47,17 @@ public class TableVisualMappingManagerImpl extends AbstractVisualMappingManager<
 	
 	@Override
 	public VisualStyle getDefaultVisualStyle() {
-		return defaultStyle;
+		return null;
 	}
 
 	@Override
 	protected View<CyColumn> getCurrentView() {
 		return null;
+	}
+	
+	@Override
+	public void setCurrentVisualStyle(VisualStyle newStyle) {
+		// do nothing
 	}
 
 	@Override
