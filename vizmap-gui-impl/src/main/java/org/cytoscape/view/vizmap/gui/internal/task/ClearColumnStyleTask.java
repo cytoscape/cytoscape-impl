@@ -1,7 +1,6 @@
 package org.cytoscape.view.vizmap.gui.internal.task;
 
 import org.cytoscape.view.vizmap.TableVisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.gui.internal.CurrentTableService;
 import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
@@ -29,11 +28,8 @@ public class ClearColumnStyleTask extends AbstractTask {
 		if(colView == null)
 			return;
 		
-		var tableMappingManager = servicesUtil.get(TableVisualMappingManager.class);
-		var vsFactory = servicesUtil.get(VisualStyleFactory.class);
-		
-		var emptyStyle = vsFactory.createVisualStyle("default");
-		tableMappingManager.setVisualStyle(emptyStyle, colView);
+		var tvmm = servicesUtil.get(TableVisualMappingManager.class);
+		tvmm.setVisualStyle(colView, null);
 	}
 
 }

@@ -269,7 +269,7 @@ public class VizMapperProxy extends Proxy
 			// MKTODO Setting the title to the UUID is a temporary hack
 			style = factory.createVisualStyle(UUID.randomUUID().toString());
 			
-			tableMappingManager.setVisualStyle(style, colView);
+			tableMappingManager.setVisualStyle(colView, style);
 		}
 		return style;
 	}

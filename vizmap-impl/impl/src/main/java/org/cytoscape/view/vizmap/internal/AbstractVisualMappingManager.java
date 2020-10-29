@@ -156,7 +156,8 @@ public abstract class AbstractVisualMappingManager<V> {
 						viewsToUpdate.add(view);
 				}
 			}
-		}		
+		}
+		
 		for (V view : viewsToUpdate) {
 			setVisualStyle(defaultStyle, view);
 		}
