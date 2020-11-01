@@ -1,13 +1,6 @@
 package org.cytoscape.view.vizmap.gui.internal.view;
 
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_NETWORK_VIEW_CHANGED;
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_TABLE_CHANGED;
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_VISUAL_STYLE_CHANGED;
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_ADDED;
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_NAME_CHANGED;
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_REMOVED;
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_SET_CHANGED;
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_UPDATED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.*;
 import static org.cytoscape.view.vizmap.gui.internal.view.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.view.vizmap.gui.internal.view.util.ViewUtil.invokeOnEDTAndWait;
 
@@ -462,7 +455,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		final VisualStyle curStyle = getCurrentVisualStyle(vp.getTargetDataType());
 		
 		// If the source mapping belongs to the current visual style, update the correspondent property sheet item
-		if (vm.equals(curStyle.getVisualMappingFunction(vp))) {
+		if (curStyle != null && vm.equals(curStyle.getVisualMappingFunction(vp))) {
 			final VisualPropertySheet vpSheet = vizMapperMainPanel.getVisualPropertySheet(vp.getTargetDataType());
 			
 			if (vpSheet != null) {

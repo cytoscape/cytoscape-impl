@@ -23,6 +23,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.TableViewRenderer;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.equations.EquationUtil;
 import org.cytoscape.io.internal.read.datatable.CSVCyReaderFactory;
@@ -32,6 +34,10 @@ import org.cytoscape.io.internal.read.xgmml.SessionXGMMLNetworkViewReader;
 import org.cytoscape.io.internal.util.GroupUtil;
 import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.internal.util.SUIDUpdater;
+import org.cytoscape.io.internal.util.cytables.model.BypassValue;
+import org.cytoscape.io.internal.util.cytables.model.ColumnView;
+import org.cytoscape.io.internal.util.cytables.model.CyTables;
+import org.cytoscape.io.internal.util.cytables.model.TableView;
 import org.cytoscape.io.internal.util.cytables.model.VirtualColumn;
 import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.io.read.CyNetworkReader;
@@ -57,6 +63,11 @@ import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.model.table.CyTableView;
+import org.cytoscape.view.model.table.CyTableViewFactory;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.TaskMonitor;
 
@@ -170,7 +181,6 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			} else if (entryName.endsWith(XGMML_EXT)) {
 				// Ignore network view files for now...
 				Matcher matcher = NETWORK_PATTERN.matcher(entryName);
-				
 				if (matcher.matches()) {
 					extractNetworks(is, entryName);
 				}
@@ -190,6 +200,8 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 				if (matcher.matches()) {
 					extractNetworkView(is, entryName);
 				}
+			} else if (entryName.endsWith(CYTABLE_STATE_FILE)) {
+				extractTableViews(is, entryName);
 			}
 		}
 	}
@@ -241,15 +253,11 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	
 	private void extractCyTableSessionState(InputStream is, String entryName) throws IOException {
 		CyTablesXMLReader reader = new CyTablesXMLReader(is);
-		
 		try {
 			reader.run(taskMonitor);
-			virtualColumns.addAll(reader.getCyTables().getVirtualColumns().getVirtualColumn());
+			CyTables cyTables = reader.getCyTables();
 			
-//			List<StyleMapping> mappings = reader.getCyTables().getStyleMappings().getStyleMapping();
-//			for(StyleMapping mapping : mappings) {
-//				columnStyleMap.put(mapping.get)
-//			}
+			virtualColumns.addAll(cyTables.getVirtualColumns().getVirtualColumn());
 			
 		} catch (Exception e) {
 			throw new IOException(e);
@@ -374,6 +382,77 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			logger.error("The network view will cannot be recreated. The network view entry is invalid: " + entryName);
 		}
 	}
+	
+	private void extractTableViews(InputStream is, String entryName) throws Exception {
+		CyTablesXMLReader reader = new CyTablesXMLReader(is);
+		
+		CyTables xmlTables;
+		try {
+			reader.run(taskMonitor);
+			xmlTables = reader.getCyTables();
+		} catch (Exception e) {
+			throw new IOException(e);
+		}
+		
+		CyApplicationManager appManager = serviceRegistrar.getService(CyApplicationManager.class);
+		
+		if(xmlTables.getTableViews() != null) {
+			List<TableView> xmlTableViews = xmlTables.getTableViews().getTableView();
+			for(TableView xmlTableView : xmlTableViews) {
+				TableViewRenderer renderer = appManager.getTableViewRenderer(xmlTableView.getRendererId());
+				
+				if(renderer != null) {
+					CyTableMetadata tableMetadata = lookupTable(xmlTableView);
+					if(tableMetadata != null) {
+						CyTableViewFactory tableViewFactory = renderer.getTableViewFactory();
+						@SuppressWarnings("unchecked")
+						CyTableView tableView = tableViewFactory.createTableView(tableMetadata.getTable(), (Class<? extends CyIdentifiable>)tableMetadata.getType());
+						
+						VisualLexicon lexicon = renderer.getRenderingEngineFactory(TableViewRenderer.DEFAULT_CONTEXT).getVisualLexicon();
+						setTableViewStyleProperties(tableView, xmlTableView, lexicon);
+						
+						tableViews.add(tableView);
+					}
+				}
+			}
+		}
+	}
+	
+	private CyTableMetadata lookupTable(TableView xmlTableView) {
+		CyTable table = filenameTableMap.get(xmlTableView.getTable());
+		if(table == null)
+			return null;
+		
+		for(CyTableMetadata tableMetadata : tableMetadata) {
+			if(tableMetadata.getTable().equals(table)) {
+				return tableMetadata;
+			}
+		}
+		return null;
+	}
+	
+	private void setTableViewStyleProperties(CyTableView tableView, TableView xmlTableView, VisualLexicon lexicon) {
+		// Restore column view visual property bypass values. Other values come from the style.
+		for(ColumnView xmlColumnView : xmlTableView.getColumnView()) {
+			View<CyColumn> colView = tableView.getColumnView(xmlColumnView.getColumnName());
+			
+			for(BypassValue xmlBypass : xmlColumnView.getBypassValue()) {
+				VisualProperty<?> vp = lexicon.lookup(CyColumn.class, xmlBypass.getName());
+				if(vp != null) {
+					Object parsedValue = vp.parseSerializableString(xmlBypass.getValue());
+					if(parsedValue != null) {
+						colView.setLockedValue(vp, parsedValue);
+					}
+				}
+			}
+			
+			String styleTitle = xmlColumnView.getStyleTitle();
+			if(styleTitle != null) {
+				columnStyleMap.put(colView, styleTitle);
+			}
+		}
+	}
+	
 
 	private void extractAppEntry(InputStream is, String entryName) {
 		final String[] items = entryName.split("/");

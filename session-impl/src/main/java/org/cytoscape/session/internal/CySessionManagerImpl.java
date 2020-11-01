@@ -146,8 +146,9 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		Map<String, List<File>> appMap = savingEvent.getAppFileListMap();
 		Set<CyTableMetadata> metadata = createTablesMetadata(networks);
 		Set<VisualStyle> styles = vmMgr.getAllVisualStyles();
-		Set<VisualStyle> tableStyles = tblVmMgr.getAllVisualStyles();
 		Set<CyProperty<?>> props = getAllProperties();
+		Set<VisualStyle> tableStyles = tblVmMgr.getAllVisualStyles();
+		
 		
 		// Build the session
 		CySession sess = new CySession.Builder()
@@ -156,6 +157,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 				.tables(metadata)
 				.networks(networks)
 				.networkViews(netViews)
+				.tableViews(tableViews)
 				.visualStyles(styles)
 				.tableStyles(tableStyles)
 				.viewVisualStyleMap(stylesMap)
@@ -268,6 +270,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 			restoreNetworkViews(sess, selectedNetworks);
 			restoreNetworkSelection(sess, selectedNetworks);
 			restoreVisualStyles(sess);
+			restoreTableViews(sess);
 			restoreTableVisualStyles(sess);
 			restoreCurrentVisualStyle();
 		}
@@ -430,6 +433,16 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		
 		appMgr.setSelectedNetworkViews(selectedViews);
 	}
+	
+	
+	private void restoreTableViews(CySession sess) {
+		CyTableViewManager tableViewManager = serviceRegistrar.getService(CyTableViewManager.class);
+		Set<CyTableView> tableViews = sess.getTableViews();
+		for(CyTableView tableView : tableViews) {
+			tableViewManager.setTableView(tableView);
+		}
+	}
+	
 
 	private void restoreTables(final CySession sess) {
 		final Set<CyTable> allTables = new HashSet<>();
@@ -515,33 +528,31 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	}
 	
 	private void restoreTableVisualStyles(CySession sess) {
-//		TableVisualMappingManager tableVmMgr = serviceRegistrar.getService(TableVisualMappingManager.class);
-//		
-//		Set<VisualStyle> styles = sess.getTableStyles();
-//		Map<String, VisualStyle> stylesMap = new HashMap<>();
-//
-//		if (styles != null) {
-//			for (VisualStyle vs : styles) {
-//				stylesMap.put(vs.getTitle(), vs);
-//				tableVmMgr.addVisualStyle(vs);
-//			}
-//		}
-//		
-//		// Set visual styles to network views
-//		final Map<View<CyColumn>, String> viewStyleMap = sess.getTableVisualStyleMap();
-//		
-//		if (viewStyleMap != null) {
-//			for (var entry : viewStyleMap.entrySet()) {
-//				final View<CyColumn> colView = entry.getKey();
-//				final String stName = entry.getValue();
-//				VisualStyle vs = stylesMap.get(stName);
-//				
-//				if (vs != null) {
-//					tableVmMgr.setVisualStyle(vs, colView);
-//					vs.apply(colView);
-//				}
-//			}
-//		}
+		TableVisualMappingManager tableVmMgr = serviceRegistrar.getService(TableVisualMappingManager.class);
+		
+		Set<VisualStyle> styles = sess.getTableStyles();
+		Map<String, VisualStyle> stylesMap = new HashMap<>();
+		if (styles != null) {
+			for (VisualStyle vs : styles) {
+				stylesMap.put(vs.getTitle(), vs);
+			}
+		}
+		
+		// Set visual styles to network views
+		final Map<View<CyColumn>, String> viewStyleMap = sess.getTableVisualStyleMap();
+		
+		if (viewStyleMap != null) {
+			for (var entry : viewStyleMap.entrySet()) {
+				final View<CyColumn> colView = entry.getKey();
+				final String stName = entry.getValue();
+				VisualStyle vs = stylesMap.get(stName);
+				
+				if (vs != null) {
+					tableVmMgr.setVisualStyle(colView, vs);
+					vs.apply(colView);
+				}
+			}
+		}
 	}
 	
 	/**
@@ -655,14 +666,6 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 			if (!vs.equals(defaultStyle))
 				vmMgr.removeVisualStyle(vs);
 		}
-		
-//		// Destroy table styles
-//		TableVisualMappingManager tvVmMgr = serviceRegistrar.getService(TableVisualMappingManager.class);
-//		List<VisualStyle> allTableStyles = new ArrayList<>(tvVmMgr.getAllVisualStyles());
-//		
-//		for (VisualStyle vs : allTableStyles) {
-//			tvVmMgr.removeVisualStyle(vs);
-//		}
 
 		// Destroy tables
 		final CyTableManager tblMgr = serviceRegistrar.getService(CyTableManager.class);
