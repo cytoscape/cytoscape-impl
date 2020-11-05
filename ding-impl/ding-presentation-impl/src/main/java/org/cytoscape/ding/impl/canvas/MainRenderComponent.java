@@ -42,6 +42,7 @@ public class MainRenderComponent extends RenderComponent {
 
 	@Override
 	public void update(Graphics g) {
+		System.out.println("MainRenderComponent.update()");
 		if(fontMetrics == null) {
 			fontMetrics = g.getFontMetrics(); // needed to compute label widths
 		}
