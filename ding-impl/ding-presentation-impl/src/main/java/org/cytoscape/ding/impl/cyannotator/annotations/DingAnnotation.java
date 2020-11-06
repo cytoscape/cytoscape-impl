@@ -88,6 +88,8 @@ public interface DingAnnotation extends Annotation {
 	double getX();
 	
 	double getY();
+
+	double getRotation();
 	
 	/** Set location in node coordinates */
 	void setLocation(double x, double y);
@@ -151,4 +153,14 @@ public interface DingAnnotation extends Annotation {
 	 * @param argMap Has most of the same keys as the map returned by {@link #getArgMap()}. Ignored if null.
 	 */
 	void setStyle(Map<String, String> argMap);
+
+  /**
+   * Get a String representation of the annotation
+   */
+  String toString();
+
+  /**
+   * Get a JSON representation of this annotation
+   */
+  String toJSON();
 }

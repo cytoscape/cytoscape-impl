@@ -72,6 +72,7 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 	private JLabel fillOpacityLabel;
 	private JLabel borderColorLabel;
 	private JLabel borderOpacityLabel;
+	private JLabel rotationLabel;
 	
 	private JList<String> shapeList;
 	private JCheckBox fillColorCheck;
@@ -79,6 +80,7 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 	private ColorButton borderColorButton;
 	private JSlider fillOpacitySlider;
 	private JSlider borderOpacitySlider;
+	private JSlider rotationSlider;
 	private JComboBox<Integer> borderWidthCombo;
 
 	private Shape customShape;
@@ -120,7 +122,7 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 			
 			getBorderColorButton().setColor(borderColor != null ? borderColor : Color.BLACK);
 			getBorderOpacitySlider().setValue(borderOpacity);
-			
+
 			{
 				var model = getBorderWidthCombo().getModel();
 
@@ -131,6 +133,9 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 					}
 				}
 			}
+
+			double rotation = (double) annotation.getRotation();
+			getRotationSlider().setValue((int)rotation);
 		}
 		
 		updateEnabled();
@@ -152,6 +157,7 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 			annotation.setFillOpacity(getFillOpacitySlider().getValue());
 			annotation.setBorderColor(getBorderColorButton().getColor());
 			annotation.setBorderOpacity(getBorderOpacitySlider().getValue());
+      annotation.setRotation((double)getRotationSlider().getValue());
 		}
 	}
 
@@ -163,6 +169,7 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 		fillOpacityLabel = new JLabel("Fill Opacity:");
 		borderColorLabel = new JLabel("Border Color:");
 		borderOpacityLabel = new JLabel("Border Opacity:");
+		rotationLabel = new JLabel("Rotation Angle:");
 		
 		var scrollPane = new JScrollPane(getShapeList(), JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -184,6 +191,7 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 						.addGroup(layout.createParallelGroup(TRAILING, true)
 								.addComponent(fillColorLabel)
 								.addComponent(fillOpacityLabel)
+		            .addComponent(rotationLabel)
 								.addComponent(borderWidthLabel)
 								.addComponent(borderColorLabel)
 								.addComponent(borderOpacityLabel)
@@ -195,6 +203,8 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 										.addComponent(getFillColorButton())
 								)
 								.addComponent(getFillOpacitySlider(), 100, 140, 140)
+								.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+								.addComponent(getRotationSlider(), 100, 140, 140)
 								.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 								.addComponent(getBorderWidthCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 								.addComponent(getBorderColorButton())
@@ -221,6 +231,11 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 								)
 								.addPreferredGap(ComponentPlacement.RELATED)
 								.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								.addGroup(layout.createParallelGroup(LEADING, false)
+										.addComponent(rotationLabel)
+										.addComponent(getRotationSlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								)
+								.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 								.addPreferredGap(ComponentPlacement.RELATED)
 								.addGroup(layout.createParallelGroup(CENTER, false)
 										.addComponent(borderWidthLabel)
@@ -240,7 +255,7 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 
 		makeSmall(shapeLabel, fillColorLabel, fillOpacityLabel, borderColorLabel, borderOpacityLabel, borderWidthLabel);
 		makeSmall(getFillColorCheck(), getFillColorButton(), getFillOpacitySlider(), getBorderColorButton(),
-				getBorderOpacitySlider(), getBorderWidthCombo());
+				getBorderOpacitySlider(), getBorderWidthCombo(), getRotationSlider());
 		makeSmall(scrollPane);
 	}
 	
@@ -339,6 +354,19 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 		
 		return fillOpacitySlider;
 	}
+	
+	private JSlider getRotationSlider() {
+		if (rotationSlider == null) {
+			rotationSlider = new JSlider(-180, 180, 0);
+			rotationSlider.setMajorTickSpacing(90);
+			rotationSlider.setMinorTickSpacing(45);
+			rotationSlider.setPaintTicks(true);
+			rotationSlider.setPaintLabels(true);
+			rotationSlider.addChangeListener(evt -> apply());
+		}
+		
+		return rotationSlider;
+  }
 	
 	private JSlider getBorderOpacitySlider() {
 		if (borderOpacitySlider == null) {

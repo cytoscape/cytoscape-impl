@@ -20,6 +20,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JSeparator;
+import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.UIManager;
@@ -73,6 +74,7 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 	private JComboBox<String> fontStyleCombo;
 	private JComboBox<Font> fontFamilyCombo;
 	private ColorButton textColorButton;
+  private JSlider rotationSlider;
 
 	public TextAnnotationEditor(AnnotationFactory<TextAnnotation> factory, CyServiceRegistrar serviceRegistrar) {
 		super(factory, serviceRegistrar);
@@ -131,6 +133,10 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 			
 			// Text Color
 			getTextColorButton().setColor(annotation.getTextColor());
+
+      // Rotation
+			double rotation = annotation.getRotation();
+			getRotationSlider().setValue((int)rotation);
 		} else {
 			getTextField().setText(TextAnnotationImpl.DEF_TEXT);
 		}
@@ -142,6 +148,7 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 			annotation.setFont(getNewFont());
 			annotation.setText(getTextField().getText());	   
 			annotation.setTextColor(getTextColorButton().getColor());
+      annotation.setRotation((double)getRotationSlider().getValue());
 		}
 	}
 	
@@ -151,6 +158,7 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 		var label2 = new JLabel("Font:");
 		var label3 = new JLabel("Style:");
 		var label4 = new JLabel("Size:");
+		var rotationLabel = new JLabel("Rotation Angle:");
 
 		var sep = new JSeparator();
 		
@@ -190,6 +198,11 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 								.addComponent(getFontSizeCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						)
 						.addGap(0, 20, Short.MAX_VALUE)
+						.addGroup(layout.createSequentialGroup()
+								.addComponent(rotationLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								.addComponent(getRotationSlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+            )
+						.addGap(0, 20, Short.MAX_VALUE)
 				)
 				.addGap(0, 20, Short.MAX_VALUE)
 		);
@@ -214,10 +227,16 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 								.addComponent(getFontSizeCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						)
 				)
+				.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addGroup(layout.createParallelGroup(LEADING, false)
+						.addComponent(rotationLabel)
+						.addComponent(getRotationSlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
 		);
 		
-		makeSmall(label1, label2, label3, label4);
-		makeSmall(getTextField(), getTextColorButton(), getFontFamilyCombo(), getFontStyleCombo(), getFontSizeCombo());
+		makeSmall(label1, label2, label3, label4, rotationLabel);
+		makeSmall(getTextField(), getTextColorButton(), getFontFamilyCombo(), getFontStyleCombo(), 
+              getFontSizeCombo(), getRotationSlider());
 	}
 	
 	private JTextField getTextField() {
@@ -306,6 +325,19 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 
 		return fontFamilyCombo;
 	}
+	
+	private JSlider getRotationSlider() {
+		if (rotationSlider == null) {
+			rotationSlider = new JSlider(-180, 180, 0);
+			rotationSlider.setMajorTickSpacing(90);
+			rotationSlider.setMinorTickSpacing(45);
+			rotationSlider.setPaintTicks(true);
+			rotationSlider.setPaintLabels(true);
+			rotationSlider.addChangeListener(evt -> apply());
+		}
+		
+		return rotationSlider;
+  }
 	
 	private ColorButton getTextColorButton() {
 		if (textColorButton == null) {

@@ -7,7 +7,10 @@ import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.cyannotator.ui.AnnotationMediator;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
+import org.cytoscape.view.presentation.annotations.AnnotationManager;
+import org.cytoscape.work.TaskFactory; 
 import org.cytoscape.work.TaskIterator; 
 
 /*
@@ -34,11 +37,23 @@ import org.cytoscape.work.TaskIterator;
  * #L%
  */
 
-public class AddAnnotationTaskFactory implements NetworkViewLocationTaskFactory {
+public class AddAnnotationTaskFactory implements NetworkViewLocationTaskFactory, TaskFactory {
 
 	private final AnnotationFactory<?> annotationFactory;
 	private final DingRenderer dingRenderer;
 	private final AnnotationMediator annotationMediator;
+  private final AnnotationManager annotationManager;
+
+	public AddAnnotationTaskFactory (
+			final AnnotationManager annotationManager,
+			final AnnotationFactory<?> annotationFactory
+  ) {
+    this.annotationManager = annotationManager;
+		this.annotationFactory = annotationFactory;
+		this.dingRenderer = null;
+		this.annotationMediator = null;
+  }
+
 
 	public AddAnnotationTaskFactory(
 			AnnotationFactory<?> annotationFactory,
@@ -48,7 +63,16 @@ public class AddAnnotationTaskFactory implements NetworkViewLocationTaskFactory 
 		this.annotationFactory = annotationFactory;
 		this.dingRenderer = dingRenderer;
 		this.annotationMediator = annotationMediator;
+    this.annotationManager = null;
 	}
+
+	@Override
+	public TaskIterator createTaskIterator() {
+		return new TaskIterator(new AddAnnotationCommandTask(annotationManager, annotationFactory));
+  }
+
+  @Override
+  public boolean isReady() { return true; }
 
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView networkView, Point2D javaPt, Point2D xformPt) {

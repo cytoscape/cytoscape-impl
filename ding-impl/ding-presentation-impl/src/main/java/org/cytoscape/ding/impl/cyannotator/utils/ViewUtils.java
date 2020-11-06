@@ -81,7 +81,7 @@ public class ViewUtils {
 			
 			return rg;
 		} else if (clr instanceof Color) {
-			return Integer.toString(((Color) clr).getRGB());
+			return String.format("#%06X", 0xFFFFFF&(((Color) clr).getRGB()));
 		}
 		
 		return clr.toString();
@@ -281,6 +281,18 @@ public class ViewUtils {
 		tree.resetZOrder();
 		re.updateView(UpdateType.JUST_ANNOTATIONS);
 	}
+
+  public static String getFontStyle(int style) {
+    if (style == Font.PLAIN)
+      return "plain";
+    if (style == Font.BOLD)
+      return "bold";
+    if (style == Font.ITALIC)
+      return "italic";
+    if (style == (Font.ITALIC|Font.BOLD))
+      return "bolditalic";
+    return "";
+  }
 	
 	public static void styleWindowStateButton(AbstractButton btn) {
 		final int size = 16;

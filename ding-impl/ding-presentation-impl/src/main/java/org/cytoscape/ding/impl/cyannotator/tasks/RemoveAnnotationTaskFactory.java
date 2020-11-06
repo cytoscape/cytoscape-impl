@@ -5,6 +5,9 @@ import java.awt.geom.Point2D;
 import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.presentation.annotations.AnnotationManager;
+import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 /*
@@ -31,13 +34,31 @@ import org.cytoscape.work.TaskIterator;
  * #L%
  */
 
-public class RemoveAnnotationTaskFactory implements NetworkViewLocationTaskFactory {
+public class RemoveAnnotationTaskFactory implements NetworkViewLocationTaskFactory, TaskFactory {
 	
 	private final DingRenderer dingRenderer;
+	private final AnnotationManager annotationManager;
+	private final CyNetworkViewManager viewManager;
 
 	public RemoveAnnotationTaskFactory(DingRenderer dingRenderer) {
 		this.dingRenderer = dingRenderer;
+    this.annotationManager = null;
+    this.viewManager = null;
 	}
+
+	public RemoveAnnotationTaskFactory(AnnotationManager annotationManager, CyNetworkViewManager viewManager) {
+		this.annotationManager = annotationManager;
+		this.viewManager = viewManager;
+		this.dingRenderer = null;
+	}
+
+	@Override
+	public TaskIterator createTaskIterator() {
+		return new TaskIterator(new RemoveAnnotationCommandTask(annotationManager, viewManager));
+  }
+
+  @Override 
+  public boolean isReady() { return true; }
 
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView networkView, Point2D javaPt, Point2D xformPt) {
