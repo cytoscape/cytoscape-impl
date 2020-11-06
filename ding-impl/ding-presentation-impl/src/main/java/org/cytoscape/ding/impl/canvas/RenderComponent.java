@@ -88,7 +88,6 @@ public abstract class RenderComponent extends JComponent {
 	private void resizeImageBuffers() {
 		int bufferWidth  = (int)(getWidth()  * dpiScaleX);
 		int bufferHeight = (int)(getHeight() * dpiScaleY);
-		System.out.printf("RenderComponent.resizeImageBuffers(width:%d, height:%d)\n", bufferWidth, bufferHeight);
 		fastCanvas.setViewport(bufferWidth, bufferHeight);
 		slowCanvas.setViewport(bufferWidth, bufferHeight);
 	}
@@ -177,9 +176,8 @@ public abstract class RenderComponent extends JComponent {
 		var scaleX = trans.getScaleX();
 		var scaleY = trans.getScaleY();
 		
+		// This typically only happens if the user drags the cytoscape window from one monitor to another.
 		if(scaleX != dpiScaleX || scaleY != dpiScaleY) {
-			// This typically only happens if the user drags the cytoscape window from one monitor to another.
-			System.out.printf("update dpi scale: %f, %f\n", scaleX, scaleY);
 			this.dpiScaleX = scaleX;
 			this.dpiScaleY = scaleY;
 			if(slowFuture != null)
@@ -196,7 +194,6 @@ public abstract class RenderComponent extends JComponent {
 	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
-		System.out.println("RenderComponent.paintComponent()");
 		
 		ImageFuture future;
 		
@@ -241,11 +238,6 @@ public abstract class RenderComponent extends JComponent {
 		
 		int w = (int)(image.getWidth(null)  / dpiScaleX);
 		int h = (int)(image.getHeight(null) / dpiScaleY);
-		
-		System.out.printf("RenderComponent.scale(width:%f, height:%f)\n", dpiScaleX, dpiScaleY);
-		System.out.printf("RenderComponent.image(width:%d, height:%d)\n", image.getWidth(null), image.getHeight(null));
-		System.out.printf("RenderComponent.comp (width:%d, height:%d)\n", getWidth(), getHeight());
-		System.out.printf("RenderComponent.draw (width:%d, height:%d)\n", w, h);
 		
 		g.drawImage(image, 0, 0, w, h, null);
 	}
