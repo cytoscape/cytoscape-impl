@@ -55,6 +55,7 @@ import org.cytoscape.ding.impl.undo.CompositeCyEdit;
 import org.cytoscape.ding.impl.undo.NodeLabelChangeEdit;
 import org.cytoscape.ding.impl.undo.ViewChangeEdit;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
+import org.cytoscape.ding.internal.util.HiDPIProxyMouseAdapter;
 import org.cytoscape.ding.internal.util.OrderedMouseAdapter;
 import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.event.CyEventHelper;
@@ -126,7 +127,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	private static final int PROGRESS_BAR_TICKS = 1000;
 	
 	private final CyServiceRegistrar registrar;
-	private final OrderedMouseAdapter orderedMouseAdapter;
+	private final HiDPIProxyMouseAdapter proxyMouseAdapter;
 	private final PopupMenuHelper popupMenuHelper;
 	private final JProgressBar progressBar;
 	
@@ -139,7 +140,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		this.cyAnnotator = re.getCyAnnotator();
 		
 		// Order matters, some listeners use MouseEvent.consume() to prevent subsequent listeners from running
-		this.orderedMouseAdapter = new OrderedMouseAdapter(
+		var orderedMouseAdapter = new OrderedMouseAdapter(
         	new FocusRequestListener(),
         	new CanvasKeyListener(),  // key listener also needs to listen for mouse presses
         	new ContextMenuListener(),
@@ -151,10 +152,12 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
         	new SelectionRectangleListener(),
         	new PanListener() // panning only happens if no node/edge/annotation/handle is clicked, so it needs to go last
         );
+		
+		this.proxyMouseAdapter = new HiDPIProxyMouseAdapter(orderedMouseAdapter);
         
-		addMouseListener(orderedMouseAdapter);
-		addMouseMotionListener(orderedMouseAdapter);
-		addKeyListener(orderedMouseAdapter.get(CanvasKeyListener.class));
+		addMouseListener(proxyMouseAdapter);
+		addMouseMotionListener(proxyMouseAdapter);
+		addKeyListener(proxyMouseAdapter.get(CanvasKeyListener.class));
         addMouseWheelListener(new CanvasMouseWheelListener());
         setFocusable(true); // key listener needs the focus
         
@@ -243,12 +246,24 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		};
 	}
 	
+	/**
+	 * Note, when accessing an event listener DO NOT call any of its mouse event handler methods directly.
+	 * They must be proxied through the {@link HiDPIProxyMouseAdapter}.
+	 */
 	private <T> T get(Class<T> t) {
-		return orderedMouseAdapter.get(t);
+		return proxyMouseAdapter.get(t);
 	}
 	
 	private <T> Optional<T> maybe(Class<T> t) {
-		return Optional.ofNullable(orderedMouseAdapter.get(t));
+		return Optional.ofNullable(proxyMouseAdapter.get(t));
+	}
+	
+	@Override
+	public void paint(Graphics g) {
+		var config = ((Graphics2D)g).getDeviceConfiguration();
+		var defaultTransform = config.getDefaultTransform();
+		proxyMouseAdapter.setDefaultTransform(defaultTransform);
+		super.paint(g);
 	}
 	
 	@Override
@@ -278,9 +293,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 
 	/** 
 	 * Usually called by the Annotation UI.
-	 * 
-	 * @param factory
-	 * @param callback To be be called after the anottation is added
 	 */
 	public void beginClickToAddAnnotation(AnnotationFactory<? extends Annotation> factory, Runnable callback) {
 		get(AddAnnotationListener.class).beginClickToAddAnnotation(factory, callback);
