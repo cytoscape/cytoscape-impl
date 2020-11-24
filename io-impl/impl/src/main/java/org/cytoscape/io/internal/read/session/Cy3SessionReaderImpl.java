@@ -405,8 +405,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 					CyTableMetadata tableMetadata = lookupTable(xmlTableView);
 					if(tableMetadata != null) {
 						CyTableViewFactory tableViewFactory = renderer.getTableViewFactory();
-						@SuppressWarnings("unchecked")
-						CyTableView tableView = tableViewFactory.createTableView(tableMetadata.getTable(), (Class<? extends CyIdentifiable>)tableMetadata.getType());
+						CyTableView tableView = tableViewFactory.createTableView(tableMetadata.getTable());
 						
 						VisualLexicon lexicon = renderer.getRenderingEngineFactory(TableViewRenderer.DEFAULT_CONTEXT).getVisualLexicon();
 						setTableViewStyleProperties(tableView, xmlTableView, lexicon);

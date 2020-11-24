@@ -6,7 +6,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -33,7 +32,6 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView,
 	
 	private final String rendererId;
 	private final VisualLexicon visualLexicon;
-	private final Class<? extends CyIdentifiable> tableType; // may be null
 	
 	// MKTODO do we need to look up by view suid? because if not we can get ride of viewSuidToXXX maps.
 	// MKTODO not all these maps may actually be needed
@@ -61,15 +59,13 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView,
 			CyServiceRegistrar registrar, 
 			CyTable model, 
 			VisualLexicon visualLexicon, 
-			String rendererId, 
-			Class<? extends CyIdentifiable> tableType
+			String rendererId
 	) {
 		super(model);
 		this.registrar = registrar;
 		this.eventHelper = registrar.getService(CyEventHelper.class);
 		this.rendererId = rendererId;
 		this.visualLexicon = visualLexicon;
-		this.tableType = tableType;
 		
 		this.tableLock  = new ViewLock();
 		this.columnLock = new ViewLock(tableLock);
@@ -109,11 +105,6 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView,
 		return rendererId;
 	}
 	
-	@Override
-	public Class<? extends CyIdentifiable> getTableType() {
-		return tableType;
-	}
-
 	@Override
 	public VisualLexicon getVisualLexicon() {
 		return visualLexicon;

@@ -11,7 +11,6 @@ import org.cytoscape.equations.Interpreter;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.SavePolicy;
@@ -67,7 +66,7 @@ public class BrowserTableColumnModelTest {
 		browserTable = new BrowserTable(equationCompiler, popupMenuHelper, registrar);
 		
 		CyTableViewFactoryImpl factory = new CyTableViewFactoryImpl(registrar, new BrowserTableVisualLexicon(), "id");
-		tableView = factory.createTableView(table, CyNode.class);
+		tableView = factory.createTableView(table);
 
 		BrowserTableModel model = new BrowserTableModel(tableView, equationCompiler);
 		browserTable.setModel(model);

@@ -20,7 +20,6 @@ import org.cytoscape.equations.Interpreter;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.event.DummyCyEventHelper;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
@@ -83,7 +82,7 @@ public class BrowserTableTest {
 		assertEquals(4, table.getColumns().size());
 
 		CyTableViewFactoryImpl factory = new CyTableViewFactoryImpl(registrar, new BrowserTableVisualLexicon(), "id");
-		CyTableView tableView = factory.createTableView(table, CyNode.class);
+		CyTableView tableView = factory.createTableView(table);
 
 		btm = new BrowserTableModel(tableView, equationCompiler);
 		browserTable.setModel(btm);

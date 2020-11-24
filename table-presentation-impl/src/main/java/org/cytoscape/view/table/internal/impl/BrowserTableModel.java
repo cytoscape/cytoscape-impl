@@ -17,7 +17,6 @@ import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.equations.EquationUtil;
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
@@ -88,7 +87,6 @@ public final class BrowserTableModel extends AbstractTableModel
 
 	private final CyTableView tableView;
 	private final CyTable dataTable;
-	private final Class<? extends CyIdentifiable> tableType;
 	private final EquationCompiler compiler;
 
 	private ViewMode viewMode;
@@ -107,7 +105,6 @@ public final class BrowserTableModel extends AbstractTableModel
 		this.dataTable = tableView.getModel();
 		this.compiler = compiler;
 		this.viewMode = ViewMode.ALL; 
-		this.tableType = tableView.getTableType();
 
 		attrNames = getAttributeNames(dataTable);
 		lock = new ReentrantReadWriteLock();
@@ -585,10 +582,6 @@ public final class BrowserTableModel extends AbstractTableModel
 		attrNames.add(name);
 	}
 
-	public Class<? extends CyIdentifiable> getTableType() {
-		return tableType;
-	}
-	
 	public ReadWriteLock getLock() {
 		return lock;
 	}

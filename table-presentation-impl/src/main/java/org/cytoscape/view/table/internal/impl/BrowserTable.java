@@ -89,6 +89,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
@@ -718,9 +719,11 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			if (tableModel.isPrimaryKey(convertColumnIndexToModel(column)))
 				return;
 
+			var networkTableManager = serviceRegistrar.getService(CyNetworkTableManager.class);
+			var tableType = networkTableManager.getTableType(tableModel.getDataTable());
+			
 			final CyColumn cyColumn = tableModel.getColumn(convertColumnIndexToModel(column));
-			popupMenuHelper.createColumnHeaderMenu(cyColumn, tableModel.getTableType(), BrowserTable.this,
-					e.getX(), e.getY());
+			popupMenuHelper.createColumnHeaderMenu(cyColumn, tableType, BrowserTable.this, e.getX(), e.getY());
 		}
 	}
 	
@@ -748,8 +751,11 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			final CyColumn cyColumn = tableModel.getColumn(modelColumn);
 			final Object primaryKeyValue = ((ValidatedObjectAndEditString) tableModel.getValueAt(modelRow,
 					tableModel.getDataTable().getPrimaryKey().getName())).getValidatedObject();
-			popupMenuHelper.createTableCellMenu(cyColumn, primaryKeyValue, tableModel.getTableType(), this,
-					e.getX(), e.getY(), this);
+			
+			var networkTableManager = serviceRegistrar.getService(CyNetworkTableManager.class);
+			var tableType = networkTableManager.getTableType(tableModel.getDataTable());
+			
+			popupMenuHelper.createTableCellMenu(cyColumn, primaryKeyValue, tableType, this, e.getX(), e.getY(), this);
 		}
 	}
 	

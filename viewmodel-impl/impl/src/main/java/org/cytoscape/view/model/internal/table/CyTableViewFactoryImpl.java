@@ -3,8 +3,6 @@ package org.cytoscape.view.model.internal.table;
 import java.util.Properties;
 
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -26,24 +24,14 @@ public class CyTableViewFactoryImpl implements CyTableViewFactory {
 	
 	@Override
 	public CyTableView createTableView(CyTable table) {
-		Class<? extends CyIdentifiable> tableType = null;
-		CyNetworkTableManager networkTableManager = registrar.getService(CyNetworkTableManager.class);
-		if(networkTableManager != null) {
-			tableType = networkTableManager.getTableType(table); // get the table type, may be null
-		}
-		return createTableView(table, tableType);
-	}
-	
-	@Override
-	public CyTableView createTableView(CyTable table, Class<? extends CyIdentifiable> tableType) {
-		CyTableViewImpl tableView = createTableViewImpl(table, tableType);
+		CyTableViewImpl tableView = createTableViewImpl(table);
 		listenForModelChanges(tableView);
 		return tableView;
 	}
 	
 
-	private CyTableViewImpl createTableViewImpl(CyTable table, Class<? extends CyIdentifiable> tableType) {
-		CyTableViewImpl tableView = new CyTableViewImpl(registrar, table, visualLexicon, rendererId, tableType);
+	private CyTableViewImpl createTableViewImpl(CyTable table) {
+		CyTableViewImpl tableView = new CyTableViewImpl(registrar, table, visualLexicon, rendererId);
 		for(CyColumn col : table.getColumns()) {
 			tableView.addColumn(col);
 		}
