@@ -130,7 +130,12 @@ public class ViewUtils {
 			CycleMethod method = CycleMethod.NO_CYCLE;
 			
 			return new RadialGradientPaint(center, radius, focus, fractions, colors, method);
-		}
+		} else if (strColor.startsWith("#")) {
+      // Hex string
+      String hex = strColor.substring(1);
+      int clr = Integer.parseInt(hex, 16);
+		  return new Color(clr);
+    }
 		
 		return new Color(Integer.parseInt(strColor), true);
 	}

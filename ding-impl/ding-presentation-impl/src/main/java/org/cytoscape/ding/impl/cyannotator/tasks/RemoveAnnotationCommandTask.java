@@ -41,8 +41,8 @@ public class RemoveAnnotationCommandTask extends AbstractTask {
 
   @Tunable(context="nogui",
            required=true,
-           description="The UUID of the annotation to be deleted")
-  public String uuid;
+           description="The UUID or name of the annotation to be deleted")
+  public String uuidOrName;
 
 	public RemoveAnnotationCommandTask(AnnotationManager annotationManager, CyNetworkViewManager viewManager) {
 		this.annotationManager = annotationManager;
@@ -54,16 +54,19 @@ public class RemoveAnnotationCommandTask extends AbstractTask {
 		tm.setTitle("Remove Annotation");
 
     // Get the UUID
-    var aUUID = UUID.fromString(uuid);
-    if (aUUID == null) {
-      tm.setStatusMessage("Illegal UUID");
-      return;
+    UUID aUUID = null;
+    String name = null;
+    try {
+      aUUID = UUID.fromString(uuidOrName);
+    } catch (IllegalArgumentException e) {
+      name = uuidOrName.trim();  // Assume it's a name
     }
 
     // Get a list of all annotations, looking for the one with our UUID
     for (var view: viewManager.getNetworkViewSet()) {
       for (var annotation: annotationManager.getAnnotations(view)) {
-        if (aUUID.equals(annotation.getUUID())) {
+        if ((aUUID != null && annotation.getUUID().equals(aUUID)) ||
+            (name != null && annotation.getName().equals(name))) {
 			    annotationManager.removeAnnotation(annotation);
           return;
         }

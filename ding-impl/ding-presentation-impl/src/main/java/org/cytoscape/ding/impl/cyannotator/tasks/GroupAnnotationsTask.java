@@ -1,16 +1,30 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.AnnotationTree;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.GroupAnnotationImpl;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
+import org.cytoscape.work.util.ListMultipleSelection;
 
 /*
  * #%L
@@ -36,10 +50,28 @@ import org.cytoscape.work.TaskMonitor;
  * #L%
  */
 
-public class GroupAnnotationsTask extends AbstractTask {
-
-	private final DRenderingEngine re;
+public class GroupAnnotationsTask extends AbstractTask implements ObservableTask {
+  private final AnnotationManager annotationManager;
+  private final CyNetworkViewManager viewManager;
+	private DRenderingEngine re;
+	private final RenderingEngineManager reManager;
 	private Collection<DingAnnotation> annotations;
+  private CyNetworkView savedView = null;
+  private GroupAnnotation groupAnnotation;
+
+  @Tunable(description="Network View",
+           longDescription=StringToModel.CY_NETWORK_VIEW_LONG_DESCRIPTION,
+           exampleStringValue=StringToModel.CY_NETWORK_VIEW_EXAMPLE_STRING,
+           context="nogui")
+  public CyNetworkView view = null;
+
+  @Tunable(description="Annotations to group",
+           longDescription="The list of UUIDs or unique names for annotations "+
+                           "to be part of this group.  The special keyword 'selected' may also be used.",
+           exampleStringValue="",
+           context="nogui")
+  public String annotationlist = null;
+
 	
 	public GroupAnnotationsTask(DRenderingEngine re) {
 		this(re, null);
@@ -47,13 +79,43 @@ public class GroupAnnotationsTask extends AbstractTask {
 	
 	public GroupAnnotationsTask(DRenderingEngine re, Collection<DingAnnotation> annotations) {
 		this.re = re;
+    this.reManager = null;
 		this.annotations = annotations;
+    this.annotationManager = null;
+    this.viewManager = null;
 	}
+
+	public GroupAnnotationsTask(AnnotationManager annotationManager, RenderingEngineManager reManager, CyNetworkViewManager viewManager) {
+    this.re = null;
+    this.reManager = reManager;
+		this.annotations = null;
+    this.annotationManager = annotationManager;
+    this.viewManager = viewManager;
+  }
 	
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setTitle("Group Annotations");
-		
+
+    if (view != null && reManager != null) {
+      re = (DRenderingEngine)reManager.getRenderingEngines(view).iterator().next();
+      if (annotationlist == null)
+        return;
+      if (annotationlist.equalsIgnoreCase("selected"))
+        annotations = null;
+      else {
+        annotations = new ArrayList<DingAnnotation>();
+        for (String ann: annotationlist.split(",")) {
+          DingAnnotation a = parseAnnotation(ann.trim());
+          if (a != null)
+            annotations.add(a);
+          else {
+            tm.showMessage(TaskMonitor.Level.WARN, "Unable to parse annotation: "+ann.trim());
+          }
+        }
+      }
+    }
+
 		if (re != null) {
 			CyAnnotator cyAnnotator = re.getCyAnnotator();
 			
@@ -96,8 +158,63 @@ public class GroupAnnotationsTask extends AbstractTask {
 			// Finally, set ourselves to be the selected components 
 			newGroup.setSelected(true);
 			newGroup.update();
+      groupAnnotation = newGroup;
 			
 			cyAnnotator.postUndoEdit();
 		}
 	}
+
+  @Override
+  public List<Class<?>> getResultClasses() {
+    return Arrays.asList(JSONResult.class, String.class, Annotation.class);
+  }
+
+  @Override
+	@SuppressWarnings({ "unchecked" })
+  public <R> R getResults(Class<? extends R> type) {
+    if (type.equals(Annotation.class)) {
+      return (R)groupAnnotation;
+    }
+
+    if (type.equals(String.class)) {
+      String result;
+      if (groupAnnotation == null) {
+        result = "Nothing groupd";
+      } else
+        result = "Group annotation "+groupAnnotation.toString();
+      return (R)result;
+    }
+
+    if (type.equals(JSONResult.class)) {
+      JSONResult res = () -> {
+        if (groupAnnotation == null) {
+          return "{}";
+        }
+        return ((DingAnnotation)groupAnnotation).toJSON();
+      };
+      return (R)res;
+    }
+    return null;
+  }
+
+  private DingAnnotation parseAnnotation(String ann) {
+    List<Annotation> allAnnotations = annotationManager.getAnnotations(view);
+
+    // First, try to see if it's a UUID
+    try {
+      UUID uuid = UUID.fromString(ann);
+      for (Annotation a: allAnnotations) {
+        if (a.getUUID().equals(uuid))
+          return (DingAnnotation)a;
+      }
+    } catch (IllegalArgumentException e) {
+      // Nope, try a name
+      for (Annotation a: allAnnotations) {
+        if (ann.equals(a.getName()))
+          return (DingAnnotation)a;
+      }
+    }
+
+    return null;
+  }
 }

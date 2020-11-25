@@ -62,19 +62,19 @@ public class AnnotationFactoryManager {
 			clazz = null;
 		}
 
-		if (type.equals("ARROW"))
+		if (type.equals("ARROW") || type.equals("org.cytoscape.view.presentation.annotations.ArrowAnnotation"))
 			return createAnnotation(ArrowAnnotation.class, view, argMap);
 
-		if (type.equals("SHAPE"))
+		if (type.equals("SHAPE") || type.equals("org.cytoscape.view.presentation.annotations.ShapeAnnotation"))
 			return createAnnotation(ShapeAnnotation.class, view, argMap);
 
-		if (type.equals("TEXT"))
+		if (type.equals("TEXT") || type.equals("org.cytoscape.view.presentation.annotations.TextAnnotation"))
 			return createAnnotation(TextAnnotation.class, view, argMap);
 
-		if (type.equals("BOUNDEDTEXT"))
+		if (type.equals("BOUNDEDTEXT") || type.equals("org.cytoscape.view.presentation.annotations.BoundedTextAnnotation"))
 			return createAnnotation(BoundedTextAnnotation.class, view, argMap);
 
-		if (type.equals("IMAGE"))
+		if (type.equals("IMAGE") || type.equals("org.cytoscape.view.presentation.annotations.ImageAnnotation"))
 			return createAnnotation(ImageAnnotation.class, view, argMap);
 
 		return null;

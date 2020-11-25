@@ -26,6 +26,7 @@ import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 import org.cytoscape.view.presentation.annotations.BoundedTextAnnotation;
+import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.cytoscape.view.presentation.annotations.ImageAnnotation;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
@@ -68,8 +69,8 @@ public class UpdateAnnotationTask extends AbstractTask implements ObservableTask
 
   @Tunable(context="nogui",
            required=true,
-           description="The UUID of the annotation to be deleted")
-  public String uuid;
+           description="The UUID or name of the annotation to be updated")
+  public String uuidOrName;
 
   // Standard annotation values
   @ContainsTunables
@@ -114,6 +115,8 @@ public class UpdateAnnotationTask extends AbstractTask implements ObservableTask
        standardTunables = new StandardAnnotationTunables();
        shapeTunables = new ShapeAnnotationTunables();
      } else if (type.equals(ArrowAnnotation.class)) {
+     } else if (type.equals(GroupAnnotation.class)) {
+       standardTunables = new StandardAnnotationTunables();
      }
   }
 
@@ -123,16 +126,19 @@ public class UpdateAnnotationTask extends AbstractTask implements ObservableTask
 		tm.setTitle("Update Annotation");
 
     // Get the UUID
-    var aUUID = UUID.fromString(uuid);
-    if (aUUID == null) {
-      tm.setStatusMessage("Illegal UUID");
-      return;
+    UUID aUUID = null;
+    String name = null;
+    try {
+      aUUID = UUID.fromString(uuidOrName);
+    } catch (IllegalArgumentException e) {
+      name = uuidOrName;
     }
 
     // Get a list of all annotations, looking for the one with our UUID
     for (var view: viewManager.getNetworkViewSet()) {
       for (var annotation: annotationManager.getAnnotations(view)) {
-        if (aUUID.equals(annotation.getUUID())) {
+        if ((aUUID != null && annotation.getUUID().equals(aUUID)) ||
+            (name != null && annotation.getName().equals(name))) {
 			    updateAnnotation(tm, annotation);
           updatedAnnotation = annotation;
           return;
@@ -140,7 +146,7 @@ public class UpdateAnnotationTask extends AbstractTask implements ObservableTask
       }
     }
 
-    tm.setStatusMessage("Can't find an annotation with UUID "+uuid);
+    tm.setStatusMessage("Can't find an annotation with UUID "+uuidOrName);
 
 	}
 
@@ -159,6 +165,8 @@ public class UpdateAnnotationTask extends AbstractTask implements ObservableTask
     } else if (type.equals(ShapeAnnotation.class)) {
       standardTunables.update(tm, annotation);
       shapeTunables.update(tm, annotation);
+    } else if (type.equals(GroupAnnotation.class)) {
+      standardTunables.update(tm, annotation);
     }
     annotation.update();
   }

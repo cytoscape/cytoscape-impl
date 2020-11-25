@@ -503,7 +503,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 			Map<String, String> argMap = createArgMap(s);
 			DingAnnotation annotation = null;
 			String type = argMap.get(DingAnnotation.TYPE);
-			
+
 			if (type == null)
 				continue;
 
