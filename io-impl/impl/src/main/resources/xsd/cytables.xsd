@@ -40,6 +40,7 @@
       </xs:sequence>
       <xs:attribute name="table" use="required" type="xs:string"/>
       <xs:attribute name="rendererId" use="required" type="xs:string"/>
+      <xs:attribute name="tableNamespace" use="optional" type="xs:string"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="columnView">

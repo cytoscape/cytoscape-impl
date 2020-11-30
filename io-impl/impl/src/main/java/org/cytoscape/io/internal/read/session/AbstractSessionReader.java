@@ -20,7 +20,6 @@ import org.cytoscape.io.internal.util.GroupUtil;
 import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.io.read.CySessionReader;
-import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTableMetadata;
@@ -30,8 +29,7 @@ import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySession;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.model.table.CyTableView;
+import org.cytoscape.view.model.table.CyTableViewMetadata;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
@@ -84,11 +82,10 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	protected Set<CyProperty<?>> properties = new HashSet<>();
 	protected final Set<CyNetwork> networks = new LinkedHashSet<>();
 	protected final Set<CyNetworkView> networkViews = new LinkedHashSet<>();
-	protected final Set<CyTableView> tableViews = new LinkedHashSet<>();
+	protected final Set<CyTableViewMetadata> tableViews = new LinkedHashSet<>();
 	protected final Set<VisualStyle> networkStyles = new HashSet<>();
 	protected final Set<VisualStyle> tableStyles = new HashSet<>();
 	protected final Map<CyNetworkView, String> visualStyleMap = new WeakHashMap<>();
-	protected final Map<View<CyColumn>, String> columnStyleMap = new WeakHashMap<>();
 	protected final Set<CyTableMetadata> tableMetadata = new HashSet<>();
 	protected final Map<String, List<File>> appFileListMap = new HashMap<>();
 	protected final Map<Class<? extends CyIdentifiable>, Map<Object, ? extends CyIdentifiable>> objectMap = new HashMap<>();
@@ -134,7 +131,6 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 				.viewVisualStyleMap(visualStyleMap)
 				
 				.tableViews(tableViews) 
-				.viewColumnStyleMap(columnStyleMap) 
 				.tableStyles(tableStyles)
 				
 				.properties(properties)

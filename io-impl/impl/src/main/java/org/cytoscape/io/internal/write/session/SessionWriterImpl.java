@@ -436,7 +436,7 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 		
 		try {
 			CyTablesXMLWriter writer = new CyTablesXMLWriter(serviceRegistrar, 
-					session.getTables(), session.getTableViews(), session.getTableVisualStyleMap(), tableFilenamesBySUID, zos);
+					session.getTables(), session.getTableViews(), tableFilenamesBySUID, zos);
 			writer.run(taskMonitor);
 		} finally {
 			zos.closeEntry();

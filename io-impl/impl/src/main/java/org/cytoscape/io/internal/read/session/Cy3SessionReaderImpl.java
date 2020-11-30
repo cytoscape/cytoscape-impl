@@ -23,8 +23,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.TableViewRenderer;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.equations.EquationUtil;
 import org.cytoscape.io.internal.read.datatable.CSVCyReaderFactory;
@@ -63,11 +61,8 @@ import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.model.table.CyTableView;
-import org.cytoscape.view.model.table.CyTableViewFactory;
+import org.cytoscape.view.model.table.CyColumnViewMetadata;
+import org.cytoscape.view.model.table.CyTableViewMetadata;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.TaskMonitor;
 
@@ -394,25 +389,31 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			throw new IOException(e);
 		}
 		
-		CyApplicationManager appManager = serviceRegistrar.getService(CyApplicationManager.class);
-		
 		if(xmlTables.getTableViews() != null) {
 			List<TableView> xmlTableViews = xmlTables.getTableViews().getTableView();
+			
 			for(TableView xmlTableView : xmlTableViews) {
-				TableViewRenderer renderer = appManager.getTableViewRenderer(xmlTableView.getRendererId());
+				String rendererId = xmlTableView.getRendererId();
+				String namespace  = xmlTableView.getTableNamespace();
 				
-				if(renderer != null) {
-					CyTableMetadata tableMetadata = lookupTable(xmlTableView);
-					if(tableMetadata != null) {
-						CyTableViewFactory tableViewFactory = renderer.getTableViewFactory();
-						CyTableView tableView = tableViewFactory.createTableView(tableMetadata.getTable());
-						
-						VisualLexicon lexicon = renderer.getRenderingEngineFactory(TableViewRenderer.DEFAULT_CONTEXT).getVisualLexicon();
-						setTableViewStyleProperties(tableView, xmlTableView, lexicon);
-						
-						tableViews.add(tableView);
+				List<CyColumnViewMetadata> columnViews = new ArrayList<>();
+				for(ColumnView xmlColView : xmlTableView.getColumnView()) {
+					String styleTitle = xmlColView.getStyleTitle();
+					String colName = xmlColView.getColumnName();
+					
+					Map<String,String> bypassValues = new HashMap<>();
+					for(BypassValue xmlBypass : xmlColView.getBypassValue()) {
+						bypassValues.put(xmlBypass.getName(), xmlBypass.getValue());
 					}
+					columnViews.add(new CyColumnViewMetadata(colName, styleTitle, bypassValues));
 				}
+				
+				CyTableViewMetadata tableViewMetadata = new CyTableViewMetadata(-1, namespace, rendererId, columnViews);
+				
+				CyTableMetadata table = lookupTable(xmlTableView);
+				tableViewMetadata.setUnderlyingTable(table);
+				
+				tableViews.add(tableViewMetadata);
 			}
 		}
 	}
@@ -428,28 +429,6 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			}
 		}
 		return null;
-	}
-	
-	private void setTableViewStyleProperties(CyTableView tableView, TableView xmlTableView, VisualLexicon lexicon) {
-		// Restore column view visual property bypass values. Other values come from the style.
-		for(ColumnView xmlColumnView : xmlTableView.getColumnView()) {
-			View<CyColumn> colView = tableView.getColumnView(xmlColumnView.getColumnName());
-			
-			for(BypassValue xmlBypass : xmlColumnView.getBypassValue()) {
-				VisualProperty<?> vp = lexicon.lookup(CyColumn.class, xmlBypass.getName());
-				if(vp != null) {
-					Object parsedValue = vp.parseSerializableString(xmlBypass.getValue());
-					if(parsedValue != null) {
-						colView.setLockedValue(vp, parsedValue);
-					}
-				}
-			}
-			
-			String styleTitle = xmlColumnView.getStyleTitle();
-			if(styleTitle != null) {
-				columnStyleMap.put(colView, styleTitle);
-			}
-		}
 	}
 	
 

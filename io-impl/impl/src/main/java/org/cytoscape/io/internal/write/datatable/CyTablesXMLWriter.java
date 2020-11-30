@@ -26,7 +26,6 @@ package org.cytoscape.io.internal.write.datatable;
 
 import java.io.OutputStream;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import javax.xml.bind.JAXBContext;
@@ -45,11 +44,8 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableMetadata;
 import org.cytoscape.model.VirtualColumnInfo;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.model.table.CyTableView;
-import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.model.table.CyColumnViewMetadata;
+import org.cytoscape.view.model.table.CyTableViewMetadata;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -58,16 +54,14 @@ public class CyTablesXMLWriter extends AbstractTask implements CyWriter {
 	private final CyServiceRegistrar registrar;
 	
 	private final Set<CyTableMetadata> tables;
-	private final Set<CyTableView> tableViews;
-	private final Map<View<CyColumn>,String> tableStyleMap;
+	private final Set<CyTableViewMetadata> tableViews;
 	private final OutputStream outputStream;
 	private Map<Long, String> tableFileNamesBySUID;
 	
 	public CyTablesXMLWriter(
 			CyServiceRegistrar registrar,
 			Set<CyTableMetadata> tables, 
-			Set<CyTableView> tableViews, 
-			Map<View<CyColumn>,String> tableStyleMap,
+			Set<CyTableViewMetadata> tableViews, 
 			Map<Long, String> tableFileNamesBySUID, 
 			OutputStream outputStream) {
 		
@@ -76,7 +70,6 @@ public class CyTablesXMLWriter extends AbstractTask implements CyWriter {
 		this.tableViews = tableViews;
 		this.outputStream = outputStream;
 		this.tableFileNamesBySUID = tableFileNamesBySUID;
-		this.tableStyleMap = tableStyleMap;
 	}
 	
 	@Override
@@ -135,48 +128,32 @@ public class CyTablesXMLWriter extends AbstractTask implements CyWriter {
 		TableViews xmlTableViews = new TableViews();
 		model.setTableViews(xmlTableViews);
 		
-		for(CyTableView tableView : tableViews) {
-			// MKTODO This is a temporary hack to handle facade tables. This is fragile, if someone changes 
-			// how AbstractTableFacade.getPrimaryKey() works it could break this code.
-			
-			// The table browser is passed facade tables not the actual tables, so we need to dig down and get the real SUID.
-			// Should probably add an interfce CyTableFacade and use instanceof to test for it.
-			Long actualSuid = tableView.getModel().getPrimaryKey().getTable().getSUID();
-			String tableName = tableFileNamesBySUID.get(actualSuid);
-			if(tableName == null)
+		for(CyTableViewMetadata tableViewMetadata : tableViews) {
+			Long actualSuid = tableViewMetadata.getSavedTableSUID();
+			String tableFileName = tableFileNamesBySUID.get(actualSuid);
+			if(tableFileName == null)
 				continue;
 			
-			TableView xmlTabelView = new TableView();
-			xmlTabelView.setRendererId(tableView.getRendererId());
-			xmlTabelView.setTable(tableName);
-			xmlTableViews.getTableView().add(xmlTabelView);
+			TableView xmlTableView = new TableView();
+			xmlTableView.setRendererId(tableViewMetadata.getRendererID());
+			xmlTableView.setTableNamespace(tableViewMetadata.getNamespace());
+			xmlTableView.setTable(tableFileName);
+			xmlTableViews.getTableView().add(xmlTableView);
 			
-			for(View<CyColumn> colView : tableView.getColumnViews()) {
+			for(CyColumnViewMetadata colViewMetadata : tableViewMetadata.getColumnViews()) {
 				ColumnView xmlColumnView = new ColumnView();
-				xmlColumnView.setColumnName(colView.getModel().getName());
-				xmlTabelView.getColumnView().add(xmlColumnView);
+				xmlColumnView.setColumnName(colViewMetadata.getName());
+				xmlColumnView.setStyleTitle(colViewMetadata.getStyleName());
+				xmlTableView.getColumnView().add(xmlColumnView);
 				
-				String styleName = tableStyleMap.get(colView);
-				if(styleName != null)
-					xmlColumnView.setStyleTitle(styleName);
-				
-				VisualLexicon lexicon = getVisualLexicon(tableView);
-				for(VisualProperty vp : lexicon.getAllVisualProperties()) {
-					if(colView.isDirectlyLocked(vp)) {
-						Object value = colView.getVisualProperty(vp);
-						if(value != null) {
-							String valueString = null;
-							try {
-								valueString = vp.toSerializableString(value);
-							} catch(ClassCastException e) { }
-							
-							if(valueString != null) {
-								BypassValue bypassValue = new BypassValue();
-								bypassValue.setName(vp.getIdString());
-								bypassValue.setValue(valueString);
-								xmlColumnView.getBypassValue().add(bypassValue);
-							}
-						}
+				for(var entry : colViewMetadata.getBypassValues().entrySet()) {
+					var vpName = entry.getKey();
+					var value = entry.getValue();
+					if(value != null) {
+						BypassValue bypassValue = new BypassValue();
+						bypassValue.setName(vpName);
+						bypassValue.setValue(value);
+						xmlColumnView.getBypassValue().add(bypassValue);
 					}
 				}
 			}
@@ -185,15 +162,4 @@ public class CyTablesXMLWriter extends AbstractTask implements CyWriter {
 		return model;
 	}
 
-	
-	private VisualLexicon getVisualLexicon(CyTableView tableView) {
-		var renderingEngineManager = registrar.getService(RenderingEngineManager.class);
-		var renderingEngines = renderingEngineManager.getRenderingEngines(tableView);
-		for(var re : renderingEngines) {
-			if(Objects.equals(tableView.getRendererId(), re.getRendererId())) {
-				return re.getVisualLexicon();
-			}
-		}
-		return null;
-	}
 }
