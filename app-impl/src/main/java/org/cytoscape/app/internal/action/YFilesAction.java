@@ -30,6 +30,6 @@ public class YFilesAction extends AbstractCyAction {
     @Override
     public void actionPerformed(ActionEvent e) {
 
-        openBrowser.openURL(YFILES_URL);
+        openBrowser.openURL(YFILES_URL, false);
     }
 }

@@ -58,6 +58,7 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 	private JLabel opacityLabel;
 	private JLabel brightnessLabel;
 	private JLabel contrastLabel;
+	private JLabel rotationLabel;
 	
 	private ColorButton borderColorButton;
 	private JComboBox<Integer> borderWidthCombo;
@@ -65,6 +66,7 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 	private JSlider opacitySlider;
 	private JSlider brightnessSlider;
 	private JSlider contrastSlider;
+	private JSlider rotationSlider;
 
 	public ImageAnnotationEditor(AnnotationFactory<ImageAnnotation> factory, CyServiceRegistrar serviceRegistrar) {
 		super(factory, serviceRegistrar);
@@ -95,6 +97,9 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 			getOpacitySlider().setValue((int) (annotation.getImageOpacity() * 100));
 			getBrightnessSlider().setValue(annotation.getImageBrightness());
 			getContrastSlider().setValue(annotation.getImageContrast());
+
+      // Rotation
+			getRotationSlider().setValue((int)annotation.getRotation());
 		} else {
 			// Reset these image adjustments fields (we don't want new images to appear damaged to the user)
 			getOpacitySlider().setValue(100);
@@ -122,6 +127,7 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 			annotation.setImageOpacity(getOpacitySlider().getValue() / 100.0f);
 			annotation.setImageBrightness(getBrightnessSlider().getValue());
 			annotation.setImageContrast(getContrastSlider().getValue());
+      annotation.setRotation((double)getRotationSlider().getValue());
 		}
 	}
 
@@ -133,6 +139,7 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 		opacityLabel = new JLabel("Opacity:");
 		brightnessLabel = new JLabel("Brightness:");
 		contrastLabel = new JLabel("Contrast:");
+		rotationLabel = new JLabel("Rotation Angle:");
 
 		var sep = new JSeparator();
 		
@@ -163,12 +170,14 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 										.addComponent(opacityLabel)
 										.addComponent(brightnessLabel)
 										.addComponent(contrastLabel)
+										.addComponent(rotationLabel)
 								)
 								.addPreferredGap(ComponentPlacement.RELATED)
 								.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
 										.addComponent(getOpacitySlider(), 100, 140, 140)
 										.addComponent(getBrightnessSlider(), 100, 140, 140)
 										.addComponent(getContrastSlider(), 100, 140, 140)
+										.addComponent(getRotationSlider(), 100, 140, 140)
 								)
 						)
 				)
@@ -202,11 +211,16 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 						.addComponent(contrastLabel)
 						.addComponent(getContrastSlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
+				.addGroup(layout.createParallelGroup(LEADING, false)
+						.addComponent(rotationLabel)
+						.addComponent(getRotationSlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
 		);
 
-		makeSmall(borderColorLabel, borderOpacityLabel, borderWidthLabel, opacityLabel, brightnessLabel, contrastLabel);
+		makeSmall(borderColorLabel, borderOpacityLabel, borderWidthLabel, opacityLabel, 
+              brightnessLabel, contrastLabel, rotationLabel);
 		makeSmall(getBorderColorButton(), getBorderOpacitySlider(), getBorderWidthCombo(), getOpacitySlider(),
-				getBrightnessSlider(), getContrastSlider());
+				getBrightnessSlider(), getContrastSlider(), getRotationSlider());
 	}
 	
 	private ColorButton getBorderColorButton() {
@@ -283,6 +297,19 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 
 		return contrastSlider;
 	}
+	
+	private JSlider getRotationSlider() {
+		if (rotationSlider == null) {
+			rotationSlider = new JSlider(-180, 180, 0);
+			rotationSlider.setMajorTickSpacing(90);
+			rotationSlider.setMinorTickSpacing(45);
+			rotationSlider.setPaintTicks(true);
+			rotationSlider.setPaintLabels(true);
+			rotationSlider.addChangeListener(evt -> apply());
+		}
+		
+		return rotationSlider;
+  }
 	
 	private void updateEnabled() {
 		var borderWidth = (int) getBorderWidthCombo().getSelectedItem();

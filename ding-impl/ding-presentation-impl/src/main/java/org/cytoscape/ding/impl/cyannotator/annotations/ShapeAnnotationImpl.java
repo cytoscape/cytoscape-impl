@@ -38,282 +38,289 @@ import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
  */
 
 public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnnotation {
-	
-	private ShapeType shapeType;
-	private double borderWidth = 1.0;
-	private Paint borderColor = Color.BLACK; // These are paint's so we can do gradients
-	private Paint fillColor; // These are paint's so we can do gradients
-	private double borderOpacity = 100.0;
-	private double fillOpacity = 100.0;
-	private Shape shape;
-	protected double factor = 1.0;
+  
+  private ShapeType shapeType;
+  private double borderWidth = 1.0;
+  private Paint borderColor = Color.BLACK; // These are paint's so we can do gradients
+  private Paint fillColor; // These are paint's so we can do gradients
+  private double borderOpacity = 100.0;
+  private double fillOpacity = 100.0;
+  private Shape shape;
+  protected double factor = 1.0;
 
-	public ShapeAnnotationImpl(DRenderingEngine re, double width, double height, boolean usedForPreviews) {
-		super(re, usedForPreviews);
-		setSize(width, height);
-		shapeType = ShapeType.RECTANGLE;
-		borderWidth = 1.0;
-	}
+  public ShapeAnnotationImpl(DRenderingEngine re, double width, double height, boolean usedForPreviews) {
+    super(re, usedForPreviews);
+    setSize(width, height);
+    shapeType = ShapeType.RECTANGLE;
+    borderWidth = 1.0;
+  }
 
-	public ShapeAnnotationImpl(ShapeAnnotationImpl c, double width, double height, boolean usedForPreviews) {
-		super(c, usedForPreviews);
-		setSize(width, height);
-		this.width = width;
-		this.height = height;
-		shapeType = GraphicsUtilities.getShapeType(c.getShapeType());
-		borderColor = c.getBorderColor();
-		borderWidth = c.getBorderWidth();
-		fillColor = c.getFillColor();
-		name = c.getName() != null ? c.getName() : getDefaultName();
+  public ShapeAnnotationImpl(ShapeAnnotationImpl c, double width, double height, boolean usedForPreviews) {
+    super(c, usedForPreviews);
+    setSize(width, height);
+    this.width = width;
+    this.height = height;
+    shapeType = GraphicsUtilities.getShapeType(c.getShapeType());
+    borderColor = c.getBorderColor();
+    borderWidth = c.getBorderWidth();
+    fillColor = c.getFillColor();
+    name = c.getName() != null ? c.getName() : getDefaultName();
 
-		if (shapeType == ShapeType.CUSTOM)
-			shape = GraphicsUtilities.copyCustomShape(c.getShape(), width, height);
-		else
-			shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, width, height);
-	}
+    if (shapeType == ShapeType.CUSTOM)
+      shape = GraphicsUtilities.copyCustomShape(c.getShape(), width, height);
+    else
+      shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, width, height);
+  }
 
-	public ShapeAnnotationImpl(
-			DRenderingEngine re,
-			double x,
-			double y,
-			ShapeType shapeType,
-			double width,
-			double height,
-			Paint fillColor,
-			Paint edgeColor,
-			float edgeThickness
-	) {
-		super(re, x, y);
+  public ShapeAnnotationImpl(
+      DRenderingEngine re,
+      double x,
+      double y,
+      double rotation,
+      ShapeType shapeType,
+      double width,
+      double height,
+      Paint fillColor,
+      Paint edgeColor,
+      float edgeThickness
+  ) {
+    super(re, x, y, rotation);
 
-		this.shapeType = shapeType;
-		this.fillColor = fillColor;
-		this.borderColor = edgeColor;
-		this.borderWidth = edgeThickness;
-		this.width = width;
-		this.height = height;
-		this.shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, width, height);
-	}
+    this.shapeType = shapeType;
+    this.fillColor = fillColor;
+    this.borderColor = edgeColor;
+    this.borderWidth = edgeThickness;
+    this.width = width;
+    this.height = height;
+    this.shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, width, height);
+  }
 
-	public ShapeAnnotationImpl(DRenderingEngine re, Map<String, String> argMap) {
-		super(re, argMap);
+  public ShapeAnnotationImpl(DRenderingEngine re, Map<String, String> argMap) {
+    super(re, argMap);
 
-		double zoom = getLegacyZoom(argMap);
+    double zoom = getLegacyZoom(argMap);
 
-		// If this is an old bounded text, we might not (yet) have a width or height
-		width = ViewUtils.getDouble(argMap, ShapeAnnotation.WIDTH, 100.0) / zoom;
-		height = ViewUtils.getDouble(argMap, ShapeAnnotation.HEIGHT, 100.0) / zoom;
+    // If this is an old bounded text, we might not (yet) have a width or height
+    width = ViewUtils.getDouble(argMap, ShapeAnnotation.WIDTH, 100.0) / zoom;
+    height = ViewUtils.getDouble(argMap, ShapeAnnotation.HEIGHT, 100.0) / zoom;
 
-		fillColor = ViewUtils.getColor(argMap, FILLCOLOR, null);
-		fillOpacity = ViewUtils.getDouble(argMap, FILLOPACITY, 100.0);
-		
-		borderWidth = ViewUtils.getDouble(argMap, EDGETHICKNESS, 1.0) / zoom;
-		borderColor = ViewUtils.getColor(argMap, EDGECOLOR, Color.BLACK);
-		borderOpacity = ViewUtils.getDouble(argMap, EDGEOPACITY, 100.0);
+    fillColor = ViewUtils.getColor(argMap, FILLCOLOR, null);
+    fillOpacity = ViewUtils.getDouble(argMap, FILLOPACITY, 100.0);
+    
+    borderWidth = ViewUtils.getDouble(argMap, EDGETHICKNESS, 1.0) / zoom;
+    borderColor = ViewUtils.getColor(argMap, EDGECOLOR, Color.BLACK);
+    borderOpacity = ViewUtils.getDouble(argMap, EDGEOPACITY, 100.0);
 
-		shapeType = GraphicsUtilities.getShapeType(argMap, SHAPETYPE, ShapeType.RECTANGLE);
+    shapeType = GraphicsUtilities.getShapeType(argMap, SHAPETYPE, ShapeType.RECTANGLE);
 
-		if (shapeType != ShapeType.CUSTOM)
-			shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, width, height);
-		else if (argMap.containsKey(CUSTOMSHAPE))
-			shape = GraphicsUtilities.deserializeShape(argMap.get(CUSTOMSHAPE));
-	}
+    if (shapeType != ShapeType.CUSTOM)
+      shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, width, height);
+    else if (argMap.containsKey(CUSTOMSHAPE))
+      shape = GraphicsUtilities.deserializeShape(argMap.get(CUSTOMSHAPE));
+  }
 
-	@Override
-	public Class<? extends Annotation> getType() {
-		return ShapeAnnotation.class;
-	}
-	
-	@Override
-	public Map<String, String> getArgMap() {
-		var argMap = super.getArgMap();
-		argMap.put(TYPE, ShapeAnnotation.class.getName());
+  @Override
+  public Class<? extends Annotation> getType() {
+    return ShapeAnnotation.class;
+  }
+  
+  @Override
+  public Map<String, String> getArgMap() {
+    var argMap = super.getArgMap();
+    argMap.put(TYPE, ShapeAnnotation.class.getName());
 
-		if (fillColor != null)
-			argMap.put(FILLCOLOR, ViewUtils.convertColor(fillColor));
+    if (fillColor != null)
+      argMap.put(FILLCOLOR, ViewUtils.convertColor(fillColor));
 
-		argMap.put(FILLOPACITY, Double.toString(fillOpacity));
+    argMap.put(FILLOPACITY, Double.toString(fillOpacity));
 
-		if (borderColor != null)
-			argMap.put(EDGECOLOR, ViewUtils.convertColor(borderColor));
+    if (borderColor != null)
+      argMap.put(EDGECOLOR, ViewUtils.convertColor(borderColor));
 
-		argMap.put(EDGETHICKNESS, Double.toString(borderWidth));
-		argMap.put(EDGEOPACITY, Double.toString(borderOpacity));
-		
-		if (shapeType != null) {
-			argMap.put(SHAPETYPE, shapeType.name());
-			
-			if (shapeType.equals(ShapeType.CUSTOM) && shape != null)
-				argMap.put(CUSTOMSHAPE, GraphicsUtilities.serializeShape(shape));
-		}
-		
-		argMap.put(ShapeAnnotation.WIDTH,  Double.toString(width));
-		argMap.put(ShapeAnnotation.HEIGHT, Double.toString(height));
+    argMap.put(EDGETHICKNESS, Double.toString(borderWidth));
+    argMap.put(EDGEOPACITY, Double.toString(borderOpacity));
+    
+    if (shapeType != null) {
+      argMap.put(SHAPETYPE, shapeType.name());
+      
+      if (shapeType.equals(ShapeType.CUSTOM) && shape != null)
+        argMap.put(CUSTOMSHAPE, GraphicsUtilities.serializeShape(shape));
+    }
+    
+    argMap.put(ShapeAnnotation.WIDTH,  Double.toString(width));
+    argMap.put(ShapeAnnotation.HEIGHT, Double.toString(height));
 
-		return argMap;
-	}
-	
-	/**
-	 * Width and height are not applied, only colors, shape, etc.
-	 */
-	@Override
-	public void setStyle(Map<String, String> argMap) {
-		if (argMap != null) {
-			double zoom = getLegacyZoom(argMap);
+    return argMap;
+  }
+  
+  /**
+   * Width and height are not applied, only colors, shape, etc.
+   */
+  @Override
+  public void setStyle(Map<String, String> argMap) {
+    if (argMap != null) {
+      double zoom = getLegacyZoom(argMap);
 
-			setFillColor(ViewUtils.getColor(argMap, FILLCOLOR, null));
-			setFillOpacity(ViewUtils.getDouble(argMap, FILLOPACITY, 100.0));
-			
-			setBorderWidth(ViewUtils.getDouble(argMap, EDGETHICKNESS, 1.0) / zoom);
-			setBorderColor(ViewUtils.getColor(argMap, EDGECOLOR, Color.BLACK));
-			setBorderOpacity(ViewUtils.getDouble(argMap, EDGEOPACITY, 100.0));
+      setFillColor(ViewUtils.getColor(argMap, FILLCOLOR, null));
+      setFillOpacity(ViewUtils.getDouble(argMap, FILLOPACITY, 100.0));
+      
+      setBorderWidth(ViewUtils.getDouble(argMap, EDGETHICKNESS, 1.0) / zoom);
+      setBorderColor(ViewUtils.getColor(argMap, EDGECOLOR, Color.BLACK));
+      setBorderOpacity(ViewUtils.getDouble(argMap, EDGEOPACITY, 100.0));
 
-			setShapeType(GraphicsUtilities.getShapeType(argMap, SHAPETYPE, ShapeType.RECTANGLE));
-		}
-	}
+      setShapeType(GraphicsUtilities.getShapeType(argMap, SHAPETYPE, ShapeType.RECTANGLE));
+    }
+  }
 
-	@Override
-	public List<String> getSupportedShapes() {
-		return GraphicsUtilities.getSupportedShapes();
-	}
+  @Override
+  public List<String> getSupportedShapes() {
+    return GraphicsUtilities.getSupportedShapes();
+  }
 
-	@Override
-	public Shape getShape() {
-		return shape;
-	}
+  @Override
+  public Shape getShape() {
+    return shape;
+  }
 
-	@Override
-	public String getShapeType() {
-		return shapeType.shapeName();
-	}
+  @Override
+  public String getShapeType() {
+    return shapeType.shapeName();
+  }
 
-	public ShapeType getShapeTypeEnum() {
-		return shapeType;
-	}
+  public ShapeType getShapeTypeEnum() {
+    return shapeType;
+  }
 
-	public void setShapeType(ShapeType type) {
-		if (shapeType != type) {
-			var oldValue = shapeType;
-			shapeType = type;
-	
-			if (shapeType != ShapeType.CUSTOM)
-				shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, width, height);
-	
-			update();
-			firePropertyChange("shapeType", oldValue, type);
-		}
-	}
+  public void setShapeType(ShapeType type) {
+    if (shapeType != type) {
+      var oldValue = shapeType;
+      shapeType = type;
+  
+      if (shapeType != ShapeType.CUSTOM)
+        shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, width, height);
+  
+      update();
+      firePropertyChange("shapeType", oldValue, type);
+    }
+  }
 
-	@Override
-	public void setShapeType(String type) {
-		var shapeType = getShapeFromString(type);
+  @Override
+  public void setShapeType(String type) {
+    var shapeType = getShapeFromString(type);
 
-		if (!Objects.equals(this.shapeType, shapeType))
-			setShapeType(shapeType);
-	}
+    if (!Objects.equals(this.shapeType, shapeType))
+      setShapeType(shapeType);
+  }
 
-	@Override
-	public double getBorderWidth() {
-		return borderWidth;
-	}
+  @Override
+  public double getBorderWidth() {
+    return borderWidth;
+  }
 
-	@Override
-	public void setBorderWidth(double width) {
-		if (borderWidth != width) {
-			var oldValue = borderWidth;
-			borderWidth = width;
-			update();
-			firePropertyChange("borderWidth", oldValue, width);
-		}
-	}
+  @Override
+  public void setBorderWidth(double width) {
+    if (borderWidth != width) {
+      var oldValue = borderWidth;
+      borderWidth = width;
+      update();
+      firePropertyChange("borderWidth", oldValue, width);
+    }
+  }
 
-	@Override
-	public Paint getBorderColor() {
-		return borderColor;
-	}
+  @Override
+  public Paint getBorderColor() {
+    return borderColor;
+  }
 
-	@Override
-	public double getBorderOpacity() {
-		return borderOpacity;
-	}
+  @Override
+  public double getBorderOpacity() {
+    return borderOpacity;
+  }
 
-	@Override
-	public Paint getFillColor() {
-		return fillColor;
-	}
+  @Override
+  public Paint getFillColor() {
+    return fillColor;
+  }
 
-	@Override
-	public double getFillOpacity() {
-		return fillOpacity;
-	}
+  @Override
+  public double getFillOpacity() {
+    return fillOpacity;
+  }
 
-	@Override
-	public void setBorderColor(Paint color) {
-		if (!Objects.equals(borderColor, color)) {
-			var oldValue = borderColor;
-			borderColor = color;
-			update();
-			firePropertyChange("borderColor", oldValue, color);
-		}
-	}
+  @Override
+  public void setBorderColor(Paint color) {
+    if (!Objects.equals(borderColor, color)) {
+      var oldValue = borderColor;
+      borderColor = color;
+      update();
+      firePropertyChange("borderColor", oldValue, color);
+    }
+  }
 
-	@Override
-	public void setBorderOpacity(double opacity) {
-		if (borderOpacity != opacity) {
-			var oldValue = borderOpacity;
-			borderOpacity = opacity;
-			update();
-			firePropertyChange("borderOpacity", oldValue, opacity);
-		}
-	}
+  @Override
+  public void setBorderOpacity(double opacity) {
+    if (borderOpacity != opacity) {
+      var oldValue = borderOpacity;
+      borderOpacity = opacity;
+      update();
+      firePropertyChange("borderOpacity", oldValue, opacity);
+    }
+  }
 
-	@Override
-	public void setFillColor(Paint color) {
-		if (!Objects.equals(fillColor, color)) {
-			var oldValue = fillColor;
-			fillColor = color;
-			update();
-			firePropertyChange("fillColor", oldValue, color);
-		}
-	}
+  @Override
+  public void setFillColor(Paint color) {
+    if (!Objects.equals(fillColor, color)) {
+      var oldValue = fillColor;
+      fillColor = color;
+      update();
+      firePropertyChange("fillColor", oldValue, color);
+    }
+  }
 
-	@Override
-	public void setFillOpacity(double opacity) {
-		if (fillOpacity != opacity) {
-			var oldValue = fillOpacity;
-			fillOpacity = opacity;
-			update();
-			firePropertyChange("fillOpacity", oldValue, opacity);
-		}
-	}
-	
-	@Override
-	public void setCustomShape(Shape shape) {
-		if (!Objects.equals(this.shape, shape)) {
-			var oldValue = this.shape;
-			this.shapeType = ShapeType.CUSTOM;
-			this.shape = shape;
-			update();
-			firePropertyChange("shape", oldValue, shape);
-		}
-	}
+  @Override
+  public void setFillOpacity(double opacity) {
+    if (fillOpacity != opacity) {
+      var oldValue = fillOpacity;
+      fillOpacity = opacity;
+      update();
+      firePropertyChange("fillOpacity", oldValue, opacity);
+    }
+  }
+  
+  @Override
+  public void setCustomShape(String stringShape) {
+      Shape shape = GraphicsUtilities.deserializeShape(stringShape);
+      setCustomShape(shape);
+  }
 
-	@Override
-	public void paint(Graphics g, boolean showSelection) {
-		super.paint(g, showSelection);
+  @Override
+  public void setCustomShape(Shape shape) {
+    if (!Objects.equals(this.shape, shape)) {
+      var oldValue = this.shape;
+      this.shapeType = ShapeType.CUSTOM;
+      this.shape = shape;
+      update();
+      firePropertyChange("shape", oldValue, shape);
+    }
+  }
 
-		// MKTODO
-//		if (canvas.isPrinting())
-//			GraphicsUtilities.drawShape(g, getX(), getY(), getWidth() - 1, getHeight() - 1, this, true);
-//		else
-			GraphicsUtilities.drawShape(g, getX(), getY(), getWidth() - 1, getHeight() - 1, this, false);
-	}
+  @Override
+  public void paint(Graphics g, boolean showSelection) {
+    super.paint(g, showSelection);
 
-	private ShapeType getShapeFromString(String shapeName) {
-		for (var type : ShapeType.values()) {
-			if (type.shapeName().equals(shapeName))
-				return type;
-		}
-		
-		return ShapeType.RECTANGLE;
-	}
+    // MKTODO
+//    if (canvas.isPrinting())
+//      GraphicsUtilities.drawShape(g, getX(), getY(), getWidth() - 1, getHeight() - 1, this, true);
+//    else
+      GraphicsUtilities.drawShape(g, getX(), getY(), getWidth() - 1, getHeight() - 1, getRotation(), this, false);
+  }
+
+  private ShapeType getShapeFromString(String shapeName) {
+    for (var type : ShapeType.values()) {
+      if (type.shapeName().equals(shapeName))
+        return type;
+    }
+    
+    return ShapeType.RECTANGLE;
+  }
 }

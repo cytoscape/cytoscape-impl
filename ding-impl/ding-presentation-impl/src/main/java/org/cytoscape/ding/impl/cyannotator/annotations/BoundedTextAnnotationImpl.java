@@ -83,6 +83,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 			DRenderingEngine re,
 			double x,
 			double y,
+			double rotation,
 			ShapeType shapeType,
 			double width,
 			double height,
@@ -93,7 +94,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 			int compCount,
 			double zoom
 	) {
-		super(re, x, y, shapeType, width, height, fillColor, edgeColor, edgeThickness);
+		super(re, x, y, rotation, shapeType, width, height, fillColor, edgeColor, edgeThickness);
 		this.text = text;
 		this.font = new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float) initialFontSize;
@@ -208,7 +209,6 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		var g2 = (Graphics2D) g.create();
 		g2.setColor(textColor);
 		g2.setFont(font);
-		g2.setClip(getBounds());
 
 		// Handle opacity
 		int alpha = textColor.getAlpha();
@@ -218,8 +218,18 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 		int halfWidth = (int) (getWidth() - getTextWidth()) / 2;
 		int halfHeight = (int) (getHeight() + getTextHeight() / 2) / 2; // Note, this is + because we start at the baseline
+    var currentTransform = g2.getTransform();
+    if (rotation != 0) {
+      g2.rotate(Math.toRadians(rotation), (int) (getX() + getWidth()/2), (int) (getY() + getHeight()/2));
+		  g2.setClip(getBounds());
+		  g2.drawString(text, (int) getX() + halfWidth, (int) getY() + halfHeight);
+      g2.setTransform(currentTransform);
+    } else {
+		  g2.setClip(getBounds());
+		  g2.drawString(text, (int) getX() + halfWidth, (int) getY() + halfHeight);
+    }
 
-		g2.drawString(text, (int) getX() + halfWidth, (int) getY() + halfHeight);
+
 		g2.setComposite(originalComposite);
 	}
 

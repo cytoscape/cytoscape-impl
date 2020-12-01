@@ -34,16 +34,46 @@ import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.GroupAnnotationImpl;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.presentation.annotations.AnnotationManager;
+import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class UngroupAnnotationsTaskFactory implements NetworkViewLocationTaskFactory {
-	
+public class UngroupAnnotationsTaskFactory implements NetworkViewLocationTaskFactory, TaskFactory {
+  private final AnnotationManager annotationManager;
+  private final CyNetworkViewManager viewManager;
 	private final DingRenderer dingRenderer;
-	
+	private final RenderingEngineManager reManager;
+
 	public UngroupAnnotationsTaskFactory(DingRenderer dingRenderer) {
 		this.dingRenderer = dingRenderer;
+    this.annotationManager = null;
+    this.reManager = null;
+    this.viewManager = null;
 	}
+
+	public UngroupAnnotationsTaskFactory(
+			AnnotationManager annotationManager,
+			RenderingEngineManager reManager,
+      CyNetworkViewManager viewManager
+	) {
+    this.annotationManager = annotationManager;
+    this.reManager = reManager;
+    this.viewManager = viewManager;
+    this.dingRenderer = null;
+  }
 	
+	@Override
+	public TaskIterator createTaskIterator() {
+		return new TaskIterator(new UngroupAnnotationsTask(annotationManager, reManager, viewManager));
+  }
+
+  @Override
+  public boolean isReady() {
+    return true;
+  }
+
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView networkView, Point2D javaPt, Point2D xformPt) {
 		DRenderingEngine re = dingRenderer.getRenderingEngine(networkView);

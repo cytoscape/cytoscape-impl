@@ -80,8 +80,13 @@ public class AnnotationCanvas<GP extends GraphicsProvider> extends DingCanvas<GP
 			if(pm.isCancelled()) {
 				return;
 			}
+      /*
 			if(visibleArea.intersects(a.getBounds())) {
-				a.paint(g, showSelection);
+			 	a.paint(g, showSelection);
+			}
+      */
+			if(visibleArea.intersects(a.getBounds()) && a.getGroupParent() == null) {
+			 	a.paint(g, showSelection);
 			}
 			dpm.increment();
 		}

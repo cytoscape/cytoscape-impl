@@ -2,6 +2,12 @@ package org.cytoscape.ding;
 
 import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
 import static org.cytoscape.work.ServiceProperties.ID;
+import static org.cytoscape.work.ServiceProperties.COMMAND;
+import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
+import static org.cytoscape.work.ServiceProperties.COMMAND_EXAMPLE_JSON;
+import static org.cytoscape.work.ServiceProperties.COMMAND_LONG_DESCRIPTION;
+import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
+import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
 import static org.cytoscape.work.ServiceProperties.IN_CONTEXT_MENU;
@@ -68,11 +74,13 @@ import org.cytoscape.ding.impl.cyannotator.tasks.CopyAnnotationStyleTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.DuplicateAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.EditAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.GroupAnnotationsTaskFactory;
+import org.cytoscape.ding.impl.cyannotator.tasks.ListAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.PasteAnnotationStyleTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.RemoveAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.RemoveSelectedAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.ReorderSelectedAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.UngroupAnnotationsTaskFactory;
+import org.cytoscape.ding.impl.cyannotator.tasks.UpdateAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.ui.AnnotationMediator;
 import org.cytoscape.ding.impl.editor.CustomGraphicsVisualPropertyEditor;
 import org.cytoscape.ding.impl.editor.CyCustomGraphicsValueEditor;
@@ -95,11 +103,18 @@ import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewFactoryProvider;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
+import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
+import org.cytoscape.view.presentation.annotations.BoundedTextAnnotation;
+import org.cytoscape.view.presentation.annotations.GroupAnnotation;
+import org.cytoscape.view.presentation.annotations.ImageAnnotation;
+import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
+import org.cytoscape.view.presentation.annotations.TextAnnotation;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
@@ -110,6 +125,7 @@ import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
 import org.cytoscape.view.vizmap.mappings.ValueTranslator;
+import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
 
 /*
@@ -181,6 +197,8 @@ public class CyActivator extends AbstractCyActivator {
 				new ObjectPositionEditor(objectPositionValueEditor, continuousMappingCellRendererFactory, serviceRegistrar);
 
 		var netViewFactoryProvider = getService(bc, CyNetworkViewFactoryProvider.class);
+		var netViewManager = getService(bc, CyNetworkViewManager.class);
+    var renderingEngineManager = getService(bc, RenderingEngineManager.class);
 		var viewFactoryConfig = DingNetworkViewFactory.getNetworkViewConfig(netViewFactoryProvider, dVisualLexicon);
 		var netViewFactory = netViewFactoryProvider.createNetworkViewFactory(dVisualLexicon, DingRenderer.ID, viewFactoryConfig);
 		
@@ -481,6 +499,352 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_MENU, NETWORK_GROUP_MENU);
 			props.setProperty(TITLE, "Ungroup Annotations");
 			registerService(bc, factory, NetworkViewLocationTaskFactory.class, props);
+		}
+
+    // -------------------------- Annotation Commands ----------------------------- //
+    {
+			// Annotation list
+			var factory = new ListAnnotationsTaskFactory(annotationManager, netViewManager);
+			var props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "annotation");
+			props.setProperty(COMMAND, "list");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_DESCRIPTION, "List all current annotations");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "List all annotations, or annotations for the specified view, if provided.");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[{\"canvas\":\"foreground\",\"name\":\"Text\","+
+                                             "\"type\":\"org.cytoscape.view.presentation.annotations.TextAnnotation\","+
+                                             "\"uuid\":\"e643934f-cf94-4ab8-affe-b86675034bee\""+
+                                             "\"x\":\"2807.0\",\"y\":\"1268.0\",\"z\":\"0\"}]");
+
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+
+    {
+			// Annotation add shape
+			var factory = new AddAnnotationTaskFactory(annotationManager, shapeAnnotationFactory);
+			var props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "annotation");
+			props.setProperty(COMMAND, "add shape");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_DESCRIPTION, "Add a shape annotation");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Adds a shape annotation to a view.  The view must be specified.");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{"+
+                                              "\"edgeThickness\": \"4.0\","+
+                                              "\"canvas\": \"foreground\","+
+                                              "\"fillOpacity\": \"100.0\","+
+                                              "\"rotation\": \"0.0\","+
+                                              "\"type\": \"org.cytoscape.view.presentation.annotations.ShapeAnnotation\","+
+                                              "\"uuid\": \"177c3b25-a138-4734-99f4-94316dd555c7\","+
+                                              "\"fillColor\": \"#9999FF\","+
+                                              "\"shapeType\": \"RECTANGLE\","+
+                                              "\"edgeColor\": \"#000000\","+
+                                              "\"edgeOpacity\": \"100.0\","+
+                                              "\"name\": \"Shape 1\","+
+                                              "\"x\": \"2735.0\","+
+                                              "\"width\": \"152.0\","+
+                                              "\"y\": \"1221.0761988896875\","+
+                                              "\"z\": \"2\","+
+                                              "\"height\": \"171.0\""+
+                                              "}");
+
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+
+    {
+			// Annotation add text
+			var factory = new AddAnnotationTaskFactory(annotationManager, textAnnotationFactory);
+			var props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "annotation");
+			props.setProperty(COMMAND, "add text");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_DESCRIPTION, "Adds a text annotation"); 
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Adds a text annotation to a view.  The view must be specified. ");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{"+
+                                              "\"canvas\": \"foreground\","+
+                                              "\"color\": \"#000000\","+
+                                              "\"rotation\": \"0.0\","+
+                                              "\"type\": \"org.cytoscape.view.presentation.annotations.TextAnnotation\","+
+                                              "\"fontStyle\": \"plain\","+
+                                              "\"uuid\": \"e643934f-cf94-4ab8-affe-b86675034bee\","+
+                                              "\"fontFamily\": \"Abyssinica SIL\","+
+                                              "\"name\": \"Text\","+
+                                              "\"x\": \"2807.0\","+
+                                              "\"y\": \"1268.0\","+
+                                              "\"z\": \"0\","+
+                                              "\"fontSize\": \"74\","+
+                                              "\"text\": \"Text\""+
+                                              "}");
+
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+
+    {
+			// Annotation add bounded text
+			var factory = new AddAnnotationTaskFactory(annotationManager, boundedAnnotationFactory);
+			var props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "annotation");
+			props.setProperty(COMMAND, "add bounded text");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_DESCRIPTION, "Add a bounded text annotation");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Adds a bounded text annotation to a view.  The view must be specified.");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{"+
+                                              "\"edgeThickness\": \"1.0\","+
+                                              "\"canvas\": \"foreground\","+
+                                              "\"fillOpacity\": \"50.0\","+
+                                              "\"color\": \"#000000\","+
+                                              "\"rotation\": \"0.0\","+
+                                              "\"type\": \"org.cytoscape.view.presentation.annotations.BoundedTextAnnotation\","+
+                                              "\"fontStyle\": \"0\","+
+                                              "\"uuid\": \"8f5d3f59-d023-4522-bfb5-164794b233cf\","+
+                                              "\"fillColor\": \"#FF66FF\","+
+                                              "\"shapeType\": \"RECTANGLE\","+
+                                              "\"edgeColor\": \"#000000\","+
+                                              "\"fontFamily\": \"Abyssinica SIL\","+
+                                              "\"edgeOpacity\": \"100.0\","+
+                                              "\"name\": \"Text\","+
+                                              "\"x\": \"2930.0\","+
+                                              "\"width\": \"163.0\","+
+                                              "\"y\": \"1176.0\","+
+                                              "\"z\": \"1\","+
+                                              "\"fontSize\": \"72\","+
+                                              "\"text\": \"Text\","+
+                                              "\"height\": \"104.0\""+
+                                              "}");
+
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+
+    {
+			// Annotation add image
+			var factory = new AddAnnotationTaskFactory(annotationManager, imageAnnotationFactory);
+			var props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "annotation");
+			props.setProperty(COMMAND, "add image");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_DESCRIPTION, "Adds an image annotation."); 
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Adds an image annotation to the specified view.  The view must be specified.");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{"+
+                                              "\"edgeThickness\": \"0.0\","+
+                                              "\"canvas\": \"foreground\","+
+                                              "\"fillOpacity\": \"100.0\","+
+                                              "\"rotation\": \"0.0\","+
+                                              "\"type\": \"org.cytoscape.view.presentation.annotations.ImageAnnotation\","+
+                                              "\"uuid\": \"0218f867-008e-48ed-800c-a2fc8863af33\","+
+                                              "\"URL\": \"file:/home/scooter/Bliss1.jpg\","+
+                                              "\"shapeType\": \"RECTANGLE\","+
+                                              "\"edgeColor\": \"#000000\","+
+                                              "\"brightness\": \"0\","+
+                                              "\"edgeOpacity\": \"100.0\","+
+                                              "\"contrast\": \"0\","+
+                                              "\"name\": \"Bliss1.jpg\","+
+                                              "\"x\": \"2705.0\","+
+                                              "\"width\": \"492.0\","+
+                                              "\"y\": \"1422.0\","+
+                                              "\"z\": \"1\","+
+                                              "\"opacity\": \"1.0\","+
+                                              "\"height\": \"369.0\""+
+                                              "}");
+
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+
+    {
+			// Annotation remove
+			var factory = new RemoveAnnotationTaskFactory(annotationManager, netViewManager);
+			var props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "annotation");
+			props.setProperty(COMMAND, "delete");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+			props.setProperty(COMMAND_DESCRIPTION, "Deletes an annotation from a view.");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Deletes an annotation from a view.");
+
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+
+    {
+			// Annotation update shape
+			var factory = new UpdateAnnotationTaskFactory(ShapeAnnotation.class, annotationManager, netViewManager);
+			var props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "annotation");
+			props.setProperty(COMMAND, "update shape");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_DESCRIPTION, "Updates a shape annotation.");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Updates a shape annotation, changing the given properties.");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{"+
+                                              "\"edgeThickness\": \"4.0\","+
+                                              "\"canvas\": \"foreground\","+
+                                              "\"fillOpacity\": \"100.0\","+
+                                              "\"rotation\": \"0.0\","+
+                                              "\"type\": \"org.cytoscape.view.presentation.annotations.ShapeAnnotation\","+
+                                              "\"uuid\": \"177c3b25-a138-4734-99f4-94316dd555c7\","+
+                                              "\"fillColor\": \"#9999FF\","+
+                                              "\"shapeType\": \"RECTANGLE\","+
+                                              "\"edgeColor\": \"#000000\","+
+                                              "\"edgeOpacity\": \"100.0\","+
+                                              "\"name\": \"Shape 1\","+
+                                              "\"x\": \"2735.0\","+
+                                              "\"width\": \"152.0\","+
+                                              "\"y\": \"1221.0761988896875\","+
+                                              "\"z\": \"2\","+
+                                              "\"height\": \"171.0\""+
+                                              "}");
+
+
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+
+    {
+			// Annotation update text
+			var factory = new UpdateAnnotationTaskFactory(TextAnnotation.class, annotationManager, netViewManager);
+			var props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "annotation");
+			props.setProperty(COMMAND, "update text");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_DESCRIPTION, "Updates a text annotation.");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Updates a text annotation, changing the given properties.");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{"+
+                                              "\"canvas\": \"foreground\","+
+                                              "\"color\": \"#000000\","+
+                                              "\"rotation\": \"0.0\","+
+                                              "\"type\": \"org.cytoscape.view.presentation.annotations.TextAnnotation\","+
+                                              "\"fontStyle\": \"plain\","+
+                                              "\"uuid\": \"e643934f-cf94-4ab8-affe-b86675034bee\","+
+                                              "\"fontFamily\": \"Abyssinica SIL\","+
+                                              "\"name\": \"Text\","+
+                                              "\"x\": \"2807.0\","+
+                                              "\"y\": \"1268.0\","+
+                                              "\"z\": \"0\","+
+                                              "\"fontSize\": \"74\","+
+                                              "\"text\": \"Text\""+
+                                              "}");
+
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+
+    {
+			// Annotation update bounded text
+			var factory = new UpdateAnnotationTaskFactory(BoundedTextAnnotation.class, annotationManager, netViewManager);
+			var props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "annotation");
+			props.setProperty(COMMAND, "update bounded text");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_DESCRIPTION, "Updates a bounded text annotation.");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Updates a bounded text annotation, changing the given properties.");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{"+
+                                              "\"edgeThickness\": \"1.0\","+
+                                              "\"canvas\": \"foreground\","+
+                                              "\"fillOpacity\": \"50.0\","+
+                                              "\"color\": \"#000000\","+
+                                              "\"rotation\": \"0.0\","+
+                                              "\"type\": \"org.cytoscape.view.presentation.annotations.BoundedTextAnnotation\","+
+                                              "\"fontStyle\": \"0\","+
+                                              "\"uuid\": \"8f5d3f59-d023-4522-bfb5-164794b233cf\","+
+                                              "\"fillColor\": \"#FF66FF\","+
+                                              "\"shapeType\": \"RECTANGLE\","+
+                                              "\"edgeColor\": \"#000000\","+
+                                              "\"fontFamily\": \"Abyssinica SIL\","+
+                                              "\"edgeOpacity\": \"100.0\","+
+                                              "\"name\": \"Text\","+
+                                              "\"x\": \"2930.0\","+
+                                              "\"width\": \"163.0\","+
+                                              "\"y\": \"1176.0\","+
+                                              "\"z\": \"1\","+
+                                              "\"fontSize\": \"72\","+
+                                              "\"text\": \"Text\","+
+                                              "\"height\": \"104.0\""+
+                                              "}");
+
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+
+    {
+			// Annotation update image
+			var factory = new UpdateAnnotationTaskFactory(ImageAnnotation.class, annotationManager, netViewManager);
+			var props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "annotation");
+			props.setProperty(COMMAND, "update image");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_DESCRIPTION, "Updates an image annotation.");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Updates an image annotation, changing the given properties.");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{"+
+                                              "\"edgeThickness\": \"0.0\","+
+                                              "\"canvas\": \"foreground\","+
+                                              "\"fillOpacity\": \"100.0\","+
+                                              "\"rotation\": \"0.0\","+
+                                              "\"type\": \"org.cytoscape.view.presentation.annotations.ImageAnnotation\","+
+                                              "\"uuid\": \"0218f867-008e-48ed-800c-a2fc8863af33\","+
+                                              "\"URL\": \"file:/home/scooter/Bliss1.jpg\","+
+                                              "\"shapeType\": \"RECTANGLE\","+
+                                              "\"edgeColor\": \"#000000\","+
+                                              "\"brightness\": \"0\","+
+                                              "\"edgeOpacity\": \"100.0\","+
+                                              "\"contrast\": \"0\","+
+                                              "\"name\": \"Bliss1.jpg\","+
+                                              "\"x\": \"2705.0\","+
+                                              "\"width\": \"492.0\","+
+                                              "\"y\": \"1422.0\","+
+                                              "\"z\": \"1\","+
+                                              "\"opacity\": \"1.0\","+
+                                              "\"height\": \"369.0\""+
+                                              "}");
+
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+
+    {
+			// Annotation update image
+			var factory = new UpdateAnnotationTaskFactory(GroupAnnotation.class, annotationManager, netViewManager);
+			var props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "annotation");
+			props.setProperty(COMMAND, "update group");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_DESCRIPTION, "Updates a group annotation.");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Updates a group annotation, changing the given properties.");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{"+
+                                              "\"canvas\": \"foreground\","+
+                                              "\"rotation\": \"0.0\","+
+                                              "\"name\": \"Group 1\","+
+                                              "\"x\": \"2705.0\","+
+                                              "\"y\": \"1176.0\","+
+                                              "\"z\": \"0\","+
+                                              "\"type\": \"org.cytoscape.view.presentation.annotations.GroupAnnotation\","+
+                                              "\"uuid\": \"1486946b-f68b-4569-b0ab-80c545348932\","+
+                                              "\"memberUUIDs\": \"e643934f-cf94-4ab8-affe-b86675034bee,0218f867-008e-48ed-800c-a2fc8863af33,177c3b25-a138-4734-99f4-94316dd555c7,8f5d3f59-d023-4522-bfb5-164794b233cf\""+
+                                              "}"); 
+			registerService(bc, factory, TaskFactory.class, props);
+    }
+
+    {
+			var factory = new GroupAnnotationsTaskFactory(annotationManager, renderingEngineManager, netViewManager);
+			var props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "annotation");
+			props.setProperty(COMMAND, "group");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_DESCRIPTION, "Combines a list of annotations into a group annotation.");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Combines a list of annotations into a group annotation.");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{"+
+                                              "\"canvas\": \"foreground\","+
+                                              "\"rotation\": \"0.0\","+
+                                              "\"name\": \"Group 1\","+
+                                              "\"x\": \"2705.0\","+
+                                              "\"y\": \"1176.0\","+
+                                              "\"z\": \"0\","+
+                                              "\"type\": \"org.cytoscape.view.presentation.annotations.GroupAnnotation\","+
+                                              "\"uuid\": \"1486946b-f68b-4569-b0ab-80c545348932\","+
+                                              "\"memberUUIDs\": \"e643934f-cf94-4ab8-affe-b86675034bee,0218f867-008e-48ed-800c-a2fc8863af33,177c3b25-a138-4734-99f4-94316dd555c7,8f5d3f59-d023-4522-bfb5-164794b233cf\""+
+                                              "}"); 
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+
+    {
+			var factory = new UngroupAnnotationsTaskFactory(annotationManager, renderingEngineManager, netViewManager);
+			var props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "annotation");
+			props.setProperty(COMMAND, "ungroup");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+			props.setProperty(COMMAND_DESCRIPTION, ""); // FIXME
+			props.setProperty(COMMAND_LONG_DESCRIPTION, ""); // FIXME
+			registerService(bc, factory, TaskFactory.class, props);
 		}
 
 		// Set mouse drag selection modes

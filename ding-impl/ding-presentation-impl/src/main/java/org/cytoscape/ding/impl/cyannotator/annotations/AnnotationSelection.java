@@ -20,6 +20,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -140,7 +141,7 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 	private void updateBounds() {
 		union = null;
 		for(var a : this) {
-			var bounds = a.getBounds();
+			var bounds = GraphicsUtilities.getRotatedBounds(a);
 			union = (union == null) ? bounds : union.createUnion(bounds);
 		}
 	}
@@ -337,7 +338,7 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 	public void paint(Graphics2D g) {
 		if (isEmpty())
 			return;
-		
+
 		/* Set up all of our anti-aliasing, etc. here to avoid doing it redundantly */
 		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 		g.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);

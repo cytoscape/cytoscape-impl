@@ -98,12 +98,13 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			DRenderingEngine re,
 			double x,
 			double y,
+			double rotation,
 			URL url,
 			BufferedImage image,
 			double zoom,
 			CustomGraphicsManager customGraphicsManager
 	) {
-		super(re, x, y, ShapeType.RECTANGLE, 0, 0, null, null, 0.0f);
+		super(re, x, y, rotation, ShapeType.RECTANGLE, 0, 0, null, null, 0.0f);
 
 		if (image == null)
 			throw new IllegalArgumentException("'image' must not be null.");
@@ -126,12 +127,13 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			DRenderingEngine re,
 			double x,
 			double y,
+      double rotation,
 			URL url,
 			String svg,
 			double zoom,
 			CustomGraphicsManager customGraphicsManager
 	) {
-		super(re, x, y, ShapeType.RECTANGLE, 0, 0, null, null, 0.0f);
+		super(re, x, y, rotation, ShapeType.RECTANGLE, 0, 0, null, null, 0.0f);
 		
 		if (svg == null)
 			throw new IllegalArgumentException("'svg' must not be null.");
@@ -161,10 +163,11 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			AbstractURLImageCustomGraphics<?> cg,
 			int x,
 			int y,
+      double rotation,
 			double zoom,
 			CustomGraphicsManager customGraphicsManager
 	) {
-		super(re, x, y, ShapeType.RECTANGLE, 0, 0, null, null, 0.0f);
+		super(re, x, y, rotation, ShapeType.RECTANGLE, 0, 0, null, null, 0.0f);
 		
 		if (cg == null)
 			throw new IllegalArgumentException("'cg' must not be null.");
@@ -569,6 +572,10 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 				g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 				g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 	
+        var currentTransform = g2.getTransform();
+        if (rotation != 0)
+          g2.rotate(Math.toRadians(rotation), (int) (getX() + getWidth()/2), (int) (getY() + getHeight()/2));
+
 				g2.drawImage(
 						image, 
 						Math.round((float) getX()), 
@@ -577,6 +584,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 						Math.round((float) getHeight()), 
 						null
 				);
+        g2.setTransform(currentTransform);
 			}
 		}
 		

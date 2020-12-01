@@ -1,6 +1,8 @@
 package org.cytoscape.ding.impl.cyannotator.annotations;
 
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -192,6 +194,25 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 	@Override
 	public void paint(Graphics g, boolean showSelected) {
 		super.paint(g, showSelected);
+    if (annotations != null && annotations.size() > 0) {
+      Graphics2D g2 = (Graphics2D)g;
+			AffineTransform savedTransform = g2.getTransform();
+      AffineTransform transform = new AffineTransform();
+			Rectangle2D bounds = getBounds();
+
+      if (rotation != 0.0) {
+        transform.rotate(Math.toRadians(rotation), bounds.getX() + bounds.getWidth()/2, bounds.getY() + bounds.getHeight()/2);
+        g2.transform(transform);
+      }
+
+      for (DingAnnotation annotation: annotations)
+        annotation.paint(g, false);
+
+      if (rotation != 0.0) {
+        g2.setTransform(savedTransform);
+      }
+    }
+
 		updateBounds();
 	}
 
