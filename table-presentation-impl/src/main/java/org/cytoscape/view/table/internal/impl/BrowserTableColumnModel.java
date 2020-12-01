@@ -3,9 +3,11 @@ package org.cytoscape.view.table.internal.impl;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
@@ -16,6 +18,8 @@ public class BrowserTableColumnModel extends DefaultTableColumnModel {
 	private final Map<TableColumn,Double> gravities = new HashMap<>();
 	private final Set<TableColumn> visibleColumns = new HashSet<>();
 	
+	private final List<BrowserTableColumnModelListener> listeners = new CopyOnWriteArrayList<>();
+	
 	
 	public void addColumn(TableColumn col, Long viewSuid, boolean isVisible, double gravity) {
 		col.setIdentifier(viewSuid);
@@ -24,6 +28,15 @@ public class BrowserTableColumnModel extends DefaultTableColumnModel {
 			visibleColumns.add(col);
 			super.addColumn(col);
 		}
+	}
+	
+	
+	public void addBrowserTableColumnModelListener(BrowserTableColumnModelListener listener) {
+		listeners.add(listener);
+	}
+	
+	public void removeBrowserTableColumnModelListener(BrowserTableColumnModelListener listener) {
+		listeners.remove(listener);
 	}
 	
 	@Override
@@ -109,15 +122,27 @@ public class BrowserTableColumnModel extends DefaultTableColumnModel {
 	
 	@Override
 	public void moveColumn(int columnIndex, int newIndex) {
+		BrowserTableColumnModelGravityEvent event = null;
 		if(columnIndex != newIndex) {
-			var c1 = super.getColumn(columnIndex);
-			var c2 = super.getColumn(newIndex);
-			var g1 = gravities.get(c1);
-			var g2 = gravities.get(c2);
+			final var c1 = super.getColumn(columnIndex);
+			final var c2 = super.getColumn(newIndex);
+			final var g1 = gravities.get(c1);
+			final var g2 = gravities.get(c2);
 			gravities.put(c1, g2);
 			gravities.put(c2, g1);
+			
+			Long c1Suid = (Long) c1.getIdentifier();
+			Long c2Suid = (Long) c2.getIdentifier();
+			event = new BrowserTableColumnModelGravityEvent(c1Suid, g2, c2Suid, g1);
 		}
+		
 		super.moveColumn(columnIndex, newIndex);
+		
+		if(event != null) {
+			for(var listener : listeners) {
+				listener.columnGravityChanged(event);
+			}
+		}
 	}
 	
 	public TableColumn getColumnByModelIndex(int modelColumnIndex) {

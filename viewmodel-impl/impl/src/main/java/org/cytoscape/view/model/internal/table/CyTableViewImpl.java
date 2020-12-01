@@ -162,6 +162,11 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView,
 		return dataSuidToCol.getOrElse(suid, null);
 	}
 	
+	@Override
+	public View<CyColumn> getColumnView(long viewSuid) {
+		return viewSuidToCol.getOrElse(viewSuid, null);
+	}
+	
 	public View<CyColumn> getColumnViewByName(String name) {
 		// can't use CyTable.getColumn(name) because the column may already have been deleted
 		for(Tuple2<Long,CyColumnViewImpl> entry : dataSuidToCol) {

@@ -21,6 +21,8 @@ import org.cytoscape.view.model.table.CyTableView;
 import org.cytoscape.view.presentation.property.table.TableMode;
 import org.cytoscape.view.table.internal.impl.BrowserTable;
 import org.cytoscape.view.table.internal.impl.BrowserTableColumnModel;
+import org.cytoscape.view.table.internal.impl.BrowserTableColumnModelGravityEvent;
+import org.cytoscape.view.table.internal.impl.BrowserTableColumnModelListener;
 import org.cytoscape.view.table.internal.impl.BrowserTableModel;
 import org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode;
 
@@ -29,10 +31,33 @@ public class VisualPropertyChangeListener implements TableViewChangedListener {
 	private final CyTableView tableView;
 	private final BrowserTable browserTable;
 	
+	
 	public VisualPropertyChangeListener(BrowserTable browserTable, CyTableView tableView) {
 		this.tableView = tableView;
 		this.browserTable = browserTable;
+		handleTableColumnReorder();
 	}
+	
+	
+	private void handleTableColumnReorder() {	
+		var colModel = (BrowserTableColumnModel) browserTable.getColumnModel();
+		 
+		colModel.addBrowserTableColumnModelListener(new BrowserTableColumnModelListener() {
+			@Override
+			public void columnGravityChanged(BrowserTableColumnModelGravityEvent event) {
+				System.out.println(event);
+				// Called when the user manually reorders columns by dragging.
+				var colView1 = tableView.getColumnView(event.getColumn1Suid());
+				var colView2 = tableView.getColumnView(event.getColumn2Suid());
+				var colGrav1 = event.getColumn1Gravity();
+				var colGrav2 = event.getColumn2Gravity();
+				
+				colView1.setLockedValue(COLUMN_GRAVITY, colGrav1);
+				colView2.setLockedValue(COLUMN_GRAVITY, colGrav2);
+			}
+		});
+	}
+	
 	
 	@Override
 	public void handleEvent(TableViewChangedEvent<?> e) {
