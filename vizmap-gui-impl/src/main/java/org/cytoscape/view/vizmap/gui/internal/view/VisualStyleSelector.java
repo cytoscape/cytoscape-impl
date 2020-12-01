@@ -252,14 +252,15 @@ public class VisualStyleSelector extends JPanel {
 	public void update(SortedSet<VisualStyle> styles, VisualStyle currentStyle) {
 		allStyles.clear();
 		
+		
 		if (styles != null)
 			allStyles.addAll(styles);
 		
 		createPreviewRenderingEngines();
-		filterStyles();
+		getStyleGrid().update(allStyles);
 		
 		getStyleGrid().setSelectedValue(currentStyle, getStyleGrid().isShowing());
-		update();
+		update(true);
 	}
 	
 	public void setSelectedStyle(VisualStyle style) {
@@ -632,10 +633,21 @@ public class VisualStyleSelector extends JPanel {
 		return btn;
 	}
 	
-	private void update() {
+	public void setDirty(VisualStyle style) {
+		getStyleGrid().setDirty(style);
+	}
+	
+	void update() {
+		update(false);
+	}
+	
+	void update(boolean updateThumbnails) {
 		setEnabled(!isEmpty());
 		getEditBtn().setSelected(isEditMode());
 		getToolBarPanel().setVisible(isEditMode());
+		
+		if (updateThumbnails)
+			getStyleGrid().updateStylePanels();
 		
 		getStyleGrid().getSelectionModel().setSelectionMode(
 				isEditMode() ? ListSelectionModel.MULTIPLE_INTERVAL_SELECTION : ListSelectionModel.SINGLE_SELECTION);
@@ -1011,6 +1023,22 @@ public class VisualStyleSelector extends JPanel {
 			}
 		}
 		
+		void setDirty(VisualStyle style) {
+			if (style != null) {
+				var item = getItem(style);
+				
+				if (item != null)
+					item.setDirty();
+			}
+		}
+		
+		void updateStylePanels() {
+			for (var itemPnl : vsPanelMap.values()) {
+				if (itemPnl.isDirty())
+					itemPnl.update();
+			}
+		}
+		
 		void update() {
 			invokeOnEDT(() -> {
 				this.removeAll();
@@ -1062,6 +1090,11 @@ public class VisualStyleSelector extends JPanel {
 				this.revalidate();
 				this.repaint();
 			});
+		}
+		
+		void update(List<VisualStyle> data) {
+			vsPanelMap.clear();
+			filterStyles();
 		}
 		
 		private StylePanel createItem(VisualStyle style) {
@@ -1355,7 +1388,6 @@ public class VisualStyleSelector extends JPanel {
 		private final List<VisualStyle> data = new ArrayList<>();
 
 		public StyleGridModel(List<VisualStyle> data) {
-			
 			this.data.addAll(data);
 		}
 		
@@ -1376,6 +1408,7 @@ public class VisualStyleSelector extends JPanel {
 		private JTextField titleTextField;
 		
 		private final VisualStyle style;
+		private boolean dirty = true;
 
 		StylePanel(VisualStyle style) {
 			this.style = style;
@@ -1423,6 +1456,8 @@ public class VisualStyleSelector extends JPanel {
 					.addComponent(getImageLabel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getTitleTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
+			
+//			update();
 		}
 		
 		JLabel getImageLabel() {
@@ -1431,24 +1466,6 @@ public class VisualStyleSelector extends JPanel {
 				imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
 				imageLabel.setOpaque(true);
 				imageLabel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, BORDER_COLOR));
-				
-				var bgPaint = style.getDefaultValue(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT);
-				var bgColor = bgPaint instanceof Color ? (Color) bgPaint : BG_COLOR;
-				imageLabel.setBackground(bgColor);
-				
-				if (previewNetView != null) {
-					var engine = getRenderingEngine(style);
-					
-					if (engine != null) {
-						style.apply(previewNetView);
-						previewNetView.updateView();
-						previewNetView.fitContent();
-						
-						var img = engine.createImage(IMAGE_WIDTH, IMAGE_HEIGHT);
-						var icon = new ImageIcon(img); 
-						imageLabel.setIcon(icon);
-					}
-				}
 			}
 			
 			return imageLabel;
@@ -1467,7 +1484,6 @@ public class VisualStyleSelector extends JPanel {
 								"</p></html>";
 					}
 				};
-				titleTextField.setToolTipText(style.getTitle()); // Otherwise our getToolTipText() won't be called!
 				titleTextField.setHorizontalAlignment(SwingConstants.CENTER);
 				titleTextField.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
 				titleTextField.setBackground(BG_COLOR);
@@ -1477,6 +1493,41 @@ public class VisualStyleSelector extends JPanel {
 			}
 			
 			return titleTextField;
+		}
+		
+		boolean isDirty() {
+			return dirty;
+		}
+		
+		void setDirty() {
+			this.dirty = true;
+		}
+		
+		void update() {
+			// Image
+			var bgPaint = style.getDefaultValue(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT);
+			var bgColor = bgPaint instanceof Color ? (Color) bgPaint : BG_COLOR;
+			getImageLabel().setBackground(bgColor);
+			
+			if (previewNetView != null) {
+				var engine = getRenderingEngine(style);
+				
+				if (engine != null) {
+					style.apply(previewNetView);
+					previewNetView.updateView();
+					previewNetView.fitContent();
+					
+					var img = engine.createImage(IMAGE_WIDTH, IMAGE_HEIGHT);
+					var icon = new ImageIcon(img); 
+					getImageLabel().setIcon(icon);
+				}
+			}
+			
+			// Title
+			getTitleTextField().setText(style.getTitle());
+			getTitleTextField().setToolTipText(style.getTitle()); // Otherwise our getToolTipText() won't be called!
+			
+			dirty = false;
 		}
 		
 		@Override
