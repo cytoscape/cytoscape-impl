@@ -45,7 +45,10 @@ public class TableBrowserStyleMediator implements VisualStyleChangedListener, Co
 
 	
 	private void updateColumn(CyColumnView view, VisualStyle style) {
-		style.apply(view);
+		if(style == null)
+			view.clearVisualProperties();
+		else
+			style.apply(view);
 	}
 	
 	

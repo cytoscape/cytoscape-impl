@@ -6,7 +6,6 @@ import java.awt.Image;
 import java.awt.print.Printable;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Properties;
 
 import javax.swing.Icon;
@@ -17,7 +16,6 @@ import javax.swing.table.TableModel;
 
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -29,7 +27,6 @@ import org.cytoscape.view.model.events.TableViewChangedListener;
 import org.cytoscape.view.model.table.CyTableView;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.table.internal.impl.BrowserTable;
-import org.cytoscape.view.table.internal.impl.BrowserTableColumnModel;
 import org.cytoscape.view.table.internal.impl.BrowserTableModel;
 import org.cytoscape.view.table.internal.impl.PopupMenuHelper;
 import org.cytoscape.view.table.internal.impl.icon.VisualPropertyIconFactory;
@@ -59,21 +56,6 @@ public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 		
 		browserTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		browserTable.setModel(model);
-		
-		//move and hide SUID and selected by default
-		final List<String> attrList = model.getAllAttributeNames();
-
-		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) browserTable.getColumnModel();
-		
-		if (attrList.contains(CyNetwork.SUID))
-			columnModel.moveColumn(browserTable.convertColumnIndexToView(model.mapColumnNameToColumnIndex(CyNetwork.SUID)), 0);
-		
-		if (attrList.contains(CyNetwork.SELECTED))
-			columnModel.moveColumn(browserTable.convertColumnIndexToView(model.mapColumnNameToColumnIndex(CyNetwork.SELECTED)), 1);
-		
-		attrList.remove(CyNetwork.SUID);
-		attrList.remove(CyNetwork.SELECTED);
-		browserTable.setVisibleAttributeNames(attrList);
 		
 		// So the drop event can go straight through the table to the drop target associated with this panel
 		if (browserTable.getDropTarget() != null)

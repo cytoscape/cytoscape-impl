@@ -1,14 +1,6 @@
 package org.cytoscape.io.internal.read.session;
 
-import static org.cytoscape.io.internal.util.session.SessionUtil.APPS_FOLDER;
-import static org.cytoscape.io.internal.util.session.SessionUtil.CYTABLE_STATE_FILE;
-import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORKS_FOLDER;
-import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORK_VIEWS_FOLDER;
-import static org.cytoscape.io.internal.util.session.SessionUtil.PROPERTIES_FOLDER;
-import static org.cytoscape.io.internal.util.session.SessionUtil.TABLE_EXT;
-import static org.cytoscape.io.internal.util.session.SessionUtil.VERSION_EXT;
-import static org.cytoscape.io.internal.util.session.SessionUtil.VIZMAP_XML_FILE;
-import static org.cytoscape.io.internal.util.session.SessionUtil.XGMML_EXT;
+import static org.cytoscape.io.internal.util.session.SessionUtil.*;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -40,6 +32,10 @@ import org.cytoscape.io.internal.read.xgmml.SessionXGMMLNetworkViewReader;
 import org.cytoscape.io.internal.util.GroupUtil;
 import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.internal.util.SUIDUpdater;
+import org.cytoscape.io.internal.util.cytables.model.BypassValue;
+import org.cytoscape.io.internal.util.cytables.model.ColumnView;
+import org.cytoscape.io.internal.util.cytables.model.CyTables;
+import org.cytoscape.io.internal.util.cytables.model.TableView;
 import org.cytoscape.io.internal.util.cytables.model.VirtualColumn;
 import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.io.read.CyNetworkReader;
@@ -65,6 +61,9 @@ import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.table.CyColumnViewMetadata;
+import org.cytoscape.view.model.table.CyTableViewMetadata;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.TaskMonitor;
 
 /*
@@ -177,7 +176,6 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			} else if (entryName.endsWith(XGMML_EXT)) {
 				// Ignore network view files for now...
 				Matcher matcher = NETWORK_PATTERN.matcher(entryName);
-				
 				if (matcher.matches()) {
 					extractNetworks(is, entryName);
 				}
@@ -197,6 +195,8 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 				if (matcher.matches()) {
 					extractNetworkView(is, entryName);
 				}
+			} else if (entryName.endsWith(CYTABLE_STATE_FILE)) {
+				extractTableViews(is, entryName);
 			}
 		}
 	}
@@ -248,10 +248,12 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	
 	private void extractCyTableSessionState(InputStream is, String entryName) throws IOException {
 		CyTablesXMLReader reader = new CyTablesXMLReader(is);
-		
 		try {
 			reader.run(taskMonitor);
-			virtualColumns.addAll(reader.getCyTables().getVirtualColumns().getVirtualColumn());
+			CyTables cyTables = reader.getCyTables();
+			
+			virtualColumns.addAll(cyTables.getVirtualColumns().getVirtualColumn());
+			
 		} catch (Exception e) {
 			throw new IOException(e);
 		}
@@ -277,8 +279,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			Class<?> type = Class.forName(SessionUtil.unescape(matcher.group(4)));
 			String title = SessionUtil.unescape(matcher.group(5));
 			table.setTitle(title);
-			CyTableMetadataBuilder builder = new CyTableMetadataBuilder().setCyTable(table).setNamespace(namespace)
-					.setType(type);
+			CyTableMetadataBuilder builder = new CyTableMetadataBuilder().setCyTable(table).setNamespace(namespace).setType(type);
 			Set<CyTableMetadataBuilder> builders = networkTableMap.get(oldNetId);
 			
 			if (builders == null) {
@@ -376,6 +377,60 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			logger.error("The network view will cannot be recreated. The network view entry is invalid: " + entryName);
 		}
 	}
+	
+	private void extractTableViews(InputStream is, String entryName) throws Exception {
+		CyTablesXMLReader reader = new CyTablesXMLReader(is);
+		
+		CyTables xmlTables;
+		try {
+			reader.run(taskMonitor);
+			xmlTables = reader.getCyTables();
+		} catch (Exception e) {
+			throw new IOException(e);
+		}
+		
+		if(xmlTables.getTableViews() != null) {
+			List<TableView> xmlTableViews = xmlTables.getTableViews().getTableView();
+			
+			for(TableView xmlTableView : xmlTableViews) {
+				String rendererId = xmlTableView.getRendererId();
+				String namespace  = xmlTableView.getTableNamespace();
+				
+				List<CyColumnViewMetadata> columnViews = new ArrayList<>();
+				for(ColumnView xmlColView : xmlTableView.getColumnView()) {
+					String styleTitle = xmlColView.getStyleTitle();
+					String colName = xmlColView.getColumnName();
+					
+					Map<String,String> bypassValues = new HashMap<>();
+					for(BypassValue xmlBypass : xmlColView.getBypassValue()) {
+						bypassValues.put(xmlBypass.getName(), xmlBypass.getValue());
+					}
+					columnViews.add(new CyColumnViewMetadata(colName, styleTitle, bypassValues));
+				}
+				
+				CyTableViewMetadata tableViewMetadata = new CyTableViewMetadata(-1, namespace, rendererId, columnViews);
+				
+				CyTableMetadata table = lookupTable(xmlTableView);
+				tableViewMetadata.setUnderlyingTable(table);
+				
+				tableViews.add(tableViewMetadata);
+			}
+		}
+	}
+	
+	private CyTableMetadata lookupTable(TableView xmlTableView) {
+		CyTable table = filenameTableMap.get(xmlTableView.getTable());
+		if(table == null)
+			return null;
+		
+		for(CyTableMetadata tableMetadata : tableMetadata) {
+			if(tableMetadata.getTable().equals(table)) {
+				return tableMetadata;
+			}
+		}
+		return null;
+	}
+	
 
 	private void extractAppEntry(InputStream is, String entryName) {
 		final String[] items = entryName.split("/");
@@ -428,7 +483,13 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	private void extractVizmap(InputStream is, String entryName) throws Exception {
 		VizmapReader reader = vizmapReaderMgr.getReader(is, entryName);
 		reader.run(taskMonitor);
-		visualStyles.addAll(reader.getVisualStyles());
+		
+		networkStyles.addAll(reader.getVisualStyles());
+		
+		Set<VisualStyle> tableVisualStyles = reader.getTableVisualStyles();
+		if(tableVisualStyles != null) {
+			tableStyles.addAll(tableVisualStyles);
+		}
 	}
 
 	private void extractProperties(InputStream is, String entryName) throws Exception {

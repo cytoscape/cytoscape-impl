@@ -10,6 +10,7 @@ import org.cytoscape.view.table.internal.impl.PopupMenuHelper;
 
 public class TableViewRendererImpl implements TableViewRenderer {
 
+	// Note, there is a use of this ID string in RenderingEngineManagerImpl.
 	public static final String ID = "org.cytoscape.view.table.renderer";
 	public static final String DISPLAY_NAME = "Cytoscape Table Browser";
 	

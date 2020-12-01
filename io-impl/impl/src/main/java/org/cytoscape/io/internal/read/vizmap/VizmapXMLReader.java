@@ -54,7 +54,9 @@ public class VizmapXMLReader extends AbstractVizmapReader {
 		tm.setProgress(0.2);
         Vizmap vizmap = (Vizmap) unmarshaller.unmarshal(inputStream);
 		tm.setProgress(0.7);
-        this.visualStyles = visualStyleSerializer.createVisualStyles(vizmap);
+        this.networkStyles = visualStyleSerializer.createNetworkVisualStyles(vizmap);
+        tm.setProgress(0.8);
+        this.tableStyles = visualStyleSerializer.createTableVisualStyles(vizmap);
 		tm.setProgress(1.0);
     }
 }

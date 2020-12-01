@@ -6,13 +6,14 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.model.events.TableViewAddedEvent;
+import org.cytoscape.view.model.events.TableViewAddedListener;
 import org.cytoscape.view.model.events.TableViewChangedEvent;
 import org.cytoscape.view.model.events.ViewChangeRecord;
 import org.cytoscape.view.model.internal.base.CyViewBase;
@@ -24,12 +25,13 @@ import io.vavr.Tuple2;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
 
-public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView {
+public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView, TableViewAddedListener {
 
+	private final CyServiceRegistrar registrar;
 	private final CyEventHelper eventHelper;
+	
 	private final String rendererId;
 	private final VisualLexicon visualLexicon;
-	private final Class<? extends CyIdentifiable> tableType; // may be null
 	
 	// MKTODO do we need to look up by view suid? because if not we can get ride of viewSuidToXXX maps.
 	// MKTODO not all these maps may actually be needed
@@ -48,6 +50,8 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView 
 	protected final VPStore columnVPs;
 	protected final VPStore rowVPs;
 	
+	private boolean fireEvents = false;
+	
 	private CopyOnWriteArrayList<Runnable> disposeListeners = new CopyOnWriteArrayList<>(); 
 	
 	
@@ -55,14 +59,13 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView 
 			CyServiceRegistrar registrar, 
 			CyTable model, 
 			VisualLexicon visualLexicon, 
-			String rendererId, 
-			Class<? extends CyIdentifiable> tableType
+			String rendererId
 	) {
 		super(model);
+		this.registrar = registrar;
 		this.eventHelper = registrar.getService(CyEventHelper.class);
 		this.rendererId = rendererId;
 		this.visualLexicon = visualLexicon;
-		this.tableType = tableType;
 		
 		this.tableLock  = new ViewLock();
 		this.columnLock = new ViewLock(tableLock);
@@ -71,22 +74,37 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView 
 		this.tableVPs  = new VPStore(CyTable.class,  visualLexicon, null);
 		this.columnVPs = new VPStore(CyColumn.class, visualLexicon, null);
 		this.rowVPs    = new VPStore(CyRow.class,    visualLexicon, null);
+		
+		registrar.registerService(this, TableViewAddedListener.class);
 	}
 
+	@Override
+	public void handleEvent(TableViewAddedEvent e) {
+		if(e.getTableView() == this) {
+			fireEvents = true;
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	protected void addEventPayload(ViewChangeRecord<?> record) {
+		if(fireEvents) {
+			eventHelper.addEventPayload(this, record, TableViewChangedEvent.class);
+		}
+	}
+	
+	@Override
+	public void dispose() {
+		registrar.unregisterService(this, TableViewAddedListener.class);
+		for(Runnable runnable : disposeListeners) {
+			runnable.run();
+		}
+	}
+	
 	@Override
 	public String getRendererId() {
 		return rendererId;
 	}
 	
-	public CyEventHelper getEventHelper() {
-		return eventHelper;
-	}
-	
-	@Override
-	public Class<? extends CyIdentifiable> getTableType() {
-		return tableType;
-	}
-
 	@Override
 	public VisualLexicon getVisualLexicon() {
 		return visualLexicon;
@@ -106,14 +124,11 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView 
 		disposeListeners.add(runnable);
 	}
 	
-	@Override
-	public void dispose() {
-		for(Runnable runnable : disposeListeners) {
-			runnable.run();
-		}
+	public int getColumnCount() {
+		return viewSuidToCol.size();
 	}
 	
-	public View<CyColumn> addColumn(CyColumn model) {
+	public CyColumnViewImpl addColumn(CyColumn model) {
 		if(dataSuidToCol.containsKey(model.getSUID()))
 			return null;
 		
@@ -147,6 +162,11 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView 
 		return dataSuidToCol.getOrElse(suid, null);
 	}
 	
+	@Override
+	public View<CyColumn> getColumnView(long viewSuid) {
+		return viewSuidToCol.getOrElse(viewSuid, null);
+	}
+	
 	public View<CyColumn> getColumnViewByName(String name) {
 		// can't use CyTable.getColumn(name) because the column may already have been deleted
 		for(Tuple2<Long,CyColumnViewImpl> entry : dataSuidToCol) {
@@ -159,13 +179,36 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView 
 		return null;
 	}
 	
+	/**
+	 * This should return columns in the same order as the underlying table model. 
+	 * It avoids strange errors where the columns are returned in an unexpected order.
+	 */
 	@Override
-	public Collection<View<CyColumn>> getColumnViews() {
+	public java.util.List<View<CyColumn>> getColumnViews() {
 		// The asJava() method returns a collection that is unbearably slow, so we create our own collection instead.
 		java.util.List<View<CyColumn>> colList = new ArrayList<>();
 		for(var col : dataSuidToCol.values()) {
 			colList.add(col);
 		}
+				
+		// assume this collection is in a well defined order that we want to preserve
+		Collection<CyColumn> modelCols = getModel().getColumns(); 
+		
+		// Sort the column views by their index in the table model
+		java.util.Map<Long,Integer> indexMap = new java.util.HashMap<>();
+		int i = 0;
+		for(CyColumn col : modelCols) {
+			indexMap.put(col.getSUID(), i++);
+		}
+		
+		colList.sort((cv1, cv2) -> {
+			var index1 = indexMap.get(cv1.getModel().getSUID());
+			var index2 = indexMap.get(cv2.getModel().getSUID());
+			if(index1 == null) return -1;
+            if(index2 == null) return  1;
+			return Integer.compare(index1, index2);
+		});
+		
 		return colList;
 	}
 	
@@ -243,11 +286,9 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView 
 	}
 	
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	protected void fireViewChangedEvent(VisualProperty<?> vp, Object value, boolean lockedValue) {
-		var record = new ViewChangeRecord<>(this, vp, value, lockedValue);
-		eventHelper.addEventPayload(this, record, TableViewChangedEvent.class);
+		addEventPayload(new ViewChangeRecord<>(this, vp, value, lockedValue));
 	}
 
 }

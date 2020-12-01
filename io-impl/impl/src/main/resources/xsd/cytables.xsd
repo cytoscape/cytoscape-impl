@@ -4,6 +4,7 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element minOccurs="0" ref="virtualColumns"/>
+        <xs:element minOccurs="0" ref="tableViews"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -23,6 +24,38 @@
       <xs:attribute name="targetTable" use="required" type="xs:string"/>
       <xs:attribute name="targetJoinKey" use="required" type="xs:string"/>
       <xs:attribute name="immutable" use="required" type="xs:boolean"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="tableViews">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="tableView"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="tableView">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="columnView"/>
+      </xs:sequence>
+      <xs:attribute name="table" use="required" type="xs:string"/>
+      <xs:attribute name="rendererId" use="required" type="xs:string"/>
+      <xs:attribute name="tableNamespace" use="optional" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="columnView">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="bypassValue"/>
+      </xs:sequence>
+      <xs:attribute name="columnName" use="required" type="xs:string"/>
+      <xs:attribute name="styleTitle" use="optional" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="bypassValue">
+    <xs:complexType>
+      <xs:attribute name="name" use="required" type="xs:NCName" />
+      <xs:attribute name="value" type="xs:string" />
     </xs:complexType>
   </xs:element>
 </xs:schema>

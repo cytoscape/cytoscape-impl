@@ -3,11 +3,7 @@ package org.cytoscape.io.internal.util.vizmap;
 import static org.cytoscape.model.CyEdge.INTERACTION;
 import static org.cytoscape.model.CyNetwork.NAME;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -135,17 +131,17 @@ public class VisualStyleSerializerTest {
 	
 	@Test
 	public void testVisualStyleCollectionNotNullForEmptyVizmap() throws Exception {
-		assertNotNull(serializer.createVisualStyles(new Vizmap()));
+		assertNotNull(serializer.createNetworkVisualStyles(new Vizmap()));
 	}
 
 	@Test
 	public void testVizmapNotNullForNullVS() throws Exception {
-		assertNotNull(serializer.createVizmap(null));
+		assertNotNull(serializer.createVizmap(null, null));
 	}
 
 	@Test
 	public void testVizmapNotNullForEmptyVS() throws Exception {
-		assertNotNull(serializer.createVizmap(new ArrayList<VisualStyle>()));
+		assertNotNull(serializer.createVizmap(new ArrayList<>(), new ArrayList<>()));
 	}
 
 	@Test

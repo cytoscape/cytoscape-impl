@@ -51,6 +51,7 @@ public class TableRenderer implements CyDisposable {
 	}
 	
 	public static void setColumnVisible(View<CyColumn> colView, boolean visible) {
+		// Must use a Bypass because it will get saved to the session.
 		if(colView != null) {
 			colView.setLockedValue(BasicTableVisualLexicon.COLUMN_VISIBLE, visible);
 		}
@@ -62,7 +63,8 @@ public class TableRenderer implements CyDisposable {
 		return colView.getVisualProperty(BasicTableVisualLexicon.COLUMN_VISIBLE);
 	}
 	
-	public void setColumnGravity(String name, int grav) {
+	public void setColumnGravity(String name, double grav) {
+		// Must use a Bypass because it will get saved to the session.
 		View<CyColumn> colView = getTableView().getColumnView(name);
 		if(colView != null) {
 			colView.setLockedValue(BasicTableVisualLexicon.COLUMN_GRAVITY, grav);
@@ -93,21 +95,19 @@ public class TableRenderer implements CyDisposable {
 	
 	public String getColumnFormat(String name) {
 		View<CyColumn> colView = getTableView().getColumnView(name);
-		CellFormat f = colView.getVisualProperty(BasicTableVisualLexicon.CELL_FORMAT);
+		CellFormat f = colView.getVisualProperty(BasicTableVisualLexicon.COLUMN_FORMAT);
 		if(f == null)
 			return null;
 		String format = f.getFormat();
-		if(format == null)
+		if(format == null || format.isBlank())
 			return null;
-		if(format.isEmpty())
-			return null;
-		return f.getFormat();
+		return format;
 	}
 	
 	public void setColumnFormat(String name, String format) {
 		View<CyColumn> colView = getTableView().getColumnView(name);
 		if(colView != null) {
-			colView.setLockedValue(BasicTableVisualLexicon.CELL_FORMAT, format);
+			colView.setLockedValue(BasicTableVisualLexicon.COLUMN_FORMAT, new CellFormat(format));
 		}		
 	}
 	

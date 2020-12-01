@@ -46,24 +46,20 @@ public class VizmapWriterImpl extends AbstractTask implements CyWriter {
 	
 	private final OutputStream outputStream;
 	private final VisualStyleSerializer visualStyleSerializer;
-	private final Set<VisualStyle> visualStyles;
+	private final Set<VisualStyle> networkStyles;
+	private final Set<VisualStyle> tableStyles;
 
-	public VizmapWriterImpl(final OutputStream outputStream, final VisualStyleSerializer visualStyleSerializer, final Object props) {
+	public VizmapWriterImpl(final OutputStream outputStream, final VisualStyleSerializer visualStyleSerializer, Set<VisualStyle> networkStyles, Set<VisualStyle> tableStyles) {
 		this.outputStream = outputStream;
 		this.visualStyleSerializer = visualStyleSerializer;
-
-		if (props instanceof Set<?>) {
-			this.visualStyles = (Set<VisualStyle>) props;
-		} else {
-			throw new IllegalArgumentException("Properties must be of type Set<VisualStyle>");
-		}
+		this.networkStyles = networkStyles;
+		this.tableStyles = tableStyles;
 	}
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setProgress(0.0);
-		final JAXBContext jc = JAXBContext.newInstance(Vizmap.class.getPackage().getName(), this.getClass()
-				.getClassLoader());
+		final JAXBContext jc = JAXBContext.newInstance(Vizmap.class.getPackage().getName(), this.getClass().getClassLoader());
 		Marshaller m = jc.createMarshaller();
 		taskMonitor.setProgress(0.2);
 		m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
@@ -74,7 +70,7 @@ public class VizmapWriterImpl extends AbstractTask implements CyWriter {
 		
 		taskMonitor.setProgress(0.2);
 		
-		Vizmap vizmap = visualStyleSerializer.createVizmap(visualStyles);
+		Vizmap vizmap = visualStyleSerializer.createVizmap(networkStyles, tableStyles);
 		vizmap.setId(vizmapDocId);
 		vizmap.setDocumentVersion(VIZMAP_VERSION);
 		

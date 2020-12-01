@@ -6,7 +6,6 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.model.events.TableViewChangedEvent;
 import org.cytoscape.view.model.events.ViewChangeRecord;
 import org.cytoscape.view.model.internal.base.CyViewBase;
 import org.cytoscape.view.model.internal.base.VPStore;
@@ -52,11 +51,9 @@ public class CyColumnViewImpl extends CyViewBase<CyColumn> implements CyColumnVi
 			return (row) -> v;
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	protected void fireViewChangedEvent(VisualProperty<?> vp, Object value, boolean lockedValue) {
-		var record = new ViewChangeRecord<>(this, vp, value, lockedValue);
-		parent.getEventHelper().addEventPayload(parent, record, TableViewChangedEvent.class);
+		parent.addEventPayload(new ViewChangeRecord<>(this, vp, value, lockedValue));
 	}
 	
 }

@@ -37,7 +37,8 @@ public abstract class AbstractVizmapReader extends AbstractTask implements Vizma
 
     protected final InputStream inputStream;
     protected final VisualStyleSerializer visualStyleSerializer;
-    protected Set<VisualStyle> visualStyles;
+    protected Set<VisualStyle> networkStyles;
+    protected Set<VisualStyle> tableStyles;
     
     public AbstractVizmapReader(InputStream inputStream, VisualStyleSerializer visualStyleSerializer) {
         if ( inputStream == null )
@@ -48,6 +49,11 @@ public abstract class AbstractVizmapReader extends AbstractTask implements Vizma
 
 	@Override
 	public Set<VisualStyle> getVisualStyles() {
-		return visualStyles;
+		return networkStyles;
+	}
+	
+	@Override
+	public Set<VisualStyle> getTableVisualStyles() {
+		return tableStyles;
 	}
 }

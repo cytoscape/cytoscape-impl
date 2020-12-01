@@ -1,5 +1,7 @@
 package org.cytoscape.view.model.internal.table;
 
+import java.util.List;
+
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
@@ -14,18 +16,23 @@ import org.cytoscape.model.events.RowsDeletedEvent;
 import org.cytoscape.model.events.RowsDeletedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.events.AboutToRemoveColumnViewEvent;
 import org.cytoscape.view.model.events.AboutToRemoveRowViewsEvent;
 import org.cytoscape.view.model.events.AddedColumnViewEvent;
 import org.cytoscape.view.model.events.AddedRowViewsEvent;
+import org.cytoscape.view.model.table.CyTableViewManager;
+import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
 
 public class TableModelListener implements ColumnCreatedListener, ColumnDeletedListener, RowsCreatedListener, RowsDeletedListener {
 
 	private final CyTableViewImpl tableView;
+	private final CyServiceRegistrar registrar;
 	private final CyEventHelper eventHelper;
 	
 	public TableModelListener(CyTableViewImpl tableView, CyServiceRegistrar registrar) {
 		this.tableView = tableView;
+		this.registrar = registrar;
 		this.eventHelper = registrar.getService(CyEventHelper.class);
 	}
 
@@ -38,7 +45,25 @@ public class TableModelListener implements ColumnCreatedListener, ColumnDeletedL
 		CyTable table = e.getSource();
 		CyColumn column = table.getColumn(e.getColumnName());
 		if(column != null) {
-			View<CyColumn> view = tableView.addColumn(column);
+			CyColumnViewImpl view = tableView.addColumn(column);
+			
+			CyTableViewManager tableViewManager = registrar.getService(CyTableViewManager.class);
+			
+			// Set the gravity so that the column shows up at the right end of the table browser.
+			// Don't fire an event for this.
+			if(tableViewManager.getTableView(tableView.getModel()) != null && 
+					tableView.getVisualLexicon() instanceof BasicTableVisualLexicon) {
+				
+				List<View<CyColumn>> colViews = tableView.getColumnViews();
+				colViews.sort(VisualProperty.comparing(BasicTableVisualLexicon.COLUMN_GRAVITY));
+				if(!colViews.isEmpty()) {
+					var lastGrav = colViews.get(colViews.size()-1).getVisualProperty(BasicTableVisualLexicon.COLUMN_GRAVITY);
+					if(lastGrav != null) {
+						view.setVisualProperty(BasicTableVisualLexicon.COLUMN_GRAVITY, lastGrav + 1.0, false);
+					}
+				}
+			}
+			
 			if(view != null) {
 				eventHelper.fireEvent(new AddedColumnViewEvent(tableView, view));
 			}

@@ -25,14 +25,17 @@ package org.cytoscape.io.internal.write.datatable;
  */
 
 import java.io.OutputStream;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
+import org.cytoscape.io.internal.util.cytables.model.BypassValue;
+import org.cytoscape.io.internal.util.cytables.model.ColumnView;
 import org.cytoscape.io.internal.util.cytables.model.CyTables;
+import org.cytoscape.io.internal.util.cytables.model.TableView;
+import org.cytoscape.io.internal.util.cytables.model.TableViews;
 import org.cytoscape.io.internal.util.cytables.model.VirtualColumn;
 import org.cytoscape.io.internal.util.cytables.model.VirtualColumns;
 import org.cytoscape.io.write.CyWriter;
@@ -40,17 +43,31 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableMetadata;
 import org.cytoscape.model.VirtualColumnInfo;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.table.CyColumnViewMetadata;
+import org.cytoscape.view.model.table.CyTableViewMetadata;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
 public class CyTablesXMLWriter extends AbstractTask implements CyWriter {
 
+	private final CyServiceRegistrar registrar;
+	
 	private final Set<CyTableMetadata> tables;
+	private final Set<CyTableViewMetadata> tableViews;
 	private final OutputStream outputStream;
 	private Map<Long, String> tableFileNamesBySUID;
 	
-	public CyTablesXMLWriter(Set<CyTableMetadata> tables, Map<Long, String> tableFileNamesBySUID, OutputStream outputStream) {
+	public CyTablesXMLWriter(
+			CyServiceRegistrar registrar,
+			Set<CyTableMetadata> tables, 
+			Set<CyTableViewMetadata> tableViews, 
+			Map<Long, String> tableFileNamesBySUID, 
+			OutputStream outputStream) {
+		
+		this.registrar = registrar;
 		this.tables = tables;
+		this.tableViews = tableViews;
 		this.outputStream = outputStream;
 		this.tableFileNamesBySUID = tableFileNamesBySUID;
 	}
@@ -72,9 +89,10 @@ public class CyTablesXMLWriter extends AbstractTask implements CyWriter {
 
 	private CyTables buildModel() {
 		CyTables model = new CyTables();
+		
+		// Virtual columns
 		VirtualColumns virtualColumns = new VirtualColumns();
 		model.setVirtualColumns(virtualColumns);
-		List<VirtualColumn> columns = virtualColumns.getVirtualColumn();
 		for (CyTableMetadata metadata : tables) {
 			CyTable table = metadata.getTable();
 			
@@ -102,9 +120,45 @@ public class CyTablesXMLWriter extends AbstractTask implements CyWriter {
 				column.setSourceJoinKey(info.getSourceJoinKey());
 				column.setTargetTable(targetTable);
 				column.setTargetJoinKey(info.getTargetJoinKey());
-				columns.add(column);
+				virtualColumns.getVirtualColumn().add(column);
 			}
 		}
+		
+		// Table view styles
+		TableViews xmlTableViews = new TableViews();
+		model.setTableViews(xmlTableViews);
+		
+		for(CyTableViewMetadata tableViewMetadata : tableViews) {
+			Long actualSuid = tableViewMetadata.getSavedTableSUID();
+			String tableFileName = tableFileNamesBySUID.get(actualSuid);
+			if(tableFileName == null)
+				continue;
+			
+			TableView xmlTableView = new TableView();
+			xmlTableView.setRendererId(tableViewMetadata.getRendererID());
+			xmlTableView.setTableNamespace(tableViewMetadata.getNamespace());
+			xmlTableView.setTable(tableFileName);
+			xmlTableViews.getTableView().add(xmlTableView);
+			
+			for(CyColumnViewMetadata colViewMetadata : tableViewMetadata.getColumnViews()) {
+				ColumnView xmlColumnView = new ColumnView();
+				xmlColumnView.setColumnName(colViewMetadata.getName());
+				xmlColumnView.setStyleTitle(colViewMetadata.getStyleName());
+				xmlTableView.getColumnView().add(xmlColumnView);
+				
+				for(var entry : colViewMetadata.getBypassValues().entrySet()) {
+					var vpName = entry.getKey();
+					var value = entry.getValue();
+					if(value != null) {
+						BypassValue bypassValue = new BypassValue();
+						bypassValue.setName(vpName);
+						bypassValue.setValue(value);
+						xmlColumnView.getBypassValue().add(bypassValue);
+					}
+				}
+			}
+		}
+
 		return model;
 	}
 

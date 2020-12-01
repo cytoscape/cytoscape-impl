@@ -76,6 +76,12 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 	}
 
 	@Override
+	protected boolean containsTable(CyTable table) {
+		return ((GlobalTableComboBoxModel)tableChooser.getModel()).contains(table);
+	}
+	
+	
+	@Override
 	public String getIdentifier() {
 		return "org.cytoscape.UnassignedTables";
 	}
@@ -90,6 +96,33 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 		showSelectedTable();
 	}
 
+	
+	/**
+	 * Switch to new table when it is registered to the table manager.
+	 * 
+	 * Note: This combo box only displays Global Table.
+	 */
+	@Override
+	public void handleEvent(final TableAddedEvent e) {
+		final CyTable newTable = e.getTable();
+
+		if (newTable.isPublic() || showPrivateTables()) {
+			final CyTableManager tableManager = serviceRegistrar.getService(CyTableManager.class);
+			
+			if (tableManager.getGlobalTables().contains(newTable)) {
+				final GlobalTableComboBoxModel comboBoxModel = (GlobalTableComboBoxModel) tableChooser.getModel();
+				comboBoxModel.addAndSetSelectedItem(newTable);
+				getToolBar().updateEnableState(tableChooser);
+			}
+			
+			if (tableChooser.getItemCount() == 1) {
+				invokeOnEDT(() -> {
+					serviceRegistrar.registerService(GlobalTableBrowser.this, CytoPanelComponent.class);
+				});
+			}
+		}
+	}
+	
 	@Override
 	public void handleEvent(final TableAboutToBeDeletedEvent e) {
 		final CyTable cyTable = e.getTable();
@@ -111,31 +144,6 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 		}
 	}
 	
-	/**
-	 * Switch to new table when it is registered to the table manager.
-	 * 
-	 * Note: This combo box only displays Global Table.
-	 */
-	@Override
-	public void handleEvent(TableAddedEvent e) {
-		final CyTable newTable = e.getTable();
-
-		if (newTable.isPublic() || showPrivateTables()) {
-			final CyTableManager tableManager = serviceRegistrar.getService(CyTableManager.class);
-			
-			if (tableManager.getGlobalTables().contains(newTable)) {
-				final GlobalTableComboBoxModel comboBoxModel = (GlobalTableComboBoxModel) tableChooser.getModel();
-				comboBoxModel.addAndSetSelectedItem(newTable);
-				getToolBar().updateEnableState(tableChooser);
-			}
-			
-			if (tableChooser.getItemCount() == 1) {
-				invokeOnEDT(() -> {
-					serviceRegistrar.registerService(GlobalTableBrowser.this, CytoPanelComponent.class);
-				});
-			}
-		}
-	}
 
 	@Override
 	public void handleEvent(TablePrivacyChangedEvent e) {
@@ -197,6 +205,10 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 				tableToStringMap.put(table, table.getTitle());
 		}
 
+		public boolean contains(CyTable table) {
+			return tables.contains(table);
+		}
+		
 		@Override
 		public int getSize() {
 			return tables.size();

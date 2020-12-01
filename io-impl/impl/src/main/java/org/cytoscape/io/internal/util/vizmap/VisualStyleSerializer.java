@@ -12,12 +12,14 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.cytoscape.io.internal.util.vizmap.model.AttributeType;
+import org.cytoscape.io.internal.util.vizmap.model.Cell;
 import org.cytoscape.io.internal.util.vizmap.model.Dependency;
 import org.cytoscape.io.internal.util.vizmap.model.DiscreteMappingEntry;
 import org.cytoscape.io.internal.util.vizmap.model.Edge;
 import org.cytoscape.io.internal.util.vizmap.model.Network;
 import org.cytoscape.io.internal.util.vizmap.model.Node;
 import org.cytoscape.io.internal.util.vizmap.model.Vizmap;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -28,6 +30,7 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.Visualizable;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
@@ -74,8 +77,6 @@ public class VisualStyleSerializer {
 	private final CalculatorConverterFactory calculatorConverterFactory;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	private VisualLexicon lexicon;
-
 	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	public VisualStyleSerializer(final CalculatorConverterFactory calculatorConverterFactory,
@@ -89,15 +90,15 @@ public class VisualStyleSerializer {
 	 * @param styles The collection of VisualStyles that you wish to convert into a serializable object.
 	 * @return A Vizmap object that contains a representation of the collection of visual styles.
 	 */
-	public Vizmap createVizmap(final Collection<VisualStyle> styles) {
+	public Vizmap createVizmap(Collection<VisualStyle> networkStyles, Collection<VisualStyle> tableStyles) {
 		final Vizmap vizmap = new Vizmap();
-		
 		final RenderingEngineManager renderingEngineManager = serviceRegistrar.getService(RenderingEngineManager.class);
-		lexicon = renderingEngineManager.getDefaultVisualLexicon();
-
-		if (styles != null) {
-			for (VisualStyle style : styles) {
-				org.cytoscape.io.internal.util.vizmap.model.VisualStyle vsModel = new org.cytoscape.io.internal.util.vizmap.model.VisualStyle();
+			
+		if (networkStyles != null) {
+			VisualLexicon lexicon = renderingEngineManager.getDefaultVisualLexicon();
+			
+			for (VisualStyle style : networkStyles) {
+				var vsModel = new org.cytoscape.io.internal.util.vizmap.model.VisualStyle();
 				vizmap.getVisualStyle().add(vsModel);
 
 				vsModel.setName(style.getTitle());
@@ -106,15 +107,33 @@ public class VisualStyleSerializer {
 				vsModel.setNode(new Node());
 				vsModel.setEdge(new Edge());
 
-				createVizmapProperties(style, BasicVisualLexicon.NETWORK, vsModel.getNetwork().getVisualProperty());
-				createVizmapProperties(style, BasicVisualLexicon.NODE, vsModel.getNode().getVisualProperty());
-				createVizmapProperties(style, BasicVisualLexicon.EDGE, vsModel.getEdge().getVisualProperty());
+				createVizmapProperties(style, lexicon, BasicVisualLexicon.NETWORK, vsModel.getNetwork().getVisualProperty());
+				createVizmapProperties(style, lexicon, BasicVisualLexicon.NODE, vsModel.getNode().getVisualProperty());
+				createVizmapProperties(style, lexicon, BasicVisualLexicon.EDGE, vsModel.getEdge().getVisualProperty());
 				
 				// Create Dependencies
-				createDependencies(style, vsModel);
+				createDependencies(style, vsModel, lexicon);
 			}
 		}
 
+		if (tableStyles != null) {
+			VisualLexicon lexicon = renderingEngineManager.getDefaultTableVisualLexicon();
+			
+			for (VisualStyle style : tableStyles) {
+				var vsModel = new org.cytoscape.io.internal.util.vizmap.model.TableStyle();
+				vizmap.getTableStyle().add(vsModel);
+
+				vsModel.setName(style.getTitle());
+
+				vsModel.setCell(new Cell());
+
+				createVizmapProperties(style, lexicon, BasicTableVisualLexicon.CELL, vsModel.getCell().getVisualProperty());
+				
+				// Create Dependencies
+				createDependencies(style, vsModel, lexicon);
+			}
+		}
+		
 		return vizmap;
 	}
 
@@ -123,34 +142,64 @@ public class VisualStyleSerializer {
 	 * @param vizmap A Vizmap object containing a representation of VisualStyles.
 	 * @return A collection of VisualStyle objects.
 	 */
-	public Set<VisualStyle> createVisualStyles(final Vizmap vizmap) {
+	public Set<VisualStyle> createNetworkVisualStyles(final Vizmap vizmap) {
 		final Set<VisualStyle> styles = new HashSet<>();
 		
 		final RenderingEngineManager renderingEngineManager = serviceRegistrar.getService(RenderingEngineManager.class);
-		lexicon = renderingEngineManager.getDefaultVisualLexicon();
-
+		VisualLexicon lexicon = renderingEngineManager.getDefaultVisualLexicon();
 		if (lexicon == null) {
 			logger.warn("Cannot create visual styles because there is no default Visual Lexicon");
 			return styles;
 		}
 
 		if (vizmap != null) {
-			final VisualStyleFactory visualStyleFactory = serviceRegistrar.getService(VisualStyleFactory.class);
-			final List<org.cytoscape.io.internal.util.vizmap.model.VisualStyle> vsModelList = vizmap.getVisualStyle();
-
-			for (org.cytoscape.io.internal.util.vizmap.model.VisualStyle vsModel : vsModelList) {
-				final String styleName = vsModel.getName();
+			VisualStyleFactory visualStyleFactory = serviceRegistrar.getService(VisualStyleFactory.class);
+			for (var vsModel : vizmap.getVisualStyle()) {
 				// Each new style should be created from the default one:
-				final VisualStyle vs = visualStyleFactory.createVisualStyle(styleName);
+				VisualStyle vs = visualStyleFactory.createVisualStyle(vsModel.getName());
 
 				// Set the visual properties and mappings:
 				if (vsModel.getNetwork() != null)
-					createVisualProperties(vs, CyNetwork.class, vsModel.getNetwork().getVisualProperty());
+					createVisualProperties(vs, lexicon, CyNetwork.class, vsModel.getNetwork().getVisualProperty());
 				if (vsModel.getNode() != null)
-					createVisualProperties(vs, CyNode.class, vsModel.getNode().getVisualProperty());
+					createVisualProperties(vs, lexicon, CyNode.class, vsModel.getNode().getVisualProperty());
 				if (vsModel.getEdge() != null)
-					createVisualProperties(vs, CyEdge.class, vsModel.getEdge().getVisualProperty());
+					createVisualProperties(vs, lexicon, CyEdge.class, vsModel.getEdge().getVisualProperty());
 
+				// Restore dependency
+				restoreDependencies(vs, vsModel);
+				styles.add(vs);
+			}
+		}
+
+		return styles;
+	}
+	
+	/**
+	 * This method creates a collection of VisualStyle objects based on the provided Vizmap object.
+	 * @param vizmap A Vizmap object containing a representation of VisualStyles.
+	 * @return A collection of VisualStyle objects.
+	 */
+	public Set<VisualStyle> createTableVisualStyles(final Vizmap vizmap) {
+		final Set<VisualStyle> styles = new HashSet<>();
+		
+		final RenderingEngineManager renderingEngineManager = serviceRegistrar.getService(RenderingEngineManager.class);
+		VisualLexicon lexicon = renderingEngineManager.getDefaultTableVisualLexicon();
+		if (lexicon == null) {
+			logger.warn("Cannot create visual styles because there is no default Visual Lexicon");
+			return styles;
+		}
+
+		if (vizmap != null) {
+			VisualStyleFactory visualStyleFactory = serviceRegistrar.getService(VisualStyleFactory.class);
+			
+			for(var vsModel : vizmap.getTableStyle()) {
+				VisualStyle vs = visualStyleFactory.createVisualStyle(vsModel.getName());
+				
+				if (vsModel.getCell() != null) {
+					createVisualProperties(vs, lexicon, CyColumn.class, vsModel.getCell().getVisualProperty());
+				}
+				
 				// Restore dependency
 				restoreDependencies(vs, vsModel);
 				styles.add(vs);
@@ -169,7 +218,7 @@ public class VisualStyleSerializer {
 	public Set<VisualStyle> createVisualStyles(final Properties props) {
 		// Convert properties to Vizmap:
 		Vizmap vizmap = new Vizmap();
-		List<org.cytoscape.io.internal.util.vizmap.model.VisualStyle> vizmapStyles = vizmap.getVisualStyle();
+		var vizmapStyles = vizmap.getVisualStyle();
 
 		// Group properties keys/values by visual style name:
 		Map<String, Map<String, String>> styleNamesMap = new HashMap<>();
@@ -196,7 +245,7 @@ public class VisualStyleSerializer {
 		for (Entry<String, Map<String, String>> entry : styleNamesMap.entrySet()) {
 			String styleName = entry.getKey();
 
-			org.cytoscape.io.internal.util.vizmap.model.VisualStyle vs = new org.cytoscape.io.internal.util.vizmap.model.VisualStyle();
+			var vs = new org.cytoscape.io.internal.util.vizmap.model.VisualStyle();
 			vs.setName(styleName);
 			vs.setNetwork(new Network());
 			vs.setNode(new Node());
@@ -219,11 +268,11 @@ public class VisualStyleSerializer {
 			vizmapStyles.add(vs);
 		}
 
-		return createVisualStyles(vizmap);
+		return createNetworkVisualStyles(vizmap);
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private void createVizmapProperties(final VisualStyle vs, final VisualProperty<Visualizable> root,
+	private void createVizmapProperties(final VisualStyle vs, VisualLexicon lexicon, final VisualProperty<Visualizable> root,
 			final List<org.cytoscape.io.internal.util.vizmap.model.VisualProperty> vpModelList) {
 		
 		final Collection<VisualProperty<?>> vpList = lexicon.getAllDescendants(root);
@@ -241,19 +290,19 @@ public class VisualStyleSerializer {
 				final VisualMappingFunction<?, ?> mapping = vs.getVisualMappingFunction(vp);
 	
 				if (defValue != null || mapping != null) {
-					org.cytoscape.io.internal.util.vizmap.model.VisualProperty vpModel = new org.cytoscape.io.internal.util.vizmap.model.VisualProperty();
+					var vpModel = new org.cytoscape.io.internal.util.vizmap.model.VisualProperty();
 					vpModel.setName(vp.getIdString());
-	
 					vpModelList.add(vpModel);
 	
 					try {
-					if (defValue != null) {
-						String sValue = vp.toSerializableString(defValue);
-						
-						if (sValue != null)
-							vpModel.setDefault(sValue);
+						if (defValue != null) {
+							String sValue = vp.toSerializableString(defValue);
+							if (sValue != null)
+								vpModel.setDefault(sValue);
+						}
+					} catch (final Exception e) {
+						System.out.println("CCE in VisualStyleSerielizer");
 					}
-					} catch (final Exception e) 	{System.out.println("CCE in VisualStyleSerielizer");}
 					
 					if (mapping instanceof PassthroughMapping<?, ?>) {
 						PassthroughMapping<?, ?> pm = (PassthroughMapping<?, ?>) mapping;
@@ -334,10 +383,10 @@ public class VisualStyleSerializer {
 	}
 
 	@SuppressWarnings("unchecked")
-	private <K, V> void createVisualProperties(VisualStyle vs,
+	private <K, V> void createVisualProperties(VisualStyle vs, VisualLexicon lexicon,
 											   Class<? extends CyIdentifiable> targetType,
 											   List<org.cytoscape.io.internal.util.vizmap.model.VisualProperty> vpModelList) {
-		for (org.cytoscape.io.internal.util.vizmap.model.VisualProperty vpModel : vpModelList) {
+		for (var vpModel : vpModelList) {
 			String vpId = vpModel.getName();
 			String defValue = vpModel.getDefault();
 
@@ -352,8 +401,7 @@ public class VisualStyleSerializer {
 
 				// Any mapping?
 				if (vpModel.getPassthroughMapping() != null) {
-					org.cytoscape.io.internal.util.vizmap.model.PassthroughMapping pmModel = vpModel
-							.getPassthroughMapping();
+					org.cytoscape.io.internal.util.vizmap.model.PassthroughMapping pmModel = vpModel.getPassthroughMapping();
 					final String attrName = pmModel.getAttributeName();
 					final AttributeType attrType = pmModel.getAttributeType();
 					final Class<?> columnDataType;
@@ -372,16 +420,11 @@ public class VisualStyleSerializer {
 						columnDataType = String.class;
 					
 					try {
-						VisualMappingFunctionFactory pmFactory = serviceRegistrar
-								.getService(VisualMappingFunctionFactory.class, "(mapping.type=passthrough)");
-						PassthroughMapping<K, V> pm = (PassthroughMapping<K, V>) pmFactory
-								.createVisualMappingFunction(attrName, columnDataType, vp);
-
+						VisualMappingFunctionFactory pmFactory = serviceRegistrar.getService(VisualMappingFunctionFactory.class, "(mapping.type=passthrough)");
+						PassthroughMapping<K, V> pm = (PassthroughMapping<K, V>) pmFactory.createVisualMappingFunction(attrName, columnDataType, vp);
 						vs.addVisualMappingFunction(pm);
-
 					} catch (Throwable e) {
-						logger.error("Cannot create PassthroughMapping (style=" + vs.getTitle() + ", property=" +
-									 vp.getIdString() + ")", e);
+						logger.error("Cannot create PassthroughMapping (style=" + vs.getTitle() + ", property=" + vp.getIdString() + ")", e);
 					}
 				} else if (vpModel.getDiscreteMapping() != null) {
 					org.cytoscape.io.internal.util.vizmap.model.DiscreteMapping dmModel = vpModel.getDiscreteMapping();
@@ -410,10 +453,8 @@ public class VisualStyleSerializer {
 								break;
 						}
 
-						VisualMappingFunctionFactory dmFactory = serviceRegistrar
-								.getService(VisualMappingFunctionFactory.class, "(mapping.type=discrete)");
-						DiscreteMapping<K, V> dm = (DiscreteMapping<K, V>) dmFactory
-								.createVisualMappingFunction(attrName, attrClass, vp);
+						VisualMappingFunctionFactory dmFactory = serviceRegistrar.getService(VisualMappingFunctionFactory.class, "(mapping.type=discrete)");
+						DiscreteMapping<K, V> dm = (DiscreteMapping<K, V>) dmFactory.createVisualMappingFunction(attrName, attrClass, vp);
 
 						for (DiscreteMappingEntry entryModel : dmModel.getDiscreteMappingEntry()) {
 							String sAttrValue = entryModel.getAttributeValue();
@@ -451,22 +492,17 @@ public class VisualStyleSerializer {
 						vs.addVisualMappingFunction(dm);
 
 					} catch (Throwable e) {
-						logger.error("Cannot create DiscreteMapping (style=" + vs.getTitle() + ", property=" +
-									 vp.getIdString() + ")", e);
+						logger.error("Cannot create DiscreteMapping (style=" + vs.getTitle() + ", property=" + vp.getIdString() + ")", e);
 					}
 				} else if (vpModel.getContinuousMapping() != null) {
-					org.cytoscape.io.internal.util.vizmap.model.ContinuousMapping cmModel = vpModel
-							.getContinuousMapping();
+					org.cytoscape.io.internal.util.vizmap.model.ContinuousMapping cmModel = vpModel.getContinuousMapping();
 					String attrName = cmModel.getAttributeName();
 
 					try {
-						VisualMappingFunctionFactory cmFactory = serviceRegistrar
-								.getService(VisualMappingFunctionFactory.class, "(mapping.type=continuous)");
-						ContinuousMapping<K, V> cm = (ContinuousMapping<K, V>) cmFactory
-								.createVisualMappingFunction(attrName, Number.class, vp);
+						VisualMappingFunctionFactory cmFactory = serviceRegistrar.getService(VisualMappingFunctionFactory.class, "(mapping.type=continuous)");
+						ContinuousMapping<K, V> cm = (ContinuousMapping<K, V>) cmFactory.createVisualMappingFunction(attrName, Number.class, vp);
 
-						for (org.cytoscape.io.internal.util.vizmap.model.ContinuousMappingPoint pModel : cmModel
-								.getContinuousMappingPoint()) {
+						for (org.cytoscape.io.internal.util.vizmap.model.ContinuousMappingPoint pModel : cmModel.getContinuousMappingPoint()) {
 
 							// Should be numbers or colors
 							V lesser = parseValue(pModel.getLesserValue(), vp);
@@ -481,8 +517,7 @@ public class VisualStyleSerializer {
 
 						vs.addVisualMappingFunction(cm);
 					} catch (Throwable e) {
-						logger.error("Cannot create ContinuousMapping (style=" + vs.getTitle() + ", property=" +
-									 vp.getIdString() + ")", e);
+						logger.error("Cannot create ContinuousMapping (style=" + vs.getTitle() + ", property=" + vp.getIdString() + ")", e);
 					}
 				}
 			}
@@ -490,7 +525,7 @@ public class VisualStyleSerializer {
 	}
 	
 	private void createDependencies(final VisualStyle visualStyle,
-			org.cytoscape.io.internal.util.vizmap.model.VisualStyle vsModel) {
+			org.cytoscape.io.internal.util.vizmap.model.VisualStyle vsModel, VisualLexicon lexicon) {
 		// Create serializable Dependency
 		final Set<VisualPropertyDependency<?>> dependencies = visualStyle.getAllVisualPropertyDependencies();
 
@@ -521,6 +556,31 @@ public class VisualStyleSerializer {
 		}
 	}
 	
+	private void createDependencies(final VisualStyle visualStyle,
+			org.cytoscape.io.internal.util.vizmap.model.TableStyle vsModel, VisualLexicon lexicon) {
+		// Create serializable Dependency
+		final Set<VisualPropertyDependency<?>> dependencies = visualStyle.getAllVisualPropertyDependencies();
+
+		final List<Dependency> colDep = vsModel.getCell().getDependency();
+
+		Collection<VisualProperty<?>> colVisualProperties = lexicon.getAllDescendants(BasicTableVisualLexicon.CELL);
+
+		for (VisualPropertyDependency<?> vpDep : dependencies) {
+			try {
+				final Dependency newDependency = new Dependency();
+				newDependency.setName(vpDep.getIdString());
+				newDependency.setValue(vpDep.isDependencyEnabled());
+	
+				final VisualProperty<?> parent = vpDep.getParentVisualProperty();
+				
+				if (colVisualProperties.contains(parent))
+					colDep.add(newDependency);
+			} catch (final Exception e) {
+				logger.error("Cannot save dependency: " + (vpDep != null ? vpDep.getDisplayName() : ""), e);
+			}
+		}
+	}
+	
 	private void restoreDependencies(final VisualStyle visualStyle, org.cytoscape.io.internal.util.vizmap.model.VisualStyle vsModel) {
 		final Node nodeSection = vsModel.getNode();
 		final Edge edgeSection = vsModel.getEdge();
@@ -534,6 +594,27 @@ public class VisualStyleSerializer {
 			dependencyStates.addAll(edgeSection.getDependency());
 		if (networkSection != null)
 			dependencyStates.addAll(networkSection.getDependency());
+
+		final Set<VisualPropertyDependency<?>> availableDependencies = visualStyle.getAllVisualPropertyDependencies();
+		
+		for (final Dependency dep : dependencyStates) {
+			final String depName = dep.getName();
+			final Boolean enabled = dep.isValue();
+
+			for (final VisualPropertyDependency<?> vsDependency : availableDependencies) {
+				if (vsDependency.getIdString().equalsIgnoreCase(depName))
+					vsDependency.setDependency(enabled);
+			}
+		}
+	}
+	
+	private void restoreDependencies(final VisualStyle visualStyle, org.cytoscape.io.internal.util.vizmap.model.TableStyle vsModel) {
+		final Cell colSection = vsModel.getCell();
+
+		final Set<Dependency> dependencyStates = new HashSet<>();
+
+		if (colSection != null)
+			dependencyStates.addAll(colSection.getDependency());
 
 		final Set<VisualPropertyDependency<?>> availableDependencies = visualStyle.getAllVisualPropertyDependencies();
 		

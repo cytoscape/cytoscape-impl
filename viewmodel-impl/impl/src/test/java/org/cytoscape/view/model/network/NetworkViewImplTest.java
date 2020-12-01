@@ -2,11 +2,7 @@ package org.cytoscape.view.model.network;
 
 import static org.cytoscape.view.model.network.NetworkViewTestUtils.asSuidSet;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.reset;
@@ -31,6 +27,7 @@ import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.SnapshotEdgeInfo;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.events.ViewChangedEvent;
 import org.cytoscape.view.model.internal.base.VPStore;
 import org.cytoscape.view.model.internal.network.CyNetworkViewImpl;
@@ -460,6 +457,31 @@ public class NetworkViewImplTest {
 			throw new RuntimeException();
 		}
 	}
+	
+	@Test
+	public void testVisualPropertyComparingMethod() {
+		CyNetwork network = networkSupport.getNetwork();
+		for(int i = 0; i < 100; i++) {
+			network.addNode();
+		}
+		
+		CyNetworkViewImpl netView = NetworkViewTestUtils.createNetworkView(network);
+		
+		for(CyNode n : network.getNodeList()) {
+			netView.getNodeView(n).setVisualProperty(NODE_X_LOCATION, Math.random());
+		}
+		
+		List<View<CyNode>> sortedNodeViews = new ArrayList<>(netView.getNodeViews());
+		sortedNodeViews.sort(VisualProperty.comparing(NODE_X_LOCATION));
+		
+		double prevX = -1;
+		for(View<CyNode> nodeView : sortedNodeViews) {
+			double x = nodeView.getVisualProperty(NODE_X_LOCATION);
+			assertTrue(x >= prevX);
+			prevX = x;
+		}
+	}
+	
 	
 	@Test
 	public void testAdjacentEdges() {

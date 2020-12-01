@@ -94,6 +94,11 @@ public class DefaultTableBrowser extends AbstractTableBrowser
 	}
 	
 	@Override
+	protected boolean containsTable(CyTable table) {
+		return ((DefaultComboBoxModel<CyTable>)getTableChooser().getModel()).getIndexOf(table) >= 0;
+	}
+	
+	@Override
 	public String getIdentifier() {
 		return "org.cytoscape." + objType.getSimpleName().replace("Cy", "") + "Tables";
 	}
@@ -212,8 +217,10 @@ public class DefaultTableBrowser extends AbstractTableBrowser
 	public void handleEvent(final TableAboutToBeDeletedEvent e) {
 		final CyTable cyTable = e.getTable();
 		
-		if (((DefaultComboBoxModel<CyTable>)getTableChooser().getModel()).getIndexOf(cyTable) >= 0) {
-			((DefaultComboBoxModel<CyTable>)getTableChooser().getModel()).removeElement(cyTable);
+		var model = (DefaultComboBoxModel<CyTable>)getTableChooser().getModel();
+		
+		if (model.getIndexOf(cyTable) >= 0) {
+			model.removeElement(cyTable);
 			// We need this to happen synchronously or we get royally messed up by the new table selection
 			invokeOnEDTAndWait(() -> {
 				getToolBar().updateEnableState(getTableChooser());
