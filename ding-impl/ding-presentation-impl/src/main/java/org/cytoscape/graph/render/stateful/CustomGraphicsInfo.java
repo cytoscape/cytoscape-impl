@@ -143,18 +143,14 @@ public class CustomGraphicsInfo {
 	}
 	
 	private boolean syncToNode(final Set<VisualPropertyDependency<?>> dependencies) {
-		boolean sync = false;
-		
 		if (dependencies != null) {
 			for (VisualPropertyDependency<?> dep:dependencies) {
 				if (dep.getIdString().equals("nodeCustomGraphicsSizeSync")) {
-					sync = dep.isDependencyEnabled();
-					break;
+					return dep.isDependencyEnabled();
 				}
 			}
 		}
-		
-		return sync;
+		return true; // The default for this in the vizmapper is 'true'
 	}
 
 	private CustomGraphicLayer syncSize(CustomGraphicLayer layer, double width, double height, float fitRatio) {

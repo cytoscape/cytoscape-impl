@@ -61,9 +61,11 @@ public class NodeCanvas<GP extends GraphicsProvider> extends DingCanvas<GP> {
 
 	@Override
 	public void paint(ProgressMonitor pm, RenderDetailFlags flags) {
+		var graphics = new GraphGraphics(graphicsProvider);
+		
 		var dependencies = getVPDeps();
+		
 		var snapshot = re.getViewModelSnapshot();
-		var graphics = new GraphGraphics(graphicsProvider); // MKTODO don't need to create a GraphGraphics object on every frame
 		var edgeDetails = re.getEdgeDetails();
 		var nodeDetails = re.getNodeDetails();
 		

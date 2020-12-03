@@ -22,8 +22,9 @@ public class EdgeCanvas<GP extends GraphicsProvider> extends DingCanvas<GP> {
 
 	@Override
 	public void paint(ProgressMonitor pm, RenderDetailFlags flags) {
-		var netViewSnapshot = re.getViewModelSnapshot();
 		var graphics = new GraphGraphics(graphicsProvider);
+		
+		var netViewSnapshot = re.getViewModelSnapshot();
 		var edgeDetails = re.getEdgeDetails();
 		var nodeDetails = re.getNodeDetails();
 		

@@ -12,13 +12,14 @@ import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.work.NoOutputProgressMonitor;
 import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
+import org.cytoscape.view.model.CyNetworkViewSnapshot;
 
 /**
  * A single use graphics canvas meant for drawing vector graphics for image and PDF export.
  */
 public class CompositeGraphicsCanvas {
 
-	public static void paint(Graphics2D graphics, DRenderingEngine re, Color bgPaint, GraphLOD lod, NetworkTransform transform) {
+	public static void paint(Graphics2D graphics, Color bgPaint, GraphLOD lod, NetworkTransform transform, DRenderingEngine re) {
 		var g = new SimpleGraphicsProvider(transform, graphics);
 		var snapshot = re.getViewModelSnapshot();
 		var flags = RenderDetailFlags.create(snapshot, transform, lod);
@@ -36,5 +37,20 @@ public class CompositeGraphicsCanvas {
 		canvasList.forEach(c -> c.paint(pm, flags));
 	}
 	
+	
+	public static void paintThumbnail(Graphics2D graphics, Color bgPaint, GraphLOD lod, NetworkTransform transform, CyNetworkViewSnapshot snapshot) {
+		var g = new SimpleGraphicsProvider(transform, graphics);
+		var flags = RenderDetailFlags.create(snapshot, transform, lod);
+		var pm = new NoOutputProgressMonitor();
+		
+		var canvasList = Arrays.asList(
+			new NodeThumbnailCanvas<>(g, snapshot),
+			new EdgeThumbnailCanvas<>(g, snapshot)
+		);
+		Collections.reverse(canvasList);
+		
+		g.fill(bgPaint);
+		canvasList.forEach(c -> c.paint(pm, flags));
+	}
 	
 }
