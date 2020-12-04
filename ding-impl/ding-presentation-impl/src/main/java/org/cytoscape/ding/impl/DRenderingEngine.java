@@ -173,7 +173,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		this.bendStore = new BendStore(this, eventHelper, handleFactory);
 		
-		nodeDetails = new DNodeDetails(this, registrar);
+		nodeDetails = new DNodeDetails(lexicon, registrar);
 		edgeDetails = new DEdgeDetails(this);
 		
 		// Finally, intialize our annotations
@@ -636,7 +636,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		g.clipRect(0, 0, renderComponent.getWidth(), renderComponent.getHeight());
 		
 		PrintLOD printLOD = new PrintLOD();
-		CompositeGraphicsCanvas.paint((Graphics2D)g, this, getBackgroundColor(), printLOD, transform);
+		CompositeGraphicsCanvas.paint((Graphics2D)g, getBackgroundColor(), printLOD, transform, this);
 		
 		return PAGE_EXISTS;
 	}
@@ -659,7 +659,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		Color bg = transparent ? null : getBackgroundColor();
 		
 		var transform = renderComponent.getTransform();
-		CompositeGraphicsCanvas.paint((Graphics2D)g, this, bg, printLOD, transform);
+		CompositeGraphicsCanvas.paint((Graphics2D)g, bg, printLOD, transform, this);
 		
 		// Keep previous dirty flags, otherwise the actual view canvas may not be updated next time.
 		// (this method is usually only used to export the View as image, create thumbnails, etc,
@@ -700,7 +700,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			NetworkImageBuffer buffer = new NetworkImageBuffer(transform);
 			Color bgColor = transparentBackground ? null : getBackgroundColor();
 			
-			CompositeGraphicsCanvas.paint(buffer.getGraphics(), this, bgColor, dingGraphLOD, transform);
+			CompositeGraphicsCanvas.paint(buffer.getGraphics(), bgColor, dingGraphLOD, transform, this);
 			
 			return buffer.getImage();
 		});

@@ -68,7 +68,7 @@ public class DNodeDetails implements NodeDetails {
 
 	private static final float NESTED_IMAGE_SCALE_FACTOR = 0.6f;
 	
-	private final DRenderingEngine re;
+	private final DVisualLexicon lexicon;
 	private final CyServiceRegistrar registrar;
 	
 	// These images will be used when a view is not available for a nested network.
@@ -90,8 +90,8 @@ public class DNodeDetails implements NodeDetails {
 		}
 	}
 	
-	public DNodeDetails(DRenderingEngine re, CyServiceRegistrar registrar) {
-		this.re = re;
+	public DNodeDetails(DVisualLexicon lexicon, CyServiceRegistrar registrar) {
+		this.lexicon = lexicon;
 		this.registrar = registrar;
 	}
 	
@@ -243,7 +243,6 @@ public class DNodeDetails implements NodeDetails {
 		if(cg == null)
 			return null;
 		
-		DVisualLexicon lexicon = re.getVisualLexicon();
 		VisualProperty<Double> sizeVP = lexicon.getAssociatedCustomGraphicsSizeVP(cgVP);
 		Double size = node.getVisualProperty(sizeVP);
 		
@@ -262,7 +261,6 @@ public class DNodeDetails implements NodeDetails {
 	public Map<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo> getCustomGraphics(View<CyNode> nodeView) {
 		Map<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo> cgInfoMap = new TreeMap<>(Comparator.comparing(VisualProperty::getIdString));
 		
-		DVisualLexicon lexicon = re.getVisualLexicon();
 		for (VisualProperty<CyCustomGraphics> cgVP : lexicon.getCustomGraphicsVisualProperties()) {
 			CustomGraphicsInfo info = getCustomGraphicsInfo(cgVP, nodeView);
 			if(info != null)
@@ -347,6 +345,9 @@ public class DNodeDetails implements NodeDetails {
 	
 	@Override
 	public TexturePaint getNestedNetworkTexturePaint(CyNetworkViewSnapshot netView, View<CyNode> nodeView) {
+		if(registrar == null)
+			return null;
+		
 		++nestedNetworkPaintingDepth;
 		try {
 			boolean nestedNetworkVisible = getNestedNetworkImgVisible(nodeView);
@@ -398,6 +399,9 @@ public class DNodeDetails implements NodeDetails {
 	}
 
 	public CyNetworkView getNestedNetworkView(CyNetworkViewSnapshot netView, View<CyNode> nodeView) {
+		if(registrar == null)
+			return null;
+		
 		SnapshotNodeInfo nodeInfo = netView.getNodeInfo(nodeView);
 		CyNode modelNode = netView.getMutableNetworkView().getModel().getNode(nodeInfo.getModelSUID());
 		

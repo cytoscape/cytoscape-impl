@@ -319,12 +319,13 @@ public final class DEdgeDetails implements EdgeDetails {
 		if (getLineCurved(edgeView) == STRAIGHT_LINES)
 			anchorInx = anchorInx / 2;
 		
-		BendStore bendStore = re.getBendStore();
+		BendStore bendStore = re == null ? null : re.getBendStore();
+		
 		Bend bend = getBend(edgeView);
 		List<Handle> handles = bend.getAllHandles();
 		try {
 			Handle handle = handles.get(anchorInx);
-			if(bendStore.isHandleSelected(new HandleInfo(edgeView, bend, handle))) {
+			if(bendStore != null && bendStore.isHandleSelected(new HandleInfo(edgeView, bend, handle))) {
 				return getSelectedPaint(edgeView);
 			}
 		} catch(IndexOutOfBoundsException e) {
@@ -350,6 +351,9 @@ public final class DEdgeDetails implements EdgeDetails {
 	 * Actual method to be used in the Graph Renderer.
 	 */
 	private void getAnchor(View<CyEdge> edgeView, int anchorIndex, float[] anchorArr) {
+		if(re == null)
+			return;
+		
 		Bend bend = getBend(edgeView);
 		
 		Handle handle;

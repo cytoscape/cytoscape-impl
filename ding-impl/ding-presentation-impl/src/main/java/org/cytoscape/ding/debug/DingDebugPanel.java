@@ -24,6 +24,7 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent {
 	private SettingsPanel settingsPanel;
 	private FrameRatePanel frameRatePanel;
 	private FrameListPanel frameListPanel;
+	private ThumbnailPanel thumbnailPanel;
 	
 	
 	public DingDebugPanel(CyServiceRegistrar registrar) {
@@ -39,6 +40,8 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent {
 		frameListPanel = new FrameListPanel();
 		frameListPanel.setCollapsed(true);
 		
+		thumbnailPanel = new ThumbnailPanel(registrar);
+		thumbnailPanel.setCollapsed(true);
 		
 		JPanel panel = new JPanel();
 		
@@ -50,6 +53,7 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent {
 			.addComponent(settingsPanel)
 			.addComponent(frameRatePanel)
 			.addComponent(frameListPanel)
+			.addComponent(thumbnailPanel)
 			.addGap(0, 500, Short.MAX_VALUE)
 		);
 		
@@ -58,6 +62,7 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent {
 			.addComponent(settingsPanel)
 			.addComponent(frameRatePanel)
 			.addComponent(frameListPanel)
+			.addComponent(thumbnailPanel)
 		);
 
 		JScrollPane scrollPane = new JScrollPane(panel, 
@@ -82,6 +87,10 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent {
 	
 	public FrameRatePanel getFrameRatePanel() {
 		return frameRatePanel;
+	}
+	
+	public ThumbnailPanel getThumbnailPanel() {
+		return thumbnailPanel;
 	}
 	
 	

@@ -1,26 +1,6 @@
 package org.cytoscape.ding;
 
-import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
-import static org.cytoscape.work.ServiceProperties.ID;
-import static org.cytoscape.work.ServiceProperties.COMMAND;
-import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
-import static org.cytoscape.work.ServiceProperties.COMMAND_EXAMPLE_JSON;
-import static org.cytoscape.work.ServiceProperties.COMMAND_LONG_DESCRIPTION;
-import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
-import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
-import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
-import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
-import static org.cytoscape.work.ServiceProperties.IN_CONTEXT_MENU;
-import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
-import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
-import static org.cytoscape.work.ServiceProperties.NETWORK_ADD_MENU;
-import static org.cytoscape.work.ServiceProperties.NETWORK_DELETE_MENU;
-import static org.cytoscape.work.ServiceProperties.NETWORK_EDIT_MENU;
-import static org.cytoscape.work.ServiceProperties.NETWORK_GROUP_MENU;
-import static org.cytoscape.work.ServiceProperties.NODE_ADD_MENU;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_ACTION;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
-import static org.cytoscape.work.ServiceProperties.TITLE;
+import static org.cytoscape.work.ServiceProperties.*;
 
 import java.net.URL;
 import java.util.HashMap;
@@ -57,6 +37,7 @@ import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.HandleFactoryImpl;
 import org.cytoscape.ding.impl.NVLTFActionSupport;
 import org.cytoscape.ding.impl.ViewTaskFactoryListener;
+import org.cytoscape.ding.impl.canvas.NetworkImageFactoryImpl;
 import org.cytoscape.ding.impl.cyannotator.AnnotationClipboard;
 // Annotation creation
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
@@ -107,6 +88,7 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.presentation.NetworkImageFactory;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
@@ -198,7 +180,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		var netViewFactoryProvider = getService(bc, CyNetworkViewFactoryProvider.class);
 		var netViewManager = getService(bc, CyNetworkViewManager.class);
-    var renderingEngineManager = getService(bc, RenderingEngineManager.class);
+		var renderingEngineManager = getService(bc, RenderingEngineManager.class);
 		var viewFactoryConfig = DingNetworkViewFactory.getNetworkViewConfig(netViewFactoryProvider, dVisualLexicon);
 		var netViewFactory = netViewFactoryProvider.createNetworkViewFactory(dVisualLexicon, DingRenderer.ID, viewFactoryConfig);
 		
@@ -519,7 +501,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 
-    {
+    	{
 			// Annotation add shape
 			var factory = new AddAnnotationTaskFactory(annotationManager, shapeAnnotationFactory);
 			var props = new Properties();
@@ -549,8 +531,15 @@ public class CyActivator extends AbstractCyActivator {
 
 			registerService(bc, factory, TaskFactory.class, props);
 		}
+    
+	    {
+	    	var thumbnailFactory = new NetworkImageFactoryImpl();
+	    	var props = new Properties();
+			props.setProperty(ID, "ding");
+	    	registerService(bc, thumbnailFactory, NetworkImageFactory.class, props);
+	    }
 
-    {
+    	{
 			// Annotation add text
 			var factory = new AddAnnotationTaskFactory(annotationManager, textAnnotationFactory);
 			var props = new Properties();
