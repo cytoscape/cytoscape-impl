@@ -10,6 +10,7 @@ import java.util.Map;
 import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -44,13 +45,21 @@ public class ThumbnailPanel extends BasicCollapsiblePanel {
 		JSpinner widthSpinner = new JSpinner(new SpinnerNumberModel(200, 0, 1000000, 100));
 		LookAndFeelUtil.makeSmall(widthLabel, widthSpinner);
 		
-		JButton createButton = new JButton("Create Thumbnail of Current Network");
+		JCheckBox fitContentCheck = new JCheckBox("Fit Content");
+		fitContentCheck.setSelected(true);
+		LookAndFeelUtil.makeSmall(fitContentCheck);
+		
+		JButton createButton = new JButton("Create");
+		LookAndFeelUtil.makeSmall(createButton);
+		
+		
 		createButton.addActionListener(e -> {
 			int width  = ((SpinnerNumberModel)widthSpinner.getModel()).getNumber().intValue();
 			int height = ((SpinnerNumberModel)heightSpinner.getModel()).getNumber().intValue();
-			createAndShowThumbnail(width, height);
+			boolean fitContent = fitContentCheck.isSelected();
+			
+			createAndShowThumbnail(width, height, fitContent);
 		});
-		LookAndFeelUtil.makeSmall(createButton);
 		
 		
 		JPanel panel = new JPanel();
@@ -71,6 +80,7 @@ public class ThumbnailPanel extends BasicCollapsiblePanel {
 					.addComponent(widthSpinner)
 				)
 			)
+			.addComponent(fitContentCheck)
 			.addComponent(createButton)
 		);
 		
@@ -83,6 +93,7 @@ public class ThumbnailPanel extends BasicCollapsiblePanel {
 				.addComponent(widthLabel)
 				.addComponent(widthSpinner, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
 			)
+			.addComponent(fitContentCheck)
 			.addComponent(createButton)
 		);
 		
@@ -93,11 +104,7 @@ public class ThumbnailPanel extends BasicCollapsiblePanel {
 	
 	
 	// MKTODO should also create a thumbnail of a canned hard-coded network, that's what MCODE et al would do.
-	private void createAndShowThumbnail(int width, int height) {
-		Map<String,Object> props = new HashMap<>();
-		props.put(ThumbnailFactory.WIDTH, width);
-		props.put(ThumbnailFactory.HEIGHT, height);
-		
+	private void createAndShowThumbnail(int width, int height, boolean fitContent) {
 		var applicationManager = registrar.getService(CyApplicationManager.class);
 		var thumbnailFactory   = registrar.getService(ThumbnailFactory.class, "(id=ding)");
 		
@@ -105,7 +112,14 @@ public class ThumbnailPanel extends BasicCollapsiblePanel {
 		if(networkView == null)
 			return;
 		
+		
+		Map<String,Object> props = new HashMap<>();
+		props.put(ThumbnailFactory.WIDTH, width);
+		props.put(ThumbnailFactory.HEIGHT, height);
+		props.put(ThumbnailFactory.FIT_CONTENT, fitContent);
+		
 		Image image = thumbnailFactory.getThumbnail(networkView, props);
+		
 		
 		JLabel picLabel = new JLabel(new ImageIcon(image));
 		JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(this), picLabel);
