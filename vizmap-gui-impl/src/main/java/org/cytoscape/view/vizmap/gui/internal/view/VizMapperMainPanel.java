@@ -84,7 +84,6 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		init();
 	}
 
-	
 	@Override
 	public String getTitle() {
 		return TITLE;
@@ -137,7 +136,6 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	public RenderingEngine<CyNetwork> getRenderingEngine() {
 		return getStylesBtn().getRenderingEngine(getSelectedVisualStyle());
 	}
-	
 	
 	VisualStylePanel getStylesPnl() {
 		if(visualStylePanel == null) {

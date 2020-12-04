@@ -243,17 +243,19 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				});
 				break;
 			case VISUAL_STYLE_UPDATED:
-				if(body != null) {
-					VisualStyle style = (VisualStyle) body;
-					if(vmProxy.isTableStyle(style)) {
-						CyColumn currentColumn = vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().getSelectedItem();
-						if(vmProxy.getVisualStyle(currentColumn) == style) {
+				if (body != null) {
+					var style = (VisualStyle) body;
+					
+					if (vmProxy.isTableStyle(style)) {
+						var currentColumn = vizMapperMainPanel.getColumnStylePnl().getColumnComboBox()
+								.getSelectedItem();
+						if (vmProxy.getVisualStyle(currentColumn) == style)
 							updateTableVisualPropertySheets(currentColumn.getTable(), false, false);
-						}
 					} else {
-						if(style.equals(vmProxy.getCurrentVisualStyle())) {
+						if (style.equals(vmProxy.getCurrentVisualStyle()))
 							updateNetworkVisualPropertySheets(style, false);
-						}
+						
+						invokeOnEDT(() -> vizMapperMainPanel.getStylesPnl().update(style));
 					}
 				}
 				break;
@@ -278,7 +280,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				}
 				break;
 			case VISUAL_STYLE_NAME_CHANGED:
-				vizMapperMainPanel.getStylesBtn().update();
+				invokeOnEDT(() -> {
+					vizMapperMainPanel.getStylesBtn().update();
+					vizMapperMainPanel.getStylesPnl().update((VisualStyle) body);
+				});
 				break;
 			case CURRENT_TABLE_CHANGED:
 				CyTable table = (CyTable) body;
@@ -758,19 +763,21 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			sendNotification(NotificationNames.REMOVE_VISUAL_MAPPINGS, Collections.singleton(vm));
 	}
 
-	private void updateVisualStyleList(final SortedSet<VisualStyle> styles, final boolean resetDefaultVisibleItems) {
+	private void updateVisualStyleList(SortedSet<VisualStyle> styles, boolean resetDefaultVisibleItems) {
 		attrProxy.setCurrentMappingType(null);
 		mappingFactoryProxy.setCurrentColumnName(null);
 		
 		invokeOnEDT(() -> {
 			ignoreVisualStyleSelectedEvents = true;
-			VisualStyle vs = vmProxy.getCurrentVisualStyle();
-			CyTable table = vmProxy.getCurrentTable();
+			var vs = vmProxy.getCurrentVisualStyle();
+			var table = vmProxy.getCurrentTable();
 			vizMapperMainPanel.updateVisualStyles(styles, vs);
 			selectCurrentVisualStyle(vs);
 			updateNetworkVisualPropertySheets(vs, resetDefaultVisibleItems);
-			if(table != null)
+
+			if (table != null)
 				updateTableVisualPropertySheets(table, resetDefaultVisibleItems, false);
+
 			ignoreVisualStyleSelectedEvents = false;
 		});
 	}

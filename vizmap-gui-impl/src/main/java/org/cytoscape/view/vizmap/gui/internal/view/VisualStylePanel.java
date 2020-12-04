@@ -20,6 +20,30 @@ import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 
+/*
+ * #%L
+ * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 public class VisualStylePanel {
 	
 	private OptionsButton optionsBtn;
@@ -47,8 +71,6 @@ public class VisualStylePanel {
 	public void setSelectedVisualStyle(final VisualStyle style) {
 		getStylesBtn().setSelectedItem(style);
 	}
-	
-	
 	
 	private JPanel getStylesPnl() {
 		if (stylesPnl == null) {
@@ -85,6 +107,10 @@ public class VisualStylePanel {
 		return styleSelector.getDefaultView(vs);
 	}
 	
+	void update(VisualStyle style) {
+		styleSelector.setDirty(style);
+	}
+	
 	VisualStyleDropDownButton getStylesBtn() {
 		if (stylesBtn == null) {
 			stylesBtn = new VisualStyleDropDownButton();
@@ -100,7 +126,6 @@ public class VisualStylePanel {
 		}
 		return optionsBtn;
 	}
-	
 
 	@SuppressWarnings("serial")
 	class VisualStyleDropDownButton extends DropDownMenuButton {
@@ -173,6 +198,8 @@ public class VisualStylePanel {
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addComponent(styleSelector, DEFAULT_SIZE, DEFAULT_SIZE, 660)
 			);
+			
+			styleSelector.update(true);
 			
 			if (getSize() != null && getSize().width > 0)
 				popup.setPreferredSize(new Dimension(getSize().width, popup.getPreferredSize().height));
