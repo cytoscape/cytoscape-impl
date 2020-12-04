@@ -11,14 +11,14 @@ import org.cytoscape.ding.PrintLOD;
 import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
-import org.cytoscape.view.presentation.ThumbnailFactory;
+import org.cytoscape.view.presentation.NetworkImageFactory;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
-public class ThumbnailFactoryImpl implements ThumbnailFactory {
+public class NetworkImageFactoryImpl implements NetworkImageFactory {
 
 	@Override
-	public Image getThumbnail(CyNetworkView networkView, Collection<Annotation> annotations, Map<String,Object> properties) {
+	public Image createImage(CyNetworkView networkView, Collection<Annotation> annotations, Map<String,Object> properties) {
 		String rendererId = networkView.getRendererId();
 		if(!rendererId.equals(DingRenderer.ID)) {
 			throw new IllegalArgumentException("networkView was not created by the ding network view factory, got: " + rendererId);

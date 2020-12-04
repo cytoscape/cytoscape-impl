@@ -23,7 +23,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.view.presentation.ThumbnailFactory;
+import org.cytoscape.view.presentation.NetworkImageFactory;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
 
@@ -34,7 +34,7 @@ public class ThumbnailPanel extends BasicCollapsiblePanel {
 	
 	
 	public ThumbnailPanel(CyServiceRegistrar registrar) {
-		super("ThumbnailFactory service");
+		super("NetworkImageFactory service");
 		this.registrar = registrar;
 		createContents();
 	}
@@ -115,7 +115,7 @@ public class ThumbnailPanel extends BasicCollapsiblePanel {
 	// MKTODO should also create a thumbnail of a canned hard-coded network, that's what MCODE et al would do.
 	private void createAndShowThumbnail(int width, int height, boolean fitContent, boolean includeAnnotations) {
 		var applicationManager = registrar.getService(CyApplicationManager.class);
-		var thumbnailFactory   = registrar.getService(ThumbnailFactory.class, "(id=ding)");
+		var thumbnailFactory   = registrar.getService(NetworkImageFactory.class, "(id=ding)");
 		var annotationManager  = registrar.getService(AnnotationManager.class);
 		
 		var networkView = applicationManager.getCurrentNetworkView();
@@ -123,15 +123,15 @@ public class ThumbnailPanel extends BasicCollapsiblePanel {
 			return;
 		
 		Map<String,Object> props = new HashMap<>();
-		props.put(ThumbnailFactory.WIDTH, width);
-		props.put(ThumbnailFactory.HEIGHT, height);
-		props.put(ThumbnailFactory.FIT_CONTENT, fitContent);
+		props.put(NetworkImageFactory.WIDTH, width);
+		props.put(NetworkImageFactory.HEIGHT, height);
+		props.put(NetworkImageFactory.FIT_CONTENT, fitContent);
 		
 		Collection<Annotation> annotations = null;
 		if(includeAnnotations)
 			annotations = annotationManager.getAnnotations(networkView);
 		
-		Image image = thumbnailFactory.getThumbnail(networkView, annotations, props);
+		Image image = thumbnailFactory.createImage(networkView, annotations, props);
 		
 		JLabel picLabel = new JLabel(new ImageIcon(image));
 		JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(this), picLabel);

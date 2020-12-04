@@ -37,7 +37,7 @@ import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.HandleFactoryImpl;
 import org.cytoscape.ding.impl.NVLTFActionSupport;
 import org.cytoscape.ding.impl.ViewTaskFactoryListener;
-import org.cytoscape.ding.impl.canvas.ThumbnailFactoryImpl;
+import org.cytoscape.ding.impl.canvas.NetworkImageFactoryImpl;
 import org.cytoscape.ding.impl.cyannotator.AnnotationClipboard;
 // Annotation creation
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
@@ -88,7 +88,7 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.view.presentation.ThumbnailFactory;
+import org.cytoscape.view.presentation.NetworkImageFactory;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
@@ -533,10 +533,10 @@ public class CyActivator extends AbstractCyActivator {
 		}
     
 	    {
-	    	var thumbnailFactory = new ThumbnailFactoryImpl();
+	    	var thumbnailFactory = new NetworkImageFactoryImpl();
 	    	var props = new Properties();
 			props.setProperty(ID, "ding");
-	    	registerService(bc, thumbnailFactory, ThumbnailFactory.class, props);
+	    	registerService(bc, thumbnailFactory, NetworkImageFactory.class, props);
 	    }
 
     	{
