@@ -4,6 +4,7 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import java.awt.BorderLayout;
 import java.awt.Image;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,6 +24,8 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.ThumbnailFactory;
+import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.AnnotationManager;
 
 @SuppressWarnings("serial")
 public class ThumbnailPanel extends BasicCollapsiblePanel {
@@ -49,6 +52,10 @@ public class ThumbnailPanel extends BasicCollapsiblePanel {
 		fitContentCheck.setSelected(true);
 		LookAndFeelUtil.makeSmall(fitContentCheck);
 		
+		JCheckBox annotationsCheck = new JCheckBox("Include Annotations");
+		annotationsCheck.setSelected(true);
+		LookAndFeelUtil.makeSmall(annotationsCheck);
+		
 		JButton createButton = new JButton("Create");
 		LookAndFeelUtil.makeSmall(createButton);
 		
@@ -57,8 +64,8 @@ public class ThumbnailPanel extends BasicCollapsiblePanel {
 			int width  = ((SpinnerNumberModel)widthSpinner.getModel()).getNumber().intValue();
 			int height = ((SpinnerNumberModel)heightSpinner.getModel()).getNumber().intValue();
 			boolean fitContent = fitContentCheck.isSelected();
-			
-			createAndShowThumbnail(width, height, fitContent);
+			boolean includeAnnotations = annotationsCheck.isSelected();
+			createAndShowThumbnail(width, height, fitContent, includeAnnotations);
 		});
 		
 		
@@ -81,6 +88,7 @@ public class ThumbnailPanel extends BasicCollapsiblePanel {
 				)
 			)
 			.addComponent(fitContentCheck)
+			.addComponent(annotationsCheck)
 			.addComponent(createButton)
 		);
 		
@@ -94,6 +102,7 @@ public class ThumbnailPanel extends BasicCollapsiblePanel {
 				.addComponent(widthSpinner, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
 			)
 			.addComponent(fitContentCheck)
+			.addComponent(annotationsCheck)
 			.addComponent(createButton)
 		);
 		
@@ -104,22 +113,25 @@ public class ThumbnailPanel extends BasicCollapsiblePanel {
 	
 	
 	// MKTODO should also create a thumbnail of a canned hard-coded network, that's what MCODE et al would do.
-	private void createAndShowThumbnail(int width, int height, boolean fitContent) {
+	private void createAndShowThumbnail(int width, int height, boolean fitContent, boolean includeAnnotations) {
 		var applicationManager = registrar.getService(CyApplicationManager.class);
 		var thumbnailFactory   = registrar.getService(ThumbnailFactory.class, "(id=ding)");
+		var annotationManager  = registrar.getService(AnnotationManager.class);
 		
 		var networkView = applicationManager.getCurrentNetworkView();
 		if(networkView == null)
 			return;
-		
 		
 		Map<String,Object> props = new HashMap<>();
 		props.put(ThumbnailFactory.WIDTH, width);
 		props.put(ThumbnailFactory.HEIGHT, height);
 		props.put(ThumbnailFactory.FIT_CONTENT, fitContent);
 		
-		Image image = thumbnailFactory.getThumbnail(networkView, props);
+		Collection<Annotation> annotations = null;
+		if(includeAnnotations)
+			annotations = annotationManager.getAnnotations(networkView);
 		
+		Image image = thumbnailFactory.getThumbnail(networkView, annotations, props);
 		
 		JLabel picLabel = new JLabel(new ImageIcon(image));
 		JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(this), picLabel);

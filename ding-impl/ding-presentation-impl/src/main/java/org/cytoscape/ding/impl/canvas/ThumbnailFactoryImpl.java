@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
+import java.util.Collection;
 import java.util.Map;
 
 import org.cytoscape.ding.PrintLOD;
@@ -11,12 +12,13 @@ import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.presentation.ThumbnailFactory;
+import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 public class ThumbnailFactoryImpl implements ThumbnailFactory {
 
 	@Override
-	public Image getThumbnail(CyNetworkView networkView, Map<String,Object> properties) {
+	public Image getThumbnail(CyNetworkView networkView, Collection<Annotation> annotations, Map<String,Object> properties) {
 		String rendererId = networkView.getRendererId();
 		if(!rendererId.equals(DingRenderer.ID)) {
 			throw new IllegalArgumentException("networkView was not created by the ding network view factory, got: " + rendererId);
@@ -43,7 +45,7 @@ public class ThumbnailFactoryImpl implements ThumbnailFactory {
 		Graphics2D g = (Graphics2D) image.getGraphics();
 		
 		// Paint the image
-		CompositeGraphicsCanvas.paintThumbnail(g, bgColor, lod, transform, snapshot);
+		CompositeGraphicsCanvas.paintThumbnail(g, bgColor, lod, transform, snapshot, annotations);
 		
 		return image;
 	}
@@ -87,5 +89,7 @@ public class ThumbnailFactoryImpl implements ThumbnailFactory {
 		
 		return transform;
 	}
+
+
 
 }
