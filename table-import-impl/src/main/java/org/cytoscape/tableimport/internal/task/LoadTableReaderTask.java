@@ -1,5 +1,7 @@
 package org.cytoscape.tableimport.internal.task;
 
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_LONG;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -232,7 +234,8 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		if (startLoadRow > 0)
 			startLoadRow--;
 		
-		final int startLoadRowTemp = firstRowAsColumnNames ? 0 : startLoadRow;
+    // This is wrong.  The "first row as column names" should be the startLoadRow
+		// final int startLoadRowTemp = firstRowAsColumnNames ? 0 : startLoadRow;
 		
 		previewPanel.update(
 				workbook,
@@ -241,7 +244,7 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 				isStart,
 				delimiters.getSelectedValues(),
 				null,
-				startLoadRowTemp,
+				startLoadRow,
 				decimalSeparator
 		);
 		
@@ -363,14 +366,27 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		
 		final int keyIndex = readerAMP.getKeyIndex();
 		final String pk = keyIndex >= 0 ? readerAMP.getAttributeNames()[keyIndex] : CyTable.SUID;
-		final Class<?> pkType = keyIndex >= 0 ? String.class : Long.class;
+		final AttributeDataType dataType = keyIndex >= 0 ? readerAMP.getDataTypes()[keyIndex] : TYPE_LONG;
+		
+		final Class<?> keyType;
+		
+		switch (dataType) {
+			case TYPE_INTEGER:
+				keyType = Integer.class;
+				break;
+			case TYPE_LONG:
+				keyType = Long.class;
+				break;
+			default:
+				keyType = String.class;
+    }
 		
 		tm.setProgress(0.1);
 
 		final CyTableFactory tableFactory = serviceRegistrar.getService(CyTableFactory.class);
 		final CyTable table = tableFactory.createTable(
 				"AttrTable " + inputName.substring(inputName.lastIndexOf('/') + 1) + " " + Integer.toString(numImports++),
-			    pk, pkType, true, true);
+			    pk, keyType, true, true);
 		
 		cyTables = new CyTable[] { table };
 		tm.setProgress(0.3);

@@ -22,6 +22,8 @@ public class DelimitersTunable {
 	         exampleStringValue = ";,\\,",
 	         context = "both")
 	public ListMultipleSelection<String> delimiters;
+
+  static String[] defaults = {TAB.getDelimiter(),COMMA.getDelimiter()};
 	
 	
 	public DelimitersTunable() {
@@ -33,6 +35,8 @@ public class DelimitersTunable {
 			"\t" // to support escape sequences used in command arguments
 		);
 		delimiters = new ListMultipleSelection<>(values);
+    // Initialize with the defaults
+    delimiters.setSelectedValues(Arrays.asList(defaults));
 	}
 	
 	public void setSelectedValues(List<TextDelimiter> values) {

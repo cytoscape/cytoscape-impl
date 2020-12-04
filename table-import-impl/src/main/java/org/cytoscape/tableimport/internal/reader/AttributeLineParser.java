@@ -85,6 +85,7 @@ public class AttributeLineParser extends AbstractLineParser {
 				default:
 					primaryKey = part;
 				}
+
 			} else {
 				primaryKey = null;
 			}
