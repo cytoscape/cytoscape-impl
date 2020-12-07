@@ -1,13 +1,6 @@
 package org.cytoscape.graph.render.stateful;
 
-import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_CUSTOM_GRAPHICS;
-import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_EDGE_ANCHORS;
-import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_EDGE_ARROWS;
-import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_EDGE_LABELS;
-import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_HIGH_DETAIL;
-import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_NODE_BORDERS;
-import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_NODE_LABELS;
-import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_TEXT_AS_SHAPE;
+import static org.cytoscape.graph.render.stateful.RenderDetailFlags.*;
 
 /*
  * #%L
@@ -48,8 +41,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.ding.DVisualLexicon;
+import org.cytoscape.ding.impl.visualproperty.EdgeStackingVisualProperty;
 import org.cytoscape.ding.impl.work.DiscreteProgressMonitor;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
+import org.cytoscape.ding.internal.util.MurmurHash3;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.GraphLOD.RenderEdges;
@@ -219,6 +215,9 @@ public final class GraphRenderer {
 			DiscreteProgressMonitor shapeDpm = shapePm.toDiscrete(nodeHits.size());
 			DiscreteProgressMonitor labelDpm = labelPm.toDiscrete(nodeHits.size());
 			
+			byte[] haystackDataBuff = new byte[16];
+			boolean haystack = netView.getVisualProperty(DVisualLexicon.NETWORK_EDGE_STACKING) == EdgeStackingVisualProperty.HAYSTACK;
+				
 			while (nodeHits.hasNext()) {
 				if(pm.isCancelled())
 					return;
@@ -235,6 +234,7 @@ public final class GraphRenderer {
 					if (!edgeDetails.isVisible(edge))
 						continue;
 					SnapshotEdgeInfo edgeInfo = netView.getEdgeInfo(edge);
+					long edgeSuid = edgeInfo.getSUID();
 					var sourceViewSUID = edgeInfo.getSourceViewSUID();
 					var targetViewSUID = edgeInfo.getTargetViewSUID();
 					final long otherNode = nodeSuid ^ sourceViewSUID ^ targetViewSUID;
@@ -282,7 +282,7 @@ public final class GraphRenderer {
 						final Paint srcArrowPaint;
 						final Paint trgArrowPaint;
 
-						if (flags.not(LOD_EDGE_ARROWS)) { // Not rendering arrows.
+						if (flags.not(LOD_EDGE_ARROWS) || haystack) { // Not rendering arrows.
 							trgArrow = srcArrow = ArrowShapeVisualProperty.NONE;
 							trgArrowSize = srcArrowSize = 0.0f;
 							trgArrowPaint = srcArrowPaint = null;
@@ -298,11 +298,18 @@ public final class GraphRenderer {
 						// Compute the anchors to use when rendering edge.
 						final EdgeAnchors anchors = flags.not(LOD_EDGE_ANCHORS) ? null : edgeDetails.getAnchors(netView, edge);
 
-						if (!computeEdgeEndpoints(srcExtents, srcShape, srcArrow,
-						                          srcArrowSize, anchors, trgExtents, trgShape,
-						                          trgArrow, trgArrowSize, floatBuff3, floatBuff4))
-							continue;
-
+						if(haystack) {
+							if (!computeEdgeEndpointsHaystack(srcExtents, trgExtents, floatBuff3, floatBuff4, 
+			                          nodeSuid, otherNode, edgeSuid, haystackDataBuff))
+								continue;
+						}
+						else {
+							if (!computeEdgeEndpoints(srcExtents, srcShape, srcArrow,
+							                          srcArrowSize, anchors, trgExtents, trgShape,
+							                          trgArrow, trgArrowSize, floatBuff3, floatBuff4))
+								continue;
+						}
+						
 						final float srcXAdj = floatBuff3[0];
 						final float srcYAdj = floatBuff3[1];
 						final float trgXAdj = floatBuff4[0];
@@ -680,8 +687,69 @@ public final class GraphRenderer {
 		}
 	}
 
-	private final static float[] s_floatBuff = new float[2];
+	public final static boolean computeEdgeEndpointsHaystack(final float[] srcNodeExtents, final float[] trgNodeExtents,
+			final float[] rtnValSrc, final float[] rtnValTrg, long srcSuid, long trgSuid,
+			long edgeSuid, byte[] dataBuff) {
 
+		haystackEndpoint(srcNodeExtents, rtnValSrc, dataBuff, srcSuid, edgeSuid);
+		haystackEndpoint(trgNodeExtents, rtnValTrg, dataBuff, trgSuid, edgeSuid);
+
+		return true;
+	}
+
+	/**
+	 * Computes a 'random' point around the circumference of a circle within the node.
+	 */
+	private final static void haystackEndpoint(float[] nodeExtents, float[] rtnVal, 
+			byte[] dataBuff, long nodeSuid, long edgeSuid) {
+		final float xMin = nodeExtents[0];
+		final float yMin = nodeExtents[1];
+		final float xMax = nodeExtents[2];
+		final float yMax = nodeExtents[3];
+		
+		final float centerX = (xMin + xMax) / 2.0f;
+		final float centerY = (yMin + yMax) / 2.0f;
+		final float width  = xMax - xMin;
+		final float height = yMax - yMin;
+		
+		final float radiusModifier = 0.6f; // Make this a VP?
+		
+		final float radius = (Math.min(width, height) / 2.0f) * radiusModifier;
+		
+		// Hash the node and edge SUIDs to a value between 0.0 and 1.0. This is done instead of 
+		// generating a random number so that the edge endpoints stay consistent between frames.
+		float h1 = hashSuids(dataBuff, nodeSuid, edgeSuid, 99);
+		
+		// Use the hash to get a 'random' point around the circumference
+		// of a circle that lies within the node boundaries.
+		double theta = h1 * Math.PI * 2;
+		double x = centerX + Math.cos(theta) * radius;
+		double y = centerY + Math.sin(theta) * radius;
+		
+		rtnVal[0] = (float) x;
+		rtnVal[1] = (float) y;
+	}
+	
+
+	private static void longToBytes(long l, byte[] buff, int offset) {
+		for (int i = offset + 7; i >= offset; i--) {
+			buff[i] = (byte) (l & 0xFF);
+			l >>= 8;
+		}
+	}
+
+	/**
+	 * Returns a hashed value of the given suids in the range 0.0 to 1.0
+	 */
+	private static float hashSuids(byte[] dataBuff, long nodeSuid, long edgeSuid, int seed) {
+		longToBytes(nodeSuid, dataBuff, 0);
+		longToBytes(edgeSuid, dataBuff, 8);
+		int hash = MurmurHash3.murmurhash3_x86_32(dataBuff, 0, dataBuff.length, seed);
+		float r = Math.abs((float) hash / Integer.MAX_VALUE);
+		return r;
+	}
+	
+	
 	/**
 	 * Calculates the edge endpoints given two nodes, any edge anchors, and any arrows. 
 	 *

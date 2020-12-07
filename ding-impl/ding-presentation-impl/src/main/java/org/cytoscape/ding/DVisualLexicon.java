@@ -24,6 +24,8 @@ import org.cytoscape.ding.impl.strokes.SineWaveStroke;
 import org.cytoscape.ding.impl.strokes.VerticalSlashStroke;
 import org.cytoscape.ding.impl.strokes.ZigzagStroke;
 import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
+import org.cytoscape.ding.impl.visualproperty.EdgeStacking;
+import org.cytoscape.ding.impl.visualproperty.EdgeStackingVisualProperty;
 import org.cytoscape.ding.impl.visualproperty.ObjectPositionVisualProperty;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -98,11 +100,13 @@ public class DVisualLexicon extends BasicVisualLexicon {
 	public static final VisualProperty<Boolean> NETWORK_ANNOTATION_SELECTION = new BooleanVisualProperty(
 			Boolean.FALSE, "NETWORK_ANNOTATION_SELECTION", "Network Annotation Selection",
 			CyNetwork.class);
-
 	public static final VisualProperty<Boolean> NETWORK_NODE_LABEL_SELECTION = new BooleanVisualProperty(
 			Boolean.FALSE, "NETWORK_NODE_LABEL_SELECTION", "Network Node Label Selection",
 			CyNetwork.class);
-
+	public static final VisualProperty<EdgeStacking> NETWORK_EDGE_STACKING = new EdgeStackingVisualProperty(
+			EdgeStackingVisualProperty.AUTO_BEND, "NETWORK_EDGE_STACKING", "Edge Stacking", 
+			CyNetwork.class);
+	
 	public static final VisualProperty<ObjectPosition> NODE_LABEL_POSITION = new ObjectPositionVisualProperty(
 			ObjectPosition.DEFAULT_POSITION, "NODE_LABEL_POSITION",
 			"Node Label Position", CyNode.class);
@@ -403,6 +407,7 @@ public class DVisualLexicon extends BasicVisualLexicon {
 		addVisualProperty(NETWORK_EDGE_SELECTION, NETWORK);
 		addVisualProperty(NETWORK_ANNOTATION_SELECTION, NETWORK);
 		addVisualProperty(NETWORK_NODE_LABEL_SELECTION, NETWORK);
+		addVisualProperty(NETWORK_EDGE_STACKING, NETWORK);
 
 		addVisualProperty(NODE_LABEL_POSITION, NODE);
 		addVisualProperty(NODE_LABEL_ROTATION, NODE);

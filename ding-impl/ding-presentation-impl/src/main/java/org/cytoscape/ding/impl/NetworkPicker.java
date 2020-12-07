@@ -24,6 +24,7 @@ import java.util.Set;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
+import org.cytoscape.ding.impl.visualproperty.EdgeStackingVisualProperty;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
@@ -452,6 +453,9 @@ public class NetworkPicker {
 				processedNodes.add(node);
 			}
 		} else { // Last render high detail.
+			byte[] haystackDataBuff = new byte[16];
+			boolean haystack = snapshot.getVisualProperty(DVisualLexicon.NETWORK_EDGE_STACKING) == EdgeStackingVisualProperty.HAYSTACK;
+				
 			float[] extentsBuff2 = new float[4];
 			
 			while(nodeHits.hasNext()) {
@@ -463,6 +467,7 @@ public class NetworkPicker {
 				
 				for(View<CyEdge> edge : touchingEdges) {
 					SnapshotEdgeInfo edgeInfo = snapshot.getEdgeInfo(edge);
+					long edgeSuid = edgeInfo.getSUID();
 					double segThicknessDiv2 = edgeDetails.getWidth(edge) / 2.0d;
 					long otherNode = node ^ edgeInfo.getSourceViewSUID() ^ edgeInfo.getTargetViewSUID();
 					View<CyNode> otherNodeView = snapshot.getNodeView(otherNode);
@@ -498,7 +503,7 @@ public class NetworkPicker {
 						GeneralPath path  = new GeneralPath();
 						GeneralPath path2 = new GeneralPath();
 						
-						if (getFlags().not(LOD_EDGE_ARROWS)) {
+						if (getFlags().not(LOD_EDGE_ARROWS) || haystack) {
 							srcArrow = trgArrow = ArrowShapeVisualProperty.NONE;
 							srcArrowSize = trgArrowSize = 0.0f;
 						} else {
@@ -510,11 +515,17 @@ public class NetworkPicker {
 
 						final EdgeAnchors anchors = getFlags().not(LOD_EDGE_ANCHORS) ? null : edgeDetails.getAnchors(snapshot, edge);
 
-						if (!GraphRenderer.computeEdgeEndpoints(srcExtents, srcShape,
-						                                        srcArrow, srcArrowSize, anchors,
-						                                        trgExtents, trgShape, trgArrow,
-						                                        trgArrowSize, floatBuff1, floatBuff2))
-							continue;
+						
+						if(haystack) {
+							if (!GraphRenderer.computeEdgeEndpointsHaystack(srcExtents, trgExtents, floatBuff1, floatBuff2, 
+			                          node, otherNode, edgeSuid, haystackDataBuff))
+								continue;
+						} else {
+							if (!GraphRenderer.computeEdgeEndpoints(srcExtents, srcShape, srcArrow,
+				                          srcArrowSize, anchors, trgExtents, trgShape,
+				                          trgArrow, trgArrowSize, floatBuff1, floatBuff2))
+								continue;
+						}
 
 						GraphGraphics.getEdgePath(srcArrow, srcArrowSize, trgArrow, trgArrowSize,
 						                    floatBuff1[0], floatBuff1[1], anchors,

@@ -40,7 +40,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.strokes.DAnimatedStroke;
+import org.cytoscape.ding.impl.visualproperty.EdgeStackingVisualProperty;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
 import org.cytoscape.model.CyEdge;
@@ -401,6 +403,11 @@ public final class DEdgeDetails implements EdgeDetails {
 	public EdgeAnchors getAnchors(final CyNetworkViewSnapshot netView, final View<CyEdge> edgeView) {
 		if (edgeView == null)
 			return null;
+		
+		if(netView.getVisualProperty(DVisualLexicon.NETWORK_EDGE_STACKING) == EdgeStackingVisualProperty.HAYSTACK) {
+			// no bends when using haystack edges
+			return null;
+		}
 		
 		int numAnchors = getNumAnchors(edgeView);
 		if (numAnchors > 0) {
