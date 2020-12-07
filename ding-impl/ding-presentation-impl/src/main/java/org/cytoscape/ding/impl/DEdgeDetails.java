@@ -404,7 +404,7 @@ public final class DEdgeDetails implements EdgeDetails {
 		if (edgeView == null)
 			return null;
 		
-		if(netView.getVisualProperty(DVisualLexicon.NETWORK_EDGE_STACKING) == EdgeStackingVisualProperty.HAYSTACK) {
+		if(edgeView.getVisualProperty(DVisualLexicon.EDGE_STACKING) == EdgeStackingVisualProperty.HAYSTACK) {
 			// no bends when using haystack edges
 			return null;
 		}

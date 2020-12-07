@@ -216,7 +216,6 @@ public final class GraphRenderer {
 			DiscreteProgressMonitor labelDpm = labelPm.toDiscrete(nodeHits.size());
 			
 			byte[] haystackDataBuff = new byte[16];
-			boolean haystack = netView.getVisualProperty(DVisualLexicon.NETWORK_EDGE_STACKING) == EdgeStackingVisualProperty.HAYSTACK;
 				
 			while (nodeHits.hasNext()) {
 				if(pm.isCancelled())
@@ -227,6 +226,7 @@ public final class GraphRenderer {
 				final View<CyNode> node = netView.getNodeView(nodeSuid);
 				final byte nodeShape = nodeDetails.getShape(node);
 				Iterable<View<CyEdge>> touchingEdges = netView.getAdjacentEdgeIterable(node);
+				
 				for (View<CyEdge> edge : touchingEdges) {
 					if(pm.isCancelled()) {
 						return;
@@ -240,6 +240,8 @@ public final class GraphRenderer {
 					final long otherNode = nodeSuid ^ sourceViewSUID ^ targetViewSUID;
 					final View<CyNode> otherCyNode = netView.getNodeView(otherNode);
 
+					boolean haystack = edge.getVisualProperty(DVisualLexicon.EDGE_STACKING) == EdgeStackingVisualProperty.HAYSTACK;
+					
 					if (nodeBuff.get(otherNode) < 0) { // Has not yet been rendered.
 						
 						shapePm.start("Line");

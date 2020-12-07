@@ -103,9 +103,6 @@ public class DVisualLexicon extends BasicVisualLexicon {
 	public static final VisualProperty<Boolean> NETWORK_NODE_LABEL_SELECTION = new BooleanVisualProperty(
 			Boolean.FALSE, "NETWORK_NODE_LABEL_SELECTION", "Network Node Label Selection",
 			CyNetwork.class);
-	public static final VisualProperty<EdgeStacking> NETWORK_EDGE_STACKING = new EdgeStackingVisualProperty(
-			EdgeStackingVisualProperty.AUTO_BEND, "NETWORK_EDGE_STACKING", "Edge Stacking", 
-			CyNetwork.class);
 	
 	public static final VisualProperty<ObjectPosition> NODE_LABEL_POSITION = new ObjectPositionVisualProperty(
 			ObjectPosition.DEFAULT_POSITION, "NODE_LABEL_POSITION",
@@ -263,6 +260,9 @@ public class DVisualLexicon extends BasicVisualLexicon {
 			Color.BLACK, BasicVisualLexicon.PAINT_RANGE,
 			"EDGE_TARGET_ARROW_UNSELECTED_PAINT",
 			"Edge Target Arrow Unselected Paint", CyEdge.class);
+	public static final VisualProperty<EdgeStacking> EDGE_STACKING = new EdgeStackingVisualProperty(
+			EdgeStackingVisualProperty.AUTO_BEND, "EDGE_STACKING", "Edge Stacking", 
+			CyEdge.class);
 	
 	public static final VisualProperty<Boolean> EDGE_CURVED = new BooleanVisualProperty(true, "EDGE_CURVED",
 			"Edge Curved", CyEdge.class);
@@ -407,7 +407,6 @@ public class DVisualLexicon extends BasicVisualLexicon {
 		addVisualProperty(NETWORK_EDGE_SELECTION, NETWORK);
 		addVisualProperty(NETWORK_ANNOTATION_SELECTION, NETWORK);
 		addVisualProperty(NETWORK_NODE_LABEL_SELECTION, NETWORK);
-		addVisualProperty(NETWORK_EDGE_STACKING, NETWORK);
 
 		addVisualProperty(NODE_LABEL_POSITION, NODE);
 		addVisualProperty(NODE_LABEL_ROTATION, NODE);
@@ -468,6 +467,7 @@ public class DVisualLexicon extends BasicVisualLexicon {
 
 		//addVisualProperty(EDGE_LABEL_POSITION, EDGE);
 		addVisualProperty(EDGE_LABEL_ROTATION, EDGE);
+		addVisualProperty(EDGE_STACKING, EDGE);
 
 		createLookupMap();
 	}

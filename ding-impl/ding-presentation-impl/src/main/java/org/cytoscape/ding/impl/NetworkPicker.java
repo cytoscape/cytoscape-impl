@@ -454,7 +454,6 @@ public class NetworkPicker {
 			}
 		} else { // Last render high detail.
 			byte[] haystackDataBuff = new byte[16];
-			boolean haystack = snapshot.getVisualProperty(DVisualLexicon.NETWORK_EDGE_STACKING) == EdgeStackingVisualProperty.HAYSTACK;
 				
 			float[] extentsBuff2 = new float[4];
 			
@@ -466,6 +465,8 @@ public class NetworkPicker {
 				Iterable<View<CyEdge>> touchingEdges = snapshot.getAdjacentEdgeIterable(node);
 				
 				for(View<CyEdge> edge : touchingEdges) {
+					boolean haystack = edge.getVisualProperty(DVisualLexicon.EDGE_STACKING) == EdgeStackingVisualProperty.HAYSTACK;
+					
 					SnapshotEdgeInfo edgeInfo = snapshot.getEdgeInfo(edge);
 					long edgeSuid = edgeInfo.getSUID();
 					double segThicknessDiv2 = edgeDetails.getWidth(edge) / 2.0d;
