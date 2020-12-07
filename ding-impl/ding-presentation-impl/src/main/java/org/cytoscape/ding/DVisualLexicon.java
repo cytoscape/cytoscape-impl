@@ -30,6 +30,7 @@ import org.cytoscape.ding.impl.visualproperty.ObjectPositionVisualProperty;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.ContinuousRange;
 import org.cytoscape.view.model.DiscreteRange;
 import org.cytoscape.view.model.NullDataType;
 import org.cytoscape.view.model.VisualProperty;
@@ -263,6 +264,10 @@ public class DVisualLexicon extends BasicVisualLexicon {
 	public static final VisualProperty<EdgeStacking> EDGE_STACKING = new EdgeStackingVisualProperty(
 			EdgeStackingVisualProperty.AUTO_BEND, "EDGE_STACKING", "Edge Stacking", 
 			CyEdge.class);
+	public static final VisualProperty<Double> EDGE_HAYSTACK_RADIUS = new DoubleVisualProperty(0.5, 
+			new ContinuousRange<>(Double.class, 0.0, 1.0, true, true), 
+			"EDGE_HAYSTACK_RADIUS", "Haystack Center Radius", CyEdge.class);
+	
 	
 	public static final VisualProperty<Boolean> EDGE_CURVED = new BooleanVisualProperty(true, "EDGE_CURVED",
 			"Edge Curved", CyEdge.class);
@@ -468,7 +473,8 @@ public class DVisualLexicon extends BasicVisualLexicon {
 		//addVisualProperty(EDGE_LABEL_POSITION, EDGE);
 		addVisualProperty(EDGE_LABEL_ROTATION, EDGE);
 		addVisualProperty(EDGE_STACKING, EDGE);
-
+		addVisualProperty(EDGE_HAYSTACK_RADIUS, EDGE);
+		
 		createLookupMap();
 	}
 

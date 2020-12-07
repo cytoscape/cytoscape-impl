@@ -335,6 +335,10 @@ public interface EdgeDetails {
 	default public boolean isVisible(View<CyEdge> edgeView) {
 		return true;
 	}
+	
+	boolean isHaystack(View<CyEdge> edgeView);
+	
+	float getHaystackRadius(View<CyEdge> edgeView);
 
 	Integer getLineCurved(View<CyEdge> edgeView);
 

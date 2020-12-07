@@ -259,6 +259,19 @@ public final class DEdgeDetails implements EdgeDetails {
 	}
 
 	@Override
+	public boolean isHaystack(View<CyEdge> edgeView) {
+		return edgeView.getVisualProperty(DVisualLexicon.EDGE_STACKING) == EdgeStackingVisualProperty.HAYSTACK;
+	}
+	
+	@Override
+	public float getHaystackRadius(View<CyEdge> edgeView) {
+		Double radius = edgeView.getVisualProperty(DVisualLexicon.EDGE_HAYSTACK_RADIUS);
+		if(radius == null)
+			return DVisualLexicon.EDGE_HAYSTACK_RADIUS.getDefault().floatValue();
+		return (float) Math.min(1.0, Math.max(0.0, radius));
+	}
+	
+	@Override
 	public double getLabelWidth(View<CyEdge> edgeView) {
 		return edgeView.getVisualProperty(EDGE_LABEL_WIDTH);
 	}

@@ -41,8 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.cytoscape.ding.DVisualLexicon;
-import org.cytoscape.ding.impl.visualproperty.EdgeStackingVisualProperty;
 import org.cytoscape.ding.impl.work.DiscreteProgressMonitor;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.ding.internal.util.MurmurHash3;
@@ -240,7 +238,7 @@ public final class GraphRenderer {
 					final long otherNode = nodeSuid ^ sourceViewSUID ^ targetViewSUID;
 					final View<CyNode> otherCyNode = netView.getNodeView(otherNode);
 
-					boolean haystack = edge.getVisualProperty(DVisualLexicon.EDGE_STACKING) == EdgeStackingVisualProperty.HAYSTACK;
+					boolean haystack = edgeDetails.isHaystack(edge);
 					
 					if (nodeBuff.get(otherNode) < 0) { // Has not yet been rendered.
 						
@@ -301,8 +299,9 @@ public final class GraphRenderer {
 						final EdgeAnchors anchors = flags.not(LOD_EDGE_ANCHORS) ? null : edgeDetails.getAnchors(netView, edge);
 
 						if(haystack) {
+							float radiusModifier = edgeDetails.getHaystackRadius(edge);
 							if (!computeEdgeEndpointsHaystack(srcExtents, trgExtents, floatBuff3, floatBuff4, 
-			                          nodeSuid, otherNode, edgeSuid, haystackDataBuff))
+			                          nodeSuid, otherNode, edgeSuid, haystackDataBuff, radiusModifier))
 								continue;
 						}
 						else {
@@ -691,10 +690,10 @@ public final class GraphRenderer {
 
 	public final static boolean computeEdgeEndpointsHaystack(final float[] srcNodeExtents, final float[] trgNodeExtents,
 			final float[] rtnValSrc, final float[] rtnValTrg, long srcSuid, long trgSuid,
-			long edgeSuid, byte[] dataBuff) {
+			long edgeSuid, byte[] dataBuff, float radiusModifier) {
 
-		haystackEndpoint(srcNodeExtents, rtnValSrc, dataBuff, srcSuid, edgeSuid);
-		haystackEndpoint(trgNodeExtents, rtnValTrg, dataBuff, trgSuid, edgeSuid);
+		haystackEndpoint(srcNodeExtents, rtnValSrc, dataBuff, srcSuid, edgeSuid, radiusModifier);
+		haystackEndpoint(trgNodeExtents, rtnValTrg, dataBuff, trgSuid, edgeSuid, radiusModifier);
 
 		return true;
 	}
@@ -703,7 +702,7 @@ public final class GraphRenderer {
 	 * Computes a 'random' point around the circumference of a circle within the node.
 	 */
 	private final static void haystackEndpoint(float[] nodeExtents, float[] rtnVal, 
-			byte[] dataBuff, long nodeSuid, long edgeSuid) {
+			byte[] dataBuff, long nodeSuid, long edgeSuid, float radiusModifier) {
 		final float xMin = nodeExtents[0];
 		final float yMin = nodeExtents[1];
 		final float xMax = nodeExtents[2];
@@ -713,8 +712,6 @@ public final class GraphRenderer {
 		final float centerY = (yMin + yMax) / 2.0f;
 		final float width  = xMax - xMin;
 		final float height = yMax - yMin;
-		
-		final float radiusModifier = 0.6f; // Make this a VP?
 		
 		final float radius = (Math.min(width, height) / 2.0f) * radiusModifier;
 		

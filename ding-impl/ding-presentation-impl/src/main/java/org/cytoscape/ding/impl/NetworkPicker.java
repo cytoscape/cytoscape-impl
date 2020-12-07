@@ -24,7 +24,6 @@ import java.util.Set;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
-import org.cytoscape.ding.impl.visualproperty.EdgeStackingVisualProperty;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
@@ -465,7 +464,7 @@ public class NetworkPicker {
 				Iterable<View<CyEdge>> touchingEdges = snapshot.getAdjacentEdgeIterable(node);
 				
 				for(View<CyEdge> edge : touchingEdges) {
-					boolean haystack = edge.getVisualProperty(DVisualLexicon.EDGE_STACKING) == EdgeStackingVisualProperty.HAYSTACK;
+					boolean haystack = edgeDetails.isHaystack(edge);
 					
 					SnapshotEdgeInfo edgeInfo = snapshot.getEdgeInfo(edge);
 					long edgeSuid = edgeInfo.getSUID();
@@ -518,8 +517,9 @@ public class NetworkPicker {
 
 						
 						if(haystack) {
+							float radiusModifier = edgeDetails.getHaystackRadius(edge);
 							if (!GraphRenderer.computeEdgeEndpointsHaystack(srcExtents, trgExtents, floatBuff1, floatBuff2, 
-			                          node, otherNode, edgeSuid, haystackDataBuff))
+			                          node, otherNode, edgeSuid, haystackDataBuff, radiusModifier))
 								continue;
 						} else {
 							if (!GraphRenderer.computeEdgeEndpoints(srcExtents, srcShape, srcArrow,
