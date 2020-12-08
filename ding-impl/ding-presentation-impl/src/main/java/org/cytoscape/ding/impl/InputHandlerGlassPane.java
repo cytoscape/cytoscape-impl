@@ -781,7 +781,12 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				}
 			}
 			
-			final String tooltip = text;
+			if(text == null || text.isBlank()) {
+				return;
+			}
+			
+			final String tooltip = text.trim();
+			
 			ViewUtil.invokeOnEDT(() -> {
 				setToolTipText(tooltip);
 				ToolTipManager.sharedInstance().mouseMoved(e);
