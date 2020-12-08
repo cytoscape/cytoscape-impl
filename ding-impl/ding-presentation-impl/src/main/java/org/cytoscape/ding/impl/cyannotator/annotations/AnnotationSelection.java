@@ -133,7 +133,9 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 	
 	public Collection<DingAnnotation> getSelectedAnnotations() {
 		// This method exists for clients that want to avoid ConcurrentModificationException
-		return new ArrayList<>(selectedAnnotations);
+		synchronized (lock) {
+			return new ArrayList<>(selectedAnnotations);
+		}
 	}
 	
 	private void saveBounds() {

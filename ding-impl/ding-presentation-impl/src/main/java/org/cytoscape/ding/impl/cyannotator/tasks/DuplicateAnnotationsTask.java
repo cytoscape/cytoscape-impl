@@ -1,5 +1,7 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
+import static org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.ANNOTATION_ID;
+
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -115,7 +117,9 @@ public class DuplicateAnnotationsTask extends AbstractTask {
 	}
 
 	private DingAnnotation duplicate(DingAnnotation a) {
-		var argMap = a.getArgMap();
+		var argMap = new HashMap<>(a.getArgMap());
+		argMap.remove(ANNOTATION_ID);
+		
 		var type = argMap.get(DingAnnotation.TYPE);
 		
 		if (type == null)

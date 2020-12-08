@@ -1,7 +1,22 @@
 package org.cytoscape.ding.impl;
 
-import static java.awt.event.KeyEvent.*;
-import static org.cytoscape.ding.internal.util.ViewUtil.*;
+import static java.awt.event.KeyEvent.VK_BACK_SPACE;
+import static java.awt.event.KeyEvent.VK_DELETE;
+import static java.awt.event.KeyEvent.VK_DOWN;
+import static java.awt.event.KeyEvent.VK_ESCAPE;
+import static java.awt.event.KeyEvent.VK_LEFT;
+import static java.awt.event.KeyEvent.VK_RIGHT;
+import static java.awt.event.KeyEvent.VK_UP;
+import static org.cytoscape.ding.internal.util.ViewUtil.getResizeCursor;
+import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
+import static org.cytoscape.ding.internal.util.ViewUtil.isAdditiveSelect;
+import static org.cytoscape.ding.internal.util.ViewUtil.isControlOrMetaDown;
+import static org.cytoscape.ding.internal.util.ViewUtil.isDoubleLeftClick;
+import static org.cytoscape.ding.internal.util.ViewUtil.isDragSelectionKeyDown;
+import static org.cytoscape.ding.internal.util.ViewUtil.isLeftClick;
+import static org.cytoscape.ding.internal.util.ViewUtil.isLeftMouse;
+import static org.cytoscape.ding.internal.util.ViewUtil.isSingleLeftClick;
+import static org.cytoscape.ding.internal.util.ViewUtil.isSingleRightClick;
 
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
@@ -381,8 +396,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			} else if (code == VK_BACK_SPACE || code == VK_DELETE) {
 				// In this case changing the model will trigger a render
 				deleteSelected();
-			} else if (code == VK_D && isControlOrMetaDown(e)) {
-				duplicateSelected();
 			}
 
 			if (allChanged)
@@ -535,15 +548,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 
 			var taskManager = registrar.getService(TaskManager.class);
 			taskManager.execute(tasks);
-		}
-		
-		private void duplicateSelected() {
-			var f = registrar.getService(NetworkViewTaskFactory.class, "(id=duplicateAnnotationsTaskFactory)");
-			
-			if (f.isReady(re.getViewModel())) {
-				var tm = registrar.getService(TaskManager.class);
-				tm.execute(f.createTaskIterator(re.getViewModel()));
-			}
 		}
 	}
 	
