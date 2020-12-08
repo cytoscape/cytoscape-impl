@@ -470,7 +470,6 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	void setSelected(Annotation a, boolean selected) {
-System.out.println("AnnotationMainPanel.setSelected(): " + a + " -- " + selected);
 		if (re != null && getAnnotationCount() > 0) {
 			// group annotations can be on both canvases at the same time
 			setSelected(a, selected, getForegroundTree());
@@ -684,11 +683,9 @@ System.out.println("AnnotationMainPanel.setSelected(): " + a + " -- " + selected
 			stack.addAll(getSelectedAnnotations(getBackgroundTree()));
 			
 			// Traverse the selection tree to find the fist non-GroupAnnotation that is selected
-System.out.println("===============");
 			while (!stack.isEmpty()) {
 				var a = stack.pop();
 				
-				System.out.println(". " + a.getName());
 //				if (a instanceof GroupAnnotation) {
 //					for (var aa : ((GroupAnnotation) a).getMembers())
 //						stack.push(aa);
@@ -701,7 +698,6 @@ System.out.println("===============");
 			}
 		}
 		
-System.out.println("\t>>> " + selected);
 		setEditingAnnotation(selected);
 	}
 	
