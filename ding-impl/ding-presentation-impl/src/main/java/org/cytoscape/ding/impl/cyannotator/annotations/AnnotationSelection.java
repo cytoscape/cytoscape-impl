@@ -20,7 +20,6 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -83,25 +82,35 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 	private Point movingStartOffset;
 	private AnchorLocation resizingAnchor;
 	
+	private final Object lock = new Object();
+	
 	public AnnotationSelection(CyAnnotator cyAnnotator) {
 		this.cyAnnotator = cyAnnotator;
 		this.re = cyAnnotator.getRenderingEngine();
 	}
 	
 	public void add(DingAnnotation a) {
-		selectedAnnotations.add(a);
+		synchronized (lock) {
+			selectedAnnotations.add(a);
+		}
+		
 		updateBounds();
 	}
 	
 	public void remove(Annotation a) {
-		selectedAnnotations.remove(a);
+		synchronized (lock) {
+			selectedAnnotations.remove(a);
+		}
+		
 		updateBounds();
 	}
 	
 	public void clear() {
-		if(!selectedAnnotations.isEmpty()) {
-			selectedAnnotations.clear();
-			updateBounds();
+		synchronized (lock) {
+			if (!selectedAnnotations.isEmpty()) {
+				selectedAnnotations.clear();
+				updateBounds();
+			}
 		}
 	}
 	
@@ -122,10 +131,6 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 		return selectedAnnotations.isEmpty();
 	}
 	
-	public int count() {
-		return selectedAnnotations.size();
-	}
-	
 	public Collection<DingAnnotation> getSelectedAnnotations() {
 		// This method exists for clients that want to avoid ConcurrentModificationException
 		return new ArrayList<>(selectedAnnotations);
@@ -133,16 +138,22 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 	
 	private void saveBounds() {
 		savedUnion = union;
-		for(DingAnnotation da : selectedAnnotations) {
-			da.saveBounds();
+		
+		synchronized (lock) {
+			for (var da : selectedAnnotations) {
+				da.saveBounds();
+			}
 		}
 	}
 
 	private void updateBounds() {
 		union = null;
-		for(var a : this) {
-			var bounds = GraphicsUtilities.getRotatedBounds(a);
-			union = (union == null) ? bounds : union.createUnion(bounds);
+		
+		synchronized (lock) {
+			for (var a : this) {
+				var bounds = GraphicsUtilities.getRotatedBounds(a);
+				union = (union == null) ? bounds : union.createUnion(bounds);
+			}
 		}
 	}
 	
@@ -155,21 +166,23 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 	}
 	
 	public Point2D getLocation() {
-		Rectangle2D bounds = getBounds();
-		if(bounds == null)
-			return null;
-		return new Point2D.Double(bounds.getX(), bounds.getY());
+		var bounds = getBounds();
+		
+		return bounds == null ? null : new Point2D.Double(bounds.getX(), bounds.getY());
 	}
 	
 	public AnchorLocation overAnchor(int mouseX, int mouseY) {
-		for(Position p : Position.values()) {
-			Rectangle rect = anchors.get(p);
-			if(rect != null && rect.contains(mouseX, mouseY)) {
+		for (var p : Position.values()) {
+			var rect = anchors.get(p);
+			
+			if (rect != null && rect.contains(mouseX, mouseY)) {
 				int mouseOffsetX = mouseX - rect.x;
 				int mouseOffsetY = mouseY - rect.y;
+				
 				return new AnchorLocation(p, rect.x, rect.y, mouseOffsetX, mouseOffsetY);
 			}
 		}
+		
 		return null;
 	}
 
@@ -179,7 +192,7 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 	}
 	
 	public void stopResizing() {
-		this.resizingAnchor = null;
+		resizingAnchor = null;
 	}
 	
 	public boolean isResizing() {
@@ -202,9 +215,11 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 		var node = re.getTransform().getNodeCoordinates(mouseX, mouseY);
 		var newOutlineBounds = resize(position, savedUnion, node.getX(), node.getY(), keepAspectRatio);
 
-		for (var a : this) {
-			((AbstractAnnotation) a).resizeAnnotationRelative(savedUnion, newOutlineBounds);
-			a.update();
+		synchronized (lock) {
+			for (var a : this) {
+				((AbstractAnnotation) a).resizeAnnotationRelative(savedUnion, newOutlineBounds);
+				a.update();
+			}
 		}
 		
 		updateBounds();
@@ -300,15 +315,17 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 	public void moveSelection(int x, int y) {
 		if (movingStartOffset == null)
 			return;
-		
+				
 		// Avoid moving the same annotation twice
 		var annotationsToMove = new HashSet<>(selectedAnnotations);
 		
-		for (var annotation : selectedAnnotations) {
-			for (var ancestor : AnnotationTree.getAncestors(annotation)) {
-				if (selectedAnnotations.contains(ancestor)) {
-					annotationsToMove.remove(annotation);
-					break;
+		synchronized (lock) {
+			for (var annotation : selectedAnnotations) {
+				for (var ancestor : AnnotationTree.getAncestors(annotation)) {
+					if (selectedAnnotations.contains(ancestor)) {
+						annotationsToMove.remove(annotation);
+						break;
+					}
 				}
 			}
 		}
