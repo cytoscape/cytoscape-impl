@@ -31,7 +31,7 @@ public class DashDotStroke extends BasicStroke implements WidthStroke {
 	private float width;
 
 	public DashDotStroke(float width) {
-		super(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f,
+		super(width, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 10.0f,
 				new float[] { width * 4f, width * 2f, width, width * 2f }, 0.0f);
 
 		this.width = width;
