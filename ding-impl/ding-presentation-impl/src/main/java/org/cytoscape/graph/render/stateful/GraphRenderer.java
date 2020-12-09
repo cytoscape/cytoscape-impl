@@ -250,23 +250,27 @@ public final class GraphRenderer {
 
 						final byte otherNodeShape = nodeDetails.getShape(otherCyNode);
 
-						// Compute node shapes, center positions, and extents.
 						final byte srcShape;
-
-						// Compute node shapes, center positions, and extents.
 						final byte trgShape;
 						final float[] srcExtents;
 						final float[] trgExtents;
+						final long srcSuid;
+						final long trgSuid;
+						
 						if (nodeSuid == sourceViewSUID) {
 							srcShape = nodeShape;
 							trgShape = otherNodeShape;
 							srcExtents = floatBuff1;
 							trgExtents = floatBuff2;
-						} else { // node == graph.edgeTarget(edge).
+							srcSuid = nodeSuid;
+							trgSuid = otherNode;
+						} else {
 							srcShape = otherNodeShape;
 							trgShape = nodeShape;
 							srcExtents = floatBuff2;
 							trgExtents = floatBuff1;
+							srcSuid = otherNode;
+							trgSuid = nodeSuid;
 						}
 
 						// Compute visual attributes that do not depend on LOD.
@@ -301,7 +305,7 @@ public final class GraphRenderer {
 						if(haystack) {
 							float radiusModifier = edgeDetails.getHaystackRadius(edge);
 							if (!computeEdgeEndpointsHaystack(srcExtents, trgExtents, floatBuff3, floatBuff4, 
-			                          nodeSuid, otherNode, edgeSuid, haystackDataBuff, radiusModifier))
+									srcSuid, trgSuid, edgeSuid, haystackDataBuff, radiusModifier))
 								continue;
 						}
 						else {
