@@ -4,7 +4,6 @@ import java.awt.AlphaComposite;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeListener;
@@ -67,7 +66,7 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	protected double y;
 	protected double width;
 	protected double height;
-  protected double rotation;
+	protected double rotation;
 	
 	protected int zOrder;
 	protected Rectangle2D initialBounds;
@@ -97,7 +96,7 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	protected AbstractAnnotation(DRenderingEngine re, double x, double y, double rotation) {
 		this(re, false);
 		setLocation(x, y);
-    this.rotation = rotation;
+		this.rotation = rotation;
 	}
 
 	protected AbstractAnnotation(DRenderingEngine re, Map<String, String> argMap) {
@@ -110,7 +109,7 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 				// Ignore...
 			}
 		}
-		
+
 		if (argMap.get(Y) != null) {
 			try {
 				y = Double.parseDouble(argMap.get(Y));
@@ -125,9 +124,9 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 			} catch (Exception e) {
 				// Ignore...
 			}
-    } else {
-      rotation = 0d;
-    }
+		} else {
+			rotation = 0d;
+		}
 
 		try {
 			zOrder = ViewUtils.getDouble(argMap, Z, 0.0).intValue();
@@ -221,24 +220,25 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 			var oldValue = this.rotation;
 			this.rotation = rotation;
 			update();
-      if (isSelected()) {
-		    cyAnnotator.getAnnotationSelection().getBounds(); // This forces an update to the bounds
-      }
+			
+			if (isSelected())
+				cyAnnotator.getAnnotationSelection().getBounds(); // This forces an update to the bounds
+			
 			firePropertyChange("rotation", oldValue, rotation);
 		}
 	}
-	
+
 	public void setBounds(Rectangle2D bounds) {
 		this.x = bounds.getX();
 		this.y = bounds.getY();
 		setSize(bounds.getWidth(), bounds.getHeight());
 	}
-	
+
 	@Override
 	public Rectangle2D getBounds() {
 		return new Rectangle2D.Double(x, y, width, height);
 	}
-	
+
 	@Override
 	public void setSize(double width, double height) {
 		this.width = width;
@@ -501,43 +501,42 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	
 	@Override
 	public String toString() {
-    Map<String, String> args = getArgMap();
-    String type = args.get(TYPE);
-    if (type.endsWith("BoundedTextAnnotation"))
-      return "Bounded Text annotation at "+(int)x+","+(int)y+" named \""+getName()+"\" with ID: "+getUUID();
-    if (type.endsWith("TextAnnotation"))
-      return "Text annotation at "+(int)x+","+(int)y+" named \""+getName()+"\" with ID: "+getUUID();
-    if (type.endsWith("ShapeAnnotation"))
-      return "Shape annotation at "+(int)x+","+(int)y+" named \""+getName()+"\" with ID: "+getUUID();
-    if (type.endsWith("ImageAnnotation"))
-      return "Image annotation at "+(int)x+","+(int)y+" named \""+getName()+"\" with ID: "+getUUID();
-    if (type.endsWith("ArrowAnnotation"))
-      return "Arrow annotation named \""+getName()+"\" with ID: "+getUUID();
-    if (type.endsWith("GroupAnnotation"))
-      return "Group annotation at "+(int)x+","+(int)y+" named \""+getName()+"\" with ID: "+getUUID();
+		var args = getArgMap();
+		String type = args.get(TYPE);
+		
+		if (type.endsWith("BoundedTextAnnotation"))
+			return "Bounded Text annotation at " + (int) x + "," + (int) y + " named \"" + getName() + "\" with ID: "
+					+ getUUID();
+		if (type.endsWith("TextAnnotation"))
+			return "Text annotation at " + (int) x + "," + (int) y + " named \"" + getName() + "\" with ID: "
+					+ getUUID();
+		if (type.endsWith("ShapeAnnotation"))
+			return "Shape annotation at " + (int) x + "," + (int) y + " named \"" + getName() + "\" with ID: "
+					+ getUUID();
+		if (type.endsWith("ImageAnnotation"))
+			return "Image annotation at " + (int) x + "," + (int) y + " named \"" + getName() + "\" with ID: "
+					+ getUUID();
+		if (type.endsWith("ArrowAnnotation"))
+			return "Arrow annotation named \"" + getName() + "\" with ID: " + getUUID();
+		if (type.endsWith("GroupAnnotation"))
+			return "Group annotation at " + (int) x + "," + (int) y + " named \"" + getName() + "\" with ID: "
+					+ getUUID();
 
-    return "Unknown annotation type";
+		return "Unknown annotation type";
 	}
 
-  @Override
-  public String toJSON() {
-    Map<String, String> args = getArgMap();
-    ObjectMapper objectMapper = new ObjectMapper();
+	@Override
+	public String toJSON() {
+		var args = getArgMap();
+		var objectMapper = new ObjectMapper();
 
-    try {
-      return objectMapper.writeValueAsString(args);
-    } catch (JsonProcessingException e) {
-      return "{\"error\":\""+e.getMessage()+"\"}";
-    }
-  }
+		try {
+			return objectMapper.writeValueAsString(args);
+		} catch (JsonProcessingException e) {
+			return "{\"error\":\"" + e.getMessage() + "\"}";
+		}
+	}
 
-  private String getValue(Object value) {
-    if (value instanceof String)
-      return "\""+(String)value+"\"";
-    else
-      return value.toString();
-  }
-	
 	protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
 		pcs.firePropertyChange(propertyName, oldValue, newValue);
 	}
@@ -548,5 +547,29 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 
 	protected void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {
 		pcs.firePropertyChange(propertyName, oldValue, newValue);
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 41;
+		int result = 17;
+		result = prime * result + ((uuid == null) ? 0 : uuid.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!(obj instanceof AbstractAnnotation))
+			return false;
+		var other = (AbstractAnnotation) obj;
+		if (uuid == null) {
+			if (other.uuid != null)
+				return false;
+		} else if (!uuid.equals(other.uuid)) {
+			return false;
+		}
+		return true;
 	}
 }

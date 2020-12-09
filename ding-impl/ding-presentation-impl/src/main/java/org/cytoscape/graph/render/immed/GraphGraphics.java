@@ -977,8 +977,16 @@ public final class GraphGraphics {
 			final ArrowShape arrow1Type, final float arrow1Size,
 			final Paint arrow1Paint, final float x0, final float y0,
 			EdgeAnchors anchors, final float x1, final float y1,
-			final float edgeThickness, final Stroke edgeStroke, final Paint edgePaint) {
+			final float edgeThickness, Stroke edgeStroke, final Paint edgePaint) {
 		final double curveFactor = CURVE_ELLIPTICAL;
+		final boolean simpleSegment = arrow0Type == ArrowShapeVisualProperty.NONE && arrow1Type == ArrowShapeVisualProperty.NONE;
+		
+		// when rendering arrows we need the stroke cap to be CAP_BUTT 
+		if(!simpleSegment && edgeStroke instanceof BasicStroke && ((BasicStroke)edgeStroke).getEndCap() != BasicStroke.CAP_BUTT) {
+			BasicStroke bs = (BasicStroke) edgeStroke;
+			edgeStroke = new BasicStroke(bs.getLineWidth(), BasicStroke.CAP_BUTT, 
+					bs.getLineJoin(), bs.getMiterLimit(), bs.getDashArray(), bs.getDashPhase());
+		}
 
 		if (anchors == null) {
 			anchors = m_noAnchors;
@@ -1005,7 +1013,7 @@ public final class GraphGraphics {
 		}
 
 		// Render the edge polypath.
-		final boolean simpleSegment = arrow0Type == ArrowShapeVisualProperty.NONE && arrow1Type == ArrowShapeVisualProperty.NONE;
+		
 		m_g2d.setStroke(edgeStroke);
 
 		// Set m_path2d to contain the cubic curves computed in
