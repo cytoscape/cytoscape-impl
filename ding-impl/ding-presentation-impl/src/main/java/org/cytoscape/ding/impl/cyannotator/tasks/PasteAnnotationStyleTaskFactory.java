@@ -60,6 +60,9 @@ public class PasteAnnotationStyleTaskFactory implements NetworkViewTaskFactory {
 
 	@Override
 	public boolean isReady(CyNetworkView view) {
+		if (clipboard.isEmpty())
+			return false;
+		
 		var re = dingRenderer.getRenderingEngine(view);
 		
 		if (re == null)

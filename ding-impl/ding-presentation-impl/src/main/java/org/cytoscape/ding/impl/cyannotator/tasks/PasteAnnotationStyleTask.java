@@ -45,7 +45,7 @@ public class PasteAnnotationStyleTask extends AbstractTask {
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setTitle("Paste Annotation Style");
 		
-		if (annotations != null && !annotations.isEmpty()) {
+		if (annotations != null && !annotations.isEmpty() && !clipboard.isEmpty()) {
 			tm.setStatusMessage("Pasting settings to at least " + annotations.size() + " annotation(s)...");
 			
 			var annotator = annotations.iterator().next().getCyAnnotator();
