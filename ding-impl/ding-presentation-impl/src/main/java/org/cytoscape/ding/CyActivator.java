@@ -87,8 +87,8 @@ import org.cytoscape.view.model.CyNetworkViewFactoryProvider;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
-import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.NetworkImageFactory;
+import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
@@ -382,9 +382,21 @@ public class CyActivator extends AbstractCyActivator {
 		// Copy/Paste Annotation Style
 		var annotationClipboard = new AnnotationClipboard();
 		{
+			// For the main menu
 			var factory = new CopyAnnotationStyleTaskFactory(renderer, annotationClipboard);
 			var props = new Properties();
 			props.setProperty(ID, "copyAnnotationStyleTaskFactory");
+			props.setProperty(MENU_GRAVITY, "6.11");
+			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
+			props.setProperty(TITLE, "Copy Annotation Style");
+			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
+			props.setProperty(IN_CONTEXT_MENU, "false");
+			registerService(bc, factory, NetworkViewTaskFactory.class, props);
+		}
+		{
+			// For the view's context menu
+			var factory = new CopyAnnotationStyleTaskFactory(renderer, annotationClipboard);
+			var props = new Properties();
 			props.setProperty(PREFERRED_ACTION, "NEW");
 			props.setProperty(MENU_GRAVITY, "6.11");
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
@@ -393,6 +405,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, NetworkViewLocationTaskFactory.class, props);
 		}
 		{
+			// For both the main menu and the view's context menu
 			var factory = new PasteAnnotationStyleTaskFactory(renderer, annotationClipboard);
 			var props = new Properties();
 			props.setProperty(ID, "pasteAnnotationStyleTaskFactory");
