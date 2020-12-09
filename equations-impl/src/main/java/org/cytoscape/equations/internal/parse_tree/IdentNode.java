@@ -27,8 +27,8 @@ package org.cytoscape.equations.internal.parse_tree;
 
 import java.util.Stack;
 
-import org.cytoscape.equations.CodeAndSourceLocation;
 import org.cytoscape.equations.AbstractNode;
+import org.cytoscape.equations.CodeAndSourceLocation;
 import org.cytoscape.equations.TreeNode;
 import org.cytoscape.equations.internal.interpreter.Instruction;
 
@@ -41,18 +41,30 @@ public class IdentNode extends AbstractNode {
 	private final Object defaultValue;
 	private final Class type;
 
-	public IdentNode(final int sourceLocation, final String attribName, final Object defaultValue, final Class type) {
+	public IdentNode(final int sourceLocation, final String attribName, Object defaultValue, final Class type) {
 		super(sourceLocation);
-
 		if (type == null)
 			throw new IllegalArgumentException("\"type\" must not be null.");
-		if (defaultValue != null && defaultValue.getClass() != type)
-			throw new IllegalArgumentException("default value must match \"type\".");
+		
+		if(defaultValue != null && defaultValue.getClass() != type) {
+			if(type == Integer.class && defaultValue instanceof Double && isConvertableToInt((Double)defaultValue)) {
+				defaultValue = ((Double)defaultValue).intValue();
+			} else if(type == Long.class && defaultValue instanceof Double && isConvertableToInt((Double)defaultValue)) {
+				defaultValue = ((Double)defaultValue).longValue();
+			} else {
+				throw new IllegalArgumentException("default value is not compatible with attribute type, expected: " + type.getSimpleName());
+			}
+		}
+		
 		this.attribName = attribName;
 		this.defaultValue = defaultValue;
 		this.type = type;
 	}
 
+	private static boolean isConvertableToInt(double d) {
+		return d % 1 == 0.0;
+	}
+	
 	public String toString() {
 		return "IdentNode: " + attribName + (defaultValue == null ? "" : " default=" + defaultValue);
 	}

@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.cytoscape.equations.Function;
 import org.cytoscape.equations.IdentDescriptor;
 import org.cytoscape.equations.Interpreter;
@@ -72,6 +73,26 @@ public class InterpreterTest {
 		parser = new EquationParserImpl(serviceRegistrar);
 		compiler = new EquationCompilerImpl(parser);
 		interpreter = new InterpreterImpl();
+	}
+	
+	@Test
+	public void testNumericDefaultValues() {
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		attribNameToTypeMap.put("a", Integer.class);
+		assertTrue(compiler.compile("=$a", attribNameToTypeMap));
+		assertTrue(compiler.compile("=${a:0}", attribNameToTypeMap));		
+		assertFalse(compiler.compile("=${a:true}", attribNameToTypeMap));
+		assertFalse(compiler.compile("=${a:0.1}", attribNameToTypeMap));
+		attribNameToTypeMap.put("a", Long.class);
+		assertTrue(compiler.compile("=$a", attribNameToTypeMap));
+		assertTrue(compiler.compile("=${a:0}", attribNameToTypeMap));		
+		assertFalse(compiler.compile("=${a:true}", attribNameToTypeMap));
+		assertFalse(compiler.compile("=${a:0.1}", attribNameToTypeMap));
+		attribNameToTypeMap.put("a", Double.class);
+		assertTrue(compiler.compile("=$a", attribNameToTypeMap));
+		assertTrue(compiler.compile("=${a:0}", attribNameToTypeMap));		
+		assertFalse(compiler.compile("=${a:true}", attribNameToTypeMap));
+		assertTrue(compiler.compile("=${a:0.1}", attribNameToTypeMap));
 	}
 	
 	@Test
