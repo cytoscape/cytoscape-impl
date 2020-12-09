@@ -1,10 +1,13 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
 import java.awt.geom.Point2D;
+import java.util.Collection;
 
 import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.cyannotator.AnnotationClipboard;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
+import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
 
@@ -32,7 +35,7 @@ import org.cytoscape.work.TaskIterator;
  * #L%
  */
 
-public class CopyAnnotationStyleTaskFactory implements NetworkViewLocationTaskFactory {
+public class CopyAnnotationStyleTaskFactory implements NetworkViewTaskFactory, NetworkViewLocationTaskFactory {
 
 	private final DingRenderer dingRenderer;
 	private final AnnotationClipboard clipboard;
@@ -43,11 +46,28 @@ public class CopyAnnotationStyleTaskFactory implements NetworkViewLocationTaskFa
 	}
 
 	@Override
+	public TaskIterator createTaskIterator(CyNetworkView networkView) {
+		var annotations = getSelectedAnnotations(networkView);
+		
+		if (annotations != null && annotations.size() == 1)
+			return new TaskIterator(new CopyAnnotationStyleTask(annotations.iterator().next(), clipboard));
+		
+		return null;
+	}
+	
+	@Override
 	public TaskIterator createTaskIterator(CyNetworkView networkView, Point2D javaPt, Point2D xformPt) {
 		var re = dingRenderer.getRenderingEngine(networkView);
 		var annotation = re != null ? re.getPicker().getAnnotationAt(javaPt) : null;
 		
 		return annotation != null ? new TaskIterator(new CopyAnnotationStyleTask(annotation, clipboard)) : null;
+	}
+	
+	@Override
+	public boolean isReady(CyNetworkView networkView) {
+		var annotations = getSelectedAnnotations(networkView);
+		
+		return annotations != null && annotations.size() == 1; // It can only copy from one annotation, of course!
 	}
 
 	@Override
@@ -56,5 +76,13 @@ public class CopyAnnotationStyleTaskFactory implements NetworkViewLocationTaskFa
 		var annotation = re != null ? re.getPicker().getAnnotationAt(javaPt) : null;
 		
 		return annotation != null && annotation.getArgMap() != null;
+	}
+	
+	private Collection<DingAnnotation> getSelectedAnnotations(CyNetworkView networkView) {
+		var re = networkView != null ? dingRenderer.getRenderingEngine(networkView) : null;
+		var cyAnnotator = re != null ? re.getCyAnnotator() : null;
+		var annotations = cyAnnotator != null ? cyAnnotator.getAnnotationSelection().getSelectedAnnotations() : null;
+		
+		return annotations;
 	}
 }
