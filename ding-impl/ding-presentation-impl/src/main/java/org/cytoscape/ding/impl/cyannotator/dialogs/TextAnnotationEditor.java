@@ -19,6 +19,7 @@ import javax.swing.GroupLayout;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
@@ -74,10 +75,23 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 	private JComboBox<String> fontStyleCombo;
 	private JComboBox<Font> fontFamilyCombo;
 	private ColorButton textColorButton;
-  private JSlider rotationSlider;
+	
+	private JPanel rotationPanel;
+	private JSlider rotationSlider;
+	
+	private final boolean rotatable;
 
 	public TextAnnotationEditor(AnnotationFactory<TextAnnotation> factory, CyServiceRegistrar serviceRegistrar) {
+		this(factory, true, serviceRegistrar);
+	}
+	
+	public TextAnnotationEditor(AnnotationFactory<TextAnnotation> factory, boolean rotatable,
+			CyServiceRegistrar serviceRegistrar) {
 		super(factory, serviceRegistrar);
+		this.rotatable = rotatable;
+		
+		if (!rotatable)
+			getRotationPanel().setVisible(false);
 	}
 	
 	@Override
@@ -134,9 +148,11 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 			// Text Color
 			getTextColorButton().setColor(annotation.getTextColor());
 
-      // Rotation
-			double rotation = annotation.getRotation();
-			getRotationSlider().setValue((int)rotation);
+			// Rotation
+			if (rotatable) {
+				double rotation = annotation.getRotation();
+				getRotationSlider().setValue((int) rotation);
+			}
 		} else {
 			getTextField().setText(TextAnnotationImpl.DEF_TEXT);
 		}
@@ -148,18 +164,19 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 			annotation.setFont(getNewFont());
 			annotation.setText(getTextField().getText());	   
 			annotation.setTextColor(getTextColorButton().getColor());
-      annotation.setRotation((double)getRotationSlider().getValue());
+			
+			if (rotatable)
+				annotation.setRotation((double) getRotationSlider().getValue());
 		}
 	}
 	
 	@Override
 	protected void init() {
-		var label1 = new JLabel("Text:");
-		var label2 = new JLabel("Font:");
-		var label3 = new JLabel("Style:");
-		var label4 = new JLabel("Size:");
-		var rotationLabel = new JLabel("Rotation Angle:");
-
+		var textLabel = new JLabel("Text:");
+		var fontLabel = new JLabel("Font:");
+		var styleLabel = new JLabel("Style:");
+		var sizeLabel = new JLabel("Size:");
+		
 		var sep = new JSeparator();
 		
 		var layout = new GroupLayout(this);
@@ -171,7 +188,7 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 				.addGap(0, 20, Short.MAX_VALUE)
 				.addGroup(layout.createParallelGroup(LEADING, true)
 						.addGroup(layout.createSequentialGroup()
-								.addComponent(label1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								.addComponent(textLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 								.addPreferredGap(ComponentPlacement.RELATED)
 								.addComponent(getTextField(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 								.addComponent(getTextColorButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -179,17 +196,17 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 						.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 						.addGroup(layout.createSequentialGroup()
 								.addGroup(layout.createParallelGroup(LEADING, true)
-										.addComponent(label2)
+										.addComponent(fontLabel)
 										.addComponent(getFontFamilyCombo())
 								)
 								.addPreferredGap(ComponentPlacement.RELATED)
 								.addGroup(layout.createParallelGroup(LEADING, true)
-										.addComponent(label3)
+										.addComponent(styleLabel)
 										.addComponent(getFontStyleCombo())
 								)
 								.addPreferredGap(ComponentPlacement.RELATED)
 								.addGroup(layout.createParallelGroup(LEADING, true)
-										.addComponent(label4)
+										.addComponent(sizeLabel)
 										.addComponent(getFontSizeCombo())
 								)
 						)
@@ -197,46 +214,37 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 								.addComponent(getFontStyleCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 								.addComponent(getFontSizeCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						)
-						.addGap(0, 20, Short.MAX_VALUE)
-						.addGroup(layout.createSequentialGroup()
-								.addComponent(rotationLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-								.addComponent(getRotationSlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-            )
+						.addComponent(getRotationPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 						.addGap(0, 20, Short.MAX_VALUE)
 				)
 				.addGap(0, 20, Short.MAX_VALUE)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addGroup(layout.createParallelGroup(CENTER, false)
-						.addComponent(label1)
+						.addComponent(textLabel)
 						.addComponent(getTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(getTextColorButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
 				.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addGroup(layout.createParallelGroup(LEADING, true)
 						.addGroup(layout.createSequentialGroup()
-								.addComponent(label2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								.addComponent(fontLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 								.addComponent(getFontFamilyCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						)
 						.addGroup(layout.createSequentialGroup()
-								.addComponent(label3, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								.addComponent(styleLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 								.addComponent(getFontStyleCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						)
 						.addGroup(layout.createSequentialGroup()
-								.addComponent(label4, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								.addComponent(sizeLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 								.addComponent(getFontSizeCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						)
 				)
-				.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				.addGroup(layout.createParallelGroup(LEADING, false)
-						.addComponent(rotationLabel)
-						.addComponent(getRotationSlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				)
+				.addComponent(getRotationPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
 		
-		makeSmall(label1, label2, label3, label4, rotationLabel);
-		makeSmall(getTextField(), getTextColorButton(), getFontFamilyCombo(), getFontStyleCombo(), 
-              getFontSizeCombo(), getRotationSlider());
+		makeSmall(textLabel, fontLabel, styleLabel, sizeLabel);
+		makeSmall(getTextField(), getTextColorButton(), getFontFamilyCombo(), getFontStyleCombo(), getFontSizeCombo());
 	}
 	
 	private JTextField getTextField() {
@@ -326,19 +334,6 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 		return fontFamilyCombo;
 	}
 	
-	private JSlider getRotationSlider() {
-		if (rotationSlider == null) {
-			rotationSlider = new JSlider(-180, 180, 0);
-			rotationSlider.setMajorTickSpacing(90);
-			rotationSlider.setMinorTickSpacing(45);
-			rotationSlider.setPaintTicks(true);
-			rotationSlider.setPaintLabels(true);
-			rotationSlider.addChangeListener(evt -> apply());
-		}
-		
-		return rotationSlider;
-  }
-	
 	private ColorButton getTextColorButton() {
 		if (textColorButton == null) {
 			textColorButton = new ColorButton(Color.BLACK);
@@ -347,6 +342,48 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 		}
 
 		return textColorButton;
+	}
+	
+	private JPanel getRotationPanel() {
+		if (rotationPanel == null) {
+			rotationPanel = new JPanel();
+			rotationPanel.setOpaque(!isAquaLAF());
+			
+			var rotationLabel = createRotationLabel();
+			var sep = new JSeparator();
+			
+			var layout = new GroupLayout(rotationPanel);
+			rotationPanel.setLayout(layout);
+			layout.setAutoCreateContainerGaps(!isAquaLAF());
+			layout.setAutoCreateGaps(!isAquaLAF());
+			
+			layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
+					.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addGroup(layout.createSequentialGroup()
+							.addComponent(rotationLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getRotationSlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGroup(layout.createParallelGroup(LEADING, false)
+							.addComponent(rotationLabel)
+							.addComponent(getRotationSlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
+			);
+			
+			makeSmall(rotationLabel, getRotationSlider());
+		}
+		
+		return rotationPanel;
+	}
+	
+	private JSlider getRotationSlider() {
+		if (rotationSlider == null) {
+			rotationSlider = createRotationSlider();
+		}
+		
+		return rotationSlider;
 	}
 	
 	private Font getNewFont() {

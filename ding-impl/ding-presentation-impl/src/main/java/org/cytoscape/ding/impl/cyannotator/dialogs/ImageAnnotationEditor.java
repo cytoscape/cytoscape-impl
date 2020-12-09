@@ -98,8 +98,8 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 			getBrightnessSlider().setValue(annotation.getImageBrightness());
 			getContrastSlider().setValue(annotation.getImageContrast());
 
-      // Rotation
-			getRotationSlider().setValue((int)annotation.getRotation());
+			// Rotation
+			getRotationSlider().setValue((int) annotation.getRotation());
 		} else {
 			// Reset these image adjustments fields (we don't want new images to appear damaged to the user)
 			getOpacitySlider().setValue(100);
@@ -127,7 +127,7 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 			annotation.setImageOpacity(getOpacitySlider().getValue() / 100.0f);
 			annotation.setImageBrightness(getBrightnessSlider().getValue());
 			annotation.setImageContrast(getContrastSlider().getValue());
-      annotation.setRotation((double)getRotationSlider().getValue());
+			annotation.setRotation((double) getRotationSlider().getValue());
 		}
 	}
 
@@ -139,7 +139,7 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 		opacityLabel = new JLabel("Opacity:");
 		brightnessLabel = new JLabel("Brightness:");
 		contrastLabel = new JLabel("Contrast:");
-		rotationLabel = new JLabel("Rotation Angle:");
+		rotationLabel = createRotationLabel();
 
 		var sep = new JSeparator();
 		
@@ -300,16 +300,11 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 	
 	private JSlider getRotationSlider() {
 		if (rotationSlider == null) {
-			rotationSlider = new JSlider(-180, 180, 0);
-			rotationSlider.setMajorTickSpacing(90);
-			rotationSlider.setMinorTickSpacing(45);
-			rotationSlider.setPaintTicks(true);
-			rotationSlider.setPaintLabels(true);
-			rotationSlider.addChangeListener(evt -> apply());
+			rotationSlider = createRotationSlider();
 		}
 		
 		return rotationSlider;
-  }
+	}
 	
 	private void updateEnabled() {
 		var borderWidth = (int) getBorderWidthCombo().getSelectedItem();
