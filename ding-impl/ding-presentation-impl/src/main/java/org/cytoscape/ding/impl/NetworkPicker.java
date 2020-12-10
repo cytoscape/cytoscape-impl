@@ -480,17 +480,23 @@ public class NetworkPicker {
 						final byte trgShape;
 						final float[] srcExtents;
 						final float[] trgExtents;
+						final long srcSuid;
+						final long trgSuid;
 
 						if (node == edgeInfo.getSourceViewSUID()) {
 							srcShape = nodeShape;
 							trgShape = otherNodeShape;
 							srcExtents = extentsBuff;
 							trgExtents = extentsBuff2;
+							srcSuid = node;
+							trgSuid = otherNode;
 						} else { // node == graph.edgeTarget(edge).
 							srcShape = otherNodeShape;
 							trgShape = nodeShape;
 							srcExtents = extentsBuff2;
 							trgExtents = extentsBuff;
+							srcSuid = otherNode;
+							trgSuid = node;
 						}
 
 						final ArrowShape srcArrow;
@@ -519,7 +525,7 @@ public class NetworkPicker {
 						if(haystack) {
 							float radiusModifier = edgeDetails.getHaystackRadius(edge);
 							if (!GraphRenderer.computeEdgeEndpointsHaystack(srcExtents, trgExtents, floatBuff1, floatBuff2, 
-			                          node, otherNode, edgeSuid, haystackDataBuff, radiusModifier))
+									srcSuid, trgSuid, edgeSuid, haystackDataBuff, radiusModifier))
 								continue;
 						} else {
 							if (!GraphRenderer.computeEdgeEndpoints(srcExtents, srcShape, srcArrow,
