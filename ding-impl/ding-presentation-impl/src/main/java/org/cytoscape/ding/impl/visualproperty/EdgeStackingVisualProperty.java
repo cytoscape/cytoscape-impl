@@ -13,6 +13,7 @@ public class EdgeStackingVisualProperty extends AbstractVisualProperty<EdgeStack
 	
 	public static final EdgeStacking AUTO_BEND = new EdgeStackingImpl("Auto Bend", "AUTO_BEND");
 	public static final EdgeStacking HAYSTACK  = new EdgeStackingImpl("Haystack", "HAYSTACK");
+	public static final EdgeStacking PARALLEL_HAYSTACK  = new EdgeStackingImpl("Parallel", "PARALLEL_HAYSTACK");
 	
 	private static final DiscreteRange<EdgeStacking> RANGE;
 	private static final Map<String,EdgeStacking> VALUES;
@@ -21,6 +22,7 @@ public class EdgeStackingVisualProperty extends AbstractVisualProperty<EdgeStack
 		VALUES = new HashMap<>();
 		VALUES.put(AUTO_BEND.getSerializableString().toUpperCase(), AUTO_BEND);
 		VALUES.put(HAYSTACK.getSerializableString().toUpperCase(), HAYSTACK);
+		VALUES.put(PARALLEL_HAYSTACK.getSerializableString().toUpperCase(), PARALLEL_HAYSTACK);
 		RANGE = new DiscreteRange<>(EdgeStacking.class, new HashSet<>(VALUES.values()));
 	}
 

@@ -464,7 +464,7 @@ public class NetworkPicker {
 				Iterable<View<CyEdge>> touchingEdges = snapshot.getAdjacentEdgeIterable(node);
 				
 				for(View<CyEdge> edge : touchingEdges) {
-					boolean haystack = edgeDetails.isHaystack(edge);
+					boolean haystack = false; //edgeDetails.isHaystack(edge);
 					
 					SnapshotEdgeInfo edgeInfo = snapshot.getEdgeInfo(edge);
 					long edgeSuid = edgeInfo.getSUID();
@@ -524,14 +524,12 @@ public class NetworkPicker {
 						
 						if(haystack) {
 							float radiusModifier = edgeDetails.getHaystackRadius(edge);
-							if (!GraphRenderer.computeEdgeEndpointsHaystack(srcExtents, trgExtents, floatBuff1, floatBuff2, 
-									srcSuid, trgSuid, edgeSuid, haystackDataBuff, radiusModifier))
-								continue;
+							GraphRenderer.computeEdgeEndpointsHaystack(srcExtents, trgExtents, floatBuff1, floatBuff2, 
+									srcSuid, trgSuid, edgeSuid, haystackDataBuff, radiusModifier);
 						} else {
-							if (!GraphRenderer.computeEdgeEndpoints(srcExtents, srcShape, srcArrow,
+							GraphRenderer.computeEdgeEndpoints(srcExtents, srcShape, srcArrow,
 				                          srcArrowSize, anchors, trgExtents, trgShape,
-				                          trgArrow, trgArrowSize, floatBuff1, floatBuff2))
-								continue;
+				                          trgArrow, trgArrowSize, floatBuff1, floatBuff2);
 						}
 
 						GraphGraphics.getEdgePath(srcArrow, srcArrowSize, trgArrow, trgArrowSize,

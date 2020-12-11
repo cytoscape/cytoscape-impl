@@ -42,6 +42,7 @@ import java.util.Map;
 
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.strokes.DAnimatedStroke;
+import org.cytoscape.ding.impl.visualproperty.EdgeStacking;
 import org.cytoscape.ding.impl.visualproperty.EdgeStackingVisualProperty;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
@@ -261,8 +262,8 @@ public final class DEdgeDetails implements EdgeDetails {
 	}
 
 	@Override
-	public boolean isHaystack(View<CyEdge> edgeView) {
-		return edgeView.getVisualProperty(DVisualLexicon.EDGE_STACKING) == EdgeStackingVisualProperty.HAYSTACK;
+	public EdgeStacking getStacking(View<CyEdge> edgeView) {
+		return edgeView.getVisualProperty(DVisualLexicon.EDGE_STACKING);
 	}
 	
 	@Override
@@ -419,7 +420,7 @@ public final class DEdgeDetails implements EdgeDetails {
 		if (edgeView == null)
 			return null;
 		
-		if(edgeView.getVisualProperty(DVisualLexicon.EDGE_STACKING) == EdgeStackingVisualProperty.HAYSTACK) {
+		if(edgeView.getVisualProperty(DVisualLexicon.EDGE_STACKING) != EdgeStackingVisualProperty.AUTO_BEND) {
 			// no bends when using haystack edges
 			return null;
 		}

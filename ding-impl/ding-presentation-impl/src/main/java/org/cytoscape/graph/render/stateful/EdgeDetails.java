@@ -6,6 +6,7 @@ import java.awt.Paint;
 import java.awt.Stroke;
 import java.util.Collection;
 
+import org.cytoscape.ding.impl.visualproperty.EdgeStacking;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
@@ -336,7 +337,7 @@ public interface EdgeDetails {
 		return true;
 	}
 	
-	boolean isHaystack(View<CyEdge> edgeView);
+	EdgeStacking getStacking(View<CyEdge> edgeView);
 	
 	float getHaystackRadius(View<CyEdge> edgeView);
 
