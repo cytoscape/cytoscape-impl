@@ -117,7 +117,7 @@ public class BoundedTextAnnotationEditor extends AbstractAnnotationEditor<Bounde
 	
 	protected TextAnnotationEditor getTextAnnotationEditor() {
 		if (textAnnotationEditor == null) {
-			textAnnotationEditor = new TextAnnotationEditor(null, serviceRegistrar);
+			textAnnotationEditor = new TextAnnotationEditor(null, false, serviceRegistrar);
 			textAnnotationEditor.init();
 		}
 		

@@ -6,7 +6,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Objects;
 
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -138,4 +140,24 @@ public abstract class AbstractAnnotationEditor<T extends Annotation> extends JPa
 	 * Initialize the visual components.
 	 */
 	protected abstract void init();
+	
+	protected static JLabel createRotationLabel() {
+		var label = new JLabel("Rotation Angle:");
+		
+		return label;
+	}
+	
+	/**
+	 * The the slider's ChangeEvent will call {@link #apply()} by default. 
+	 */
+	protected JSlider createRotationSlider() {
+		var slider = new JSlider(-180, 180, 0);
+		slider.setMajorTickSpacing(90);
+		slider.setMinorTickSpacing(45);
+		slider.setPaintTicks(true);
+		slider.setPaintLabels(true);
+		slider.addChangeListener(evt -> apply());
+
+		return slider;
+	}
 }

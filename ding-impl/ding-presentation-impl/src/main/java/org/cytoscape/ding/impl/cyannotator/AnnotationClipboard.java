@@ -68,4 +68,8 @@ public class AnnotationClipboard {
 				a.setStyle(styleMap);
 		}
 	}
+	
+	public boolean isEmpty() {
+		return styleMap == null || styleMap.isEmpty();
+	}
 }
