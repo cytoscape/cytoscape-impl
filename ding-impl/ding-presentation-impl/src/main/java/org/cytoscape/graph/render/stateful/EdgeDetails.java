@@ -339,7 +339,7 @@ public interface EdgeDetails {
 	
 	EdgeStacking getStacking(View<CyEdge> edgeView);
 	
-	float getHaystackRadius(View<CyEdge> edgeView);
+	float getStackingDensity(View<CyEdge> edgeView);
 
 	Integer getLineCurved(View<CyEdge> edgeView);
 

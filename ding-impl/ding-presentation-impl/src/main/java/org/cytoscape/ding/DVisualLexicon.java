@@ -262,11 +262,10 @@ public class DVisualLexicon extends BasicVisualLexicon {
 			"EDGE_TARGET_ARROW_UNSELECTED_PAINT",
 			"Edge Target Arrow Unselected Paint", CyEdge.class);
 	public static final VisualProperty<EdgeStacking> EDGE_STACKING = new EdgeStackingVisualProperty(
-			EdgeStackingVisualProperty.AUTO_BEND, "EDGE_STACKING", "Edge Stacking", 
-			CyEdge.class);
-	public static final VisualProperty<Double> EDGE_HAYSTACK_RADIUS = new DoubleVisualProperty(0.5, 
+			EdgeStackingVisualProperty.AUTO_BEND, "EDGE_STACKING", "Edge Stacking", CyEdge.class);
+	public static final VisualProperty<Double> EDGE_STACKING_DENSITY = new DoubleVisualProperty(0.3, 
 			new ContinuousRange<>(Double.class, 0.0, 1.0, true, true), 
-			"EDGE_HAYSTACK_RADIUS", "Haystack Center Radius", CyEdge.class);
+			"EDGE_STACKING_DENSITY", "Stacking Density", CyEdge.class);
 	
 	
 	public static final VisualProperty<Boolean> EDGE_CURVED = new BooleanVisualProperty(true, "EDGE_CURVED",
@@ -473,7 +472,7 @@ public class DVisualLexicon extends BasicVisualLexicon {
 		//addVisualProperty(EDGE_LABEL_POSITION, EDGE);
 		addVisualProperty(EDGE_LABEL_ROTATION, EDGE);
 		addVisualProperty(EDGE_STACKING, EDGE);
-		addVisualProperty(EDGE_HAYSTACK_RADIUS, EDGE);
+		addVisualProperty(EDGE_STACKING_DENSITY, EDGE);
 		
 		createLookupMap();
 	}

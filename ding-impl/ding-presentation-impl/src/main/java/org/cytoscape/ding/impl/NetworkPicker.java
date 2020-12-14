@@ -24,6 +24,7 @@ import java.util.Set;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
+import org.cytoscape.ding.impl.visualproperty.EdgeStacking;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
@@ -464,13 +465,14 @@ public class NetworkPicker {
 				Iterable<View<CyEdge>> touchingEdges = snapshot.getAdjacentEdgeIterable(node);
 				
 				for(View<CyEdge> edge : touchingEdges) {
-					boolean haystack = false; //edgeDetails.isHaystack(edge);
 					
 					SnapshotEdgeInfo edgeInfo = snapshot.getEdgeInfo(edge);
 					long edgeSuid = edgeInfo.getSUID();
 					double segThicknessDiv2 = edgeDetails.getWidth(edge) / 2.0d;
 					long otherNode = node ^ edgeInfo.getSourceViewSUID() ^ edgeInfo.getTargetViewSUID();
 					View<CyNode> otherNodeView = snapshot.getNodeView(otherNode);
+					
+					EdgeStacking stacking = edgeDetails.getStacking(edge);
 					
 					if(!processedNodes.contains(otherNode)) {
 						snapshot.getSpacialIndex2D().get(otherNode, extentsBuff2);
@@ -509,7 +511,7 @@ public class NetworkPicker {
 						GeneralPath path  = new GeneralPath();
 						GeneralPath path2 = new GeneralPath();
 						
-						if (getFlags().not(LOD_EDGE_ARROWS) || haystack) {
+						if (getFlags().not(LOD_EDGE_ARROWS) || stacking.isHaystack()) {
 							srcArrow = trgArrow = ArrowShapeVisualProperty.NONE;
 							srcArrowSize = trgArrowSize = 0.0f;
 						} else {
@@ -522,10 +524,10 @@ public class NetworkPicker {
 						final EdgeAnchors anchors = getFlags().not(LOD_EDGE_ANCHORS) ? null : edgeDetails.getAnchors(snapshot, edge);
 
 						
-						if(haystack) {
-							float radiusModifier = edgeDetails.getHaystackRadius(edge);
-							GraphRenderer.computeEdgeEndpointsHaystack(srcExtents, trgExtents, floatBuff1, floatBuff2, 
-									srcSuid, trgSuid, edgeSuid, haystackDataBuff, radiusModifier);
+						if(stacking.isHaystack()) {
+							float radiusModifier = edgeDetails.getStackingDensity(edge);
+							GraphRenderer.computeEdgeEndpointsHaystack(srcExtents, trgExtents, srcSuid, trgSuid, edgeSuid, radiusModifier, stacking, 
+									floatBuff1, floatBuff2, haystackDataBuff);
 						} else {
 							GraphRenderer.computeEdgeEndpoints(srcExtents, srcShape, srcArrow,
 				                          srcArrowSize, anchors, trgExtents, trgShape,

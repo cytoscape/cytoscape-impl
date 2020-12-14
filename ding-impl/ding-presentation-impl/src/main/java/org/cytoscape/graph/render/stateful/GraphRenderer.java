@@ -288,7 +288,7 @@ public final class GraphRenderer {
 						final Paint srcArrowPaint;
 						final Paint trgArrowPaint;
 
-						if (flags.not(LOD_EDGE_ARROWS) || stacking != EdgeStackingVisualProperty.AUTO_BEND) { // Not rendering arrows.
+						if (flags.not(LOD_EDGE_ARROWS) || stacking.isHaystack()) { // Not rendering arrows.
 							trgArrow = srcArrow = ArrowShapeVisualProperty.NONE;
 							trgArrowSize = srcArrowSize = 0.0f;
 							trgArrowPaint = srcArrowPaint = null;
@@ -304,15 +304,11 @@ public final class GraphRenderer {
 						// Compute the anchors to use when rendering edge.
 						final EdgeAnchors anchors = flags.not(LOD_EDGE_ANCHORS) ? null : edgeDetails.getAnchors(netView, edge);
 
-						if(stacking == EdgeStackingVisualProperty.HAYSTACK) {
-							float radiusModifier = edgeDetails.getHaystackRadius(edge);
-							computeEdgeEndpointsHaystack(srcExtents, trgExtents, floatBuff3, floatBuff4, srcSuid, 
-									trgSuid, edgeSuid, haystackDataBuff, radiusModifier);
-						} else if(stacking == EdgeStackingVisualProperty.PARALLEL_HAYSTACK) {
-							float radiusModifier = edgeDetails.getHaystackRadius(edge);
-							computeEdgeEndpointsParallelHaystack(srcExtents, trgExtents, floatBuff3, floatBuff4, 
-									edgeSuid, haystackDataBuff, radiusModifier);
-						} else {
+						if(stacking.isHaystack()) {
+							float radiusModifier = edgeDetails.getStackingDensity(edge);
+							computeEdgeEndpointsHaystack(srcExtents, trgExtents, srcSuid, trgSuid, edgeSuid, radiusModifier, stacking, 
+									floatBuff3, floatBuff4, haystackDataBuff);
+						} else /* auto bend */ {
 							computeEdgeEndpoints(srcExtents, srcShape, srcArrow, srcArrowSize, anchors, trgExtents, 
 									trgShape,  trgArrow, trgArrowSize, floatBuff3, floatBuff4);
 						}
@@ -363,7 +359,7 @@ public final class GraphRenderer {
 								final Position edgeAnchor = edgeDetails.getLabelEdgeAnchor(edge);
 								final float offsetVectorX = edgeDetails.getLabelOffsetVectorX(edge);
 								final float offsetVectorY = edgeDetails.getLabelOffsetVectorY(edge);
-                final double theta = edgeDetails.getLabelRotation(edge)*.01745329252;
+								final double theta = edgeDetails.getLabelRotation(edge)*.01745329252;
 								final Justification justify;
 
 								if (text.indexOf('\n') >= 0)
@@ -580,7 +576,7 @@ public final class GraphRenderer {
 						final Position nodeAnchor = nodeDetails.getLabelNodeAnchor(cyNode);
 						final float offsetVectorX = nodeDetails.getLabelOffsetVectorX(cyNode);
 						final float offsetVectorY = nodeDetails.getLabelOffsetVectorY(cyNode);
-            final double theta = nodeDetails.getLabelRotation(cyNode)*.01745329252;
+						final double theta = nodeDetails.getLabelRotation(cyNode)*.01745329252;
 						final Justification justify;
 
 						if (text.indexOf('\n') >= 0)
@@ -694,29 +690,46 @@ public final class GraphRenderer {
 		}
 	}
 
-	public final static void computeEdgeEndpointsParallelHaystack(final float[] srcNodeExtents, final float[] trgNodeExtents,
-			final float[] rtnValSrc, final float[] rtnValTrg, long edgeSuid, byte[] dataBuff, float radiusModifier) {
+	public final static void computeEdgeEndpointsHaystack(
+			float[] srcNodeExtents, float[] trgNodeExtents,
+			long srcSuid, long trgSuid, long edgeSuid,
+			float radiusModifier, EdgeStacking stacking,
+			float[] rtnValSrc, float[] rtnValTrg, byte[] dataBuff) {
 
-		parallelHaystackEndpoint(srcNodeExtents, trgNodeExtents, rtnValSrc, dataBuff, edgeSuid, radiusModifier, true);
-		parallelHaystackEndpoint(trgNodeExtents, srcNodeExtents, rtnValTrg, dataBuff, edgeSuid, radiusModifier, false);
-	}
-	
-	public final static void parallelHaystackEndpoint(float[] srcNodeExtents, float[] trgNodeExtents, float[] rtnVal, 
-			byte[] dataBuff, long edgeSuid, float radiusModifier, boolean isSource) {
-		
-		final float xMin = srcNodeExtents[0];
-		final float yMin = srcNodeExtents[1];
-		final float xMax = srcNodeExtents[2];
-		final float yMax = srcNodeExtents[3];
-		
-		final float x0 = (xMin + xMax) / 2.0f;
-		final float y0 = (yMin + yMax) / 2.0f;
+		// center coordinates of source and target nodes
+		final float x0 = (srcNodeExtents[0] + srcNodeExtents[2]) / 2.0f;
+		final float y0 = (srcNodeExtents[1] + srcNodeExtents[3]) / 2.0f;
 		final float x1 = (trgNodeExtents[2] + trgNodeExtents[0]) / 2.0f;
 		final float y1 = (trgNodeExtents[3] + trgNodeExtents[1]) / 2.0f;
 		
-		final float width  = xMax - xMin;
-		final float height = yMax - yMin;
-		final float radius = (Math.min(width, height) / 2.0f) * 0.9f * radiusModifier;
+		final float srcWidth  = srcNodeExtents[2] - srcNodeExtents[0];
+		final float srcHeight = srcNodeExtents[3] - srcNodeExtents[1];
+		final float srcRadius = (Math.min(srcWidth, srcHeight) / 2.0f) * 0.9f * radiusModifier;
+		
+		final float trgWidth  = trgNodeExtents[2] - trgNodeExtents[0];
+		final float trgHeight = trgNodeExtents[3] - trgNodeExtents[1];
+		final float trgRadius = (Math.min(trgWidth, trgHeight) / 2.0f) * 0.9f * radiusModifier;
+		
+		if(stacking == EdgeStackingVisualProperty.HAYSTACK_FAN) {
+			parallelHaystackEndpoint(x0, y0, x1, y1, srcRadius, rtnValSrc, dataBuff, edgeSuid, radiusModifier, true);
+			parallelHaystackEndpoint(x1, y1, x0, y0, trgRadius, rtnValTrg, dataBuff, edgeSuid, radiusModifier, false);
+		} 
+		else if(stacking == EdgeStackingVisualProperty.HAYSTACK_PARALLEL) {
+			float radius = Math.min(srcRadius, trgRadius);
+			parallelHaystackEndpoint(x0, y0, x1, y1, radius, rtnValSrc, dataBuff, edgeSuid, radiusModifier, true);
+			parallelHaystackEndpoint(x1, y1, x0, y0, radius, rtnValTrg, dataBuff, edgeSuid, radiusModifier, false);
+		} 
+		else if(stacking == EdgeStackingVisualProperty.HAYSTACK_CROSS) {
+			crossHaystackEndpoint(x0, y0, srcRadius, rtnValSrc, dataBuff, srcSuid, edgeSuid, radiusModifier);
+			crossHaystackEndpoint(x1, y1, trgRadius, rtnValTrg, dataBuff, trgSuid, edgeSuid, radiusModifier);
+		}
+	}
+	
+	/**
+	 * Computes a "random" point along a line from the node center that is perpendicular to the edge and is of length 2*radius.
+	 */
+	public final static void parallelHaystackEndpoint(float x0, float y0, float x1, float y1, float radius, 
+			float[] rtnVal, byte[] dataBuff, long edgeSuid, float radiusModifier, boolean isSource) {
 		
 		float h1 = hashSuids(dataBuff, edgeSuid, edgeSuid, 99);
 		float d = radius * h1;
@@ -740,8 +753,8 @@ public final class GraphRenderer {
 		double yd = yNorm * d;
 
 		// flip a coin to see if we rotate clockwise or counter-clockwise
-		boolean clockwise = hashSuids(dataBuff, edgeSuid, edgeSuid, 123) > 0.5;
-		// use opposite rotation direction for target node
+		boolean clockwise = 0.5 < hashSuids(dataBuff, edgeSuid, edgeSuid, 123);
+		// use opposite rotation direction for target node so that edges don't cross
 		clockwise = clockwise == isSource;
 		
 		// rotate the point 90 degrees
@@ -762,33 +775,12 @@ public final class GraphRenderer {
 		rtnVal[1] = (float) y;
 	}
 	
-	
 
-	public final static void computeEdgeEndpointsHaystack(final float[] srcNodeExtents, final float[] trgNodeExtents,
-			final float[] rtnValSrc, final float[] rtnValTrg, long srcSuid, long trgSuid,
-			long edgeSuid, byte[] dataBuff, float radiusModifier) {
-
-		haystackEndpoint(srcNodeExtents, rtnValSrc, dataBuff, srcSuid, edgeSuid, radiusModifier);
-		haystackEndpoint(trgNodeExtents, rtnValTrg, dataBuff, trgSuid, edgeSuid, radiusModifier);
-	}
-	
 	/**
 	 * Computes a 'random' point around the circumference of a circle within the node.
 	 */
-	private final static void haystackEndpoint(float[] nodeExtents, float[] rtnVal, 
+	private final static void crossHaystackEndpoint(float centerX, float centerY, float radius, float[] rtnVal, 
 			byte[] dataBuff, long nodeSuid, long edgeSuid, float radiusModifier) {
-		final float xMin = nodeExtents[0];
-		final float yMin = nodeExtents[1];
-		final float xMax = nodeExtents[2];
-		final float yMax = nodeExtents[3];
-		
-		final float centerX = (xMin + xMax) / 2.0f;
-		final float centerY = (yMin + yMax) / 2.0f;
-		final float width  = xMax - xMin;
-		final float height = yMax - yMin;
-		
-		final float radius = (Math.min(width, height) / 2.0f) * radiusModifier;
-		
 		// Hash the node and edge SUIDs to a value between 0.0 and 1.0. This is done instead of 
 		// generating a random number so that the edge endpoints stay consistent between frames.
 		float h1 = hashSuids(dataBuff, nodeSuid, edgeSuid, 99);

@@ -11,9 +11,10 @@ import org.cytoscape.view.presentation.property.values.AbstractVisualPropertyVal
 
 public class EdgeStackingVisualProperty extends AbstractVisualProperty<EdgeStacking> {
 	
-	public static final EdgeStacking AUTO_BEND = new EdgeStackingImpl("Auto Bend", "AUTO_BEND");
-	public static final EdgeStacking HAYSTACK  = new EdgeStackingImpl("Haystack", "HAYSTACK");
-	public static final EdgeStacking PARALLEL_HAYSTACK  = new EdgeStackingImpl("Parallel", "PARALLEL_HAYSTACK");
+	public static final EdgeStacking AUTO_BEND = new EdgeStackingImpl("Auto Bend", "AUTO_BEND", false);
+	public static final EdgeStacking HAYSTACK_CROSS  = new EdgeStackingImpl("Haystack (Crossing)", "HAYSTACK_CROSS", true);
+	public static final EdgeStacking HAYSTACK_FAN  = new EdgeStackingImpl("Haystack (Fan)", "HAYSTACK_FAN", true);
+	public static final EdgeStacking HAYSTACK_PARALLEL  = new EdgeStackingImpl("Haystack (Parallel)", "HAYSTACK_PARALLEL", true);
 	
 	private static final DiscreteRange<EdgeStacking> RANGE;
 	private static final Map<String,EdgeStacking> VALUES;
@@ -21,8 +22,9 @@ public class EdgeStackingVisualProperty extends AbstractVisualProperty<EdgeStack
 	static {
 		VALUES = new HashMap<>();
 		VALUES.put(AUTO_BEND.getSerializableString().toUpperCase(), AUTO_BEND);
-		VALUES.put(HAYSTACK.getSerializableString().toUpperCase(), HAYSTACK);
-		VALUES.put(PARALLEL_HAYSTACK.getSerializableString().toUpperCase(), PARALLEL_HAYSTACK);
+		VALUES.put(HAYSTACK_CROSS.getSerializableString().toUpperCase(), HAYSTACK_CROSS);
+		VALUES.put(HAYSTACK_FAN.getSerializableString().toUpperCase(), HAYSTACK_FAN);
+		VALUES.put(HAYSTACK_PARALLEL.getSerializableString().toUpperCase(), HAYSTACK_PARALLEL);
 		RANGE = new DiscreteRange<>(EdgeStacking.class, new HashSet<>(VALUES.values()));
 	}
 
@@ -41,8 +43,14 @@ public class EdgeStackingVisualProperty extends AbstractVisualProperty<EdgeStack
 	}
 	
 	private static class EdgeStackingImpl extends AbstractVisualPropertyValue implements EdgeStacking {
-		public EdgeStackingImpl(String displayName, String serializableString) {
+		private final boolean haystack;
+		public EdgeStackingImpl(String displayName, String serializableString, boolean haystack) {
 			super(displayName, serializableString);
+			this.haystack = haystack;
+		}
+		@Override
+		public boolean isHaystack() {
+			return haystack;
 		}
 	}
 
