@@ -271,7 +271,13 @@ public final class DEdgeDetails implements EdgeDetails {
 		Double radius = edgeView.getVisualProperty(DVisualLexicon.EDGE_STACKING_DENSITY);
 		if(radius == null)
 			return DVisualLexicon.EDGE_STACKING_DENSITY.getDefault().floatValue();
-		return (float) Math.min(1.0, Math.max(0.0, radius));
+		float density = (float) Math.min(1.0, Math.max(0.0, radius));
+		
+		if(getStacking(edgeView) == EdgeStackingVisualProperty.AUTO_BEND) {
+			// Multiply by 2 so the default of 0.5 results in a modifier of 1.0 which has no effect and maintains backwards compatibility.
+			density *= 2.0f; 
+		}
+		return density;
 	}
 	
 	@Override
@@ -554,13 +560,15 @@ public final class DEdgeDetails implements EdgeDetails {
 			if (((float) len) == 0.0f)
 				break;
 
+						
 			// This determines which side of the first edge and how far from the first
 			// edge the other edge should be placed.
 			// - Divide by 2 puts consecutive edges at the same distance from the center because of integer math.
 			// - Modulo puts consecutive edges on opposite sides.
 			// - Node size is for consistent scaling.
-			final double offset = ((inx + 1) / 2) * (inx % 2 == 0 ? 1 : -1) * nodeSize;
-
+			final float densityModifier = getStackingDensity(edgeView);
+			final double offset = (((inx + 1) / 2) * (inx % 2 == 0 ? 1 : -1) * nodeSize) * densityModifier;
+			
 			// Depending on orientation sine or cosine. This adjusts the length
 			// of the offset according the appropriate X and Y dimensions.
 			final double normX = dx / len;
