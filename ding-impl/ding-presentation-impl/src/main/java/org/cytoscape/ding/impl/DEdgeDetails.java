@@ -462,6 +462,7 @@ public final class DEdgeDetails implements EdgeDetails {
 			}
 
 			final int inx = i;
+			final float densityModifier = getStackingDensity(edgeView);
 
 			return new EdgeAnchors() {
 				@Override
@@ -471,11 +472,11 @@ public final class DEdgeDetails implements EdgeDetails {
 				@Override
 				public void getAnchor(int anchorInx, float[] anchorArr) {
 					if (anchorInx == 0) {
-						anchorArr[0] = (float) (x - (((inx + 3) * nodeSize) / 2.0d));
+						anchorArr[0] = (float) (x - ((((inx + 3) * nodeSize) / 2.0d) * densityModifier));
 						anchorArr[1] = (float) y;
 					} else if (anchorInx == 1) {
 						anchorArr[0] = (float) x;
-						anchorArr[1] = (float) (y - (((inx + 3) * nodeSize) / 2.0d));
+						anchorArr[1] = (float) (y - ((((inx + 3) * nodeSize) / 2.0d) * densityModifier)) ;
 					}
 				}
 			};
