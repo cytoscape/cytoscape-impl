@@ -1,23 +1,21 @@
 package org.cytoscape.editor.internal;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.WeakHashMap;
 
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.VirtualColumnInfo;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -25,6 +23,14 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.AnnotationFactory;
+import org.cytoscape.view.presentation.annotations.AnnotationManager;
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
+import org.cytoscape.view.presentation.annotations.BoundedTextAnnotation;
+import org.cytoscape.view.presentation.annotations.ImageAnnotation;
+import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
+import org.cytoscape.view.presentation.annotations.TextAnnotation;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 /*
@@ -33,7 +39,7 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -56,6 +62,7 @@ public class ClipboardImpl {
 	private final CyNetworkView sourceView;
 	private final Set<CyNode> nodes;
 	private final Set<CyEdge> edges;
+	private final Set<Annotation> annotations;
 	private final Map<CyNode, Map<VisualProperty<?>, Object>> nodeBypass;
 	private final Map<CyEdge, Map<VisualProperty<?>, Object>> edgeBypassMap;
 	private final Map<CyNode, double[]> nodePositions;
@@ -69,23 +76,40 @@ public class ClipboardImpl {
 
 	private double xCenter, yCenter;
 	
+	private final List<AnnotationFactory<? extends Annotation>> annotationFactories;
 	private final CyServiceRegistrar serviceRegistrar;
 
 	public ClipboardImpl(
-			final CyNetworkView sourceView,
-			final Set<CyNode> nodes,
-			final Set<CyEdge> edges,
-			final boolean cut,
-			final VisualLexicon lexicon,
-			final CyServiceRegistrar serviceRegistrar
+			CyNetworkView sourceView,
+			Set<CyNode> nodes,
+			Set<CyEdge> edges,
+			boolean cut,
+			VisualLexicon lexicon,
+			List<AnnotationFactory<? extends Annotation>> annotationFactories,
+			CyServiceRegistrar serviceRegistrar
+	) {
+		this(sourceView, nodes, edges, null, cut, lexicon, annotationFactories, serviceRegistrar);
+	}
+	
+	public ClipboardImpl(
+			CyNetworkView sourceView,
+			Collection<CyNode> nodes,
+			Collection<CyEdge> edges,
+			Collection<Annotation> annotations,
+			boolean cut,
+			VisualLexicon lexicon,
+			List<AnnotationFactory<? extends Annotation>> annotationFactories,
+			CyServiceRegistrar serviceRegistrar
 	) {
 		this.sourceView = sourceView;
-		this.nodes = nodes;
-		this.edges = edges;
+		this.nodes = nodes != null ? new HashSet<>(nodes) : Collections.emptySet();
+		this.edges = edges != null ? new HashSet<>(edges) : Collections.emptySet();
+		this.annotations = annotations != null ? new HashSet<>(annotations) : Collections.emptySet();
 		this.cutOperation = cut;
 		this.serviceRegistrar = serviceRegistrar;
+		this.annotationFactories = annotationFactories;
 
-		CyNetwork sourceNetwork = sourceView.getModel();
+		var sourceNetwork = sourceView.getModel();
 		oldSharedRowMap = new WeakHashMap<>();
 		oldLocalRowMap = new WeakHashMap<>();
 		oldHiddenRowMap = new WeakHashMap<>();
@@ -96,27 +120,27 @@ public class ClipboardImpl {
 		oldValueMap = new WeakHashMap<>();
 
 		// We need the root network to get the shared attributes
-		CyRootNetwork sourceRootNetwork = ((CySubNetwork)sourceNetwork).getRootNetwork();
+		var sourceRootNetwork = ((CySubNetwork) sourceNetwork).getRootNetwork();
 
 		// save bypass values and the positions of the nodes
 		nodeBypass = new HashMap<>();
 		edgeBypassMap = new HashMap<>();
-		final Collection<VisualProperty<?>> nodeProps = lexicon.getAllDescendants(BasicVisualLexicon.NODE);
-		final Collection<VisualProperty<?>> edgeProps = lexicon.getAllDescendants(BasicVisualLexicon.EDGE);
+		var nodeProps = lexicon.getAllDescendants(BasicVisualLexicon.NODE);
+		var edgeProps = lexicon.getAllDescendants(BasicVisualLexicon.EDGE);
 		
 		xCenter = 0.0;
 		yCenter = 0.0;
 		nodePositions = new HashMap<>();
 		
-		for (CyNode node: nodes) {
+		for (var node : nodes) {
 			addRows(node, sourceRootNetwork, sourceNetwork);
-			
-			View<CyNode> nodeView = sourceView.getNodeView(node);
-			
+
+			var nodeView = sourceView.getNodeView(node);
+
 			if (nodeView == null)
 				continue;
-			
-			final double[] position = saveNodePosition(nodeView);
+
+			double[] position = saveNodePosition(nodeView);
 			xCenter += position[0];
 			yCenter += position[1];
 			saveLockedValues(nodeView, nodeProps, nodeBypass);
@@ -127,33 +151,34 @@ public class ClipboardImpl {
 			yCenter = yCenter / nodes.size();
 		}
 
-		for (CyEdge edge: edges) {
+		for (var edge : edges) {
 			addRows(edge, sourceRootNetwork, sourceNetwork);
-			
-			View<CyEdge> edgeView = sourceView.getEdgeView(edge);
-			
+
+			var edgeView = sourceView.getEdgeView(edge);
+
 			if (edgeView == null)
 				continue;
-			
+
 			saveLockedValues(edgeView, edgeProps, edgeBypassMap);
-			
+
 			// If the source/target nodes of this edge were not copied, we still have
 			// to save any bypass values set to their views, because the source/target nodes
 			// may have to be pasted later (e.g. target network does not contain the source or target of this edge)
-			final CyNode src = edgeView.getModel().getSource();
-			final CyNode tgt = edgeView.getModel().getTarget();
+			var src = edgeView.getModel().getSource();
+			var tgt = edgeView.getModel().getTarget();
 			
 			if (!nodes.contains(src)) {
-				final View<CyNode> nodeView = sourceView.getNodeView(src);
-				
+				var nodeView = sourceView.getNodeView(src);
+
 				if (nodeView != null) {
 					saveNodePosition(nodeView);
 					saveLockedValues(nodeView, nodeProps, nodeBypass);
 				}
 			}
+
 			if (!nodes.contains(tgt)) {
-				final View<CyNode> nodeView = sourceView.getNodeView(tgt);
-				
+				var nodeView = sourceView.getNodeView(tgt);
+
 				if (nodeView != null) {
 					saveNodePosition(nodeView);
 					saveLockedValues(nodeView, nodeProps, nodeBypass);
@@ -169,6 +194,10 @@ public class ClipboardImpl {
 	public Set<CyEdge> getEdges() {
 		return edges;
 	}
+	
+	public Set<Annotation> getAnnotations() {
+		return annotations;
+	}
 
 	public double getCenterX() {
 		return xCenter;
@@ -179,12 +208,12 @@ public class ClipboardImpl {
 	}
 
 	public boolean clipboardHasData() {
-		return (nodes != null && nodes.size() > 0) || (edges != null && edges.size() > 0);
+		return !nodes.isEmpty() || !edges.isEmpty() || !annotations.isEmpty();
 	}
 
 	public Collection<CyIdentifiable> paste(CyNetworkView targetView, double x, double y) {
-		final LinkedHashSet<CyIdentifiable> pastedObjects = new LinkedHashSet<>();
-		final Map<CyRow, CyRow> rowMap = new HashMap<>();
+		var pastedObjects = new LinkedHashSet<CyIdentifiable>();
+		var rowMap = new HashMap<CyRow, CyRow>();
 
 		// We need to do this in 4 passes.
 		// In pass 1, we'll add all of the nodes and store their (possibly new) SUID.
@@ -194,19 +223,19 @@ public class ClipboardImpl {
 		// Note that if we add any nodes, we'll only add edges to nodes that exist.  
 
 		// Pass 1: add the nodes 
-		final Map<CyNode, CyNode> newNodeMap = new HashMap<>();
+		var newNodeMap = new HashMap<CyNode, CyNode>();
 		
-		for (CyNode node : nodes) {
-			CyNode newNode = pasteNode(sourceView, targetView, node, rowMap);
+		for (var node : nodes) {
+			var newNode = pasteNode(sourceView, targetView, node, rowMap);
 			newNodeMap.put(node, newNode);
 			pastedObjects.add(newNode);
 		}
 
 		// Pass 2: add the edges
-		final Map<CyEdge, CyEdge> newEdgeMap = new HashMap<>();
+		var newEdgeMap = new HashMap<CyEdge, CyEdge>();
 		
-		for (CyEdge edge : edges) {
-			CyEdge newEdge = pasteEdge(sourceView, targetView, edge, rowMap, newNodeMap, pastedObjects);
+		for (var edge : edges) {
+			var newEdge = pasteEdge(sourceView, targetView, edge, rowMap, newNodeMap, pastedObjects);
 			
 			if (newEdge != null) {
 				newEdgeMap.put(edge, newEdge);
@@ -216,7 +245,7 @@ public class ClipboardImpl {
 
 		copyRows(rowMap);
 		
-		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		var eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 		eventHelper.flushPayloadEvents(); // Make sure node/edge views were created
 		targetView.updateView();
 
@@ -224,18 +253,18 @@ public class ClipboardImpl {
 		double xOffset = xCenter - x;
 		double yOffset = yCenter - y;
 		
-		for (CyNode node : nodePositions.keySet()) {
-			final CyNode newNode = newNodeMap.get(node);
+		for (var node : nodePositions.keySet()) {
+			var newNode = newNodeMap.get(node);
 			
 			if (newNode == null || !pastedObjects.contains(newNode))
 				continue;
 			
-			final double[] position = nodePositions.get(node);
+			var position = nodePositions.get(node);
 			double nodeX = (position == null ? 0 : position[0]) - xOffset;
 			double nodeY = (position == null ? 0 : position[1]) - yOffset;
 
 			// Now, get the new node view
-			View<CyNode> newNodeView = targetView.getNodeView(newNode);
+			var newNodeView = targetView.getNodeView(newNode);
 			
 			if (newNodeView != null) {
 				newNodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, nodeX);
@@ -246,10 +275,10 @@ public class ClipboardImpl {
 		
 		// Pass 4: paste locked visual properties to new edge views
 		if (!edgeBypassMap.isEmpty()) {
-			for (CyEdge edge: edgeBypassMap.keySet()) {
+			for (var edge : edgeBypassMap.keySet()) {
 				// Now, get the new edge view
-				CyEdge newEdge = newEdgeMap.get(edge);
-				View<CyEdge> newEdgeView = newEdge != null ? targetView.getEdgeView(newEdge) : null;
+				var newEdge = newEdgeMap.get(edge);
+				var newEdgeView = newEdge != null ? targetView.getEdgeView(newEdge) : null;
 				
 				if (newEdgeView != null)
 					setLockedValues(newEdgeView, edge, edgeBypassMap);
@@ -258,32 +287,39 @@ public class ClipboardImpl {
 
 		// Pass 5: Fix up selection.  For some reason, even though the selected column is set
 		// the nodes and edges don't show as selected.  We need to fix that now
-		for (CyIdentifiable object : pastedObjects) {
+		for (var object : pastedObjects) {
 			// Special-case selected!!!
 			if (isSelected(targetView, object))
 				reselect(targetView, object);
+		}
+		
+		// PAss 6: Paste annotations
+		var annotationMgr = serviceRegistrar.getService(AnnotationManager.class);
+		
+		for (var a : annotations) {
+			var na = pasteAnnotation(targetView, annotationMgr, a, a.getX() - xOffset, a.getY() - yOffset);
 		}
 
 		return pastedObjects;
 	}
 
 	private CyEdge pasteEdge(
-			final CyNetworkView sourceView,
-			final CyNetworkView targetView, 
-			final CyEdge edge,
-			final Map<CyRow, CyRow> rowMap,
-			final Map<CyNode, CyNode> newNodeMap,
-			final Collection<CyIdentifiable> pastedObjects
+			CyNetworkView sourceView,
+			CyNetworkView targetView, 
+			CyEdge edge,
+			Map<CyRow, CyRow> rowMap,
+			Map<CyNode, CyNode> newNodeMap,
+			Collection<CyIdentifiable> pastedObjects
 	) {
-		CyNetwork sourceNetwork = sourceView.getModel();
-		CyRootNetwork sourceRoot = ((CySubNetwork)sourceNetwork).getRootNetwork();
+		var sourceNetwork = sourceView.getModel();
+		var sourceRoot = ((CySubNetwork)sourceNetwork).getRootNetwork();
 
-		CySubNetwork targetNetwork = (CySubNetwork)targetView.getModel();
-		CyRootNetwork targetRoot = targetNetwork.getRootNetwork();
+		var targetNetwork = (CySubNetwork)targetView.getModel();
+		var targetRoot = targetNetwork.getRootNetwork();
 
 		CyEdge newEdge = null;
-		CyNode sourceNode = edge.getSource();
-		CyNode targetNode = edge.getTarget();
+		var sourceNode = edge.getSource();
+		var targetNode = edge.getTarget();
 
 		// Same three cases as pasteNode, but we need to be careful to add missing nodes.  If
 		// we paste an edge, but there's no corresponding node, we need to copy the
@@ -298,14 +334,14 @@ public class ClipboardImpl {
 
 			if (!newNodeMap.containsKey(sourceNode)) {
 				addRows(sourceNode, sourceRoot, sourceNetwork);
-				final CyNode newNode = pasteNode(sourceView, targetView, sourceNode, rowMap);
+				var newNode = pasteNode(sourceView, targetView, sourceNode, rowMap);
 				newNodeMap.put(sourceNode, newNode);
 				pastedObjects.add(newNode);
 			}
 
 			if (!newNodeMap.containsKey(targetNode)) {
 				addRows(targetNode, sourceRoot, sourceNetwork);
-				final CyNode newNode = pasteNode(sourceView, targetView, targetNode, rowMap);
+				var newNode = pasteNode(sourceView, targetView, targetNode, rowMap);
 				newNodeMap.put(targetNode, newNode);
 				pastedObjects.add(newNode);
 			}
@@ -314,12 +350,9 @@ public class ClipboardImpl {
 			newEdge = targetNetwork.addEdge(newNodeMap.get(sourceNode), newNodeMap.get(targetNode), edge.isDirected());
 
 			// Copy the attributes over
-			rowMap.put(oldSharedRowMap.get(edge),
-			           targetNetwork.getRow(newEdge, CyNetwork.DEFAULT_ATTRS));
-			rowMap.put(oldLocalRowMap.get(edge),
-			           targetNetwork.getRow(newEdge, CyNetwork.LOCAL_ATTRS));
-			rowMap.put(oldHiddenRowMap.get(edge),
-			           targetNetwork.getRow(newEdge, CyNetwork.HIDDEN_ATTRS));
+			rowMap.put(oldSharedRowMap.get(edge), targetNetwork.getRow(newEdge, CyNetwork.DEFAULT_ATTRS));
+			rowMap.put(oldLocalRowMap.get(edge), targetNetwork.getRow(newEdge, CyNetwork.LOCAL_ATTRS));
+			rowMap.put(oldHiddenRowMap.get(edge), targetNetwork.getRow(newEdge, CyNetwork.HIDDEN_ATTRS));
 		} else {
 			// Case 2: different network, same root and
 			// Case 3: same network
@@ -330,7 +363,7 @@ public class ClipboardImpl {
 					newNodeMap.put(sourceNode, sourceNode);
 				} else {
 					addRows(sourceNode, sourceRoot, sourceNetwork);
-					final CyNode newNode = pasteNode(sourceView, targetView, sourceNode, rowMap);
+					var newNode = pasteNode(sourceView, targetView, sourceNode, rowMap);
 					newNodeMap.put(sourceNode, newNode);
 					pastedObjects.add(newNode);
 				}
@@ -341,7 +374,7 @@ public class ClipboardImpl {
 					newNodeMap.put(targetNode, targetNode);
 				} else {
 					addRows(targetNode, sourceRoot, sourceNetwork);
-					final CyNode newNode = pasteNode(sourceView, targetView, targetNode, rowMap);
+					var newNode = pasteNode(sourceView, targetView, targetNode, rowMap);
 					newNodeMap.put(targetNode, newNode);
 					pastedObjects.add(newNode);
 				}
@@ -368,13 +401,17 @@ public class ClipboardImpl {
 	// TODO: Need to figure out how to copy LOCAL_ATTRS, SHARED_ATTRS, and HIDDEN_ATTRS
 	// The latter is easy.  The second two are both part of the DEFAULT_ATTRS, but it's
 	// not clear how to create a local attribute specifically....
-	private CyNode pasteNode(CyNetworkView sourceView, CyNetworkView targetView, 
-	                         CyNode node, Map<CyRow, CyRow> rowMap) {
-		CyNetwork sourceNetwork = sourceView.getModel();
-		CyRootNetwork sourceRoot = ((CySubNetwork)sourceNetwork).getRootNetwork();
+	private CyNode pasteNode(
+			CyNetworkView sourceView,
+			CyNetworkView targetView,
+			CyNode node,
+			Map<CyRow, CyRow> rowMap
+	) {
+		var sourceNetwork = sourceView.getModel();
+		var sourceRoot = ((CySubNetwork) sourceNetwork).getRootNetwork();
 
-		CySubNetwork targetNetwork = (CySubNetwork)targetView.getModel();
-		CyRootNetwork targetRoot = targetNetwork.getRootNetwork();
+		var targetNetwork = (CySubNetwork) targetView.getModel();
+		var targetRoot = targetNetwork.getRootNetwork();
 
 		CyNode newNode = null;
 
@@ -411,28 +448,39 @@ public class ClipboardImpl {
 		
 		return newNode;
 	}
+	
+	private Annotation pasteAnnotation(CyNetworkView targetView, AnnotationManager annotationMgr, Annotation a,
+			double x, double y) {
+		var na = cloneAnnotation(targetView, a, x, y);
+		System.out.println("*** " + na);
+		
+		if (na != null)
+			annotationMgr.addAnnotation(na);
+		
+		return na;
+	}
 
-	private void copyRows(Map<CyRow,CyRow> rowMap) {
+	private void copyRows(Map<CyRow, CyRow> rowMap) {
 		if (rowMap == null || rowMap.size() == 0)
 			return;
 
-		for (CyRow sourceRow: rowMap.keySet()) {
-			CyRow targetRow = rowMap.get(sourceRow);
-			CyTable destTable = targetRow.getTable();
-			CyTable sourceTable = sourceRow.getTable();
+		for (var sourceRow: rowMap.keySet()) {
+			var targetRow = rowMap.get(sourceRow);
+			var destTable = targetRow.getTable();
+			var sourceTable = sourceRow.getTable();
 
-			Map<String, Object> oldDataMap;
+			final Map<String, Object> oldDataMap;
 			
 			if (oldValueMap.containsKey(sourceRow))
 				oldDataMap = oldValueMap.get(sourceRow);
 			else
 				oldDataMap = sourceRow.getAllValues();
 
-			for (String colName: oldDataMap.keySet()) {
-				CyColumn column = destTable.getColumn(colName);
+			for (var colName : oldDataMap.keySet()) {
+				var column = destTable.getColumn(colName);
 
 				if (column == null) {
-					CyColumn sourceColumn = sourceTable.getColumn(colName);
+					var sourceColumn = sourceTable.getColumn(colName);
 					
 					if (sourceColumn.getType() == List.class) {
 						destTable.createListColumn(colName, sourceColumn.getListElementType(),
@@ -445,7 +493,7 @@ public class ClipboardImpl {
 				} else {
 					// Column already exists.  We need to check for virtual columns that don't join
 					// on SUID (since that's the only thing we're changing).  If they don't, we need to skip them.
-					VirtualColumnInfo virtualInfo = column.getVirtualColumnInfo();
+					var virtualInfo = column.getVirtualColumnInfo();
 					
 					if (virtualInfo.isVirtual() && !virtualInfo.getTargetJoinKey().equals(CyNetwork.SUID))
 						continue;
@@ -467,14 +515,14 @@ public class ClipboardImpl {
 	public void addRows(CyIdentifiable object, CyRootNetwork sourceRootNetwork, CyNetwork sourceNetwork) {
 		oldSharedRowMap.put(object, sourceRootNetwork.getRow(object, CyRootNetwork.SHARED_ATTRS));
 
-		CyRow localRow = sourceNetwork.getRow(object, CyNetwork.LOCAL_ATTRS); // Careful, this is actually a facade
+		var localRow = sourceNetwork.getRow(object, CyNetwork.LOCAL_ATTRS); // Careful, this is actually a facade
 		oldLocalRowMap.put(object, localRow);
 
 		// If we cut this object, then the row data was removed.  We need to copy the local data for it
 		if (cutOperation)
 			oldValueMap.put(localRow, copyRowValues(localRow));
 
-		CyRow hiddenRow = sourceNetwork.getRow(object, CyNetwork.HIDDEN_ATTRS);
+		var hiddenRow = sourceNetwork.getRow(object, CyNetwork.HIDDEN_ATTRS);
 		oldHiddenRowMap.put(object, hiddenRow);
 
 		if (cutOperation)
@@ -486,26 +534,90 @@ public class ClipboardImpl {
 		return new HashMap<>(row.getAllValues());
 	}
 
-	private double[] saveNodePosition(final View<CyNode> view) {
+	private double[] saveNodePosition(View<CyNode> view) {
 		if (view == null)
 			return null;
 		
 		double x = view.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
 		double y = view.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
-		final double[] position = new double[]{x, y};
+		var position = new double[]{x, y};
 		nodePositions.put(view.getModel(), position);
 		
 		return position;
 	}
+	
+	private Annotation cloneAnnotation(CyNetworkView targetView, Annotation a, double x, double y) {
+		var argMap = new HashMap<>(a.getArgMap());
+		argMap.remove("uuid");
+		
+		argMap.put(Annotation.X, Double.toString(x));
+		argMap.put(Annotation.Y, Double.toString(y));
+		
+		var type = argMap.get("type");
+		System.out.println(type);
+		
+		if (type == null) {
+			type = a.getClass().getName();
+			System.out.println("\t: " + type);
+		}
+		
+		if (type.equals("ARROW") || type.equals("org.cytoscape.view.presentation.annotations.ArrowAnnotation"))
+			return createAnnotation(ArrowAnnotation.class, targetView, argMap);
 
-	private boolean isSelected(final CyNetworkView networkView, final CyIdentifiable object) {
-		final CyNetwork network = networkView.getModel();
+		if (type.equals("SHAPE") || type.equals("org.cytoscape.view.presentation.annotations.ShapeAnnotation"))
+			return createAnnotation(ShapeAnnotation.class, targetView, argMap);
+
+		if (type.equals("TEXT") || type.equals("org.cytoscape.view.presentation.annotations.TextAnnotation"))
+			return createAnnotation(TextAnnotation.class, targetView, argMap);
+
+		if (type.equals("BOUNDEDTEXT") || type.equals("org.cytoscape.view.presentation.annotations.BoundedTextAnnotation"))
+			return createAnnotation(BoundedTextAnnotation.class, targetView, argMap);
+
+		if (type.equals("IMAGE") || type.equals("org.cytoscape.view.presentation.annotations.ImageAnnotation"))
+			return createAnnotation(ImageAnnotation.class, targetView, argMap);
+//		
+//		// Create annotation
+//		var copy = factory.createAnnotation(type, sourceView, argMap);
+//		
+//// TODO
+//		if (copy instanceof ArrowAnnotation) {
+//			// Force source/target to be same references as the ones from the original arrow,
+//			// because, for some reason, the copy seems to get different ones sometimes (???)
+//			((ArrowAnnotation) copy).setSource(((ArrowAnnotation) a).getSource());
+//			
+//			var tgt = ((ArrowAnnotation) a).getTarget();
+//			
+//			if (tgt instanceof Annotation)
+//				((ArrowAnnotation) copy).setTarget((Annotation) tgt);
+//			else if (tgt instanceof CyNode)
+//				((ArrowAnnotation) copy).setTarget((CyNode) tgt);
+//			else if (tgt instanceof Point2D)
+//				((ArrowAnnotation) copy).setTarget((Point2D) tgt);
+//		}
+		
+		return null;
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public Annotation createAnnotation(Class type, CyNetworkView netView, Map<String, String> argMap) {
+		for (var factory : annotationFactories) {
+			var a = factory.createAnnotation(type, netView, argMap);
+			
+			if (a != null)
+				return a;
+		}
+		
+		return null;
+	}
+
+	private boolean isSelected(CyNetworkView networkView, CyIdentifiable object) {
+		var network = networkView.getModel();
 		
 		return Boolean.TRUE.equals(network.getRow(object).get(CyNetwork.SELECTED, Boolean.class));
 	}
 
-	private void reselect(final CyNetworkView networkView, final CyIdentifiable object) {
-		final CyNetwork network = networkView.getModel();
+	private void reselect(CyNetworkView networkView, CyIdentifiable object) {
+		var network = networkView.getModel();
 		network.getRow(object).set(CyNetwork.SELECTED, false);
 		network.getRow(object).set(CyNetwork.SELECTED, true);
 	}
@@ -518,9 +630,9 @@ public class ClipboardImpl {
 		if (view == null)
 			return;
 		
-		for (final VisualProperty<?> vp : visualProps) {
+		for (var vp : visualProps) {
 			if (view.isValueLocked(vp)) {
-				Map<VisualProperty<?>, Object> vpMap = bypassMap.get(view.getModel());
+				var vpMap = bypassMap.get(view.getModel());
 				
 				if (vpMap == null)
 					bypassMap.put(view.getModel(), vpMap = new HashMap<>());
@@ -535,10 +647,10 @@ public class ClipboardImpl {
 			T orginalModel,
 			Map<T, Map<VisualProperty<?>, Object>> bypassMap
 	) {
-		final Map<VisualProperty<?>, Object> vpMap = bypassMap.get(orginalModel);
+		var vpMap = bypassMap.get(orginalModel);
 		
 		if (vpMap != null) {
-			for (final Entry<VisualProperty<?>, Object> entry : vpMap.entrySet())
+			for (var entry : vpMap.entrySet())
 				target.setLockedValue(entry.getKey(), entry.getValue());
 		}
 	}

@@ -11,7 +11,6 @@ import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 
@@ -21,7 +20,7 @@ import org.cytoscape.work.undo.UndoSupport;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -45,8 +44,8 @@ public class PasteTask extends AbstractNetworkViewTask {
 	private final ClipboardManagerImpl clipMgr;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public PasteTask(final CyNetworkView view, final Point2D xformPt, final ClipboardManagerImpl clipMgr,
-			final CyServiceRegistrar serviceRegistrar) {
+	public PasteTask(CyNetworkView view, Point2D xformPt, ClipboardManagerImpl clipMgr,
+			CyServiceRegistrar serviceRegistrar) {
 		super(view);
 		this.xformPt = xformPt;
 		this.clipMgr = clipMgr;
@@ -56,6 +55,7 @@ public class PasteTask extends AbstractNetworkViewTask {
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setTitle("Paste Task");
+		
 		final Collection<CyIdentifiable> pastedObjects;
 		
 		if (xformPt == null)
@@ -68,19 +68,20 @@ public class PasteTask extends AbstractNetworkViewTask {
 			return;
 		}
 
-		final UndoSupport undoSupport = serviceRegistrar.getService(UndoSupport.class);
+		var undoSupport = serviceRegistrar.getService(UndoSupport.class);
 		undoSupport.postEdit(new PasteEdit(view, xformPt, clipMgr, pastedObjects, serviceRegistrar));
 		
 		// Apply visual style
-		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
-		VisualStyle vs = vmMgr.getVisualStyle(view);
-		
-		for (CyIdentifiable element: pastedObjects) {
+		var vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
+		var vs = vmMgr.getVisualStyle(view);
+
+		for (var element : pastedObjects) {
 			View<? extends CyIdentifiable> elementView = null;
+			
 			if (element instanceof CyNode)
-				elementView = view.getNodeView((CyNode)element);
+				elementView = view.getNodeView((CyNode) element);
 			else if (element instanceof CyEdge)
-				elementView = view.getEdgeView((CyEdge)element);
+				elementView = view.getEdgeView((CyEdge) element);
 			else
 				continue;
 
@@ -88,6 +89,6 @@ public class PasteTask extends AbstractNetworkViewTask {
 		}
 
 		view.updateView();
-		tm.setStatusMessage("Pasted "+pastedObjects.size()+" nodes and/or edges");
+		tm.setStatusMessage("Pasted " + pastedObjects.size() + " nodes and/or edges");
 	}
 }

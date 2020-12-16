@@ -22,6 +22,7 @@ import org.cytoscape.task.EdgeViewTaskFactory;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
+import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.osgi.framework.BundleContext;
 
 /*
@@ -30,7 +31,7 @@ import org.osgi.framework.BundleContext;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -52,12 +53,12 @@ public class CyActivator extends AbstractCyActivator {
 	
 	@Override
 	public void start(BundleContext bc) {
-		final CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
+		var serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 
 		{
 			// NetworkView (empty space) context menus
-			SIFInterpreterTaskFactory factory = new SIFInterpreterTaskFactory(serviceRegistrar);
-			Properties props = new Properties();
+			var factory = new SIFInterpreterTaskFactory(serviceRegistrar);
+			var props = new Properties();
 			props.setProperty(ENABLE_FOR, "networkAndView");
 			props.setProperty(PREFERRED_ACTION, "NEW");
 			props.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
@@ -67,8 +68,8 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 		}
 		{
-			NetworkViewLocationTaskFactory factory = new AddNodeTaskFactory(serviceRegistrar);
-			Properties props = new Properties();
+			var factory = new AddNodeTaskFactory(serviceRegistrar);
+			var props = new Properties();
 			props.setProperty(PREFERRED_ACTION, "NEW");
 			props.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
 			props.setProperty(MENU_GRAVITY, "1.1");
@@ -77,12 +78,13 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		
 		// We need a place to hold the objects themselves
-		ClipboardManagerImpl clipboardManager = new ClipboardManagerImpl(serviceRegistrar);
-
+		var clipboardManager = new ClipboardManagerImpl(serviceRegistrar);
+		registerServiceListener(bc, clipboardManager::addAnnotationFactory, clipboardManager::removeAnnotationFactory, AnnotationFactory.class);
+		
 		{
 			// Copy node
-			NetworkViewTaskFactory factory = new CopyTaskFactory(clipboardManager);
-			Properties props = new Properties();
+			var factory = new CopyTaskFactory(clipboardManager, serviceRegistrar);
+			var props = new Properties();
 			props.setProperty(ENABLE_FOR, "networkAndView");
 			props.setProperty(PREFERRED_ACTION, "NEW");
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
@@ -93,8 +95,8 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			// Cut node
-			NetworkViewTaskFactory factory = new CutTaskFactory(clipboardManager, serviceRegistrar);
-			Properties props = new Properties();
+			var factory = new CutTaskFactory(clipboardManager, serviceRegistrar);
+			var props = new Properties();
 			props.setProperty(ENABLE_FOR, "networkAndView");
 			props.setProperty(PREFERRED_ACTION, "NEW");
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
@@ -105,8 +107,8 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			// Paste node
-			NetworkViewLocationTaskFactory pasteTaskFactory = new PasteTaskFactory(clipboardManager, serviceRegistrar);
-			Properties props = new Properties();
+			var pasteTaskFactory = new PasteTaskFactory(clipboardManager, serviceRegistrar);
+			var props = new Properties();
 			props.setProperty(ENABLE_FOR, "networkAndView");
 			props.setProperty(PREFERRED_ACTION, "NEW");
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
@@ -122,8 +124,8 @@ public class CyActivator extends AbstractCyActivator {
 		// NodeView context menus
 		{
 			// Copy node
-			NodeViewTaskFactory factory = new CopyNodeTaskFactory(clipboardManager);
-			Properties props = new Properties();
+			var factory = new CopyNodeTaskFactory(clipboardManager, serviceRegistrar);
+			var props = new Properties();
 			props.setProperty(PREFERRED_ACTION, "NEW");
 			props.setProperty(PREFERRED_MENU, NODE_EDIT_MENU);
 			props.setProperty(ACCELERATOR, "cmd c");
@@ -133,8 +135,8 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			// Cut node
-			NodeViewTaskFactory factory = new CutNodeTaskFactory(clipboardManager, serviceRegistrar);
-			Properties props = new Properties();
+			var factory = new CutNodeTaskFactory(clipboardManager, serviceRegistrar);
+			var props = new Properties();
 			props.setProperty(PREFERRED_ACTION, "NEW");
 			props.setProperty(PREFERRED_MENU, NODE_EDIT_MENU);
 			props.setProperty(ACCELERATOR, "cmd x");
@@ -144,8 +146,8 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			// Rename node
-			NodeViewTaskFactory factory = new RenameNodeTaskFactory(serviceRegistrar);
-			Properties props = new Properties();
+			var factory = new RenameNodeTaskFactory(serviceRegistrar);
+			var props = new Properties();
 			props.setProperty(PREFERRED_ACTION, "NEW");
 			props.setProperty(PREFERRED_MENU, NODE_EDIT_MENU);
 			props.setProperty(INSERT_SEPARATOR_AFTER, "true");
@@ -155,8 +157,8 @@ public class CyActivator extends AbstractCyActivator {
 		}
 
 		{
-			NodeViewTaskFactory factory = new AddNestedNetworkTaskFactory(serviceRegistrar);
-			Properties props = new Properties();
+			var factory = new AddNestedNetworkTaskFactory(serviceRegistrar);
+			var props = new Properties();
 			props.setProperty(PREFERRED_ACTION, "NEW");
 			props.setProperty(PREFERRED_MENU, NODE_NESTED_NETWORKS_MENU);
 			props.setProperty(MENU_GRAVITY, "0.1f");
@@ -164,8 +166,8 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, NodeViewTaskFactory.class, props);
 		}
 		{
-			NodeViewTaskFactory factory = new DeleteNestedNetworkTaskFactory(serviceRegistrar);
-			Properties props = new Properties();
+			var factory = new DeleteNestedNetworkTaskFactory(serviceRegistrar);
+			var props = new Properties();
 			props.setProperty(PREFERRED_ACTION, "NEW");
 			props.setProperty(PREFERRED_MENU, NODE_NESTED_NETWORKS_MENU);
 			props.setProperty(MENU_GRAVITY, "0.2f");
@@ -173,8 +175,8 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, NodeViewTaskFactory.class, props);
 		}
 		{
-			NodeViewTaskFactory factory = new GoToNestedNetworkTaskFactory(serviceRegistrar);
-			Properties props = new Properties();
+			var factory = new GoToNestedNetworkTaskFactory(serviceRegistrar);
+			var props = new Properties();
 			props.setProperty(PREFERRED_ACTION, "NEW");
 			props.setProperty(PREFERRED_MENU, NODE_NESTED_NETWORKS_MENU);
 			props.setProperty(MENU_GRAVITY, "0.3f");
@@ -185,8 +187,8 @@ public class CyActivator extends AbstractCyActivator {
 		// EdgeView context menus
 		{
 			// Copy node
-			EdgeViewTaskFactory factory = new CopyEdgeTaskFactory(clipboardManager);
-			Properties props = new Properties();
+			var factory = new CopyEdgeTaskFactory(clipboardManager, serviceRegistrar);
+			var props = new Properties();
 			props.setProperty(PREFERRED_ACTION, "NEW");
 			props.setProperty(PREFERRED_MENU, EDGE_EDIT_MENU);
 			props.setProperty(ACCELERATOR, "cmd c");
@@ -196,8 +198,8 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			// Cut edge
-			EdgeViewTaskFactory factory = new CutEdgeTaskFactory(clipboardManager, serviceRegistrar);
-			Properties props = new Properties();
+			var factory = new CutEdgeTaskFactory(clipboardManager, serviceRegistrar);
+			var props = new Properties();
 			props.setProperty(PREFERRED_ACTION, "NEW");
 			props.setProperty(PREFERRED_MENU, EDGE_EDIT_MENU);
 			props.setProperty(ACCELERATOR, "cmd x");

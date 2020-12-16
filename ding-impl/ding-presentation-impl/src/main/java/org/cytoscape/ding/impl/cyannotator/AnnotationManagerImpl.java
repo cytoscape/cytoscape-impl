@@ -78,7 +78,7 @@ public class AnnotationManagerImpl implements AnnotationManager {
 		// note all the groups have to be on the same canvas for this to work
 		annotationsByView.forEach((view, annotationsByCanvas) -> {
 			annotationsByCanvas.forEach((canvas, canvasAnnotations) -> {
-				DRenderingEngine re = dingRenderer.getRenderingEngine(view);
+				var re = dingRenderer.getRenderingEngine(view);
 				re.getCyAnnotator().checkCycle(canvasAnnotations);
 			});
 		});
@@ -90,16 +90,16 @@ public class AnnotationManagerImpl implements AnnotationManager {
 				// We have to make sure the foreground annotations are added before the background annotations.
 				// Because group annotations must be on the foreground canvas, if we add annotations to the background
 				// before the groups are added it can lead to bad things happening.
-				List<DingAnnotation> all = new ArrayList<>();
+				var all = new ArrayList<DingAnnotation>();
 				
-				if(annotationsByCanvas.containsKey(CanvasID.FOREGROUND)) {
-					List<DingAnnotation> foregroundAnnotations = annotationsByCanvas.get(CanvasID.FOREGROUND);
+				if (annotationsByCanvas.containsKey(CanvasID.FOREGROUND)) {
+					var foregroundAnnotations = annotationsByCanvas.get(CanvasID.FOREGROUND);
 //					re.getAnnotationCanvas(CanvasID.FOREGROUND).addAnnotations(foregroundAnnotations);
 //					re.getCyAnnotator().addAnnotations(annotations);
 					all.addAll(foregroundAnnotations);
 				}
-				if(annotationsByCanvas.containsKey(CanvasID.BACKGROUND)) {
-					List<DingAnnotation> backgroundAnnotations = annotationsByCanvas.get(CanvasID.BACKGROUND);
+				if (annotationsByCanvas.containsKey(CanvasID.BACKGROUND)) {
+					var backgroundAnnotations = annotationsByCanvas.get(CanvasID.BACKGROUND);
 //					re.getAnnotationCanvas(CanvasID.BACKGROUND).addAnnotations(backgroundAnnotations);
 					all.addAll(backgroundAnnotations);
 				}
@@ -124,25 +124,30 @@ public class AnnotationManagerImpl implements AnnotationManager {
 
 	@Override
 	public void removeAnnotations(Collection<? extends Annotation> annotations) {
+		if (annotations == null | annotations.isEmpty())
+			return;
+		
 		// throws IllegalAnnotationStructureException
-		Map<CyNetworkView,Map<CanvasID,List<DingAnnotation>>> annotationsByView = groupByViewAndCanvasAndFlatten(annotations, true);
+		var annotationsByView = groupByViewAndCanvasAndFlatten(annotations, true);
+		
 		if (annotationsByView.isEmpty())
 			return;
 		
-		DingRenderer dingRenderer = serviceRegistrar.getService(DingRenderer.class);
+		var dingRenderer = serviceRegistrar.getService(DingRenderer.class);
 		
 		annotationsByView.forEach((view, annotationsByCanvas) -> {
-			DRenderingEngine re = dingRenderer.getRenderingEngine(view);
+			var re = dingRenderer.getRenderingEngine(view);
 			
 			annotationsByCanvas.forEach((canvasId, dingAnnotations) -> {
 				// The following code is a batch version of Annotation.removeAnnotation()
-				for (DingAnnotation a : dingAnnotations) {
-					GroupAnnotation parent = a.getGroupParent();
+				for (var a : dingAnnotations) {
+					var parent = a.getGroupParent();
+					
 					if (parent != null)
 						parent.removeMember(a);
 				}
 
-				List<DingAnnotation> arrows = getArrows(dingAnnotations);
+				var arrows = getArrows(dingAnnotations);
 				
 				re.getCyAnnotator().removeAnnotations(arrows);
 				re.getCyAnnotator().removeAnnotations(dingAnnotations);
@@ -167,14 +172,28 @@ public class AnnotationManagerImpl implements AnnotationManager {
 		return Collections.emptyList();
 	}
 	
-	private Map<CyNetworkView,Map<CanvasID,List<DingAnnotation>>> groupByViewAndCanvasAndFlatten(Collection<? extends Annotation> annotations, boolean incudeExisting) {
-		Map<CyNetworkView,Map<CanvasID,List<DingAnnotation>>> map = new HashMap<>();
+	@Override
+	public List<Annotation> getSelectedAnnotations(CyNetworkView networkView) {
+		var re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(networkView);
+		var cyAnnotator = re != null ? re.getCyAnnotator() : null;
 		
+		if (cyAnnotator != null)
+			return new ArrayList<>(cyAnnotator.getAnnotationSelection().getSelectedAnnotations());
+		
+		return Collections.emptyList();	
+	}
+	
+	private Map<CyNetworkView, Map<CanvasID, List<DingAnnotation>>> groupByViewAndCanvasAndFlatten(
+			Collection<? extends Annotation> annotations,
+			boolean incudeExisting
+	) {
+		var map = new HashMap<CyNetworkView, Map<CanvasID, List<DingAnnotation>>>();
+
 		groupByView(annotations).forEach((view, as) -> {
-			Set<DingAnnotation> flattened = flattenAnnotations(view, as, incudeExisting);
+			var flattened = flattenAnnotations(view, as, incudeExisting);
 			map.put(view, groupByCanvas(view, flattened));
 		});
-		
+
 		return map;
 	}
 	
@@ -184,32 +203,33 @@ public class AnnotationManagerImpl implements AnnotationManager {
 			.map(a -> (DingAnnotation) a)
 			.collect(groupingBy(da -> da.getNetworkView()));
 	}
-	
-	private Map<CanvasID,List<DingAnnotation>> groupByCanvas(CyNetworkView view, Collection<DingAnnotation> dingAnnotations) {
+
+	private Map<CanvasID, List<DingAnnotation>> groupByCanvas(CyNetworkView view, Collection<DingAnnotation> dingAnnotations) {
 		return dingAnnotations.stream().collect(groupingBy(da -> getCanvas(view, da)));
 	}
-	
+
 	private Set<DingAnnotation> flattenAnnotations(CyNetworkView view, List<DingAnnotation> annotaitons, boolean incudeExisting) {
-		Set<DingAnnotation> collector = new HashSet<>();
-		for(DingAnnotation a : annotaitons) {
+		var collector = new HashSet<DingAnnotation>();
+		
+		for (var a : annotaitons)
 			flattenAnnotations(view, a, collector, incudeExisting);
-		}
+		
 		return collector;
 	}
-	
+
 	private void flattenAnnotations(CyNetworkView view, DingAnnotation a, Set<DingAnnotation> collector, boolean includeExisting) {
 		var re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
 
-		if(!includeExisting && re.getCyAnnotator().contains(a))
+		if (!includeExisting && re.getCyAnnotator().contains(a))
 			return;
-		if(!collector.add(a))
+		if (!collector.add(a))
 			return;
 			
 		collector.add(a);
-		if(a instanceof GroupAnnotation) {
-			for(Annotation member : ((GroupAnnotation)a).getMembers()) {
-				flattenAnnotations(view, (DingAnnotation)member, collector, includeExisting);
-			}
+		
+		if (a instanceof GroupAnnotation) {
+			for (var member : ((GroupAnnotation) a).getMembers())
+				flattenAnnotations(view, (DingAnnotation) member, collector, includeExisting);
 		}
 	}
 

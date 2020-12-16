@@ -8,8 +8,10 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -19,7 +21,7 @@ import org.cytoscape.work.TaskMonitor;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -40,38 +42,45 @@ import org.cytoscape.work.TaskMonitor;
 public class CopyTask extends AbstractTask {
 	
 	private final CyNetworkView netView;
-	private final ClipboardManagerImpl clipMgr;
-	private final Set<CyNode> selNodes;
-	private final Set<CyEdge> selEdges;
+	private final Set<CyNode> nodes;
+	private final Set<CyEdge> edges;
 	
-	public CopyTask(final CyNetworkView netView, final ClipboardManagerImpl clipMgr) {
+	private final ClipboardManagerImpl clipMgr;
+	private final CyServiceRegistrar serviceRegistrar;
+	
+	public CopyTask(CyNetworkView netView, ClipboardManagerImpl clipMgr, CyServiceRegistrar serviceRegistrar) {
 		this.netView = netView;
-		// Get all of the selected nodes and edges
-		selNodes = new HashSet<CyNode>(CyTableUtil.getNodesInState(netView.getModel(), CyNetwork.SELECTED, true));
-		selEdges = new HashSet<CyEdge>(CyTableUtil.getEdgesInState(netView.getModel(), CyNetwork.SELECTED, true));
-
-		// Save them in our list
 		this.clipMgr = clipMgr;
+		this.serviceRegistrar = serviceRegistrar;
+		
+		// Get all of the selected nodes and edges
+		nodes = new HashSet<>(CyTableUtil.getNodesInState(netView.getModel(), CyNetwork.SELECTED, true));
+		edges = new HashSet<>(CyTableUtil.getEdgesInState(netView.getModel(), CyNetwork.SELECTED, true));
 	}
 
 	@SuppressWarnings("unchecked")
-	public CopyTask(final CyNetworkView netView,
-					final View<?extends CyIdentifiable> objView, 
-	                final ClipboardManagerImpl clipMgr) {
-		// Get all of the selected nodes and edges first
-		this(netView, clipMgr);
+	public CopyTask(
+			CyNetworkView netView,
+			View<? extends CyIdentifiable> objView,
+			ClipboardManagerImpl clipMgr,
+			CyServiceRegistrar serviceRegistrar
+	) {
+		this(netView, clipMgr, serviceRegistrar); // Get all of the selected nodes and edges first
 
 		// Now, make sure we add our
 		if (objView.getModel() instanceof CyNode)
-			selNodes.add(((View<CyNode>)objView).getModel());
+			nodes.add(((View<CyNode>) objView).getModel());
 		else if (objView.getModel() instanceof CyEdge)
-			selEdges.add(((View<CyEdge>)objView).getModel());
+			edges.add(((View<CyEdge>) objView).getModel());
 	}
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setTitle("Copy Task");
-		clipMgr.copy(netView, selNodes, selEdges);
-		tm.setStatusMessage("Copied "+selNodes.size()+" nodes and "+selEdges.size()+" edges to the clipboard");
+		
+		var annotations = serviceRegistrar.getService(AnnotationManager.class).getSelectedAnnotations(netView);
+		
+		clipMgr.copy(netView, nodes, edges, annotations);
+		tm.setStatusMessage("Copied " + nodes.size() + " node(s) and " + edges.size() + " edge(s) to the clipboard");
 	}
 }

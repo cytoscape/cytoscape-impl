@@ -1,13 +1,11 @@
 package org.cytoscape.editor.internal;
 
-import java.util.List;
-
-import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNetworkViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.work.TaskIterator;
 
 /*
@@ -16,7 +14,7 @@ import org.cytoscape.work.TaskIterator;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -37,9 +35,16 @@ import org.cytoscape.work.TaskIterator;
 public class CopyTaskFactory extends AbstractNetworkViewTaskFactory {
 	
 	private final ClipboardManagerImpl clipMgr;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public CopyTaskFactory(final ClipboardManagerImpl clipboardMgr) { 
+	public CopyTaskFactory(ClipboardManagerImpl clipboardMgr, CyServiceRegistrar serviceRegistrar) {
 		this.clipMgr = clipboardMgr;
+		this.serviceRegistrar = serviceRegistrar;
+	}
+	
+	@Override
+	public TaskIterator createTaskIterator(CyNetworkView networkView) {
+		return new TaskIterator(new CopyTask(networkView, clipMgr, serviceRegistrar));
 	}
 
 	@Override
@@ -48,17 +53,21 @@ public class CopyTaskFactory extends AbstractNetworkViewTaskFactory {
 			return false;
 
 		// Make sure we've got something selected
-		List<CyNode> selNodes = CyTableUtil.getNodesInState(networkView.getModel(), CyNetwork.SELECTED, true);
-		if (selNodes != null && selNodes.size() > 0) return true;
+		var nodes = CyTableUtil.getNodesInState(networkView.getModel(), CyNetwork.SELECTED, true);
+		
+		if (nodes != null && !nodes.isEmpty())
+			return true;
 
-		List<CyEdge> selEdges = CyTableUtil.getEdgesInState(networkView.getModel(), CyNetwork.SELECTED, true);
-		if (selEdges != null && selEdges.size() > 0) return true;
+		var edges = CyTableUtil.getEdgesInState(networkView.getModel(), CyNetwork.SELECTED, true);
+		
+		if (edges != null && !edges.isEmpty())
+			return true;
+		
+		var annotations = serviceRegistrar.getService(AnnotationManager.class).getSelectedAnnotations(networkView);
+		
+		if (annotations != null && !annotations.isEmpty())
+			return true;
 
 		return false;
-	}
-
-	@Override
-	public TaskIterator createTaskIterator(CyNetworkView networkView) {
-		return new TaskIterator(new CopyTask(networkView, clipMgr));
 	}
 }

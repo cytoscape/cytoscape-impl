@@ -8,17 +8,14 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
 
 import javax.swing.event.SwingPropertyChangeSupport;
 
@@ -33,7 +30,6 @@ import org.cytoscape.ding.impl.cyannotator.annotations.GraphicsUtilities;
 import org.cytoscape.ding.impl.cyannotator.tasks.ReloadImagesTask;
 import org.cytoscape.ding.impl.undo.AnnotationEdit;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
@@ -93,7 +89,11 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
-	public CyAnnotator(DRenderingEngine re, AnnotationFactoryManager annotationFactoryManager, CyServiceRegistrar registrar) {
+	public CyAnnotator(
+			DRenderingEngine re,
+			AnnotationFactoryManager annotationFactoryManager,
+			CyServiceRegistrar registrar
+	) {
 		this.re = re;
 		this.registrar = registrar;
 		this.annotationFactoryManager = annotationFactoryManager;
@@ -141,8 +141,8 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		if (annotations.isEmpty())
 			return false;
 
-		for (DingAnnotation a : annotations) {
-      var bounds = GraphicsUtilities.getRotatedBounds(a);
+		for (var a : annotations) {
+			var bounds = GraphicsUtilities.getRotatedBounds(a);
 
 			if (bounds.getX() < extents[0])
 				extents[0] = bounds.getX();
@@ -157,19 +157,20 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 			if (y2 > extents[3])
 				extents[3] = y2;
 		}
-		
+
 		return true;
 	}
-	
+
 	public void loadAnnotations() {
-		CyNetwork network = re.getViewModel().getModel();
+		var network = re.getViewModel().getModel();
+
 		// Now, see if this network has any existing annotations
-		final CyTable networkAttributes = network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS);
+		var networkAttributes = network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS);
 
 		if (networkAttributes.getColumn(ANNOTATION_ATTRIBUTE) == null)
 			networkAttributes.createListColumn(ANNOTATION_ATTRIBUTE, String.class, false, Collections.emptyList());
 
-		List<String> annotations = network.getRow(network, CyNetwork.LOCAL_ATTRS).getList(ANNOTATION_ATTRIBUTE,String.class);
+		var annotations = network.getRow(network, CyNetwork.LOCAL_ATTRS).getList(ANNOTATION_ATTRIBUTE, String.class);
 		loadAnnotations(annotations);
 	}
 	
@@ -177,10 +178,10 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		loading = true;
 		
 		try {
-			List<Map<String, String>> arrowList = new ArrayList<>(); // Keep a list of arrows
-			Map<GroupAnnotation, String> groupMap = new HashMap<>(); // Keep a map of groups and uuids
-			Map<String, Annotation> uuidMap = new HashMap<>();
-			Map<CanvasID, Map<Integer, DingAnnotation>> zOrderMap = new HashMap<>();
+			var arrowList = new ArrayList<Map<String, String>>(); // Keep a list of arrows
+			var groupMap = new HashMap<GroupAnnotation, String>(); // Keep a map of groups and uuids
+			var uuidMap = new HashMap<String, Annotation>();
+			var zOrderMap = new HashMap<CanvasID, Map<Integer, DingAnnotation>>();
 	
 			if (annotations != null) {
 				loadRegularAnnotations(annotations, arrowList, groupMap, uuidMap, zOrderMap);
@@ -201,7 +202,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 
 	public DingAnnotation getAnnotation(UUID annotationID) {
-		for (DingAnnotation a: annotationSet) {
+		for (var a: annotationSet) {
 			if (a.getUUID().equals(annotationID))
 				return a;
 		}
@@ -223,12 +224,11 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	public List<DingAnnotation> getAnnotations(CanvasID canvasId) {
 		return getAnnotations(canvasId, true);
 	}
-	
+
 	public boolean hasAnnotations(CanvasID canvasId) {
-		for(var a : annotationSet) {
-			if(a.getCanvas() == canvasId) {
+		for (var a : annotationSet) {
+			if (a.getCanvas() == canvasId)
 				return true;
-			}
 		}
 		return false;
 	}
@@ -238,11 +238,12 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	 * @param ascending If true sort ascending, otherwise descending
 	 */
 	public List<DingAnnotation> getAnnotations(CanvasID canvasId, boolean ascending) {
-		if(annotationSet.isEmpty())
+		if (annotationSet.isEmpty())
 			return Collections.emptyList();
+
+		var zComparator = Comparator.comparing(DingAnnotation::getZOrder);
 		
-		Comparator<DingAnnotation> zComparator = Comparator.comparing(DingAnnotation::getZOrder);
-		if(!ascending)
+		if (!ascending)
 			zComparator = zComparator.reversed();
 		
 		// MKTODO, optimize this, use loops or cache?
@@ -257,22 +258,22 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 	
 	public void checkCycle() throws IllegalAnnotationStructureException {
-		if(AnnotationTree.containsCycle(annotationSet)) {
+		if (AnnotationTree.containsCycle(annotationSet)) {
 			throw new IllegalAnnotationStructureException("Adding annotation would create a cycle. Group annotations must be a tree.");
 		}
 	}
 	
 	public void checkCycle(Annotation annotation) throws IllegalAnnotationStructureException {
-		if(annotation instanceof GroupAnnotation) {
-			if(AnnotationTree.containsCycle(annotationSet, (DingAnnotation)annotation)) {
+		if (annotation instanceof GroupAnnotation) {
+			if (AnnotationTree.containsCycle(annotationSet, (DingAnnotation) annotation))
 				throw new IllegalAnnotationStructureException("Adding annotation would create a cycle. Group annotations must be a tree.");
-			}
 		}
 	}
 	
 	public void checkCycle(Collection<DingAnnotation> annotations) throws IllegalAnnotationStructureException {
 		if (annotations.isEmpty())
 			return;
+		
 		if (AnnotationTree.containsCycle(annotationSet, annotations))
 			throw new IllegalAnnotationStructureException("Adding annotation would create a cycle. Group annotations must be a tree.");
 	}
@@ -284,7 +285,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		if (!(annotation instanceof DingAnnotation))
 			return;
 		
-		Set<DingAnnotation> oldValue = new HashSet<>(annotationSet);
+		var oldValue = new HashSet<>(annotationSet);
 		
 		annotationSet.add((DingAnnotation) annotation);
 		
@@ -300,12 +301,11 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		if (annotationSet.containsAll(annotations))
 			return;
 		
-		var oldValue = new HashSet<DingAnnotation>(annotationSet);
+		var oldValue = new HashSet<>(annotationSet);
 		
-		for (Annotation a : annotations) {
-			if (a instanceof DingAnnotation) {
+		for (var a : annotations) {
+			if (a instanceof DingAnnotation)
 				annotationSet.add((DingAnnotation) a);
-			}
 		}
 		
 		getAnnotationTree().resetZOrder();
@@ -317,7 +317,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 	
 	public void removeAnnotation(Annotation annotation) {
-		var oldValue = new HashSet<DingAnnotation>(annotationSet);
+		var oldValue = new HashSet<>(annotationSet);
 		
 		boolean changed = annotationSet.remove((DingAnnotation) annotation);
 		annotationSelection.remove(annotation);
@@ -330,7 +330,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 
 	public void removeAnnotations(Collection<? extends Annotation> annotations) {
 		boolean changed = false;
-		var oldValue = new HashSet<DingAnnotation>(annotationSet);
+		var oldValue = new HashSet<>(annotationSet);
 		
 		for (var a : annotations) {
 			if (annotationSet.remove((DingAnnotation) a))
@@ -403,18 +403,17 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		return new ReloadImagesTask(this);
 	}
 
-
 	public String getDefaultAnnotationName(String desiredName) {
 		if (desiredName == null || "".equals(desiredName.trim()))
 			desiredName = DEF_ANNOTATION_NAME_PREFIX;
 		
-		Pattern p = Pattern.compile(".*\\s(\\d*)$"); // capture just the digits
-		Matcher m = p.matcher(desiredName);
+		var p = Pattern.compile(".*\\s(\\d*)$"); // capture just the digits
+		var m = p.matcher(desiredName);
 		int start = 1;
 
 		if (m.matches()) {
 			desiredName = desiredName.substring(0, m.start(1) - 1);
-			String gr = m.group(1); // happens to be "" (empty str.) because of \\d*
+			var gr = m.group(1); // happens to be "" (empty str.) because of \\d*
 			start = (gr.isEmpty()) ? 1 : Integer.decode(gr) + 1;
 		}
 
@@ -422,7 +421,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 			desiredName = desiredName.substring(0, MAX_NAME_LENGH);
 
 		for (int i = start; true; i++) {
-			final String candidate = desiredName + " " + i;
+			var candidate = desiredName + " " + i;
 
 			if (!isAnnotationNameTaken(candidate))
 				return candidate;
@@ -430,8 +429,8 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 	
 	private boolean isAnnotationNameTaken(String candidate) {
-		for (Annotation a : getAnnotations()) {
-			final String name = a.getName();
+		for (var a : getAnnotations()) {
+			var name = a.getName();
 
 			if (name != null && name.equals(candidate))
 				return true;
@@ -442,20 +441,20 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	
 	@Override
 	public void handleEvent(SessionAboutToBeSavedEvent e) {
-		CyNetwork network = re.getViewModel().getModel();
-		List<String> networkAnnotation = createSavableNetworkAttribute();
-		
-		if (network.getDefaultNetworkTable().getColumn(ANNOTATION_ATTRIBUTE) == null) {
-			network.getDefaultNetworkTable().createListColumn(ANNOTATION_ATTRIBUTE, String.class, false, Collections.emptyList());
-		}
+		var network = re.getViewModel().getModel();
+		var networkAnnotation = createSavableNetworkAttribute();
+
+		if (network.getDefaultNetworkTable().getColumn(ANNOTATION_ATTRIBUTE) == null)
+			network.getDefaultNetworkTable().createListColumn(ANNOTATION_ATTRIBUTE, String.class, false,
+					Collections.emptyList());
 
 		network.getRow(network, CyNetwork.LOCAL_ATTRS).set(ANNOTATION_ATTRIBUTE, networkAnnotation);
 	}
 
 	public List<String> createSavableNetworkAttribute() {
-		List<Map<String,String>> networkAnnotations = new ArrayList<>();
+		var networkAnnotations = new ArrayList<Map<String,String>>();
 		
-		for (DingAnnotation annotation : annotationSet)
+		for (var annotation : annotationSet)
 			networkAnnotations.add(annotation.getArgMap());
 		
 		// Save it in the network attributes
@@ -463,24 +462,28 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 	
 	private List<String> convertAnnotationMap(List<Map<String, String>>networkAnnotations) {
-		List<String> result = new ArrayList<>();
+		var result = new ArrayList<String>();
 
 		if (networkAnnotations == null || networkAnnotations.size() == 0)
 			return result;
 
 		for (Map<String,String> map: networkAnnotations) {
-			StringBuilder props = new StringBuilder();
-			Iterator<Map.Entry<String,String>> iter = map.entrySet().iterator();
-			if(iter.hasNext()) {
-				Map.Entry<String,String> entry = iter.next();
+			var props = new StringBuilder();
+			var iter = map.entrySet().iterator();
+			
+			if (iter.hasNext()) {
+				var entry = iter.next();
 				props.append(entry.getKey()).append('=').append(entry.getValue());
 			}
-			while(iter.hasNext()) {
-				Map.Entry<String,String> entry = iter.next();
+			
+			while (iter.hasNext()) {
+				var entry = iter.next();
 				props.append('|').append(entry.getKey()).append('=').append(entry.getValue());
 			}
+			
 			result.add(props.toString());
 		}
+		
 		return result;
 	}
 	
@@ -499,10 +502,10 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 			Map<String, Annotation> uuidMap,
 			Map<CanvasID, Map<Integer, DingAnnotation>> zOrderMap
 	) {
-		for (String s: annotations) {
-			Map<String, String> argMap = createArgMap(s);
+		for (var s : annotations) {
+			var argMap = createArgMap(s);
 			DingAnnotation annotation = null;
-			String type = argMap.get(DingAnnotation.TYPE);
+			var type = argMap.get(DingAnnotation.TYPE);
 
 			if (type == null)
 				continue;
@@ -512,7 +515,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 				continue;
 			}
 
-			Annotation a = annotationFactoryManager.createAnnotation(type, re.getViewModel(), argMap);
+			var a = annotationFactoryManager.createAnnotation(type, re.getViewModel(), argMap);
 			
 			if (a == null || !(a instanceof DingAnnotation))
 				continue;
@@ -532,11 +535,12 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 
 			if (argMap.containsKey(Annotation.Z)) {
 				int zOrder = Integer.parseInt(argMap.get(Annotation.Z));
+				
 				if (zOrder >= 0) {
-					if (!zOrderMap.containsKey(canvas)) {
+					if (!zOrderMap.containsKey(canvas))
 						zOrderMap.put(canvas, new TreeMap<>());
-					}
-					zOrderMap.get(canvas).put(zOrder,annotation);
+					
+					zOrderMap.get(canvas).put(zOrder, annotation);
 				}
 			}
 
@@ -613,15 +617,15 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 	
 	private Map<String, String> createArgMap(String mapstring) {
-		Map<String, String> result = new HashMap<>();
-		String[] argList = mapstring.split("[|]");
+		var result = new HashMap<String, String>();
+		var argList = mapstring.split("[|]");
 
 		if (argList.length == 0)
 			return result;
 
 		for (int argIndex = 0; argIndex < argList.length; argIndex++) {
-			String arg = argList[argIndex];
-			String[] keyValue = arg.split("=");
+			var arg = argList[argIndex];
+			var keyValue = arg.split("=");
 
 			if (keyValue.length != 2)
 				continue;
@@ -631,5 +635,4 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 
 		return result;
 	}
-
 }
