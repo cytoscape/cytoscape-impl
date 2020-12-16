@@ -269,7 +269,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				} else if (view == null || vmProxy.getVisualStyle(view).equals(vizMapperMainPanel.getSelectedVisualStyle())) {
 					// Ignore it, if the selected style is not the current one,
 					// because it should change the selection style first and then recreate all the items, anyway.
-					updateLockedValues((CyNetworkView) body);
+					updateLockedValues(view);
 					
 					if (body instanceof CyNetworkView) {
 						updateMappings(CyNode.class, view.getModel().getDefaultNodeTable());
@@ -287,10 +287,12 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				break;
 			case CURRENT_TABLE_CHANGED:
 				CyTable table = (CyTable) body;
-				invokeOnEDT(() -> {
-					// Switching styles.  Need to reset the range tracer
-					updateTableVisualPropertySheets(table, false, false);
-				});
+				if(table != null) {
+					invokeOnEDT(() -> {
+						// Switching styles.  Need to reset the range tracer
+						updateTableVisualPropertySheets(table, false, false);
+					});
+				}
 				break;
 		}
 	}
