@@ -212,7 +212,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 							 VISUAL_STYLE_UPDATED,
 							 CURRENT_NETWORK_VIEW_CHANGED,
 							 VISUAL_STYLE_NAME_CHANGED,
-							 CURRENT_TABLE_CHANGED};
+							 CURRENT_TABLE_CHANGED,
+							 CURRENT_TABLE_VISUAL_STYLE_CHANGED};
 	}
 	
 	@Override
@@ -240,6 +241,12 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				invokeOnEDT(() -> {
 					VisualStyle vs = (VisualStyle) body;
 					updateNetworkVisualPropertySheets(vs, false);
+				});
+				break;
+			case CURRENT_TABLE_VISUAL_STYLE_CHANGED:
+				invokeOnEDT(() -> {
+					CyTable table = (CyTable) body;
+					updateTableVisualPropertySheets(table, false, true);
 				});
 				break;
 			case VISUAL_STYLE_UPDATED:

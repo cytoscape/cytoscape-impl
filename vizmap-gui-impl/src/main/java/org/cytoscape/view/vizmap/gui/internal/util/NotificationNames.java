@@ -61,6 +61,7 @@ public final class NotificationNames {
 	/** Body: {@link org.cytoscape.view.vizmap.VisualStyle} */
 	public static final String VISUAL_STYLE_NAME_CHANGED = "VISUAL_STYLE_NAME_CHANGED";
 	
+	public static final String CURRENT_TABLE_VISUAL_STYLE_CHANGED = "CURRENT_TABLE_VISUAL_STYLE_CHANGED";
 	public static final String CURRENT_TABLE_CHANGED = "CURRENT_TABLE_CHANGED";
 	
 	/** Body: {@link java.util.Properties} */
