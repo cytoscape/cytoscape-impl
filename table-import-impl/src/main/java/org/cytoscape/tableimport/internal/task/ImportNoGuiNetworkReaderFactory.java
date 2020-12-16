@@ -122,6 +122,7 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 
 			viewThreshold = getViewThreshold();
 			results = new ArrayList<CyNetworkView>();
+			largeNetworks = new ArrayList<CyNetwork>();
 
 			for (CyNetwork network : networks) {
 				// Use original name if exists
@@ -152,8 +153,8 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 						view.fitContent();
 					results.add(view);
 				} else {
-					results.add(nullNetViewFactory.createNetworkView(network));
 					largeNetworks.add(network);
+					results.add(nullNetViewFactory.createNetworkView(network));
 				}
 
 				taskMonitor.setProgress((double)(++i)/numNets);
@@ -174,7 +175,6 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 					}
 				}
 			}
-
 
 			// Make sure rootNetwork has a name
 			for (CyNetwork network : networks) {
@@ -227,8 +227,10 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 		private Object getStringResults() {
 			String strRes = "";
 
-			for (CyNetworkView view: results)
-				strRes += (view.toString() + "\n");
+			for (CyNetworkView view: results) {
+        strRes = "SUID:"+view.getModel().getSUID()+" "+view.getModel().toString()+"\n";
+				// strRes += (view.toString() + "\n");
+      }
 
 			return strRes.isEmpty() ? null : strRes.substring(0, strRes.length()-1);
 		}
