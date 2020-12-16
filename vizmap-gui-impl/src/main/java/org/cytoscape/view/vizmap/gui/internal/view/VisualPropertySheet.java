@@ -554,8 +554,6 @@ public class VisualPropertySheet extends JPanel{
 				menuItemMap.put(vpSheetItem, mi);
 			}
 		}
-		
-		getVpsBtn().setEnabled(menuMap.size() > 1);
 	}
 	
 	private void updateMenuItems() {
