@@ -1,7 +1,9 @@
 package org.cytoscape.view.vizmap.gui.internal.view;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,7 +15,11 @@ import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 
 import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.util.swing.GravityTracker;
 import org.cytoscape.util.swing.MenuGravityTracker;
 
@@ -27,6 +33,14 @@ public class PropertySheetPanel {
 	private JMenu editSubMenu;
 	private MenuGravityTracker editSubMenuGravityTracker;
 	private JMenu mapValueGeneratorsSubMenu;
+	
+	private static Map<Class<?>,Integer> tabOrder = new HashMap<>();
+	static {
+		tabOrder.put(CyNode.class, 1);
+		tabOrder.put(CyEdge.class, 2);
+		tabOrder.put(CyNetwork.class, 3);
+		tabOrder.put(CyColumn.class, 4);
+	}
 	
 	
 	public PropertySheetPanel() {
@@ -52,14 +66,22 @@ public class PropertySheetPanel {
 			return;
 		
 		final Class<? extends CyIdentifiable> type = sheet.getModel().getTargetDataType();
-		
-		if (vpSheetMap.containsKey(type))
-			getPropertiesPn().remove(vpSheetMap.get(type));
-		
-		getPropertiesPn().addTab(sheet.getModel().getTitle(), sheet);
 		vpSheetMap.put(type, sheet);
+		
+		// Make sure the tabs are always in the correct order
+		getPropertiesPn().removeAll();
+		List<VisualPropertySheet> sheets = new ArrayList<>(vpSheetMap.values());
+		sheets.sort((s1, s2) -> {
+			int o1 = tabOrder.get(s1.getModel().getTargetDataType());
+			int o2 = tabOrder.get(s2.getModel().getTargetDataType());
+			return Integer.compare(o1, o2);
+		});
+		
+		for(var s : sheets) {
+			getPropertiesPn().addTab(s.getModel().getTitle(), s);
+		}
 	}
-	
+
 	public void removeAllVisualPropertySheets() {
 		getPropertiesPn().removeAll();
 		vpSheetMap.clear();

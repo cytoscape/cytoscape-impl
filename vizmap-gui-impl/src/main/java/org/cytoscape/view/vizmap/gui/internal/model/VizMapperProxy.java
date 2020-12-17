@@ -57,6 +57,8 @@ import org.cytoscape.view.vizmap.events.VisualStyleAddedEvent;
 import org.cytoscape.view.vizmap.events.VisualStyleAddedListener;
 import org.cytoscape.view.vizmap.events.VisualStyleChangedEvent;
 import org.cytoscape.view.vizmap.events.VisualStyleChangedListener;
+import org.cytoscape.view.vizmap.events.table.ColumnVisualStyleSetEvent;
+import org.cytoscape.view.vizmap.events.table.ColumnVisualStyleSetListener;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
 import org.puremvc.java.multicore.patterns.proxy.Proxy;
@@ -89,7 +91,8 @@ import org.puremvc.java.multicore.patterns.proxy.Proxy;
 public class VizMapperProxy extends Proxy
 							implements VisualStyleAddedListener, VisualStyleAboutToBeRemovedListener,
 							  		   VisualStyleChangedListener, SetCurrentVisualStyleListener,
-							  		   SetCurrentNetworkListener, SetCurrentNetworkViewListener, SetCurrentTableListener,
+							  		   SetCurrentNetworkListener, SetCurrentNetworkViewListener, 
+							  		   SetCurrentTableListener, ColumnVisualStyleSetListener,
 							  		   SessionAboutToBeLoadedListener, SessionLoadedListener, CyStartListener {
 
 	public static final String NAME = "VisualStyleProxy";
@@ -465,6 +468,12 @@ public class VizMapperProxy extends Proxy
 	public void handleEvent(final SetCurrentVisualStyleEvent e) {
 		if (cytoscapeStarted && !loadingSession)
 			sendNotification(CURRENT_VISUAL_STYLE_CHANGED, e.getVisualStyle());
+	}
+	
+	@Override
+	public void handleEvent(ColumnVisualStyleSetEvent e) {
+		if (cytoscapeStarted && !loadingSession)
+			sendNotification(CURRENT_TABLE_VISUAL_STYLE_CHANGED, e.getColumnView().getModel().getTable());
 	}
 	
 	@Override

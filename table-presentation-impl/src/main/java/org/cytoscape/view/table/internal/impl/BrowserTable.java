@@ -532,10 +532,9 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		for (int i = 0; i < attrNames.size(); ++i) {
 			if (attrNames.get(i).equals(columnName)) {
 				removedColIndex = i;
-				columnModel.removeColumn (columnModel.getColumn(convertColumnIndexToView(i)));
+				columnModel.deleteColumn(columnModel.getColumn(convertColumnIndexToView(i)));
 				columnFound = true;
 			} else if (columnFound){ //need to push back the model indexes for all of the columns after this
-				
 				TableColumn nextCol = columnModel.getColumnByModelIndex(i); 
 				nextCol.setModelIndex(i- 1);
 			}

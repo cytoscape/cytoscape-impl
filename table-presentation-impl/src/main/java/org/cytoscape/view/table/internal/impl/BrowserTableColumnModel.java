@@ -30,6 +30,14 @@ public class BrowserTableColumnModel extends DefaultTableColumnModel {
 		}
 	}
 	
+	/**
+	 * Columns are removed from the model when they are made invisible, but we want to remember
+	 * the gravity of invisible columns, so we need this new method for when columns are actually deleted.
+	 */
+	public void deleteColumn(TableColumn column) {
+		gravities.remove(column);
+		super.removeColumn(column);
+	}
 	
 	public void addBrowserTableColumnModelListener(BrowserTableColumnModelListener listener) {
 		listeners.add(listener);

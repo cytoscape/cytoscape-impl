@@ -268,7 +268,10 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		topPanel.add(getStylesPnl().getComponent(), BorderLayout.CENTER);
 		
 		getPropertiesPnl().getPropertiesPn().addChangeListener(e -> {
-			var type = getPropertiesPnl().getSelectedVisualPropertySheet().getModel().getTargetDataType();
+			var sheet = getPropertiesPnl().getSelectedVisualPropertySheet();
+			if(sheet == null)
+				return;
+			var type = sheet.getModel().getTargetDataType();
 			topPanel.removeAll();
 			if(CyColumn.class.equals(type) || CyTable.class.equals(type)) {
 				topPanel.add(getColumnStylePnl().getComponent(), BorderLayout.CENTER);

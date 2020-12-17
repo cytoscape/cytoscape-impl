@@ -244,10 +244,10 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		
 		if (is != null)
 			netReader = networkReaderManager.getReader(is, inputName);
-		
+
 		if (netReader == null)				
 			netReader = networkReaderManager.getReader(uri, inputName);
-		
+
 		if (netReader instanceof CombineNetworkReaderAndMappingTask) {
 			Workbook workbook = null;
 
@@ -359,6 +359,8 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 						indexColumnSourceInteraction = index;
 					else if (scs.equals(SourceColumnSemantic.TARGET))
 						indexColumnTargetInteraction = index;
+					else if (scs.equals(SourceColumnSemantic.INTERACTION))
+	          indexColumnTypeInteraction = index;
 					index++;
 				}
 			}
