@@ -261,6 +261,7 @@ public class DVisualLexicon extends BasicVisualLexicon {
 			Color.BLACK, BasicVisualLexicon.PAINT_RANGE,
 			"EDGE_TARGET_ARROW_UNSELECTED_PAINT",
 			"Edge Target Arrow Unselected Paint", CyEdge.class);
+	
 	public static final VisualProperty<EdgeStacking> EDGE_STACKING = new EdgeStackingVisualProperty(
 			EdgeStackingVisualProperty.AUTO_BEND, "EDGE_STACKING", "Edge Stacking", CyEdge.class);
 	public static final VisualProperty<Double> EDGE_STACKING_DENSITY = new DoubleVisualProperty(0.5, // default must be 0.5 for backwards compatibility

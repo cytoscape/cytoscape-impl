@@ -12,9 +12,7 @@ import org.cytoscape.view.presentation.property.values.AbstractVisualPropertyVal
 public class EdgeStackingVisualProperty extends AbstractVisualProperty<EdgeStacking> {
 	
 	public static final EdgeStacking AUTO_BEND = new EdgeStackingImpl("Auto Bend", "AUTO_BEND", false);
-	public static final EdgeStacking HAYSTACK_CROSS  = new EdgeStackingImpl("Haystack (Crossing)", "HAYSTACK_CROSS", true);
-	public static final EdgeStacking HAYSTACK_FAN  = new EdgeStackingImpl("Haystack (Fan)", "HAYSTACK_FAN", true);
-	public static final EdgeStacking HAYSTACK_PARALLEL  = new EdgeStackingImpl("Haystack (Parallel)", "HAYSTACK_PARALLEL", true);
+	public static final EdgeStacking HAYSTACK_CROSS  = new EdgeStackingImpl("Haystack", "HAYSTACK", true);
 	
 	private static final DiscreteRange<EdgeStacking> RANGE;
 	private static final Map<String,EdgeStacking> VALUES;
@@ -23,8 +21,6 @@ public class EdgeStackingVisualProperty extends AbstractVisualProperty<EdgeStack
 		VALUES = new HashMap<>();
 		VALUES.put(AUTO_BEND.getSerializableString().toUpperCase(), AUTO_BEND);
 		VALUES.put(HAYSTACK_CROSS.getSerializableString().toUpperCase(), HAYSTACK_CROSS);
-		VALUES.put(HAYSTACK_FAN.getSerializableString().toUpperCase(), HAYSTACK_FAN);
-		VALUES.put(HAYSTACK_PARALLEL.getSerializableString().toUpperCase(), HAYSTACK_PARALLEL);
 		RANGE = new DiscreteRange<>(EdgeStacking.class, new HashSet<>(VALUES.values()));
 	}
 

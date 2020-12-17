@@ -42,7 +42,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.ding.impl.visualproperty.EdgeStacking;
-import org.cytoscape.ding.impl.visualproperty.EdgeStackingVisualProperty;
 import org.cytoscape.ding.impl.work.DiscreteProgressMonitor;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.ding.internal.util.MurmurHash3;
@@ -710,69 +709,8 @@ public final class GraphRenderer {
 		final float trgHeight = trgNodeExtents[3] - trgNodeExtents[1];
 		final float trgRadius = (Math.min(trgWidth, trgHeight) / 2.0f) * 0.9f * radiusModifier;
 		
-		if(stacking == EdgeStackingVisualProperty.HAYSTACK_FAN) {
-			parallelHaystackEndpoint(x0, y0, x1, y1, srcRadius, rtnValSrc, dataBuff, edgeSuid, radiusModifier, true);
-			parallelHaystackEndpoint(x1, y1, x0, y0, trgRadius, rtnValTrg, dataBuff, edgeSuid, radiusModifier, false);
-		} 
-		else if(stacking == EdgeStackingVisualProperty.HAYSTACK_PARALLEL) {
-			float radius = Math.min(srcRadius, trgRadius);
-			parallelHaystackEndpoint(x0, y0, x1, y1, radius, rtnValSrc, dataBuff, edgeSuid, radiusModifier, true);
-			parallelHaystackEndpoint(x1, y1, x0, y0, radius, rtnValTrg, dataBuff, edgeSuid, radiusModifier, false);
-		} 
-		else if(stacking == EdgeStackingVisualProperty.HAYSTACK_CROSS) {
-			crossHaystackEndpoint(x0, y0, srcRadius, rtnValSrc, dataBuff, srcSuid, edgeSuid, radiusModifier);
-			crossHaystackEndpoint(x1, y1, trgRadius, rtnValTrg, dataBuff, trgSuid, edgeSuid, radiusModifier);
-		}
-	}
-	
-	/**
-	 * Computes a "random" point along a line from the node center that is perpendicular to the edge and is of length 2*radius.
-	 */
-	public final static void parallelHaystackEndpoint(float x0, float y0, float x1, float y1, float radius, 
-			float[] rtnVal, byte[] dataBuff, long edgeSuid, float radiusModifier, boolean isSource) {
-		
-		float h1 = hashSuids(dataBuff, edgeSuid, edgeSuid, 99);
-		float d = radius * h1;
-		
-		// compute a vector that represents the edge
-		double xEdge = x1 - x0;
-		double yEdge = y1 - y0;
-		
-		// normalize the edge vector
-		double mag = Math.sqrt(xEdge*xEdge + yEdge*yEdge);
-		if(mag < 0.001) { // Check for zero(ish)
-			rtnVal[0] = x0;
-			rtnVal[1] = y0;
-			return;
-		}
-		double xNorm = xEdge / mag;
-		double yNorm = yEdge / mag;
-		
-		// compute a point along the edge vector of length d
-		double xd = xNorm * d;
-		double yd = yNorm * d;
-
-		// flip a coin to see if we rotate clockwise or counter-clockwise
-		boolean clockwise = 0.5 < hashSuids(dataBuff, edgeSuid, edgeSuid, 123);
-		// use opposite rotation direction for target node so that edges don't cross
-		clockwise = clockwise == isSource;
-		
-		// rotate the point 90 degrees
-		double xdr, ydr;
-		if(clockwise) {
-			xdr = yd;
-			ydr = -xd;
-		} else {
-			xdr = -yd;
-			ydr = xd;
-		}
-		
-		// translate to node location
-		double x = xdr + x0;
-		double y = ydr + y0;
-		
-		rtnVal[0] = (float) x;
-		rtnVal[1] = (float) y;
+		crossHaystackEndpoint(x0, y0, srcRadius, rtnValSrc, dataBuff, srcSuid, edgeSuid, radiusModifier);
+		crossHaystackEndpoint(x1, y1, trgRadius, rtnValTrg, dataBuff, trgSuid, edgeSuid, radiusModifier);
 	}
 	
 
