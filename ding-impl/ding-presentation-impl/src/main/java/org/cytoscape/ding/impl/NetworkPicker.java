@@ -24,7 +24,6 @@ import java.util.Set;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
-import org.cytoscape.ding.impl.visualproperty.EdgeStacking;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
@@ -39,8 +38,10 @@ import org.cytoscape.view.model.SnapshotEdgeInfo;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
+import org.cytoscape.view.presentation.property.EdgeStackingVisualProperty;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Bend;
+import org.cytoscape.view.presentation.property.values.EdgeStacking;
 import org.cytoscape.view.presentation.property.values.Handle;
 import org.cytoscape.view.presentation.property.values.ObjectPosition;
 import org.cytoscape.view.presentation.property.values.Position;
@@ -511,7 +512,7 @@ public class NetworkPicker {
 						GeneralPath path  = new GeneralPath();
 						GeneralPath path2 = new GeneralPath();
 						
-						if (getFlags().not(LOD_EDGE_ARROWS) || stacking.isHaystack()) {
+						if (getFlags().not(LOD_EDGE_ARROWS) || stacking == EdgeStackingVisualProperty.HAYSTACK) {
 							srcArrow = trgArrow = ArrowShapeVisualProperty.NONE;
 							srcArrowSize = trgArrowSize = 0.0f;
 						} else {
@@ -524,7 +525,7 @@ public class NetworkPicker {
 						final EdgeAnchors anchors = getFlags().not(LOD_EDGE_ANCHORS) ? null : edgeDetails.getAnchors(snapshot, edge);
 
 						
-						if(stacking.isHaystack()) {
+						if(stacking == EdgeStackingVisualProperty.HAYSTACK) {
 							float radiusModifier = edgeDetails.getStackingDensity(edge);
 							GraphRenderer.computeEdgeEndpointsHaystack(srcExtents, trgExtents, srcSuid, trgSuid, edgeSuid, radiusModifier, stacking, 
 									floatBuff1, floatBuff2, haystackDataBuff);

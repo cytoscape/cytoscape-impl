@@ -41,7 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.cytoscape.ding.impl.visualproperty.EdgeStacking;
 import org.cytoscape.ding.impl.work.DiscreteProgressMonitor;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.ding.internal.util.MurmurHash3;
@@ -60,7 +59,9 @@ import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
+import org.cytoscape.view.presentation.property.EdgeStackingVisualProperty;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
+import org.cytoscape.view.presentation.property.values.EdgeStacking;
 import org.cytoscape.view.presentation.property.values.Justification;
 import org.cytoscape.view.presentation.property.values.Position;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
@@ -287,7 +288,7 @@ public final class GraphRenderer {
 						final Paint srcArrowPaint;
 						final Paint trgArrowPaint;
 
-						if (flags.not(LOD_EDGE_ARROWS) || stacking.isHaystack()) { // Not rendering arrows.
+						if (flags.not(LOD_EDGE_ARROWS) || stacking == EdgeStackingVisualProperty.HAYSTACK) { // Not rendering arrows.
 							trgArrow = srcArrow = ArrowShapeVisualProperty.NONE;
 							trgArrowSize = srcArrowSize = 0.0f;
 							trgArrowPaint = srcArrowPaint = null;
@@ -303,7 +304,7 @@ public final class GraphRenderer {
 						// Compute the anchors to use when rendering edge.
 						final EdgeAnchors anchors = flags.not(LOD_EDGE_ANCHORS) ? null : edgeDetails.getAnchors(netView, edge);
 
-						if(stacking.isHaystack()) {
+						if(stacking == EdgeStackingVisualProperty.HAYSTACK) {
 							float radiusModifier = edgeDetails.getStackingDensity(edge);
 							computeEdgeEndpointsHaystack(srcExtents, trgExtents, srcSuid, trgSuid, edgeSuid, radiusModifier, stacking, 
 									floatBuff3, floatBuff4, haystackDataBuff);
