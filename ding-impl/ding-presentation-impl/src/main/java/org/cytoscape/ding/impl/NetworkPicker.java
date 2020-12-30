@@ -216,7 +216,7 @@ public class NetworkPicker {
 				ObjectPosition pos = nodeView.isSet(DVisualLexicon.NODE_LABEL_POSITION) ?
 						 nodeView.getVisualProperty(DVisualLexicon.NODE_LABEL_POSITION) : null;
 
-				selection = (new DLabelSelection ( nodeView, r, pos, nodeDetails.isSelected(nodeView)));
+				selection = (new DLabelSelection ( nodeView, r, pos, nodeDetails.getLabelRotation(nodeView), nodeDetails.isSelected(nodeView)));
 			}
 		} 
 				
