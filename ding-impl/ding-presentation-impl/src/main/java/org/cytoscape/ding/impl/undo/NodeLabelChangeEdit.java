@@ -29,8 +29,8 @@ public class NodeLabelChangeEdit extends AbstractCyEdit {
 	private Long  nodeId;
 
 	public NodeLabelChangeEdit(CyServiceRegistrar serviceRegistrar, ObjectPosition previousValue, Double previousRotation,
-			CyNetworkView netview, Long nodeId) {
-		super("Move Label");
+			CyNetworkView netview, Long nodeId, String label) {
+		super(label);
 		this.serviceRegistrar = serviceRegistrar;
 		
 		this.oldValue = previousValue;
