@@ -4,9 +4,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Paint;
-import java.util.Properties;
-import java.util.function.Function;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -18,7 +15,6 @@ import javax.swing.table.TableCellRenderer;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -61,26 +57,21 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 	private static final int H_PAD = 8;
 	private static final int V_PAD = 2;
 	private static EquationIcon EQUATION_ICON = new EquationIcon();
-	private final Font defaultFont;
-	private final IconManager iconManager;
-	private final CyProperty<Properties> propManager;
+	
+	private final BrowserTablePresentation presentation;
+	
 
-	@SuppressWarnings("unchecked")
 	public BrowserTableCellRenderer(CyServiceRegistrar serviceRegistrar) {
-		this.iconManager = serviceRegistrar.getService(IconManager.class);
-		this.propManager = serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
-		defaultFont = getFont().deriveFont(LookAndFeelUtil.getSmallFontSize());
+		presentation = new BrowserTablePresentation(serviceRegistrar, getFont());
+		
 		setOpaque(true);
 
 		// Add padding:
 		Border border = getBorder();
-
 		if (border == null)
 			border = BorderFactory.createEmptyBorder(V_PAD, H_PAD, V_PAD, H_PAD);
 		else
-			border = BorderFactory.createCompoundBorder(border,
-					BorderFactory.createEmptyBorder(V_PAD, H_PAD, V_PAD, H_PAD));
-
+			border = BorderFactory.createCompoundBorder(border, BorderFactory.createEmptyBorder(V_PAD, H_PAD, V_PAD, H_PAD));
 		setBorder(border);
 	}
 	
@@ -98,30 +89,12 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 		
 		CyColumnView colView = (CyColumnView) tableView.getColumnView(col);
 		
-		// Apply background VP
-		Color background = UIManager.getColor("Table.background");
-		Function<CyRow,Paint> cellPaintMapping = colView.getCellVisualProperty(BasicTableVisualLexicon.CELL_BACKGROUND_PAINT);
-		if(cellPaintMapping != null) {
-			Paint vpValue = cellPaintMapping.apply(row);
-			if(vpValue instanceof Color) {
-				background = (Color) vpValue;
-			}
-		} 
+		Color background = presentation.getBackgroundColor(row, colView);
+		Color foreground = presentation.getForegroundColor(row, colView);
+		Font font = presentation.getFont(row, colView, validatedObj);
+	
 		setBackground(background);
-		
-		
-		// Apply font style VP
-		Font font = defaultFont;
-		if (validatedObj instanceof Boolean) {
-			font = iconManager.getIconFont(12.0f);
-		} else {
-			Function<CyRow,Font> cellFontMapping = colView.getCellVisualProperty(BasicTableVisualLexicon.CELL_FONT_FACE);
-			if(cellFontMapping != null) {
-				font = cellFontMapping.apply(row);
-			}
-		}
 		setFont(font);
-		
 		
 		setIcon(objEditStr != null && objEditStr.isEquation() ? EQUATION_ICON : null);
 		setVerticalTextPosition(JLabel.CENTER);
@@ -180,7 +153,7 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 			if (table.getModel() instanceof BrowserTableModel && !table.isCellEditable(0, colIndex))
 				setForeground(UIManager.getColor("TextField.inactiveForeground"));
 			else
-				setForeground(isError ? LookAndFeelUtil.getErrorColor() : UIManager.getColor("Table.foreground"));
+				setForeground(isError ? LookAndFeelUtil.getErrorColor() : foreground);
 		}
 
 		return this;
