@@ -1,5 +1,6 @@
 package org.cytoscape.editor.internal;
 
+import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -293,11 +294,65 @@ public class ClipboardImpl {
 				reselect(targetView, object);
 		}
 		
-		// PAss 6: Paste annotations
+		// Pass 6: Paste annotations, except ArrowAnnotations
 		var annotationMgr = serviceRegistrar.getService(AnnotationManager.class);
+		var newAnnotationMap = new HashMap<Annotation, Annotation>();
+		var arrowAnnotations = new LinkedHashSet<ArrowAnnotation>();
 		
 		for (var a : annotations) {
-			var na = pasteAnnotation(targetView, annotationMgr, a, a.getX() - xOffset, a.getY() - yOffset);
+			if (a instanceof ArrowAnnotation) {
+				arrowAnnotations.add((ArrowAnnotation) a);
+			} else {
+				var na = pasteAnnotation(targetView, annotationMgr, a, a.getX() - xOffset, a.getY() - yOffset);
+				
+				if (na != null)
+					newAnnotationMap.put(a, na);
+			}
+		}
+		
+		// Pass 7: Paste ArrowAnnotations
+		for (var a : arrowAnnotations) {
+			var na = cloneAnnotation(targetView, a, a.getX() - xOffset, a.getY() - yOffset);
+			
+			if (na instanceof ArrowAnnotation) {
+				var newArrow = (ArrowAnnotation) na;
+				
+				// Reassign source
+				var src = ((ArrowAnnotation) a).getSource();
+				
+				if (src != null) {
+					if (newAnnotationMap.containsKey(src))
+						src = newAnnotationMap.get(src); // The source is a pasted annotation
+					else if (!targetView.equals(sourceView)) 
+						src = null; // Pasting to a different view, but the source has not been copied
+					// TODO tests if this is a valid annotation
+				}
+				
+				newArrow.setSource(src);
+				
+				// Reassign target
+				var tgt = ((ArrowAnnotation) a).getTarget();
+				
+				if (tgt instanceof Annotation) {
+					if (newAnnotationMap.containsKey(tgt))
+						tgt = newAnnotationMap.get(tgt); // The source is a pasted node
+					else if (!targetView.equals(sourceView))
+						tgt = null; // Pasting to a different view, but the target annotation has not been copied
+					
+					newArrow.setTarget((Annotation) tgt);
+				} else if (tgt instanceof CyNode) {
+					if (newNodeMap.containsKey(tgt))
+						tgt = newNodeMap.get(tgt); // The source is a pasted node
+					else if (!targetView.equals(sourceView))
+						tgt = null; // Pasting to a different view, but the target node has not been copied
+					
+					newArrow.setTarget((CyNode) tgt);
+				} else if (tgt instanceof Point2D) {
+					newArrow.setTarget((Point2D) tgt);
+				}
+				
+				annotationMgr.addAnnotation(na);
+			}
 		}
 
 		return pastedObjects;
@@ -554,12 +609,9 @@ public class ClipboardImpl {
 		argMap.put(Annotation.Y, Double.toString(y));
 		
 		var type = argMap.get("type");
-		System.out.println(type);
 		
-		if (type == null) {
+		if (type == null)
 			type = a.getClass().getName();
-			System.out.println("\t: " + type);
-		}
 		
 		if (type.equals("ARROW") || type.equals("org.cytoscape.view.presentation.annotations.ArrowAnnotation"))
 			return createAnnotation(ArrowAnnotation.class, targetView, argMap);
@@ -575,25 +627,6 @@ public class ClipboardImpl {
 
 		if (type.equals("IMAGE") || type.equals("org.cytoscape.view.presentation.annotations.ImageAnnotation"))
 			return createAnnotation(ImageAnnotation.class, targetView, argMap);
-//		
-//		// Create annotation
-//		var copy = factory.createAnnotation(type, sourceView, argMap);
-//		
-//// TODO
-//		if (copy instanceof ArrowAnnotation) {
-//			// Force source/target to be same references as the ones from the original arrow,
-//			// because, for some reason, the copy seems to get different ones sometimes (???)
-//			((ArrowAnnotation) copy).setSource(((ArrowAnnotation) a).getSource());
-//			
-//			var tgt = ((ArrowAnnotation) a).getTarget();
-//			
-//			if (tgt instanceof Annotation)
-//				((ArrowAnnotation) copy).setTarget((Annotation) tgt);
-//			else if (tgt instanceof CyNode)
-//				((ArrowAnnotation) copy).setTarget((CyNode) tgt);
-//			else if (tgt instanceof Point2D)
-//				((ArrowAnnotation) copy).setTarget((Point2D) tgt);
-//		}
 		
 		return null;
 	}
