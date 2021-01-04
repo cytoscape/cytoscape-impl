@@ -179,6 +179,8 @@ public class DefaultTableBrowser extends AbstractTableBrowser
 			final CyTable table = (CyTable) getTableChooser().getSelectedItem();
 			currentTable = table;
 			
+			showSelectedTable();
+			
 			final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
 			
 			if (table != null && !table.equals(applicationManager.getCurrentTable())) {
@@ -187,8 +189,6 @@ public class DefaultTableBrowser extends AbstractTableBrowser
 				if (tableManager.getTable(table.getSUID()) != null)
 					applicationManager.setCurrentTable(table);
 			}
-			
-			showSelectedTable();
 		}
 	}
 

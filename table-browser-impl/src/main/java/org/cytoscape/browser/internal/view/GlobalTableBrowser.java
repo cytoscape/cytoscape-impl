@@ -92,8 +92,9 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 			return;
 
 		currentTable = table;
-		serviceRegistrar.getService(CyApplicationManager.class).setCurrentTable(table);
 		showSelectedTable();
+		
+		serviceRegistrar.getService(CyApplicationManager.class).setCurrentTable(table);
 	}
 
 	
