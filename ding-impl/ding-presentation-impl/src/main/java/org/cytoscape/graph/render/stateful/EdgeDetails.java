@@ -12,6 +12,7 @@ import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Bend;
+import org.cytoscape.view.presentation.property.values.EdgeStacking;
 import org.cytoscape.view.presentation.property.values.Justification;
 import org.cytoscape.view.presentation.property.values.Position;
 
@@ -335,6 +336,10 @@ public interface EdgeDetails {
 	default public boolean isVisible(View<CyEdge> edgeView) {
 		return true;
 	}
+	
+	EdgeStacking getStacking(View<CyEdge> edgeView);
+	
+	float getStackingDensity(View<CyEdge> edgeView);
 
 	Integer getLineCurved(View<CyEdge> edgeView);
 

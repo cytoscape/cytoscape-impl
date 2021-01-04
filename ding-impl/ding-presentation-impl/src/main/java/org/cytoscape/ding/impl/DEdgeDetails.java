@@ -40,6 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.strokes.DAnimatedStroke;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
@@ -52,8 +53,10 @@ import org.cytoscape.view.model.SnapshotEdgeInfo;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.EdgeStackingVisualProperty;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Bend;
+import org.cytoscape.view.presentation.property.values.EdgeStacking;
 import org.cytoscape.view.presentation.property.values.Handle;
 import org.cytoscape.view.presentation.property.values.LineType;
 
@@ -259,6 +262,25 @@ public final class DEdgeDetails implements EdgeDetails {
 	}
 
 	@Override
+	public EdgeStacking getStacking(View<CyEdge> edgeView) {
+		return edgeView.getVisualProperty(DVisualLexicon.EDGE_STACKING);
+	}
+	
+	@Override
+	public float getStackingDensity(View<CyEdge> edgeView) {
+		Double radius = edgeView.getVisualProperty(DVisualLexicon.EDGE_STACKING_DENSITY);
+		if(radius == null)
+			return DVisualLexicon.EDGE_STACKING_DENSITY.getDefault().floatValue();
+		float density = (float) Math.min(1.0, Math.max(0.0, radius));
+		
+		if(getStacking(edgeView) == EdgeStackingVisualProperty.AUTO_BEND) {
+			// Multiply by 2 so the default of 0.5 results in a modifier of 1.0 which has no effect and maintains backwards compatibility.
+			density *= 2.0f; 
+		}
+		return density;
+	}
+	
+	@Override
 	public double getLabelWidth(View<CyEdge> edgeView) {
 		return edgeView.getVisualProperty(EDGE_LABEL_WIDTH);
 	}
@@ -404,6 +426,11 @@ public final class DEdgeDetails implements EdgeDetails {
 		if (edgeView == null)
 			return null;
 		
+		if(edgeView.getVisualProperty(DVisualLexicon.EDGE_STACKING) != EdgeStackingVisualProperty.AUTO_BEND) {
+			// no bends when using haystack edges
+			return null;
+		}
+		
 		int numAnchors = getNumAnchors(edgeView);
 		if (numAnchors > 0) {
 			return new VisualPropertyEdgeAnchors(edgeView);
@@ -435,6 +462,7 @@ public final class DEdgeDetails implements EdgeDetails {
 			}
 
 			final int inx = i;
+			final float densityModifier = getStackingDensity(edgeView);
 
 			return new EdgeAnchors() {
 				@Override
@@ -444,11 +472,11 @@ public final class DEdgeDetails implements EdgeDetails {
 				@Override
 				public void getAnchor(int anchorInx, float[] anchorArr) {
 					if (anchorInx == 0) {
-						anchorArr[0] = (float) (x - (((inx + 3) * nodeSize) / 2.0d));
+						anchorArr[0] = (float) (x - ((((inx + 3) * nodeSize) / 2.0d) * densityModifier));
 						anchorArr[1] = (float) y;
 					} else if (anchorInx == 1) {
 						anchorArr[0] = (float) x;
-						anchorArr[1] = (float) (y - (((inx + 3) * nodeSize) / 2.0d));
+						anchorArr[1] = (float) (y - ((((inx + 3) * nodeSize) / 2.0d) * densityModifier)) ;
 					}
 				}
 			};
@@ -533,13 +561,15 @@ public final class DEdgeDetails implements EdgeDetails {
 			if (((float) len) == 0.0f)
 				break;
 
+						
 			// This determines which side of the first edge and how far from the first
 			// edge the other edge should be placed.
 			// - Divide by 2 puts consecutive edges at the same distance from the center because of integer math.
 			// - Modulo puts consecutive edges on opposite sides.
 			// - Node size is for consistent scaling.
-			final double offset = ((inx + 1) / 2) * (inx % 2 == 0 ? 1 : -1) * nodeSize;
-
+			final float densityModifier = getStackingDensity(edgeView);
+			final double offset = (((inx + 1) / 2) * (inx % 2 == 0 ? 1 : -1) * nodeSize) * densityModifier;
+			
 			// Depending on orientation sine or cosine. This adjusts the length
 			// of the offset according the appropriate X and Y dimensions.
 			final double normX = dx / len;

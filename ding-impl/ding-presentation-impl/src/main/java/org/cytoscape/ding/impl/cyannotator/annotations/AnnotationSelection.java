@@ -24,6 +24,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -72,6 +73,8 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 	private final DRenderingEngine re;
 	private final CyAnnotator cyAnnotator;
 	private final Set<DingAnnotation> selectedAnnotations = new HashSet<>();
+	private final Map<DingAnnotation, Double> initialRotations = new HashMap<>();
+	private final Map<DingAnnotation, Rectangle2D> initialBounds = new HashMap<>();
 	
 	// node coordinates
 	private Rectangle2D union; 
@@ -80,6 +83,7 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 	// Everything below in image coordinates
 	private final Map<Position,Rectangle> anchors = new EnumMap<>(Position.class);
 	private Point movingStartOffset;
+	private Point2D initialCenter;
 	private AnchorLocation resizingAnchor;
 	
 	private final Object lock = new Object();
@@ -305,8 +309,64 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 	
 	public void setMovingStartOffset(Point offset) {
 		this.movingStartOffset = offset;
+    if (union != null)
+      this.initialCenter = new Point2D.Double(union.getX()+union.getWidth()/2, union.getY()+union.getHeight()/2);
+	}
+
+	public void setRotations() {
+		for (var a : selectedAnnotations) {
+      initialRotations.put(a, a.getRotation());
+      initialBounds.put(a, a.getBounds());
+    }
 	}
 	
+	public void rotateSelection(Point p) {
+    // If we have more than one annotation selected, we need to temporarily group them
+    // in order to make the movement work since we will probably be doing a rotate *and*
+    // a move for each annotation
+
+		// Avoid moving the same annotation twice
+		var annotationsToMove = annotationsToChange();
+    double centerX = initialCenter.getX();
+    double centerY = initialCenter.getY();
+
+		var transform = cyAnnotator.getRenderingEngine().getTransform();
+		var nodePt = transform.getNodeCoordinates(p);
+		var offsetPt = transform.getNodeCoordinates(movingStartOffset);
+
+    double angle1 = Math.atan2(centerY - offsetPt.getY(), centerX - offsetPt.getX());
+    double angle2 = Math.atan2(centerY - nodePt.getY(), centerX - nodePt.getX());
+
+		for (var a : annotationsToMove) {
+      double angle;
+      if (initialRotations.get(a) == null)
+			  angle = 0d-Math.toDegrees(angle1-angle2);
+      else
+			  angle = initialRotations.get(a)-Math.toDegrees(angle1-angle2);
+
+      // Get the center of the annotation relative to the center of the union
+      Rectangle2D bounds = initialBounds.get(a);
+      Point2D aCenter = getCenter(bounds);
+      double x = aCenter.getX()-centerX;
+      double y = aCenter.getY()-centerY;
+      if (Math.abs(x) > 0.1 || Math.abs(y) > 0.1) {
+        double aRadians = Math.toRadians(angle);
+        // Calculate the displacement relative to the center of the union
+        double newCenterX = x*Math.cos(aRadians)-y*Math.sin(aRadians); 
+        double newCenterY = y*Math.cos(aRadians)+x*Math.sin(aRadians);
+
+        // Now get the position relative to the screen
+        newCenterX += centerX;
+        newCenterY += centerY;
+
+        a.setLocation(newCenterX - bounds.getWidth()/2d, newCenterY - bounds.getHeight()/2d);
+      }
+      a.setRotation(angle);
+			a.update();
+		}
+    updateBounds();
+  }
+
 	public void moveSelection(Point p) {
 		moveSelection(p.x, p.y);
 	}
@@ -319,18 +379,7 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 			return;
 				
 		// Avoid moving the same annotation twice
-		var annotationsToMove = new HashSet<>(selectedAnnotations);
-		
-		synchronized (lock) {
-			for (var annotation : selectedAnnotations) {
-				for (var ancestor : AnnotationTree.getAncestors(annotation)) {
-					if (selectedAnnotations.contains(ancestor)) {
-						annotationsToMove.remove(annotation);
-						break;
-					}
-				}
-			}
-		}
+		var annotationsToMove = annotationsToChange();
 
 		var transform = cyAnnotator.getRenderingEngine().getTransform();
 		var nodePt = transform.getNodeCoordinates(x, y);
@@ -407,6 +456,27 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 		
 		return new Rectangle(r.x - WIDTH, r.y - WIDTH, r.width + WIDTH * 2, r.height + WIDTH * 2);
 	}
+
+  private HashSet<DingAnnotation> annotationsToChange() {
+		// Avoid moving the same annotation twice
+		var annotationsToMove = new HashSet<>(selectedAnnotations);
+		
+		synchronized (lock) {
+			for (var annotation : selectedAnnotations) {
+				for (var ancestor : AnnotationTree.getAncestors(annotation)) {
+					if (selectedAnnotations.contains(ancestor)) {
+						annotationsToMove.remove(annotation);
+						break;
+					}
+				}
+			}
+		}
+    return annotationsToMove;
+  }
+
+  private Point2D getCenter(Rectangle2D bounds) {
+    return new Point2D.Double(bounds.getX()+bounds.getWidth()/2d, bounds.getY()+ bounds.getHeight()/2d);
+  }
 	
 	/**
 	 * @param shape in image coords

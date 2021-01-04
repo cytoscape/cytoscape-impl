@@ -22,24 +22,28 @@ public class NodeLabelChangeEdit extends AbstractCyEdit {
 	
 	private ObjectPosition oldValue;
 	private ObjectPosition newValue;
+	private Double oldRotation;
+	private double newRotation;
 	private CyServiceRegistrar serviceRegistrar;
 	private CyNetworkView netView;
 	private Long  nodeId;
 
-	public NodeLabelChangeEdit(CyServiceRegistrar serviceRegistrar, ObjectPosition previousValue,
-			CyNetworkView netview, Long nodeId) {
-		super("Move Label");
+	public NodeLabelChangeEdit(CyServiceRegistrar serviceRegistrar, ObjectPosition previousValue, Double previousRotation,
+			CyNetworkView netview, Long nodeId, String label) {
+		super(label);
 		this.serviceRegistrar = serviceRegistrar;
 		
 		this.oldValue = previousValue;
+		this.oldRotation = previousRotation;
 		this.netView = netview;
 		this.nodeId = nodeId;
 	}
 	
 
 	
-	public void post(ObjectPosition newPosition) {
+	public void post(ObjectPosition newPosition, double newRotation) {
 		this.newValue = newPosition;
+		this.newRotation = newRotation;
 		serviceRegistrar.getService(UndoSupport.class).postEdit(this);
 	}
 
@@ -67,6 +71,11 @@ public class NodeLabelChangeEdit extends AbstractCyEdit {
 				node.setLockedValue(DVisualLexicon.NODE_LABEL_POSITION, oldValue);
 			else
 				node.clearValueLock(DVisualLexicon.NODE_LABEL_POSITION);
+
+      if (oldRotation != null)
+				node.setLockedValue(DVisualLexicon.NODE_LABEL_ROTATION, oldRotation);
+			else
+				node.clearValueLock(DVisualLexicon.NODE_LABEL_ROTATION);
 			
 			updateView();
 		}		
@@ -77,6 +86,7 @@ public class NodeLabelChangeEdit extends AbstractCyEdit {
 		if (isNetworkViewRegistered()) {
 			View<CyNode> node = netView.getNodeView(netView.getModel().getNode(nodeId.longValue()));
 			node.setLockedValue(DVisualLexicon.NODE_LABEL_POSITION, newValue);
+			node.setLockedValue(DVisualLexicon.NODE_LABEL_ROTATION, Math.toDegrees(newRotation));
 			updateView();
 		}	
 	}

@@ -1,13 +1,6 @@
 package org.cytoscape.graph.render.stateful;
 
-import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_CUSTOM_GRAPHICS;
-import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_EDGE_ANCHORS;
-import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_EDGE_ARROWS;
-import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_EDGE_LABELS;
-import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_HIGH_DETAIL;
-import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_NODE_BORDERS;
-import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_NODE_LABELS;
-import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_TEXT_AS_SHAPE;
+import static org.cytoscape.graph.render.stateful.RenderDetailFlags.*;
 
 /*
  * #%L
@@ -50,6 +43,7 @@ import java.util.Set;
 
 import org.cytoscape.ding.impl.work.DiscreteProgressMonitor;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
+import org.cytoscape.ding.internal.util.MurmurHash3;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.GraphLOD.RenderEdges;
@@ -65,7 +59,9 @@ import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
+import org.cytoscape.view.presentation.property.EdgeStackingVisualProperty;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
+import org.cytoscape.view.presentation.property.values.EdgeStacking;
 import org.cytoscape.view.presentation.property.values.Justification;
 import org.cytoscape.view.presentation.property.values.Position;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
@@ -219,6 +215,8 @@ public final class GraphRenderer {
 			DiscreteProgressMonitor shapeDpm = shapePm.toDiscrete(nodeHits.size());
 			DiscreteProgressMonitor labelDpm = labelPm.toDiscrete(nodeHits.size());
 			
+			byte[] haystackDataBuff = new byte[16];
+				
 			while (nodeHits.hasNext()) {
 				if(pm.isCancelled())
 					return;
@@ -228,6 +226,7 @@ public final class GraphRenderer {
 				final View<CyNode> node = netView.getNodeView(nodeSuid);
 				final byte nodeShape = nodeDetails.getShape(node);
 				Iterable<View<CyEdge>> touchingEdges = netView.getAdjacentEdgeIterable(node);
+				
 				for (View<CyEdge> edge : touchingEdges) {
 					if(pm.isCancelled()) {
 						return;
@@ -235,11 +234,14 @@ public final class GraphRenderer {
 					if (!edgeDetails.isVisible(edge))
 						continue;
 					SnapshotEdgeInfo edgeInfo = netView.getEdgeInfo(edge);
+					long edgeSuid = edgeInfo.getSUID();
 					var sourceViewSUID = edgeInfo.getSourceViewSUID();
 					var targetViewSUID = edgeInfo.getTargetViewSUID();
 					final long otherNode = nodeSuid ^ sourceViewSUID ^ targetViewSUID;
 					final View<CyNode> otherCyNode = netView.getNodeView(otherNode);
 
+					EdgeStacking stacking = edgeDetails.getStacking(edge);
+					
 					if (nodeBuff.get(otherNode) < 0) { // Has not yet been rendered.
 						
 						shapePm.start("Line");
@@ -250,23 +252,27 @@ public final class GraphRenderer {
 
 						final byte otherNodeShape = nodeDetails.getShape(otherCyNode);
 
-						// Compute node shapes, center positions, and extents.
 						final byte srcShape;
-
-						// Compute node shapes, center positions, and extents.
 						final byte trgShape;
 						final float[] srcExtents;
 						final float[] trgExtents;
+						final long srcSuid;
+						final long trgSuid;
+						
 						if (nodeSuid == sourceViewSUID) {
 							srcShape = nodeShape;
 							trgShape = otherNodeShape;
 							srcExtents = floatBuff1;
 							trgExtents = floatBuff2;
-						} else { // node == graph.edgeTarget(edge).
+							srcSuid = nodeSuid;
+							trgSuid = otherNode;
+						} else {
 							srcShape = otherNodeShape;
 							trgShape = nodeShape;
 							srcExtents = floatBuff2;
 							trgExtents = floatBuff1;
+							srcSuid = otherNode;
+							trgSuid = nodeSuid;
 						}
 
 						// Compute visual attributes that do not depend on LOD.
@@ -282,7 +288,7 @@ public final class GraphRenderer {
 						final Paint srcArrowPaint;
 						final Paint trgArrowPaint;
 
-						if (flags.not(LOD_EDGE_ARROWS)) { // Not rendering arrows.
+						if (flags.not(LOD_EDGE_ARROWS) || stacking == EdgeStackingVisualProperty.HAYSTACK) { // Not rendering arrows.
 							trgArrow = srcArrow = ArrowShapeVisualProperty.NONE;
 							trgArrowSize = srcArrowSize = 0.0f;
 							trgArrowPaint = srcArrowPaint = null;
@@ -298,11 +304,15 @@ public final class GraphRenderer {
 						// Compute the anchors to use when rendering edge.
 						final EdgeAnchors anchors = flags.not(LOD_EDGE_ANCHORS) ? null : edgeDetails.getAnchors(netView, edge);
 
-						if (!computeEdgeEndpoints(srcExtents, srcShape, srcArrow,
-						                          srcArrowSize, anchors, trgExtents, trgShape,
-						                          trgArrow, trgArrowSize, floatBuff3, floatBuff4))
-							continue;
-
+						if(stacking == EdgeStackingVisualProperty.HAYSTACK) {
+							float radiusModifier = edgeDetails.getStackingDensity(edge);
+							computeEdgeEndpointsHaystack(srcExtents, trgExtents, srcSuid, trgSuid, edgeSuid, radiusModifier, stacking, 
+									floatBuff3, floatBuff4, haystackDataBuff);
+						} else /* auto bend */ {
+							computeEdgeEndpoints(srcExtents, srcShape, srcArrow, srcArrowSize, anchors, trgExtents, 
+									trgShape,  trgArrow, trgArrowSize, floatBuff3, floatBuff4);
+						}
+						
 						final float srcXAdj = floatBuff3[0];
 						final float srcYAdj = floatBuff3[1];
 						final float trgXAdj = floatBuff4[0];
@@ -349,7 +359,7 @@ public final class GraphRenderer {
 								final Position edgeAnchor = edgeDetails.getLabelEdgeAnchor(edge);
 								final float offsetVectorX = edgeDetails.getLabelOffsetVectorX(edge);
 								final float offsetVectorY = edgeDetails.getLabelOffsetVectorY(edge);
-                final double theta = edgeDetails.getLabelRotation(edge)*.01745329252;
+								final double theta = edgeDetails.getLabelRotation(edge)*.01745329252;
 								final Justification justify;
 
 								if (text.indexOf('\n') >= 0)
@@ -566,7 +576,7 @@ public final class GraphRenderer {
 						final Position nodeAnchor = nodeDetails.getLabelNodeAnchor(cyNode);
 						final float offsetVectorX = nodeDetails.getLabelOffsetVectorX(cyNode);
 						final float offsetVectorY = nodeDetails.getLabelOffsetVectorY(cyNode);
-            final double theta = nodeDetails.getLabelRotation(cyNode)*.01745329252;
+						final double theta = nodeDetails.getLabelRotation(cyNode)*.01745329252;
 						final Justification justify;
 
 						if (text.indexOf('\n') >= 0)
@@ -680,8 +690,70 @@ public final class GraphRenderer {
 		}
 	}
 
-	private final static float[] s_floatBuff = new float[2];
+	public final static void computeEdgeEndpointsHaystack(
+			float[] srcNodeExtents, float[] trgNodeExtents,
+			long srcSuid, long trgSuid, long edgeSuid,
+			float radiusModifier, EdgeStacking stacking,
+			float[] rtnValSrc, float[] rtnValTrg, byte[] dataBuff) {
 
+		// center coordinates of source and target nodes
+		final float x0 = (srcNodeExtents[0] + srcNodeExtents[2]) / 2.0f;
+		final float y0 = (srcNodeExtents[1] + srcNodeExtents[3]) / 2.0f;
+		final float x1 = (trgNodeExtents[2] + trgNodeExtents[0]) / 2.0f;
+		final float y1 = (trgNodeExtents[3] + trgNodeExtents[1]) / 2.0f;
+		
+		final float srcWidth  = srcNodeExtents[2] - srcNodeExtents[0];
+		final float srcHeight = srcNodeExtents[3] - srcNodeExtents[1];
+		final float srcRadius = (Math.min(srcWidth, srcHeight) / 2.0f) * 0.9f * radiusModifier;
+		
+		final float trgWidth  = trgNodeExtents[2] - trgNodeExtents[0];
+		final float trgHeight = trgNodeExtents[3] - trgNodeExtents[1];
+		final float trgRadius = (Math.min(trgWidth, trgHeight) / 2.0f) * 0.9f * radiusModifier;
+		
+		crossHaystackEndpoint(x0, y0, srcRadius, rtnValSrc, dataBuff, srcSuid, edgeSuid, radiusModifier);
+		crossHaystackEndpoint(x1, y1, trgRadius, rtnValTrg, dataBuff, trgSuid, edgeSuid, radiusModifier);
+	}
+	
+
+	/**
+	 * Computes a 'random' point around the circumference of a circle within the node.
+	 */
+	private final static void crossHaystackEndpoint(float centerX, float centerY, float radius, float[] rtnVal, 
+			byte[] dataBuff, long nodeSuid, long edgeSuid, float radiusModifier) {
+		// Hash the node and edge SUIDs to a value between 0.0 and 1.0. This is done instead of 
+		// generating a random number so that the edge endpoints stay consistent between frames.
+		float h1 = hashSuids(dataBuff, nodeSuid, edgeSuid, 99);
+		
+		// Use the hash to get a 'random' point around the circumference
+		// of a circle that lies within the node boundaries.
+		double theta = h1 * Math.PI * 2;
+		double x = centerX + Math.cos(theta) * radius;
+		double y = centerY + Math.sin(theta) * radius;
+		
+		rtnVal[0] = (float) x;
+		rtnVal[1] = (float) y;
+	}
+	
+
+	private static void longToBytes(long l, byte[] buff, int offset) {
+		for (int i = offset + 7; i >= offset; i--) {
+			buff[i] = (byte) (l & 0xFF);
+			l >>= 8;
+		}
+	}
+
+	/**
+	 * Returns a hashed value of the given suids in the range 0.0 to 1.0
+	 */
+	private static float hashSuids(byte[] dataBuff, long nodeSuid, long edgeSuid, int seed) {
+		longToBytes(nodeSuid, dataBuff, 0);
+		longToBytes(edgeSuid, dataBuff, 8);
+		int hash = MurmurHash3.murmurhash3_x86_32(dataBuff, 0, dataBuff.length, seed);
+		float r = Math.abs((float) hash / Integer.MAX_VALUE);
+		return r;
+	}
+	
+	
 	/**
 	 * Calculates the edge endpoints given two nodes, any edge anchors, and any arrows. 
 	 *
@@ -701,7 +773,7 @@ public final class GraphRenderer {
 	 *
 	 * @return DOCUMENT ME!
 	 */
-	public final static boolean computeEdgeEndpoints(final float[] srcNodeExtents,
+	public final static void computeEdgeEndpoints(final float[] srcNodeExtents,
 	                                                 final byte srcNodeShape, final ArrowShape srcArrow,
 	                                                 final float srcArrowSize, EdgeAnchors anchors,
 	                                                 final float[] trgNodeExtents,
@@ -750,8 +822,6 @@ public final class GraphRenderer {
 		rtnValSrc[1] = srcYAdj;
 		rtnValTrg[0] = trgXAdj;
 		rtnValTrg[1] = trgYAdj;
-
-		return true;
 	}
 
 	private static void calcIntersection(byte nodeShape, 

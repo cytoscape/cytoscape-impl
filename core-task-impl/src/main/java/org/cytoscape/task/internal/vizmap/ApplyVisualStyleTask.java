@@ -6,11 +6,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.cytoscape.command.StringToModel;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNetworkViewCollectionTask;
 import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.ObservableTask;
@@ -53,13 +56,13 @@ public class ApplyVisualStyleTask extends AbstractNetworkViewCollectionTask impl
 		return "Apply Style";
 	}
 
-	@Tunable(
-			description = "Style:",
-			longDescription = "Name of Style to be applied to the selected views.",
-			exampleStringValue = "Minimal",
-			required = true
-	)
+	@Tunable(description = "Network", longDescription = StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue = StringToModel.CY_NETWORK_EXAMPLE_STRING, context = "nogui", required = true)
+	public CyNetwork network;
+
+	@Tunable(description = "Style:", longDescription = "Name of Style to be applied to the selected views.", exampleStringValue = "Minimal", required = true)
 	public ListSingleSelection<VisualStyle> styles;
+
+	private Collection<CyNetworkView> selectedNetworkViews;
 	
 	private VisualStyle selectedStyle;
 
@@ -68,10 +71,10 @@ public class ApplyVisualStyleTask extends AbstractNetworkViewCollectionTask impl
 		this.serviceRegistrar = serviceRegistrar;
 
 		VisualMappingManager vmManager = serviceRegistrar.getService(VisualMappingManager.class);
-		
+
 		final List<VisualStyle> vsList = new ArrayList<>(vmManager.getAllVisualStyles());
 		styles = new ListSingleSelection<>(vsList);
-		
+
 		if (!vsList.isEmpty())
 			styles.setSelectedValue(vsList.get(0));
 	}
@@ -83,8 +86,15 @@ public class ApplyVisualStyleTask extends AbstractNetworkViewCollectionTask impl
 
 		VisualMappingManager vmManager = serviceRegistrar.getService(VisualMappingManager.class);
 
-		int viewCount = networkViews.size();
+		if (network != null) {
+			selectedNetworkViews = serviceRegistrar.getService(CyNetworkViewManager.class).getNetworkViews(network);
+		} else {
+			selectedNetworkViews = networkViews;
+		}
+		
+		int viewCount = selectedNetworkViews.size();
 		selectedStyle = styles.getSelectedValue();
+		
 		
 		if (viewCount == 0) // Should not happen!
 			throw new RuntimeException("No network views selected.");
@@ -94,7 +104,7 @@ public class ApplyVisualStyleTask extends AbstractNetworkViewCollectionTask impl
 		tm.setStatusMessage("Applying style '" + selectedStyle.getTitle() + "' to " + viewCount + " view(s)...");
 		int i = 0;
 		
-		for (final CyNetworkView view : networkViews) {
+		for (final CyNetworkView view : selectedNetworkViews) {
 			if (cancelled)
 				return;
 				
@@ -109,37 +119,39 @@ public class ApplyVisualStyleTask extends AbstractNetworkViewCollectionTask impl
 
 		tm.setProgress(1.0);
 	}
-	
+
 	@Override
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Object getResults(Class type) {
 		if (type == String.class) {
 			String res = "";
-			
-			if (networkViews != null && !networkViews.isEmpty()) {
+
+			if (selectedNetworkViews != null && !selectedNetworkViews.isEmpty()) {
 				res += "Style applied to views:\n";
-				
-				for (CyNetworkView view : networkViews)
+
+				for (CyNetworkView view : selectedNetworkViews)
 					res += DataUtils.getViewTitle(view) + " (SUID: " + view.getSUID() + ")" + "\n";
-				
+
 				res = res.substring(0, res.length() - 1);
 			} else {
 				res = "Please select one or more views before applying a style.";
 			}
-			
+
 			return res;
 		}
-		
+
 		if (type == JSONResult.class) {
-			String json = serviceRegistrar.getService(CyJSONUtil.class).cyIdentifiablesToJson(networkViews);
-			JSONResult res = () -> { return "{\"views\":"+json+"}"; };
-			
+			String json = serviceRegistrar.getService(CyJSONUtil.class).cyIdentifiablesToJson(selectedNetworkViews);
+			JSONResult res = () -> {
+				return "{\"views\":" + json + "}";
+			};
+
 			return res;
 		}
-		
-		return networkViews != null ? new ArrayList<>(networkViews) : Collections.emptyList();
+
+		return selectedNetworkViews != null ? new ArrayList<>(selectedNetworkViews) : Collections.emptyList();
 	}
-	
+
 	@Override
 	public List<Class<?>> getResultClasses() {
 		return Arrays.asList(String.class, List.class, JSONResult.class);

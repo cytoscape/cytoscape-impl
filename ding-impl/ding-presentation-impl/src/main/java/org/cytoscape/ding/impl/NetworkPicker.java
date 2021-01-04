@@ -38,8 +38,10 @@ import org.cytoscape.view.model.SnapshotEdgeInfo;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
+import org.cytoscape.view.presentation.property.EdgeStackingVisualProperty;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Bend;
+import org.cytoscape.view.presentation.property.values.EdgeStacking;
 import org.cytoscape.view.presentation.property.values.Handle;
 import org.cytoscape.view.presentation.property.values.ObjectPosition;
 import org.cytoscape.view.presentation.property.values.Position;
@@ -214,7 +216,7 @@ public class NetworkPicker {
 				ObjectPosition pos = nodeView.isSet(DVisualLexicon.NODE_LABEL_POSITION) ?
 						 nodeView.getVisualProperty(DVisualLexicon.NODE_LABEL_POSITION) : null;
 
-				selection = (new DLabelSelection ( nodeView, r, pos, nodeDetails.isSelected(nodeView)));
+				selection = (new DLabelSelection ( nodeView, r, pos, nodeDetails.getLabelRotation(nodeView), nodeDetails.isSelected(nodeView)));
 			}
 		} 
 				
@@ -452,6 +454,8 @@ public class NetworkPicker {
 				processedNodes.add(node);
 			}
 		} else { // Last render high detail.
+			byte[] haystackDataBuff = new byte[16];
+				
 			float[] extentsBuff2 = new float[4];
 			
 			while(nodeHits.hasNext()) {
@@ -462,10 +466,14 @@ public class NetworkPicker {
 				Iterable<View<CyEdge>> touchingEdges = snapshot.getAdjacentEdgeIterable(node);
 				
 				for(View<CyEdge> edge : touchingEdges) {
+					
 					SnapshotEdgeInfo edgeInfo = snapshot.getEdgeInfo(edge);
+					long edgeSuid = edgeInfo.getSUID();
 					double segThicknessDiv2 = edgeDetails.getWidth(edge) / 2.0d;
 					long otherNode = node ^ edgeInfo.getSourceViewSUID() ^ edgeInfo.getTargetViewSUID();
 					View<CyNode> otherNodeView = snapshot.getNodeView(otherNode);
+					
+					EdgeStacking stacking = edgeDetails.getStacking(edge);
 					
 					if(!processedNodes.contains(otherNode)) {
 						snapshot.getSpacialIndex2D().get(otherNode, extentsBuff2);
@@ -475,17 +483,23 @@ public class NetworkPicker {
 						final byte trgShape;
 						final float[] srcExtents;
 						final float[] trgExtents;
+						final long srcSuid;
+						final long trgSuid;
 
 						if (node == edgeInfo.getSourceViewSUID()) {
 							srcShape = nodeShape;
 							trgShape = otherNodeShape;
 							srcExtents = extentsBuff;
 							trgExtents = extentsBuff2;
+							srcSuid = node;
+							trgSuid = otherNode;
 						} else { // node == graph.edgeTarget(edge).
 							srcShape = otherNodeShape;
 							trgShape = nodeShape;
 							srcExtents = extentsBuff2;
 							trgExtents = extentsBuff;
+							srcSuid = otherNode;
+							trgSuid = node;
 						}
 
 						final ArrowShape srcArrow;
@@ -498,7 +512,7 @@ public class NetworkPicker {
 						GeneralPath path  = new GeneralPath();
 						GeneralPath path2 = new GeneralPath();
 						
-						if (getFlags().not(LOD_EDGE_ARROWS)) {
+						if (getFlags().not(LOD_EDGE_ARROWS) || stacking == EdgeStackingVisualProperty.HAYSTACK) {
 							srcArrow = trgArrow = ArrowShapeVisualProperty.NONE;
 							srcArrowSize = trgArrowSize = 0.0f;
 						} else {
@@ -510,11 +524,16 @@ public class NetworkPicker {
 
 						final EdgeAnchors anchors = getFlags().not(LOD_EDGE_ANCHORS) ? null : edgeDetails.getAnchors(snapshot, edge);
 
-						if (!GraphRenderer.computeEdgeEndpoints(srcExtents, srcShape,
-						                                        srcArrow, srcArrowSize, anchors,
-						                                        trgExtents, trgShape, trgArrow,
-						                                        trgArrowSize, floatBuff1, floatBuff2))
-							continue;
+						
+						if(stacking == EdgeStackingVisualProperty.HAYSTACK) {
+							float radiusModifier = edgeDetails.getStackingDensity(edge);
+							GraphRenderer.computeEdgeEndpointsHaystack(srcExtents, trgExtents, srcSuid, trgSuid, edgeSuid, radiusModifier, stacking, 
+									floatBuff1, floatBuff2, haystackDataBuff);
+						} else {
+							GraphRenderer.computeEdgeEndpoints(srcExtents, srcShape, srcArrow,
+				                          srcArrowSize, anchors, trgExtents, trgShape,
+				                          trgArrow, trgArrowSize, floatBuff1, floatBuff2);
+						}
 
 						GraphGraphics.getEdgePath(srcArrow, srcArrowSize, trgArrow, trgArrowSize,
 						                    floatBuff1[0], floatBuff1[1], anchors,

@@ -219,6 +219,12 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 		if (this.rotation != rotation) {
 			var oldValue = this.rotation;
 			this.rotation = rotation;
+      while (this.rotation < -180d)
+        this.rotation += 360d;
+
+      while (this.rotation > 180d)
+        this.rotation -= 360d;
+
 			update();
 			
 			if (isSelected())

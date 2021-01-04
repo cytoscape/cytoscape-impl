@@ -98,11 +98,10 @@ public class DVisualLexicon extends BasicVisualLexicon {
 	public static final VisualProperty<Boolean> NETWORK_ANNOTATION_SELECTION = new BooleanVisualProperty(
 			Boolean.FALSE, "NETWORK_ANNOTATION_SELECTION", "Network Annotation Selection",
 			CyNetwork.class);
-
 	public static final VisualProperty<Boolean> NETWORK_NODE_LABEL_SELECTION = new BooleanVisualProperty(
 			Boolean.FALSE, "NETWORK_NODE_LABEL_SELECTION", "Network Node Label Selection",
 			CyNetwork.class);
-
+	
 	public static final VisualProperty<ObjectPosition> NODE_LABEL_POSITION = new ObjectPositionVisualProperty(
 			ObjectPosition.DEFAULT_POSITION, "NODE_LABEL_POSITION",
 			"Node Label Position", CyNode.class);
@@ -259,6 +258,7 @@ public class DVisualLexicon extends BasicVisualLexicon {
 			Color.BLACK, BasicVisualLexicon.PAINT_RANGE,
 			"EDGE_TARGET_ARROW_UNSELECTED_PAINT",
 			"Edge Target Arrow Unselected Paint", CyEdge.class);
+	
 	
 	public static final VisualProperty<Boolean> EDGE_CURVED = new BooleanVisualProperty(true, "EDGE_CURVED",
 			"Edge Curved", CyEdge.class);
@@ -463,7 +463,7 @@ public class DVisualLexicon extends BasicVisualLexicon {
 
 		//addVisualProperty(EDGE_LABEL_POSITION, EDGE);
 		addVisualProperty(EDGE_LABEL_ROTATION, EDGE);
-
+		
 		createLookupMap();
 	}
 
