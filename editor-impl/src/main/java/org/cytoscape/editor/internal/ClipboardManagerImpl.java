@@ -1,14 +1,18 @@
 package org.cytoscape.editor.internal;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Set;
+import java.util.List;
+import java.util.Map;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.AnnotationFactory;
+import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 
 /*
@@ -17,7 +21,7 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -36,23 +40,23 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
  */
 
 /**
- * The ClipboardManager provides a simple wrapper around a Clipboard.  This
- * allows us to manipulate the "current" clipboard.  In the future, we might
- * also want to provide for multiple clipboards....
+ * The ClipboardManager provides a simple wrapper around a Clipboard.
+ * This allows us to manipulate the "current" clipboard.
+ * In the future, we might also want to provide for multiple clipboards....
  */
 public final class ClipboardManagerImpl {
 	
 	private ClipboardImpl currentClipboard;
+	private List<AnnotationFactory<? extends Annotation>> annotationFactories = new ArrayList<>();
+	
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public ClipboardManagerImpl(final CyServiceRegistrar serviceRegistrar) { 
+	public ClipboardManagerImpl(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	public boolean clipboardHasData() {
-		if (currentClipboard == null)
-			return false;
-		return currentClipboard.clipboardHasData();
+		return currentClipboard == null ? false : currentClipboard.clipboardHasData();
 	}
 
 	public ClipboardImpl getCurrentClipboard() {
@@ -63,27 +67,56 @@ public final class ClipboardManagerImpl {
 		this.currentClipboard = clip;
 	}
 
-	public void copy(CyNetworkView networkView, Set<CyNode> nodes, Set<CyEdge> edges) {
-		copy(networkView, nodes, edges, false);
+	public void copy(
+			CyNetworkView networkView,
+			Collection<CyNode> nodes,
+			Collection<CyEdge> edges,
+			Collection<Annotation> annotations
+	) {
+		copy(networkView, nodes, edges, annotations, false);
 	}
 
-	public void cut(CyNetworkView networkView, Set<CyNode> nodes, Set<CyEdge> edges) {
-		copy(networkView, nodes, edges, true);
+	public void copy(
+			CyNetworkView networkView,
+			Collection<CyNode> nodes,
+			Collection<CyEdge> edges,
+			Collection<Annotation> annotations,
+			boolean cut
+	) {
+		var vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
+		var lexicon = vmMgr.getAllVisualLexicon().iterator().next();
+		currentClipboard = new ClipboardImpl(networkView, nodes, edges, annotations, cut, lexicon, annotationFactories,
+				serviceRegistrar);
+	}
+
+	public void cut(
+			CyNetworkView networkView,
+			Collection<CyNode> nodes,
+			Collection<CyEdge> edges,
+			Collection<Annotation> annotations
+	) {
+		copy(networkView, nodes, edges, annotations, true);
 		networkView.getModel().removeEdges(edges);
 		networkView.getModel().removeNodes(nodes);
+		serviceRegistrar.getService(AnnotationManager.class).removeAnnotations(annotations);
+		
 		networkView.updateView();
-	}
-
-	public void copy(CyNetworkView networkView, Set<CyNode> nodes, Set<CyEdge> edges, boolean cut) {
-		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
-		final VisualLexicon lexicon = vmMgr.getAllVisualLexicon().iterator().next();
-		currentClipboard = new ClipboardImpl(networkView, nodes, edges, cut, lexicon, serviceRegistrar);
 	}
 
 	public Collection<CyIdentifiable> paste(CyNetworkView targetView, double x, double y) {
 		if (currentClipboard == null)
 			return null;
-		
+
 		return currentClipboard.paste(targetView, x, y);
+	}
+	
+	public void addAnnotationFactory(AnnotationFactory<?> factory, Map<?, ?> props) {
+		if (factory != null)
+			annotationFactories.add(factory);
+	}
+
+	public void removeAnnotationFactory(AnnotationFactory<?> factory, Map<?, ?> props) {
+		if (factory != null)
+			annotationFactories.remove(factory);
 	}
 }

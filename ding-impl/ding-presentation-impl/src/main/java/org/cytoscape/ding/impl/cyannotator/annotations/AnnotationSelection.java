@@ -23,11 +23,11 @@ import java.awt.RenderingHints;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -135,7 +135,7 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 		return selectedAnnotations.isEmpty();
 	}
 	
-	public Collection<DingAnnotation> getSelectedAnnotations() {
+	public List<DingAnnotation> getSelectedAnnotations() {
 		// This method exists for clients that want to avoid ConcurrentModificationException
 		synchronized (lock) {
 			return new ArrayList<>(selectedAnnotations);

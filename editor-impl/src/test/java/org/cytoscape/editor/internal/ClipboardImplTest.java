@@ -17,11 +17,12 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NullVisualProperty;
 import org.junit.Before;
@@ -55,21 +56,23 @@ import org.mockito.MockitoAnnotations;
 
 public class ClipboardImplTest {
 
-	@Mock CyServiceRegistrar serviceRegistrar;
-	@Mock CyEventHelper eventHelper;
+	@Mock
+	private CyServiceRegistrar serviceRegistrar;
+	@Mock
+	private CyEventHelper eventHelper;
+
+	private NetworkViewTestSupport viewTestSupport = new NetworkViewTestSupport();
+	private VisualLexicon lexicon = new BasicVisualLexicon(new NullVisualProperty("MINIMAL_ROOT", "Min Root Visual Property"));
+	private List<AnnotationFactory<? extends Annotation>> annotationFactories = Collections.emptyList();
 	
-	NetworkTestSupport netTestSupport = new NetworkTestSupport();
-	NetworkViewTestSupport viewTestSupport = new NetworkViewTestSupport();
-	VisualLexicon lexicon = new BasicVisualLexicon(new NullVisualProperty("MINIMAL_ROOT", "Min Root Visual Property"));
-	
-	CyNetworkView sourceView;
-	CyNode n1;
-    CyNode n2;
-    CyNode n3;
-    CyEdge e1;
-    CyEdge e2;
-    CyEdge e3;
-    CyEdge e4;
+	private CyNetworkView sourceView;
+	private CyNode n1;
+	private CyNode n2;
+	private CyNode n3;
+	private CyEdge e1;
+	private CyEdge e2;
+	private CyEdge e3;
+	private CyEdge e4;
 	
 	@Before
 	public void initMocks() {
@@ -99,7 +102,7 @@ public class ClipboardImplTest {
 		Set<CyNode> nodes = new HashSet<>(Arrays.asList(new CyNode[] { n1, n3 }));
 		Set<CyEdge> edges = Collections.emptySet();
 		
-		ClipboardImpl clipboard = new ClipboardImpl(sourceView, nodes, edges, false, lexicon, serviceRegistrar);
+		ClipboardImpl clipboard = new ClipboardImpl(sourceView, nodes, edges, false, lexicon, annotationFactories, serviceRegistrar);
 		clipboard.paste(targetView, 0, 0);
 		
 		assertEquals(2, targetView.getModel().getNodeCount());
@@ -117,7 +120,7 @@ public class ClipboardImplTest {
 		Set<CyNode> nodes = new HashSet<>(Arrays.asList(new CyNode[] { n1, n3 }));
 		Set<CyEdge> edges = Collections.emptySet();
 		
-		ClipboardImpl clipboard = new ClipboardImpl(sourceView, nodes, edges, false, lexicon, serviceRegistrar);
+		ClipboardImpl clipboard = new ClipboardImpl(sourceView, nodes, edges, false, lexicon, annotationFactories, serviceRegistrar);
 		clipboard.paste(targetView, 0, 0);
 		
 		assertEquals(2, targetView.getModel().getNodeCount());
@@ -133,7 +136,7 @@ public class ClipboardImplTest {
 		Set<CyNode> nodes = new HashSet<>(Arrays.asList(new CyNode[] { n1, n3 }));
 		Set<CyEdge> edges = Collections.emptySet();
 		
-		ClipboardImpl clipboard = new ClipboardImpl(sourceView, nodes, edges, false, lexicon, serviceRegistrar);
+		ClipboardImpl clipboard = new ClipboardImpl(sourceView, nodes, edges, false, lexicon, annotationFactories, serviceRegistrar);
 		clipboard.paste(targetView, 0, 0);
 		
 		assertEquals(5, targetView.getModel().getNodeCount());
@@ -154,7 +157,7 @@ public class ClipboardImplTest {
 		Set<CyNode> nodes = Collections.emptySet();
 		Set<CyEdge> edges = new HashSet<>(Arrays.asList(new CyEdge[] { e1, e2, e3 }));
 		
-		ClipboardImpl clipboard = new ClipboardImpl(sourceView, nodes, edges, false, lexicon, serviceRegistrar);
+		ClipboardImpl clipboard = new ClipboardImpl(sourceView, nodes, edges, false, lexicon, annotationFactories, serviceRegistrar);
 		clipboard.paste(targetView, 0, 0);
 		
 		assertEquals(3, targetView.getModel().getNodeCount()); // Nodes of copied edges also copied!
@@ -174,7 +177,7 @@ public class ClipboardImplTest {
 		Set<CyNode> nodes = Collections.emptySet();
 		Set<CyEdge> edges = new HashSet<>(Arrays.asList(new CyEdge[] { e1, e2, e3 }));
 		
-		ClipboardImpl clipboard = new ClipboardImpl(sourceView, nodes, edges, false, lexicon, serviceRegistrar);
+		ClipboardImpl clipboard = new ClipboardImpl(sourceView, nodes, edges, false, lexicon, annotationFactories, serviceRegistrar);
 		clipboard.paste(targetView, 0, 0);
 		
 		assertEquals(3, targetView.getModel().getNodeCount()); // Nodes of copied edges also copied!
@@ -194,7 +197,7 @@ public class ClipboardImplTest {
 		Set<CyNode> nodes = Collections.emptySet();
 		Set<CyEdge> edges = new HashSet<>(Arrays.asList(new CyEdge[] { e1, e2, e3 }));
 		
-		ClipboardImpl clipboard = new ClipboardImpl(sourceView, nodes, edges, false, lexicon, serviceRegistrar);
+		ClipboardImpl clipboard = new ClipboardImpl(sourceView, nodes, edges, false, lexicon, annotationFactories, serviceRegistrar);
 		clipboard.paste(targetView, 0, 0);
 		
 		assertEquals(3, targetView.getModel().getNodeCount()); // Nodes of copied edges also copied!
@@ -220,7 +223,7 @@ public class ClipboardImplTest {
 		Set<CyNode> nodes = new HashSet<>(Arrays.asList(new CyNode[] { n1, n2 }));
 		Set<CyEdge> edges = new HashSet<>(Arrays.asList(new CyEdge[] { e1, e3 }));
 		
-		ClipboardImpl clipboard = new ClipboardImpl(sourceView, nodes, edges, false, lexicon, serviceRegistrar);
+		ClipboardImpl clipboard = new ClipboardImpl(sourceView, nodes, edges, false, lexicon, annotationFactories, serviceRegistrar);
 		clipboard.paste(targetView, 0, 0);
 		
 		assertEquals(3, targetView.getModel().getNodeCount()); // Nodes of copied edges also copied!
@@ -239,7 +242,7 @@ public class ClipboardImplTest {
 		Set<CyNode> nodes = new HashSet<>(Arrays.asList(new CyNode[] { n1, n2 }));
 		Set<CyEdge> edges = new HashSet<>(Arrays.asList(new CyEdge[] { e1, e3 }));
 		
-		ClipboardImpl clipboard = new ClipboardImpl(sourceView, nodes, edges, false, lexicon, serviceRegistrar);
+		ClipboardImpl clipboard = new ClipboardImpl(sourceView, nodes, edges, false, lexicon, annotationFactories, serviceRegistrar);
 		clipboard.paste(targetView, 0, 0);
 		
 		assertEquals(3, targetView.getModel().getNodeCount()); // Nodes of copied edges also copied!
@@ -258,7 +261,7 @@ public class ClipboardImplTest {
 		Set<CyNode> nodes = new HashSet<>(Arrays.asList(new CyNode[] { n1, n2 }));
 		Set<CyEdge> edges = new HashSet<>(Arrays.asList(new CyEdge[] { e1, e3 }));
 		
-		ClipboardImpl clipboard = new ClipboardImpl(sourceView, nodes, edges, false, lexicon, serviceRegistrar);
+		ClipboardImpl clipboard = new ClipboardImpl(sourceView, nodes, edges, false, lexicon, annotationFactories, serviceRegistrar);
 		clipboard.paste(targetView, 0, 0);
 		
 		assertEquals(5, targetView.getModel().getNodeCount()); // Nodes of copied edges also copied!

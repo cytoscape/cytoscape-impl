@@ -1,6 +1,7 @@
 package org.cytoscape.editor.internal;
 
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractEdgeViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
@@ -12,7 +13,7 @@ import org.cytoscape.work.TaskIterator;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -33,13 +34,15 @@ import org.cytoscape.work.TaskIterator;
 public class CopyEdgeTaskFactory extends AbstractEdgeViewTaskFactory {
 	
 	private final ClipboardManagerImpl clipMgr;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public CopyEdgeTaskFactory(final ClipboardManagerImpl clipboardMgr) {
+	public CopyEdgeTaskFactory(ClipboardManagerImpl clipboardMgr, CyServiceRegistrar serviceRegistrar) {
 		this.clipMgr = clipboardMgr;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(View<CyEdge> edgeView, CyNetworkView networkView) {
-		return new TaskIterator(new CopyTask(networkView, edgeView, clipMgr));
+		return new TaskIterator(new CopyTask(networkView, edgeView, clipMgr, serviceRegistrar));
 	}
 }

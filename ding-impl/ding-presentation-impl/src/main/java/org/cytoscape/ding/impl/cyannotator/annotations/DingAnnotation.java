@@ -85,10 +85,6 @@ public interface DingAnnotation extends Annotation {
 	
 	void removePropertyChangeListener(String propertyName, PropertyChangeListener listener);
 
-	double getX();
-	
-	double getY();
-
 	double getRotation();
 	
 	/** Set location in node coordinates */

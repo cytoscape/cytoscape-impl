@@ -18,6 +18,7 @@ import java.util.UUID;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.graph.render.stateful.NodeDetails;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.annotations.Annotation;
@@ -262,15 +263,18 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		}
 	}
 
+	/**
+	 * This is only here for backwards compatibility, do not use!
+	 */
 	@Override
 	@Deprecated
 	public void setTarget(CyNode target) {
-		// This is only here for backwards compatibility, do not use
 		var nv = re.getViewModelSnapshot().getNodeView(target);
 		setTarget(nv);
 	}
 
-	public void setTarget(View<CyNode> target) {
+	@Override
+	public void setTarget(View<? extends CyIdentifiable> target) {
 		if (!Objects.equals(this.target, target)) {
 			this.target = target;
 			update();

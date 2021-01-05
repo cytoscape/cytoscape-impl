@@ -1,6 +1,7 @@
 package org.cytoscape.editor.internal;
 
 import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNodeViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
@@ -12,7 +13,7 @@ import org.cytoscape.work.TaskIterator;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2020 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -31,15 +32,17 @@ import org.cytoscape.work.TaskIterator;
  */
 
 public class CopyNodeTaskFactory extends AbstractNodeViewTaskFactory {
-	
-	private final ClipboardManagerImpl clipMgr;
 
-	public CopyNodeTaskFactory(final ClipboardManagerImpl clipboardMgr) {
+	private final ClipboardManagerImpl clipMgr;
+	private final CyServiceRegistrar serviceRegistrar;
+
+	public CopyNodeTaskFactory(ClipboardManagerImpl clipboardMgr, CyServiceRegistrar serviceRegistrar) {
 		this.clipMgr = clipboardMgr;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView networkView) {
-		return new TaskIterator(new CopyTask(networkView, nodeView, clipMgr));
+		return new TaskIterator(new CopyTask(networkView, nodeView, clipMgr, serviceRegistrar));
 	}
 }
