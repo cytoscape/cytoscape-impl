@@ -262,14 +262,17 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		}
 	}
 
+	/**
+	 * This is only here for backwards compatibility, do not use!
+	 */
 	@Override
 	@Deprecated
 	public void setTarget(CyNode target) {
-		// This is only here for backwards compatibility, do not use
 		var nv = re.getViewModelSnapshot().getNodeView(target);
 		setTarget(nv);
 	}
 
+	@Override
 	public void setTarget(View<CyNode> target) {
 		if (!Objects.equals(this.target, target)) {
 			this.target = target;

@@ -312,47 +312,7 @@ public class ClipboardImpl {
 		
 		// Pass 7: Paste ArrowAnnotations
 		for (var a : arrowAnnotations) {
-			var na = cloneAnnotation(targetView, a, a.getX() - xOffset, a.getY() - yOffset);
-			
-			if (na instanceof ArrowAnnotation) {
-				var newArrow = (ArrowAnnotation) na;
-				
-				// Reassign source
-				var src = ((ArrowAnnotation) a).getSource();
-				
-				if (src != null) {
-					if (newAnnotationMap.containsKey(src))
-						src = newAnnotationMap.get(src); // The source is a pasted annotation
-					else if (!targetView.equals(sourceView)) 
-						src = null; // Pasting to a different view, but the source has not been copied
-					// TODO tests if this is a valid annotation
-				}
-				
-				newArrow.setSource(src);
-				
-				// Reassign target
-				var tgt = ((ArrowAnnotation) a).getTarget();
-				
-				if (tgt instanceof Annotation) {
-					if (newAnnotationMap.containsKey(tgt))
-						tgt = newAnnotationMap.get(tgt); // The source is a pasted node
-					else if (!targetView.equals(sourceView))
-						tgt = null; // Pasting to a different view, but the target annotation has not been copied
-					
-					newArrow.setTarget((Annotation) tgt);
-				} else if (tgt instanceof CyNode) {
-					if (newNodeMap.containsKey(tgt))
-						tgt = newNodeMap.get(tgt); // The source is a pasted node
-					else if (!targetView.equals(sourceView))
-						tgt = null; // Pasting to a different view, but the target node has not been copied
-					
-					newArrow.setTarget((CyNode) tgt);
-				} else if (tgt instanceof Point2D) {
-					newArrow.setTarget((Point2D) tgt);
-				}
-				
-				annotationMgr.addAnnotation(na);
-			}
+			pasteArrowAnnotation(targetView, annotationMgr, a, newAnnotationMap, newNodeMap, xOffset, yOffset);
 		}
 
 		return pastedObjects;
@@ -504,15 +464,100 @@ public class ClipboardImpl {
 		return newNode;
 	}
 	
-	private Annotation pasteAnnotation(CyNetworkView targetView, AnnotationManager annotationMgr, Annotation a,
-			double x, double y) {
+	private Annotation pasteAnnotation(
+			CyNetworkView targetView,
+			AnnotationManager annotationMgr,
+			Annotation a,
+			double x,
+			double y
+	) {
 		var na = cloneAnnotation(targetView, a, x, y);
-		System.out.println("*** " + na);
 		
 		if (na != null)
 			annotationMgr.addAnnotation(na);
 		
 		return na;
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private ArrowAnnotation pasteArrowAnnotation(
+			CyNetworkView targetView,
+			AnnotationManager annotationMgr,
+			ArrowAnnotation a,
+			HashMap<Annotation, Annotation> newAnnotationMap,
+			HashMap<CyNode, CyNode> newNodeMap,
+			double xOffset,
+			double yOffset
+	) {
+		var na = cloneAnnotation(targetView, a, a.getX() - xOffset, a.getY() - yOffset);
+		
+		if (na instanceof ArrowAnnotation) {
+			var newArrow = (ArrowAnnotation) na;
+			
+			// Reassign source
+			var src = ((ArrowAnnotation) a).getSource();
+			
+			if (src != null) {
+				if (newAnnotationMap.containsKey(src))
+					src = newAnnotationMap.get(src); // The source is a pasted annotation
+				else if (!targetView.equals(sourceView)) 
+					src = null; // Pasting to a different view, but the source has not been copied
+			}
+			
+			if (src == null)
+				return null;
+			
+			newArrow.setSource(src);
+			
+			// Reassign target
+			var tgt = ((ArrowAnnotation) a).getTarget();
+
+			if (tgt instanceof Annotation) {
+				if (newAnnotationMap.containsKey(tgt))
+					tgt = newAnnotationMap.get(tgt); // The source is a pasted node
+				else if (!targetView.equals(sourceView))
+					tgt = null; // Pasting to a different view, but the target annotation has not been copied
+				
+				newArrow.setTarget((Annotation) tgt);
+			} else if (tgt instanceof View) {
+				if (newNodeMap.containsKey(((View<?>) tgt).getModel())) {
+					// The source is a pasted node
+					var node = newNodeMap.get(((View<?>) tgt).getModel());
+					tgt = targetView.getNodeView(node);
+				} else if (!targetView.equals(sourceView)) {
+					var sourceNetwork = sourceView.getModel();
+					var sourceRoot = ((CySubNetwork) sourceNetwork).getRootNetwork();
+
+					var targetNetwork = (CySubNetwork) targetView.getModel();
+					var targetRoot = targetNetwork.getRootNetwork();
+					
+					if (sourceRoot.equals(targetRoot)) {
+						// Different view that belongs to the same root network
+						if (((View<?>) tgt).getModel() instanceof CyNode) {
+							var node = ((View<CyNode>) tgt).getModel();
+							tgt = targetView.getNodeView(node);
+						} else {
+							tgt = null; // View<CyEdge> not supported!
+						}
+					} else {
+						// Different view of another root network, but the target node has not been copied
+						tgt = null;
+					}
+				}
+				
+				newArrow.setTarget((View) tgt);
+			} else if (tgt instanceof Point2D) {
+				newArrow.setTarget((Point2D) tgt);
+			}
+			
+			if (newArrow.getTarget() != null) {
+				annotationMgr.addAnnotation(newArrow);
+			
+				return newArrow;
+			}
+		}
+		
+		return null;
 	}
 
 	private void copyRows(Map<CyRow, CyRow> rowMap) {
