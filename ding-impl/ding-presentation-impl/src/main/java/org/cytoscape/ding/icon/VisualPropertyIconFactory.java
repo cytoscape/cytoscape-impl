@@ -13,6 +13,7 @@ import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Bend;
+import org.cytoscape.view.presentation.property.values.EdgeStacking;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.presentation.property.values.ObjectPosition;
@@ -23,7 +24,7 @@ import org.cytoscape.view.presentation.property.values.ObjectPosition;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2020 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -87,6 +88,8 @@ public final class VisualPropertyIconFactory {
 				icon = new ArrowIcon(dShape.getShape(), w, h, dShape.getDisplayName());
 		} else if (value instanceof Bend) {
 			icon = new EdgeBendIcon((Bend) value, w, h, value.toString());
+		} else if (value instanceof EdgeStacking) {
+			icon = new EdgeStackingIcon((EdgeStacking) value, w, h, value.toString());
 		} else {
 			// If not found, use return value of toString() as icon.
 			icon = new TextIcon(value, w, h, value.toString());
