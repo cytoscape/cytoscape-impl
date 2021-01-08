@@ -1,22 +1,7 @@
 package org.cytoscape.ding.impl;
 
-import static java.awt.event.KeyEvent.VK_BACK_SPACE;
-import static java.awt.event.KeyEvent.VK_DELETE;
-import static java.awt.event.KeyEvent.VK_DOWN;
-import static java.awt.event.KeyEvent.VK_ESCAPE;
-import static java.awt.event.KeyEvent.VK_LEFT;
-import static java.awt.event.KeyEvent.VK_RIGHT;
-import static java.awt.event.KeyEvent.VK_UP;
-import static org.cytoscape.ding.internal.util.ViewUtil.getResizeCursor;
-import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
-import static org.cytoscape.ding.internal.util.ViewUtil.isAdditiveSelect;
-import static org.cytoscape.ding.internal.util.ViewUtil.isControlOrMetaDown;
-import static org.cytoscape.ding.internal.util.ViewUtil.isDoubleLeftClick;
-import static org.cytoscape.ding.internal.util.ViewUtil.isDragSelectionKeyDown;
-import static org.cytoscape.ding.internal.util.ViewUtil.isLeftClick;
-import static org.cytoscape.ding.internal.util.ViewUtil.isLeftMouse;
-import static org.cytoscape.ding.internal.util.ViewUtil.isSingleLeftClick;
-import static org.cytoscape.ding.internal.util.ViewUtil.isSingleRightClick;
+import static java.awt.event.KeyEvent.*;
+import static org.cytoscape.ding.internal.util.ViewUtil.*;
 
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
@@ -25,7 +10,6 @@ import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -171,11 +155,11 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		addMouseListener(orderedMouseAdapter);
 		addMouseMotionListener(orderedMouseAdapter);
 		addKeyListener(orderedMouseAdapter.get(CanvasKeyListener.class));
-        addMouseWheelListener(new CanvasMouseWheelListener());
-        setFocusable(true); // key listener needs the focus
-        
-        this.popupMenuHelper = new PopupMenuHelper(re, InputHandlerGlassPane.this, registrar);
-        this.progressBar = addProgressBar();
+		addMouseWheelListener(new CanvasMouseWheelListener());
+		setFocusable(true); // key listener needs the focus
+		
+		this.popupMenuHelper = new PopupMenuHelper(re, InputHandlerGlassPane.this, registrar);
+		this.progressBar = addProgressBar();
 	}
 	
 	@Override
@@ -203,9 +187,9 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		panel.setLayout(new FlowLayout(FlowLayout.LEFT));
 		panel.add(progressBar);
 		
-        setLayout(new BorderLayout());
-        add(panel, BorderLayout.SOUTH);
-        return progressBar;
+		setLayout(new BorderLayout());
+		add(panel, BorderLayout.SOUTH);
+		return progressBar;
 	}
 	
 	/**
@@ -370,7 +354,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		public void keyPressed(KeyEvent e) {
 			// Clear the label selection if it is enabled
 			if (labelSelectionEnabled()) 
-			   get(SelecionClickAndDragListener.class).resetLabelSelection();
+				get(SelecionClickAndDragListener.class).resetLabelSelection();
 			
 			int code = e.getKeyCode();
 			
@@ -558,7 +542,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		public void mouseWheelMoved(MouseWheelEvent e) {
 			// Clear the label selection if it is enabled
 			if (labelSelectionEnabled()) 
-			   get(SelecionClickAndDragListener.class).resetLabelSelection();
+				get(SelecionClickAndDragListener.class).resetLabelSelection();
 			
 			re.zoom(e.getWheelRotation());
 			re.updateView(UpdateType.ALL_FULL);
@@ -729,27 +713,27 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			coords[0] = startPoint.getX();
 			coords[1] = startPoint.getY();
 			re.getTransform().xformNodeToImageCoords(coords);
-	        double x1 = coords[0];
-	        double y1 = coords[1];
-	        
-	        coords[0] = endPoint.getX();
+			double x1 = coords[0];
+			double y1 = coords[1];
+			
+			coords[0] = endPoint.getX();
 			coords[1] = endPoint.getY();
 			re.getTransform().xformNodeToImageCoords(coords);
-	        double x2 = coords[0];
-	        double y2 = coords[1];
-	        
-	        double offset = 5;
-	        
-	        double lineLen = Math.sqrt((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1));
-	        if(lineLen == 0)
-	            lineLen = 1;
+			double x2 = coords[0];
+			double y2 = coords[1];
 
-	        y2 += ((y1 - y2) / lineLen) * offset;
-	        x2 += ((x1 - x2) / lineLen) * offset;
+			double offset = 5;
 
-	        Graphics2D g = (Graphics2D) graphics.create();
-	        g.setColor(Color.BLACK);
-	        g.drawLine(((int) x1) - 1, ((int) y1) - 1, ((int) x2) + 1, ((int) y2) + 1);
+			double lineLen = Math.sqrt((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1));
+			if (lineLen == 0)
+				lineLen = 1;
+
+			y2 += ((y1 - y2) / lineLen) * offset;
+			x2 += ((x1 - x2) / lineLen) * offset;
+
+			Graphics2D g = (Graphics2D) graphics.create();
+			g.setColor(Color.BLACK);
+			g.drawLine(((int) x1) - 1, ((int) y1) - 1, ((int) x2) + 1, ((int) y2) + 1);
 		}
 		
 		private void createEdge(View<CyNode> sourceNodeView, View<CyNode> targetNodeView) {
@@ -813,7 +797,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		
 		private DLabelSelection selectedLabel;
 		
-    private final Cursor rotateCursor = createRotateCursor();
+		private final Cursor rotateCursor = createRotateCursor();
 		
 		@Override
 		public void mousePressed(MouseEvent e) {
@@ -845,9 +829,9 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			if(labelSelectionEnabled()) {   // if label drag feature is enabled
 				selectedLabel = picker.getNodeLabelAt(e.getPoint());
 				if(selectedLabel != null) {
-          if (isControlOrMetaDown(e)) {
-			      changeCursor(rotateCursor);
-          }
+					if (isControlOrMetaDown(e)) {
+						changeCursor(rotateCursor);
+					}
 					toggleSelection(selectedLabel.getNode(), CyNode.class, Toggle.SELECT);
 					repaint();
 					return true;
@@ -860,12 +844,12 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				
 				AnchorLocation anchor = annotationSelection.overAnchor(e.getX(), e.getY());
 				if(!annotationSelection.isEmpty() && anchor != null) {
-          if (isControlOrMetaDown(e)) {
-            changeCursor(rotateCursor);
-            annotationSelection.setRotations();
-          } else {
-					  mousePressedHandleAnnotationAnchor(anchor, e);
-          }
+					if (isControlOrMetaDown(e)) {
+						changeCursor(rotateCursor);
+						annotationSelection.setRotations();
+					} else {
+						mousePressedHandleAnnotationAnchor(anchor, e);
+					}
 					return true;
 				}
 				
@@ -876,10 +860,10 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 						deselectAllNodesAndEdges();
 					}
 					annotationSelection.setMovingStartOffset(e.getPoint());
-          if (isControlOrMetaDown(e)) {
-            changeCursor(rotateCursor);
-            annotationSelection.setRotations();
-          }
+					if (isControlOrMetaDown(e)) {
+						changeCursor(rotateCursor);
+						annotationSelection.setRotations();
+					}
 					return true;
 				}
 			}
@@ -1036,34 +1020,32 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			if (selectedLabel != null) {
 				View<CyNode> mutableNode = re.getViewModelSnapshot().getMutableNodeView(selectedLabel.getNode().getSUID().longValue());
 
-        if (isControlOrMetaDown(e)) {
-				  // handle Undo
-				  NodeLabelChangeEdit undoEntry = new NodeLabelChangeEdit(registrar, selectedLabel.getPreviousPosition(),  
-                                                                  selectedLabel.getPreviousRotation(), re.getViewModel(), 
-                                                                  mutableNode.getModel().getSUID(), "Rotate Label");
-				  mutableNode.setLockedValue(DVisualLexicon.NODE_LABEL_ROTATION, Math.toDegrees(selectedLabel.getCurrentRotation()));
-				  undoEntry.post(selectedLabel.getPreviousPosition(), selectedLabel.getCurrentRotation());
-        } else {
-				  NodeLabelChangeEdit undoEntry = new NodeLabelChangeEdit(registrar, selectedLabel.getPreviousPosition(),  
-                                                                  selectedLabel.getPreviousRotation(), re.getViewModel(), 
-                                                                  mutableNode.getModel().getSUID(), "Move Label");
-				  mutableNode.setLockedValue(DVisualLexicon.NODE_LABEL_ROTATION, Math.toDegrees(selectedLabel.getCurrentRotation()));
-				  double offsetX = e.getX() - mousePressedPoint.getX(); //  selectedLabel.getOriginalX();
-				  double offsetY = e.getY() - mousePressedPoint.getY(); //selectedLabel.getOriginalY();
-				
-				  if(((int)offsetX) != 0 || ((int)offsetY) != 0) {
-				  	double scaleFactor = re.getTransform().getScaleFactor();
-				
-				  	ObjectPosition position = new ObjectPosition(mutableNode.getVisualProperty(DVisualLexicon.NODE_LABEL_POSITION));
-				  	position.setOffsetX(position.getOffsetX() + offsetX / scaleFactor);
-				  	position.setOffsetY(position.getOffsetY() + offsetY / scaleFactor);
-
-				  	mutableNode.setLockedValue(DVisualLexicon.NODE_LABEL_POSITION, position);
-					
-				  	undoEntry.post(position, selectedLabel.getPreviousRotation());
-          }
+				if (isControlOrMetaDown(e)) {
+					// handle Undo
+					NodeLabelChangeEdit undoEntry = new NodeLabelChangeEdit(registrar, selectedLabel.getPreviousPosition(),
+							selectedLabel.getPreviousRotation(), re.getViewModel(), mutableNode.getModel().getSUID(), "Rotate Label");
+					mutableNode.setLockedValue(DVisualLexicon.NODE_LABEL_ROTATION, Math.toDegrees(selectedLabel.getCurrentRotation()));
+					undoEntry.post(selectedLabel.getPreviousPosition(), selectedLabel.getCurrentRotation());
+				} else {
+					NodeLabelChangeEdit undoEntry = new NodeLabelChangeEdit(registrar, selectedLabel.getPreviousPosition(),
+							selectedLabel.getPreviousRotation(), re.getViewModel(), mutableNode.getModel().getSUID(), "Move Label");
+					mutableNode.setLockedValue(DVisualLexicon.NODE_LABEL_ROTATION, Math.toDegrees(selectedLabel.getCurrentRotation()));
+					double offsetX = e.getX() - mousePressedPoint.getX(); // selectedLabel.getOriginalX();
+					double offsetY = e.getY() - mousePressedPoint.getY(); // selectedLabel.getOriginalY();
+	
+					if (((int) offsetX) != 0 || ((int) offsetY) != 0) {
+						double scaleFactor = re.getTransform().getScaleFactor();
+	
+						ObjectPosition position = new ObjectPosition(mutableNode.getVisualProperty(DVisualLexicon.NODE_LABEL_POSITION));
+						position.setOffsetX(position.getOffsetX() + offsetX / scaleFactor);
+						position.setOffsetY(position.getOffsetY() + offsetY / scaleFactor);
+	
+						mutableNode.setLockedValue(DVisualLexicon.NODE_LABEL_POSITION, position);
+	
+						undoEntry.post(position, selectedLabel.getPreviousRotation());
+					}
 				}
-				
+					
 				if(!selectedLabel.getNodeWasSelected()) {
 					toggleSelection(selectedLabel.getNode(), CyNode.class, Toggle.DESELECT);
 				}
@@ -1115,19 +1097,19 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				return;
 			
 			if (selectedLabel != null) {				
-        // TODO: handle rotation, if enabled
-        if (isControlOrMetaDown(e)) {
-          selectedLabel.adjustAngle(mousePressedPoint.getX(), mousePressedPoint.getY(), e.getX(), e.getY());
-        } else {
-				  selectedLabel.moveRectangle(e.getX() - (int) mousePressedPoint.getX(), e.getY() - (int) mousePressedPoint.getY());
-        }
+				// TODO: handle rotation, if enabled
+				if (isControlOrMetaDown(e)) {
+					selectedLabel.adjustAngle(mousePressedPoint.getX(), mousePressedPoint.getY(), e.getX(), e.getY());
+				} else {
+					selectedLabel.moveRectangle(e.getX() - (int) mousePressedPoint.getX(),
+							e.getY() - (int) mousePressedPoint.getY());
+				}
 				repaint(); // repaint the glass pane
 				return;
 			}
 				
 			var selectedNodes = re.getViewModelSnapshot().getTrackedNodes(DingNetworkViewFactory.SELECTED_NODES);
 
-//			var anchorsToMove = re.getBendStore().getSelectedHandles();
 			var annotationSelection = cyAnnotator.getAnnotationSelection();
 			
 			if (!annotationSelection.isEmpty()) {
@@ -1141,7 +1123,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 					return;
 				} if (isControlOrMetaDown(e)) {
 					annotationSelection.rotateSelection(e.getPoint());
-        } else {
+				} else {
 					if (annotationMovingEdit == null)
 						annotationMovingEdit = new AnnotationEdit("Move Annotation", cyAnnotator, registrar);
 
@@ -1767,10 +1749,9 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		label.setFont(registrar.getService(IconManager.class).getIconFont(150));
 		label.paint(graphics);
 		graphics.dispose();
-    Image newImage = image.getScaledInstance(24, 24, Image.SCALE_DEFAULT);
+		Image newImage = image.getScaledInstance(24, 24, Image.SCALE_DEFAULT);
 		return Toolkit.getDefaultToolkit().createCustomCursor(newImage, new Point(0, 0), "custom:" + (int) icon.charAt(0));
-  }
-	
+	}
 	
 	private <T extends CyIdentifiable> void select(Collection<View<T>> nodesOrEdgeViews, Class<T> type, boolean selected) {
 		if (nodesOrEdgeViews == null || nodesOrEdgeViews.isEmpty())
