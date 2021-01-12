@@ -41,6 +41,7 @@ import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 
 import org.cytoscape.ding.DVisualLexicon;
+import org.cytoscape.ding.impl.DRenderingEngine.Panner;
 import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.AnchorLocation;
@@ -458,10 +459,10 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			
 			float move = getMoveAmountNodeUnit(k);
 			switch(k.getKeyCode()) {
-				case VK_UP:    re.pan(0,  move); break;
-				case VK_DOWN:  re.pan(0, -move); break;
-				case VK_LEFT:  re.pan( move, 0); break;
-				case VK_RIGHT: re.pan(-move, 0); break;
+				case VK_UP:    re.setCenter(0,  move); break;
+				case VK_DOWN:  re.setCenter(0, -move); break;
+				case VK_LEFT:  re.setCenter( move, 0); break;
+				case VK_RIGHT: re.setCenter(-move, 0); break;
 			}
 		}
 
@@ -1517,14 +1518,16 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		
 		private Point mousePressedPoint;
 		private ViewChangeEdit undoPanEdit;
-		private boolean actuallyPanned = false;
+		
+		private Panner panner = null;
 		
 		@Override
 		public void mousePressed(MouseEvent e) {
 			if(!isSingleLeftClick(e))
 				return;
 			
-			actuallyPanned = false;
+			panner = re.startPan();
+			
 			changeCursor(panCursor);
 			mousePressedPoint = e.getPoint();
 			e.consume();
@@ -1533,7 +1536,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		@Override
 		public void mouseDragged(MouseEvent e) {
 			if(mousePressedPoint != null) {
-				actuallyPanned = true;
 				if(undoPanEdit == null) {
 					// Save state on start of drag, that way we don't post an undo edit if the user just clicks.
 					// Pass null, don't save node state, just the center location of the canvas.
@@ -1558,8 +1560,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				double deltaX = oldX - newX;
 				double deltaY = oldY - newY;
 				
-				re.pan(deltaX, deltaY);
-				re.updateView(UpdateType.ALL_FAST);
+				panner.continuePan(deltaX, deltaY);
 			}
 		}
 		
@@ -1572,8 +1573,8 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			mousePressedPoint = null;
 			undoPanEdit = null;
 			
-			if(actuallyPanned)
-				re.updateView(UpdateType.ALL_FULL);
+			panner.endPan();
+			panner = null;
 		}
 		
 		private Cursor createPanCursor() {

@@ -44,8 +44,8 @@ public abstract class RenderComponent extends JComponent {
 		
 		// MKTODO This is a hack, we don't know what the size of the buffer should be until setBounds() is called.
 		// Unfortunately its possible for fitContent() to be called before setBounds() is called.
-		fastCanvas = new CompositeImageCanvas(re, lod.faster(), 1, 1);
 		slowCanvas = new CompositeImageCanvas(re, lod, 1, 1);
+		fastCanvas = new CompositeFastImageCanvas(re, lod.faster(), 1, 1, slowCanvas);
 	}
 	
 	
@@ -172,17 +172,22 @@ public abstract class RenderComponent extends JComponent {
 				slowFuture = null;
 			}
 			
-			// fast frame right now
-			if(updateType == UpdateType.JUST_ANNOTATIONS) {
-				var fastPm = debugPm(updateType, null);
-				fastFuture = fastCanvas.paintJustAnnotations(fastPm);
-			} else if(updateType == UpdateType.JUST_EDGES) {
-				var fastPm = debugPm(updateType, null);
-				fastFuture = fastCanvas.paintJustEdges(fastPm);
-			} else {
-				var fastPm = debugPm(UpdateType.ALL_FAST, null);
-				fastFuture = fastCanvas.paint(fastPm);
+			switch(updateType) {
+				case JUST_ANNOTATIONS:
+					fastFuture = fastCanvas.paintJustAnnotations(debugPm(updateType));
+					break;
+				case JUST_EDGES:
+					fastFuture = fastCanvas.paintJustEdges(debugPm(updateType));
+					break;
+				case INTERACTIVE_PAN:
+					fastFuture = fastCanvas.paintInteractivePan(debugPm(updateType));
+					break;
+				case ALL_FAST: 
+				case ALL_FULL:
+					fastFuture = fastCanvas.paint(debugPm(UpdateType.ALL_FAST));
+					break;
 			}
+			
 			fastFuture.join();
 			lastFastRenderFlags = fastFuture.getLastRenderDetail();
 			
@@ -206,6 +211,9 @@ public abstract class RenderComponent extends JComponent {
 	protected void setRenderDetailFlags(RenderDetailFlags flags) {
 	}
 	
+	private ProgressMonitor debugPm(UpdateType updateType) {
+		return debugPm(updateType, null);
+	}
 	
 	private ProgressMonitor debugPm(UpdateType updateType, ProgressMonitor pm) {
 		DebugProgressMonitorFactory factory = re.getDebugProgressMonitorFactory();

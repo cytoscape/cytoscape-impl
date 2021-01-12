@@ -98,10 +98,11 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	protected static int DEF_SNAPSHOT_SIZE = 400;
 	
 	public enum UpdateType {
-		ALL_FAST, // Render a fast frame
-		ALL_FULL,  // Render a fast frame, then start rendering a full frame async
+		ALL_FAST, // Render a fast frame only
+		ALL_FULL, // Render a fast frame, then start rendering a full frame async
 		JUST_ANNOTATIONS, // Just render annotations fast
-		JUST_EDGES
+		JUST_EDGES, // for animated edges
+		INTERACTIVE_PAN, // for interactive mouse panning
 	}
 	
 	private final CyServiceRegistrar serviceRegistrar;
@@ -507,21 +508,48 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 	
 	
-	public void pan(double deltaX, double deltaY) {
-		synchronized (dingLock) {
-			NetworkTransform transform = renderComponent.getTransform();
-			double x = transform.getCenterX() + deltaX;
-			double y = transform.getCenterY() + deltaY;
-			setCenter(x, y);
-		}
+	public Panner startPan() {
+		return new Panner();
 	}
 	
+	public class Panner {
+		private boolean changed = false;
+		
+		public void continuePan(double dx, double dy) {
+			synchronized (dingLock) { // MKTODO is this necessary?
+				changed = true;
+			
+				NetworkTransform transform = renderComponent.getTransform();
+				double x = transform.getCenterX() + dx;
+				double y = transform.getCenterY() + dy;
+				renderComponent.setCenter(x, y);
+				
+				updateView(UpdateType.INTERACTIVE_PAN);
+			}
+		}
+		
+		public void endPan() {
+			if(changed) {
+				updateCenterVPs();
+				updateView(UpdateType.ALL_FULL);
+			}
+		} 
+	}
+	
+	
+	/**
+	 * Don't use this method to perform continuous mouse pan motions. 
+	 * Only use to set the center as a one-time operation.
+	 */
 	public void setCenter(double x, double y) {
 		synchronized (dingLock) {
 			renderComponent.setCenter(x,y);
-			
-			// Update view model
-			// TODO: don't do it from here?
+			updateCenterVPs();
+		}
+	}
+
+	private void updateCenterVPs() {
+		synchronized (dingLock) {
 			getViewModel().batch(netView -> {
 				NetworkTransform transform = renderComponent.getTransform();
 				netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, transform.getCenterX());
@@ -529,7 +557,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			}, false); // don't set the dirty flag
 		}
 	}
-
+	
 	
 	@Override
 	public void handleFitSelected() {

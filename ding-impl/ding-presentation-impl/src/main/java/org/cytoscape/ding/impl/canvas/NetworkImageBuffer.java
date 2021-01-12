@@ -2,7 +2,8 @@ package org.cytoscape.ding.impl.canvas;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Image;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 
 
@@ -16,7 +17,7 @@ public class NetworkImageBuffer implements ImageGraphicsProvider {
 	private static final Color TRANSPARENT_COLOR = new Color(0,0,0,0);
 	
 	private NetworkTransform transform;
-	private Image image;
+	private BufferedImage image;
 	
 	public NetworkImageBuffer(NetworkTransform transform) {
 		this.transform = transform;
@@ -39,12 +40,44 @@ public class NetworkImageBuffer implements ImageGraphicsProvider {
 	}
 	
 	@Override
-	public synchronized Image getImage() {
+	public synchronized BufferedImage getImage() {
 		if(image == null) {
-			image = new BufferedImage(transform.getWidth(), transform.getHeight(), BufferedImage.TYPE_INT_ARGB);
+			image  = new BufferedImage(transform.getWidth(), transform.getHeight(), BufferedImage.TYPE_INT_ARGB);
 		}
 		return image;
 	}
+	
+	
+	public synchronized void bufferTransform(NetworkTransform.Snapshot ts, ImageGraphicsProvider slowEdgeCanvas) {
+		if(image == null)
+			return;
+		
+		clear((Graphics2D)image.getGraphics());
+		
+		// MKTODO this will only work on pan, how to make zoom work also????
+		double[] coords = new double[2];
+		
+		coords[0] = ts.x;
+		coords[1] = ts.y;
+		transform.xformNodeToImageCoords(coords);
+		double oldX = coords[0];
+		double oldY = coords[1];
+		
+		coords[0] = transform.getCenterX();
+		coords[1] = transform.getCenterY();
+		transform.xformNodeToImageCoords(coords);
+		double newX = coords[0];
+		double newY = coords[1];
+		
+		var dx = oldX - newX;
+		var dy = oldY - newY;
+		
+		AffineTransform t = new AffineTransform();
+		t.translate(dx, dy);
+		AffineTransformOp op = new AffineTransformOp(t, AffineTransformOp.TYPE_BILINEAR);
+		op.filter((BufferedImage)slowEdgeCanvas.getImage(), image);
+	}
+	
 	
 	/*
 	 * Returns the Graphics2D object directly from the image buffer, the AffineTransform has not 

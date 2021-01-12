@@ -78,6 +78,10 @@ public class CompositeImageCanvas {
 		return new NetworkImageBuffer(transform);
 	}
 	
+	public EdgeCanvas<ImageGraphicsProvider> getEdgeCanvas() {
+		return edgeCanvas;
+	}
+	
 	// Kind of hackey, we don't want the annotation selection to show up in the brids-eye-view
 	public void showAnnotationSelection(boolean show) {
 		annotationSelectionCanvas.show(show);
@@ -145,7 +149,6 @@ public class CompositeImageCanvas {
 	public void setScaleFactor(double scaleFactor) {
 		transform.setScaleFactor(scaleFactor);
 	}
-	
 
 	public RenderDetailFlags getRenderDetailFlags() {
 		var snapshot = re.getViewModelSnapshot();
@@ -161,25 +164,12 @@ public class CompositeImageCanvas {
 		return composite;
 	}
 	
-	/**
-	 * Starts painting on a single separate thread. 
-	 * Each layer of the canvas is painted sequentially in order. 
-	 * Returns an ImageFuture that represents the result of the painting.
-	 * To get the Image buffer from the ImageFuture call future.join().
-	 */
-	private ImageFuture paint(ProgressMonitor pm, Predicate<DingCanvas<?>> layers) {
-		var pm2 = ProgressMonitor.notNull(pm);
-		var flags = getRenderDetailFlags();
-		var future = CompletableFuture.supplyAsync(() -> paintImpl(pm2, flags, layers), executor);
-		return new ImageFuture(future, flags, pm2);
-	}
-	
 	public ImageFuture paint(ProgressMonitor pm) {
-		return paint(pm, null);
+		return paintFuture(pm, null);
 	}
 	
 	public ImageFuture paintJustAnnotations(ProgressMonitor pm) {
-		return paint(pm, c -> 
+		return paintFuture(pm, c -> 
 			c == bgAnnotationCanvas || 
 			c == fgAnnotationCanvas || 
 			c == annotationSelectionCanvas
@@ -187,7 +177,26 @@ public class CompositeImageCanvas {
 	}
 	
 	public ImageFuture paintJustEdges(ProgressMonitor pm) {
-		return paint(pm, c -> c == edgeCanvas);
+		return paintFuture(pm, c -> c == edgeCanvas);
+	}
+	
+	public ImageFuture paintInteractivePan(ProgressMonitor pm) {
+		// meant to be overridden in CompositeFastImageCanvas
+		return paintFuture(pm, null);
+	}
+	
+	
+	/**
+	 * Starts painting on a single separate thread. 
+	 * Each layer of the canvas is painted sequentially in order. 
+	 * Returns an ImageFuture that represents the result of the painting.
+	 * To get the Image buffer from the ImageFuture call future.join().
+	 */
+	protected ImageFuture paintFuture(ProgressMonitor pm, Predicate<DingCanvas<?>> layers) {
+		var pm2 = ProgressMonitor.notNull(pm);
+		var flags = getRenderDetailFlags();
+		var future = CompletableFuture.supplyAsync(() -> paintImpl(pm2, flags, layers), executor);
+		return new ImageFuture(future, flags, pm2);
 	}
 	
 	private Image paintImpl(ProgressMonitor pm, RenderDetailFlags flags, Predicate<DingCanvas<?>> layersToRepaint) {

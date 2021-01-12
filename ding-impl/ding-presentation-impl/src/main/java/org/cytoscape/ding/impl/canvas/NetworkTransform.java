@@ -50,6 +50,26 @@ public class NetworkTransform {
 		updateTransform();
 	}
 	
+	public Snapshot snapshot() {
+		return new Snapshot(this);
+	}
+	
+	public static class Snapshot {
+		public final int width;
+		public final int height;
+		public final double x;
+		public final double y;
+		public final double scaleFactor;
+		
+		private Snapshot(NetworkTransform nt) {
+			this.width = nt.width;
+			this.height = nt.height;
+			this.x = nt.x;
+			this.y = nt.y;
+			this.scaleFactor = nt.scaleFactor;
+		}
+	}
+	
 	public int getWidth() {
 		return width;
 	}

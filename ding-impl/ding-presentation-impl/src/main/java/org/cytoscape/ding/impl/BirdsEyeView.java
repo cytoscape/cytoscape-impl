@@ -182,7 +182,8 @@ public final class BirdsEyeView implements RenderingEngine<CyNetwork>, ContentCh
 					lastYMousePos = currY;
 				}
 				if (deltaX != 0 || deltaY != 0) {
-					re.pan(deltaX, deltaY);
+					// MKTODO
+//					re.pan(deltaX, deltaY);
 					re.updateView(UpdateType.ALL_FAST);
 				}
 			}
