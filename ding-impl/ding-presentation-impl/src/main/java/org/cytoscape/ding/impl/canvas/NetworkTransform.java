@@ -8,6 +8,7 @@ import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.cytoscape.ding.impl.TransformChangeListener;
@@ -55,18 +56,27 @@ public class NetworkTransform {
 	}
 	
 	public static class Snapshot {
-		public final int width;
-		public final int height;
 		public final double x;
 		public final double y;
 		public final double scaleFactor;
 		
 		private Snapshot(NetworkTransform nt) {
-			this.width = nt.width;
-			this.height = nt.height;
 			this.x = nt.x;
 			this.y = nt.y;
 			this.scaleFactor = nt.scaleFactor;
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(scaleFactor, x, y);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (!(obj instanceof Snapshot))
+				return false;
+			Snapshot other = (Snapshot) obj;
+			return scaleFactor == other.scaleFactor && x == other.x && y == other.y;
 		}
 	}
 	

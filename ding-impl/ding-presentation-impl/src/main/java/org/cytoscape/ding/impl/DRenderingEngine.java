@@ -101,8 +101,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		ALL_FAST, // Render a fast frame only
 		ALL_FULL, // Render a fast frame, then start rendering a full frame async
 		JUST_ANNOTATIONS, // Just render annotations fast
-		JUST_EDGES, // for animated edges
-		INTERACTIVE_PAN, // for interactive mouse panning
+		JUST_EDGES // for animated edges
+//		INTERACTIVE_PAN, // for interactive mouse panning
 	}
 	
 	private final CyServiceRegistrar serviceRegistrar;
@@ -515,6 +515,10 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	public class Panner {
 		private boolean changed = false;
 		
+		private Panner() {
+			renderComponent.startPan();
+		}
+		
 		public void continuePan(double dx, double dy) {
 			synchronized (dingLock) { // MKTODO is this necessary?
 				changed = true;
@@ -524,11 +528,13 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 				double y = transform.getCenterY() + dy;
 				renderComponent.setCenter(x, y);
 				
-				updateView(UpdateType.INTERACTIVE_PAN);
+				updateView(UpdateType.ALL_FAST);
 			}
 		}
 		
 		public void endPan() {
+			renderComponent.endPan();
+			
 			if(changed) {
 				updateCenterVPs();
 				updateView(UpdateType.ALL_FULL);

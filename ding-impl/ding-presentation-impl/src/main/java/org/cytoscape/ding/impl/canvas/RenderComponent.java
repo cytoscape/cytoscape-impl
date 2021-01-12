@@ -27,8 +27,8 @@ public abstract class RenderComponent extends JComponent {
 	
 	protected DRenderingEngine re;
 	
-	private CompositeImageCanvas fastCanvas; // treat this as the 'main' canvas
-	private CompositeImageCanvas slowCanvas;
+	protected CompositeImageCanvas fastCanvas; // treat this as the 'main' canvas
+	protected CompositeImageCanvas slowCanvas;
 	
 	private ImageFuture slowFuture;
 	private ImageFuture fastFuture;
@@ -51,6 +51,9 @@ public abstract class RenderComponent extends JComponent {
 	
 	abstract ProgressMonitor getSlowProgressMonitor();
 	abstract DebugFrameType getDebugFrameType(UpdateType type);
+	
+	public void startPan() { }
+	public void endPan() { }
 	
 	
 	public void setInitializedCallback(Runnable callback) {
@@ -179,9 +182,9 @@ public abstract class RenderComponent extends JComponent {
 				case JUST_EDGES:
 					fastFuture = fastCanvas.paintJustEdges(debugPm(updateType));
 					break;
-				case INTERACTIVE_PAN:
-					fastFuture = fastCanvas.paintInteractivePan(debugPm(updateType));
-					break;
+//				case INTERACTIVE_PAN:
+//					fastFuture = fastCanvas.paintInteractivePan(debugPm(updateType));
+//					break;
 				case ALL_FAST: 
 				case ALL_FULL:
 					fastFuture = fastCanvas.paint(debugPm(UpdateType.ALL_FAST));

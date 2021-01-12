@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.function.Predicate;
 
@@ -49,6 +50,8 @@ public class CompositeImageCanvas {
 	
 	private final Executor executor;
 	
+	private final List<CanvasPaintListener> paintListeners = new CopyOnWriteArrayList<>();
+	
 	public CompositeImageCanvas(DRenderingEngine re, GraphLOD lod, int w, int h) {
 		this.re = re;
 		this.lod = lod;
@@ -72,6 +75,19 @@ public class CompositeImageCanvas {
 		updateAnnotationCanvasBuffers();
 		
 		this.executor = re.getSingleThreadExecutorService();
+	}
+	
+	
+	public void startPan() { }
+	public void endPan() { }
+	
+	
+	public void addPaintListener(CanvasPaintListener paintListener) {
+		this.paintListeners.add(paintListener);
+	}
+	
+	public void removePaintListener(CanvasPaintListener paintListener) {
+		this.paintListeners.remove(paintListener);
 	}
 	
 	private static ImageGraphicsProvider newBuffer(NetworkTransform transform) {
@@ -180,10 +196,10 @@ public class CompositeImageCanvas {
 		return paintFuture(pm, c -> c == edgeCanvas);
 	}
 	
-	public ImageFuture paintInteractivePan(ProgressMonitor pm) {
-		// meant to be overridden in CompositeFastImageCanvas
-		return paintFuture(pm, null);
-	}
+//	public ImageFuture paintInteractivePan(ProgressMonitor pm) {
+//		// meant to be overridden in CompositeFastImageCanvas
+//		return paintFuture(pm, null);
+//	}
 	
 	
 	/**
@@ -192,11 +208,20 @@ public class CompositeImageCanvas {
 	 * Returns an ImageFuture that represents the result of the painting.
 	 * To get the Image buffer from the ImageFuture call future.join().
 	 */
-	protected ImageFuture paintFuture(ProgressMonitor pm, Predicate<DingCanvas<?>> layers) {
+	private ImageFuture paintFuture(ProgressMonitor pm, Predicate<DingCanvas<?>> layers) {
 		var pm2 = ProgressMonitor.notNull(pm);
 		var flags = getRenderDetailFlags();
+		
+		paintListeners.forEach(CanvasPaintListener::beforePaint);
+		
 		var future = CompletableFuture.supplyAsync(() -> paintImpl(pm2, flags, layers), executor);
-		return new ImageFuture(future, flags, pm2);
+		var imageFuture = new ImageFuture(future, flags, pm2);
+		
+		if(!paintListeners.isEmpty()) {
+			imageFuture.thenRun(() -> paintListeners.forEach(CanvasPaintListener::afterPaint));
+		}
+		
+		return imageFuture;
 	}
 	
 	private Image paintImpl(ProgressMonitor pm, RenderDetailFlags flags, Predicate<DingCanvas<?>> layersToRepaint) {

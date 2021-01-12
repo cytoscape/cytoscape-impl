@@ -32,10 +32,11 @@ public class EdgeCanvas<GP extends GraphicsProvider> extends DingCanvas<GP> {
 
 	@Override
 	public void paint(ProgressMonitor pm, RenderDetailFlags flags) {
-//		if(transformSnapshot != null && graphicsProvider instanceof NetworkImageBuffer) {
-//			((NetworkImageBuffer) graphicsProvider).bufferTransform(transformSnapshot, slowEdgeCanvas);
-//		} 
-//		else {
+		if(transformSnapshot != null && graphicsProvider instanceof NetworkImageBuffer) {
+			((NetworkImageBuffer) graphicsProvider).bufferTransform(transformSnapshot, slowEdgeCanvas);
+			pm.addProgress(1.0);
+		} 
+		else {
 			var graphics = new GraphGraphics(graphicsProvider);
 			
 			var netViewSnapshot = re.getViewModelSnapshot();
@@ -43,7 +44,7 @@ public class EdgeCanvas<GP extends GraphicsProvider> extends DingCanvas<GP> {
 			var nodeDetails = re.getNodeDetails();
 			
 			GraphRenderer.renderEdges(pm, graphics, netViewSnapshot, flags, nodeDetails, edgeDetails);
-//		}
+		}
 		
 		transformSnapshot = null;
 		slowEdgeCanvas = null;
