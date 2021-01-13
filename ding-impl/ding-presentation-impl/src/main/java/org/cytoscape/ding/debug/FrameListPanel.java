@@ -1,5 +1,7 @@
 package org.cytoscape.ding.debug;
 
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 
@@ -66,12 +68,12 @@ public class FrameListPanel extends BasicCollapsiblePanel {
 		layout.setHorizontalGroup(layout.createParallelGroup()
 			.addGroup(layout.createSequentialGroup()
 				.addGroup(layout.createParallelGroup()
-					.addComponent(fastPanel)
-					.addComponent(fastBirdPanel)
+					.addComponent(fastPanel, PREFERRED_SIZE, PREFERRED_SIZE, Short.MAX_VALUE)
+					.addComponent(fastBirdPanel, PREFERRED_SIZE, PREFERRED_SIZE, Short.MAX_VALUE)
 				)
 				.addGroup(layout.createParallelGroup()
-					.addComponent(slowPanel)
-					.addComponent(slowBirdPanel)
+					.addComponent(slowPanel, PREFERRED_SIZE, PREFERRED_SIZE, Short.MAX_VALUE)
+					.addComponent(slowBirdPanel, PREFERRED_SIZE, PREFERRED_SIZE, Short.MAX_VALUE)
 				)
 			)
 			.addGroup(layout.createSequentialGroup()
@@ -81,7 +83,7 @@ public class FrameListPanel extends BasicCollapsiblePanel {
 		
 		JPanel content = getContentPane();
 		content.setLayout(new BorderLayout());
-		content.add(BorderLayout.WEST, panel);
+		content.add(BorderLayout.CENTER, panel);
 	}
 	
 	public void clear() {

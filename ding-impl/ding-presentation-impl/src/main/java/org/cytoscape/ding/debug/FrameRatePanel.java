@@ -1,5 +1,7 @@
 package org.cytoscape.ding.debug;
 
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.util.ArrayList;
@@ -50,7 +52,7 @@ public class FrameRatePanel extends BasicCollapsiblePanel {
 		table.setShowGrid(true);
 		
 		JScrollPane scrollPane = new JScrollPane(table);
-		scrollPane.setPreferredSize(new Dimension(450, 200));
+		scrollPane.setPreferredSize(new Dimension(300, 200));
 		
 		JPanel panel = new JPanel();
 		panel.setOpaque(false);
@@ -61,7 +63,7 @@ public class FrameRatePanel extends BasicCollapsiblePanel {
 		
 		layout.setHorizontalGroup(layout.createParallelGroup()
 			.addComponent(frameRateLabel)
-			.addComponent(scrollPane)
+			.addComponent(scrollPane, PREFERRED_SIZE, PREFERRED_SIZE, Short.MAX_VALUE)
 		);
 		
 		layout.setVerticalGroup(layout.createSequentialGroup()
@@ -72,7 +74,7 @@ public class FrameRatePanel extends BasicCollapsiblePanel {
 		
 		JPanel content = getContentPane();
 		content.setLayout(new BorderLayout());
-		content.add(BorderLayout.WEST, panel);
+		content.add(BorderLayout.CENTER, panel);
 	}
 	
 	private double calcFrameRate(int frameCount, long frameTime) {
