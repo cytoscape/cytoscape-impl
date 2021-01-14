@@ -177,7 +177,7 @@ public class CompositeImageCanvas {
 		private final UpdateType update;
 		private final int panDx;
 		private final int panDy;
-		private final CompositeImageCanvas slowCanvas;
+		private CompositeImageCanvas slowCanvas;
 		
 		private PaintParameters(UpdateType updateType, boolean isPan, int panDx, int panDy, CompositeImageCanvas slowCanvas) {
 			this.update = updateType;
@@ -193,6 +193,26 @@ public class CompositeImageCanvas {
 		
 		public static PaintParameters pan(int panDx, int panDy, CompositeImageCanvas slowCanvas) {
 			return new PaintParameters(UpdateType.ALL_FAST, true, panDx, panDy, slowCanvas);
+		}
+		
+		public boolean isPan() {
+			return isPan;
+		}
+
+		public UpdateType getUpdate() {
+			return update;
+		}
+
+		public int getPanDx() {
+			return panDx;
+		}
+
+		public int getPanDy() {
+			return panDy;
+		}
+
+		public void done() {
+			slowCanvas = null;
 		}
 	}
 	
@@ -272,8 +292,9 @@ public class CompositeImageCanvas {
 		}
 		
 		
-		if(pm instanceof DebugRootProgressMonitor) // MKTODO hackey, fix it
-			((DebugRootProgressMonitor)pm).done(flags);
+		params.done();
+		if(pm instanceof DebugRootProgressMonitor) // MKTODO hackey
+			((DebugRootProgressMonitor)pm).done(flags, params);
 		else
 			pm.done();
 		

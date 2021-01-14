@@ -52,6 +52,7 @@ public class FrameListTablePanel extends JPanel {
 		private static final int NODE_COL = 0;
 		private static final int EDGE_COL = 1;
 		private static final int TIME_COL = 2;
+		private static final int OPT_COL  = 3;
 
 		private final int maxSize;
 		private LinkedList<DebugRootFrameInfo> list = new LinkedList<>();
@@ -81,7 +82,7 @@ public class FrameListTablePanel extends JPanel {
 		
 		@Override
 		public int getColumnCount() {
-			return 3;
+			return 4;
 		}
 		
 		@Override
@@ -95,6 +96,8 @@ public class FrameListTablePanel extends JPanel {
 				case TIME_COL: return "Time (MS)";
 				case NODE_COL: return "Nodes";
 				case EDGE_COL: return "Edges";
+				case OPT_COL:  return "Opt";
+				
 			}
 			return null;
 		}
@@ -103,11 +106,35 @@ public class FrameListTablePanel extends JPanel {
 		public Object getValueAt(int row, int col) {
 			var entry = list.get(row);
 			switch(col) {
-				case TIME_COL: return entry.getTimeMessage();
-				case NODE_COL: return entry.getNodeCount();
-				case EDGE_COL: return entry.getEdgeCountEstimate();
+				case TIME_COL: return getTimeMessage(entry);
+				case NODE_COL: return entry.getRenderDetailFlags().getVisibleNodeCount();
+				case EDGE_COL: return entry.getRenderDetailFlags().getEstimatedEdgeCount();
+				case OPT_COL:  return getOptimizationMessage(entry);
 			}
 			return null;
+		}
+		
+		public String getTimeMessage(DebugRootFrameInfo entry) {
+			var time = entry.getTime();
+			var type = entry.getType();
+			var cancelled = entry.isCancelled();
+			
+			if(type == DebugFrameType.MAIN_ANNOTAITONS)
+				return time + " (annotations)";
+			else if(type == DebugFrameType.MAIN_EDGES)
+				return time + " (edges)";
+			else if(cancelled)
+				return time + " (cancelled)";
+			else
+				return "" + time;
+		}
+		
+		public String getOptimizationMessage(DebugRootFrameInfo entry) {
+			var paintParams = entry.getPaintParameters();
+			if(paintParams.isPan()) {
+				return "b-pan";
+			}
+			return "";
 		}
 
 	}

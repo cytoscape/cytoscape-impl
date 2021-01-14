@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.cytoscape.ding.impl.canvas.CompositeImageCanvas.PaintParameters;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 
@@ -16,8 +17,10 @@ public class DebugRootProgressMonitor implements DebugProgressMonitor {
 	private List<DebugSubProgressMonitor> subMonitors = Collections.emptyList();
 	
 	private long start, end;
-	private int  nodes, edges;
 	private String taskName;
+	
+	private RenderDetailFlags flags;
+	private PaintParameters paintParams;
 	
 	public DebugRootProgressMonitor(DebugFrameType type, ProgressMonitor delegate, DebugProgressMonitorCallback callback) {
 		this.type = type;
@@ -37,10 +40,10 @@ public class DebugRootProgressMonitor implements DebugProgressMonitor {
 		delegate.done();
 	}
 	
-	public void done(RenderDetailFlags flags) {
-		end = System.currentTimeMillis();
-		nodes = flags.getVisibleNodeCount();
-		edges = flags.getEstimatedEdgeCount();
+	public void done(RenderDetailFlags flags, PaintParameters paintParams) {
+		this.end = System.currentTimeMillis();
+		this.flags = flags;
+		this.paintParams = paintParams;
 		done();
 		if(callback != null) {
 			callback.addFrame(DebugRootFrameInfo.fromProgressMonitor(this));
@@ -88,12 +91,12 @@ public class DebugRootProgressMonitor implements DebugProgressMonitor {
 		return type;
 	}
 	
-	public int getNodeCount() {
-		return nodes;
+	public RenderDetailFlags getRenderDetailFlags() {
+		return flags;
 	}
 
-	public int getEdgeCountEstimate() {
-		return edges;
+	public PaintParameters getPaintParametsr() {
+		return paintParams;
 	}
 	
 	public long getStartTime() {
