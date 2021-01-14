@@ -102,7 +102,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		ALL_FULL, // Render a fast frame, then start rendering a full frame async
 		JUST_ANNOTATIONS, // Just render annotations fast
 		JUST_EDGES // for animated edges
-//		INTERACTIVE_PAN, // for interactive mouse panning
 	}
 	
 	private final CyServiceRegistrar serviceRegistrar;

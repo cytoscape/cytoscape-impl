@@ -1,5 +1,8 @@
 package org.cytoscape.ding.impl.canvas;
 
+import static org.cytoscape.ding.impl.DRenderingEngine.UpdateType.ALL_FULL;
+import static org.cytoscape.ding.impl.DRenderingEngine.UpdateType.JUST_ANNOTATIONS;
+import static org.cytoscape.ding.impl.DRenderingEngine.UpdateType.JUST_EDGES;
 import static org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID.BACKGROUND;
 import static org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID.FOREGROUND;
 
@@ -12,12 +15,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
-import java.util.function.Predicate;
 
 import org.cytoscape.ding.debug.DebugRootProgressMonitor;
 import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.stateful.GraphLOD;
@@ -27,7 +29,6 @@ import org.cytoscape.graph.render.stateful.RenderDetailFlags;
  * Manages what used to be ContentChangedListener and ViewportChangedListener
  *
  */
-@SuppressWarnings("unused")
 public class CompositeImageCanvas {
 	
 	private final DRenderingEngine re;
@@ -49,8 +50,6 @@ public class CompositeImageCanvas {
 	private final double[] weights;
 	
 	private final Executor executor;
-	
-	private final List<CanvasPaintListener> paintListeners = new CopyOnWriteArrayList<>();
 	
 	public CompositeImageCanvas(DRenderingEngine re, GraphLOD lod, int w, int h) {
 		this.re = re;
@@ -77,18 +76,6 @@ public class CompositeImageCanvas {
 		this.executor = re.getSingleThreadExecutorService();
 	}
 	
-	
-	public void startPan() { }
-	public void endPan() { }
-	
-	
-	public void addPaintListener(CanvasPaintListener paintListener) {
-		this.paintListeners.add(paintListener);
-	}
-	
-	public void removePaintListener(CanvasPaintListener paintListener) {
-		this.paintListeners.remove(paintListener);
-	}
 	
 	private static ImageGraphicsProvider newBuffer(NetworkTransform transform) {
 		return new NetworkImageBuffer(transform);
@@ -173,33 +160,41 @@ public class CompositeImageCanvas {
 	
 	
 	private Image overlayImage(Image composite, Image image) {
+		return overlayImage(composite, image, 0, 0);
+	}
+	
+	private Image overlayImage(Image composite, Image image, int dx, int dy) {
 		if(image != null) {
 			Graphics g = composite.getGraphics();
-			g.drawImage(image, 0, 0, null);
+			g.drawImage(image, dx, dy, null);
 		}
 		return composite;
 	}
 	
-	public ImageFuture paint(ProgressMonitor pm) {
-		return paintFuture(pm, null);
-	}
 	
-	public ImageFuture paintJustAnnotations(ProgressMonitor pm) {
-		return paintFuture(pm, c -> 
-			c == bgAnnotationCanvas || 
-			c == fgAnnotationCanvas || 
-			c == annotationSelectionCanvas
-		);
+	public static class PaintParameters {
+		private final boolean isPan;
+		private final UpdateType update;
+		private final int panDx;
+		private final int panDy;
+		private final CompositeImageCanvas slowCanvas;
+		
+		private PaintParameters(UpdateType updateType, boolean isPan, int panDx, int panDy, CompositeImageCanvas slowCanvas) {
+			this.update = updateType;
+			this.isPan = isPan;
+			this.panDx = panDx;
+			this.panDy = panDy;
+			this.slowCanvas = slowCanvas;
+		}
+		
+		public static PaintParameters updateType(UpdateType updateType) {
+			return new PaintParameters(updateType, false, 0, 0, null);
+		}
+		
+		public static PaintParameters pan(int panDx, int panDy, CompositeImageCanvas slowCanvas) {
+			return new PaintParameters(UpdateType.ALL_FAST, true, panDx, panDy, slowCanvas);
+		}
 	}
-	
-	public ImageFuture paintJustEdges(ProgressMonitor pm) {
-		return paintFuture(pm, c -> c == edgeCanvas);
-	}
-	
-//	public ImageFuture paintInteractivePan(ProgressMonitor pm) {
-//		// meant to be overridden in CompositeFastImageCanvas
-//		return paintFuture(pm, null);
-//	}
 	
 	
 	/**
@@ -208,44 +203,74 @@ public class CompositeImageCanvas {
 	 * Returns an ImageFuture that represents the result of the painting.
 	 * To get the Image buffer from the ImageFuture call future.join().
 	 */
-	private ImageFuture paintFuture(ProgressMonitor pm, Predicate<DingCanvas<?>> layers) {
+	public ImageFuture paint(ProgressMonitor pm, PaintParameters params) {
 		var pm2 = ProgressMonitor.notNull(pm);
 		var flags = getRenderDetailFlags();
-		
-		paintListeners.forEach(CanvasPaintListener::beforePaint);
-		
-		var future = CompletableFuture.supplyAsync(() -> paintImpl(pm2, flags, layers), executor);
-		var imageFuture = new ImageFuture(future, flags, pm2);
-		
-		if(!paintListeners.isEmpty()) {
-			imageFuture.thenRun(() -> paintListeners.forEach(CanvasPaintListener::afterPaint));
-		}
-		
-		return imageFuture;
+		var future = CompletableFuture.supplyAsync(() -> paintImpl(pm2, flags, params), executor);
+		return new ImageFuture(future, flags, pm2);
 	}
 	
-	private Image paintImpl(ProgressMonitor pm, RenderDetailFlags flags, Predicate<DingCanvas<?>> layersToRepaint) {
+	public ImageFuture paint(ProgressMonitor pm) {
+		return paint(pm, PaintParameters.updateType(ALL_FULL));
+	}
+	
+	
+	private Image paintImpl(ProgressMonitor pm, RenderDetailFlags flags, PaintParameters params) {
 		var subPms = pm.split(weights);
 		pm.start("Frame"); // debug message
 		
 		Image composite = image.getImage();
 		fill(composite, bgColor);
 		
-		for(int i = 0; i < canvasList.size(); i++) {
-			var canvas = canvasList.get(i);
-			var subPm = subPms[i];
-			
-			Image canvasImage;
-			if(layersToRepaint == null || layersToRepaint.test(canvas)) {
-				canvasImage = canvas.paintAndGet(subPm, flags).getImage();
-			} else {
-				canvasImage = canvas.getCurrent(subPm).getImage();
-			}
-				
-			if(canvasImage != null) {
-				overlayImage(composite, canvasImage);
-			}
+		// Annotation background layer
+		if(params.update == JUST_EDGES) {
+			Image image = bgAnnotationCanvas.getCurrent(subPms[0]).getImage();
+			overlayImage(composite, image);
+		} else {
+			Image image = bgAnnotationCanvas.paintAndGet(subPms[0], flags).getImage();
+			overlayImage(composite, image);
 		}
+		
+		// Edge layer
+		if(params.update == JUST_ANNOTATIONS) {
+			Image image = edgeCanvas.getCurrent(subPms[1]).getImage();
+			overlayImage(composite, image);
+		} else if(params.isPan) {
+			Image image = params.slowCanvas.getEdgeCanvas().getGraphicsProvier().getImage();
+			overlayImage(composite, image, params.panDx, params.panDy);
+			subPms[1].addProgress(1.0);
+		} else {
+			Image image = edgeCanvas.paintAndGet(subPms[1], flags).getImage();
+			overlayImage(composite, image);
+		}
+		
+		// Node layer
+		if(params.update == JUST_ANNOTATIONS) {
+			Image image = nodeCanvas.getCurrent(subPms[2]).getImage();
+			overlayImage(composite, image);
+		} else {
+			Image image = nodeCanvas.paintAndGet(subPms[2], flags).getImage();
+			overlayImage(composite, image);
+		}
+		
+		// Annotation foreground layer
+		if(params.update == JUST_EDGES) {
+			Image image = fgAnnotationCanvas.getCurrent(subPms[3]).getImage();
+			overlayImage(composite, image);
+		} else {
+			Image image = fgAnnotationCanvas.paintAndGet(subPms[3], flags).getImage();
+			overlayImage(composite, image);
+		}
+		
+		// Annotation selection layer
+		if(params.update == JUST_EDGES) {
+			Image image = annotationSelectionCanvas.getCurrent(subPms[4]).getImage();
+			overlayImage(composite, image);
+		} else {
+			Image image = annotationSelectionCanvas.paintAndGet(subPms[4], flags).getImage();
+			overlayImage(composite, image);
+		}
+		
 		
 		if(pm instanceof DebugRootProgressMonitor) // MKTODO hackey, fix it
 			((DebugRootProgressMonitor)pm).done(flags);

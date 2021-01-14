@@ -41,16 +41,6 @@ public class MainRenderComponent extends RenderComponent {
 	}
 
 	@Override
-	public void startPan() {
-		fastCanvas.startPan();
-	}
-	
-	@Override
-	public void endPan() {
-		fastCanvas.endPan();
-	}
-	
-	@Override
 	public void update(Graphics g) {
 		if(fontMetrics == null) {
 			fontMetrics = g.getFontMetrics(); // needed to compute label widths
@@ -79,7 +69,6 @@ public class MainRenderComponent extends RenderComponent {
 			case ALL_FULL: return DebugFrameType.MAIN_SLOW;
 			case JUST_ANNOTATIONS: return DebugFrameType.MAIN_ANNOTAITONS;
 			case JUST_EDGES: return DebugFrameType.MAIN_EDGES;
-//			case INTERACTIVE_PAN: return DebugFrameType.MAIN_EDGES;
 			default: return null;
 		}
 	}

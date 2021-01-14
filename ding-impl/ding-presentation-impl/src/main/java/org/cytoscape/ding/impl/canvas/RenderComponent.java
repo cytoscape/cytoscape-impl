@@ -6,6 +6,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Paint;
+import java.util.Objects;
 
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
@@ -15,6 +16,7 @@ import org.cytoscape.ding.debug.DebugProgressMonitorFactory;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
 import org.cytoscape.ding.impl.TransformChangeListener;
+import org.cytoscape.ding.impl.canvas.CompositeImageCanvas.PaintParameters;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
@@ -39,21 +41,37 @@ public abstract class RenderComponent extends JComponent {
 	
 	private Runnable initializedCallback;
 	
+	private NetworkTransform.Snapshot slowCanvasLastPaintSnapshot;
+	private NetworkTransform.Snapshot fastCanvasPanStartedSnapshot;
+	
+	
 	public RenderComponent(DRenderingEngine re, GraphLOD lod) {
 		this.re = re;
 		
-		// MKTODO This is a hack, we don't know what the size of the buffer should be until setBounds() is called.
+		// MKTODO Using a size of 1 is a hack. We don't know what the size of the buffer should be until setBounds() is called.
 		// Unfortunately its possible for fitContent() to be called before setBounds() is called.
 		slowCanvas = new CompositeImageCanvas(re, lod, 1, 1);
-		fastCanvas = new CompositeFastImageCanvas(re, lod.faster(), 1, 1, slowCanvas);
+		fastCanvas = new CompositeImageCanvas(re, lod.faster(), 1, 1);
 	}
 	
 	
 	abstract ProgressMonitor getSlowProgressMonitor();
 	abstract DebugFrameType getDebugFrameType(UpdateType type);
 	
-	public void startPan() { }
-	public void endPan() { }
+	
+	public void startPan() {
+		fastCanvasPanStartedSnapshot = getTransform().snapshot();
+	}
+	
+	private void takeSlowPaintSnapshot() {
+		slowCanvasLastPaintSnapshot = getTransform().snapshot();
+	}
+	
+	public void endPan() {
+		slowCanvasLastPaintSnapshot = null;
+		fastCanvasPanStartedSnapshot = null;
+	}
+	
 	
 	
 	public void setInitializedCallback(Runnable callback) {
@@ -159,6 +177,34 @@ public abstract class RenderComponent extends JComponent {
 		return image[0];
 	}
 	
+	private PaintParameters getFastCanvasPaintParams() {
+		if((updateType == UpdateType.ALL_FAST || updateType == UpdateType.ALL_FULL) 
+				&& fastCanvasPanStartedSnapshot != null && Objects.equals(slowCanvasLastPaintSnapshot, fastCanvasPanStartedSnapshot)) {
+			double[] coords = new double[2];
+			
+			// compute the distance the canvas needs to be panned in image coords
+			coords[0] = fastCanvasPanStartedSnapshot.x;
+			coords[1] = fastCanvasPanStartedSnapshot.y;
+			fastCanvas.getTransform().xformNodeToImageCoords(coords);
+			double oldX = coords[0];
+			double oldY = coords[1];
+			
+			coords[0] = fastCanvas.getTransform().getCenterX();
+			coords[1] = fastCanvas.getTransform().getCenterY();
+			fastCanvas.getTransform().xformNodeToImageCoords(coords);
+			double newX = coords[0];
+			double newY = coords[1];
+			
+			var dx = (int) (oldX - newX);
+			var dy = (int) (oldY - newY);
+			
+			return PaintParameters.pan(dx, dy, slowCanvas);
+		} else {
+			return PaintParameters.updateType(updateType);
+		}
+	}
+	
+	
 	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
@@ -175,32 +221,21 @@ public abstract class RenderComponent extends JComponent {
 				slowFuture = null;
 			}
 			
-			switch(updateType) {
-				case JUST_ANNOTATIONS:
-					fastFuture = fastCanvas.paintJustAnnotations(debugPm(updateType));
-					break;
-				case JUST_EDGES:
-					fastFuture = fastCanvas.paintJustEdges(debugPm(updateType));
-					break;
-//				case INTERACTIVE_PAN:
-//					fastFuture = fastCanvas.paintInteractivePan(debugPm(updateType));
-//					break;
-				case ALL_FAST: 
-				case ALL_FULL:
-					fastFuture = fastCanvas.paint(debugPm(UpdateType.ALL_FAST));
-					break;
-			}
-			
+			// Paint the fast canvas synchronously
+			PaintParameters paintParams = getFastCanvasPaintParams();
+			fastFuture = fastCanvas.paint(debugPm(UpdateType.ALL_FAST), paintParams);
 			fastFuture.join();
 			lastFastRenderFlags = fastFuture.getLastRenderDetail();
-			
 			future = fastFuture;
 
 			// start a slow frame if necessary
 			if(updateType == UpdateType.ALL_FULL && !sameDetail()) { 
 				var slowPm = debugPm(UpdateType.ALL_FULL, getSlowProgressMonitor());
 				slowFuture = slowCanvas.paint(slowPm);
-				slowFuture.thenRun(this::repaint);
+				slowFuture.thenRun(() -> {
+					takeSlowPaintSnapshot();
+					repaint();
+				});
 			}
 			updateType = UpdateType.ALL_FAST;
 		}
