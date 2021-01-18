@@ -130,9 +130,9 @@ public class FrameListTablePanel extends JPanel {
 		}
 		
 		public String getOptimizationMessage(DebugRootFrameInfo entry) {
-			var paintParams = entry.getPaintParameters();
-			if(paintParams.isPan()) {
-				return "b-pan";
+			var params = entry.getPaintParameters();
+			if(params.isPan()) {
+				return "bpan " + params.getPanCanvasName();
 			}
 			return "";
 		}

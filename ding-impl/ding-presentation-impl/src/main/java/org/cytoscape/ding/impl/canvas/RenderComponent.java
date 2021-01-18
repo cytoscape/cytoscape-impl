@@ -17,8 +17,10 @@ import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
 import org.cytoscape.ding.impl.TransformChangeListener;
 import org.cytoscape.ding.impl.canvas.CompositeImageCanvas.PaintParameters;
+import org.cytoscape.ding.impl.canvas.NetworkTransform.Snapshot;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.stateful.GraphLOD;
+import org.cytoscape.graph.render.stateful.GraphLOD.RenderEdges;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 
 /**
@@ -41,8 +43,10 @@ public abstract class RenderComponent extends JComponent {
 	
 	private Runnable initializedCallback;
 	
+	// These are used for the panning optimization
 	private NetworkTransform.Snapshot slowCanvasLastPaintSnapshot;
 	private NetworkTransform.Snapshot fastCanvasPanStartedSnapshot;
+	private NetworkTransform.Snapshot fastCanvasLastPaintSnapshot;
 	
 	
 	public RenderComponent(DRenderingEngine re, GraphLOD lod) {
@@ -53,6 +57,7 @@ public abstract class RenderComponent extends JComponent {
 		slowCanvas = new CompositeImageCanvas(re, lod, 1, 1);
 		fastCanvas = new CompositeImageCanvas(re, lod.faster(), 1, 1);
 	}
+	
 	
 	
 	abstract ProgressMonitor getSlowProgressMonitor();
@@ -67,9 +72,14 @@ public abstract class RenderComponent extends JComponent {
 		slowCanvasLastPaintSnapshot = getTransform().snapshot();
 	}
 	
+	private void takeFastPaintSnapshot() {
+		fastCanvasLastPaintSnapshot = getTransform().snapshot();
+	}
+	
 	public void endPan() {
 		slowCanvasLastPaintSnapshot = null;
 		fastCanvasPanStartedSnapshot = null;
+		fastCanvasLastPaintSnapshot = null;
 	}
 	
 	
@@ -178,30 +188,51 @@ public abstract class RenderComponent extends JComponent {
 	}
 	
 	private PaintParameters getFastCanvasPaintParams() {
-		if((updateType == UpdateType.ALL_FAST || updateType == UpdateType.ALL_FULL) 
-				&& fastCanvasPanStartedSnapshot != null && Objects.equals(slowCanvasLastPaintSnapshot, fastCanvasPanStartedSnapshot)) {
-			double[] coords = new double[2];
-			
-			// compute the distance the canvas needs to be panned in image coords
-			coords[0] = fastCanvasPanStartedSnapshot.x;
-			coords[1] = fastCanvasPanStartedSnapshot.y;
-			fastCanvas.getTransform().xformNodeToImageCoords(coords);
-			double oldX = coords[0];
-			double oldY = coords[1];
-			
-			coords[0] = fastCanvas.getTransform().getCenterX();
-			coords[1] = fastCanvas.getTransform().getCenterY();
-			fastCanvas.getTransform().xformNodeToImageCoords(coords);
-			double newX = coords[0];
-			double newY = coords[1];
-			
-			var dx = (int) (oldX - newX);
-			var dy = (int) (oldY - newY);
-			
-			return PaintParameters.pan(dx, dy, slowCanvas);
-		} else {
-			return PaintParameters.updateType(updateType);
+		RenderDetailFlags flags = fastCanvas.getRenderDetailFlags();
+		
+		if(flags.renderEdges() != RenderEdges.NONE) {
+			return PaintParameters.updateType(updateType); // Fast canvas can render its own edges, don't optimize
 		}
+		
+		// Try to optimize panning by just shifting the edge canvas image buffer by some number of pixels
+		if((updateType == UpdateType.ALL_FAST || updateType == UpdateType.ALL_FULL) && fastCanvasPanStartedSnapshot != null) {
+			
+			if(Objects.equals(slowCanvasLastPaintSnapshot, fastCanvasPanStartedSnapshot)) {
+				int[] dxdy = getBufferPanDxDy(slowCanvasLastPaintSnapshot);
+				int dx = dxdy[0], dy = dxdy[1];
+				return PaintParameters.pan(dx, dy, slowCanvas, "slow");
+			}
+			else if(fastCanvasLastPaintSnapshot != null) {
+				int[] dxdy = getBufferPanDxDy(fastCanvasLastPaintSnapshot);
+				int dx = dxdy[0], dy = dxdy[1];
+				return PaintParameters.pan(dx, dy, fastCanvas, "fast");
+			}
+		}
+		
+		return PaintParameters.updateType(updateType);
+	}
+	
+	
+	private int[] getBufferPanDxDy(Snapshot snapshot) {
+		var currentTransform = fastCanvas.getTransform();
+		
+		double[] coords = new double[2];
+		coords[0] = snapshot.x;
+		coords[1] = snapshot.y;
+		currentTransform.xformNodeToImageCoords(coords);
+		double oldX = coords[0];
+		double oldY = coords[1];
+		
+		coords[0] = currentTransform.getCenterX();
+		coords[1] = currentTransform.getCenterY();
+		currentTransform.xformNodeToImageCoords(coords);
+		double newX = coords[0];
+		double newY = coords[1];
+		
+		var dx = (int) (oldX - newX);
+		var dy = (int) (oldY - newY);
+		
+		return new int[] { dx, dy };
 	}
 	
 	
@@ -224,6 +255,11 @@ public abstract class RenderComponent extends JComponent {
 			// Paint the fast canvas synchronously
 			PaintParameters paintParams = getFastCanvasPaintParams();
 			fastFuture = fastCanvas.paint(debugPm(UpdateType.ALL_FAST), paintParams);
+			fastFuture.thenRun(() -> {
+				if(!paintParams.isPan()) {
+					takeFastPaintSnapshot(); // for pan optimization
+				}
+			});
 			fastFuture.join();
 			lastFastRenderFlags = fastFuture.getLastRenderDetail();
 			future = fastFuture;
@@ -233,7 +269,7 @@ public abstract class RenderComponent extends JComponent {
 				var slowPm = debugPm(UpdateType.ALL_FULL, getSlowProgressMonitor());
 				slowFuture = slowCanvas.paint(slowPm);
 				slowFuture.thenRun(() -> {
-					takeSlowPaintSnapshot();
+					takeSlowPaintSnapshot(); // for pan optimization
 					repaint();
 				});
 			}

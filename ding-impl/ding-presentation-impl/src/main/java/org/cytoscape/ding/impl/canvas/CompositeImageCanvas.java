@@ -11,9 +11,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Paint;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -46,7 +43,6 @@ public class CompositeImageCanvas {
 	private final ImageGraphicsProvider image;
 	private final NetworkTransform transform;
 	
-	private final List<DingCanvas<ImageGraphicsProvider>> canvasList;
 	private final double[] weights;
 	
 	private final Executor executor;
@@ -57,17 +53,14 @@ public class CompositeImageCanvas {
 		this.transform = new NetworkTransform(w, h);
 		this.image = newBuffer(transform);
 		
-		canvasList = Arrays.asList(
-			annotationSelectionCanvas = new AnnotationSelectionCanvas<>(NullGraphicsProvider.INSTANCE, re),
-			fgAnnotationCanvas = new AnnotationCanvas<>(NullGraphicsProvider.INSTANCE, re, FOREGROUND),
-			nodeCanvas = new NodeCanvas<>(newBuffer(transform), re),
-			edgeCanvas = new EdgeCanvas<>(newBuffer(transform), re),
-			bgAnnotationCanvas = new AnnotationCanvas<>(NullGraphicsProvider.INSTANCE, re, BACKGROUND)
-		);
+		annotationSelectionCanvas = new AnnotationSelectionCanvas<>(NullGraphicsProvider.INSTANCE, re);
+		fgAnnotationCanvas = new AnnotationCanvas<>(NullGraphicsProvider.INSTANCE, re, FOREGROUND);
+		nodeCanvas = new NodeCanvas<>(newBuffer(transform), re);
+		edgeCanvas = new EdgeCanvas<>(newBuffer(transform), re);
+		bgAnnotationCanvas = new AnnotationCanvas<>(NullGraphicsProvider.INSTANCE, re, BACKGROUND);
 	
-		// Must paint over top of each other in reverse order
-		Collections.reverse(canvasList);
 		// This is the proportion of total progress assigned to each canvas. Edge canvas gets the most.
+		// In reverse order because that's the order they are painted.
 		weights = new double[] {1, 20, 3, 1, 0}; // MKTODO not very elegant
 		
 		re.getCyAnnotator().addPropertyChangeListener(e -> updateAnnotationCanvasBuffers());
@@ -122,7 +115,11 @@ public class CompositeImageCanvas {
 	}
 	
 	public void dispose() {
-		canvasList.forEach(DingCanvas::dispose);
+		annotationSelectionCanvas.dispose();
+		fgAnnotationCanvas.dispose();
+		nodeCanvas.dispose();
+		edgeCanvas.dispose();
+		bgAnnotationCanvas.dispose();
 	}
 	
 	public void setLOD(GraphLOD lod) {
@@ -178,39 +175,40 @@ public class CompositeImageCanvas {
 		private final int panDx;
 		private final int panDy;
 		private CompositeImageCanvas slowCanvas;
+		private final String panCanvasName;
 		
-		private PaintParameters(UpdateType updateType, boolean isPan, int panDx, int panDy, CompositeImageCanvas slowCanvas) {
+		private PaintParameters(UpdateType updateType, boolean isPan, int panDx, int panDy, CompositeImageCanvas slowCanvas, String panCanvasName) {
 			this.update = updateType;
 			this.isPan = isPan;
 			this.panDx = panDx;
 			this.panDy = panDy;
 			this.slowCanvas = slowCanvas;
+			this.panCanvasName = panCanvasName;
 		}
 		
 		public static PaintParameters updateType(UpdateType updateType) {
-			return new PaintParameters(updateType, false, 0, 0, null);
+			return new PaintParameters(updateType, false, 0, 0, null, null);
 		}
 		
-		public static PaintParameters pan(int panDx, int panDy, CompositeImageCanvas slowCanvas) {
-			return new PaintParameters(UpdateType.ALL_FAST, true, panDx, panDy, slowCanvas);
+		public static PaintParameters pan(int panDx, int panDy, CompositeImageCanvas slowCanvas, String panCanvasName) {
+			return new PaintParameters(UpdateType.ALL_FAST, true, panDx, panDy, slowCanvas, panCanvasName);
 		}
 		
 		public boolean isPan() {
 			return isPan;
 		}
-
 		public UpdateType getUpdate() {
 			return update;
 		}
-
 		public int getPanDx() {
 			return panDx;
 		}
-
 		public int getPanDy() {
 			return panDy;
 		}
-
+		public String getPanCanvasName() {
+			return panCanvasName;
+		}
 		public void done() {
 			slowCanvas = null;
 		}
