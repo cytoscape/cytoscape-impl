@@ -1,6 +1,15 @@
 package org.cytoscape.view.vizmap.gui.internal.model;
 
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.*;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_NETWORK_CHANGED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_NETWORK_VIEW_CHANGED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_TABLE_CHANGED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_TABLE_VISUAL_STYLE_CHANGED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_VISUAL_STYLE_CHANGED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.LOAD_DEFAULT_VISUAL_STYLES;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_ADDED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_REMOVED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_SET_CHANGED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_UPDATED;
 
 import java.text.Collator;
 import java.util.Comparator;
@@ -69,7 +78,7 @@ import org.puremvc.java.multicore.patterns.proxy.Proxy;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2020 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -244,12 +253,14 @@ public class VizMapperProxy extends Proxy
 	}
 	
 	public RenderingEngine<CyTable> getCurrentTableRenderingEngine() {
-		CyTable table = getCurrentTable();
-		CyTableViewManager tableViewManager = servicesUtil.get(CyTableViewManager.class);
-		CyTableView tableView = tableViewManager.getTableView(table);
+		var table = getCurrentTable();
+		var tableViewManager = servicesUtil.get(CyTableViewManager.class);
+		var tableView = tableViewManager.getTableView(table);
 		
 		var renderingEngineManager = servicesUtil.get(RenderingEngineManager.class);
-		return (RenderingEngine<CyTable>) renderingEngineManager.getRenderingEngines(tableView).iterator().next();
+		var renderingEngines = renderingEngineManager.getRenderingEngines(tableView);
+		
+		return renderingEngines.isEmpty() ? null : (RenderingEngine<CyTable>) renderingEngines.iterator().next();
 	}
 	
 	public CyTable getCurrentTable() {

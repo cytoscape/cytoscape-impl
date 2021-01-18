@@ -1,28 +1,5 @@
 package org.cytoscape.view.table.internal.impl;
 
-/*
- * #%L
- * Cytoscape Table Browser Impl (table-browser-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2019 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.ALL;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.AUTO;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.SELECTED;
@@ -113,6 +90,30 @@ import org.cytoscape.view.table.internal.util.TableBrowserUtil;
 import org.cytoscape.view.table.internal.util.ValidatedObjectAndEditString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+/*
+ * #%L
+ * Cytoscape Table Browser Impl (table-browser-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 @SuppressWarnings("serial")
 public class BrowserTable extends JTable implements MouseListener, ActionListener, MouseMotionListener,
@@ -353,14 +354,16 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	}
 	
 	public void showListContents(int modelRow, int modelColumn, MouseEvent e) {
-		final BrowserTableModel model = (BrowserTableModel) getModel();
-		final Class<?> columnType = model.getColumn(modelColumn).getType();
+		var model = (BrowserTableModel) getModel();
+		var columnType = modelColumn >= 0 && modelColumn < model.getColumnCount()
+				? model.getColumn(modelColumn).getType()
+				: null;
 
 		if (columnType == List.class) {
-			final ValidatedObjectAndEditString value = (ValidatedObjectAndEditString) model.getValueAt(modelRow, modelColumn);
+			var value = (ValidatedObjectAndEditString) model.getValueAt(modelRow, modelColumn);
 
 			if (value != null) {
-				final List<?> list = (List<?>) value.getValidatedObject();
+				var list = (List<?>) value.getValidatedObject();
 				
 				if (list != null && !list.isEmpty())
 					showCellMenu(List.class, list, "Entries", e);
