@@ -38,7 +38,7 @@ import org.cytoscape.view.table.internal.util.ValidatedObjectAndEditString;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -190,8 +190,9 @@ public final class BrowserTableModel extends AbstractTableModel
 	}
 
 	public CyColumn getColumn(int columnIndex)  {
-		final String columnName = getColumnName(columnIndex);
-		return dataTable.getColumn(columnName);
+		var columnName = columnIndex >= 0 && columnIndex < getColumnCount() ? getColumnName(columnIndex) : null;
+		
+		return columnName != null ? dataTable.getColumn(columnName) : null;
 	}
 
 	CyColumn getColumnByModelIndex(final int modelIndex)  {
@@ -559,11 +560,9 @@ public final class BrowserTableModel extends AbstractTableModel
 	}
 
 	public boolean isPrimaryKey(int columnIndex) {
-		CyColumn column = getColumnByModelIndex(columnIndex);
-		if (column == null) {
-			return false;
-		}
-		return column.isPrimaryKey();
+		var column = columnIndex >= 0 && columnIndex < getColumnCount() ? getColumnByModelIndex(columnIndex) : null;
+		
+		return column == null ? false : column.isPrimaryKey();
 	}
 
 	void clearSelectedRows() {

@@ -1,30 +1,5 @@
 package org.cytoscape.view.table.internal.impl;
 
-/*
- * #%L
- * Cytoscape Table Browser Impl (table-browser-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2010 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 
@@ -53,9 +28,32 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 
-final class BrowserTableHeaderRenderer extends JPanel implements TableCellRenderer {
+/*
+ * #%L
+ * Cytoscape Table Browser Impl (table-browser-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2010 - 2021 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
-	private static final long serialVersionUID = 4656466166588715282L;
+@SuppressWarnings("serial")
+final class BrowserTableHeaderRenderer extends JPanel implements TableCellRenderer {
 
 	private final JLabel namespaceLabel;
 	private final JLabel namespaceIconLabel;
@@ -274,7 +272,7 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 			boolean ascending = true;
 			
 			RowSorter<? extends TableModel> rowSorter = table.getRowSorter();
-			int modelColumn = table.convertColumnIndexToModel(col);
+			int modelColumn = col >= 0 && col < table.getColumnCount() ? table.convertColumnIndexToModel(col) : -1;
 			List<? extends SortKey> sortKeys = rowSorter.getSortKeys();
 			
 			if (sortKeys.size() > 0) {
