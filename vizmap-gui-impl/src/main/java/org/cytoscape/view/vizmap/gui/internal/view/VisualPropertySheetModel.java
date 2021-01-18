@@ -56,7 +56,7 @@ public class VisualPropertySheetModel extends AbstractVizMapperModel {
 	public String getTitle() {
 		if (targetDataType == CyNode.class) return "Node";
 		if (targetDataType == CyEdge.class) return "Edge";
-		if (targetDataType == CyColumn.class) return "Column";
+		if (targetDataType == CyColumn.class) return "Table";
 		return "Network";
 	}
 	

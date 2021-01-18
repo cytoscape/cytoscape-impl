@@ -1,5 +1,10 @@
 package org.cytoscape.view.table.internal.impl;
 
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_BACKGROUND_PAINT;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_FONT_FACE;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_TEXT_COLOR;
+import static org.cytoscape.view.table.internal.BrowserTableVisualLexicon.CELL_CUSTOMGRAPHICS;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
@@ -12,7 +17,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.table.CyColumnView;
-import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
+import org.cytoscape.view.presentation.property.table.CellCustomGraphics;
 
 public class BrowserTablePresentation {
 	
@@ -27,7 +32,7 @@ public class BrowserTablePresentation {
 	public Color getBackgroundColor(CyRow row, CyColumnView colView) {
 		// Apply background VP
 		Color background = UIManager.getColor("Table.background");
-		Function<CyRow,Paint> cellPaintMapping = colView.getCellVisualProperty(BasicTableVisualLexicon.CELL_BACKGROUND_PAINT);
+		Function<CyRow,Paint> cellPaintMapping = colView.getCellVisualProperty(CELL_BACKGROUND_PAINT);
 		if(cellPaintMapping != null) {
 			Paint vpValue = cellPaintMapping.apply(row);
 			if(vpValue instanceof Color) {
@@ -40,7 +45,7 @@ public class BrowserTablePresentation {
 	public Color getForegroundColor(CyRow row, CyColumnView colView) {
 		// Apply background VP
 		Color foreground = UIManager.getColor("Table.foreground");
-		Function<CyRow,Paint> cellPaintMapping = colView.getCellVisualProperty(BasicTableVisualLexicon.CELL_TEXT_COLOR);
+		Function<CyRow,Paint> cellPaintMapping = colView.getCellVisualProperty(CELL_TEXT_COLOR);
 		if(cellPaintMapping != null) {
 			Paint vpValue = cellPaintMapping.apply(row);
 			if(vpValue instanceof Color) {
@@ -55,7 +60,7 @@ public class BrowserTablePresentation {
 		if (value instanceof Boolean) {
 			font = iconManager.getIconFont(12.0f);
 		} else {
-			Function<CyRow,Font> cellFontMapping = colView.getCellVisualProperty(BasicTableVisualLexicon.CELL_FONT_FACE);
+			Function<CyRow,Font> cellFontMapping = colView.getCellVisualProperty(CELL_FONT_FACE);
 			if(cellFontMapping != null) {
 				font = cellFontMapping.apply(row);
 			}
@@ -63,4 +68,9 @@ public class BrowserTablePresentation {
 		return font;
 	}
 	
+	public CellCustomGraphics getCustomGraphics(CyRow row, CyColumnView colView) {
+		var fn = colView.getCellVisualProperty(CELL_CUSTOMGRAPHICS);
+		
+		return fn != null ? fn.apply(row) : null;
+	}
 }

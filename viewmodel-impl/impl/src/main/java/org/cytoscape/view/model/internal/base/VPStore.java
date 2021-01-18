@@ -104,6 +104,11 @@ public class VPStore {
 	protected <T, V extends T> boolean setVisualProperty(Long suid, VisualProperty<? extends T> vp, V value) {
 		if(setSpecialVisualProperty(suid, vp, value))
 			return true;
+		
+		if ("CELL_CUSTOMGRAPHICS".equals(vp.getIdString()) && value != null
+				&& value.getClass().getName().contains(".NullCellCustomGraphics"))
+			return false;
+		
 		var prevValue = getVisualPropertiesMap(suid).getOrElse(vp, null);
 		if(!Objects.equals(prevValue, value)) {
 			visualProperties = put(visualProperties, suid, vp, value);

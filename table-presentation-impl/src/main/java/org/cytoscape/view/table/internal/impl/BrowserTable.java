@@ -166,6 +166,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		getHeaderPopupMenu();
 		setKeyStroke();
 		setTransferHandler(new BrowserTableTransferHandler());
+		
+		setRowHeight(100);
 	}
 
 	// ==[ PUBLIC METHODS ]=============================================================================================

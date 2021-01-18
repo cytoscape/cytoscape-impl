@@ -1,17 +1,15 @@
 package org.cytoscape.view.table.internal.impl;
 
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.geom.Rectangle2D;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.UIManager;
-import javax.swing.border.Border;
-import javax.swing.table.TableCellRenderer;
+import javax.swing.table.DefaultTableCellRenderer;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
@@ -19,9 +17,9 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.table.CyColumnView;
-import org.cytoscape.view.model.table.CyTableView;
 import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
-import org.cytoscape.view.presentation.property.table.CellFormat;
+import org.cytoscape.view.presentation.property.table.CellCustomGraphics;
+import org.cytoscape.view.table.internal.cg.NullCellCustomGraphics;
 import org.cytoscape.view.table.internal.util.ValidatedObjectAndEditString;
 
 /*
@@ -30,7 +28,7 @@ import org.cytoscape.view.table.internal.util.ValidatedObjectAndEditString;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -49,49 +47,55 @@ import org.cytoscape.view.table.internal.util.ValidatedObjectAndEditString;
  */
 
 /** Cell renderer for attribute browser table. */
-class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
-
-	private static final long serialVersionUID = -4364566217397320318L;
+@SuppressWarnings("serial")
+class BrowserTableCellRenderer extends DefaultTableCellRenderer {
 
 	// Define fonts & colors for the cells
 	private static final int H_PAD = 8;
 	private static final int V_PAD = 2;
 	private static EquationIcon EQUATION_ICON = new EquationIcon();
 	
+	private CyColumn col;
+	private CyRow row;
+	private CellCustomGraphics cg;
+	
 	private final BrowserTablePresentation presentation;
 	
-
 	public BrowserTableCellRenderer(CyServiceRegistrar serviceRegistrar) {
 		presentation = new BrowserTablePresentation(serviceRegistrar, getFont());
 		
 		setOpaque(true);
 
 		// Add padding:
-		Border border = getBorder();
+		var border = getBorder();
+		
 		if (border == null)
 			border = BorderFactory.createEmptyBorder(V_PAD, H_PAD, V_PAD, H_PAD);
 		else
 			border = BorderFactory.createCompoundBorder(border, BorderFactory.createEmptyBorder(V_PAD, H_PAD, V_PAD, H_PAD));
+		
 		setBorder(border);
 	}
 	
-
 	@Override
-	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int rowIndex, int colIndex) {
-		final ValidatedObjectAndEditString objEditStr = (ValidatedObjectAndEditString) value;
-		final Object validatedObj = objEditStr != null ? objEditStr.getValidatedObject() : null;
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+			int rowIndex, int colIndex) {
+		super.getTableCellRendererComponent(table, value, isSelected, hasFocus, rowIndex, colIndex);
+		
+		var objEditStr = (ValidatedObjectAndEditString) value;
+		var validatedObj = objEditStr != null ? objEditStr.getValidatedObject() : null;
 
-		BrowserTable browserTable = (BrowserTable) table;
-		BrowserTableModel model = (BrowserTableModel) browserTable.getModel();
-		CyTableView tableView = model.getTableView();
-		CyColumn col = model.getColumnByModelIndex(browserTable.convertColumnIndexToModel(colIndex));
-		CyRow row = model.getCyRow(browserTable.convertRowIndexToModel(rowIndex));
+		var browserTable = (BrowserTable) table;
+		var model = (BrowserTableModel) browserTable.getModel();
+		var tableView = model.getTableView();
+		col = model.getColumnByModelIndex(browserTable.convertColumnIndexToModel(colIndex));
+		row = model.getCyRow(browserTable.convertRowIndexToModel(rowIndex));
 		
-		CyColumnView colView = (CyColumnView) tableView.getColumnView(col);
+		var colView = (CyColumnView) tableView.getColumnView(col);
 		
-		Color background = presentation.getBackgroundColor(row, colView);
-		Color foreground = presentation.getForegroundColor(row, colView);
-		Font font = presentation.getFont(row, colView, validatedObj);
+		var background = presentation.getBackgroundColor(row, colView);
+		var foreground = presentation.getForegroundColor(row, colView);
+		var font = presentation.getFont(row, colView, validatedObj);
 	
 		setBackground(background);
 		setFont(font);
@@ -105,58 +109,74 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 		else
 			setHorizontalAlignment(validatedObj instanceof Number ? JLabel.RIGHT : JLabel.LEFT);
 
-		final boolean isError = objEditStr != null && objEditStr.getErrorText() != null;
-
+		String text = null;
+		String tooltip = null;
+		
+		boolean isError = objEditStr != null && objEditStr.getErrorText() != null;
+		
 		// First, set values
 		if (objEditStr == null || (objEditStr.getValidatedObject() == null && objEditStr.getErrorText() == null)) {
-			setText("");
-			setToolTipText(null);
+			text = "";
 		} else {
-			final String displayText;
-
-			if (objEditStr.getErrorText() != null)
-				displayText = "#ERR: " + objEditStr.getErrorText();
-			else if (validatedObj instanceof Boolean)
-				displayText = validatedObj == Boolean.TRUE ? IconManager.ICON_CHECK_SQUARE : IconManager.ICON_SQUARE_O;
-			else if (validatedObj instanceof Double) {
+			if (objEditStr.getErrorText() != null) {
+				text = "#ERR: " + objEditStr.getErrorText();
+			} else if (validatedObj instanceof Boolean) {
+				text = validatedObj == Boolean.TRUE ? IconManager.ICON_CHECK_SQUARE : IconManager.ICON_SQUARE_O;
+			} else if (validatedObj instanceof Double) {
 				String formatStr = null;
-				CellFormat format = colView.getVisualProperty(BasicTableVisualLexicon.COLUMN_FORMAT);
-				if(format != null) {
+				var format = colView.getVisualProperty(BasicTableVisualLexicon.COLUMN_FORMAT);
+				
+				if (format != null)
 					formatStr = format.getFormat();
-				}
 
 				if (formatStr == null || formatStr.isBlank())
-					displayText = validatedObj.toString();
+					text = validatedObj.toString();
 				else
-					displayText = String.format(formatStr, validatedObj);
+					text = String.format(formatStr, validatedObj);
 			} else {
-				displayText = validatedObj.toString();
+				text = validatedObj.toString();
 			}
 
-			setText(displayText);
-			String tooltipText = validatedObj instanceof Boolean ? validatedObj.toString() : displayText;
-
-			setToolTipText(tooltipText);
-		}
-
-		// If selected, return
-		if (isSelected) {
-			if (table.getSelectedColumn() == colIndex && table.getSelectedRow() == rowIndex) { // Selected
-				setBackground(UIManager.getColor("Table.focusCellBackground"));
-				setForeground(UIManager.getColor("Table.focusCellForeground"));
+			tooltip = validatedObj instanceof Boolean ? validatedObj.toString() : text;
+			
+			if (isSelected) {
+				if (table.getSelectedColumn() == colIndex && table.getSelectedRow() == rowIndex) { // Selected
+					setBackground(UIManager.getColor("Table.focusCellBackground"));
+					setForeground(UIManager.getColor("Table.focusCellForeground"));
+				} else {
+					setForeground(isError ? LookAndFeelUtil.getErrorColor() : UIManager.getColor("Table.selectionForeground"));
+					setBackground(UIManager.getColor("Table.selectionBackground"));
+				}
 			} else {
-				setForeground( isError ? LookAndFeelUtil.getErrorColor() : UIManager.getColor("Table.selectionForeground"));
-				setBackground(UIManager.getColor("Table.selectionBackground"));
+				// If non-editable, grey it out.
+				if (table.getModel() instanceof BrowserTableModel && !table.isCellEditable(0, colIndex))
+					setForeground(UIManager.getColor("TextField.inactiveForeground"));
+				else
+					setForeground(isError ? LookAndFeelUtil.getErrorColor() : foreground);
 			}
-		} else {
-			// If non-editable, grey it out.
-			if (table.getModel() instanceof BrowserTableModel && !table.isCellEditable(0, colIndex))
-				setForeground(UIManager.getColor("TextField.inactiveForeground"));
-			else
-				setForeground(isError ? LookAndFeelUtil.getErrorColor() : foreground);
 		}
+		
+		// Save the custom graphics
+		cg = presentation.getCustomGraphics(row, colView);
+		
+		setText(text);
+		setToolTipText(tooltip);
 
 		return this;
+	}
+	
+	@Override
+	public void paint(Graphics g) {
+		super.paint(g);
+		
+		// Draw custom graphics (sparklines, etc)
+		if (cg != null && !cg.equals(NullCellCustomGraphics.getNullObject())) {
+			var w = getWidth();
+			var h = getHeight();
+			var bounds = new Rectangle2D.Float(0, 0, w, h);
+			
+			cg.draw(g, bounds, col, row);
+		}
 	}
 
 	private static class EquationIcon implements Icon {
@@ -175,11 +195,11 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 		}
 
 		@Override
-		public void paintIcon(final Component c, final Graphics g, final int x, final int y) {
+		public void paintIcon(Component c, Graphics g, int x, int y) {
 			g.setColor(LookAndFeelUtil.getSuccessColor());
 
-			final int[] xPoints = new int[] { 0, 0, WIDTH };
-			final int[] yPoints = new int[] { HEIGHT, 0, 0 };
+			int[] xPoints = new int[] { 0, 0, WIDTH };
+			int[] yPoints = new int[] { HEIGHT, 0, 0 };
 			g.fillPolygon(xPoints, yPoints, 3);
 		}
 	}

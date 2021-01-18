@@ -22,7 +22,7 @@ import com.l2fprod.common.swing.PercentLayout;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -51,14 +51,14 @@ public class CyCustomGraphicsPropertyEditor extends AbstractPropertyEditor {
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	public CyCustomGraphicsPropertyEditor(final CyCustomGraphicsValueEditor valueEditor,
-			final CyServiceRegistrar serviceRegistrar) {
+	public CyCustomGraphicsPropertyEditor(CyCustomGraphicsValueEditor valueEditor,
+			CyServiceRegistrar serviceRegistrar) {
 		this.valueEditor = valueEditor;
 		this.serviceRegistrar = serviceRegistrar;
 	}
 	
 	@Override
-	public Component getCustomEditor() {System.out.println(">>>>>>>>>> " + super.getCustomEditor());
+	public Component getCustomEditor() {
 		if (editor == null) {
 			editor = new JPanel(new PercentLayout(PercentLayout.HORIZONTAL, 0));
 			((JPanel) editor).setOpaque(false);
@@ -66,7 +66,7 @@ public class CyCustomGraphicsPropertyEditor extends AbstractPropertyEditor {
 			((JPanel) editor).add("*", label = new CyCustomGraphicsCellRenderer());
 			label.setOpaque(false);
 			
-			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+			var iconManager = serviceRegistrar.getService(IconManager.class);
 			
 			// TODO just use double-click to open editor--remove buttons!!!	
 			((JPanel) editor).add(button = ComponentFactory.Helper.getFactory().createMiniButton());
@@ -102,18 +102,19 @@ public class CyCustomGraphicsPropertyEditor extends AbstractPropertyEditor {
 	}
 	
 	@Override
-	public void setValue(final Object value) {
+	public void setValue(Object value) {
 		customGraphics = (CyCustomGraphics<?>) value;
 		label.setValue(value);
 	}
 	
-	public void setVisualProperty(final VisualProperty<CyCustomGraphics> visualProperty) {
+	@SuppressWarnings("rawtypes")
+	public void setVisualProperty(VisualProperty<CyCustomGraphics> visualProperty) {
 		this.visualProperty = visualProperty;
 	}
 	
 	private void editChart() {
 		//TODO: set correct parent
-		final CyCustomGraphics<?> newVal = valueEditor.showEditor(null, customGraphics, visualProperty);
+		var newVal = valueEditor.showEditor(null, customGraphics, visualProperty);
 
 		if (newVal != null) {
 			setValue(newVal);
