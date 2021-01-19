@@ -92,14 +92,16 @@ public class BarSparkline extends AbstractSparkline<CategoryDataset> implements 
 		super.addJsonDeserializers(module);
 		module.addDeserializer(BarSparklineType.class, new BarSparklineTypeJsonDeserializer());
 	}
-
-	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	@Override
-	protected void init() {
-		super.init();
+	public void update() {
+		super.update();
+		
 		type = get(TYPE, BarSparklineType.class, BarSparklineType.GROUPED);
+		orientation = get(ORIENTATION, Orientation.class);
 	}
+
+	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	@Override
 	protected CategoryDataset createDataset(CyRow row) {
@@ -108,8 +110,6 @@ public class BarSparkline extends AbstractSparkline<CategoryDataset> implements 
 		colors = getColors(data);
 		double size = 32;
 		bounds = new Rectangle2D.Double(-size / 2, -size / 2, size, size);
-		
-		orientation = get(ORIENTATION, Orientation.class);
 		
 		if (type == BarSparklineType.HEAT_STRIPS &&
 				(range == null || range.size() < 2 || range.get(0) == null || range.get(1) == null))
@@ -160,18 +160,6 @@ public class BarSparkline extends AbstractSparkline<CategoryDataset> implements 
 		plot.setBackgroundPaint(TRANSPARENT_COLOR);
 		plot.setBackgroundAlpha(0.0f);
 		
-//		if (showRangeZeroBaseline) {
-//			plot.setRangeZeroBaselineVisible(true);
-//			plot.setRangeZeroBaselinePaint(axisColor);
-//			plot.setRangeZeroBaselineStroke(new EqualDashStroke(axisWidth));
-//		}
-		
-//		// Set axis range		
-//		if (range != null && range.size() >= 2 && range.get(0) != null && range.get(1) != null) {
-//			rangeAxis.setLowerBound(range.get(0));
-//			rangeAxis.setUpperBound(range.get(1));
-//		}
-		
 		if (type != BarSparklineType.STACKED) {
 			if (type == BarSparklineType.HEAT_STRIPS || type == BarSparklineType.UP_DOWN) {
 				Color up   = (colors.size() > 0) ? colors.get(0) : Color.LIGHT_GRAY;
@@ -190,6 +178,12 @@ public class BarSparkline extends AbstractSparkline<CategoryDataset> implements 
         var rangeAxis = (NumberAxis) plot.getRangeAxis();
 		rangeAxis.setVisible(false);
 		
+		// Set axis range
+		if (range != null && range.size() >= 2 && range.get(0) != null && range.get(1) != null) {
+			rangeAxis.setLowerBound(range.get(0));
+			rangeAxis.setUpperBound(range.get(1));
+		}
+				
 		var renderer = (BarRenderer) plot.getRenderer();
 		renderer.setBarPainter(new StandardBarPainter());
 		renderer.setShadowVisible(false);

@@ -57,6 +57,8 @@ public abstract class AbstractSparkline<T extends Dataset> extends AbstractCellC
 	protected Rectangle2D bounds;
 	protected Rectangle2D scaledBounds;
 	
+	private boolean dirty = true;
+	
 	protected final CyServiceRegistrar serviceRegistrar;
 	
 	protected AbstractSparkline(String displayName, CyServiceRegistrar serviceRegistrar) {
@@ -66,18 +68,8 @@ public abstract class AbstractSparkline<T extends Dataset> extends AbstractCellC
 			throw new IllegalArgumentException("'serviceRegistrar' must not be null.");
 		
 		this.serviceRegistrar = serviceRegistrar;
-		
-		init();
 	}
 	
-	/**
-	 * Initializes properties that are common to all rows.
-	 */
-	protected void init() {
-		global = get(GLOBAL_RANGE, Boolean.class, true);
-		range = global ? getList(RANGE, Double.class) : null;
-	}
-
 	protected AbstractSparkline(String displayName, String input, CyServiceRegistrar serviceRegistrar) {
 		this(displayName, serviceRegistrar);
 		addProperties(parseInput(input));
@@ -104,7 +96,12 @@ public abstract class AbstractSparkline<T extends Dataset> extends AbstractCellC
 	
 	@Override
 	public void update() {
-		// Doesn't need to do anything here, because charts are updated when layers are recreated.
+		global = get(GLOBAL_RANGE, Boolean.class, true);
+		range = global ? getList(RANGE, Double.class) : null;
+	}
+	
+	protected boolean isDirty() {
+		return dirty;
 	}
 	
 	public Map<String, List<Double>> getDataFromColumns(CyRow row, List<CyColumnIdentifier> columnNames) {
@@ -342,10 +339,21 @@ public abstract class AbstractSparkline<T extends Dataset> extends AbstractCellC
 	}
 	
 	protected JFreeChart createChart(CyRow row) {
+		if (isDirty()) {
+			update();
+			dirty = false;
+		}
+		
 		var dataset = createDataset(row);
 		var chart = createChart(dataset);
 		
 		return chart;
+	}
+	
+	@Override
+	public synchronized void set(String key, Object value) {
+		super.set(key, value);
+		dirty = true;
 	}
 
 	protected abstract T createDataset(CyRow row);
