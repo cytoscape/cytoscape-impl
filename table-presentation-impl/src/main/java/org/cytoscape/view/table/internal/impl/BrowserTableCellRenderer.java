@@ -125,7 +125,7 @@ class BrowserTableCellRenderer extends JPanel implements TableCellRenderer {
 		boolean isError = objEditStr != null && objEditStr.getErrorText() != null;
 		
 		// First, set values
-		if (objEditStr == null || (objEditStr.getValidatedObject() == null && objEditStr.getErrorText() == null)) {
+		if (objEditStr == null || (validatedObj == null && objEditStr.getErrorText() == null)) {
 			text = "";
 		} else {
 			if (objEditStr.getErrorText() != null) {
@@ -148,22 +148,22 @@ class BrowserTableCellRenderer extends JPanel implements TableCellRenderer {
 			}
 
 			tooltip = validatedObj instanceof Boolean ? validatedObj.toString() : text;
-			
-			if (isSelected) {
-				if (table.getSelectedColumn() == colIndex && table.getSelectedRow() == rowIndex) { // Selected
-					bg = UIManager.getColor("Table.focusCellBackground");
-					fg = UIManager.getColor("Table.focusCellForeground");
-				} else {
-					bg = UIManager.getColor("Table.selectionBackground");
-					fg = isError ? LookAndFeelUtil.getErrorColor() : UIManager.getColor("Table.selectionForeground");
-				}
+		}
+		
+		if (isSelected) {
+			if (table.getSelectedColumn() == colIndex && table.getSelectedRow() == rowIndex) { // Selected
+				bg = UIManager.getColor("Table.focusCellBackground");
+				fg = UIManager.getColor("Table.focusCellForeground");
 			} else {
-				// If non-editable, grey it out.
-				if (table.getModel() instanceof BrowserTableModel && !table.isCellEditable(0, colIndex))
-					fg = UIManager.getColor("TextField.inactiveForeground");
-				else
-					fg = isError ? LookAndFeelUtil.getErrorColor() : fg;
+				bg = UIManager.getColor("Table.selectionBackground");
+				fg = isError ? LookAndFeelUtil.getErrorColor() : UIManager.getColor("Table.selectionForeground");
 			}
+		} else {
+			// If non-editable, grey it out.
+			if (!table.isCellEditable(0, colIndex))
+				fg = UIManager.getColor("TextField.inactiveForeground");
+			else
+				fg = isError ? LookAndFeelUtil.getErrorColor() : fg;
 		}
 		
 		// Save the custom graphics
