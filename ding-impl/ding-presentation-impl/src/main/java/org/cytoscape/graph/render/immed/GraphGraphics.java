@@ -119,12 +119,9 @@ public final class GraphGraphics {
 	public static final int CUSTOM_SHAPE_MAX_VERTICES = 100;
 	public static final int MAX_EDGE_ANCHORS = 64;
 	private static final float DEF_SHAPE_SIZE = 32;
-	/*
-	 * A constant for controlling how cubic Bezier curves are drawn; This
-	 * particular constant results in elliptical-looking curves.
-	 */
+	
+	// A constant for controlling how cubic Bezier curves are drawn; This particular constant results in elliptical-looking curves.
 	private static final double CURVE_ELLIPTICAL = (4.0d * (Math.sqrt(2.0d) - 1.0d)) / 3.0d;
-	private static final Paint CLEAR_PAINT = new Color(0, 0, 0, 0);
 	
 	// This member variable only to be used from within defineCustomNodeShape().
 	private byte m_lastCustomShapeType = s_last_shape;
@@ -197,88 +194,18 @@ public final class GraphGraphics {
 	private Graphics2D m_gMinimal; // We use mostly java.awt.Graphics methods.
 	private final AffineTransform m_currNativeXform = new AffineTransform();
 	
-	/**
-	 * All rendering operations will be performed on the specified image. No
-	 * rendering operations are performed as a result of calling this
-	 * constructor. It is safe to call this constructor from any thread.
-	 * <p>
-	 * The image argument passed to this constructor must support at least three
-	 * methods: getGraphics(), getWidth(ImageObserver), and
-	 * getHeight(ImageObserver). The image.getGraphics() method must return an
-	 * instance of java.awt.Graphics2D. The hypothetical method calls
-	 * image.getWidth(null) and image.getHeight(null) must return the
-	 * corresponding dimension immediately.
-	 * <p>
-	 * Notice that it is not possible to resize the image area with this API.
-	 * This is not a problem; instances of this class are very lightweight and
-	 * are for the most part stateless; simply instantiate a new GraphGraphics
-	 * when the image area changes.
-	 * 
-	 * @param image
-	 *            an off-screen image; passing an image gotten from a call to
-	 *            java.awt.Component.createImage(int, int) works well, although
-	 *            experience shows that for full support of non-opaque colors,
-	 *            java.awt.image.BufferedImage should be used instead.
-	 * @param debug
-	 *            if this is true, extra [and time-consuming] error checking
-	 *            will take place in each method call; it is recommended to have
-	 *            this value set to true during the testing phase; set it to
-	 *            false once you are sure that code does not mis-use this
-	 *            module.
-	 * @param clear
-	 *            if this is true, we will clear the image before drawing.  This should
-	 *            only ever be false when we're printing....
-	 */
+
 	public GraphGraphics(GraphicsProvider graphicsProvider) {
 		this.graphicsProvider = graphicsProvider;
-		m_path2dPrime.setWindingRule(GeneralPath.WIND_EVEN_ODD);
-		initialize(CLEAR_PAINT);
+		this.m_path2dPrime.setWindingRule(GeneralPath.WIND_EVEN_ODD);
+		update();
 	}
 	
 	public NetworkTransform getTransform() {
 		return graphicsProvider.getTransform();
 	}
 
-	/**
-	 * Clears image area with background paint specified and sets an appropriate
-	 * transformation of coordinate systems. See the class description for a
-	 * definition of the two coordinate systems: the node coordinate system and
-	 * the image coordinate system.
-	 * <p>
-	 * The background paint is not blended with colors that may already be on
-	 * the underlying image; if a translucent color is used in the background
-	 * paint, the underlying image itself becomes translucent.
-	 * <p>
-	 * It is mandatory to call this method before making the first rendering
-	 * call.
-	 * 
-	 * @param bgPaint
-	 *            paint to use when clearing the image before painting a new
-	 *            frame; translucency is honored, provided that the underlying
-	 *            image supports it.
-	 * @param xCenter
-	 *            the X component of the translation transform for the frame
-	 *            about to be rendered; a node whose center is at the X
-	 *            coordinate xCenter will be rendered exactly in the middle of
-	 *            the image going across; increasing X values (in the node
-	 *            coordinate system) result in movement towards the right on the
-	 *            image.
-	 * @param yCenter
-	 *            the Y component of the translation transform for the frame
-	 *            about to be rendered; a node whose center is at the Y
-	 *            coordinate yCenter will be rendered exactly in the middle of
-	 *            the image going top to bottom; increasing Y values (in the
-	 *            node coordinate system) result in movement towards the bottom
-	 *            on the image.
-	 * @param scaleFactor
-	 *            the scaling that is to take place when rendering; a distance
-	 *            of 1 in node coordinates translates to a distance of
-	 *            scaleFactor in the image coordinate system (usually one unit
-	 *            in the image coordinate system equates to one pixel width).
-	 * @exception IllegalArgumentException
-	 *                if scaleFactor is not positive.
-	 */
-	private final void initialize(Paint bgPaint) {
+	public final void update() {
 		if (m_gMinimal != null) {
 			m_gMinimal.dispose();
 			m_gMinimal = null;
@@ -289,14 +216,6 @@ public final class GraphGraphics {
 
 		m_g2d = graphicsProvider.getGraphics();
 
-//		final Composite origComposite = m_g2d.getComposite();
-//		m_g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC));
-//		m_g2d.setPaint(bgPaint);
-//		m_g2d.fillRect(0, 0, transform.getWidth(), transform.getHeight());
-//		m_g2d.setComposite(origComposite);
-		
-		// For detailed view, render high quality image as much as possible.
-		
 		// Antialiasing is ON
 		m_g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		

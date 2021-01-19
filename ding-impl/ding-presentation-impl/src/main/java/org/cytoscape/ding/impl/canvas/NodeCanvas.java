@@ -42,11 +42,13 @@ public class NodeCanvas<GP extends GraphicsProvider> extends DingCanvas<GP> {
 
 	private final VisualMappingManager vmm;
 	private final DRenderingEngine re;
+	private final GraphGraphics graphGraphics;
 
 	public NodeCanvas(GP graphics, DRenderingEngine re) {
 		super(graphics);
 		this.re = re;
 		this.vmm = re.getServiceRegistrar().getService(VisualMappingManager.class);
+		this.graphGraphics = new GraphGraphics(graphics);
 	}
 	
 	@Override
@@ -61,14 +63,12 @@ public class NodeCanvas<GP extends GraphicsProvider> extends DingCanvas<GP> {
 
 	@Override
 	public void paint(ProgressMonitor pm, RenderDetailFlags flags) {
-		var graphics = new GraphGraphics(graphicsProvider);
-		
 		var dependencies = getVPDeps();
-		
 		var snapshot = re.getViewModelSnapshot();
 		var edgeDetails = re.getEdgeDetails();
 		var nodeDetails = re.getNodeDetails();
 		
-		GraphRenderer.renderNodes(pm, graphics, snapshot, flags, nodeDetails, edgeDetails, dependencies);
+		graphGraphics.update();
+		GraphRenderer.renderNodes(pm, graphGraphics, snapshot, flags, nodeDetails, edgeDetails, dependencies);
 	}
 }

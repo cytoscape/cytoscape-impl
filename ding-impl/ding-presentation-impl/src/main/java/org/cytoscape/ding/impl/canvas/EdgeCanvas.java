@@ -9,10 +9,12 @@ import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 public class EdgeCanvas<GP extends GraphicsProvider> extends DingCanvas<GP> {
 
 	private final DRenderingEngine re;
+	private final GraphGraphics graphGraphics;
 	
 	public EdgeCanvas(GP graphics, DRenderingEngine re) {
 		super(graphics);
 		this.re = re;
+		this.graphGraphics = new GraphGraphics(graphics);
 	}
 	
 	@Override
@@ -22,13 +24,12 @@ public class EdgeCanvas<GP extends GraphicsProvider> extends DingCanvas<GP> {
 	
 	@Override
 	public void paint(ProgressMonitor pm, RenderDetailFlags flags) {
-		var graphics = new GraphGraphics(graphicsProvider);
-		
 		var netViewSnapshot = re.getViewModelSnapshot();
 		var edgeDetails = re.getEdgeDetails();
 		var nodeDetails = re.getNodeDetails();
 		
-		GraphRenderer.renderEdges(pm, graphics, netViewSnapshot, flags, nodeDetails, edgeDetails);
+		graphGraphics.update();
+		GraphRenderer.renderEdges(pm, graphGraphics, netViewSnapshot, flags, nodeDetails, edgeDetails);
 	}
 	
 }
