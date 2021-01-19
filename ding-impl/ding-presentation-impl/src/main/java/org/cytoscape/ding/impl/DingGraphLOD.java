@@ -38,6 +38,8 @@ import org.cytoscape.view.model.CyNetworkView;
  * Level of Details object for Ding.
  * 
  * TODO: design and implement event/listeners for this.
+ * 
+ * This is a singleton, only one of these is instantiated in the CyActivator.
  */
 public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 
@@ -46,6 +48,7 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 	protected int nodeLabelThreshold;
 	protected int edgeArrowThreshold;
 	protected int edgeLabelThreshold;
+	protected boolean edgeBufferPan;
 
 	private final Properties props;
 	private final CyProperty<Properties> cyProp;
@@ -60,25 +63,13 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 		init();
 	}
 
-	// Copy constructor.
-	public DingGraphLOD(DingGraphLOD source) {
-		this.props = source.props;
-		this.cyProp = source.cyProp;
-		this.serviceRegistrar = source.serviceRegistrar;
-
-		this.coarseDetailThreshold = source.coarseDetailThreshold;
-		this.nodeBorderThreshold = source.nodeBorderThreshold;
-		this.nodeLabelThreshold = source.nodeLabelThreshold;
-		this.edgeArrowThreshold = source.edgeArrowThreshold;
-		this.edgeLabelThreshold = source.edgeLabelThreshold;
-	}
-
 	private void init() {
 		coarseDetailThreshold = parseInt(props.getProperty("render.coarseDetailThreshold"), 4000);
 		nodeBorderThreshold = parseInt(props.getProperty("render.nodeBorderThreshold"), 400);
 		nodeLabelThreshold = parseInt(props.getProperty("render.nodeLabelThreshold"), 200);
 		edgeArrowThreshold = parseInt(props.getProperty("render.edgeArrowThreshold"), 600);
 		edgeLabelThreshold = parseInt(props.getProperty("render.edgeLabelThreshold"), 200);
+		edgeBufferPan = Boolean.valueOf(props.getProperty("render.edgeBufferPan"));
 	}
 
 	private static int parseInt(String intString, int defaultValue) {
@@ -137,20 +128,13 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 			public double getNestedNetworkImageScaleFactor() {
 				return DingGraphLOD.this.getNestedNetworkImageScaleFactor();
 			}
+			@Override
+			public boolean edgeBufferPan() {
+				return DingGraphLOD.this.edgeBufferPan();
+			}
 		};
 	}
 	
-	
-//	/**
-//	 * For dense networks we don't want to draw edges during
-//	 * pan and zoom operations.  This flag controls that.
-//	 *
-//	 * @param drawEdges if true edges will not be drawn
-//	 */
-//	@Override
-//	public void setDrawEdges(boolean drawEdges) {
-//		this.drawEdges = drawEdges;
-//	}
 
 	@Override
 	public void handleEvent(PropertyUpdatedEvent e) {
@@ -164,9 +148,6 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 		if (view != null)
 			view.updateView();
 	}
-
-//	@Override
-//	public boolean getDrawEdges() { return drawEdges; }
 
 	/**
 	 * Determines whether or not to render all edges in a graph, no edges, or
@@ -429,6 +410,12 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 		return true;
 	}
 
+	
+	@Override
+	public boolean edgeBufferPan() {
+		return edgeBufferPan;
+	}
+	
 	@Override
 	public double getNestedNetworkImageScaleFactor() {
 		final String scaleFactor = props.getProperty("nestedNetwork.imageScaleFactor", "1.0");

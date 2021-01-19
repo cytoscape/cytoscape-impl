@@ -190,22 +190,22 @@ public abstract class RenderComponent extends JComponent {
 	private PaintParameters getFastCanvasPaintParams() {
 		RenderDetailFlags flags = fastCanvas.getRenderDetailFlags();
 		
-		if(flags.renderEdges() != RenderEdges.NONE) {
-			return PaintParameters.updateType(updateType); // Fast canvas can render its own edges, don't optimize
-		}
-		
-		// Try to optimize panning by just shifting the edge canvas image buffer by some number of pixels
-		if((updateType == UpdateType.ALL_FAST || updateType == UpdateType.ALL_FULL) && fastCanvasPanStartedSnapshot != null) {
-			
-			if(Objects.equals(slowCanvasLastPaintSnapshot, fastCanvasPanStartedSnapshot)) {
-				int[] dxdy = getBufferPanDxDy(slowCanvasLastPaintSnapshot);
-				int dx = dxdy[0], dy = dxdy[1];
-				return PaintParameters.pan(dx, dy, slowCanvas, "slow");
+		if(flags.has(RenderDetailFlags.OPT_EDGE_BUFF_PAN)) { // enable edge buffer panning optimization
+			if(flags.renderEdges() != RenderEdges.NONE) {
+				return PaintParameters.updateType(updateType); // Fast canvas can render its own edges, don't need to buffer pan
 			}
-			else if(fastCanvasLastPaintSnapshot != null) {
-				int[] dxdy = getBufferPanDxDy(fastCanvasLastPaintSnapshot);
-				int dx = dxdy[0], dy = dxdy[1];
-				return PaintParameters.pan(dx, dy, fastCanvas, "fast");
+			// Try to optimize panning by just shifting the edge canvas image buffer by some number of pixels
+			if((updateType == UpdateType.ALL_FAST || updateType == UpdateType.ALL_FULL) && fastCanvasPanStartedSnapshot != null) {
+				if(Objects.equals(slowCanvasLastPaintSnapshot, fastCanvasPanStartedSnapshot)) {
+					int[] dxdy = getBufferPanDxDy(slowCanvasLastPaintSnapshot);
+					int dx = dxdy[0], dy = dxdy[1];
+					return PaintParameters.pan(dx, dy, slowCanvas, "slow");
+				}
+				else if(fastCanvasLastPaintSnapshot != null) {
+					int[] dxdy = getBufferPanDxDy(fastCanvasLastPaintSnapshot);
+					int dx = dxdy[0], dy = dxdy[1];
+					return PaintParameters.pan(dx, dy, fastCanvas, "fast");
+				}
 			}
 		}
 		

@@ -17,15 +17,19 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
  */
 public class RenderDetailFlags {
 	
-	public final static int LOD_HIGH_DETAIL  = 0x1;
-	public final static int LOD_NODE_BORDERS = 0x2;
-	public final static int LOD_NODE_LABELS  = 0x4;
-	public final static int LOD_EDGE_ARROWS  = 0x8;
-	public final static int LOD_DASHED_EDGES = 0x10;
-	public final static int LOD_EDGE_ANCHORS = 0x20;
-	public final static int LOD_EDGE_LABELS  = 0x40;
-	public final static int LOD_TEXT_AS_SHAPE = 0x80;
+	// Level of detail
+	public final static int LOD_HIGH_DETAIL     = 0x001;
+	public final static int LOD_NODE_BORDERS    = 0x002;
+	public final static int LOD_NODE_LABELS     = 0x004;
+	public final static int LOD_EDGE_ARROWS     = 0x008;
+	public final static int LOD_DASHED_EDGES    = 0x010;
+	public final static int LOD_EDGE_ANCHORS    = 0x020;
+	public final static int LOD_EDGE_LABELS     = 0x040;
+	public final static int LOD_TEXT_AS_SHAPE   = 0x080;
 	public final static int LOD_CUSTOM_GRAPHICS = 0x100;
+	
+	// Optimizations
+	public final static int OPT_EDGE_BUFF_PAN   = 0x200;
 
 	
 	private final int lodBits;
@@ -140,27 +144,34 @@ public class RenderDetailFlags {
 	
 	
 	private static int lodToBits(int renderNodeCount, int renderEdgeCount, GraphLOD lod) {
-		int lodTemp = 0;
+		int lodbits = 0;
+		
+		// detail bits
 		if (lod.detail(renderNodeCount, renderEdgeCount)) {
-			lodTemp |= LOD_HIGH_DETAIL;
+			lodbits |= LOD_HIGH_DETAIL;
 			if (lod.nodeBorders(renderNodeCount, renderEdgeCount))
-				lodTemp |= LOD_NODE_BORDERS;
+				lodbits |= LOD_NODE_BORDERS;
 			if (lod.nodeLabels(renderNodeCount, renderEdgeCount))
-				lodTemp |= LOD_NODE_LABELS;
+				lodbits |= LOD_NODE_LABELS;
 			if (lod.edgeArrows(renderNodeCount, renderEdgeCount))
-				lodTemp |= LOD_EDGE_ARROWS;
+				lodbits |= LOD_EDGE_ARROWS;
 			if (lod.dashedEdges(renderNodeCount, renderEdgeCount))
-				lodTemp |= LOD_DASHED_EDGES;
+				lodbits |= LOD_DASHED_EDGES;
 			if (lod.edgeAnchors(renderNodeCount, renderEdgeCount))
-				lodTemp |= LOD_EDGE_ANCHORS;
+				lodbits |= LOD_EDGE_ANCHORS;
 			if (lod.edgeLabels(renderNodeCount, renderEdgeCount))
-				lodTemp |= LOD_EDGE_LABELS;
-			if ((((lodTemp & LOD_NODE_LABELS) != 0) || ((lodTemp & LOD_EDGE_LABELS) != 0)) && lod.textAsShape(renderNodeCount, renderEdgeCount))
-				lodTemp |= LOD_TEXT_AS_SHAPE;
+				lodbits |= LOD_EDGE_LABELS;
+			if ((((lodbits & LOD_NODE_LABELS) != 0) || ((lodbits & LOD_EDGE_LABELS) != 0)) && lod.textAsShape(renderNodeCount, renderEdgeCount))
+				lodbits |= LOD_TEXT_AS_SHAPE;
 			if (lod.customGraphics(renderNodeCount, renderEdgeCount))
-				lodTemp |= LOD_CUSTOM_GRAPHICS;
+				lodbits |= LOD_CUSTOM_GRAPHICS;
 		}
-		return lodTemp;
+		
+		// optimization bits
+		if (lod.edgeBufferPan())
+			lodbits |= OPT_EDGE_BUFF_PAN;
+		
+		return lodbits;
 	}
 
 	@Override

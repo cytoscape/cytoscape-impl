@@ -234,6 +234,13 @@ public interface GraphLOD {
 		return false;
 	}
 
+	/**
+	 * Returns true if the edge buffer panning optimization should be turned on.
+	 */
+	default boolean edgeBufferPan() {
+		return false;
+	}
+	
 	default double getNestedNetworkImageScaleFactor() { return 1.0; }
 
 }

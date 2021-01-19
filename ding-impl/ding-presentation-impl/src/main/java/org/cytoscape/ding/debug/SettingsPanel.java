@@ -3,9 +3,14 @@ package org.cytoscape.ding.debug;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Properties;
 
 import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
@@ -34,6 +39,7 @@ public class SettingsPanel extends BasicCollapsiblePanel  {
 	private PropEditor prop3;
 	private PropEditor prop4;
 	private PropEditor prop5;
+	private PropEditor prop6;
 	
 	
 	@SuppressWarnings("unchecked")
@@ -45,11 +51,13 @@ public class SettingsPanel extends BasicCollapsiblePanel  {
 	}
 	
 	private void createContents() {
-		prop1 = new PropEditor("render.coarseDetailThreshold");
-		prop2 = new PropEditor("render.nodeBorderThreshold");
-		prop3 = new PropEditor("render.nodeLabelThreshold");
-		prop4 = new PropEditor("render.edgeArrowThreshold");
-		prop5 = new PropEditor("render.edgeLabelThreshold");
+		prop1 = new NumberPropEditor("render.coarseDetailThreshold");
+		prop2 = new NumberPropEditor("render.nodeBorderThreshold");
+		prop3 = new NumberPropEditor("render.nodeLabelThreshold");
+		prop4 = new NumberPropEditor("render.edgeArrowThreshold");
+		prop5 = new NumberPropEditor("render.edgeLabelThreshold");
+		prop6 = new BooleanPropEditor("render.edgeBufferPan");
+		
 		
 		JPanel panel = new JPanel();
 		panel.setOpaque(false);
@@ -60,41 +68,47 @@ public class SettingsPanel extends BasicCollapsiblePanel  {
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
 			.addGroup(layout.createParallelGroup()
-				.addComponent(prop1.label)
-				.addComponent(prop2.label)
-				.addComponent(prop3.label)
-				.addComponent(prop4.label)
-				.addComponent(prop5.label)
+				.addComponent(prop1.getLabel())
+				.addComponent(prop2.getLabel())
+				.addComponent(prop3.getLabel())
+				.addComponent(prop4.getLabel())
+				.addComponent(prop5.getLabel())
+				.addComponent(prop6.getLabel())
 			)
 			.addGroup(layout.createParallelGroup()
-				.addComponent(prop1.spinner)
-				.addComponent(prop2.spinner)
-				.addComponent(prop3.spinner)
-				.addComponent(prop4.spinner)
-				.addComponent(prop5.spinner)
+				.addComponent(prop1.getEditor())
+				.addComponent(prop2.getEditor())
+				.addComponent(prop3.getEditor())
+				.addComponent(prop4.getEditor())
+				.addComponent(prop5.getEditor())
+				.addComponent(prop6.getEditor())
 			)
 		);
 		
 		layout.setVerticalGroup(layout.createSequentialGroup()
-			.addGroup(layout.createParallelGroup()
-				.addComponent(prop1.label)
-				.addComponent(prop1.spinner, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
+			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
+				.addComponent(prop1.getLabel())
+				.addComponent(prop1.getEditor(), PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
 			)
-			.addGroup(layout.createParallelGroup()
-				.addComponent(prop2.label)
-				.addComponent(prop2.spinner, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
+			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
+				.addComponent(prop2.getLabel())
+				.addComponent(prop2.getEditor(), PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
 			)
-			.addGroup(layout.createParallelGroup()
-				.addComponent(prop3.label)
-				.addComponent(prop3.spinner, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
+			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
+				.addComponent(prop3.getLabel())
+				.addComponent(prop3.getEditor(), PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
 			)
-			.addGroup(layout.createParallelGroup()
-				.addComponent(prop4.label)
-				.addComponent(prop4.spinner, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
+			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
+				.addComponent(prop4.getLabel())
+				.addComponent(prop4.getEditor(), PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
 			)
-			.addGroup(layout.createParallelGroup()
-				.addComponent(prop5.label)
-				.addComponent(prop5.spinner, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
+			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
+				.addComponent(prop5.getLabel())
+				.addComponent(prop5.getEditor(), PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
+			)
+			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
+				.addComponent(prop6.getLabel())
+				.addComponent(prop6.getEditor(), PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
 			)
 		);
 		
@@ -102,6 +116,16 @@ public class SettingsPanel extends BasicCollapsiblePanel  {
 		content.setLayout(new BorderLayout());
 		content.add(BorderLayout.WEST, panel);
 	}
+	
+	public void update() {
+		prop1.update();
+		prop2.update();
+		prop3.update();
+		prop4.update();
+		prop5.update();
+		prop6.update();
+	}
+	
 	
 	
 	private void setProperty(String propName, String value) {
@@ -112,23 +136,21 @@ public class SettingsPanel extends BasicCollapsiblePanel  {
 	}
 	
 	
-	public void update() {
-		prop1.update();
-		prop2.update();
-		prop3.update();
-		prop4.update();
-		prop5.update();
+	private interface PropEditor {
+		JComponent getLabel();
+		JComponent getEditor();
+		void update();
 	}
 	
 	
-	private class PropEditor implements ChangeListener {
+	private class NumberPropEditor implements PropEditor, ChangeListener {
 		
 		private final String propName;
 		private final SpinnerNumberModel model;
-		public final JLabel label;
-		public final JSpinner spinner;
+		private final JLabel label;
+		private final JSpinner spinner;
 		
-		public PropEditor(String propName) {
+		public NumberPropEditor(String propName) {
 			this.propName = propName;
 			label = new JLabel(propName);
 			int value = getPropValue();
@@ -138,6 +160,17 @@ public class SettingsPanel extends BasicCollapsiblePanel  {
 			LookAndFeelUtil.makeSmall(label, spinner);
 		}
 		
+		@Override
+		public JComponent getLabel() {
+			return label;
+		}
+		
+		@Override
+		public JComponent getEditor() {
+			return spinner;
+		}
+		
+		@Override
 		public void update() {
 			spinner.removeChangeListener(this);
 			model.setValue(getPropValue());
@@ -153,6 +186,53 @@ public class SettingsPanel extends BasicCollapsiblePanel  {
 			debounceTimer.debounce(() -> {
 				int v = model.getNumber().intValue();
 				setProperty(propName, Integer.toString(v));
+			});
+		}
+	}
+	
+	
+	private class BooleanPropEditor implements PropEditor, ActionListener {
+		
+		private final String propName;
+		private final JLabel label;
+		private final JCheckBox checkBox;
+		
+		public BooleanPropEditor(String propName) {
+			this.propName = propName;
+			label = new JLabel(propName);
+			checkBox = new JCheckBox();
+			boolean value = getPropValue();
+			checkBox.setSelected(value);
+			checkBox.addActionListener(this);
+			LookAndFeelUtil.makeSmall(label, checkBox);
+		}
+		
+		@Override
+		public JComponent getLabel() {
+			return label;
+		}
+		
+		@Override
+		public JComponent getEditor() {
+			return checkBox;
+		}
+		
+		@Override
+		public void update() {
+			checkBox.removeActionListener(this);
+			checkBox.setSelected(getPropValue());
+			checkBox.addActionListener(this);
+		}
+
+		private boolean getPropValue() {
+			return Boolean.valueOf(cyProps.getProperties().getProperty(propName));
+		}
+		
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			debounceTimer.debounce(() -> {
+				boolean v = checkBox.isSelected();
+				setProperty(propName, String.valueOf(v));
 			});
 		}
 	}
