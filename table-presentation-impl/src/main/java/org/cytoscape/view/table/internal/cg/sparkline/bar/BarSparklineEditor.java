@@ -65,7 +65,7 @@ public class BarSparklineEditor extends AbstractSparklineEditor<BarSparkline> {
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
 	public BarSparklineEditor(BarSparkline chart, CyServiceRegistrar serviceRegistrar) {
-		super(chart, Number.class, false, true, true, true, true, false, true, true, serviceRegistrar);
+		super(chart, Number.class, false, true, true, serviceRegistrar);
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================
@@ -88,7 +88,7 @@ public class BarSparklineEditor extends AbstractSparklineEditor<BarSparkline> {
 	
 	@Override
 	protected JPanel getOtherBasicOptionsPnl() {
-		var p = super.getOtherAdvancedOptionsPnl();
+		var p = super.getOtherBasicOptionsPnl();
 		p.setVisible(true);
 		
 		var layout = new GroupLayout(p);

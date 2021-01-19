@@ -52,7 +52,7 @@ public class BarSparkline extends AbstractSparkline<CategoryDataset> implements 
 	
 	private BarSparklineType type;
 	private Orientation orientation;
-	private final double separation = 1.0;
+	private final double separation = 0.05;
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
@@ -185,6 +185,7 @@ public class BarSparkline extends AbstractSparkline<CategoryDataset> implements 
 		
 		var domainAxis = (CategoryAxis) plot.getDomainAxis();
         domainAxis.setVisible(false);
+        domainAxis.setCategoryMargin(separation);
         
         var rangeAxis = (NumberAxis) plot.getRangeAxis();
 		rangeAxis.setVisible(false);

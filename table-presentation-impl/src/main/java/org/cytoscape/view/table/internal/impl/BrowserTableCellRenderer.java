@@ -1,5 +1,6 @@
 package org.cytoscape.view.table.internal.impl;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.geom.Rectangle2D;
@@ -7,9 +8,10 @@ import java.awt.geom.Rectangle2D;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.UIManager;
-import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
@@ -21,6 +23,8 @@ import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
 import org.cytoscape.view.presentation.property.table.CellCustomGraphics;
 import org.cytoscape.view.table.internal.cg.NullCellCustomGraphics;
 import org.cytoscape.view.table.internal.util.ValidatedObjectAndEditString;
+
+import com.l2fprod.common.swing.renderer.DefaultCellRenderer;
 
 /*
  * #%L
@@ -48,26 +52,33 @@ import org.cytoscape.view.table.internal.util.ValidatedObjectAndEditString;
 
 /** Cell renderer for attribute browser table. */
 @SuppressWarnings("serial")
-class BrowserTableCellRenderer extends DefaultTableCellRenderer {
+class BrowserTableCellRenderer extends JPanel implements TableCellRenderer {
 
 	// Define fonts & colors for the cells
 	private static final int H_PAD = 8;
 	private static final int V_PAD = 2;
 	private static EquationIcon EQUATION_ICON = new EquationIcon();
 	
+	private final JLabel label;
+	
 	private CyColumn col;
 	private CyRow row;
 	private CellCustomGraphics cg;
 	
+	private final DefaultCellRenderer defCellRenderer = new DefaultCellRenderer();
 	private final BrowserTablePresentation presentation;
 	
 	public BrowserTableCellRenderer(CyServiceRegistrar serviceRegistrar) {
-		presentation = new BrowserTablePresentation(serviceRegistrar, getFont());
+		presentation = new BrowserTablePresentation(serviceRegistrar, defCellRenderer.getFont());
 		
-		setOpaque(true);
-
+		label = new JLabel();
+		label.setOpaque(false);
+		
+		setLayout(new BorderLayout());
+		add(label, BorderLayout.CENTER);
+		
 		// Add padding:
-		var border = getBorder();
+		var border = defCellRenderer.getBorder();
 		
 		if (border == null)
 			border = BorderFactory.createEmptyBorder(V_PAD, H_PAD, V_PAD, H_PAD);
@@ -80,11 +91,12 @@ class BrowserTableCellRenderer extends DefaultTableCellRenderer {
 	@Override
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 			int rowIndex, int colIndex) {
-		super.getTableCellRendererComponent(table, value, isSelected, hasFocus, rowIndex, colIndex);
+		if (colIndex < 0 || colIndex >= table.getColumnCount())
+			return this;
 		
 		var objEditStr = (ValidatedObjectAndEditString) value;
 		var validatedObj = objEditStr != null ? objEditStr.getValidatedObject() : null;
-
+		
 		var browserTable = (BrowserTable) table;
 		var model = (BrowserTableModel) browserTable.getModel();
 		var tableView = model.getTableView();
@@ -93,21 +105,19 @@ class BrowserTableCellRenderer extends DefaultTableCellRenderer {
 		
 		var colView = (CyColumnView) tableView.getColumnView(col);
 		
-		var background = presentation.getBackgroundColor(row, colView);
-		var foreground = presentation.getForegroundColor(row, colView);
+		var bg = presentation.getBackgroundColor(row, colView);
+		var fg = presentation.getForegroundColor(row, colView);
 		var font = presentation.getFont(row, colView, validatedObj);
 	
-		setBackground(background);
-		setFont(font);
-		
-		setIcon(objEditStr != null && objEditStr.isEquation() ? EQUATION_ICON : null);
-		setVerticalTextPosition(JLabel.CENTER);
-		setHorizontalTextPosition(JLabel.CENTER);
+		label.setFont(font);
+		label.setIcon(objEditStr != null && objEditStr.isEquation() ? EQUATION_ICON : null);
+		label.setVerticalTextPosition(JLabel.CENTER);
+		label.setHorizontalTextPosition(JLabel.CENTER);
 
 		if (validatedObj instanceof Boolean)
-			setHorizontalAlignment(JLabel.CENTER);
+			label.setHorizontalAlignment(JLabel.CENTER);
 		else
-			setHorizontalAlignment(validatedObj instanceof Number ? JLabel.RIGHT : JLabel.LEFT);
+			label.setHorizontalAlignment(validatedObj instanceof Number ? JLabel.RIGHT : JLabel.LEFT);
 
 		String text = null;
 		String tooltip = null;
@@ -141,44 +151,48 @@ class BrowserTableCellRenderer extends DefaultTableCellRenderer {
 			
 			if (isSelected) {
 				if (table.getSelectedColumn() == colIndex && table.getSelectedRow() == rowIndex) { // Selected
-					setBackground(UIManager.getColor("Table.focusCellBackground"));
-					setForeground(UIManager.getColor("Table.focusCellForeground"));
+					bg = UIManager.getColor("Table.focusCellBackground");
+					fg = UIManager.getColor("Table.focusCellForeground");
 				} else {
-					setForeground(isError ? LookAndFeelUtil.getErrorColor() : UIManager.getColor("Table.selectionForeground"));
-					setBackground(UIManager.getColor("Table.selectionBackground"));
+					bg = UIManager.getColor("Table.selectionBackground");
+					fg = isError ? LookAndFeelUtil.getErrorColor() : UIManager.getColor("Table.selectionForeground");
 				}
 			} else {
 				// If non-editable, grey it out.
 				if (table.getModel() instanceof BrowserTableModel && !table.isCellEditable(0, colIndex))
-					setForeground(UIManager.getColor("TextField.inactiveForeground"));
+					fg = UIManager.getColor("TextField.inactiveForeground");
 				else
-					setForeground(isError ? LookAndFeelUtil.getErrorColor() : foreground);
+					fg = isError ? LookAndFeelUtil.getErrorColor() : fg;
 			}
 		}
 		
 		// Save the custom graphics
 		cg = presentation.getCustomGraphics(row, colView);
 		
-		setText(text);
+		setBackground(bg);
+		setForeground(fg);
+		label.setForeground(fg);
+		
+		label.setText(text);
+		label.setToolTipText(tooltip);
 		setToolTipText(tooltip);
 
 		return this;
 	}
 	
 	@Override
-	public void paint(Graphics g) {
-		super.paint(g);
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
 		
 		// Draw custom graphics (sparklines, etc)
 		if (cg != null && !cg.equals(NullCellCustomGraphics.getNullObject())) {
 			var w = getWidth();
 			var h = getHeight();
 			var bounds = new Rectangle2D.Float(0, 0, w, h);
-			
 			cg.draw(g, bounds, col, row);
 		}
 	}
-
+	
 	private static class EquationIcon implements Icon {
 
 		static final int HEIGHT = 8;

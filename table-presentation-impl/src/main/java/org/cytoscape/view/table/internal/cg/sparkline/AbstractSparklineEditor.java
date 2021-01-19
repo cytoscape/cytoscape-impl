@@ -4,7 +4,6 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isWinLAF;
-import static org.cytoscape.view.table.internal.cg.AbstractCellCustomGraphics.ORIENTATION;
 import static org.cytoscape.view.table.internal.cg.ColorScheme.CONTRASTING;
 import static org.cytoscape.view.table.internal.cg.ColorScheme.CUSTOM;
 import static org.cytoscape.view.table.internal.cg.ColorScheme.MODULATED;
@@ -37,7 +36,6 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -51,7 +49,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
@@ -68,7 +65,6 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 import org.cytoscape.view.table.internal.cg.ColorScheme;
-import org.cytoscape.view.table.internal.cg.Orientation;
 import org.cytoscape.view.table.internal.util.SortedListModel;
 import org.cytoscape.view.table.internal.util.SortedListModel.SortOrder;
 import org.jfree.data.general.Dataset;
@@ -87,7 +83,6 @@ public abstract class AbstractSparklineEditor<T extends AbstractSparkline<? exte
 	private JPanel advancedOptionsPnl;
 	private DataPanel dataPnl;
 	private JPanel rangePnl;
-	private JPanel orientationPnl;
 	protected ColorSchemeEditor<T> colorSchemeEditor;
 	private JPanel otherBasicOptionsPnl;
 	private JPanel otherAdvancedOptionsPnl;
@@ -98,13 +93,9 @@ public abstract class AbstractSparklineEditor<T extends AbstractSparkline<? exte
 	private JButton refreshRangeBtn;
 	private JLabel rangeMaxLbl;
 	private JTextField rangeMaxTxt;
-	private ButtonGroup orientationGrp;
-	private JRadioButton verticalRd;
-	private JRadioButton horizontalRd;
 	
 	protected final boolean columnIsSeries;
 	protected final boolean setRange;
-	protected final boolean setOrientation;
 	protected final Map<CyColumnIdentifier, CyColumn> columns;
 	protected final T chart;
 	protected final Class<?> dataType;
@@ -120,11 +111,6 @@ public abstract class AbstractSparklineEditor<T extends AbstractSparkline<? exte
 			Class<?> dataType, 
 			boolean columnIsSeries,
 			boolean setRange, 
-			boolean setOrientation, 
-			boolean setItemLabels,
-			boolean setDomainLabels, 
-			boolean setRangeLabels, 
-			boolean hasAxes,
 			boolean hasZeroBaseline, 
 			CyServiceRegistrar serviceRegistrar
 	) {
@@ -139,7 +125,6 @@ public abstract class AbstractSparklineEditor<T extends AbstractSparkline<? exte
 		this.columnIsSeries = columnIsSeries;
 		this.dataType = dataType;
 		this.setRange = setRange;
-		this.setOrientation = setOrientation;
 		this.serviceRegistrar = serviceRegistrar;
 		
 		var columnComparator = new ColumnComparator();
@@ -249,12 +234,10 @@ public abstract class AbstractSparklineEditor<T extends AbstractSparkline<? exte
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
 					.addComponent(getColorSchemeEditor())
-					.addComponent(getOrientationPnl())
 					.addComponent(getOtherAdvancedOptionsPnl())
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addComponent(getColorSchemeEditor())
-					.addComponent(getOrientationPnl())
 					.addComponent(getOtherAdvancedOptionsPnl())
 			);
 		}
@@ -316,40 +299,6 @@ public abstract class AbstractSparklineEditor<T extends AbstractSparkline<? exte
 		return rangePnl;
 	}
 	
-	
-	protected JPanel getOrientationPnl() {
-		if (orientationPnl == null) {
-			orientationPnl = new JPanel();
-			orientationPnl.setOpaque(!isAquaLAF()); // Transparent if Aqua
-			orientationPnl.setVisible(setOrientation);
-			
-			if (!orientationPnl.isVisible())
-				return orientationPnl;
-			
-			var layout = new GroupLayout(orientationPnl);
-			orientationPnl.setLayout(layout);
-			layout.setAutoCreateContainerGaps(false);
-			layout.setAutoCreateGaps(!isAquaLAF());
-			
-			var sep = new JSeparator();
-			
-			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
-					.addGroup(layout.createSequentialGroup()
-							.addComponent(getVerticalRd())
-							.addComponent(getHorizontalRd())
-					).addComponent(sep)
-			);
-			layout.setVerticalGroup(layout.createSequentialGroup()
-					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
-							.addComponent(getVerticalRd())
-							.addComponent(getHorizontalRd())
-					).addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-			);
-		}
-		
-		return orientationPnl;
-	}
-	
 	protected ColorSchemeEditor<T> getColorSchemeEditor() {
 		if (colorSchemeEditor == null) {
 			colorSchemeEditor = new ColorSchemeEditor<>(
@@ -394,7 +343,7 @@ public abstract class AbstractSparklineEditor<T extends AbstractSparkline<? exte
 	
 	protected JCheckBox getGlobalRangeCkb() {
 		if (globalRangeCkb == null) {
-			globalRangeCkb = new JCheckBox("Network-Wide Axis Range");
+			globalRangeCkb = new JCheckBox("Table-Wide Axis Range");
 			globalRangeCkb.setSelected(chart.get(GLOBAL_RANGE, Boolean.class, Boolean.TRUE));
 			globalRangeCkb.addItemListener(evt -> {
 				boolean selected = evt.getStateChange() == ItemEvent.SELECTED;
@@ -483,47 +432,6 @@ public abstract class AbstractSparklineEditor<T extends AbstractSparkline<? exte
 		return refreshRangeBtn;
 	}
 	
-	
-	private ButtonGroup getOrientationGrp() {
-		if (orientationGrp == null) {
-			orientationGrp = new ButtonGroup();
-			orientationGrp.add(getVerticalRd());
-			orientationGrp.add(getHorizontalRd());
-		}
-		
-		return orientationGrp;
-	}
-	
-	protected JRadioButton getVerticalRd() {
-		if (verticalRd == null) {
-			verticalRd = new JRadioButton("Vertical Orientation");
-			verticalRd.setVisible(setOrientation);
-			
-			if (setOrientation)
-				verticalRd.addActionListener(evt -> setOrientation());
-		}
-		
-		return verticalRd;
-	}
-	
-	protected JRadioButton getHorizontalRd() {
-		if (horizontalRd == null) {
-			horizontalRd = new JRadioButton("Horizontal Orientation");
-			horizontalRd.setVisible(setOrientation);
-			
-			if (setOrientation) {
-				horizontalRd.addActionListener(evt -> setOrientation());
-			}
-		}
-		
-		return horizontalRd;
-	}
-	
-	protected void setOrientation() {
-		var orientation = getHorizontalRd().isSelected() ? Orientation.HORIZONTAL : Orientation.VERTICAL;
-		chart.set(ORIENTATION, orientation);
-	}
-	
 	@SuppressWarnings("unchecked")
 	protected List<Double> calculateAutoRange() {
 		var range = new ArrayList<Double>(2);
@@ -586,19 +494,10 @@ public abstract class AbstractSparklineEditor<T extends AbstractSparkline<? exte
 	}
 	
 	protected void update(boolean recalculateRange) {
-		if (setOrientation)
-			updateOrientation();
-		
 		updateGlobalRange();
 		updateRangeMinMax(recalculateRange);
 	}
 
-	protected void updateOrientation() {
-		var orientation = chart.get(ORIENTATION, Orientation.class, Orientation.VERTICAL);
-		var orientRd = orientation == Orientation.HORIZONTAL ? getHorizontalRd() : getVerticalRd();
-		getOrientationGrp().setSelected(orientRd.getModel(), true);
-	}
-	
 	protected void updateGlobalRange() {
 		boolean global = chart.get(GLOBAL_RANGE, Boolean.class, Boolean.TRUE);
 		getAutoRangeCkb().setVisible(global);

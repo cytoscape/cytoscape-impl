@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.locks.ReadWriteLock;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListSelectionModel;
@@ -167,7 +166,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		setKeyStroke();
 		setTransferHandler(new BrowserTableTransferHandler());
 		
-		setRowHeight(100);
+		setRowHeight(80); // TODO remove!
 	}
 
 	// ==[ PUBLIC METHODS ]=============================================================================================
@@ -475,19 +474,18 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	}
 
 	@Override
-	public void paint(Graphics graphics) {
-		BrowserTableModel model = (BrowserTableModel) getModel();
-		ReadWriteLock lock = model.getLock();
+	public void paint(Graphics g) {
+		var model = (BrowserTableModel) getModel();
+		var lock = model.getLock();
 		lock.readLock().lock();
+		
 		try {
-			if (!model.isDisposed()) {
-				super.paint(graphics);
-			}
+			if (!model.isDisposed())
+				super.paint(g);
 		} finally {
 			lock.readLock().unlock();
 		}
 	}
-	
 
 	@Override
 	public void handleEvent(final AddedColumnViewEvent e) {
