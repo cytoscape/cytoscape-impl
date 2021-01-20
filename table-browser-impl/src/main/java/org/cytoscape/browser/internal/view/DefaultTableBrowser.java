@@ -45,7 +45,7 @@ import org.cytoscape.view.presentation.property.table.TableModeVisualProperty;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -75,19 +75,19 @@ public class DefaultTableBrowser extends AbstractTableBrowser
 	private boolean ignoreSetCurrentTable = true;
 	
 	public DefaultTableBrowser(
-			final String tabTitle,
-			final Class<? extends CyIdentifiable> objType,
-			final CyServiceRegistrar serviceRegistrar
+			String tabTitle,
+			Class<? extends CyIdentifiable> objType,
+			CyServiceRegistrar serviceRegistrar
 	) {
 		super(tabTitle, serviceRegistrar);
 		this.objType = objType;
 
 		createPopupMenu();
 		
-		TableBrowserToolBar toolBar = new TableBrowserToolBar(serviceRegistrar, getTableChooser(), objType);
+		var toolBar = new TableBrowserToolBar(serviceRegistrar, getTableChooser(), objType);
 		setToolBar(toolBar);
 		
-		toolBar.getSelectionModeButton().addActionListener(e -> {
+		toolBar.getSelectionModeButton().addActionListener(evt -> {
 			setCurrentTable();
 			displayMode.show(toolBar.getSelectionModeButton(), 0, toolBar.getSelectionModeButton().getHeight());
 		});

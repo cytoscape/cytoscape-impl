@@ -3,8 +3,11 @@ package org.cytoscape.browser.internal.view;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.util.swing.IconManager.ICON_COG;
+import static org.cytoscape.util.swing.IconManager.ICON_SLIDERS;
 import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_VISIBLE;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.ROW_HEIGHT;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -58,8 +61,9 @@ import org.cytoscape.task.read.LoadTableFileTaskFactory;
 import org.cytoscape.task.write.ExportTableTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.util.swing.TextIcon;
+import org.cytoscape.view.model.ContinuousRange;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -70,7 +74,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -99,15 +103,16 @@ public class TableBrowserToolBar extends JPanel {
 	private TableRenderer tableRenderer;
 	
 	/* GUI components */
-	private JPopupMenu columnSelectorPopupMenu;
+	private JPopupMenu columnSelectorPopup;
 	private CyColumnSelector columnSelector;
-	private JPopupMenu createColumnMenu;
+	private JPopupMenu createColumnPopup;
 
 	private JToolBar toolBar;
 	private SequentialGroup hToolBarGroup;
 	private ParallelGroup vToolBarGroup;
 	
 	private JButton selectionModeButton;
+	private JButton formatButton;
 	private JButton showColumnsButton;
 	private JButton createColumnButton;
 	private JButton deleteColumnsButton;
@@ -123,11 +128,10 @@ public class TableBrowserToolBar extends JPanel {
 	private final CyServiceRegistrar serviceRegistrar;
 	private final IconManager iconMgr;
 	
-
 	public TableBrowserToolBar(
-			final CyServiceRegistrar serviceRegistrar,
-			final JComboBox<CyTable> tableChooser,
-			final Class<? extends CyIdentifiable> objType
+			CyServiceRegistrar serviceRegistrar,
+			JComboBox<CyTable> tableChooser,
+			Class<? extends CyIdentifiable> objType
 	) {
 		this.components = new ArrayList<>();
 		this.tableChooser = tableChooser;
@@ -153,7 +157,6 @@ public class TableBrowserToolBar extends JPanel {
 //			});
 //		}
 	}
-
 	
 	protected void updateEnableState() {
 		components.forEach(this::updateEnableState);
@@ -165,7 +168,7 @@ public class TableBrowserToolBar extends JPanel {
 		
 		boolean enabled = false;
 		
-		if(tableRenderer != null) {
+		if (tableRenderer != null) {
 			if (comp == deleteTableButton) {
 				enabled = tableRenderer.getDataTable().getMutability() == Mutability.MUTABLE;
 			} else if (comp == deleteColumnsButton) {
@@ -198,6 +201,7 @@ public class TableBrowserToolBar extends JPanel {
 		if (objType == CyNode.class || objType == CyEdge.class)
 			addComponent(getSelectionModeButton(), ComponentPlacement.RELATED);
 		
+		addComponent(getFormatButton(), ComponentPlacement.RELATED);
 		addComponent(getShowColumnsButton(), ComponentPlacement.RELATED);
 		addComponent(getCreateColumnButton(), ComponentPlacement.RELATED);
 		addComponent(getDeleteColumnsButton(), ComponentPlacement.RELATED);
@@ -240,21 +244,84 @@ public class TableBrowserToolBar extends JPanel {
 		btn.setPreferredSize(new Dimension(w, h));
 	}
 	
-	private JPopupMenu getColumnSelectorPopupMenu() {
-		if (columnSelectorPopupMenu == null) {
-			columnSelectorPopupMenu = new JPopupMenu();
-			columnSelectorPopupMenu.add(getColumnSelector());
-			columnSelectorPopupMenu.addPopupMenuListener(new MenuListener());
-			columnSelectorPopupMenu.addMouseListener(new MouseAdapter() {
+	private JPopupMenu getFormatPopup() {
+		var formatPopup = new JPopupMenu();
+		
+		var iconManager = serviceRegistrar.getService(IconManager.class);
+		
+		var view = tableRenderer.getTableView();
+		var oldRowHeight = view.getVisualProperty(ROW_HEIGHT);
+		
+		{
+			var mi = new JMenuItem("Row Height...");
+			mi.addActionListener(evt -> {
+				var range = (ContinuousRange<Integer>) ROW_HEIGHT.getRange();
+				var newRowHeight = 0;
+				String val = null;
+				
+				do {
+					val = (String) JOptionPane.showInputDialog(
+							TableBrowserToolBar.this,
+							"Enter a number between " + range.getMin() + " and " + range.getMax() + ":",
+							"Row Height",
+							JOptionPane.PLAIN_MESSAGE,
+							null,
+							null,
+							oldRowHeight
+					);
+					
+					if (val == null)
+						break; // cancelled by user
+					
+					try {
+						newRowHeight = Integer.parseInt(val);
+					} catch (NumberFormatException e) {
+						// Ignore...
+					}
+					
+					if (range.inRange(newRowHeight)) {
+						view.setVisualProperty(ROW_HEIGHT, newRowHeight);
+						break;
+					} else {
+						JOptionPane.showMessageDialog(
+								TableBrowserToolBar.this,
+								"Row height must be between " + range.getMin() + " and " + range.getMax() + ".",
+								"Invalid Value",
+								JOptionPane.ERROR_MESSAGE
+						);
+					}
+				} while (true);
+			});
+			formatPopup.add(mi);
+		}
+		{
+			var icon = new TextIcon(IconManager.ICON_REFRESH, iconManager.getIconFont(12.0f), 16, 16);
+			var mi = new JMenuItem("Reset Row Height", icon);
+			mi.addActionListener(evt -> {
+				view.setVisualProperty(ROW_HEIGHT, ROW_HEIGHT.getDefault());
+			});
+			mi.setEnabled(oldRowHeight != ROW_HEIGHT.getDefault());
+			formatPopup.add(mi);
+		}
+		
+		return formatPopup;
+	}
+	
+	private JPopupMenu getColumnSelectorPopup() {
+		if (columnSelectorPopup == null) {
+			columnSelectorPopup = new JPopupMenu();
+			columnSelectorPopup.add(getColumnSelector());
+			columnSelectorPopup.addPopupMenuListener(new MenuListener());
+			columnSelectorPopup.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent e) {
-					if (SwingUtilities.isRightMouseButton(e)) {
-						columnSelectorPopupMenu.setVisible(false);
-					}
+					if (SwingUtilities.isRightMouseButton(e))
+						columnSelectorPopup.setVisible(false);
 				}
 			});
 		}
-		return columnSelectorPopupMenu;
+		
+		return columnSelectorPopup;
 	}
 	
 	private class MenuListener implements PopupMenuListener {
@@ -290,12 +357,12 @@ public class TableBrowserToolBar extends JPanel {
 		return columnSelector;
 	}
 
-	private JPopupMenu getCreateColumnMenu() {
-		if (createColumnMenu == null) {
-			createColumnMenu = new JPopupMenu();
+	private JPopupMenu getCreateColumnPopup() {
+		if (createColumnPopup == null) {
+			createColumnPopup = new JPopupMenu();
 			
-			final JMenu columnRegular = new JMenu("New Single Column");
-			final JMenu columnList = new JMenu("New List Column");
+			var columnRegular = new JMenu("New Single Column");
+			var columnList = new JMenu("New List Column");
 
 			columnRegular.add(getJMenuItemIntegerAttribute(false));
 			columnRegular.add(getJMenuItemLongIntegerAttribute(false));
@@ -308,11 +375,11 @@ public class TableBrowserToolBar extends JPanel {
 			columnList.add(getJMenuItemFloatingPointListAttribute(false));
 			columnList.add(getJMenuItemBooleanListAttribute(false));
 			
-			createColumnMenu.add(columnRegular);
-			createColumnMenu.add(columnList);
+			createColumnPopup.add(columnRegular);
+			createColumnPopup.add(columnList);
 		}
 
-		return createColumnMenu;
+		return createColumnPopup;
 	}
 
 	private JMenuItem getJMenuItemStringAttribute(final boolean isShared) {
@@ -414,6 +481,18 @@ public class TableBrowserToolBar extends JPanel {
 
 		return toolBar;
 	}
+	
+	protected JButton getFormatButton() {
+		if (formatButton == null) {
+			formatButton = new JButton(ICON_SLIDERS);
+			formatButton.setToolTipText("Format Table...");
+			styleButton(formatButton, iconMgr.getIconFont(TableBrowserToolBar.ICON_FONT_SIZE * 4/5));
+			
+			formatButton.addActionListener(e -> getFormatPopup().show(formatButton, 0, formatButton.getHeight()));
+		}
+		
+		return formatButton;
+	}
 
 	private JButton getShowColumnsButton() {
 		if (showColumnsButton == null) {
@@ -423,22 +502,20 @@ public class TableBrowserToolBar extends JPanel {
 
 			showColumnsButton.addActionListener(e -> {
 				if (tableRenderer != null) {
+					var columnViews = tableRenderer.getTableView().getColumnViews();
+					var columns = new ArrayList<CyColumn>();
+					var visibleColumns = new ArrayList<String>();
 					
-					Collection<View<CyColumn>> columnViews = tableRenderer.getTableView().getColumnViews();
-					
-					List<CyColumn> columns = new ArrayList<>();
-					List<String> visibleColumns = new ArrayList<>();
-					
-					for(View<CyColumn> columnView : columnViews) {
-						columns.add(columnView.getModel());
-						if(Boolean.TRUE.equals(columnView.getVisualProperty(BasicTableVisualLexicon.COLUMN_VISIBLE))) {
-							visibleColumns.add(columnView.getModel().getName());
-						}
+					for (var view : columnViews) {
+						columns.add(view.getModel());
+						
+						if (Boolean.TRUE.equals(view.getVisualProperty(COLUMN_VISIBLE)))
+							visibleColumns.add(view.getModel().getName());
 					}
-					
+
 					getColumnSelector().update(columns, visibleColumns);
-					getColumnSelectorPopupMenu().pack();
-					getColumnSelectorPopupMenu().show(showColumnsButton, 0, showColumnsButton.getHeight());
+					getColumnSelectorPopup().pack();
+					getColumnSelectorPopup().show(showColumnsButton, 0, showColumnsButton.getHeight());
 				}
 			});
 		}
@@ -519,7 +596,7 @@ public class TableBrowserToolBar extends JPanel {
 	}
 
 	private void deleteTable() {
-		final CyTable table = tableRenderer.getDataTable();
+		var table = tableRenderer.getDataTable();
 
 		if (table.getMutability() == CyTable.Mutability.MUTABLE) {
 			String title = "Please confirm this action";
@@ -578,7 +655,7 @@ public class TableBrowserToolBar extends JPanel {
 			
 			createColumnButton.addActionListener(e -> {
 				if (tableRenderer != null)
-					getCreateColumnMenu().show(createColumnButton, 0, createColumnButton.getHeight());
+					getCreateColumnPopup().show(createColumnButton, 0, createColumnButton.getHeight());
 			});
 			
 			createColumnButton.setEnabled(false);

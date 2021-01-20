@@ -50,8 +50,6 @@ import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -156,42 +154,33 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		multiLineCellEditor = new MultiLineTableCellEditor();
 		
 		init();
-		setAutoCreateColumnsFromModel(false);
-		setAutoCreateRowSorter(true);
-		setCellSelectionEnabled(true);
-		setShowGrid(false);
-		setDefaultEditor(Object.class, multiLineCellEditor);
-		getPopupMenu();
-		getHeaderPopupMenu();
-		setKeyStroke();
-		setTransferHandler(new BrowserTableTransferHandler());
-		
-		setRowHeight(60); // TODO remove!
 	}
 
 	// ==[ PUBLIC METHODS ]=============================================================================================
 	
 	@Override
-	public void setModel(final TableModel dataModel) {
-//		assert(dataModel instanceof BrowserTableModel);
+	public void setModel(TableModel dataModel) {
 		super.setModel(dataModel);
 		
-		BrowserTableColumnModel columnModel = new BrowserTableColumnModel();
+		var columnModel = new BrowserTableColumnModel();
 		setColumnModel(columnModel);
 
 		if (dataModel instanceof BrowserTableModel) {
-			BrowserTableModel model = (BrowserTableModel) dataModel;
+			var model = (BrowserTableModel) dataModel;
 			
 			for (int i = 0; i < model.getColumnCount(); i++) {
-				String name = model.getColumnName(i);
-				View<CyColumn> view = model.getTableView().getColumnView(name);
+				var name = model.getColumnName(i);
+				var tableView = model.getTableView();
+				var view = tableView.getColumnView(name);
 				boolean visible = view.getVisualProperty(BasicTableVisualLexicon.COLUMN_VISIBLE);
 				double gravity  = view.getVisualProperty(BasicTableVisualLexicon.COLUMN_GRAVITY);
 				
-				TableColumn tableColumn = new TableColumn(i);
+				var tableColumn = new TableColumn(i);
 				tableColumn.setHeaderValue(name);
 				tableColumn.setHeaderRenderer(new BrowserTableHeaderRenderer(serviceRegistrar));
 				columnModel.addColumn(tableColumn, view.getSUID(), visible, gravity);
+				
+				setRowHeight(tableView.getVisualProperty(BasicTableVisualLexicon.ROW_HEIGHT));
 			}
 		}
 		
@@ -615,18 +604,28 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	protected void init() {
-		final JTableHeader header = getTableHeader();
+		setAutoCreateColumnsFromModel(false);
+		setAutoCreateRowSorter(true);
+		setCellSelectionEnabled(true);
+		setShowGrid(false);
+		setDefaultEditor(Object.class, multiLineCellEditor);
+		getPopupMenu();
+		getHeaderPopupMenu();
+		setKeyStroke();
+		setTransferHandler(new BrowserTableTransferHandler());
+		
+		var header = getTableHeader();
 		header.setOpaque(false);
 //		header.setDefaultRenderer(new BrowserTableHeaderRenderer(serviceRegistrar.getService(IconManager.class)));
 		header.getColumnModel().setColumnSelectionAllowed(true);
 		header.addMouseMotionListener(this);
 		header.addMouseListener(new MouseAdapter() {
 			@Override
-			public void mousePressed(final MouseEvent e) {
+			public void mousePressed(MouseEvent e) {
 				maybeShowHeaderPopup(e);
 			}
 			@Override
-			public void mouseReleased(final MouseEvent e) {
+			public void mouseReleased(MouseEvent e) {
 				maybeShowHeaderPopup(e);
 			}
 		});
@@ -635,12 +634,9 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		addMouseListener(this);
 		
-		getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-			@Override
-			public void valueChanged(final ListSelectionEvent e) {
-				if (!e.getValueIsAdjusting() && !ignoreRowSelectionEvents)
-					selectFromTable();
-			}
+		getSelectionModel().addListSelectionListener(e -> {
+			if (!e.getValueIsAdjusting() && !ignoreRowSelectionEvents)
+				selectFromTable();
 		});
 	}
 	
