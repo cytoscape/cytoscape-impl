@@ -5,7 +5,6 @@ import java.awt.Image;
 import java.awt.Paint;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
@@ -119,9 +118,21 @@ public class BarSparkline extends AbstractSparkline<CategoryDataset> implements 
 	}
     
 	@Override
-	protected JFreeChart createChart(CategoryDataset dataset) {
-		var plotOrientation = orientation == Orientation.HORIZONTAL ? PlotOrientation.HORIZONTAL
-				: PlotOrientation.VERTICAL;
+	protected JFreeChart createChart(CategoryDataset dataset) {System.out.println(orientation);
+		final PlotOrientation plotOrientation;
+		
+		if (orientation != null) {
+			plotOrientation = orientation == Orientation.HORIZONTAL ? PlotOrientation.HORIZONTAL
+					: PlotOrientation.VERTICAL;
+		} else {
+			// Auto-orientation, based on the number of bars
+			// (1 bar fits better in a table cell when horizontal; besides, two or more horizontal bars per cell
+			// could make the visualization of confusing when comparing rows, specially if the table does not show the
+			// internal grid lines to better separate the different charts)
+			var colCount = dataset.getColumnCount();
+			plotOrientation = colCount > 1 ? PlotOrientation.VERTICAL : PlotOrientation.HORIZONTAL;
+		}
+		
 		final JFreeChart chart;
 		
 		if (type == BarSparklineType.STACKED)
@@ -192,11 +203,11 @@ public class BarSparkline extends AbstractSparkline<CategoryDataset> implements 
 		renderer.setBaseItemLabelsVisible(false);
 		renderer.setItemMargin(separation);
 		
-		List<?> keys = dataset.getRowKeys();
+		var keys = dataset.getRowKeys();
 		
 		for (int i = 0; i < keys.size(); i++) {
 			if (type != BarSparklineType.UP_DOWN && type != BarSparklineType.HEAT_STRIPS) {
-				Color c = DEFAULT_ITEM_BG_COLOR;
+				var c = DEFAULT_ITEM_BG_COLOR;
 				
 				if (colors != null && colors.size() > i)
 					c = colors.get(i);
