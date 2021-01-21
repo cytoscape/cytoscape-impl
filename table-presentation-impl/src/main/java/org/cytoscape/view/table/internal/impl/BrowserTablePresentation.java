@@ -7,8 +7,6 @@ import static org.cytoscape.view.table.internal.BrowserTableVisualLexicon.CELL_C
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Paint;
-import java.util.function.Function;
 
 import javax.swing.UIManager;
 
@@ -23,54 +21,64 @@ public class BrowserTablePresentation {
 	
 	private final IconManager iconManager;
 	private final Font defaultFont;
-	
+
 	public BrowserTablePresentation(CyServiceRegistrar registrar, Font defaultFont) {
 		this.iconManager = registrar.getService(IconManager.class);
 		this.defaultFont = defaultFont.deriveFont(LookAndFeelUtil.getSmallFontSize());
 	}
-	
+
 	public Color getBackgroundColor(CyRow row, CyColumnView colView) {
-		// Apply background VP
-		Color background = UIManager.getColor("Table.background");
-		Function<CyRow,Paint> cellPaintMapping = colView.getCellVisualProperty(CELL_BACKGROUND_PAINT);
-		if(cellPaintMapping != null) {
-			Paint vpValue = cellPaintMapping.apply(row);
-			if(vpValue instanceof Color) {
-				background = (Color) vpValue;
+		var color = UIManager.getColor("Table.background");
+		
+		if (color == null || colView.isSet(CELL_BACKGROUND_PAINT)) {
+			var fn = colView.getCellVisualProperty(CELL_BACKGROUND_PAINT);
+			
+			if (fn != null) {
+				var val = fn.apply(row);
+				
+				if (val instanceof Color)
+					color = (Color) val;
 			}
 		}
-		return background;
+		
+		return color;
 	}
-	
+
 	public Color getForegroundColor(CyRow row, CyColumnView colView) {
-		// Apply background VP
-		Color foreground = UIManager.getColor("Table.foreground");
-		Function<CyRow,Paint> cellPaintMapping = colView.getCellVisualProperty(CELL_TEXT_COLOR);
-		if(cellPaintMapping != null) {
-			Paint vpValue = cellPaintMapping.apply(row);
-			if(vpValue instanceof Color) {
-				foreground = (Color) vpValue;
+		var color = UIManager.getColor("Table.foreground");
+		
+		if (color == null || colView.isSet(CELL_TEXT_COLOR)) {
+			var fn = colView.getCellVisualProperty(CELL_TEXT_COLOR);
+			
+			if (fn != null) {
+				var vpValue = fn.apply(row);
+				
+				if (vpValue instanceof Color)
+					color = (Color) vpValue;
 			}
 		}
-		return foreground;
+		
+		return color;
 	}
 
 	public Font getFont(CyRow row, CyColumnView colView, Object value) {
-		Font font = defaultFont;
+		var font = defaultFont;
+		
 		if (value instanceof Boolean) {
 			font = iconManager.getIconFont(12.0f);
-		} else {
-			Function<CyRow,Font> cellFontMapping = colView.getCellVisualProperty(CELL_FONT_FACE);
-			if(cellFontMapping != null) {
-				font = cellFontMapping.apply(row);
-			}
+		} else if (colView.isSet(CELL_FONT_FACE)) {
+			var fn = colView.getCellVisualProperty(CELL_FONT_FACE);
+			
+			if (fn != null)
+				font = fn.apply(row);
 		}
+		
 		return font;
 	}
-	
+
 	public CellCustomGraphics getCustomGraphics(CyRow row, CyColumnView colView) {
 		var fn = colView.getCellVisualProperty(CELL_CUSTOMGRAPHICS);
-		
+
 		return fn != null ? fn.apply(row) : null;
 	}
 }

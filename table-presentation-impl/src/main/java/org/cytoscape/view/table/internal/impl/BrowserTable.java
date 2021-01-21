@@ -167,10 +167,16 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 		if (dataModel instanceof BrowserTableModel) {
 			var model = (BrowserTableModel) dataModel;
+			var tableView = model.getTableView();
+			
+			// Only apply the row height value from the visual property if it has been explicitly set,
+			// because it depends on "Table.font" property set to the current LAF,
+			// which means the default from the BasicTableVisualLexicon could be too small and crop the cell text
+			if (tableView.isSet(BasicTableVisualLexicon.ROW_HEIGHT))
+				setRowHeight(tableView.getVisualProperty(BasicTableVisualLexicon.ROW_HEIGHT));
 			
 			for (int i = 0; i < model.getColumnCount(); i++) {
 				var name = model.getColumnName(i);
-				var tableView = model.getTableView();
 				var view = tableView.getColumnView(name);
 				boolean visible = view.getVisualProperty(BasicTableVisualLexicon.COLUMN_VISIBLE);
 				double gravity  = view.getVisualProperty(BasicTableVisualLexicon.COLUMN_GRAVITY);
@@ -179,8 +185,6 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 				tableColumn.setHeaderValue(name);
 				tableColumn.setHeaderRenderer(new BrowserTableHeaderRenderer(serviceRegistrar));
 				columnModel.addColumn(tableColumn, view.getSUID(), visible, gravity);
-				
-				setRowHeight(tableView.getVisualProperty(BasicTableVisualLexicon.ROW_HEIGHT));
 			}
 		}
 		

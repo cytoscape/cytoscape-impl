@@ -75,7 +75,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -126,10 +126,7 @@ public abstract class AbstractTableBrowser extends JPanel
 	protected final CyServiceRegistrar serviceRegistrar;
 	private final Object lock = new Object();
 
-	AbstractTableBrowser(
-			final String tabTitle,
-			final CyServiceRegistrar serviceRegistrar
-	) {
+	AbstractTableBrowser(String tabTitle, CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 		this.tabTitle = tabTitle;
 		
@@ -147,7 +144,7 @@ public abstract class AbstractTableBrowser extends JPanel
 		add(mainPane, BorderLayout.CENTER);
 		showDropPanel();
 		
-		BrowserDropListener dropListener = new BrowserDropListener();
+		var dropListener = new BrowserDropListener();
 		setTransferHandler(dropListener);
 		new DropTarget(this, dropListener);
 		
@@ -156,7 +153,6 @@ public abstract class AbstractTableBrowser extends JPanel
 	
 	protected abstract boolean containsTable(CyTable table);
 	
-
 	@Override
 	public Component getComponent() {
 		return this;
@@ -310,14 +306,14 @@ public abstract class AbstractTableBrowser extends JPanel
 		return renderer;
 	}
 
-	
 	private void createDefaultTableView() {
 		var tableViewManager = serviceRegistrar.getService(CyTableViewManager.class);
 		
 		// If no table view exists yet then automatically create one using the default renderer.
 		var tableView = tableViewManager.getTableView(currentTable);
-		if(tableView == null) {
-			CyTableViewFactory tableViewFactory = serviceRegistrar.getService(CyTableViewFactory.class);
+		
+		if (tableView == null) {
+			var tableViewFactory = serviceRegistrar.getService(CyTableViewFactory.class);
 			tableView = tableViewFactory.createTableView(currentTable);
 			
 			// this will fire the event that runs the below handler
