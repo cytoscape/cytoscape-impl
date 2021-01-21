@@ -162,7 +162,7 @@ public class NetworkPicker {
 			Font   font = nodeDetails.getLabelFont(nodeView);
 			double labelWidth = nodeDetails.getLabelWidth(nodeView);
 			
-			MeasuredLineCreator mlCreator = new MeasuredLineCreator(labelText, font,  new FontRenderContext(null,true,true), 1.0, true, labelWidth);
+			MeasuredLineCreator mlCreator = new MeasuredLineCreator(labelText, font,  new FontRenderContext(null,true,true), true, labelWidth);
 			
 			double h = mlCreator.getTotalHeight();  // actual label text box height
 			double w =  mlCreator.getMaxLineWidth();  // actual label text box width. 

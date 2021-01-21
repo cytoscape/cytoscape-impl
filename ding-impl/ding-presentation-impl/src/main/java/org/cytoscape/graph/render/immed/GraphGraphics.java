@@ -1634,14 +1634,9 @@ public final class GraphGraphics {
 	 *            operation has a difficult time when it needs to render text
 	 *            under a transformation with a very large scale factor.
 	 */
-	public final void drawTextFull(final Font font, final double scaleFactor,
+	public final void drawTextFull(final Font font,
 			final String text, final float xCenter, final float yCenter,
 			final float theta, final Paint paint, final boolean drawTextAsShape) {
-		if (debug) {
-			if (scaleFactor < 0.0) {
-				throw new IllegalArgumentException("scaleFactor must be positive");
-			}
-		}
 		
 		boolean useLabelCaching = true;
 		
@@ -1654,7 +1649,6 @@ public final class GraphGraphics {
 		else {
 			// Old drawing code, untouched
 			m_g2d.translate(xCenter, yCenter);
-			m_g2d.scale(scaleFactor, scaleFactor);
 			m_g2d.setPaint(paint);
 			if(theta != 0.0f)
 				m_g2d.rotate(theta);

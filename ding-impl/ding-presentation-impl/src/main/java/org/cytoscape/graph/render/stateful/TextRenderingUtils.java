@@ -1,5 +1,11 @@
 package org.cytoscape.graph.render.stateful;
 
+import java.awt.Font;
+import java.awt.Paint;
+import java.awt.font.GlyphVector;
+import java.awt.geom.Rectangle2D;
+import java.util.StringTokenizer;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -26,12 +32,6 @@ package org.cytoscape.graph.render.stateful;
 
 
 import org.cytoscape.graph.render.immed.GraphGraphics;
-
-import java.awt.*;
-import java.awt.font.GlyphVector;
-import java.awt.geom.Rectangle2D;
-import java.util.StringTokenizer;
-
 import org.cytoscape.view.presentation.property.values.Justification;
 
 final class TextRenderingUtils {
@@ -90,18 +90,18 @@ final class TextRenderingUtils {
 	 */
 	public final static void renderHorizontalText(final GraphGraphics grafx, 
 	                                              final MeasuredLineCreator measuredText,
-	                                              final Font font, final double fontScaleFactor,
+	                                              final Font font,
 	                                              final float textXCenter, final float textYCenter,
 	                                              final Justification textJustify, final Paint paint,
 	                                              final boolean textAsShape) {
-    renderText(grafx, measuredText, font, fontScaleFactor, textXCenter, textYCenter,
+    renderText(grafx, measuredText, font, textXCenter, textYCenter,
                textJustify, paint, 0d, textAsShape);
   }
 
 
 	public final static void renderText(final GraphGraphics grafx, 
 	                                    final MeasuredLineCreator measuredText,
-	                                    final Font font, final double fontScaleFactor,
+	                                    final Font font,
 	                                    final float textXCenter, final float textYCenter,
 	                                    final Justification textJustify, final Paint paint,
 	                                    final double theta, final boolean textAsShape) {
@@ -122,7 +122,7 @@ final class TextRenderingUtils {
 			else
 				throw new IllegalStateException("textJustify value unrecognized");
 
-			grafx.drawTextFull(font, fontScaleFactor, line.getLine(), 
+			grafx.drawTextFull(font, line.getLine(), 
 			                   (float) xCenter, (float) yCenter, (float)theta,
 			                   paint, textAsShape);
 			currHeight += line.getHeight();

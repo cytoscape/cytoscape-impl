@@ -26,15 +26,11 @@ package org.cytoscape.graph.render.stateful;
 
 
 import java.awt.Font;
-import java.awt.Paint;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.Rectangle2D;
-
-import java.util.List;
 import java.util.ArrayList;
-
-import org.cytoscape.graph.render.immed.GraphGraphics;
+import java.util.List;
 
 
 /**
@@ -51,17 +47,15 @@ public class MeasuredLineCreator {
 	private final String[] rawLines;
 	private final FontRenderContext frc;
 	private final Font font; 
-	private final double fontScaleFactor;
 	private final boolean textAsShape;
 	private final List<MeasuredLine> measuredLines;
 	
 	public MeasuredLineCreator(final String rawLine, final Font font, 
-	                            final FontRenderContext frc, final double fontScaleFactor, 
+	                            final FontRenderContext frc,
 	                            final boolean textAsShape, final double labelWidth) {
 		this.rawLine = rawLine;
 		this.font = font;
 		this.frc = frc;
-		this.fontScaleFactor = fontScaleFactor;
 		this.textAsShape = textAsShape;
 		this.labelWidth = labelWidth;
 		this.rawLines = rawLine.split("\n"); 
@@ -80,7 +74,7 @@ public class MeasuredLineCreator {
 		totalHeight = 0;
 		for ( String line : rawLines ) { 
 			final Rectangle2D bounds = calcBounds(line);
-			updateBounds(bounds.getWidth()*fontScaleFactor,bounds.getHeight()*fontScaleFactor);
+			updateBounds(bounds.getWidth(),bounds.getHeight());
 		}
 	}
 
@@ -143,8 +137,8 @@ public class MeasuredLineCreator {
 			for (String w : words) {
 				String word = w + " ";	
 				Rectangle2D bounds = calcBounds(word);
-				wordWidth = bounds.getWidth()*fontScaleFactor;
-				wordHeight = bounds.getHeight()*fontScaleFactor;
+				wordWidth = bounds.getWidth();
+				wordHeight = bounds.getHeight();
 
 				// If the current line width plus the new word
 				// width is >= than the label width save the line

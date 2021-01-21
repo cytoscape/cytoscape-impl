@@ -353,7 +353,6 @@ public final class GraphRenderer {
 								
 								final String text = edgeDetails.getLabelText(edge);
 								final Font font = edgeDetails.getLabelFont(edge);
-								final double fontScaleFactor = edgeDetails.getLabelScaleFactor(edge);
 								final Paint paint = edgeDetails.getLabelPaint(edge);
 								final Position textAnchor = edgeDetails.getLabelTextAnchor(edge);
 								final Position edgeAnchor = edgeDetails.getLabelEdgeAnchor(edge);
@@ -467,7 +466,6 @@ public final class GraphRenderer {
 								final MeasuredLineCreator measuredText = 
 									new MeasuredLineCreator(text,font,
 									                         grafx.getFontRenderContextFull(),
-									                         fontScaleFactor, 
 									                         flags.has(LOD_TEXT_AS_SHAPE),
 									                         edgeLabelWidth);
 
@@ -480,7 +478,7 @@ public final class GraphRenderer {
 								final double textXCenter = edgeAnchorPointX - doubleBuff2[0] + offsetVectorX;
 								final double textYCenter = edgeAnchorPointY - doubleBuff2[1] + offsetVectorY;
 								TextRenderingUtils.renderText(grafx, measuredText, 
-								                              font, fontScaleFactor,
+								                              font,
 								                              (float) textXCenter,
 								                              (float) textYCenter,
 								                              justify, paint, theta,
@@ -595,7 +593,7 @@ public final class GraphRenderer {
 						final double nodeAnchorPointX = doubleBuff2[0];
 						final double nodeAnchorPointY = doubleBuff2[1];
 						final MeasuredLineCreator measuredText = new MeasuredLineCreator(
-						    text, font, grafx.getFontRenderContextFull(), fontScaleFactor,
+						    text, font, grafx.getFontRenderContextFull(),
 						    flags.has(LOD_TEXT_AS_SHAPE), nodeLabelWidth);
 
 						doubleBuff1[0] = -0.5d * measuredText.getMaxLineWidth();
@@ -607,7 +605,6 @@ public final class GraphRenderer {
 						final double textXCenter = nodeAnchorPointX - doubleBuff2[0] + offsetVectorX;
 						final double textYCenter = nodeAnchorPointY - doubleBuff2[1] + offsetVectorY;
 						TextRenderingUtils.renderText(grafx, measuredText, font,
-						                              fontScaleFactor,
 						                              (float) textXCenter,
 						                              (float) textYCenter, justify,
 						                              paint,theta,
