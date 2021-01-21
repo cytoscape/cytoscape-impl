@@ -15,7 +15,6 @@ import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
@@ -126,6 +125,9 @@ public final class GraphGraphics {
 	// This member variable only to be used from within defineCustomNodeShape().
 	private byte m_lastCustomShapeType = s_last_shape;
 	
+	
+	private final LabelBufferCache labelBufferCache;
+	
 	// package scoped for unit testing
 	static final EdgeAnchors m_noAnchors = new EdgeAnchors() {
 		public final int numAnchors() { return 0; }
@@ -198,6 +200,13 @@ public final class GraphGraphics {
 	public GraphGraphics(GraphicsProvider graphicsProvider) {
 		this.graphicsProvider = graphicsProvider;
 		this.m_path2dPrime.setWindingRule(GeneralPath.WIND_EVEN_ODD);
+		
+		// MKTODO what to use for max cache size? 
+		// nodeLabelThreshold is 200
+		// If this optimization works well then nodeLabelThreshold could be increased.
+		// If the cache size is too small it'll just thrash the cache and there won't be any speedup
+		this.labelBufferCache = new LabelBufferCache(m_fontRenderContextFull, 1000);
+		
 		update();
 	}
 	
@@ -223,7 +232,7 @@ public final class GraphGraphics {
 	}
 
 	
-	private static void setGraphicsFlags(Graphics2D g) {
+	public static void setGraphicsFlags(Graphics2D g) {
 		// Antialiasing is ON
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
@@ -1637,37 +1646,13 @@ public final class GraphGraphics {
 		boolean useLabelCaching = true;
 		
 		if(useLabelCaching) {
-			GlyphVector glyphV = createGlyphVector(text, font);
-			Rectangle2D glyphBounds = glyphV.getLogicalBounds();
-			
-			AffineTransform t = new AffineTransform(m_currNativeXform);
-			t.scale(scaleFactor, scaleFactor);
-			t.translate(-glyphBounds.getWidth()/2, -glyphBounds.getHeight()/2);
-			
-			Point2D p = new Point2D.Double(xCenter, yCenter);
-			t.transform(p, p);
-			
-			Rectangle2D pixelBounds = t.createTransformedShape(glyphBounds).getBounds2D();
-			int w = (int) Math.ceil(pixelBounds.getWidth());
-			int h = (int) Math.ceil(pixelBounds.getHeight());
-			// assume newly created buffer is initialized to be transparent
-			BufferedImage buffer = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-			
-			Graphics2D gBuff = buffer.createGraphics();
-			setGraphicsFlags(gBuff);
-			
-			double scalex = w / glyphBounds.getWidth();
-			double scaley = h / glyphBounds.getHeight();
-			gBuff.scale(scalex, scaley);
-			gBuff.translate(-glyphBounds.getX(), -glyphBounds.getY());
-			
-			gBuff.setPaint(paint);
-			gBuff.fill(glyphV.getOutline());
-			
-			m_g2d.setTransform(new AffineTransform());
-			m_g2d.drawImage(buffer, (int)p.getX(), (int)p.getY(), null);
+			Color color = (Color) paint; // MKTODO is this safe?
+			// MKTODO support label rotation!!!
+			labelBufferCache.drawText(m_g2d, xCenter, yCenter, text, font, color);
+
 		}
 		else {
+			// Old drawing code, untouched
 			m_g2d.translate(xCenter, yCenter);
 			m_g2d.scale(scaleFactor, scaleFactor);
 			m_g2d.setPaint(paint);
