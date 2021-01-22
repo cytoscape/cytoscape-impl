@@ -7,7 +7,6 @@ import java.awt.Image;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.Objects;
@@ -18,21 +17,22 @@ import com.google.common.cache.CacheBuilder;
 
 public class LabelBufferCache {
 	
+	private static final AffineTransform identity = new AffineTransform();
+	
 	private final Cache<Key,CachedImage> imageCache;
 	private final FontRenderContext fontRenderContextFull;
 	private char[] charBuff = new char[20];
+	
 	
 	public LabelBufferCache(FontRenderContext fontRenderContextFull, int maxSize) {
 		this.fontRenderContextFull = fontRenderContextFull;
 		this.imageCache = CacheBuilder.newBuilder()
 				.maximumSize(maxSize)
-//				.recordStats()
 				.build();
 	}
 	
 	
 	private static class CachedImage {
-		
 		private final Image buffer;
 		private final Rectangle2D glyphBounds;
 		
@@ -88,8 +88,8 @@ public class LabelBufferCache {
 			builder.append("]");
 			return builder.toString();
 		}
-		
 	}
+	
 	
 	public void drawText(Graphics2D g, double xCenter, double yCenter, String text, Font font, Color color) {
 		try {
@@ -101,10 +101,9 @@ public class LabelBufferCache {
 	
 	
 	private void drawTextImpl(Graphics2D g, double xCenter, double yCenter, String text, Font font, Color color) throws ExecutionException {
-		AffineTransform currentT = g.getTransform();
+		AffineTransform currentTransform = g.getTransform();
 		
-		// assume scaleX and scaleY are the same
-		double scale = currentT.getScaleX();
+		double scale = currentTransform.getScaleX(); // assume scaleX and scaleY are the same
 		Key key = new Key(scale, text, font, color);
 		
 		CachedImage cachedImage = imageCache.get(key, () -> {
@@ -128,25 +127,29 @@ public class LabelBufferCache {
 			double scaley = h / glyphBounds.getHeight();
 			gBuff.scale(scalex, scaley);
 			gBuff.translate(-glyphBounds.getX(), -glyphBounds.getY());
-			
 			gBuff.setPaint(color);
 			gBuff.fill(glyphV.getOutline());
 			
 			return new CachedImage(buffer, glyphBounds);
 		});
 		
-//		CacheStats stats = imageCache.stats();
-//		System.out.println(stats);
+		// Get the components of the current transformation matrix, without creating any new objects.
+		double tx = currentTransform.getTranslateX();
+		double ty = currentTransform.getTranslateY();
 		
-		AffineTransform t = new AffineTransform(currentT);
-		t.translate(-cachedImage.glyphBounds.getWidth()/2, -cachedImage.glyphBounds.getHeight()/2);
+		// Translate to the center of the buffer area
+		double gtx = -cachedImage.glyphBounds.getWidth()  / 2;
+		double gty = -cachedImage.glyphBounds.getHeight() / 2;
+		tx = gtx * scale + tx;
+		ty = gty * scale + ty;
+         
+		// Translate to the pixel location where the label should be drawn
+		double x = xCenter * scale + tx;
+		double y = yCenter * scale + ty;
 		
-		Point2D p = new Point2D.Double(xCenter, yCenter);
-		t.transform(p, p);
-		
-		g.setTransform(new AffineTransform());
-		g.drawImage(cachedImage.buffer, (int)p.getX(), (int)p.getY(), null);		
-		g.setTransform(currentT);
+		g.setTransform(identity);
+		g.drawImage(cachedImage.buffer, (int)x, (int)y, null);		
+		g.setTransform(currentTransform);
 	}
 	
 	
