@@ -240,6 +240,13 @@ public interface GraphLOD {
 	default boolean edgeBufferPan() {
 		return false;
 	}
+
+	/**
+	 * Returns true if the label buffer cache optimization should be turned on.
+	 */
+	default boolean labelCache() {
+		return false;
+	}
 	
 	default double getNestedNetworkImageScaleFactor() { return 1.0; }
 

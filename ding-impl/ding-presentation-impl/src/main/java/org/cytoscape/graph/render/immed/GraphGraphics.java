@@ -50,6 +50,7 @@ import org.cytoscape.graph.render.immed.nodeshape.RectangleNodeShape;
 import org.cytoscape.graph.render.immed.nodeshape.RoundedRectangleNodeShape;
 import org.cytoscape.graph.render.immed.nodeshape.TriangleNodeShape;
 import org.cytoscape.graph.render.immed.nodeshape.VeeNodeShape;
+import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
@@ -127,6 +128,7 @@ public final class GraphGraphics {
 	
 	
 	private final LabelBufferCache labelBufferCache;
+	private RenderDetailFlags renderDetailFlags;
 	
 	// package scoped for unit testing
 	static final EdgeAnchors m_noAnchors = new EdgeAnchors() {
@@ -207,14 +209,15 @@ public final class GraphGraphics {
 		// If the cache size is too small it'll just thrash the cache and there won't be any speedup
 		this.labelBufferCache = new LabelBufferCache(m_fontRenderContextFull, 1000);
 		
-		update();
+		update(null);
 	}
 	
 	public NetworkTransform getTransform() {
 		return graphicsProvider.getTransform();
 	}
 
-	public final void update() {
+	public final void update(RenderDetailFlags flags) {
+		this.renderDetailFlags = flags;
 		if (m_gMinimal != null) {
 			m_gMinimal.dispose();
 			m_gMinimal = null;
@@ -1638,13 +1641,11 @@ public final class GraphGraphics {
 			final String text, final float xCenter, final float yCenter,
 			final float theta, final Paint paint, final boolean drawTextAsShape) {
 		
-		boolean useLabelCaching = true;
+		boolean useCache = renderDetailFlags != null && renderDetailFlags.has(RenderDetailFlags.OPT_LABEL_CACHE);
 		
-		if(useLabelCaching) {
-			Color color = (Color) paint; // MKTODO is this safe?
+		if(useCache && paint instanceof Color) {
 			// MKTODO support label rotation!!!
-			labelBufferCache.drawText(m_g2d, xCenter, yCenter, text, font, color);
-
+			labelBufferCache.drawText(m_g2d, xCenter, yCenter, text, font, (Color)paint);
 		}
 		else {
 			// Old drawing code, untouched

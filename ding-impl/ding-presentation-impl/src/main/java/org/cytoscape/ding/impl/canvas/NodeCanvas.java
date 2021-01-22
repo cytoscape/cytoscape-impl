@@ -68,7 +68,7 @@ public class NodeCanvas<GP extends GraphicsProvider> extends DingCanvas<GP> {
 		var edgeDetails = re.getEdgeDetails();
 		var nodeDetails = re.getNodeDetails();
 		
-		graphGraphics.update();
+		graphGraphics.update(flags);
 		GraphRenderer.renderNodes(pm, graphGraphics, snapshot, flags, nodeDetails, edgeDetails, dependencies);
 	}
 }

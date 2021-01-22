@@ -40,6 +40,7 @@ public class SettingsPanel extends BasicCollapsiblePanel  {
 	private PropEditor prop4;
 	private PropEditor prop5;
 	private PropEditor prop6;
+	private PropEditor prop7;
 	
 	
 	@SuppressWarnings("unchecked")
@@ -57,6 +58,7 @@ public class SettingsPanel extends BasicCollapsiblePanel  {
 		prop4 = new NumberPropEditor("render.edgeArrowThreshold");
 		prop5 = new NumberPropEditor("render.edgeLabelThreshold");
 		prop6 = new BooleanPropEditor("render.edgeBufferPan");
+		prop7 = new BooleanPropEditor("render.labelCache");
 		
 		
 		JPanel panel = new JPanel();
@@ -74,6 +76,7 @@ public class SettingsPanel extends BasicCollapsiblePanel  {
 				.addComponent(prop4.getLabel())
 				.addComponent(prop5.getLabel())
 				.addComponent(prop6.getLabel())
+				.addComponent(prop7.getLabel())
 			)
 			.addGroup(layout.createParallelGroup()
 				.addComponent(prop1.getEditor())
@@ -82,6 +85,7 @@ public class SettingsPanel extends BasicCollapsiblePanel  {
 				.addComponent(prop4.getEditor())
 				.addComponent(prop5.getEditor())
 				.addComponent(prop6.getEditor())
+				.addComponent(prop7.getEditor())
 			)
 		);
 		
@@ -110,6 +114,10 @@ public class SettingsPanel extends BasicCollapsiblePanel  {
 				.addComponent(prop6.getLabel())
 				.addComponent(prop6.getEditor(), PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
 			)
+			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
+				.addComponent(prop7.getLabel())
+				.addComponent(prop7.getEditor(), PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
+			)
 		);
 		
 		JPanel content = getContentPane();
@@ -124,6 +132,7 @@ public class SettingsPanel extends BasicCollapsiblePanel  {
 		prop4.update();
 		prop5.update();
 		prop6.update();
+		prop7.update();
 	}
 	
 	
