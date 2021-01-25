@@ -562,28 +562,19 @@ public final class GraphRenderer {
 				
 				// Take care of label rendering.
 				if (flags.has(LOD_NODE_LABELS)) { // Potential label rendering.
-
-					final int labelCount = nodeDetails.getLabelCount(cyNode);
-
-					for (int labelInx = 0; labelInx < labelCount; labelInx++) {
-						final String text = nodeDetails.getLabelText(cyNode);
+					final String text = nodeDetails.getLabelText(cyNode);
+					
+					if(text != null && !text.isEmpty()) {
 						final Font font = nodeDetails.getLabelFont(cyNode);
-						final double fontScaleFactor = nodeDetails.getLabelScaleFactor(cyNode);
 						final Paint paint = nodeDetails.getLabelPaint(cyNode);
 						final Position textAnchor = nodeDetails.getLabelTextAnchor(cyNode);
 						final Position nodeAnchor = nodeDetails.getLabelNodeAnchor(cyNode);
 						final float offsetVectorX = nodeDetails.getLabelOffsetVectorX(cyNode);
 						final float offsetVectorY = nodeDetails.getLabelOffsetVectorY(cyNode);
 						final double theta = nodeDetails.getLabelRotation(cyNode)*.01745329252;
-						final Justification justify;
-
-						if (text.indexOf('\n') >= 0)
-							justify = nodeDetails.getLabelJustify(cyNode);
-						else
-							justify = Justification.JUSTIFY_CENTER;
-
 						final double nodeLabelWidth = nodeDetails.getLabelWidth(cyNode);
-
+						final Justification justify = text.indexOf('\n') >= 0 ? nodeDetails.getLabelJustify(cyNode) : Justification.JUSTIFY_CENTER;
+						
 						doubleBuff1[0] = floatBuff1[0];
 						doubleBuff1[1] = floatBuff1[1];
 						doubleBuff1[2] = floatBuff1[2];
@@ -592,6 +583,7 @@ public final class GraphRenderer {
 
 						final double nodeAnchorPointX = doubleBuff2[0];
 						final double nodeAnchorPointY = doubleBuff2[1];
+						
 						final MeasuredLineCreator measuredText = new MeasuredLineCreator(
 						    text, font, grafx.getFontRenderContextFull(),
 						    flags.has(LOD_TEXT_AS_SHAPE), nodeLabelWidth);
