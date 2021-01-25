@@ -28,7 +28,7 @@ import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
 import org.cytoscape.graph.render.stateful.GraphRenderer;
-import org.cytoscape.graph.render.stateful.MeasuredLineCreator;
+import org.cytoscape.graph.render.stateful.LabelInfo;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 import org.cytoscape.model.CyEdge;
@@ -162,7 +162,7 @@ public class NetworkPicker {
 			Font   font = nodeDetails.getLabelFont(nodeView);
 			double labelWidth = nodeDetails.getLabelWidth(nodeView);
 			
-			MeasuredLineCreator mlCreator = new MeasuredLineCreator(labelText, font,  new FontRenderContext(null,true,true), true, labelWidth);
+			LabelInfo mlCreator = new LabelInfo(labelText, font,  new FontRenderContext(null,true,true), true, labelWidth);
 			
 			double h = mlCreator.getTotalHeight();  // actual label text box height
 			double w =  mlCreator.getMaxLineWidth();  // actual label text box width. 

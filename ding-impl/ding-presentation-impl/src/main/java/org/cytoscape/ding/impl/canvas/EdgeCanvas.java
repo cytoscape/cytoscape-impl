@@ -4,6 +4,7 @@ import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.GraphRenderer;
+import org.cytoscape.graph.render.stateful.LabelInfoProvider;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 
 public class EdgeCanvas<GP extends GraphicsProvider> extends DingCanvas<GP> {
@@ -27,9 +28,10 @@ public class EdgeCanvas<GP extends GraphicsProvider> extends DingCanvas<GP> {
 		var netViewSnapshot = re.getViewModelSnapshot();
 		var edgeDetails = re.getEdgeDetails();
 		var nodeDetails = re.getNodeDetails();
+		var labelProvider = flags.has(RenderDetailFlags.OPT_LABEL_CACHE) ? re.getLabelCache() : LabelInfoProvider.INSTANCE;
 		
 		graphGraphics.update(flags);
-		GraphRenderer.renderEdges(pm, graphGraphics, netViewSnapshot, flags, nodeDetails, edgeDetails);
+		GraphRenderer.renderEdges(pm, graphGraphics, netViewSnapshot, flags, nodeDetails, edgeDetails, labelProvider);
 	}
 	
 }

@@ -5,6 +5,7 @@ import org.cytoscape.ding.impl.DNodeDetails;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.GraphRenderer;
+import org.cytoscape.graph.render.stateful.LabelInfoProvider;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 
@@ -25,11 +26,11 @@ public class NodeThumbnailCanvas<GP extends GraphicsProvider> extends DingCanvas
 	@Override
 	public void paint(ProgressMonitor pm, RenderDetailFlags flags) {
 		var graphics = new GraphGraphics(graphicsProvider);
-		
 		var edgeDetails = new DEdgeDetails(null);
 		var nodeDetails = new DNodeDetails(null, null);
+		var labelInfoCache = LabelInfoProvider.INSTANCE;
 		
-		GraphRenderer.renderNodes(pm, graphics, snapshot, flags, nodeDetails, edgeDetails, null);
+		GraphRenderer.renderNodes(pm, graphics, snapshot, flags, nodeDetails, edgeDetails, null, labelInfoCache);
 	}
 	
 }

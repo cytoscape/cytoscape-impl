@@ -1,5 +1,9 @@
 package org.cytoscape.graph.render.stateful;
 
+import java.awt.Font;
+import java.awt.Shape;
+import java.awt.font.GlyphVector;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -29,19 +33,58 @@ package org.cytoscape.graph.render.stateful;
  * A simple class to hold the width and height of a given string in terms
  * of specific fonts, rendering contexts, etc.. 
  */
-class MeasuredLine {
-	private final String line;
+public class LabelLineInfo {
+	
+	private static char[] charBuff = new char[20];
+	
+	private final LabelInfo parent;
+	private final String text;
 	private final double width;
 	private final double height;
 
-	public MeasuredLine(final String line, final double width, final double height) {
-		this.line = line;
+	private Shape shape;
+	private GlyphVector glyphVector;
+	
+	public LabelLineInfo(LabelInfo parent, String text, double width, double height) {
+		this.parent = parent;
+		this.text = text;
 		this.width = width;
 		this.height = height;
 	}
 
+	private GlyphVector createGlyphVector() {
+		if (text.length() > charBuff.length) {
+			charBuff = new char[Math.max(charBuff.length * 2, text.length())];
+		}
+		text.getChars(0, text.length(), charBuff, 0);
+		return parent.getFont().layoutGlyphVector(parent.getFontRenderContext(), charBuff, 0, text.length(), Font.LAYOUT_NO_LIMIT_CONTEXT);
+	}
+	
+	public GlyphVector getGlyphVector() {
+		if(glyphVector == null) {
+			glyphVector = createGlyphVector();
+		}
+		return glyphVector;
+	}
+	
+	public Shape getShape() {
+		if(shape == null) {
+			GlyphVector glyphVector = getGlyphVector();
+			shape = glyphVector.getOutline();
+		}
+		return shape;
+	}
+	
+	public Font getFont() {
+		return parent.getFont();
+	}
+	
+	public String getText() {
+		return text;
+	}
+	
 	public String getLine() {
-		return line;
+		return text;
 	}
 
 	public double getWidth() {
@@ -53,6 +96,6 @@ class MeasuredLine {
 	}
 
 	public String toString() {
-		return "'" + line + "'  w:" + width + " h:" + height;
+		return "'" + text + "'  w:" + width + " h:" + height;
 	}
 }

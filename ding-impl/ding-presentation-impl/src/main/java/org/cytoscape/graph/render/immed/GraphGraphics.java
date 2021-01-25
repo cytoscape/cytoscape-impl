@@ -50,6 +50,7 @@ import org.cytoscape.graph.render.immed.nodeshape.RectangleNodeShape;
 import org.cytoscape.graph.render.immed.nodeshape.RoundedRectangleNodeShape;
 import org.cytoscape.graph.render.immed.nodeshape.TriangleNodeShape;
 import org.cytoscape.graph.render.immed.nodeshape.VeeNodeShape;
+import org.cytoscape.graph.render.stateful.LabelLineInfo;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
@@ -126,8 +127,6 @@ public final class GraphGraphics {
 	// This member variable only to be used from within defineCustomNodeShape().
 	private byte m_lastCustomShapeType = s_last_shape;
 	
-	
-	private final LabelBufferCache labelBufferCache;
 	private RenderDetailFlags renderDetailFlags;
 	
 	// package scoped for unit testing
@@ -189,7 +188,6 @@ public final class GraphGraphics {
 	// This is only used by computeCubicPolyEdgePath().
 	private final float[] m_floatBuff = new float[2];
 	// This member variable shall only be used from within drawTextFull().
-	private char[] m_charBuff = new char[20];
 	private final FontRenderContext m_fontRenderContextFull = new FontRenderContext(null,true,true);
 	
 	private final GraphicsProvider graphicsProvider;
@@ -202,13 +200,6 @@ public final class GraphGraphics {
 	public GraphGraphics(GraphicsProvider graphicsProvider) {
 		this.graphicsProvider = graphicsProvider;
 		this.m_path2dPrime.setWindingRule(GeneralPath.WIND_EVEN_ODD);
-		
-		// MKTODO what to use for max cache size? 
-		// nodeLabelThreshold is 200
-		// If this optimization works well then nodeLabelThreshold could be increased.
-		// If the cache size is too small it'll just thrash the cache and there won't be any speedup
-		this.labelBufferCache = new LabelBufferCache(m_fontRenderContextFull, 1000);
-		
 		update(null);
 	}
 	
@@ -1637,54 +1628,41 @@ public final class GraphGraphics {
 	 *            operation has a difficult time when it needs to render text
 	 *            under a transformation with a very large scale factor.
 	 */
-	public final void drawTextFull(final Font font,
-			final String text, final float xCenter, final float yCenter,
+	public final void drawTextFull(LabelLineInfo labelLineInfo,
+			final float xCenter, final float yCenter,
 			final float theta, final Paint paint, final boolean drawTextAsShape) {
 		
-		boolean useCache = renderDetailFlags != null && renderDetailFlags.has(RenderDetailFlags.OPT_LABEL_CACHE);
-		
-		if(useCache && paint instanceof Color) {
-			// MKTODO support label rotation!!!
-			labelBufferCache.drawText(m_g2d, xCenter, yCenter, text, font, (Color)paint);
-		}
-		else {
-			// Old drawing code, untouched
-			m_g2d.translate(xCenter, yCenter);
-			m_g2d.setPaint(paint);
-			if(theta != 0.0f)
-				m_g2d.rotate(theta);
-	
-			// NOTE: Java 7 seems to have broken the antialiasing of text
-			// on translucent backgrounds.  In our case, the network canvas
-			// is transparent, so we fall into this category.  For the monment
-			// the "drawTextAsShape" path is the default path as it avoids
-			// this problem.
-			if (drawTextAsShape) {
-				GlyphVector glyphV = createGlyphVector(text, font);
-				Rectangle2D glyphBounds = glyphV.getLogicalBounds();
-				m_g2d.translate(-glyphBounds.getCenterX(), -glyphBounds.getCenterY());
-				m_g2d.fill(glyphV.getOutline());
-			} else {
-				// Note: A new Rectangle2D is being constructed by this method call.
-				// As far as I know this performance hit is unavoidable.
-				Rectangle2D textBounds = font.getStringBounds(text, getFontRenderContextFull());
-				m_g2d.translate(-textBounds.getCenterX(), -textBounds.getCenterY());
-				m_g2d.setFont(font);
-				m_g2d.drawString(text, 0.0f, 0.0f);
-			}
+		// Old drawing code, untouched
+		m_g2d.translate(xCenter, yCenter);
+		m_g2d.setPaint(paint);
+		if(theta != 0.0f)
+			m_g2d.rotate(theta);
+
+		// NOTE: Java 7 seems to have broken the antialiasing of text
+		// on translucent backgrounds.  In our case, the network canvas
+		// is transparent, so we fall into this category.  For the monment
+		// the "drawTextAsShape" path is the default path as it avoids
+		// this problem.
+		if (drawTextAsShape) {
+			GlyphVector glyphV = labelLineInfo.getGlyphVector();
+			Rectangle2D glyphBounds = glyphV.getLogicalBounds();
+			m_g2d.translate(-glyphBounds.getCenterX(), -glyphBounds.getCenterY());
+			m_g2d.fill(labelLineInfo.getShape());
+		} else {
+			// Note: A new Rectangle2D is being constructed by this method call.
+			// As far as I know this performance hit is unavoidable.
+			String text = labelLineInfo.getText();
+			Font font = labelLineInfo.getFont();
+			
+			Rectangle2D textBounds = font.getStringBounds(text, getFontRenderContextFull());
+			m_g2d.translate(-textBounds.getCenterX(), -textBounds.getCenterY());
+			m_g2d.setFont(font);
+			m_g2d.drawString(text, 0.0f, 0.0f);
 		}
 		
 		m_g2d.setTransform(m_currNativeXform);
 	}
 	
-	
-	private GlyphVector createGlyphVector(String text, Font font) {
-		if(text.length() > m_charBuff.length) {
-			m_charBuff = new char[Math.max(m_charBuff.length * 2, text.length())];
-		}
-		text.getChars(0, text.length(), m_charBuff, 0);
-		return font.layoutGlyphVector(getFontRenderContextFull(), m_charBuff, 0, text.length(), Font.LAYOUT_NO_LIMIT_CONTEXT);
-	}
 
 	/**
 	 * Returns the context that is used by drawTextFull() to produce text shapes

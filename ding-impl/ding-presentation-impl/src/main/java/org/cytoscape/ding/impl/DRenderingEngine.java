@@ -42,6 +42,8 @@ import org.cytoscape.event.DebounceTimer;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
 import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.graph.render.stateful.GraphLOD.RenderEdges;
+import org.cytoscape.graph.render.stateful.LabelInfoCache;
+import org.cytoscape.graph.render.stateful.LabelInfoProvider;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 import org.cytoscape.model.CyEdge;
@@ -142,6 +144,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private final Timer checkDirtyTimer;
 	private final DebounceTimer eventFireTimer;
 	
+	private final LabelInfoCache labelInfoCache;
+	
 	private final BendStore bendStore;
 	private InputHandlerGlassPane inputHandler = null;
 	private DebugProgressMonitorFactory debugProgressMonitorFactory;
@@ -188,6 +192,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 		viewModelSnapshot = viewModel.createSnapshot();
 		
+		labelInfoCache = new LabelInfoCache(1000); // MKTODO should maxSize be hardcoded?
+		
 		eventFireTimer = new DebounceTimer(240);
 		
 		// Check if the view model has changed approximately 30 times per second
@@ -229,6 +235,9 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		return singleThreadExecutor;
 	}
 	
+	public LabelInfoProvider getLabelCache() {
+		return labelInfoCache;
+	}
 	
 	public Rectangle getComponentBounds() {
 		return renderComponent.getBounds();
