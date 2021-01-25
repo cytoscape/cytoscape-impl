@@ -94,7 +94,7 @@ final class TextRenderingUtils {
 	                                              final float textXCenter, final float textYCenter,
 	                                              final Justification textJustify, final Paint paint,
 	                                              final boolean textAsShape) {
-    renderText(grafx, measuredText, font, fontScaleFactor, textXCenter, textYCenter,
+    renderText(grafx, measuredText, font, fontScaleFactor, textXCenter, textYCenter, textXCenter, textYCenter,
                textJustify, paint, 0d, textAsShape);
   }
 
@@ -103,6 +103,7 @@ final class TextRenderingUtils {
 	                                    final MeasuredLineCreator measuredText,
 	                                    final Font font, final double fontScaleFactor,
 	                                    final float textXCenter, final float textYCenter,
+                                      final double textXAnchor, final double textYAnchor,
 	                                    final Justification textJustify, final Paint paint,
 	                                    final double theta, final boolean textAsShape) {
 
@@ -123,7 +124,7 @@ final class TextRenderingUtils {
 				throw new IllegalStateException("textJustify value unrecognized");
 
 			grafx.drawTextFull(font, fontScaleFactor, line.getLine(), 
-			                   (float) xCenter, (float) yCenter, (float)theta,
+			                   (float) xCenter, (float) yCenter, textXAnchor, textYAnchor, (float)theta,
 			                   paint, textAsShape);
 			currHeight += line.getHeight();
 		}

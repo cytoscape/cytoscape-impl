@@ -483,6 +483,8 @@ public final class GraphRenderer {
 								                              font, fontScaleFactor,
 								                              (float) textXCenter,
 								                              (float) textYCenter,
+                                              edgeAnchorPointX,
+                                              edgeAnchorPointY,
 								                              justify, paint, theta,
 								                              flags.has(LOD_TEXT_AS_SHAPE));
 							}
@@ -609,7 +611,10 @@ public final class GraphRenderer {
 						TextRenderingUtils.renderText(grafx, measuredText, font,
 						                              fontScaleFactor,
 						                              (float) textXCenter,
-						                              (float) textYCenter, justify,
+						                              (float) textYCenter, 
+                                          nodeAnchorPointX,
+                                          nodeAnchorPointY,
+                                          justify,
 						                              paint,theta,
 						                              flags.has(LOD_TEXT_AS_SHAPE));
 					}

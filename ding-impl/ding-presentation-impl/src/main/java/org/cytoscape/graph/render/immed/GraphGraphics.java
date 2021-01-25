@@ -1676,19 +1676,24 @@ public final class GraphGraphics {
 	 */
 	public final void drawTextFull(final Font font, final double scaleFactor,
 			final String text, final float xCenter, final float yCenter,
+			final double xAnchor, final double yAnchor,
 			final float theta, final Paint paint, final boolean drawTextAsShape) {
+    // System.out.println("anchor = "+xAnchor+","+yAnchor);
+    // System.out.println("center = "+xCenter+","+yCenter);
+
 		if (debug) {
 			if (scaleFactor < 0.0) {
 				throw new IllegalArgumentException("scaleFactor must be positive");
 			}
 		}
 
+		if (theta != 0.0f) {
+			// m_g2d.rotate(theta, (double)xCenter-xAnchor, (double)yCenter-yAnchor);
+			m_g2d.rotate(theta, xAnchor, yAnchor);
+		}
+
 		m_g2d.translate(xCenter, yCenter);
 		m_g2d.scale(scaleFactor, scaleFactor);
-
-		if (theta != 0.0f) {
-			m_g2d.rotate(theta);
-		}
 
 		m_g2d.setPaint(paint);
 
