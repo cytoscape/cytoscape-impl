@@ -139,7 +139,9 @@ public class UpdateAnnotationTask extends AbstractTask implements ObservableTask
       for (var annotation: annotationManager.getAnnotations(view)) {
         if ((aUUID != null && annotation.getUUID().equals(aUUID)) ||
             (name != null && annotation.getName().equals(name))) {
+          try {
 			    updateAnnotation(tm, annotation);
+          } catch (Exception e) { e.printStackTrace(); }
           updatedAnnotation = annotation;
           return;
         }
@@ -151,6 +153,7 @@ public class UpdateAnnotationTask extends AbstractTask implements ObservableTask
 	}
 
   private void updateAnnotation(TaskMonitor tm, Annotation annotation) {
+    
 		if (type.equals(ImageAnnotation.class)) {
       standardTunables.update(tm, annotation);
       shapeTunables.update(tm, annotation);
@@ -166,9 +169,13 @@ public class UpdateAnnotationTask extends AbstractTask implements ObservableTask
       standardTunables.update(tm, annotation);
       shapeTunables.update(tm, annotation);
     } else if (type.equals(GroupAnnotation.class)) {
+      
       standardTunables.update(tm, annotation);
+      
     }
+    
     annotation.update();
+    
   }
 
   @Override

@@ -3,6 +3,7 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -191,6 +192,45 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		super.changeCanvas(canvasId);
 	}
 
+  @Override
+  public void setRotation(double rotation) {
+    // Get the current rotation
+    var oldValue = this.rotation;
+    super.setRotation(rotation);
+
+    var deltaRotation = this.rotation-oldValue;
+    System.out.println("rotation = "+rotation+", deltaRotation = "+deltaRotation);
+    var centerX = getCenter(this.getBounds()).getX();
+    var centerY = getCenter(this.getBounds()).getY();
+
+    // Change the rotation in each of our children
+		for (var a : annotations) {
+      System.out.println("setting rotation for "+a+" to "+(a.getRotation()+deltaRotation));
+      a.setRotation(a.getRotation()+deltaRotation);
+			var angle = deltaRotation;
+
+      // Get the center of the annotation relative to the center of the union
+      Rectangle2D bounds = a.getBounds();
+      Point2D aCenter = getCenter(bounds);
+      double x = aCenter.getX()-centerX;
+      double y = aCenter.getY()-centerY;
+      if (Math.abs(x) > 0.1 || Math.abs(y) > 0.1) {
+        double aRadians = Math.toRadians(angle);
+
+        // Calculate the displacement relative to the center of the union
+        double newCenterX = x*Math.cos(aRadians)-y*Math.sin(aRadians); 
+        double newCenterY = y*Math.cos(aRadians)+x*Math.sin(aRadians);
+
+        // Now get the position relative to the screen
+        newCenterX += centerX;
+        newCenterY += centerY;
+
+        a.setLocation(newCenterX - bounds.getWidth()/2d, newCenterY - bounds.getHeight()/2d);
+      }
+    }
+    updateBounds();
+  }
+
 	@Override
 	public void paint(Graphics g, boolean showSelected) {
 		super.paint(g, showSelected);
@@ -201,7 +241,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 			Rectangle2D bounds = getBounds();
 
       if (rotation != 0.0) {
-        transform.rotate(Math.toRadians(rotation), bounds.getX() + bounds.getWidth()/2, bounds.getY() + bounds.getHeight()/2);
+        // transform.rotate(Math.toRadians(rotation), bounds.getX() + bounds.getWidth()/2, bounds.getY() + bounds.getHeight()/2);
         g2.transform(transform);
       }
 
@@ -229,4 +269,8 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		if (union != null)
 			setBounds(union.getBounds());
 	}
+
+  private Point2D getCenter(Rectangle2D bounds) {
+    return new Point2D.Double(bounds.getX()+bounds.getWidth()/2d, bounds.getY()+ bounds.getHeight()/2d);
+  }
 }
