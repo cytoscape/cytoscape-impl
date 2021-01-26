@@ -142,7 +142,7 @@ public class LabelInfo {
 				if (currentWidth + wordWidth >= labelWidth) {
 					// only write the string if something is there
 					if ( currentWidth > 0 ) {
-						measuredLines.add( new LabelLineInfo(this, currentLine.toString(), currentWidth,wordHeight) );
+						measuredLines.add(new LabelLineInfo(this, currentLine.toString(), currentWidth,wordHeight));
 						updateBounds(currentWidth,wordHeight);
 						currentLine.delete(0,currentLine.length());
 					}
@@ -169,7 +169,7 @@ public class LabelInfo {
 
 			// add the last line if there's anything there
 			if ( currentWidth > 0 ) {
-				measuredLines.add( new LabelLineInfo(this, currentLine.toString(), currentWidth, wordHeight) );
+				measuredLines.add(new LabelLineInfo(this, currentLine.toString(), currentWidth, wordHeight));
 				updateBounds(currentWidth,wordHeight);
 			}
 		}

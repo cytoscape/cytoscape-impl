@@ -1573,8 +1573,10 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			mousePressedPoint = null;
 			undoPanEdit = null;
 			
-			panner.endPan();
-			panner = null;
+			if(panner != null) { // why does this happen?
+				panner.endPan();
+				panner = null;
+			}
 		}
 		
 		private Cursor createPanCursor() {
