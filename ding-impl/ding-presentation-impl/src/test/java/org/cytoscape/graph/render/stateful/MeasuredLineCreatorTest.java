@@ -1,5 +1,10 @@
 package org.cytoscape.graph.render.stateful;
 
+import java.awt.Font;
+import java.awt.GraphicsEnvironment;
+import java.awt.font.FontRenderContext;
+import java.util.List;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -23,21 +28,14 @@ package org.cytoscape.graph.render.stateful;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-
-import junit.framework.*;
-
-import java.awt.Font;
-import java.awt.font.*;
-import java.awt.GraphicsEnvironment;
-import java.util.List;
+import junit.framework.TestCase;
 
 
 public class MeasuredLineCreatorTest extends TestCase {
 	Font serif;
 	Font sansSerif;
 	FontRenderContext frc;
-	MeasuredLineCreator mlc;
+	LabelInfo mlc;
 
 
 	public void setUp() {
@@ -52,46 +50,46 @@ public class MeasuredLineCreatorTest extends TestCase {
 	}
 
 	public void testOneLine() {
-		mlc = new MeasuredLineCreator("homer",serif,frc,2.0,true,100);
+		mlc = new LabelInfo("homer",serif,frc,true,100);
 		printLines("one line",mlc);
 		assertTrue(mlc.getMeasuredLines().size() == 1);
 	}
 
 	public void testOneNewLine() {
-		mlc = new MeasuredLineCreator("homer\nmarge",serif,frc,2.0,true,100);
+		mlc = new LabelInfo("homer\nmarge",serif,frc,true,100);
 		printLines("one newline",mlc);
 		assertTrue(mlc.getMeasuredLines().size() == 2);
 	}
 
 	public void testLongLine() {
-		mlc = new MeasuredLineCreator("homer bart lisa marge",serif,frc,2.0,true,10);
+		mlc = new LabelInfo("homer bart lisa marge",serif,frc,true,10);
 		printLines("long line",mlc);
 		assertTrue(mlc.getMeasuredLines().size() > 1);
 	}
 
 	public void testLongLineAndNewLines() {
-		mlc = new MeasuredLineCreator("homer bart lisa marge\nmaggie\nsmithers",serif,frc,2.0,false,10);
+		mlc = new LabelInfo("homer bart lisa marge\nmaggie\nsmithers",serif,frc,false,10);
 		printLines("long line and newlines",mlc);
 		assertTrue(mlc.getMeasuredLines().size() > 3);
 	}
 
 	public void testLongLineAndSpaces() {
-		mlc = new MeasuredLineCreator("homer bart lisa marge          smithers",serif,frc,2.0,true,10);
+		mlc = new LabelInfo("homer bart lisa marge          smithers",serif,frc,true,10);
 		printLines("long line and spaces",mlc);
 		assertTrue(mlc.getMeasuredLines().size() > 2);
 	}
 
 	public void testLongWord() {
-		mlc = new MeasuredLineCreator("homerbartlisamargesmithers",serif,frc,2.0,false,10);
+		mlc = new LabelInfo("homerbartlisamargesmithers",serif,frc,false,10);
 		printLines("long word",mlc);
 		assertTrue(mlc.getMeasuredLines().size() == 1);
 	}
 
 	public void testWidthUpdate() {
-		mlc = new MeasuredLineCreator("homer\nmarge",serif,frc,2.0,true,100);
+		mlc = new LabelInfo("homer\nmarge",serif,frc,true,100);
 		printLines("width update",mlc);
 		double w = mlc.getMaxLineWidth();
-		for ( MeasuredLine ml : mlc.getMeasuredLines() )
+		for ( LabelLineInfo ml : mlc.getMeasuredLines() )
 			if ( ml.getWidth() == w )
 				return;
 		
@@ -99,35 +97,35 @@ public class MeasuredLineCreatorTest extends TestCase {
 	}
 
 	public void testFirstLineNotEmpty() {
-		mlc = new MeasuredLineCreator("homerbart lisa margesmithers",serif,frc,2.0,false,10);
+		mlc = new LabelInfo("homerbart lisa margesmithers",serif,frc,false,10);
 		printLines("first line not empty",mlc);
-		List<MeasuredLine> ml = mlc.getMeasuredLines(); 
+		List<LabelLineInfo> ml = mlc.getMeasuredLines(); 
 		assertFalse( ml.get(0).getLine().equals("") );
 	}
 
 	public void testLastLineNotEmpty() {
-		mlc = new MeasuredLineCreator("homerbart lisa margesmithers",serif,frc,2.0,false,10);
+		mlc = new LabelInfo("homerbart lisa margesmithers",serif,frc,false,10);
 		printLines("last line not empty",mlc);
-		List<MeasuredLine> ml = mlc.getMeasuredLines(); 
+		List<LabelLineInfo> ml = mlc.getMeasuredLines(); 
 		assertFalse( ml.get(ml.size()-1).getLine().equals("") );
 	}
 
 	public void testTotalHeight() {
-		mlc = new MeasuredLineCreator("homerbart lisa margesmithers",serif,frc,2.0,false,10);
+		mlc = new LabelInfo("homerbart lisa margesmithers",serif,frc,false,10);
 		printLines("total height",mlc);
 		double h = mlc.getTotalHeight();
 		double total = 0;
-		for ( MeasuredLine ml : mlc.getMeasuredLines() )
+		for ( LabelLineInfo ml : mlc.getMeasuredLines() )
 			total += ml.getHeight();
 
 		assertEquals( total, h, 0.001 ); 
 	}
 
 	public void testRespectFontHeight() {
-		mlc = new MeasuredLineCreator("homerbart lisa margesmithers",serif,frc,2.0,false,10);
+		mlc = new LabelInfo("homerbart lisa margesmithers",serif,frc,false,10);
 		double h1 = mlc.getTotalHeight();
 		printLines("respect font height 1",mlc);
-		mlc = new MeasuredLineCreator("homerbart lisa margesmithers",sansSerif,frc,2.0,false,10);
+		mlc = new LabelInfo("homerbart lisa margesmithers",sansSerif,frc,false,10);
 		double h2 = mlc.getTotalHeight();
 		printLines("respect font height 2",mlc);
 
@@ -135,19 +133,19 @@ public class MeasuredLineCreatorTest extends TestCase {
 	}
 
 	public void testRespectOverallWidthLimit() {
-		mlc = new MeasuredLineCreator("homer marge bart lisa maggie smithers",
-		                              serif,frc,2.0,false,50.0);
+		mlc = new LabelInfo("homer marge bart lisa maggie smithers",
+		                              serif,frc,false,50.0);
 		double mw = mlc.getMaxLineWidth();
 		printLines("respect overall width",mlc);
 		
 		assertTrue( mw < (50.0*2.0) );
 	}
 
-	private void printLines(String title, MeasuredLineCreator mlx) {
+	private void printLines(String title, LabelInfo mlx) {
 		System.out.println("------------------------- " + title);
 		System.out.println("max line width: " + mlx.getMaxLineWidth());
 		System.out.println("total height  : " + mlx.getTotalHeight());
-		for ( MeasuredLine ml : mlc.getMeasuredLines() )
+		for ( LabelLineInfo ml : mlc.getMeasuredLines() )
 			System.out.println(ml.toString());
 		System.out.println();
 	}

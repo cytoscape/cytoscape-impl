@@ -163,11 +163,6 @@ public interface NodeDetails {
 	Paint getBorderPaint(View<CyNode> node);
 
 	/**
-	 * Returns the number of labels that this node has.
-	 */
-	int getLabelCount(View<CyNode> node);
-
-	/**
 	 * Returns a label's text. This
 	 * method is only called by the rendering engine if labelCount(node) returns
 	 * a value greater than zero. It is an error to return null if this method
@@ -196,21 +191,6 @@ public interface NodeDetails {
 	 */
 	default Double getLabelRotation(View<CyNode> node) { return 0d; }
 
-	/**
-	 * Returns an additional scaling factor that is to be applied to the font
-	 * used to render this label; this scaling factor, applied to the point size
-	 * of the font returned by labelFont(node, labelInx), yields a new virtual
-	 * font that is used to render the text label. 
-	 * This method is only called by the rendering engine if
-	 * labelCount(node) returns a value greater than zero.
-	 * 
-	 * @param labelInx
-	 *            a value in the range [0, labelCount(node)-1] indicating which
-	 *            node label in question.
-	 */
-	default double getLabelScaleFactor(View<CyNode> node) {
-		return 1.0d;
-	}
 
 	/**
 	 * Returns the paint of a text label. 

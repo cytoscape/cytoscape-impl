@@ -74,62 +74,9 @@ import org.cytoscape.view.vizmap.VisualPropertyDependency;
 public final class GraphRenderer {
 	
 	
-	// No constructor.
-	private GraphRenderer() {
-	}
-	
-	
-//	/**
-//	 * Renders a graph.
-//	 * @param netView the network view; nodes in this graph must correspond to
-//	 *   objKeys in nodePositions (the SpacialIndex2D parameter) and vice versa.
-//	 * @param nodePositions defines the positions and extents of nodes in graph;
-//	 *   each entry (objKey) in this structure must correspond to a node in graph
-//	 *   (the CyNetwork parameter) and vice versa; the order in which nodes are
-//	 *   rendered is defined by a non-reversed overlap query on this structure.
-//	 * @param lod defines the different levels of detail; an appropriate level
-//	 *   of detail is chosen based on the results of method calls on this
-//	 *   object.
-//	 * @param nodeDetails defines details of nodes such as colors, node border
-//	 *   thickness, and shape; the node arguments passed to methods on this
-//	 *   object will be nodes in the graph parameter.
-//	 * @param edgeDetails defines details of edges such as colors, thickness,
-//	 *   and arrow type; the edge arguments passed to methods on this
-//	 *   object will be edges in the graph parameter.
-//	 * @param nodeBuff this is a computational helper that is required in the
-//	 *   implementation of this method; when this method returns, nodeBuff is
-//	 *   in a state such that an edge in graph has been rendered by this method
-//	 *   if and only if it touches at least one node in this nodeBuff set;
-//	 *   no guarantee made regarding edgeless nodes.
-//	 * @param grafx the graphics context that is to render this graph.
-//	 * @param bgPaint the background paint to use when calling grafx.clear().
-//	 * @param xCenter the xCenter parameter to use when calling grafx.clear().
-//	 * @param yCenter the yCenter parameter to use when calling grafx.clear().
-//	 * @param scaleFactor the scaleFactor parameter to use when calling
-//	 *   grafx.clear().
-//	 * @param dependencies 
-//	 * @return bits representing the level of detail that was rendered; the
-//	 *   return value is a bitwise-or'ed value of the LOD_* constants.
-//	 */
-//	public final static void renderGraph(final CyNetworkViewSnapshot netView,
-//	                                    final RenderDetailFlags flags,
-//	                                    final NodeDetails nodeDetails,
-//	                                    final EdgeDetails edgeDetails,
-//	                                    final GraphGraphics grafx,
-//	                                    final Set<VisualPropertyDependency<?>> dependencies) {
-//
-////		RenderDetailFlags flags = RenderDetailFlags.create(netView, grafx.getTransform(), lod, edgeDetails);
-//		
-//		if (flags.renderEdges() >= 0) {
-//			renderEdges(grafx, netView, flags, nodeDetails, edgeDetails);
-//		}
-//		renderNodes(grafx, netView, flags, nodeDetails, edgeDetails, dependencies);
-//	}
-	
-	
-	
 	public static void renderEdges(ProgressMonitor pm, GraphGraphics grafx, CyNetworkViewSnapshot netView,
-			RenderDetailFlags flags, NodeDetails nodeDetails, EdgeDetails edgeDetails) {
+			RenderDetailFlags flags, NodeDetails nodeDetails, EdgeDetails edgeDetails,
+			LabelInfoProvider labelInfoProvider) {
 		
 		// Render the edges first.  No edge shall be rendered twice.  Render edge labels.  
 		// A label is not necessarily on top of every edge; it is only on top of the edge it belongs to.
@@ -353,7 +300,6 @@ public final class GraphRenderer {
 								
 								final String text = edgeDetails.getLabelText(edge);
 								final Font font = edgeDetails.getLabelFont(edge);
-								final double fontScaleFactor = edgeDetails.getLabelScaleFactor(edge);
 								final Paint paint = edgeDetails.getLabelPaint(edge);
 								final Position textAnchor = edgeDetails.getLabelTextAnchor(edge);
 								final Position edgeAnchor = edgeDetails.getLabelEdgeAnchor(edge);
@@ -464,29 +410,18 @@ public final class GraphRenderer {
 								} else
 									throw new IllegalStateException("encountered an invalid EDGE_ANCHOR_* constant: " + edgeAnchor);
 
-								final MeasuredLineCreator measuredText = 
-									new MeasuredLineCreator(text,font,
-									                         grafx.getFontRenderContextFull(),
-									                         fontScaleFactor, 
-									                         flags.has(LOD_TEXT_AS_SHAPE),
-									                         edgeLabelWidth);
-
-								doubleBuff1[0] = -0.5d * measuredText.getMaxLineWidth();
-								doubleBuff1[1] = -0.5d * measuredText.getTotalHeight(); 
-								doubleBuff1[2] = 0.5d * measuredText.getMaxLineWidth(); 
-								doubleBuff1[3] = 0.5d * measuredText.getTotalHeight(); 
+								LabelInfo labelInfo = labelInfoProvider.getLabelInfo(text, font, edgeLabelWidth, grafx.getFontRenderContextFull());
+								
+								doubleBuff1[0] = -0.5d * labelInfo.getMaxLineWidth();
+								doubleBuff1[1] = -0.5d * labelInfo.getTotalHeight(); 
+								doubleBuff1[2] =  0.5d * labelInfo.getMaxLineWidth(); 
+								doubleBuff1[3] =  0.5d * labelInfo.getTotalHeight(); 
 								lemma_computeAnchor(textAnchor, doubleBuff1, doubleBuff2);
 
 								final double textXCenter = edgeAnchorPointX - doubleBuff2[0] + offsetVectorX;
 								final double textYCenter = edgeAnchorPointY - doubleBuff2[1] + offsetVectorY;
-								TextRenderingUtils.renderText(grafx, measuredText, 
-								                              font, fontScaleFactor,
-								                              (float) textXCenter,
-								                              (float) textYCenter,
-                                              edgeAnchorPointX,
-                                              edgeAnchorPointY,
-								                              justify, paint, theta,
-								                              flags.has(LOD_TEXT_AS_SHAPE));
+								renderText(grafx, labelInfo, (float) textXCenter, (float) textYCenter,
+										edgeAnchorPointX, edgeAnchorPointY, justify, paint, theta, flags.has(LOD_TEXT_AS_SHAPE));
 							}
 						}
 						
@@ -503,7 +438,8 @@ public final class GraphRenderer {
 
 	
 	public static void renderNodes(ProgressMonitor pm, GraphGraphics grafx, CyNetworkViewSnapshot netView,
-			RenderDetailFlags flags, NodeDetails nodeDetails, EdgeDetails edgeDetails, Set<VisualPropertyDependency<?>> dependencies) {
+			RenderDetailFlags flags, NodeDetails nodeDetails, EdgeDetails edgeDetails, Set<VisualPropertyDependency<?>> dependencies, 
+			LabelInfoProvider labelInfoProvider) {
 		
 		// Render nodes and labels.  A label is not necessarily on top of every
 		// node; it is only on top of the node it belongs to.
@@ -566,28 +502,19 @@ public final class GraphRenderer {
 				
 				// Take care of label rendering.
 				if (flags.has(LOD_NODE_LABELS)) { // Potential label rendering.
-
-					final int labelCount = nodeDetails.getLabelCount(cyNode);
-
-					for (int labelInx = 0; labelInx < labelCount; labelInx++) {
-						final String text = nodeDetails.getLabelText(cyNode);
+					final String text = nodeDetails.getLabelText(cyNode);
+					
+					if(text != null && !text.isEmpty()) {
 						final Font font = nodeDetails.getLabelFont(cyNode);
-						final double fontScaleFactor = nodeDetails.getLabelScaleFactor(cyNode);
 						final Paint paint = nodeDetails.getLabelPaint(cyNode);
 						final Position textAnchor = nodeDetails.getLabelTextAnchor(cyNode);
 						final Position nodeAnchor = nodeDetails.getLabelNodeAnchor(cyNode);
 						final float offsetVectorX = nodeDetails.getLabelOffsetVectorX(cyNode);
 						final float offsetVectorY = nodeDetails.getLabelOffsetVectorY(cyNode);
 						final double theta = nodeDetails.getLabelRotation(cyNode)*.01745329252;
-						final Justification justify;
-
-						if (text.indexOf('\n') >= 0)
-							justify = nodeDetails.getLabelJustify(cyNode);
-						else
-							justify = Justification.JUSTIFY_CENTER;
-
 						final double nodeLabelWidth = nodeDetails.getLabelWidth(cyNode);
-
+						final Justification justify = text.indexOf('\n') >= 0 ? nodeDetails.getLabelJustify(cyNode) : Justification.JUSTIFY_CENTER;
+						
 						doubleBuff1[0] = floatBuff1[0];
 						doubleBuff1[1] = floatBuff1[1];
 						doubleBuff1[2] = floatBuff1[2];
@@ -596,27 +523,21 @@ public final class GraphRenderer {
 
 						final double nodeAnchorPointX = doubleBuff2[0];
 						final double nodeAnchorPointY = doubleBuff2[1];
-						final MeasuredLineCreator measuredText = new MeasuredLineCreator(
-						    text, font, grafx.getFontRenderContextFull(), fontScaleFactor,
-						    flags.has(LOD_TEXT_AS_SHAPE), nodeLabelWidth);
+						
+						LabelInfo labelInfo = labelInfoProvider.getLabelInfo(text, font, nodeLabelWidth, grafx.getFontRenderContextFull());
 
-						doubleBuff1[0] = -0.5d * measuredText.getMaxLineWidth();
-						doubleBuff1[1] = -0.5d * measuredText.getTotalHeight();
-						doubleBuff1[2] = 0.5d * measuredText.getMaxLineWidth();
-						doubleBuff1[3] = 0.5d * measuredText.getTotalHeight();
+						doubleBuff1[0] = -0.5d * labelInfo.getMaxLineWidth();
+						doubleBuff1[1] = -0.5d * labelInfo.getTotalHeight();
+						doubleBuff1[2] =  0.5d * labelInfo.getMaxLineWidth();
+						doubleBuff1[3] =  0.5d * labelInfo.getTotalHeight();
 						lemma_computeAnchor(textAnchor, doubleBuff1, doubleBuff2);
 
 						final double textXCenter = nodeAnchorPointX - doubleBuff2[0] + offsetVectorX;
 						final double textYCenter = nodeAnchorPointY - doubleBuff2[1] + offsetVectorY;
-						TextRenderingUtils.renderText(grafx, measuredText, font,
-						                              fontScaleFactor,
-						                              (float) textXCenter,
-						                              (float) textYCenter, 
-                                          nodeAnchorPointX,
-                                          nodeAnchorPointY,
-                                          justify,
-						                              paint,theta,
-						                              flags.has(LOD_TEXT_AS_SHAPE));
+						
+						renderText(grafx, labelInfo, (float) textXCenter,(float) textYCenter, nodeAnchorPointX,
+                                	nodeAnchorPointY, justify, paint, theta, flags.has(LOD_TEXT_AS_SHAPE));
+
 					}
 				}
 				
@@ -625,6 +546,35 @@ public final class GraphRenderer {
 			}
 		}
 	}
+	
+	
+	public final static void renderText(final GraphGraphics grafx, final LabelInfo measuredText,
+			final float textXCenter, final float textYCenter,
+			final double textXAnchor, final double textYAnchor,
+			final Justification textJustify,
+			final Paint paint, final double theta, final boolean textAsShape) {
+
+		double currHeight = measuredText.getTotalHeight() / -2.0d;
+		final double overallWidth = measuredText.getMaxLineWidth();
+
+		for (LabelLineInfo line : measuredText.getMeasuredLines()) {
+			final double yCenter = currHeight + textYCenter + (line.getHeight() / 2.0d);
+			final double xCenter;
+
+			if (textJustify == Justification.JUSTIFY_CENTER)
+				xCenter = textXCenter;
+			else if (textJustify == Justification.JUSTIFY_LEFT)
+				xCenter = (-0.5d * (overallWidth - line.getWidth())) + textXCenter;
+			else if (textJustify == Justification.JUSTIFY_RIGHT)
+				xCenter = (0.5d * (overallWidth - line.getWidth())) + textXCenter;
+			else
+				throw new IllegalStateException("textJustify value unrecognized");
+
+			grafx.drawTextFull(line, (float) xCenter, (float) yCenter, textXAnchor, textYAnchor, (float) theta, paint, textAsShape);
+			currHeight += line.getHeight();
+		}
+	}
+	
 	
 	/**
 	 * 

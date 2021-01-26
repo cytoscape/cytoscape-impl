@@ -201,12 +201,6 @@ public class DNodeDetails implements NodeDetails {
 	}
 
 	@Override
-	public int getLabelCount(View<CyNode> nodeView) {
-		String label = getLabelText(nodeView);
-		return (label == null || label.isEmpty()) ? 0 : 1;
-	}
-
-	@Override
 	public String getLabelText(View<CyNode> nodeView) {
 		return nodeView.getVisualProperty(NODE_LABEL);
 	}

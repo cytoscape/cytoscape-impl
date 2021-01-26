@@ -30,6 +30,7 @@ public class RenderDetailFlags {
 	
 	// Optimizations
 	public final static int OPT_EDGE_BUFF_PAN   = 0x200;
+	public final static int OPT_LABEL_CACHE     = 0x400;
 
 	
 	private final int lodBits;
@@ -170,6 +171,8 @@ public class RenderDetailFlags {
 		// optimization bits
 		if (lod.edgeBufferPan())
 			lodbits |= OPT_EDGE_BUFF_PAN;
+		if (lod.labelCache())
+			lodbits |= OPT_LABEL_CACHE;
 		
 		return lodbits;
 	}

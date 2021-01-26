@@ -3,7 +3,6 @@ package org.cytoscape.graph.render.immed;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Rectangle;
@@ -51,6 +50,8 @@ import org.cytoscape.graph.render.immed.nodeshape.RectangleNodeShape;
 import org.cytoscape.graph.render.immed.nodeshape.RoundedRectangleNodeShape;
 import org.cytoscape.graph.render.immed.nodeshape.TriangleNodeShape;
 import org.cytoscape.graph.render.immed.nodeshape.VeeNodeShape;
+import org.cytoscape.graph.render.stateful.LabelLineInfo;
+import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
@@ -126,6 +127,8 @@ public final class GraphGraphics {
 	// This member variable only to be used from within defineCustomNodeShape().
 	private byte m_lastCustomShapeType = s_last_shape;
 	
+	private RenderDetailFlags renderDetailFlags;
+	
 	// package scoped for unit testing
 	static final EdgeAnchors m_noAnchors = new EdgeAnchors() {
 		public final int numAnchors() { return 0; }
@@ -185,7 +188,6 @@ public final class GraphGraphics {
 	// This is only used by computeCubicPolyEdgePath().
 	private final float[] m_floatBuff = new float[2];
 	// This member variable shall only be used from within drawTextFull().
-	private char[] m_charBuff = new char[20];
 	private final FontRenderContext m_fontRenderContextFull = new FontRenderContext(null,true,true);
 	
 	private final GraphicsProvider graphicsProvider;
@@ -198,14 +200,15 @@ public final class GraphGraphics {
 	public GraphGraphics(GraphicsProvider graphicsProvider) {
 		this.graphicsProvider = graphicsProvider;
 		this.m_path2dPrime.setWindingRule(GeneralPath.WIND_EVEN_ODD);
-		update();
+		update(null);
 	}
 	
 	public NetworkTransform getTransform() {
 		return graphicsProvider.getTransform();
 	}
 
-	public final void update() {
+	public final void update(RenderDetailFlags flags) {
+		this.renderDetailFlags = flags;
 		if (m_gMinimal != null) {
 			m_gMinimal.dispose();
 			m_gMinimal = null;
@@ -216,31 +219,36 @@ public final class GraphGraphics {
 
 		m_g2d = graphicsProvider.getGraphics();
 
-		// Antialiasing is ON
-		m_g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		
-		// Rendering quality is HIGH.
-		m_g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-		
-		// High quality alpha blending is ON.
-		m_g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
-		
-		// High quality color rendering is ON.
-		m_g2d.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
-		m_g2d.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE);
-		m_g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-		
-		// Text antialiasing is ON.
-		m_g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-		m_g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-		m_g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
-		
-		m_g2d.setStroke(new BasicStroke(0.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 10.0f));
+		setGraphicsFlags(m_g2d);
 
 		m_g2d.transform(getTransform().getAffineTransform());
 		m_currNativeXform.setTransform(m_g2d.getTransform()); // save the current transform
 	}
 
+	
+	public static void setGraphicsFlags(Graphics2D g) {
+		// Antialiasing is ON
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		
+		// Rendering quality is HIGH.
+		g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+		
+		// High quality alpha blending is ON.
+		g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+		
+		// High quality color rendering is ON.
+		g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+		g.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE);
+		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+		
+		// Text antialiasing is ON.
+		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+		g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+		
+		g.setStroke(new BasicStroke(0.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 10.0f));
+	}
+	
 
 	/**
 	 * This is the method that will render a node very quickly. The node shape
@@ -1551,60 +1559,6 @@ public final class GraphGraphics {
 		return ns == null ? false : ns.computeEdgeIntersection(xMin, yMin, xMax, yMax, ptX, ptY, returnVal);
 	}
 
-	/**
-	 * This method will render text very quickly. Translucent colors are not
-	 * supported by the low detail rendering methods.
-	 * <p>
-	 * For the sake of maximum performance, this method works differently from
-	 * the other rendering methods with respect to the scaling factor specified
-	 * in clear(). That is, the font used to render the specified text will not
-	 * be scaled; its exact size will be used when the text is rendered onto the
-	 * underlying image. On the other hand, the parameters xCenter and yCenter
-	 * specify coordinates in the node coordinate system, and so the point
-	 * (xCenter, yCenter) will be transformed according the clear() transform in
-	 * determining the location of the text on the underlying image.
-	 * 
-	 * @param font
-	 *            the font to use in drawing text; the size of this font
-	 *            specifies the actual point size of what will be rendered onto
-	 *            the underlying image.
-	 * @param text
-	 *            the text to render.
-	 * @param xCenter
-	 *            the X coordinate of the center point of where to place the
-	 *            rendered text; specified in the node coordinate system.
-	 * @param yCenter
-	 *            the Y coordinate of the center point of where to place the
-	 *            rendered text; specified in the node coordinate system.
-	 * @param color
-	 *            the [fully opaque] color to use in rendering the text.
-	 * @exception IllegalArgumentException
-	 *                if color is not opaque.
-	 */
-	public final void drawTextLow(final Font font, final String text,
-			final float xCenter, final float yCenter, final Color color) {
-		if (debug) {
-			if (color.getAlpha() != 255) {
-				throw new IllegalStateException("color is not opaque");
-			}
-		}
-
-		if (m_gMinimal == null) {
-			makeMinimalGraphics();
-		}
-
-		m_ptsBuff[0] = xCenter;
-		m_ptsBuff[1] = yCenter;
-		getTransform().getAffineTransform().transform(m_ptsBuff, 0, m_ptsBuff, 0, 1);
-		m_gMinimal.setFont(font);
-
-		final FontMetrics fMetrics = m_gMinimal.getFontMetrics();
-		m_gMinimal.setColor(color);
-		m_gMinimal.drawString(
-						text,
-						(int) ((-0.5d * fMetrics.stringWidth(text)) + m_ptsBuff[0]),
-						(int) ((0.5d * fMetrics.getHeight()) - fMetrics.getDescent() + m_ptsBuff[1]));
-	}
 
 	/**
 	 * Returns the context that is used by drawTextLow() to produce text shapes
@@ -1674,18 +1628,12 @@ public final class GraphGraphics {
 	 *            operation has a difficult time when it needs to render text
 	 *            under a transformation with a very large scale factor.
 	 */
-	public final void drawTextFull(final Font font, final double scaleFactor,
-			final String text, final float xCenter, final float yCenter,
+
+	public final void drawTextFull(LabelLineInfo labelLineInfo,
+			final float xCenter, final float yCenter,
 			final double xAnchor, final double yAnchor,
 			final float theta, final Paint paint, final boolean drawTextAsShape) {
-    // System.out.println("anchor = "+xAnchor+","+yAnchor);
-    // System.out.println("center = "+xCenter+","+yCenter);
-
-		if (debug) {
-			if (scaleFactor < 0.0) {
-				throw new IllegalArgumentException("scaleFactor must be positive");
-			}
-		}
+		
 
 		if (theta != 0.0f) {
 			// m_g2d.rotate(theta, (double)xCenter-xAnchor, (double)yCenter-yAnchor);
@@ -1693,8 +1641,6 @@ public final class GraphGraphics {
 		}
 
 		m_g2d.translate(xCenter, yCenter);
-		m_g2d.scale(scaleFactor, scaleFactor);
-
 		m_g2d.setPaint(paint);
 
 		// NOTE: Java 7 seems to have broken the antialiasing of text
@@ -1703,33 +1649,25 @@ public final class GraphGraphics {
 		// the "drawTextAsShape" path is the default path as it avoids
 		// this problem.
 		if (drawTextAsShape) {
-			final GlyphVector glyphV;
-
-			if (text.length() > m_charBuff.length) {
-				m_charBuff = new char[Math.max(m_charBuff.length * 2, text
-						.length())];
-			}
-
-			text.getChars(0, text.length(), m_charBuff, 0);
-			glyphV = font.layoutGlyphVector(getFontRenderContextFull(),
-					m_charBuff, 0, text.length(), Font.LAYOUT_NO_LIMIT_CONTEXT);
-
-			final Rectangle2D glyphBounds = glyphV.getLogicalBounds();
-			m_g2d.translate(-glyphBounds.getCenterX(), -glyphBounds
-					.getCenterY());
-			m_g2d.fill(glyphV.getOutline());
+			GlyphVector glyphV = labelLineInfo.getGlyphVector();
+			Rectangle2D glyphBounds = glyphV.getLogicalBounds();
+			m_g2d.translate(-glyphBounds.getCenterX(), -glyphBounds.getCenterY());
+			m_g2d.fill(labelLineInfo.getShape());
 		} else {
 			// Note: A new Rectangle2D is being constructed by this method call.
 			// As far as I know this performance hit is unavoidable.
-			final Rectangle2D textBounds = font.getStringBounds(text,
-					getFontRenderContextFull());
+			String text = labelLineInfo.getText();
+			Font font = labelLineInfo.getFont();
+			
+			Rectangle2D textBounds = font.getStringBounds(text, getFontRenderContextFull());
 			m_g2d.translate(-textBounds.getCenterX(), -textBounds.getCenterY());
 			m_g2d.setFont(font);
 			m_g2d.drawString(text, 0.0f, 0.0f);
 		}
-
+		
 		m_g2d.setTransform(m_currNativeXform);
 	}
+	
 
 	/**
 	 * Returns the context that is used by drawTextFull() to produce text shapes

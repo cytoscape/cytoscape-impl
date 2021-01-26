@@ -28,7 +28,8 @@ import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
 import org.cytoscape.graph.render.stateful.GraphRenderer;
-import org.cytoscape.graph.render.stateful.MeasuredLineCreator;
+import org.cytoscape.graph.render.stateful.LabelInfo;
+import org.cytoscape.graph.render.stateful.LabelInfoProvider;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 import org.cytoscape.model.CyEdge;
@@ -128,7 +129,7 @@ public class NetworkPicker {
 	 * @param pt   point where the mouse was clicked.
 	 * @return a DLabelSelection object if there is a node label under the specified point. null if no labels are found at this point.
 	 */
-	private DLabelSelection selectLabel(CyNetworkViewSnapshot snapshot, Point2D pt ) {
+	private DLabelSelection selectLabel(CyNetworkViewSnapshot snapshot, Point2D pt) {
 		double[] locn = {pt.getX(), pt.getY()};
 		re.getTransform().xformImageToNodeCoords(locn);
 		double xP = locn[0];
@@ -150,6 +151,9 @@ public class NetworkPicker {
 		
 		SpacialIndex2DEnumerator<Long> under = snapshot.getSpacialIndex2D().queryOverlap(xMin, yMin, xMax, yMax);
 		
+		LabelInfoProvider labelProvider = re.getGraphLOD().labelCache() ? re.getLabelCache() : LabelInfoProvider.INSTANCE;
+		FontRenderContext frc = new FontRenderContext(null,true,true); // MKTODO
+		
 		float[] extentsBuff = new float[4];
 
 		while (under.hasNext()) {
@@ -159,13 +163,13 @@ public class NetworkPicker {
 			// compute the actual size of label text rectangle
 			String labelText = nodeDetails.getLabelText(nodeView);
 			
-			Font   font = nodeDetails.getLabelFont(nodeView);
+			Font font = nodeDetails.getLabelFont(nodeView);
 			double labelWidth = nodeDetails.getLabelWidth(nodeView);
 			
-			MeasuredLineCreator mlCreator = new MeasuredLineCreator(labelText, font,  new FontRenderContext(null,true,true), 1.0, true, labelWidth);
+			LabelInfo mlCreator = labelProvider.getLabelInfo(labelText, font, labelWidth, frc);
 			
 			double h = mlCreator.getTotalHeight();  // actual label text box height
-			double w =  mlCreator.getMaxLineWidth();  // actual label text box width. 
+			double w = mlCreator.getMaxLineWidth();  // actual label text box width. 
 			
 			// compute the actual position of the label text box.
 			double x = nodeDetails.getXPosition(nodeView); 

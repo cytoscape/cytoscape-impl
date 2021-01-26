@@ -9,15 +9,20 @@ import java.util.Properties;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.event.DebounceTimer;
 import org.cytoscape.property.CyProperty;
@@ -40,6 +45,8 @@ public class SettingsPanel extends BasicCollapsiblePanel  {
 	private PropEditor prop4;
 	private PropEditor prop5;
 	private PropEditor prop6;
+	private PropEditor prop7;
+	private JButton cacheStatsButton;
 	
 	
 	@SuppressWarnings("unchecked")
@@ -51,13 +58,17 @@ public class SettingsPanel extends BasicCollapsiblePanel  {
 	}
 	
 	private void createContents() {
-		prop1 = new NumberPropEditor("render.coarseDetailThreshold");
-		prop2 = new NumberPropEditor("render.nodeBorderThreshold");
-		prop3 = new NumberPropEditor("render.nodeLabelThreshold");
-		prop4 = new NumberPropEditor("render.edgeArrowThreshold");
-		prop5 = new NumberPropEditor("render.edgeLabelThreshold");
-		prop6 = new BooleanPropEditor("render.edgeBufferPan");
+		prop1 = new NumberPropEditor("render.coarseDetailThreshold", "coarseDetailThreshold");
+		prop2 = new NumberPropEditor("render.nodeBorderThreshold", "nodeBorderThreshold");
+		prop3 = new NumberPropEditor("render.nodeLabelThreshold", "nodeLabelThreshold");
+		prop4 = new NumberPropEditor("render.edgeArrowThreshold", "edgeArrowThreshold");
+		prop5 = new NumberPropEditor("render.edgeLabelThreshold", "edgeLabelThreshold");
+		prop6 = new BooleanPropEditor("render.edgeBufferPan", "edgeBufferPan");
+		prop7 = new BooleanPropEditor("render.labelCache", "labelCache");
+		cacheStatsButton = new JButton("show stats");
+		cacheStatsButton.addActionListener(e-> showCacheStats());
 		
+		LookAndFeelUtil.makeSmall(cacheStatsButton);
 		
 		JPanel panel = new JPanel();
 		panel.setOpaque(false);
@@ -74,6 +85,7 @@ public class SettingsPanel extends BasicCollapsiblePanel  {
 				.addComponent(prop4.getLabel())
 				.addComponent(prop5.getLabel())
 				.addComponent(prop6.getLabel())
+				.addComponent(prop7.getLabel())
 			)
 			.addGroup(layout.createParallelGroup()
 				.addComponent(prop1.getEditor())
@@ -82,6 +94,10 @@ public class SettingsPanel extends BasicCollapsiblePanel  {
 				.addComponent(prop4.getEditor())
 				.addComponent(prop5.getEditor())
 				.addComponent(prop6.getEditor())
+				.addComponent(prop7.getEditor())
+			)
+			.addGroup(layout.createParallelGroup()
+				.addComponent(cacheStatsButton)
 			)
 		);
 		
@@ -110,6 +126,11 @@ public class SettingsPanel extends BasicCollapsiblePanel  {
 				.addComponent(prop6.getLabel())
 				.addComponent(prop6.getEditor(), PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
 			)
+			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
+				.addComponent(prop7.getLabel())
+				.addComponent(prop7.getEditor(), PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
+				.addComponent(cacheStatsButton)
+			)
 		);
 		
 		JPanel content = getContentPane();
@@ -124,6 +145,23 @@ public class SettingsPanel extends BasicCollapsiblePanel  {
 		prop4.update();
 		prop5.update();
 		prop6.update();
+		prop7.update();
+	}
+	
+	
+	private void showCacheStats() {
+		var renderer = registrar.getService(DingRenderer.class);
+		var appManager = registrar.getService(CyApplicationManager.class);
+		
+		var netView = appManager.getCurrentNetworkView();
+		if(netView == null)
+			return;
+		
+		DRenderingEngine re = renderer.getRenderingEngine(netView);
+		var labelCache = re.getLabelCache();
+		String stats = labelCache.getStats();
+		
+		JOptionPane.showMessageDialog(this, stats);
 	}
 	
 	
@@ -150,9 +188,9 @@ public class SettingsPanel extends BasicCollapsiblePanel  {
 		private final JLabel label;
 		private final JSpinner spinner;
 		
-		public NumberPropEditor(String propName) {
+		public NumberPropEditor(String propName, String labelText) {
 			this.propName = propName;
-			label = new JLabel(propName);
+			label = new JLabel(labelText);
 			int value = getPropValue();
 			model = new SpinnerNumberModel(value, 0, 1000000, 100);
 			spinner = new JSpinner(model);
@@ -197,9 +235,9 @@ public class SettingsPanel extends BasicCollapsiblePanel  {
 		private final JLabel label;
 		private final JCheckBox checkBox;
 		
-		public BooleanPropEditor(String propName) {
+		public BooleanPropEditor(String propName, String labelText) {
 			this.propName = propName;
-			label = new JLabel(propName);
+			label = new JLabel(labelText);
 			checkBox = new JCheckBox();
 			boolean value = getPropValue();
 			checkBox.setSelected(value);

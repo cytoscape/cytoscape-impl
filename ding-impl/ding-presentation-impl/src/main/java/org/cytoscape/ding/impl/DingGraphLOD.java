@@ -48,7 +48,9 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 	protected int nodeLabelThreshold;
 	protected int edgeArrowThreshold;
 	protected int edgeLabelThreshold;
+	
 	protected boolean edgeBufferPan;
+	protected boolean labelCache;
 
 	private final Properties props;
 	private final CyProperty<Properties> cyProp;
@@ -70,6 +72,7 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 		edgeArrowThreshold = parseInt(props.getProperty("render.edgeArrowThreshold"), 600);
 		edgeLabelThreshold = parseInt(props.getProperty("render.edgeLabelThreshold"), 200);
 		edgeBufferPan = Boolean.valueOf(props.getProperty("render.edgeBufferPan"));
+		labelCache = Boolean.valueOf(props.getProperty("render.labelCache"));
 	}
 
 	private static int parseInt(String intString, int defaultValue) {
@@ -131,6 +134,10 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 			@Override
 			public boolean edgeBufferPan() {
 				return DingGraphLOD.this.edgeBufferPan();
+			}
+			@Override
+			public boolean labelCache() {
+				return DingGraphLOD.this.labelCache();
 			}
 		};
 	}
@@ -414,6 +421,11 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 	@Override
 	public boolean edgeBufferPan() {
 		return edgeBufferPan;
+	}
+	
+	@Override
+	public boolean labelCache() {
+		return labelCache;
 	}
 	
 	@Override

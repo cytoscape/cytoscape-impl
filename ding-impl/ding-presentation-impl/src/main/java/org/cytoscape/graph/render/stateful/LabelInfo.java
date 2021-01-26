@@ -26,15 +26,11 @@ package org.cytoscape.graph.render.stateful;
 
 
 import java.awt.Font;
-import java.awt.Paint;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.Rectangle2D;
-
-import java.util.List;
 import java.util.ArrayList;
-
-import org.cytoscape.graph.render.immed.GraphGraphics;
+import java.util.List;
 
 
 /**
@@ -42,45 +38,46 @@ import org.cytoscape.graph.render.immed.GraphGraphics;
  * splits the text into MeasuredLines based on newline characters and whether 
  * line length is otherwise greater than the specified label width limit.
  */
-public class MeasuredLineCreator {
+public class LabelInfo {
+	
 	private double maxLineWidth;
 	private double totalHeight;
-
 	private final double labelWidth;
-	private final String rawLine;
-	private final String[] rawLines;
 	private final FontRenderContext frc;
 	private final Font font; 
-	private final double fontScaleFactor;
 	private final boolean textAsShape;
-	private final List<MeasuredLine> measuredLines;
+	private final List<LabelLineInfo> measuredLines;
 	
-	public MeasuredLineCreator(final String rawLine, final Font font, 
-	                            final FontRenderContext frc, final double fontScaleFactor, 
-	                            final boolean textAsShape, final double labelWidth) {
-		this.rawLine = rawLine;
+	public LabelInfo(String rawLine, Font font, FontRenderContext frc, boolean textAsShape, double labelWidth) {
 		this.font = font;
 		this.frc = frc;
-		this.fontScaleFactor = fontScaleFactor;
 		this.textAsShape = textAsShape;
 		this.labelWidth = labelWidth;
-		this.rawLines = rawLine.split("\n"); 
-		this.measuredLines = new ArrayList<MeasuredLine>();
+		this.measuredLines = new ArrayList<LabelLineInfo>();
 
-		calculateRawBounds(); 
-		createMeasuredLines();
+		String[] lines = rawLine.split("/n");
+		calculateRawBounds(lines); 
+		createMeasuredLines(lines);
 	}
 
+	public Font getFont() {
+		return font;
+	}
+	
+	public FontRenderContext getFontRenderContext() {
+		return frc;
+	}
+	
 	/** 
 	 * Does a first pass at calculating the bounds of all lines. For short strings
 	 * (i.e. the norm) this is sufficient calculation.
 	 */
-	private void calculateRawBounds() {
+	private void calculateRawBounds(String[] lines) {
 		maxLineWidth = 0;
 		totalHeight = 0;
-		for ( String line : rawLines ) { 
-			final Rectangle2D bounds = calcBounds(line);
-			updateBounds(bounds.getWidth()*fontScaleFactor,bounds.getHeight()*fontScaleFactor);
+		for(String line : lines) { 
+			Rectangle2D bounds = calcBounds(line);
+			updateBounds(bounds.getWidth(),bounds.getHeight());
 		}
 	}
 
@@ -88,8 +85,8 @@ public class MeasuredLineCreator {
 	 * Simply updates the maxLineWidth and totalHeight.  We do it in a separate method
 	 * to make sure we do it consistently.
 	 */
-	private void updateBounds(final double newWidth, final double newHeight ) {
-		maxLineWidth = Math.max( maxLineWidth, newWidth );
+	private void updateBounds(double newWidth, double newHeight) {
+		maxLineWidth = Math.max(maxLineWidth, newWidth);
 		totalHeight += newHeight;
 	}
 
@@ -97,18 +94,13 @@ public class MeasuredLineCreator {
 	 * Calculates the bounds of a single string.
 	 */
 	private Rectangle2D calcBounds(final String s) {
-		final Rectangle2D bounds;
-
-		if (textAsShape) {
-			final char[] charBuff = s.toCharArray(); 
-			final GlyphVector glyphV = font.layoutGlyphVector( frc, charBuff, 0,
-			                                charBuff.length, Font.LAYOUT_NO_LIMIT_CONTEXT);
-			bounds = glyphV.getLogicalBounds();
+		if(textAsShape) {
+			char[] charBuff = s.toCharArray(); 
+			GlyphVector glyphV = font.layoutGlyphVector(frc, charBuff, 0, charBuff.length, Font.LAYOUT_NO_LIMIT_CONTEXT);
+			return glyphV.getLogicalBounds();
 		} else {
-			bounds = font.getStringBounds(s, frc);
+			return font.getStringBounds(s, frc);
 		}
-
-		return bounds;
 	}
 
 	/**
@@ -116,11 +108,10 @@ public class MeasuredLineCreator {
 	 * the lines are too long.  Recalculates the maxLineWidth and totalHeight based
 	 * on the new lines created.
 	 */
-	private void createMeasuredLines() {
-
+	private void createMeasuredLines(String[] lines) {
 		// There's only one line and it's short, i.e. what usually happens.
-		if ( rawLines.length == 1 && labelWidth > maxLineWidth ) {
-			measuredLines.add(new MeasuredLine(rawLines[0],maxLineWidth,totalHeight));
+		if(lines.length == 1 && labelWidth > maxLineWidth) {
+			measuredLines.add(new LabelLineInfo(this, lines[0], maxLineWidth, totalHeight));
 			return;
 		}
 
@@ -130,7 +121,7 @@ public class MeasuredLineCreator {
 		totalHeight = 0;
 		maxLineWidth = 0;
 	
-		for ( String line : rawLines ) {
+		for(String line : lines) {
 			double currentWidth = 0;
 			double wordWidth = 0; 
 			double wordHeight = 0; 
@@ -143,16 +134,15 @@ public class MeasuredLineCreator {
 			for (String w : words) {
 				String word = w + " ";	
 				Rectangle2D bounds = calcBounds(word);
-				wordWidth = bounds.getWidth()*fontScaleFactor;
-				wordHeight = bounds.getHeight()*fontScaleFactor;
+				wordWidth = bounds.getWidth();
+				wordHeight = bounds.getHeight();
 
 				// If the current line width plus the new word
 				// width is >= than the label width save the line
 				if (currentWidth + wordWidth >= labelWidth) {
 					// only write the string if something is there
 					if ( currentWidth > 0 ) {
-						measuredLines.add( new MeasuredLine(currentLine.toString(),
-					   	                                    currentWidth,wordHeight) );
+						measuredLines.add(new LabelLineInfo(this, currentLine.toString(), currentWidth,wordHeight));
 						updateBounds(currentWidth,wordHeight);
 						currentLine.delete(0,currentLine.length());
 					}
@@ -160,7 +150,7 @@ public class MeasuredLineCreator {
 					// if the word itself is >= the label width,
 					// make the word itself a new line
 					if ( wordWidth >= labelWidth ) {
-						measuredLines.add(new MeasuredLine(word,wordWidth,wordHeight) );
+						measuredLines.add(new LabelLineInfo(this, word,wordWidth,wordHeight) );
 						updateBounds(wordWidth,wordHeight);
 						currentWidth = 0;
 
@@ -179,8 +169,7 @@ public class MeasuredLineCreator {
 
 			// add the last line if there's anything there
 			if ( currentWidth > 0 ) {
-				measuredLines.add( new MeasuredLine(currentLine.toString(),
-			                                        currentWidth, wordHeight) );
+				measuredLines.add(new LabelLineInfo(this, currentLine.toString(), currentWidth, wordHeight));
 				updateBounds(currentWidth,wordHeight);
 			}
 		}
@@ -203,7 +192,7 @@ public class MeasuredLineCreator {
 	/**
 	 * @return a list of MeasuredLine objects created from the input text.
 	 */
-	public List<MeasuredLine> getMeasuredLines() {
+	public List<LabelLineInfo> getMeasuredLines() {
 		return measuredLines;
 	}
 }

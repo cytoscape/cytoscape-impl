@@ -8,6 +8,7 @@ render.nodeLabelThreshold=200
 render.edgeArrowThreshold=600
 render.edgeLabelThreshold=200
 render.edgeBufferPan=true
+render.labelCache=true
 layout.default=force-directed
 maximizeViewOnCreate=false
 networkImport.fileThreshold=10
