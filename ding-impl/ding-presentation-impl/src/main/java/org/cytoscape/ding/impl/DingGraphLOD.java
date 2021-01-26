@@ -51,6 +51,7 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 	
 	protected boolean edgeBufferPan;
 	protected boolean labelCache;
+	protected boolean hidpi;
 
 	private final Properties props;
 	private final CyProperty<Properties> cyProp;
@@ -62,10 +63,10 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 		this.cyProp = serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 		this.props = cyProp.getProperties();
 		this.serviceRegistrar = serviceRegistrar;
-		init();
+		updateProps();
 	}
 
-	private void init() {
+	private void updateProps() {
 		coarseDetailThreshold = parseInt(props.getProperty("render.coarseDetailThreshold"), 4000);
 		nodeBorderThreshold = parseInt(props.getProperty("render.nodeBorderThreshold"), 400);
 		nodeLabelThreshold = parseInt(props.getProperty("render.nodeLabelThreshold"), 200);
@@ -73,6 +74,7 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 		edgeLabelThreshold = parseInt(props.getProperty("render.edgeLabelThreshold"), 200);
 		edgeBufferPan = Boolean.valueOf(props.getProperty("render.edgeBufferPan"));
 		labelCache = Boolean.valueOf(props.getProperty("render.labelCache"));
+		hidpi = Boolean.valueOf(props.getProperty("render.hidpi"));
 	}
 
 	private static int parseInt(String intString, int defaultValue) {
@@ -148,10 +150,9 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 		if (!e.getSource().equals(cyProp))
 			return;
 
-		init();
+		updateProps();
 		
-		final CyNetworkView view = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
-		
+		CyNetworkView view = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
 		if (view != null)
 			view.updateView();
 	}
@@ -426,6 +427,11 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 	@Override
 	public boolean labelCache() {
 		return labelCache;
+	}
+	
+	@Override
+	public boolean isHidpiEnabled() {
+		return hidpi;
 	}
 	
 	@Override

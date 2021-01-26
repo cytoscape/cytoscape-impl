@@ -46,6 +46,7 @@ public class SettingsPanel extends BasicCollapsiblePanel  {
 	private PropEditor prop5;
 	private PropEditor prop6;
 	private PropEditor prop7;
+	private PropEditor prop8;
 	private JButton cacheStatsButton;
 	
 	
@@ -65,6 +66,7 @@ public class SettingsPanel extends BasicCollapsiblePanel  {
 		prop5 = new NumberPropEditor("render.edgeLabelThreshold", "edgeLabelThreshold");
 		prop6 = new BooleanPropEditor("render.edgeBufferPan", "edgeBufferPan");
 		prop7 = new BooleanPropEditor("render.labelCache", "labelCache");
+		prop8 = new BooleanPropEditor("render.hidpi", "hidpi");
 		cacheStatsButton = new JButton("show stats");
 		cacheStatsButton.addActionListener(e-> showCacheStats());
 		
@@ -86,6 +88,7 @@ public class SettingsPanel extends BasicCollapsiblePanel  {
 				.addComponent(prop5.getLabel())
 				.addComponent(prop6.getLabel())
 				.addComponent(prop7.getLabel())
+				.addComponent(prop8.getLabel())
 			)
 			.addGroup(layout.createParallelGroup()
 				.addComponent(prop1.getEditor())
@@ -95,6 +98,7 @@ public class SettingsPanel extends BasicCollapsiblePanel  {
 				.addComponent(prop5.getEditor())
 				.addComponent(prop6.getEditor())
 				.addComponent(prop7.getEditor())
+				.addComponent(prop8.getEditor())
 			)
 			.addGroup(layout.createParallelGroup()
 				.addComponent(cacheStatsButton)
@@ -131,6 +135,10 @@ public class SettingsPanel extends BasicCollapsiblePanel  {
 				.addComponent(prop7.getEditor(), PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
 				.addComponent(cacheStatsButton)
 			)
+			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
+				.addComponent(prop8.getLabel())
+				.addComponent(prop8.getEditor(), PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
+			)
 		);
 		
 		JPanel content = getContentPane();
@@ -146,6 +154,7 @@ public class SettingsPanel extends BasicCollapsiblePanel  {
 		prop5.update();
 		prop6.update();
 		prop7.update();
+		prop8.update();
 	}
 	
 	

@@ -249,11 +249,18 @@ public abstract class RenderComponent extends JComponent {
 	
 	@Override
 	public void paint(Graphics g) {
+		double scaleX, scaleY;
+		
 		// MKTODO does doing this on every paint eat up rendering time?
-		var config = ((Graphics2D)g).getDeviceConfiguration();
-		var trans = config.getDefaultTransform();
-		var scaleX = trans.getScaleX();
-		var scaleY = trans.getScaleY();
+		if(re.getGraphLOD().isHidpiEnabled()) {
+			var config = ((Graphics2D)g).getDeviceConfiguration();
+			var trans = config.getDefaultTransform();
+			scaleX = trans.getScaleX();
+			scaleY = trans.getScaleY();
+		} else {
+			scaleX = 1.0;
+			scaleY = 1.0;
+		}
 
 		// This typically only happens if the user drags the cytoscape window from one monitor to another.
 		if(scaleX != dpiScaleX || scaleY != dpiScaleY) {

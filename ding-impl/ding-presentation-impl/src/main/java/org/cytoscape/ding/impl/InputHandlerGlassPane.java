@@ -22,6 +22,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
@@ -125,6 +126,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
 @SuppressWarnings("serial")
 public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	
+	private static final AffineTransform identity = new AffineTransform();
 	private static final int PROGRESS_BAR_TICKS = 1000;
 	
 	private final CyServiceRegistrar registrar;
@@ -264,11 +266,17 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	
 	@Override
 	public void paint(Graphics g) {
-		var config = ((Graphics2D)g).getDeviceConfiguration();
-		var trans = config.getDefaultTransform();
-		dpiScaleX = trans.getScaleX();
-		dpiScaleY = trans.getScaleY();
-		proxyMouseAdapter.setDefaultTransform(trans);
+		if(re.getGraphLOD().isHidpiEnabled()) {
+			var config = ((Graphics2D)g).getDeviceConfiguration();
+			var trans = config.getDefaultTransform();
+			dpiScaleX = trans.getScaleX();
+			dpiScaleY = trans.getScaleY();
+			proxyMouseAdapter.setDefaultTransform(trans);
+		} else {
+			dpiScaleX = 1.0;
+			dpiScaleY = 1.0;
+			proxyMouseAdapter.setDefaultTransform(identity);
+		}
 		super.paint(g);
 	}
 
