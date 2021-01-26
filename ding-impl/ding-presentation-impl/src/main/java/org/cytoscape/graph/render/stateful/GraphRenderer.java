@@ -535,8 +535,8 @@ public final class GraphRenderer {
 						final double textXCenter = nodeAnchorPointX - doubleBuff2[0] + offsetVectorX;
 						final double textYCenter = nodeAnchorPointY - doubleBuff2[1] + offsetVectorY;
 						
-						renderText(grafx, labelInfo, (float) textXCenter,(float) textYCenter, nodeAnchorPointX,
-                                	nodeAnchorPointY, justify, paint, theta, flags.has(LOD_TEXT_AS_SHAPE));
+						renderText(grafx, labelInfo, (float) textXCenter,(float) textYCenter, nodeAnchorPointX+offsetVectorX,
+                                	nodeAnchorPointY+offsetVectorY, justify, paint, theta, flags.has(LOD_TEXT_AS_SHAPE));
 
 					}
 				}
