@@ -421,7 +421,7 @@ public final class GraphRenderer {
 								final double textXCenter = edgeAnchorPointX - doubleBuff2[0] + offsetVectorX;
 								final double textYCenter = edgeAnchorPointY - doubleBuff2[1] + offsetVectorY;
 								renderText(grafx, labelInfo, (float) textXCenter, (float) textYCenter,
-								                  justify, paint, theta, flags.has(LOD_TEXT_AS_SHAPE));
+										edgeAnchorPointX, edgeAnchorPointY, justify, paint, theta, flags.has(LOD_TEXT_AS_SHAPE));
 							}
 						}
 						
@@ -535,8 +535,9 @@ public final class GraphRenderer {
 						final double textXCenter = nodeAnchorPointX - doubleBuff2[0] + offsetVectorX;
 						final double textYCenter = nodeAnchorPointY - doubleBuff2[1] + offsetVectorY;
 						
-						renderText(grafx, labelInfo, (float) textXCenter,(float) textYCenter, justify,
-						                              paint, theta, flags.has(LOD_TEXT_AS_SHAPE));
+						renderText(grafx, labelInfo, (float) textXCenter,(float) textYCenter, nodeAnchorPointX,
+                                	nodeAnchorPointY, justify, paint, theta, flags.has(LOD_TEXT_AS_SHAPE));
+
 					}
 				}
 				
@@ -548,7 +549,9 @@ public final class GraphRenderer {
 	
 	
 	public final static void renderText(final GraphGraphics grafx, final LabelInfo measuredText,
-			final float textXCenter, final float textYCenter, final Justification textJustify,
+			final float textXCenter, final float textYCenter,
+			final double textXAnchor, final double textYAnchor,
+			final Justification textJustify,
 			final Paint paint, final double theta, final boolean textAsShape) {
 
 		double currHeight = measuredText.getTotalHeight() / -2.0d;
@@ -567,7 +570,7 @@ public final class GraphRenderer {
 			else
 				throw new IllegalStateException("textJustify value unrecognized");
 
-			grafx.drawTextFull(line, (float) xCenter, (float) yCenter, (float) theta, paint, textAsShape);
+			grafx.drawTextFull(line, (float) xCenter, (float) yCenter, textXAnchor, textYAnchor, (float) theta, paint, textAsShape);
 			currHeight += line.getHeight();
 		}
 	}

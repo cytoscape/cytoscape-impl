@@ -1628,15 +1628,20 @@ public final class GraphGraphics {
 	 *            operation has a difficult time when it needs to render text
 	 *            under a transformation with a very large scale factor.
 	 */
+
 	public final void drawTextFull(LabelLineInfo labelLineInfo,
 			final float xCenter, final float yCenter,
+			final double xAnchor, final double yAnchor,
 			final float theta, final Paint paint, final boolean drawTextAsShape) {
 		
-		// Old drawing code, untouched
+
+		if (theta != 0.0f) {
+			// m_g2d.rotate(theta, (double)xCenter-xAnchor, (double)yCenter-yAnchor);
+			m_g2d.rotate(theta, xAnchor, yAnchor);
+		}
+
 		m_g2d.translate(xCenter, yCenter);
 		m_g2d.setPaint(paint);
-		if(theta != 0.0f)
-			m_g2d.rotate(theta);
 
 		// NOTE: Java 7 seems to have broken the antialiasing of text
 		// on translucent backgrounds.  In our case, the network canvas
