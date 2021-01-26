@@ -12,10 +12,11 @@ public class LabelInfoCache implements LabelInfoProvider {
 	
 	private final Cache<Key,LabelInfo> labelCache;
 	
-	public LabelInfoCache(int maxSize) {
-		this.labelCache = CacheBuilder.newBuilder()
-				.maximumSize(maxSize)
-				.build();
+	public LabelInfoCache(int maxSize, boolean recordStats) {
+		var builder = CacheBuilder.newBuilder().maximumSize(maxSize);
+		if(recordStats)
+			builder = builder.recordStats();
+		this.labelCache = builder.build();
 	}
 
 	
@@ -48,6 +49,7 @@ public class LabelInfoCache implements LabelInfoProvider {
 		}
 	}
 
+	@Override
 	public LabelInfo getLabelInfo(String text, Font font, double labelWidth, FontRenderContext frc) {
 		try {
 			return getLabelInfoImpl(text, font, labelWidth, frc);
@@ -60,5 +62,10 @@ public class LabelInfoCache implements LabelInfoProvider {
 	private LabelInfo getLabelInfoImpl(String text, Font font, double labelWidth, FontRenderContext frc) throws ExecutionException {
 		// MKTODO add textAsShape parameter
 		return labelCache.get(new Key(text, font, labelWidth), () -> new LabelInfo(text, font, frc, false, labelWidth));
+	}
+	
+	@Override
+	public String getStats() {
+		return String.valueOf(labelCache.stats());
 	}
 }

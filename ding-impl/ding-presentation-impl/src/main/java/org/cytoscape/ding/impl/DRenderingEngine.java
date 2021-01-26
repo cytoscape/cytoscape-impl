@@ -30,6 +30,7 @@ import javax.swing.Timer;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.PrintLOD;
 import org.cytoscape.ding.debug.DebugProgressMonitorFactory;
+import org.cytoscape.ding.debug.DingDebugMediator;
 import org.cytoscape.ding.icon.VisualPropertyIconFactory;
 import org.cytoscape.ding.impl.canvas.CompositeGraphicsCanvas;
 import org.cytoscape.ding.impl.canvas.MainRenderComponent;
@@ -192,7 +193,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 		viewModelSnapshot = viewModel.createSnapshot();
 		
-		labelInfoCache = new LabelInfoCache(1000); // MKTODO should maxSize be hardcoded?
+		labelInfoCache = new LabelInfoCache(1000, DingDebugMediator.showDebugPanel(registrar)); // MKTODO should maxSize be hardcoded?
 		
 		eventFireTimer = new DebounceTimer(240);
 		
