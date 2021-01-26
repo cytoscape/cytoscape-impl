@@ -132,6 +132,9 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	private final PopupMenuHelper popupMenuHelper;
 	private final JProgressBar progressBar;
 	
+	private double dpiScaleX = 1.0;
+	private double dpiScaleY = 1.0;
+	
 	private DRenderingEngine re;
 	private CyAnnotator cyAnnotator;
 	
@@ -262,8 +265,10 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	@Override
 	public void paint(Graphics g) {
 		var config = ((Graphics2D)g).getDeviceConfiguration();
-		var defaultTransform = config.getDefaultTransform();
-		proxyMouseAdapter.setDefaultTransform(defaultTransform);
+		var trans = config.getDefaultTransform();
+		dpiScaleX = trans.getScaleX();
+		dpiScaleY = trans.getScaleY();
+		proxyMouseAdapter.setDefaultTransform(trans);
 		super.paint(g);
 	}
 
@@ -1169,7 +1174,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			// Draw selection rectangle
 			if(selectedLabel != null) {
 				Graphics2D g = (Graphics2D) graphics.create();
-				// External border
+				g.scale(1.0/dpiScaleX, 1.0/dpiScaleY);
 				g.setColor(UIManager.getColor("Focus.color"));
 				g.draw(selectedLabel.getRectangle());
 			}
@@ -1422,6 +1427,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		public void drawSelectionLasso(Graphics graphics) {
 			if(selectionLasso != null) {
 				Graphics2D g = (Graphics2D) graphics.create();
+				g.scale(1.0/dpiScaleX, 1.0/dpiScaleY);
 				g.setColor(SELECTION_RECT_BORDER_COLOR_1);
 				GeneralPath path = new GeneralPath(selectionLasso);
 				path.closePath();
@@ -1503,11 +1509,12 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		public boolean isDragging() {
 			return selectionRect != null;
 		}
-		
+		 
 		public void drawSelectionRectangle(Graphics graphics) {
 			// Draw selection rectangle
 			if(selectionRect != null) {
 				Graphics2D g = (Graphics2D) graphics.create();
+				g.scale(1.0/dpiScaleX, 1.0/dpiScaleY);
 				// External border
 				g.setColor(SELECTION_RECT_BORDER_COLOR_1);
 				g.draw(selectionRect);
