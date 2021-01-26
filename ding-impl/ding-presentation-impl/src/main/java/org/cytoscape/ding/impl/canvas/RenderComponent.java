@@ -4,6 +4,7 @@ import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDTAndWait;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Paint;
 import java.util.Objects;
@@ -42,6 +43,9 @@ public abstract class RenderComponent extends JComponent {
 	private boolean initialized = false;
 	
 	private Runnable initializedCallback;
+	
+	private double dpiScaleX = 1.0;
+	private double dpiScaleY = 1.0;
 	
 	// These are used for the panning optimization
 	private NetworkTransform.Snapshot slowCanvasLastPaintSnapshot;
@@ -95,8 +99,7 @@ public abstract class RenderComponent extends JComponent {
 			return;
 		}
 		super.setBounds(x, y, width, height);
-		fastCanvas.setViewport(width, height);
-		slowCanvas.setViewport(width, height);
+		resizeImageBuffers();
 		
 		if(!initialized) {
 			initialized = true;
@@ -110,6 +113,14 @@ public abstract class RenderComponent extends JComponent {
 			updateView(UpdateType.ALL_FULL);
 		}
 	}
+	
+	private void resizeImageBuffers() {
+		int bufferWidth  = (int)(getWidth()  * dpiScaleX);
+		int bufferHeight = (int)(getHeight() * dpiScaleY);
+		fastCanvas.setViewport(bufferWidth, bufferHeight);
+		slowCanvas.setViewport(bufferWidth, bufferHeight);
+	}
+
 	
 	public boolean isInitialized() {
 		return initialized;
@@ -237,6 +248,29 @@ public abstract class RenderComponent extends JComponent {
 	
 	
 	@Override
+	public void paint(Graphics g) {
+		// MKTODO does doing this on every paint eat up rendering time?
+		var config = ((Graphics2D)g).getDeviceConfiguration();
+		var trans = config.getDefaultTransform();
+		var scaleX = trans.getScaleX();
+		var scaleY = trans.getScaleY();
+
+		// This typically only happens if the user drags the cytoscape window from one monitor to another.
+		if(scaleX != dpiScaleX || scaleY != dpiScaleY) {
+			this.dpiScaleX = scaleX;
+			this.dpiScaleY = scaleY;
+			if(slowFuture != null)
+				slowFuture.cancel();
+			if(fastFuture != null)
+				fastFuture.cancel();
+			resizeImageBuffers();
+		}
+
+		super.paint(g);
+	}
+	
+	
+	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		ImageFuture future;
@@ -278,7 +312,11 @@ public abstract class RenderComponent extends JComponent {
 		
 		Image image = future.join();
 		setRenderDetailFlags(future.getLastRenderDetail());
-		g.drawImage(image, 0, 0, null);
+
+		int w = (int)(image.getWidth(null)  / dpiScaleX);
+		int h = (int)(image.getHeight(null) / dpiScaleY);
+
+		g.drawImage(image, 0, 0, w, h, null);
 	}
 	
 	
