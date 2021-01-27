@@ -53,6 +53,7 @@ public class NetworkTransform {
 		this.x = t.x;
 		this.y = t.y;
 		this.scaleFactor = t.scaleFactor;
+		this.dpiScaleFactor = t.dpiScaleFactor;
 		updateTransform();
 	}
 	
