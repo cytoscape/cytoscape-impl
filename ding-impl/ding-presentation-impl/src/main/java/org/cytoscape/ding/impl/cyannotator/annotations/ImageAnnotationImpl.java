@@ -19,11 +19,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.ding.customgraphics.image.AbstractURLImageCustomGraphics;
-import org.cytoscape.ding.customgraphics.image.BitmapCustomGraphics;
-import org.cytoscape.ding.customgraphics.image.SVGCustomGraphics;
-import org.cytoscape.ding.customgraphics.image.SVGLayer;
+import org.cytoscape.cg.internal.image.AbstractURLImageCustomGraphics;
+import org.cytoscape.cg.internal.image.BitmapCustomGraphics;
+import org.cytoscape.cg.internal.image.SVGCustomGraphics;
+import org.cytoscape.cg.internal.image.SVGLayer;
+import org.cytoscape.cg.model.CustomGraphicsManager;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.ding.internal.util.ImageUtil;
@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2020 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -505,13 +505,13 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
 			var g = image.createGraphics();
 			
-			var layers = ((SVGCustomGraphics) cg).getLayers(null, null);
+			var layers = ((SVGCustomGraphics) cg).getLayers();
 			
 			for (var cgl : layers) {
 				// Much easier to use the SVGLayer draw method than have calculate and apply
 				// the same scale factor and translation transform already done by the layer!
 				if (cgl instanceof SVGLayer)
-					((SVGLayer) cgl).draw(g, rect, rect, null, null);
+					((SVGLayer) cgl).draw(g, rect, rect);
 			}
 			
 			g.dispose();
@@ -557,11 +557,11 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			var h = Math.max(1.0, getHeight()); // will throw exception if h <= 0
 			var rect = new Rectangle2D.Double(getX() + w / 2.0f, getY() + h / 2.0f, w, h);
 			
-			var layers = ((SVGCustomGraphics) cg).getLayers(null, null);
+			var layers = ((SVGCustomGraphics) cg).getLayers();
 			
 			for (var cgl : layers) {
 				if (cgl instanceof SVGLayer)
-					((SVGLayer) cgl).draw(g2, rect, rect, null, null);
+					((SVGLayer) cgl).draw(g2, rect, rect);
 			}
 		} else {
 			// Bitmap...

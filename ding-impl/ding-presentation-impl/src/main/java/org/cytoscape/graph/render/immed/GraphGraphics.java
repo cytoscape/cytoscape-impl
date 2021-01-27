@@ -1844,35 +1844,42 @@ public final class GraphGraphics {
 	 *            in node coordinates, a value to add to the Y coordinates of
 	 *            the shape's definition.
 	 */
-	public final void drawCustomGraphicFull(final CyNetworkView netView, final View<CyNode> node,
-											final Shape nodeShape, final CustomGraphicLayer cg,
-	                                        final float xOffset, final float yOffset) {
-
+	public final void drawCustomGraphicFull(
+			CyNetworkView netView,
+			View<CyNode> node,
+			Shape nodeShape,
+			CustomGraphicLayer cg,
+			float xOffset,
+			float yOffset
+	) {
 		m_g2d.translate(xOffset, yOffset);
 		
 		if (cg instanceof PaintedShape) {
-			PaintedShape ps = (PaintedShape)cg;
-			Shape shape = ps.getShape();
+			var ps = (PaintedShape) cg;
+			var shape = ps.getShape();
 
 			if (ps.getStroke() != null) {
-				Paint strokePaint = ps.getStrokePaint();
-				if (strokePaint == null) strokePaint = Color.BLACK;
+				var strokePaint = ps.getStrokePaint();
+
+				if (strokePaint == null)
+					strokePaint = Color.BLACK;
+
 				m_g2d.setPaint(strokePaint);
 				m_g2d.setStroke(ps.getStroke());
 				m_g2d.draw(shape);
 			}
-			
+
 			m_g2d.setPaint(ps.getPaint());
 			m_g2d.fill(shape);
 		} else if (cg instanceof Cy2DGraphicLayer) {
-			Cy2DGraphicLayer layer = (Cy2DGraphicLayer)cg;
+			var layer = (Cy2DGraphicLayer) cg;
 			layer.draw(m_g2d, nodeShape, netView, node);
 		} else if (cg instanceof ImageCustomGraphicLayer) {
-			Rectangle bounds = cg.getBounds2D().getBounds();
-			final BufferedImage bImg = ((ImageCustomGraphicLayer)cg).getPaint(bounds).getImage();
-			m_g2d.drawImage(bImg, bounds.x, bounds.y, bounds.width, bounds.height, null);
+			var bounds = cg.getBounds2D().getBounds();
+			var img = ((ImageCustomGraphicLayer) cg).getPaint(bounds).getImage();
+			m_g2d.drawImage(img, bounds.x, bounds.y, bounds.width, bounds.height, null);
 		} else {
-			Rectangle2D bounds = nodeShape.getBounds2D();
+			var bounds = nodeShape.getBounds2D();
 			m_g2d.setPaint(cg.getPaint(bounds));
 			m_g2d.fill(nodeShape);
 		}

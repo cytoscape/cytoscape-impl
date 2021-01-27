@@ -4,8 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 
+import org.cytoscape.cg.model.CustomGraphicsManager;
 import org.cytoscape.ding.DVisualLexicon;
-import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.view.model.NullDataType;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
@@ -20,7 +20,7 @@ import org.junit.Test;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -44,7 +44,7 @@ public class DVisualLexiconTest extends AbstractVisualLexiconTest {
 
 	@Before
 	public void setUp() throws Exception {
-		final CustomGraphicsManager manager = mock(CustomGraphicsManager.class);
+		var manager = mock(CustomGraphicsManager.class);
 		dLexicon = new DVisualLexicon(manager);
 	}
 
@@ -70,5 +70,4 @@ public class DVisualLexiconTest extends AbstractVisualLexiconTest {
 	public void testDVisualLexiconTree() throws Exception {
 		this.testTree(dLexicon);
 	}
-
 }

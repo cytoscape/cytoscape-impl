@@ -1,17 +1,17 @@
 package org.cytoscape.ding.internal.charts;
 
 import static java.util.Arrays.asList;
-import static org.cytoscape.ding.customgraphics.AbstractCustomGraphics2.COLORS;
-import static org.cytoscape.ding.customgraphics.AbstractCustomGraphics2.COLOR_SCHEME;
-import static org.cytoscape.ding.internal.charts.AbstractChart.BORDER_COLOR;
-import static org.cytoscape.ding.internal.charts.AbstractChart.BORDER_WIDTH;
-import static org.cytoscape.ding.internal.charts.AbstractChart.DATA_COLUMNS;
-import static org.cytoscape.ding.internal.charts.AbstractChart.ITEM_LABELS;
-import static org.cytoscape.ding.internal.charts.AbstractChart.ITEM_LABELS_COLUMN;
-import static org.cytoscape.ding.internal.charts.AbstractChart.SHOW_ITEM_LABELS;
-import static org.cytoscape.ding.internal.charts.AbstractChart.VALUES;
-import static org.cytoscape.ding.internal.charts.ring.RingChart.HOLE_SIZE;
-import static org.cytoscape.ding.internal.charts.ring.RingChart.START_ANGLE;
+import static org.cytoscape.cg.internal.charts.AbstractChart.BORDER_COLOR;
+import static org.cytoscape.cg.internal.charts.AbstractChart.BORDER_WIDTH;
+import static org.cytoscape.cg.internal.charts.AbstractChart.DATA_COLUMNS;
+import static org.cytoscape.cg.internal.charts.AbstractChart.ITEM_LABELS;
+import static org.cytoscape.cg.internal.charts.AbstractChart.ITEM_LABELS_COLUMN;
+import static org.cytoscape.cg.internal.charts.AbstractChart.SHOW_ITEM_LABELS;
+import static org.cytoscape.cg.internal.charts.AbstractChart.VALUES;
+import static org.cytoscape.cg.internal.charts.ring.RingChart.HOLE_SIZE;
+import static org.cytoscape.cg.internal.charts.ring.RingChart.START_ANGLE;
+import static org.cytoscape.cg.model.AbstractCustomGraphics2.COLORS;
+import static org.cytoscape.cg.model.AbstractCustomGraphics2.COLOR_SCHEME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -19,9 +19,9 @@ import static org.junit.Assert.assertTrue;
 import java.awt.Color;
 import java.util.Map;
 
+import org.cytoscape.cg.internal.charts.ring.RingChart;
+import org.cytoscape.cg.model.ColorScheme;
 import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2Test;
-import org.cytoscape.ding.customgraphics.ColorScheme;
-import org.cytoscape.ding.internal.charts.ring.RingChart;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,7 +32,7 @@ import org.junit.Test;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 

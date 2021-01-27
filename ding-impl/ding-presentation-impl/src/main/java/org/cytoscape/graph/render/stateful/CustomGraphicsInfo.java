@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.ding.DVisualLexicon;
-import org.cytoscape.ding.customgraphics.CustomGraphicsPositionCalculator;
+import org.cytoscape.ding.internal.util.CustomGraphicsPositionCalculator;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
@@ -24,7 +24,7 @@ import org.cytoscape.view.vizmap.VisualPropertyDependency;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2020 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 

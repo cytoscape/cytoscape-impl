@@ -118,6 +118,13 @@
 			<artifactId>command-executor-api</artifactId>
 		</dependency>
 
+		<!-- Internal API -->
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>custom-graphics-impl</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 		<!-- 3rd party library -->
 		<dependency>
 			<groupId>commons-io</groupId>

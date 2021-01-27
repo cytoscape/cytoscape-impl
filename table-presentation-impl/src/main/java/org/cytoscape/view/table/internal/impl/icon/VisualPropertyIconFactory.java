@@ -5,7 +5,8 @@ import java.awt.Font;
 
 import javax.swing.Icon;
 
-import org.cytoscape.view.presentation.property.table.CellCustomGraphics;
+import org.cytoscape.cg.util.CustomGraphicsIcon;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 
 public class VisualPropertyIconFactory {
 
@@ -19,9 +20,9 @@ public class VisualPropertyIconFactory {
 			icon = new ColorIcon((Color) value, w, h, value.toString());
 		} else if (value instanceof Font) {
 			icon = new FontFaceIcon((Font) value, w, h, "");
-		} else if (value instanceof CellCustomGraphics) {
-			var name = ((CellCustomGraphics) value).getDisplayName();
-			icon = new CustomGraphicsIcon(((CellCustomGraphics) value), w, h, name);
+		} else if (value instanceof CyCustomGraphics) {
+			var name = ((CyCustomGraphics<?>) value).getDisplayName();
+			icon = new CustomGraphicsIcon(((CyCustomGraphics<?>) value), w, h, name);
 		} else {
 			// If not found, use return value of toString() as icon.
 			icon = new TextIcon(value, w, h, value.toString());

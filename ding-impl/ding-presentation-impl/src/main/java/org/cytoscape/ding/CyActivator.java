@@ -1,30 +1,36 @@
 package org.cytoscape.ding;
 
-import static org.cytoscape.work.ServiceProperties.*;
+import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
+import static org.cytoscape.work.ServiceProperties.COMMAND;
+import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
+import static org.cytoscape.work.ServiceProperties.COMMAND_EXAMPLE_JSON;
+import static org.cytoscape.work.ServiceProperties.COMMAND_LONG_DESCRIPTION;
+import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
+import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
+import static org.cytoscape.work.ServiceProperties.ID;
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
+import static org.cytoscape.work.ServiceProperties.IN_CONTEXT_MENU;
+import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.NETWORK_ADD_MENU;
+import static org.cytoscape.work.ServiceProperties.NETWORK_DELETE_MENU;
+import static org.cytoscape.work.ServiceProperties.NETWORK_EDIT_MENU;
+import static org.cytoscape.work.ServiceProperties.NETWORK_GROUP_MENU;
+import static org.cytoscape.work.ServiceProperties.NODE_ADD_MENU;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_ACTION;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+import static org.cytoscape.work.ServiceProperties.TITLE;
 
-import java.net.URL;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Properties;
-import java.util.Set;
 
 import org.cytoscape.application.NetworkViewRenderer;
-import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNetworkViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
+import org.cytoscape.cg.model.CustomGraphicsManager;
 import org.cytoscape.ding.action.GraphicsDetailAction;
-import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.ding.customgraphics.CustomGraphicsTranslator;
-import org.cytoscape.ding.customgraphics.CyCustomGraphics2Manager;
-import org.cytoscape.ding.customgraphics.CyCustomGraphics2ManagerImpl;
-import org.cytoscape.ding.customgraphics.image.BitmapCustomGraphicsFactory;
-import org.cytoscape.ding.customgraphics.image.SVGCustomGraphicsFactory;
-import org.cytoscape.ding.customgraphics.vector.GradientOvalFactory;
-import org.cytoscape.ding.customgraphics.vector.GradientRoundRectangleFactory;
-import org.cytoscape.ding.customgraphicsmgr.internal.CustomGraphicsManagerImpl;
-import org.cytoscape.ding.customgraphicsmgr.internal.action.CustomGraphicsManagerAction;
-import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsBrowser;
 import org.cytoscape.ding.debug.DingDebugMediator;
 import org.cytoscape.ding.dependency.CustomGraphicsSizeDependencyFactory;
 import org.cytoscape.ding.dependency.EdgeColorDependencyFactory;
@@ -39,7 +45,6 @@ import org.cytoscape.ding.impl.NVLTFActionSupport;
 import org.cytoscape.ding.impl.ViewTaskFactoryListener;
 import org.cytoscape.ding.impl.canvas.NetworkImageFactoryImpl;
 import org.cytoscape.ding.impl.cyannotator.AnnotationClipboard;
-// Annotation creation
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.ding.impl.cyannotator.AnnotationManagerImpl;
 import org.cytoscape.ding.impl.cyannotator.AnnotationTree.Shift;
@@ -49,7 +54,6 @@ import org.cytoscape.ding.impl.cyannotator.create.GroupAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.ImageAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.ShapeAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.TextAnnotationFactory;
-// Annotation edits and changes
 import org.cytoscape.ding.impl.cyannotator.tasks.AddAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.CopyAnnotationStyleTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.DuplicateAnnotationsTaskFactory;
@@ -63,19 +67,9 @@ import org.cytoscape.ding.impl.cyannotator.tasks.ReorderSelectedAnnotationsTaskF
 import org.cytoscape.ding.impl.cyannotator.tasks.UngroupAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.UpdateAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.ui.AnnotationMediator;
-import org.cytoscape.ding.impl.editor.CustomGraphicsVisualPropertyEditor;
-import org.cytoscape.ding.impl.editor.CyCustomGraphicsValueEditor;
 import org.cytoscape.ding.impl.editor.EdgeBendEditor;
 import org.cytoscape.ding.impl.editor.EdgeBendValueEditor;
 import org.cytoscape.ding.impl.editor.ObjectPositionEditor;
-import org.cytoscape.ding.internal.charts.bar.BarChartFactory;
-import org.cytoscape.ding.internal.charts.box.BoxChartFactory;
-import org.cytoscape.ding.internal.charts.heatmap.HeatMapChartFactory;
-import org.cytoscape.ding.internal.charts.line.LineChartFactory;
-import org.cytoscape.ding.internal.charts.pie.PieChartFactory;
-import org.cytoscape.ding.internal.charts.ring.RingChartFactory;
-import org.cytoscape.ding.internal.gradients.linear.LinearGradientFactory;
-import org.cytoscape.ding.internal.gradients.radial.RadialGradientFactory;
 import org.cytoscape.property.PropertyUpdatedListener;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -97,16 +91,12 @@ import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.cytoscape.view.presentation.annotations.ImageAnnotation;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 import org.cytoscape.view.presentation.property.values.BendFactory;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
 import org.cytoscape.view.vizmap.VisualPropertyDependencyFactory;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
-import org.cytoscape.view.vizmap.mappings.ValueTranslator;
 import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
 
@@ -116,7 +106,7 @@ import org.osgi.framework.BundleContext;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2020 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -136,17 +126,10 @@ import org.osgi.framework.BundleContext;
 
 public class CyActivator extends AbstractCyActivator {
 	
-	private CustomGraphicsManager cgManager;
-	private CyCustomGraphics2Manager cg2Manager;
-	private CustomGraphicsBrowser cgBrowser;
-	
 	@Override
 	public void start(BundleContext bc) {
 		var serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 
-		startCustomGraphicsMgr(bc, serviceRegistrar);
-		startCharts(bc, serviceRegistrar);
-		startGradients(bc, serviceRegistrar);
 		startPresentationImpl(bc, serviceRegistrar);
 
 		if (DingDebugMediator.showDebugPanel(serviceRegistrar)) {
@@ -156,6 +139,7 @@ public class CyActivator extends AbstractCyActivator {
 	}
 
 	private void startPresentationImpl(BundleContext bc, CyServiceRegistrar serviceRegistrar) {
+		var cgManager = serviceRegistrar.getService(CustomGraphicsManager.class);
 		var dVisualLexicon = new DVisualLexicon(cgManager);
 
 		var nvltfActionSupport = new NVLTFActionSupport(serviceRegistrar);
@@ -188,7 +172,11 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, dingNetViewFactory, NetworkViewAboutToBeDestroyedListener.class);
 		
 		var renderer = new DingRenderer(dingNetViewFactory, dVisualLexicon, serviceRegistrar);
-		registerService(bc, renderer, NetworkViewRenderer.class);
+		{
+			var props = new Properties();
+			props.setProperty(ID, DingRenderer.ID);
+			registerService(bc, renderer, NetworkViewRenderer.class, props);
+		}
 		registerService(bc, renderer, DingRenderer.class);
 		
 		var dingRenderingEngineFactory = renderer.getRenderingEngineFactory(DingRenderer.DEFAULT_CONTEXT);
@@ -261,7 +249,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty("type", "ShapeAnnotation.class");
 			registerService(bc, shapeAnnotationFactory, AnnotationFactory.class, props);
 		}
-		var imageAnnotationFactory = new ImageAnnotationFactory(cgBrowser, serviceRegistrar);
+		var imageAnnotationFactory = new ImageAnnotationFactory(serviceRegistrar);
 		{
 			var props = new Properties();
 			props.setProperty("type", "ImageAnnotation.class");
@@ -897,10 +885,6 @@ public class CyActivator extends AbstractCyActivator {
 		// Register the factory
 		dVisualLexicon.addBendFactory(bendFactory, new HashMap<Object, Object>());
 		
-		// Translators for Passthrough
-		var cgTranslator = new CustomGraphicsTranslator(cgManager, cg2Manager);
-		registerService(bc, cgTranslator, ValueTranslator.class);
-
 		// Factories for Visual Property Dependency
 		var nodeSizeDependencyFactory = new NodeSizeDependencyFactory(dVisualLexicon);
 		registerService(bc, nodeSizeDependencyFactory, VisualPropertyDependencyFactory.class);
@@ -910,112 +894,5 @@ public class CyActivator extends AbstractCyActivator {
 
 		var cgSizeDependencyFactory = new CustomGraphicsSizeDependencyFactory(dVisualLexicon);
 		registerService(bc, cgSizeDependencyFactory, VisualPropertyDependencyFactory.class);
-
-		// Custom Graphics Editors
-		var cgValueEditor = new CyCustomGraphicsValueEditor(cgBrowser, serviceRegistrar);
-		registerAllServices(bc, cgValueEditor);
-
-		var cgVisualPropertyEditor = new CustomGraphicsVisualPropertyEditor(CyCustomGraphics.class, cgValueEditor,
-				continuousMappingCellRendererFactory, serviceRegistrar);
-		registerService(bc, cgVisualPropertyEditor, VisualPropertyEditor.class);
-	}
-
-	private void startCustomGraphicsMgr(BundleContext bc, CyServiceRegistrar serviceRegistrar) {
-		cgManager = new CustomGraphicsManagerImpl(getdefaultImageURLs(bc), serviceRegistrar);
-		registerAllServices(bc, cgManager);
-
-		cgBrowser = new CustomGraphicsBrowser(cgManager);
-		registerAllServices(bc, cgBrowser);
-
-		var cgManagerAction = new CustomGraphicsManagerAction(cgManager, cgBrowser, serviceRegistrar);
-		registerService(bc, cgManagerAction, CyAction.class);
-
-		// Create and register our built-in factories.
-		// TODO:  When the CustomGraphicsFactory service stuff is set up, just register these as services
-		{
-			var bitmapFactory = new BitmapCustomGraphicsFactory(cgManager, serviceRegistrar);
-			var props = new Properties();
-			props.setProperty(CustomGraphicsManager.SUPPORTED_CLASS_ID, BitmapCustomGraphicsFactory.SUPPORTED_CLASS_ID);
-			cgManager.addCustomGraphicsFactory(bitmapFactory, props);
-		}
-		{
-			var vectorFactory = new SVGCustomGraphicsFactory(cgManager, serviceRegistrar);
-			var props = new Properties();
-			props.setProperty(CustomGraphicsManager.SUPPORTED_CLASS_ID, SVGCustomGraphicsFactory.SUPPORTED_CLASS_ID);
-			cgManager.addCustomGraphicsFactory(vectorFactory, props);
-		}
-
-		var ovalFactory = new GradientOvalFactory(cgManager);
-		cgManager.addCustomGraphicsFactory(ovalFactory, new Properties());
-
-		var rectangleFactory = new GradientRoundRectangleFactory(cgManager);
-		cgManager.addCustomGraphicsFactory(rectangleFactory, new Properties());
-
-		// Register this service listener so that app writers can provide their own CustomGraphics factories
-		registerServiceListener(bc, cgManager::addCustomGraphicsFactory, cgManager::removeCustomGraphicsFactory,
-				CyCustomGraphicsFactory.class);
-		
-		// Register this service listener so that app writers can provide their own CyCustomGraphics2 factories
-		cg2Manager = CyCustomGraphics2ManagerImpl.getInstance();
-		registerAllServices(bc, cg2Manager);
-		registerServiceListener(bc, ((CyCustomGraphics2ManagerImpl) cg2Manager)::addFactory, 
-				((CyCustomGraphics2ManagerImpl) cg2Manager)::removeFactory, CyCustomGraphics2Factory.class);
-	}
-	
-	private void startCharts(BundleContext bc, CyServiceRegistrar serviceRegistrar) {
-		// Register Chart Factories
-		var props = new Properties();
-		props.setProperty(CyCustomGraphics2Factory.GROUP, CyCustomGraphics2Manager.GROUP_CHARTS);
-		{
-			var factory = new BarChartFactory(serviceRegistrar);
-			registerService(bc, factory, CyCustomGraphics2Factory.class, props);
-		}
-		{
-			var factory = new BoxChartFactory(serviceRegistrar);
-			registerService(bc, factory, CyCustomGraphics2Factory.class, props);
-		}
-		{
-			var factory = new PieChartFactory(serviceRegistrar);
-			registerService(bc, factory, CyCustomGraphics2Factory.class, props);
-		}
-		{
-			var factory = new RingChartFactory(serviceRegistrar);
-			registerService(bc, factory, CyCustomGraphics2Factory.class, props);
-		}
-		{
-			var factory = new LineChartFactory(serviceRegistrar);
-			registerService(bc, factory, CyCustomGraphics2Factory.class, props);
-		}
-		{
-			var factory = new HeatMapChartFactory(serviceRegistrar);
-			registerService(bc, factory, CyCustomGraphics2Factory.class, props);
-		}
-	}
-	
-	private void startGradients(BundleContext bc, CyServiceRegistrar serviceRegistrar) {
-		// Register Gradient Factories
-		var props = new Properties();
-		props.setProperty(CyCustomGraphics2Factory.GROUP, CyCustomGraphics2Manager.GROUP_GRADIENTS);
-		{
-			var factory = new LinearGradientFactory();
-			registerService(bc, factory, CyCustomGraphics2Factory.class, props);
-		}
-		{
-			var factory = new RadialGradientFactory();
-			registerService(bc, factory, CyCustomGraphics2Factory.class, props);
-		}
-	}
-	
-	/**
-	 * Get list of default images from resource.
-	 */
-	private Set<URL> getdefaultImageURLs(BundleContext bc) {
-		var e = bc.getBundle().findEntries("images/sampleCustomGraphics", "*.png", true);
-		var defaultImageUrls = new HashSet<URL>();
-		
-		while (e.hasMoreElements())
-			defaultImageUrls.add(e.nextElement());
-		
-		return defaultImageUrls;
 	}
 }

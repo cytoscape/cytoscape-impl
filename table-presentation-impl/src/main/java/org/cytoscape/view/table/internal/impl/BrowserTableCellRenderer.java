@@ -1,8 +1,10 @@
 package org.cytoscape.view.table.internal.impl;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 
 import javax.swing.BorderFactory;
@@ -13,15 +15,19 @@ import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
 
+import org.cytoscape.cg.model.NullCustomGraphics;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.table.CyColumnView;
+import org.cytoscape.view.model.table.CyTableView;
+import org.cytoscape.view.presentation.customgraphics.Cy2DGraphicLayer;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.ImageCustomGraphicLayer;
+import org.cytoscape.view.presentation.customgraphics.PaintedShape;
 import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
-import org.cytoscape.view.presentation.property.table.CellCustomGraphics;
-import org.cytoscape.view.table.internal.cg.NullCellCustomGraphics;
 import org.cytoscape.view.table.internal.util.ValidatedObjectAndEditString;
 
 import com.l2fprod.common.swing.renderer.DefaultCellRenderer;
@@ -63,7 +69,9 @@ class BrowserTableCellRenderer extends JPanel implements TableCellRenderer {
 	
 	private CyColumn col;
 	private CyRow row;
-	private CellCustomGraphics cg;
+	private CyCustomGraphics<?> cg;
+	private CyTableView tableView;
+	private CyColumnView columnView;
 	
 	private final DefaultCellRenderer defCellRenderer = new DefaultCellRenderer();
 	private final BrowserTablePresentation presentation;
@@ -99,15 +107,15 @@ class BrowserTableCellRenderer extends JPanel implements TableCellRenderer {
 		
 		var browserTable = (BrowserTable) table;
 		var model = (BrowserTableModel) browserTable.getModel();
-		var tableView = model.getTableView();
+		tableView = model.getTableView();
 		col = model.getColumnByModelIndex(browserTable.convertColumnIndexToModel(colIndex));
 		row = model.getCyRow(browserTable.convertRowIndexToModel(rowIndex));
 		
-		var colView = (CyColumnView) tableView.getColumnView(col);
+		columnView = (CyColumnView) tableView.getColumnView(col);
 		
-		var bg = presentation.getBackgroundColor(row, colView);
-		var fg = presentation.getForegroundColor(row, colView);
-		var font = presentation.getFont(row, colView, validatedObj);
+		var bg = presentation.getBackgroundColor(row, columnView);
+		var fg = presentation.getForegroundColor(row, columnView);
+		var font = presentation.getFont(row, columnView, validatedObj);
 	
 		label.setFont(font);
 		label.setIcon(objEditStr != null && objEditStr.isEquation() ? EQUATION_ICON : null);
@@ -134,7 +142,7 @@ class BrowserTableCellRenderer extends JPanel implements TableCellRenderer {
 				text = validatedObj == Boolean.TRUE ? IconManager.ICON_CHECK_SQUARE : IconManager.ICON_SQUARE_O;
 			} else if (validatedObj instanceof Double) {
 				String formatStr = null;
-				var format = colView.getVisualProperty(BasicTableVisualLexicon.COLUMN_FORMAT);
+				var format = columnView.getVisualProperty(BasicTableVisualLexicon.COLUMN_FORMAT);
 				
 				if (format != null)
 					formatStr = format.getFormat();
@@ -167,7 +175,7 @@ class BrowserTableCellRenderer extends JPanel implements TableCellRenderer {
 		}
 		
 		// Save the custom graphics
-		cg = presentation.getCustomGraphics(row, colView);
+		cg = presentation.getCustomGraphics(row, columnView);
 		
 		setBackground(bg);
 		setForeground(fg);
@@ -185,11 +193,44 @@ class BrowserTableCellRenderer extends JPanel implements TableCellRenderer {
 		super.paintComponent(g);
 		
 		// Draw custom graphics (sparklines, etc)
-		if (cg != null && !cg.equals(NullCellCustomGraphics.getNullObject())) {
+		if (cg != null && !cg.equals(NullCustomGraphics.getNullObject())) {
+			var g2 = (Graphics2D) g.create();
+			
 			var w = getWidth();
 			var h = getHeight();
 			var bounds = new Rectangle2D.Float(0, 0, w, h);
-			cg.draw(g, bounds, col, row);
+			
+			for (var layer : cg.getLayers(tableView, columnView)) {
+				if (layer instanceof PaintedShape) {
+					var ps = (PaintedShape) layer;
+					var shape = ps.getShape();
+
+					if (ps.getStroke() != null) {
+						var strokePaint = ps.getStrokePaint();
+
+						if (strokePaint == null)
+							strokePaint = Color.BLACK;
+
+						g2.setPaint(strokePaint);
+						g2.setStroke(ps.getStroke());
+						g2.draw(shape);
+					}
+
+					g2.setPaint(ps.getPaint());
+					g2.fill(shape);
+				} else if (layer instanceof Cy2DGraphicLayer) {
+					((Cy2DGraphicLayer) layer).draw(g2, tableView, col, row);
+				} else if (layer instanceof ImageCustomGraphicLayer) {
+					var b = layer.getBounds2D().getBounds();
+					var img = ((ImageCustomGraphicLayer) layer).getPaint(b).getImage();
+					g2.drawImage(img, b.x, b.y, b.width, b.height, null);
+				} else {
+					g2.setPaint(layer.getPaint(bounds));
+					g2.fill(bounds);
+				}
+			}
+			
+			g2.dispose();
 		}
 	}
 	

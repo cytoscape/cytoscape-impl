@@ -1,18 +1,18 @@
 package org.cytoscape.ding.internal.gradients;
 
 import static java.util.Arrays.asList;
-import static org.cytoscape.ding.internal.gradients.AbstractGradient.GRADIENT_COLORS;
-import static org.cytoscape.ding.internal.gradients.AbstractGradient.GRADIENT_FRACTIONS;
-import static org.cytoscape.ding.internal.gradients.radial.RadialGradient.CENTER;
-import static org.cytoscape.ding.internal.gradients.radial.RadialGradient.RADIUS;
+import static org.cytoscape.cg.internal.gradient.AbstractGradient.GRADIENT_COLORS;
+import static org.cytoscape.cg.internal.gradient.AbstractGradient.GRADIENT_FRACTIONS;
+import static org.cytoscape.cg.internal.gradient.radial.RadialGradient.CENTER;
+import static org.cytoscape.cg.internal.gradient.radial.RadialGradient.RADIUS;
 import static org.junit.Assert.assertEquals;
 
 import java.awt.Color;
 import java.awt.geom.Point2D;
 import java.util.Map;
 
+import org.cytoscape.cg.internal.gradient.radial.RadialGradient;
 import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2Test;
-import org.cytoscape.ding.internal.gradients.radial.RadialGradient;
 import org.junit.Before;
 import org.junit.Test;
 

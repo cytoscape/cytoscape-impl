@@ -7,9 +7,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.ding.customgraphics.CustomGraphicsRange;
-import org.cytoscape.ding.customgraphics.NullCustomGraphics;
+import org.cytoscape.cg.internal.model.CustomGraphicsVisualProperty;
+import org.cytoscape.cg.model.CustomGraphicsManager;
+import org.cytoscape.cg.model.CustomGraphicsRange;
+import org.cytoscape.cg.model.NullCustomGraphics;
 import org.cytoscape.ding.impl.DLineType;
 import org.cytoscape.ding.impl.strokes.AnimatedDashDotStroke;
 import org.cytoscape.ding.impl.strokes.AnimatedEqualDashStroke;
@@ -23,7 +24,6 @@ import org.cytoscape.ding.impl.strokes.SeparateArrowStroke;
 import org.cytoscape.ding.impl.strokes.SineWaveStroke;
 import org.cytoscape.ding.impl.strokes.VerticalSlashStroke;
 import org.cytoscape.ding.impl.strokes.ZigzagStroke;
-import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
 import org.cytoscape.ding.impl.visualproperty.ObjectPositionVisualProperty;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -50,7 +50,7 @@ import org.cytoscape.view.presentation.property.values.ObjectPosition;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 

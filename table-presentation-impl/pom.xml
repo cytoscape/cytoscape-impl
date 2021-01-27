@@ -110,6 +110,13 @@
 			<artifactId>core-task-api</artifactId>
 		</dependency>
 
+		<!-- Internal API -->
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>custom-graphics-impl</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 		<!-- 3rd party -->
 		<dependency>
 			<groupId>com.fifesoft</groupId>

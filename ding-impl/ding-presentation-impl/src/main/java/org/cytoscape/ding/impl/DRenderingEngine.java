@@ -27,6 +27,7 @@ import javax.swing.JComponent;
 import javax.swing.RootPaneContainer;
 import javax.swing.Timer;
 
+import org.cytoscape.cg.event.CustomGraphicsLibraryUpdatedListener;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.PrintLOD;
 import org.cytoscape.ding.debug.DebugProgressMonitorFactory;
@@ -151,12 +152,12 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 	
 	public DRenderingEngine(
-			final CyNetworkView view,
-			final DVisualLexicon dingLexicon,
-			final AnnotationFactoryManager annMgr,
-			final DingGraphLOD dingGraphLOD,
-			final HandleFactory handleFactory,
-			final CyServiceRegistrar registrar
+			CyNetworkView view,
+			DVisualLexicon dingLexicon,
+			AnnotationFactoryManager annMgr,
+			DingGraphLOD dingGraphLOD,
+			HandleFactory handleFactory,
+			CyServiceRegistrar registrar
 	) {
 		this.serviceRegistrar = registrar;
 		this.eventHelper = registrar.getService(CyEventHelper.class);
@@ -178,7 +179,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		// Finally, intialize our annotations
 		cyAnnotator = new CyAnnotator(this, annMgr, registrar);
-		registrar.registerService(cyAnnotator, SessionAboutToBeSavedListener.class, new Properties());
+		registrar.registerService(cyAnnotator, SessionAboutToBeSavedListener.class);
+		registrar.registerService(cyAnnotator, CustomGraphicsLibraryUpdatedListener.class);
 		
 		renderComponent = new MainRenderComponent(this, dingGraphLOD);
 		picker = new NetworkPicker(this, null);
@@ -199,7 +201,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			fireThumbnailChanged(null);
 		});
 	}
-	
 	
 	public void install(RootPaneContainer rootPane) {
 		InputHandlerGlassPane glassPane = getInputHandlerGlassPane();
@@ -269,8 +270,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	 * does not get re-assigned while a frame is being drawn.
 	 */
 	private void checkModelIsDirty() {
-		final boolean updateModel = viewModel.dirty(true);
-		final boolean updateView = updateModel || contentChanged;
+		boolean updateModel = viewModel.dirty(true);
+		boolean updateView = updateModel || contentChanged;
 		
 		if(updateModel) {
 			updateModel();

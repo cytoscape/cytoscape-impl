@@ -10,18 +10,18 @@ public final class ViewUtil {
 	 * Utility method that invokes the code in Runnable.run on the AWT Event Dispatch Thread.
 	 * @param runnable
 	 */
-	public static void invokeOnEDT(final Runnable runnable) {
+	public static void invokeOnEDT(Runnable runnable) {
 		if (SwingUtilities.isEventDispatchThread())
 			runnable.run();
 		else
 			SwingUtilities.invokeLater(runnable);
 	}
 	
-	public static void invokeOnEDTAndWait(final Runnable runnable) {
+	public static void invokeOnEDTAndWait(Runnable runnable) {
 		invokeOnEDTAndWait(runnable, null);
 	}
 	
-	public static void invokeOnEDTAndWait(final Runnable runnable, final Logger logger) {
+	public static void invokeOnEDTAndWait(Runnable runnable, Logger logger) {
 		if (SwingUtilities.isEventDispatchThread()) {
 			runnable.run();
 		} else {

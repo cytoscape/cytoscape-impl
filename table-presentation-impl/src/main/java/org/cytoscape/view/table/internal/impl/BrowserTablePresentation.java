@@ -15,7 +15,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.table.CyColumnView;
-import org.cytoscape.view.presentation.property.table.CellCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 
 public class BrowserTablePresentation {
 	
@@ -76,7 +76,7 @@ public class BrowserTablePresentation {
 		return font;
 	}
 
-	public CellCustomGraphics getCustomGraphics(CyRow row, CyColumnView colView) {
+	public CyCustomGraphics<?> getCustomGraphics(CyRow row, CyColumnView colView) {
 		var fn = colView.getCellVisualProperty(CELL_CUSTOMGRAPHICS);
 
 		return fn != null ? fn.apply(row) : null;

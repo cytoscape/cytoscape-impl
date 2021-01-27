@@ -142,7 +142,6 @@ public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 		return TableViewRendererImpl.ID;
 	}
 
-	
 	@Override
 	public VisualLexicon getVisualLexicon() {
 		return lexicon;
@@ -171,8 +170,4 @@ public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 	@Override
 	public void printCanvas(Graphics printCanvas) {
 	}
-
-	
-
-
 }

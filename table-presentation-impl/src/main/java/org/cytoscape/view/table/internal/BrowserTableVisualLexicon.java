@@ -1,13 +1,14 @@
 package org.cytoscape.view.table.internal;
 
+import org.cytoscape.cg.internal.model.CustomGraphicsVisualProperty;
+import org.cytoscape.cg.model.CustomGraphicsRange;
+import org.cytoscape.cg.model.NullCustomGraphics;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.view.model.NullDataType;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.property.NullVisualProperty;
 import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
-import org.cytoscape.view.presentation.property.table.CellCustomGraphics;
-import org.cytoscape.view.table.internal.cg.CellCGVisualProperty;
-import org.cytoscape.view.table.internal.cg.NullCellCustomGraphics;
 
 public class BrowserTableVisualLexicon extends BasicTableVisualLexicon {
 
@@ -17,8 +18,10 @@ public class BrowserTableVisualLexicon extends BasicTableVisualLexicon {
 			"Browser Table Root Visual Property"
 	);
 	
-	public static final VisualProperty<CellCustomGraphics> CELL_CUSTOMGRAPHICS = new CellCGVisualProperty(
-			NullCellCustomGraphics.getNullObject(), "CELL_CUSTOMGRAPHICS", "Cell Image/Sparkline", CyColumn.class);	
+	private static final CustomGraphicsRange CG_RANGE = new CustomGraphicsRange();
+	
+	public static final VisualProperty<CyCustomGraphics> CELL_CUSTOMGRAPHICS = new CustomGraphicsVisualProperty(
+			NullCustomGraphics.getNullObject(), CG_RANGE, "CELL_CUSTOMGRAPHICS", "Cell Image/Sparkline", CyColumn.class);	
 	
 	public BrowserTableVisualLexicon() {
 		super(BROWSER_TABLE_ROOT);
