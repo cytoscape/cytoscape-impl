@@ -1,7 +1,10 @@
 package org.cytoscape.ding.impl;
 
+import static org.cytoscape.ding.internal.util.ViewUtil.isSingleLeftClick;
+
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
@@ -14,6 +17,7 @@ import java.util.Properties;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 
+import org.cytoscape.ding.impl.DRenderingEngine.Panner;
 import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
 import org.cytoscape.ding.impl.canvas.BirdsEyeViewRenderComponent;
 import org.cytoscape.ding.impl.canvas.RenderComponent;
@@ -25,7 +29,6 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 public final class BirdsEyeView implements RenderingEngine<CyNetwork>, ContentChangeListener {
 
@@ -34,12 +37,14 @@ public final class BirdsEyeView implements RenderingEngine<CyNetwork>, ContentCh
 	private final double[] extents = new double[4];
 	
 	private DRenderingEngine re;
+	private final CyServiceRegistrar registrar;
 	private final RenderComponent renderComponent;
 	
 	private final DebounceTimer contentChangedTimer;
 	
 	public BirdsEyeView(DRenderingEngine re, CyServiceRegistrar registrar) {
 		this.re = re;
+		this.registrar = registrar;
 		
 		var lod = new BirdsEyeViewLOD(re.getGraphLOD());
 		renderComponent = new BirdsEyeViewRenderComponent(re, lod);
@@ -127,65 +132,69 @@ public final class BirdsEyeView implements RenderingEngine<CyNetwork>, ContentCh
 	
 	
 	private final class InnerMouseListener extends MouseAdapter {
-
-		private int currMouseButton = 0;
-		private int lastXMousePos = 0;
-		private int lastYMousePos = 0;
 		
-		@Override public void mousePressed(MouseEvent e) {
-			if(e.getButton() == MouseEvent.BUTTON1) {
-				currMouseButton = 1;
-				lastXMousePos = e.getX(); // needed by drag listener
-				lastYMousePos = e.getY();
-				
-				double myXCenter = renderComponent.getTransform().getCenterX();
-				double myYCenter = renderComponent.getTransform().getCenterY();
-				double myScaleFactor = renderComponent.getTransform().getScaleFactor();
-				
-				double halfWidth  = (double)renderComponent.getWidth()  / 2.0d;
-				double halfHeight = (double)renderComponent.getHeight() / 2.0d;
-				
-				double centerX = ((lastXMousePos - halfWidth)  / myScaleFactor) + myXCenter;
-				double centerY = ((lastYMousePos - halfHeight) / myScaleFactor) + myYCenter;
-				
-				re.setCenter(centerX, centerY);
-				re.updateView(UpdateType.ALL_FULL);
-			}
-		}
-
+		private final double[] coords = new double[2];
+		
+		private Point mousePressedPoint;
+		private Panner panner = null;
+		
 		@Override 
-		public void mouseReleased(MouseEvent e) {
-			if(e.getButton() == MouseEvent.BUTTON1) {
-				if(currMouseButton == 1) {
-					currMouseButton = 0;
-				}
-			}
+		public void mousePressed(MouseEvent e) {
+			if(!isSingleLeftClick(e))
+				return;
+			
+			mousePressedPoint = e.getPoint();
+			
+			// Center the network on the point that was clicked
+			double myXCenter = renderComponent.getTransform().getCenterX();
+			double myYCenter = renderComponent.getTransform().getCenterY();
+			double myScaleFactor = renderComponent.getTransform().getScaleFactor();
+			
+			double halfWidth  = (double)renderComponent.getWidth()  / 2.0d;
+			double halfHeight = (double)renderComponent.getHeight() / 2.0d;
+			
+			double centerX = ((e.getX() - halfWidth)  / myScaleFactor) + myXCenter;
+			double centerY = ((e.getY() - halfHeight) / myScaleFactor) + myYCenter;
+			
+			re.setCenter(centerX, centerY);
 			re.updateView(UpdateType.ALL_FULL);
+			
+			// Now start a pan operation
+			panner = re.startPan();
 		}
-		
+
 		@Override
 		public void mouseDragged(MouseEvent e) {
-			if(currMouseButton == 1) {
-				int currX = e.getX();
-				int currY = e.getY();
-				double deltaX = 0;
-				double deltaY = 0;
+			if(mousePressedPoint != null) {
+				// MKTODO does holding SHIFT matter??
+				coords[0] = mousePressedPoint.getX();
+				coords[1] = mousePressedPoint.getY();
+				renderComponent.getTransform().xformImageToNodeCoords(coords);
+				double oldX = coords[0];
+				double oldY = coords[1];
 				
-				double myScaleFactor = renderComponent.getTransform().getScaleFactor();
+				coords[0] = e.getX();
+				coords[1] = e.getY();
+				renderComponent.getTransform().xformImageToNodeCoords(coords);
+				double newX = coords[0];
+				double newY = coords[1];
 				
-				if (!re.getViewModel().isValueLocked(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION)) {
-					deltaX = (currX - lastXMousePos) / myScaleFactor;
-					lastXMousePos = currX;
-				}
-				if (!re.getViewModel().isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)) {
-					deltaY = (currY - lastYMousePos) / myScaleFactor;
-					lastYMousePos = currY;
-				}
-				if (deltaX != 0 || deltaY != 0) {
-					// MKTODO
-//					re.pan(deltaX, deltaY);
-					re.updateView(UpdateType.ALL_FAST);
-				}
+				mousePressedPoint = e.getPoint();
+				
+				double deltaX = oldX - newX;
+				double deltaY = oldY - newY;
+				
+				panner.continuePan(-deltaX, -deltaY);
+			}
+		}
+		
+		@Override 
+		public void mouseReleased(MouseEvent e) {
+			mousePressedPoint = null;
+
+			if(panner != null) { // why does this happen?
+				panner.endPan();
+				panner = null;
 			}
 		}
 		
