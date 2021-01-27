@@ -1,8 +1,7 @@
-package org.cytoscape.cg.internal.image;
+package org.cytoscape.cg.model;
 
 import java.net.URL;
 
-import org.cytoscape.cg.model.AbstractDCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 
 /*

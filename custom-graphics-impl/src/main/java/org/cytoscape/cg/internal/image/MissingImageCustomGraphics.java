@@ -1,5 +1,6 @@
 package org.cytoscape.cg.internal.image;
 
+import org.cytoscape.cg.model.AbstractURLImageCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 

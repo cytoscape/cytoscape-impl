@@ -7,6 +7,8 @@ import java.nio.charset.StandardCharsets;
 
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.cg.model.CustomGraphicsManager;
+import org.cytoscape.cg.model.SVGCustomGraphics;
+import org.cytoscape.cg.model.SVGLayer;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 

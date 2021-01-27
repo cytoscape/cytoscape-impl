@@ -24,10 +24,10 @@ import javax.imageio.ImageIO;
 
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.cg.event.CustomGraphicsLibraryUpdatedEvent;
-import org.cytoscape.cg.internal.image.BitmapCustomGraphics;
-import org.cytoscape.cg.internal.image.SVGCustomGraphics;
 import org.cytoscape.cg.model.AbstractDCustomGraphics;
+import org.cytoscape.cg.model.BitmapCustomGraphics;
 import org.cytoscape.cg.model.CustomGraphicsManager;
+import org.cytoscape.cg.model.SVGCustomGraphics;
 import org.cytoscape.cg.model.Taggable;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.CyServiceRegistrar;

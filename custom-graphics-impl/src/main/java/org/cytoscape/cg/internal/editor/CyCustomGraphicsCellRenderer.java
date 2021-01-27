@@ -6,8 +6,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 
-import org.cytoscape.cg.internal.image.SVGCustomGraphics;
 import org.cytoscape.cg.internal.util.IconUtil;
+import org.cytoscape.cg.model.SVGCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 
 import com.kitfox.svg.app.beans.SVGIcon;

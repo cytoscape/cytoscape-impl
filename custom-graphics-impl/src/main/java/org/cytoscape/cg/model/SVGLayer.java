@@ -1,4 +1,4 @@
-package org.cytoscape.cg.internal.image;
+package org.cytoscape.cg.model;
 
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;

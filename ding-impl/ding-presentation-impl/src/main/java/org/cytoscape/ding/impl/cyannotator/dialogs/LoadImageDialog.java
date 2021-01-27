@@ -16,9 +16,9 @@ import javax.swing.JTabbedPane;
 import javax.swing.filechooser.FileFilter;
 
 import org.apache.commons.io.FilenameUtils;
-import org.cytoscape.cg.internal.image.BitmapCustomGraphics;
-import org.cytoscape.cg.internal.image.SVGCustomGraphics;
+import org.cytoscape.cg.model.BitmapCustomGraphics;
 import org.cytoscape.cg.model.CustomGraphicsManager;
+import org.cytoscape.cg.model.SVGCustomGraphics;
 import org.cytoscape.cg.util.CustomGraphicsBrowser;
 import org.cytoscape.cg.util.ImageCustomGraphicsSelector;
 import org.cytoscape.ding.impl.DRenderingEngine;

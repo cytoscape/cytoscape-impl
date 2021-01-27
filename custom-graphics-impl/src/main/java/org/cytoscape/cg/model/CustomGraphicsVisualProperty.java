@@ -1,8 +1,8 @@
 
-package org.cytoscape.cg.internal.model;
+package org.cytoscape.cg.model;
 
-import org.cytoscape.cg.model.CustomGraphicsRange;
-import org.cytoscape.cg.model.NullCustomGraphics;
+import org.cytoscape.cg.internal.model.CustomGraphicsManagerImpl;
+import org.cytoscape.cg.internal.model.CyCustomGraphics2ManagerImpl;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.AbstractVisualProperty;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;

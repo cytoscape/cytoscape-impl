@@ -53,22 +53,6 @@ public class CyActivator extends AbstractCyActivator {
 		startPresentationImpl(bc, serviceRegistrar);
 	}
 
-	private void startPresentationImpl(BundleContext bc, CyServiceRegistrar serviceRegistrar) {
-		// Translators for Passthrough
-		var cgTranslator = new CustomGraphicsTranslator(cgManager, cg2Manager);
-		registerService(bc, cgTranslator, ValueTranslator.class);
-		
-		// Custom Graphics Editors
-		var cgValueEditor = new CyCustomGraphicsValueEditor(cgBrowser, serviceRegistrar);
-		registerAllServices(bc, cgValueEditor);
-
-		var cmCellRendererFactory = getService(bc, ContinuousMappingCellRendererFactory.class);
-		
-		var cgVisualPropertyEditor = new CustomGraphicsVisualPropertyEditor(CyCustomGraphics.class, cgValueEditor,
-				cmCellRendererFactory, serviceRegistrar);
-		registerService(bc, cgVisualPropertyEditor, VisualPropertyEditor.class);
-	}
-
 	private void startCustomGraphicsMgr(BundleContext bc, CyServiceRegistrar serviceRegistrar) {
 		cgBrowser = new CustomGraphicsBrowser(serviceRegistrar);
 		registerAllServices(bc, cgBrowser);
@@ -153,6 +137,22 @@ public class CyActivator extends AbstractCyActivator {
 			var factory = new RadialGradientFactory();
 			registerService(bc, factory, CyCustomGraphics2Factory.class, props);
 		}
+	}
+	
+	private void startPresentationImpl(BundleContext bc, CyServiceRegistrar serviceRegistrar) {
+		// Translators for Passthrough
+		var cgTranslator = new CustomGraphicsTranslator(cgManager, cg2Manager);
+		registerService(bc, cgTranslator, ValueTranslator.class);
+		
+		// Custom Graphics Editors
+		var cgValueEditor = new CyCustomGraphicsValueEditor(cgBrowser, serviceRegistrar);
+		registerAllServices(bc, cgValueEditor);
+
+		var cmCellRendererFactory = getService(bc, ContinuousMappingCellRendererFactory.class);
+		
+		var cgVisualPropertyEditor = new CustomGraphicsVisualPropertyEditor(CyCustomGraphics.class, cgValueEditor,
+				cmCellRendererFactory, serviceRegistrar);
+		registerService(bc, cgVisualPropertyEditor, VisualPropertyEditor.class);
 	}
 	
 	/**

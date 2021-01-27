@@ -18,15 +18,17 @@ import javax.swing.JViewport;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
+import org.cytoscape.application.events.CyStartEvent;
+import org.cytoscape.application.events.CyStartListener;
 import org.cytoscape.cg.event.CustomGraphicsLibraryUpdatedEvent;
 import org.cytoscape.cg.event.CustomGraphicsLibraryUpdatedListener;
-import org.cytoscape.cg.internal.image.AbstractURLImageCustomGraphics;
-import org.cytoscape.cg.internal.image.BitmapCustomGraphics;
-import org.cytoscape.cg.internal.image.SVGCustomGraphics;
 import org.cytoscape.cg.internal.ui.CustomGraphicsCellRenderer;
 import org.cytoscape.cg.internal.ui.CustomGraphicsListModel;
+import org.cytoscape.cg.model.AbstractURLImageCustomGraphics;
+import org.cytoscape.cg.model.BitmapCustomGraphics;
 import org.cytoscape.cg.model.CustomGraphicsManager;
 import org.cytoscape.cg.model.NullCustomGraphics;
+import org.cytoscape.cg.model.SVGCustomGraphics;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.jdesktop.swingx.JXList;
@@ -35,7 +37,7 @@ import org.jdesktop.swingx.JXList;
  * Display list of images available as custom graphics
  */
 @SuppressWarnings("serial")
-public class CustomGraphicsBrowser extends JXList implements CustomGraphicsLibraryUpdatedListener {
+public class CustomGraphicsBrowser extends JXList implements CyStartListener, CustomGraphicsLibraryUpdatedListener {
 
 	private CustomGraphicsListModel model;
 	
@@ -56,6 +58,10 @@ public class CustomGraphicsBrowser extends JXList implements CustomGraphicsLibra
 		this.serviceRegistrar = serviceRegistrar;
 
 		initComponents();
+	}
+	
+	@Override
+	public void handleEvent(CyStartEvent e) {
 		addAllImages();
 	}
 

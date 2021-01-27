@@ -11,6 +11,8 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 import org.cytoscape.application.CyApplicationConfiguration;
+import org.cytoscape.cg.model.BitmapCustomGraphics;
+import org.cytoscape.cg.model.BitmapLayer;
 import org.cytoscape.cg.model.CustomGraphicsManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;

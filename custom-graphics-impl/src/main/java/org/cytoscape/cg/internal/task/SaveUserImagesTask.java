@@ -12,9 +12,9 @@ import java.util.concurrent.TimeUnit;
 import javax.imageio.ImageIO;
 
 import org.cytoscape.application.CyUserLog;
-import org.cytoscape.cg.internal.image.SVGCustomGraphics;
 import org.cytoscape.cg.internal.util.ImageUtil;
 import org.cytoscape.cg.model.CustomGraphicsManager;
+import org.cytoscape.cg.model.SVGCustomGraphics;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;

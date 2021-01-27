@@ -28,10 +28,10 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
-import org.cytoscape.cg.internal.image.AbstractURLImageCustomGraphics;
-import org.cytoscape.cg.internal.image.BitmapCustomGraphics;
-import org.cytoscape.cg.internal.image.SVGCustomGraphics;
+import org.cytoscape.cg.model.AbstractURLImageCustomGraphics;
+import org.cytoscape.cg.model.BitmapCustomGraphics;
 import org.cytoscape.cg.model.CustomGraphicsManager;
+import org.cytoscape.cg.model.SVGCustomGraphics;
 import org.cytoscape.cg.util.CustomGraphicsBrowser;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;

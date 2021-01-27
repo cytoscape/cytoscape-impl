@@ -1,4 +1,4 @@
-package org.cytoscape.cg.internal.image;
+package org.cytoscape.cg.model;
 
 import java.awt.Image;
 import java.awt.Rectangle;
@@ -37,7 +37,7 @@ public class SVGCustomGraphics extends AbstractURLImageCustomGraphics<SVGLayer> 
 	/** Layer used only to draw rendered images */
 	private SVGLayer renderedImageLayer;
 	
-	static String DEF_IMAGE;
+	public static String DEF_IMAGE;
 	
 	static {
 		try (var scan = new Scanner(new BufferedInputStream(

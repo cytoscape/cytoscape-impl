@@ -26,9 +26,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.cg.internal.image.BitmapCustomGraphics;
-import org.cytoscape.cg.internal.image.SVGCustomGraphics;
 import org.cytoscape.cg.internal.util.VisualPropertyIconFactory;
+import org.cytoscape.cg.model.BitmapCustomGraphics;
+import org.cytoscape.cg.model.SVGCustomGraphics;
 import org.cytoscape.cg.util.CustomGraphicsBrowser;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;

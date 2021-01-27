@@ -19,11 +19,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.cytoscape.cg.internal.image.AbstractURLImageCustomGraphics;
-import org.cytoscape.cg.internal.image.BitmapCustomGraphics;
-import org.cytoscape.cg.internal.image.SVGCustomGraphics;
-import org.cytoscape.cg.internal.image.SVGLayer;
+import org.cytoscape.cg.model.AbstractURLImageCustomGraphics;
+import org.cytoscape.cg.model.BitmapCustomGraphics;
 import org.cytoscape.cg.model.CustomGraphicsManager;
+import org.cytoscape.cg.model.SVGCustomGraphics;
+import org.cytoscape.cg.model.SVGLayer;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.ding.internal.util.ImageUtil;

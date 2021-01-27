@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
+import org.cytoscape.cg.model.BitmapCustomGraphics;
+import org.cytoscape.cg.model.BitmapLayer;
 import org.cytoscape.cg.model.Taggable;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.CyNetworkView;

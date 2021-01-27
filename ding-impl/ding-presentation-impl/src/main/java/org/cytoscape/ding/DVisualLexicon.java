@@ -7,9 +7,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.cytoscape.cg.internal.model.CustomGraphicsVisualProperty;
 import org.cytoscape.cg.model.CustomGraphicsManager;
 import org.cytoscape.cg.model.CustomGraphicsRange;
+import org.cytoscape.cg.model.CustomGraphicsVisualProperty;
 import org.cytoscape.cg.model.NullCustomGraphics;
 import org.cytoscape.ding.impl.DLineType;
 import org.cytoscape.ding.impl.strokes.AnimatedDashDotStroke;

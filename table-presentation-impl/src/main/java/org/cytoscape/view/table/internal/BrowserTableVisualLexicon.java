@@ -1,7 +1,7 @@
 package org.cytoscape.view.table.internal;
 
-import org.cytoscape.cg.internal.model.CustomGraphicsVisualProperty;
 import org.cytoscape.cg.model.CustomGraphicsRange;
+import org.cytoscape.cg.model.CustomGraphicsVisualProperty;
 import org.cytoscape.cg.model.NullCustomGraphics;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.view.model.NullDataType;

@@ -8,9 +8,9 @@ import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 
-import org.cytoscape.cg.internal.image.SVGCustomGraphics;
-import org.cytoscape.cg.internal.image.SVGLayer;
 import org.cytoscape.cg.internal.util.VisualPropertyIcon;
+import org.cytoscape.cg.model.SVGCustomGraphics;
+import org.cytoscape.cg.model.SVGLayer;
 import org.cytoscape.view.presentation.customgraphics.Cy2DGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 

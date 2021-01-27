@@ -1,4 +1,4 @@
-package org.cytoscape.cg.internal.image;
+package org.cytoscape.cg.model;
 
 import java.awt.Image;
 import java.awt.geom.Rectangle2D;
@@ -27,7 +27,7 @@ public class BitmapCustomGraphics extends AbstractURLImageCustomGraphics<BitmapL
 	private BufferedImage originalImage;
 	private BufferedImage scaledImage;
 	
-	static BufferedImage DEF_IMAGE;
+	public static BufferedImage DEF_IMAGE;
 	
 	static {
 		try {
