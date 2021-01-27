@@ -22,7 +22,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
@@ -57,7 +56,6 @@ import org.cytoscape.ding.impl.undo.CompositeCyEdit;
 import org.cytoscape.ding.impl.undo.NodeLabelChangeEdit;
 import org.cytoscape.ding.impl.undo.ViewChangeEdit;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
-import org.cytoscape.ding.internal.util.HiDPIProxyMouseAdapter;
 import org.cytoscape.ding.internal.util.OrderedMouseAdapter;
 import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.event.CyEventHelper;
@@ -126,16 +124,12 @@ import org.cytoscape.work.swing.DialogTaskManager;
 @SuppressWarnings("serial")
 public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	
-	private static final AffineTransform identity = new AffineTransform();
 	private static final int PROGRESS_BAR_TICKS = 1000;
 	
 	private final CyServiceRegistrar registrar;
-	private final HiDPIProxyMouseAdapter proxyMouseAdapter;
+	private final OrderedMouseAdapter orderedMouseAdapter;
 	private final PopupMenuHelper popupMenuHelper;
 	private final JProgressBar progressBar;
-	
-	private double dpiScaleX = 1.0;
-	private double dpiScaleY = 1.0;
 	
 	private DRenderingEngine re;
 	private CyAnnotator cyAnnotator;
@@ -146,7 +140,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		this.cyAnnotator = re.getCyAnnotator();
 		
 		// Order matters, some listeners use MouseEvent.consume() to prevent subsequent listeners from running
-		var orderedMouseAdapter = new OrderedMouseAdapter(
+		orderedMouseAdapter = new OrderedMouseAdapter(
         	new FocusRequestListener(),
         	new CanvasKeyListener(),  // key listener also needs to listen for mouse presses
         	new ContextMenuListener(),
@@ -159,11 +153,9 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
         	new PanListener() // panning only happens if no node/edge/annotation/handle is clicked, so it needs to go last
         );
         
-		this.proxyMouseAdapter = new HiDPIProxyMouseAdapter(orderedMouseAdapter);
-
-		addMouseListener(proxyMouseAdapter);
-		addMouseMotionListener(proxyMouseAdapter);
-		addKeyListener(proxyMouseAdapter.get(CanvasKeyListener.class));
+		addMouseListener(orderedMouseAdapter);
+		addMouseMotionListener(orderedMouseAdapter);
+		addKeyListener(orderedMouseAdapter.get(CanvasKeyListener.class));
 		addMouseWheelListener(new CanvasMouseWheelListener());
 		setFocusable(true); // key listener needs the focus
 		
@@ -257,29 +249,13 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	 * They must be proxied through the {@link HiDPIProxyMouseAdapter}.
 	 */
 	private <T> T get(Class<T> t) {
-		return proxyMouseAdapter.get(t);
+		return orderedMouseAdapter.get(t);
 	}
 	
 	private <T> Optional<T> maybe(Class<T> t) {
-		return Optional.ofNullable(proxyMouseAdapter.get(t));
+		return Optional.ofNullable(orderedMouseAdapter.get(t));
 	}
 	
-	@Override
-	public void paint(Graphics g) {
-		if(re.getGraphLOD().isHidpiEnabled()) {
-			var config = ((Graphics2D)g).getDeviceConfiguration();
-			var trans = config.getDefaultTransform();
-			dpiScaleX = trans.getScaleX();
-			dpiScaleY = trans.getScaleY();
-			proxyMouseAdapter.setDefaultTransform(trans);
-		} else {
-			dpiScaleX = 1.0;
-			dpiScaleY = 1.0;
-			proxyMouseAdapter.setDefaultTransform(identity);
-		}
-		super.paint(g);
-	}
-
 	@Override
 	protected void paintComponent(Graphics g) {
 		get(AddEdgeListener.class).drawAddingEdge(g);
@@ -1182,7 +1158,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			// Draw selection rectangle
 			if(selectedLabel != null) {
 				Graphics2D g = (Graphics2D) graphics.create();
-				g.scale(1.0/dpiScaleX, 1.0/dpiScaleY);
 				g.setColor(UIManager.getColor("Focus.color"));
 				g.draw(selectedLabel.getRectangle());
 			}
@@ -1435,7 +1410,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		public void drawSelectionLasso(Graphics graphics) {
 			if(selectionLasso != null) {
 				Graphics2D g = (Graphics2D) graphics.create();
-				g.scale(1.0/dpiScaleX, 1.0/dpiScaleY);
 				g.setColor(SELECTION_RECT_BORDER_COLOR_1);
 				GeneralPath path = new GeneralPath(selectionLasso);
 				path.closePath();
@@ -1522,7 +1496,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			// Draw selection rectangle
 			if(selectionRect != null) {
 				Graphics2D g = (Graphics2D) graphics.create();
-				g.scale(1.0/dpiScaleX, 1.0/dpiScaleY);
 				// External border
 				g.setColor(SELECTION_RECT_BORDER_COLOR_1);
 				g.draw(selectionRect);

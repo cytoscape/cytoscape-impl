@@ -17,7 +17,7 @@ public interface GraphicsProvider {
 				color = new Color(0,0,0,0); // transparent
 			}
 			g.setColor(color);
-			g.fillRect(0, 0, t.getWidth(), t.getHeight());
+			g.fillRect(0, 0, t.getPixelWidth(), t.getPixelHeight());
 		}
 	}
 	

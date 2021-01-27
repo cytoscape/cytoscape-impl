@@ -27,7 +27,7 @@ public class NetworkImageBuffer implements ImageGraphicsProvider {
 		if(image == null) {
 			return;
 		}
-		if(transform.getWidth() != image.getWidth(null) || transform.getHeight() != image.getHeight(null)) {
+		if(transform.getPixelWidth() != image.getWidth(null) || transform.getPixelHeight() != image.getHeight(null)) {
 			this.image = null;
 		}
 	}
@@ -40,7 +40,7 @@ public class NetworkImageBuffer implements ImageGraphicsProvider {
 	@Override
 	public synchronized BufferedImage getImage() {
 		if(image == null) {
-			image  = new BufferedImage(transform.getWidth(), transform.getHeight(), BufferedImage.TYPE_INT_ARGB);
+			image  = new BufferedImage(transform.getPixelWidth(), transform.getPixelHeight(), BufferedImage.TYPE_INT_ARGB);
 		}
 		return image;
 	}

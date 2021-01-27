@@ -44,8 +44,7 @@ public abstract class RenderComponent extends JComponent {
 	
 	private Runnable initializedCallback;
 	
-	private double dpiScaleX = 1.0;
-	private double dpiScaleY = 1.0;
+	private double dpiScaleFactor = 1.0;
 	
 	// These are used for the panning optimization
 	private NetworkTransform.Snapshot slowCanvasLastPaintSnapshot;
@@ -115,10 +114,15 @@ public abstract class RenderComponent extends JComponent {
 	}
 	
 	private void resizeImageBuffers() {
-		int bufferWidth  = (int)(getWidth()  * dpiScaleX);
-		int bufferHeight = (int)(getHeight() * dpiScaleY);
-		fastCanvas.setViewport(bufferWidth, bufferHeight);
-		slowCanvas.setViewport(bufferWidth, bufferHeight);
+		int bufferWidth  = getWidth();
+		int bufferHeight = getHeight();
+		fastCanvas.getTransform().setViewport(bufferWidth, bufferHeight);
+		slowCanvas.getTransform().setViewport(bufferWidth, bufferHeight);
+	}
+	
+	private void updateDPIScaleFactor() {
+		fastCanvas.getTransform().setDPIScaleFactor(dpiScaleFactor);
+		slowCanvas.getTransform().setDPIScaleFactor(dpiScaleFactor);
 	}
 
 	
@@ -156,13 +160,13 @@ public abstract class RenderComponent extends JComponent {
 	}
 	
 	public void setCenter(double x, double y) {
-		slowCanvas.setCenter(x, y);
-		fastCanvas.setCenter(x, y);
+		slowCanvas.getTransform().setCenter(x, y);
+		fastCanvas.getTransform().setCenter(x, y);
 	}
 	
 	public void setScaleFactor(double scaleFactor) {
-		slowCanvas.setScaleFactor(scaleFactor);
-		fastCanvas.setScaleFactor(scaleFactor);
+		slowCanvas.getTransform().setScaleFactor(scaleFactor);
+		fastCanvas.getTransform().setScaleFactor(scaleFactor);
 	}
 	
 	public void updateView(UpdateType updateType) {
@@ -249,28 +253,27 @@ public abstract class RenderComponent extends JComponent {
 	
 	@Override
 	public void paint(Graphics g) {
-		double scaleX, scaleY;
+		double scaleX;
 		
 		// MKTODO does doing this on every paint eat up rendering time?
 		if(re.getGraphLOD().isHidpiEnabled()) {
 			var config = ((Graphics2D)g).getDeviceConfiguration();
 			var trans = config.getDefaultTransform();
 			scaleX = trans.getScaleX();
-			scaleY = trans.getScaleY();
 		} else {
 			scaleX = 1.0;
-			scaleY = 1.0;
 		}
 
 		// This typically only happens if the user drags the cytoscape window from one monitor to another.
-		if(scaleX != dpiScaleX || scaleY != dpiScaleY) {
-			this.dpiScaleX = scaleX;
-			this.dpiScaleY = scaleY;
+		if(scaleX != dpiScaleFactor) {
+			this.dpiScaleFactor = scaleX;
+			
 			if(slowFuture != null)
 				slowFuture.cancel();
 			if(fastFuture != null)
 				fastFuture.cancel();
-			resizeImageBuffers();
+			
+			updateDPIScaleFactor();
 		}
 
 		super.paint(g);
@@ -320,8 +323,8 @@ public abstract class RenderComponent extends JComponent {
 		Image image = future.join();
 		setRenderDetailFlags(future.getLastRenderDetail());
 
-		int w = (int)(image.getWidth(null)  / dpiScaleX);
-		int h = (int)(image.getHeight(null) / dpiScaleY);
+		int w = (int)(image.getWidth(null)  / dpiScaleFactor);
+		int h = (int)(image.getHeight(null) / dpiScaleFactor);
 
 		g.drawImage(image, 0, 0, w, h, null);
 	}

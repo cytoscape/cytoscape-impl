@@ -21,8 +21,13 @@ public class NetworkTransform {
 	private double x = 0;
 	private double y = 0;
 	private double scaleFactor = 1;
+	private double dpiScaleFactor = 1.0;
 	
-	private final AffineTransform xform = new AffineTransform();
+	// This transform is used to convert from window (ie mouse) coordinates to node coordinates.
+	private final AffineTransform windowXform = new AffineTransform();
+	// This transform is used when painting, and it incorporates the dpiScaleFactor to render at higher resolution.
+	private final AffineTransform paintXform = new AffineTransform();
+	
 	private final Rectangle2D.Float area = new Rectangle2D.Float();
 	
 	private final List<TransformChangeListener> transformChangeListeners = new CopyOnWriteArrayList<>();
@@ -80,12 +85,21 @@ public class NetworkTransform {
 		}
 	}
 	
+	
 	public int getWidth() {
 		return width;
 	}
 	
 	public int getHeight() {
 		return height;
+	}
+	
+	public int getPixelWidth() {
+		return (int)(width  * dpiScaleFactor);
+	}
+	
+	public int getPixelHeight() {
+		return (int)(height * dpiScaleFactor);
 	}
 	
 	public double getCenterX() {
@@ -104,9 +118,20 @@ public class NetworkTransform {
 		return scaleFactor;
 	}
 	
+	public double getDpiScaleFactor() {
+		return dpiScaleFactor;
+	}
+	
 	public void setScaleFactor(double scaleFactor) {
 		if(this.scaleFactor != scaleFactor) {
 			this.scaleFactor = scaleFactor;
+			updateTransform();
+		}
+	}
+	
+	public void setDPIScaleFactor(double dpiScaleFactor) {
+		if(this.dpiScaleFactor != dpiScaleFactor) {
+			this.dpiScaleFactor = dpiScaleFactor;
 			updateTransform();
 		}
 	}
@@ -127,10 +152,16 @@ public class NetworkTransform {
 		}
 	}
 	
+	
 	private void updateTransform() {
-		xform.setToTranslation(0.5d * width, 0.5d * height);
-		xform.scale(scaleFactor, scaleFactor);
-		xform.translate(-x, -y);
+		windowXform.setToTranslation(0.5d * width, 0.5d * height);
+		windowXform.scale(scaleFactor, scaleFactor);
+		windowXform.translate(-x, -y);
+		
+		paintXform.setToTranslation(0.5d * getPixelWidth(), 0.5d * getPixelHeight());
+		paintXform.scale(scaleFactor, scaleFactor);
+		paintXform.scale(dpiScaleFactor, dpiScaleFactor);
+		paintXform.translate(-x, -y);
 		
 		// Define the visible window in node coordinate space.
 		float xMin = (float) (x - ((0.5d * width)  / scaleFactor));
@@ -161,26 +192,26 @@ public class NetworkTransform {
 		return area;
 	}
 	
-	public AffineTransform getAffineTransform() {
-		return xform;
+	public AffineTransform getPaintAffineTransform() {
+		return paintXform;
 	}
 	
 	public final void xformImageToNodeCoords(double[] coords) {
 		try {
-			xform.inverseTransform(coords, 0, coords, 0, 1);
+			windowXform.inverseTransform(coords, 0, coords, 0, 1);
 		} catch (java.awt.geom.NoninvertibleTransformException e) {
 			throw new RuntimeException("noninvertible matrix - cannot happen");
 		}
 	}
 	
 	public final void xformNodeToImageCoords(double[] coords) {
-		xform.transform(coords, 0, coords, 0, 1);
+		windowXform.transform(coords, 0, coords, 0, 1);
 	}
 	
 	public GeneralPath pathInNodeCoords(GeneralPath path) {
 		try {
 			GeneralPath transformedPath = new GeneralPath(path);
-			transformedPath.transform(xform.createInverse());
+			transformedPath.transform(windowXform.createInverse());
 			return transformedPath;
 		} catch (NoninvertibleTransformException e) {
 			return null;

@@ -69,7 +69,7 @@ public class AnnotationCanvas<GP extends GraphicsProvider> extends DingCanvas<GP
 			return;
 		
 		var transform = graphicsProvider.getTransform();
-		g.transform(transform.getAffineTransform());
+		g.transform(transform.getPaintAffineTransform());
 		
 		Rectangle2D visibleArea = transform.getNetworkVisibleAreaNodeCoords();
 		

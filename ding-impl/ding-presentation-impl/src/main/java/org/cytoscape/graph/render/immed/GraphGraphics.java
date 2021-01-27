@@ -221,7 +221,7 @@ public final class GraphGraphics {
 
 		setGraphicsFlags(m_g2d);
 
-		m_g2d.transform(getTransform().getAffineTransform());
+		m_g2d.transform(getTransform().getPaintAffineTransform());
 		m_currNativeXform.setTransform(m_g2d.getTransform()); // save the current transform
 	}
 
@@ -297,7 +297,7 @@ public final class GraphGraphics {
 		m_ptsBuff[1] = yMin;
 		m_ptsBuff[2] = xMax;
 		m_ptsBuff[3] = yMax;
-		getTransform().getAffineTransform().transform(m_ptsBuff, 0, m_ptsBuff, 0, 2);
+		getTransform().getPaintAffineTransform().transform(m_ptsBuff, 0, m_ptsBuff, 0, 2);
 
 		// Here, double values outside of the range of ints will be cast to
 		// the nearest int without overflow.
@@ -747,7 +747,7 @@ public final class GraphGraphics {
 		m_ptsBuff[1] = y0;
 		m_ptsBuff[2] = x1;
 		m_ptsBuff[3] = y1;
-		getTransform().getAffineTransform().transform(m_ptsBuff, 0, m_ptsBuff, 0, 2);
+		getTransform().getPaintAffineTransform().transform(m_ptsBuff, 0, m_ptsBuff, 0, 2);
 
 		final int xNot = (int) m_ptsBuff[0];
 		final int yNot = (int) m_ptsBuff[1];

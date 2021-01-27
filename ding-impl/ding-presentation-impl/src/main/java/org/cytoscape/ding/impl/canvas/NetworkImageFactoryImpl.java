@@ -81,8 +81,8 @@ public class NetworkImageFactoryImpl implements NetworkImageFactory {
 
 		double centerX = (extents[0] + extents[2]) / 2.0d;
 		double centerY = (extents[1] + extents[3]) / 2.0d;
-		double scaleFactor = Math.min(((double) transform.getWidth())  /  (extents[2] - extents[0]), 
-                ((double) transform.getHeight()) /  (extents[3] - extents[1])) * 0.98;
+		double scaleFactor = Math.min(((double) transform.getPixelWidth())  /  (extents[2] - extents[0]), 
+                ((double) transform.getPixelHeight()) /  (extents[3] - extents[1])) * 0.98;
 		
 		transform.setCenter(centerX, centerY);
 		transform.setScaleFactor(scaleFactor);
