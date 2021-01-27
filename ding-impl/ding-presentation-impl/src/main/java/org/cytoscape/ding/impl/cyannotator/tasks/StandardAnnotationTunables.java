@@ -18,8 +18,8 @@ public class StandardAnnotationTunables extends AbstractAnnotationTunables {
   static final String[] CANVASES = {Annotation.FOREGROUND, Annotation.BACKGROUND};
 
   @Tunable(context="nogui", 
-           description="The name for this annotation, which will appear to users in the Annotations Panel")
-  public String name = null;
+           description="The new name for this annotation, which will appear to users in the Annotations Panel")
+  public String newName = null;
 
   @Tunable(context="nogui", 
            required=true,
@@ -49,7 +49,7 @@ public class StandardAnnotationTunables extends AbstractAnnotationTunables {
     putIfNotNull(tm, args, Annotation.X, x);
     putIfNotNull(tm, args, Annotation.Y, y);
     putIfNotNull(tm, args, Annotation.Z, z);
-    putIfNotNull(tm, args, Annotation.NAME, name);
+    putIfNotNull(tm, args, Annotation.NAME, newName);
     putIfNotNull(tm, args, Annotation.ROTATION, angle);
     putIfNotNull(tm, args, Annotation.CANVAS, canvas, Arrays.asList(CANVASES));
     return args;
@@ -71,8 +71,8 @@ public class StandardAnnotationTunables extends AbstractAnnotationTunables {
     if (canvas != null)
       annotation.setCanvas(canvas);
 
-    if (name != null)
-      annotation.setName(name);
+    if (newName != null)
+      annotation.setName(newName);
 
     if (angle != null)
       annotation.setRotation(angle);
