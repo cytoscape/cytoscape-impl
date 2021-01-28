@@ -58,7 +58,7 @@ public class MeasuredLineCreatorTest extends TestCase {
 	public void testOneNewLine() {
 		mlc = new LabelInfo("homer\nmarge",serif,frc,true,100);
 		printLines("one newline",mlc);
-		assertTrue(mlc.getMeasuredLines().size() == 2);
+		assertEquals(2, mlc.getMeasuredLines().size());
 	}
 
 	public void testLongLine() {

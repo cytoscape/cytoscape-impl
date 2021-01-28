@@ -55,7 +55,7 @@ public class LabelInfo {
 		this.labelWidth = labelWidth;
 		this.measuredLines = new ArrayList<LabelLineInfo>();
 
-		String[] lines = rawLine.split("/n");
+		String[] lines = rawLine.split("\n");
 		calculateRawBounds(lines); 
 		createMeasuredLines(lines);
 	}
