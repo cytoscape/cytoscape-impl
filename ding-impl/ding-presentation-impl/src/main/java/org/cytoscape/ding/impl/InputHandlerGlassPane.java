@@ -140,7 +140,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		this.cyAnnotator = re.getCyAnnotator();
 		
 		// Order matters, some listeners use MouseEvent.consume() to prevent subsequent listeners from running
-		this.orderedMouseAdapter = new OrderedMouseAdapter(
+		orderedMouseAdapter = new OrderedMouseAdapter(
         	new FocusRequestListener(),
         	new CanvasKeyListener(),  // key listener also needs to listen for mouse presses
         	new ContextMenuListener(),
@@ -244,6 +244,10 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		};
 	}
 	
+	/**
+	 * Note, when accessing an event listener DO NOT call any of its mouse event handler methods directly.
+	 * They must be proxied through the {@link HiDPIProxyMouseAdapter}.
+	 */
 	private <T> T get(Class<T> t) {
 		return orderedMouseAdapter.get(t);
 	}
@@ -1154,7 +1158,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			// Draw selection rectangle
 			if(selectedLabel != null) {
 				Graphics2D g = (Graphics2D) graphics.create();
-				// External border
 				g.setColor(UIManager.getColor("Focus.color"));
 				g.draw(selectedLabel.getRectangle());
 			}
@@ -1488,7 +1491,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		public boolean isDragging() {
 			return selectionRect != null;
 		}
-		
+		 
 		public void drawSelectionRectangle(Graphics graphics) {
 			// Draw selection rectangle
 			if(selectionRect != null) {

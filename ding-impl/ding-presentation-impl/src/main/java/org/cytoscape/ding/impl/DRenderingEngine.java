@@ -667,7 +667,9 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		((Graphics2D) g).translate(pageFormat.getImageableX(), pageFormat.getImageableY());
 
 		// make sure the whole image on the screen will fit to the printable area of the paper
-		var transform = renderComponent.getTransform();
+		var transform = new NetworkTransform(renderComponent.getTransform());
+		transform.setDPIScaleFactor(1.0);
+		
 		double image_scale = Math.min(pageFormat.getImageableWidth()  / transform.getWidth(),
 									  pageFormat.getImageableHeight() / transform.getHeight());
 
@@ -701,7 +703,10 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		Color bg = transparent ? null : getBackgroundColor();
 		
-		var transform = renderComponent.getTransform();
+		// Don't use HiDPI transform when rendering an image.
+		var transform = new NetworkTransform(renderComponent.getTransform());
+		transform.setDPIScaleFactor(1.0);
+		
 		CompositeGraphicsCanvas.paint((Graphics2D)g, bg, printLOD, transform, this);
 		
 		// Keep previous dirty flags, otherwise the actual view canvas may not be updated next time.

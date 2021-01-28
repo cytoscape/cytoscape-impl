@@ -138,18 +138,6 @@ public class CompositeImageCanvas {
 		return bgColor;
 	}
 	
-	public void setViewport(int width, int height) {
-		transform.setViewport(width, height);
-	}
-	
-	public void setCenter(double x, double y) {
-		transform.setCenter(x, y);
-	}
-	
-	public void setScaleFactor(double scaleFactor) {
-		transform.setScaleFactor(scaleFactor);
-	}
-
 	public RenderDetailFlags getRenderDetailFlags() {
 		var snapshot = re.getViewModelSnapshot();
 		return RenderDetailFlags.create(snapshot, transform, lod);
@@ -307,7 +295,7 @@ public class CompositeImageCanvas {
 				color = new Color(0,0,0,0); // transparent
 			}
 			g.setColor(color);
-			g.fillRect(0, 0, t.getWidth(), t.getHeight());
+			g.fillRect(0, 0, t.getPixelWidth(), t.getPixelHeight());
 		}
 	}
 	

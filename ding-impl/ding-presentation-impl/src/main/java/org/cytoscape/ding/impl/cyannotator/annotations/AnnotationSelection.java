@@ -429,6 +429,9 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 		// Draw the selection box
 		g.setStroke(new BasicStroke(WIDTH));
 		
+		var dpiScale = re.getTransform().getDpiScaleFactor();
+		g.scale(dpiScale, dpiScale);
+		
 		var r1 = getShapeImageCoords(); // Inner line
 		g.setPaint(COLOR_1);
 		g.draw(r1);

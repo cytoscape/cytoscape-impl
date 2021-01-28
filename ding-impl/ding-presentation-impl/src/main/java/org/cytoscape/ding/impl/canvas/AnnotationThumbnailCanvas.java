@@ -54,7 +54,7 @@ public class AnnotationThumbnailCanvas<GP extends GraphicsProvider> extends Ding
 			return;
 		
 		var transform = graphicsProvider.getTransform();
-		g.transform(transform.getAffineTransform());
+		g.transform(transform.getPaintAffineTransform());
 		
 		Rectangle2D visibleArea = transform.getNetworkVisibleAreaNodeCoords();
 		

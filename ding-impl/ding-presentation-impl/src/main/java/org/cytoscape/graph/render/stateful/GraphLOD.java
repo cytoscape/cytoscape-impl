@@ -248,6 +248,13 @@ public interface GraphLOD {
 		return false;
 	}
 	
+	/**
+	 * Returns true if the hidpi mode should be enabled.
+	 */
+	default boolean isHidpiEnabled() {
+		return false;
+	}
+	
 	default double getNestedNetworkImageScaleFactor() { return 1.0; }
 
 }
