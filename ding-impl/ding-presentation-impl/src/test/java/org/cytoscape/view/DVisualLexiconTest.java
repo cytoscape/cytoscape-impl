@@ -2,9 +2,7 @@ package org.cytoscape.view;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.mock;
 
-import org.cytoscape.cg.model.CustomGraphicsManager;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.view.model.NullDataType;
 import org.cytoscape.view.model.VisualLexicon;
@@ -44,8 +42,7 @@ public class DVisualLexiconTest extends AbstractVisualLexiconTest {
 
 	@Before
 	public void setUp() throws Exception {
-		var manager = mock(CustomGraphicsManager.class);
-		dLexicon = new DVisualLexicon(manager);
+		dLexicon = new DVisualLexicon();
 	}
 
 	@After

@@ -1,9 +1,6 @@
 
 package org.cytoscape.ding;
 
-import static org.mockito.Mockito.mock;
-
-import org.cytoscape.cg.model.CustomGraphicsManager;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -47,12 +44,11 @@ public class NetworkViewTestSupport extends NetworkTestSupport {
 	}
 
 	public CyNetworkViewFactory getNetworkViewFactory() {
-		DVisualLexicon lexicon = new DVisualLexicon(mock(CustomGraphicsManager.class));
+		var lexicon = new DVisualLexicon();
 		return networkViewFactoryTestSupport.getNetworkViewFactory(lexicon);
 	}
 	
 	public CyNetworkViewFactoryProvider getNetworkViewFactoryProvider() {
 		return networkViewFactoryTestSupport.getNetworkViewFactoryFactory();
 	}
-	
 }

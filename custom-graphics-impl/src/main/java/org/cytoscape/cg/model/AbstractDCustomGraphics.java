@@ -8,6 +8,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.table.CyColumnView;
@@ -94,7 +95,7 @@ public abstract class AbstractDCustomGraphics<T extends CustomGraphicLayer> impl
 	}
 	
 	@Override
-	public List<T> getLayers(CyTableView tableView, CyColumnView columnView) {
+	public List<T> getLayers(CyTableView tableView, CyColumnView columnView, CyRow row) {
 		return layers;
 	}
 

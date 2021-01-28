@@ -2,6 +2,7 @@ package org.cytoscape.cg.internal.charts;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -14,8 +15,12 @@ import org.cytoscape.cg.internal.json.CyColumnIdentifierJsonSerializer;
 import org.cytoscape.cg.model.AbstractCustomGraphics2;
 import org.cytoscape.cg.model.ColorScheme;
 import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.table.CyColumnView;
+import org.cytoscape.view.model.table.CyTableView;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
@@ -73,6 +78,22 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 		addProperties(properties);
 	}
 	
+	@Override 
+	public List<T> getLayers(CyNetworkView networkView, View<? extends CyIdentifiable> view) {
+		var network = networkView.getModel();
+		var model = view.getModel();
+		var row = network.getRow(model);
+
+		return Collections.singletonList(getLayer(row));
+	}
+	
+	@Override
+	public List<T> getLayers(CyTableView tableView, CyColumnView columnView, CyRow row) {
+		return Collections.singletonList(getLayer(row));
+	}
+	
+	protected abstract T getLayer(CyRow row);
+	
 	@Override
 	public Set<CyColumnIdentifier> getMappedColumns() {
 		var set = new HashSet<CyColumnIdentifier>();
@@ -100,10 +121,8 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 		// Doesn't need to do anything here, because charts are updated when layers are recreated.
 	}
 	
-	public Map<String, List<Double>> getDataFromColumns(CyNetwork network, CyIdentifiable model,
-			List<CyColumnIdentifier> columnNames) {
+	public Map<String, List<Double>> getDataFromColumns(CyRow row, List<CyColumnIdentifier> columnNames) {
 		var data = new LinkedHashMap<String, List<Double>>();
-		var row = network.getRow(model);
 		
 		if (row == null)
 			return data;
@@ -208,9 +227,8 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 	}
 	
 	@SuppressWarnings("unchecked")
-	public List<String> getLabelsFromColumn(CyNetwork network, CyIdentifiable model, CyColumnIdentifier columnId) {
+	public List<String> getLabelsFromColumn(CyRow row, CyColumnIdentifier columnId) {
 		var labels = new ArrayList<String>();
-		var row = network.getRow(model);
 		
 		if (row != null && columnId != null) {
 			var table = row.getTable();
@@ -235,9 +253,8 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 	/**
 	 * @return The names of the data columns or an empty list if any of the data columns is of type List.
 	 */
-	protected List<String> getSingleValueColumnNames(CyNetwork network, CyIdentifiable model) {
+	protected List<String> getSingleValueColumnNames(CyRow row) {
 		var names = new ArrayList<String>();
-		var row = network.getRow(model);
 		
 		if (row == null)
 			return names;
@@ -265,27 +282,27 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 		return names;
 	}
 
-	protected Map<String, List<Double>> getData(CyNetwork network, CyIdentifiable model) {
+	protected Map<String, List<Double>> getData(CyRow row) {
 		final Map<String, List<Double>> data;
 		var values = getList(VALUES, Double.class);
 		
 		if (values == null || values.isEmpty()) {
 			var dataColumns = getList(DATA_COLUMNS, CyColumnIdentifier.class);
-			data = getDataFromColumns(network, model, dataColumns);
+			data = getDataFromColumns(row, dataColumns);
 		} else {
-			data = new HashMap<String, List<Double>>();
+			data = new HashMap<>();
 			data.put("Values", values);
 		}
 		
 		return data;
 	}
 	
-	protected List<String> getItemLabels(CyNetwork network, CyIdentifiable model) {
+	protected List<String> getItemLabels(CyRow row) {
 		var labels = getList(ITEM_LABELS, String.class);
 		
 		if (labels == null || labels.isEmpty()) {
 			var labelsColumn = get(ITEM_LABELS_COLUMN, CyColumnIdentifier.class);
-			labels = getLabelsFromColumn(network, model, labelsColumn);
+			labels = getLabelsFromColumn(row, labelsColumn);
 		}
 		
 		return labels;

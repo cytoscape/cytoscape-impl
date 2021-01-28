@@ -572,10 +572,11 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 				g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 				g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 	
-        var currentTransform = g2.getTransform();
-        if (rotation != 0)
-          g2.rotate(Math.toRadians(rotation), (int) (getX() + getWidth()/2), (int) (getY() + getHeight()/2));
-
+				var currentTransform = g2.getTransform();
+				
+				if (rotation != 0)
+					g2.rotate(Math.toRadians(rotation), (int) (getX() + getWidth()/2), (int) (getY() + getHeight()/2));
+				
 				g2.drawImage(
 						image, 
 						Math.round((float) getX()), 
@@ -584,7 +585,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 						Math.round((float) getHeight()), 
 						null
 				);
-        g2.setTransform(currentTransform);
+				g2.setTransform(currentTransform);
 			}
 		}
 		

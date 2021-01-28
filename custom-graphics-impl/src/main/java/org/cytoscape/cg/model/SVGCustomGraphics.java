@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Scanner;
 
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.table.CyColumnView;
@@ -97,7 +98,7 @@ public class SVGCustomGraphics extends AbstractURLImageCustomGraphics<SVGLayer> 
 	}
 	
 	@Override
-	public List<SVGLayer> getLayers(CyTableView tableView, CyColumnView columnView) {
+	public List<SVGLayer> getLayers(CyTableView tableView, CyColumnView columnView, CyRow row) {
 		return getLayers();
 	}
 	

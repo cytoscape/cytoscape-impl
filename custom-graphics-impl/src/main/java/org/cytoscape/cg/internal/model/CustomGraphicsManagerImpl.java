@@ -18,6 +18,8 @@ import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.events.CyShutdownEvent;
 import org.cytoscape.application.events.CyShutdownListener;
+import org.cytoscape.application.events.CyStartEvent;
+import org.cytoscape.application.events.CyStartListener;
 import org.cytoscape.cg.internal.image.MissingImageCustomGraphics;
 import org.cytoscape.cg.internal.task.RestoreImagesTaskFactory;
 import org.cytoscape.cg.internal.task.SaveGraphicsToSessionTaskFactory;
@@ -27,7 +29,6 @@ import org.cytoscape.cg.model.CGComparator;
 import org.cytoscape.cg.model.CustomGraphicsManager;
 import org.cytoscape.cg.model.IDGenerator;
 import org.cytoscape.cg.model.NullCustomGraphics;
-import org.cytoscape.cg.util.CustomGraphicsBrowser;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -54,8 +55,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("rawtypes")
-public final class CustomGraphicsManagerImpl
-		implements CustomGraphicsManager, CyShutdownListener, SessionAboutToBeSavedListener, SessionLoadedListener {
+public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, CyStartListener, CyShutdownListener,
+		SessionAboutToBeSavedListener, SessionLoadedListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
@@ -75,8 +76,7 @@ public final class CustomGraphicsManagerImpl
 	private final Map<String, CyCustomGraphicsFactory> factoryMap;
 	private final Map<CyCustomGraphicsFactory, Map<?, ?>> factoryPropsMap;
 	
-	
-	private final CustomGraphicsBrowser cgBrowser;
+	private final Set<URL> defaultImageURLs;
 	private final CyServiceRegistrar serviceRegistrar;
 
 	private static CustomGraphicsManager instance;
@@ -84,12 +84,8 @@ public final class CustomGraphicsManagerImpl
 	/**
 	 * Creates an image pool object and restore existing images from user resource directory.
 	 */
-	public CustomGraphicsManagerImpl(
-			Set<URL> defaultImageURLs,
-			CustomGraphicsBrowser cgBrowser,
-			CyServiceRegistrar serviceRegistrar
-	) {
-		this.cgBrowser = cgBrowser;
+	public CustomGraphicsManagerImpl(Set<URL> defaultImageURLs, CyServiceRegistrar serviceRegistrar) {
+		this.defaultImageURLs = defaultImageURLs;
 		this.serviceRegistrar = serviceRegistrar;
 		this.isUsedCustomGraphics = new HashMap<>();
 		this.factoryMap = new HashMap<>();
@@ -98,10 +94,6 @@ public final class CustomGraphicsManagerImpl
 		var config = serviceRegistrar.getService(CyApplicationConfiguration.class);
 		this.imageHomeDirectory = new File(config.getConfigurationDirectoryLocation(), IMAGE_DIR_NAME);
 
-		// Restore Custom Graphics from the directory.
-		var taskFactory = new RestoreImagesTaskFactory(defaultImageURLs, imageHomeDirectory, serviceRegistrar);
-		serviceRegistrar.getService(DialogTaskManager.class).execute(taskFactory.createTaskIterator());
-		
 		instance = this;
 	}
 
@@ -277,6 +269,14 @@ public final class CustomGraphicsManagerImpl
 
 		isUsedCustomGraphics.put(graphics.getIdentifier(), isUsed);
 	}
+	
+
+	@Override
+	public void handleEvent(CyStartEvent e) {
+		// Restore Custom Graphics from the directory.
+		var taskFactory = new RestoreImagesTaskFactory(defaultImageURLs, imageHomeDirectory, serviceRegistrar);
+		serviceRegistrar.getService(DialogTaskManager.class).execute(taskFactory.createTaskIterator());
+	}
 
 	@Override
 	public void handleEvent(CyShutdownEvent e) {
@@ -336,7 +336,7 @@ public final class CustomGraphicsManagerImpl
 	public Long getNextAvailableID() {
 		Long key = IDGenerator.getIDGenerator().getNextId();
 		
-		while(graphicsMap.get(key) != null)
+		while (graphicsMap.get(key) != null)
 			key = IDGenerator.getIDGenerator().getNextId();
 		
 		return key;

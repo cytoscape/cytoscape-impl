@@ -40,27 +40,27 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public BarLayer(final Map<String/*category*/, List<Double>/*values*/> data,
-					final BarChartType type,
-					final List<String> itemLabels,
-					final List<String> domainLabels,
-					final List<String> rangeLabels,
-					final boolean showItemLabels,
-					final boolean showDomainAxis,
-					final boolean showRangeAxis,
-					final boolean showRangeZeroBaseline,
-					final float itemFontSize,
-					final LabelPosition domainLabelPosition,
-					final List<Color> colors,
-					final float axisWidth,
-					final Color axisColor,
-					final float axisFontSize,
-					final float borderWidth,
-					final Color borderColor,
-					final double separation,
-					final List<Double> range,
-					final Orientation orientation,
-					final Rectangle2D bounds) {
+	public BarLayer(Map<String/*category*/, List<Double>/*values*/> data,
+					BarChartType type,
+					List<String> itemLabels,
+					List<String> domainLabels,
+					List<String> rangeLabels,
+					boolean showItemLabels,
+					boolean showDomainAxis,
+					boolean showRangeAxis,
+					boolean showRangeZeroBaseline,
+					float itemFontSize,
+					LabelPosition domainLabelPosition,
+					List<Color> colors,
+					float axisWidth,
+					Color axisColor,
+					float axisFontSize,
+					float borderWidth,
+					Color borderColor,
+					double separation,
+					List<Double> range,
+					Orientation orientation,
+					Rectangle2D bounds) {
         super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis, itemFontSize,
         		domainLabelPosition, colors, axisWidth, axisColor, axisFontSize, borderWidth, borderColor, range,
         		bounds);
@@ -80,14 +80,14 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 	
 	@Override
 	protected CategoryDataset createDataset() {
-		final boolean listIsSeries = (singleCategory && type != BarChartType.STACKED);
+		var listIsSeries = (singleCategory && type != BarChartType.STACKED);
 		
 		return createCategoryDataset(data, listIsSeries, domainLabels);
 	}
     
 	@Override
-	protected JFreeChart createChart(final CategoryDataset dataset) {
-		final PlotOrientation plotOrientation = 
+	protected JFreeChart createChart(CategoryDataset dataset) {
+		var plotOrientation = 
 				orientation == Orientation.HORIZONTAL ? PlotOrientation.HORIZONTAL : PlotOrientation.VERTICAL;
 		final JFreeChart chart;
 		
@@ -118,7 +118,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
         chart.setBackgroundImageAlpha(0.0f);
         chart.setPadding(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
         
-        final CategoryPlot plot = (CategoryPlot) chart.getPlot();
+        var plot = (CategoryPlot) chart.getPlot();
 		plot.setOutlineVisible(false);
 		plot.setInsets(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
 		plot.setAxisOffset(new RectangleInsets(1.0, 1.0, 1.0, 1.0));
@@ -134,9 +134,9 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 			plot.setRangeZeroBaselineStroke(new EqualDashStroke(axisWidth));
 		}
 		
-		final BasicStroke axisStroke = new BasicStroke(axisWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+		var axisStroke = new BasicStroke(axisWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		
-		final CategoryAxis domainAxis = (CategoryAxis) plot.getDomainAxis();
+		var domainAxis = (CategoryAxis) plot.getDomainAxis();
         domainAxis.setVisible(showDomainAxis);
         domainAxis.setAxisLineStroke(axisStroke);
         domainAxis.setAxisLinePaint(axisColor);
@@ -151,7 +151,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
         domainAxis.setLowerMargin(.025);
         domainAxis.setUpperMargin(.025);
         
-		final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+		var rangeAxis = (NumberAxis) plot.getRangeAxis();
 		rangeAxis.setVisible(showRangeAxis);
 		rangeAxis.setAxisLineStroke(axisStroke);
 		rangeAxis.setAxisLinePaint(axisColor);
@@ -179,7 +179,7 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 			}
 		}
 		
-		final BarRenderer renderer = (BarRenderer) plot.getRenderer();
+		var renderer = (BarRenderer) plot.getRenderer();
 		renderer.setBarPainter(new StandardBarPainter());
 		renderer.setShadowVisible(false);
 		renderer.setDrawBarOutline(true);
@@ -198,9 +198,9 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 					ItemLabelAnchor.CENTER, TextAnchor.CENTER, TextAnchor.CENTER, angle));
 		}
 		
-		final BasicStroke borderStroke = new BasicStroke(borderWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+		var borderStroke = new BasicStroke(borderWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		
-		final List<?> keys = dataset.getRowKeys();
+		var keys = dataset.getRowKeys();
 		
 		for (int i = 0; i < keys.size(); i++) {
 			renderer.setSeriesOutlineStroke(i, borderStroke);
@@ -221,26 +221,25 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 
 	// ==[ CLASSES ]====================================================================================================
 	
+	@SuppressWarnings("serial")
 	class UpDownColorBarRenderer extends BarRenderer {
 
-		private static final long serialVersionUID = -1827868101222293644L;
-		
 		private Color upColor;
 		private Color zeroColor;
 		private Color downColor;
 
-		UpDownColorBarRenderer(final Color up, final Color zero, Color down) {
+		UpDownColorBarRenderer(Color up, Color zero, Color down) {
 			this.upColor = up;
 			this.zeroColor = zero;
 			this.downColor = down;
 		}
 		
 		@Override
-		public Paint getItemPaint(final int row, final int column) {
-			final CategoryDataset dataset = getPlot().getDataset();
-			final String rowKey = (String) dataset.getRowKey(row);
-			final String colKey = (String) dataset.getColumnKey(column);
-			final double value = dataset.getValue(rowKey, colKey).doubleValue();
+		public Paint getItemPaint(int row, int column) {
+			var dataset = getPlot().getDataset();
+			var rowKey = (String) dataset.getRowKey(row);
+			var colKey = (String) dataset.getColumnKey(column);
+			var value = dataset.getValue(rowKey, colKey).doubleValue();
 			
 			if (type == BarChartType.HEAT_STRIPS) {
 				if (Double.isNaN(value))
@@ -253,12 +252,11 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 		}
 	}
 	
+	@SuppressWarnings("serial")
 	class SingleCategoryRenderer extends BarRenderer {
 
-		private static final long serialVersionUID = 1138264028943798008L;
-
 		@Override
-        public Paint getItemPaint(final int row, final int column) {
+        public Paint getItemPaint(int row, int column) {
             return (colors != null && colors.size() > column) ? colors.get(column) : DEFAULT_ITEM_BG_COLOR;
         }
     }

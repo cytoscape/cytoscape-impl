@@ -18,7 +18,7 @@ public class BrowserTableVisualLexicon extends BasicTableVisualLexicon {
 			"Browser Table Root Visual Property"
 	);
 	
-	private static final CustomGraphicsRange CG_RANGE = new CustomGraphicsRange();
+	private static final CustomGraphicsRange CG_RANGE = CustomGraphicsRange.getInstance();
 	
 	public static final VisualProperty<CyCustomGraphics> CELL_CUSTOMGRAPHICS = new CustomGraphicsVisualProperty(
 			NullCustomGraphics.getNullObject(), CG_RANGE, "CELL_CUSTOMGRAPHICS", "Cell Image/Sparkline", CyColumn.class);	

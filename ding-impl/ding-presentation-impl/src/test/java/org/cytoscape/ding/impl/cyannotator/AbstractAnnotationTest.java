@@ -7,7 +7,6 @@ import static org.mockito.Mockito.when;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.cytoscape.cg.model.CustomGraphicsManager;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.ding.impl.DRenderingEngine;
@@ -46,7 +45,7 @@ public class AbstractAnnotationTest {
 		
 		graphView = nvTest.getNetworkView();
 		
-		DVisualLexicon dingLexicon = new DVisualLexicon(mock(CustomGraphicsManager.class));
+		DVisualLexicon dingLexicon = new DVisualLexicon();
 		AnnotationFactoryManager annMgr = mock(AnnotationFactoryManager.class);
 		DingGraphLOD dingGraphLOD = mock(DingGraphLOD.class);
 		HandleFactory handleFactory = new HandleFactoryImpl();

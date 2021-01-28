@@ -1,9 +1,7 @@
 package org.cytoscape.cg.internal.gradient.linear;
 
 import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.Collections;
 import java.util.List;
@@ -26,15 +24,15 @@ public class LinearGradient extends AbstractGradient<LinearGradientLayer> {
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public LinearGradient(final String input) {
+	public LinearGradient(String input) {
 		super(DISPLAY_NAME, input);
 	}
 	
-	public LinearGradient(final LinearGradient gradient) {
+	public LinearGradient(LinearGradient gradient) {
 		super(gradient);
 	}
 
-	public LinearGradient(final Map<String, Object> properties) {
+	public LinearGradient(Map<String, Object> properties) {
 		super(DISPLAY_NAME, properties);
 	}
 	
@@ -42,9 +40,8 @@ public class LinearGradient extends AbstractGradient<LinearGradientLayer> {
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public List<LinearGradientLayer> getLayers(final CyNetworkView networkView,
-			final View<? extends CyIdentifiable> grView) {
-		final LinearGradientLayer layer = createLayer();
+	public List<LinearGradientLayer> getLayers(CyNetworkView networkView, View<? extends CyIdentifiable> grView) {
+		var layer = createLayer();
 		
 		return layer != null ? Collections.singletonList(layer) : Collections.EMPTY_LIST;
 	}
@@ -74,7 +71,7 @@ public class LinearGradient extends AbstractGradient<LinearGradientLayer> {
 	}
 	
 	@Override
-	public Class<?> getSettingType(final String key) {
+	public Class<?> getSettingType(String key) {
 		if (key.equalsIgnoreCase(ANGLE)) return Double.class;
 		
 		return super.getSettingType(key);
@@ -84,9 +81,9 @@ public class LinearGradient extends AbstractGradient<LinearGradientLayer> {
 	
 	private LinearGradientLayer createLayer() {
 		LinearGradientLayer layer = null;
-		final Double angle = get(ANGLE, Double.class, 0.0);
-		final List<Float> fractions = getList(GRADIENT_FRACTIONS, Float.class);
-		final List<Color> colors = getList(GRADIENT_COLORS, Color.class);
+		var angle = get(ANGLE, Double.class, 0.0);
+		var fractions = getList(GRADIENT_FRACTIONS, Float.class);
+		var colors = getList(GRADIENT_COLORS, Color.class);
 		
 		if (angle != null && fractions.size() > 1)
 			layer = new LinearGradientLayer(angle, fractions, colors);
@@ -95,13 +92,13 @@ public class LinearGradient extends AbstractGradient<LinearGradientLayer> {
 	}
 	
 	private void updateRendereredImage() {
-		final LinearGradientLayer layer = createLayer();
+		var layer = createLayer();
 		
 		if (layer != null) {
 			// Create a rectangle and fill it with our current paint
-			final Rectangle rect = layer.getBounds2D().getBounds();
+			var rect = layer.getBounds2D().getBounds();
 			renderedImg = new BufferedImage(rect.width, rect.height, BufferedImage.TYPE_INT_ARGB);
-			final Graphics2D g2d = renderedImg.createGraphics();
+			var g2d = renderedImg.createGraphics();
 			g2d.setPaint(layer.getPaint(rect));
 			g2d.fill(rect);
 		} else {

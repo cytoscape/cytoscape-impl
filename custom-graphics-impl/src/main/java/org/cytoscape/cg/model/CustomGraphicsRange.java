@@ -9,18 +9,23 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 
 @SuppressWarnings("rawtypes")
-public class CustomGraphicsRange extends DiscreteRange<CyCustomGraphics>  {
+public final class CustomGraphicsRange extends DiscreteRange<CyCustomGraphics>  {
 
-	private CustomGraphicsManager manager;
+	private static CustomGraphicsManager manager;
 	
-	public CustomGraphicsRange() {
+	private static CustomGraphicsRange instance;
+	
+	private CustomGraphicsRange() {
 		super(CyCustomGraphics.class, new HashSet<>());
 	}
-
-	public void setManager(CustomGraphicsManager manager) {
-		this.manager = manager;
-	}
 	
+	public static CustomGraphicsRange getInstance() {
+		if (instance == null)
+			instance = new CustomGraphicsRange();
+		
+		return instance;
+	}
+
 	@Override
 	public Class<CyCustomGraphics> getType() {
 		return CyCustomGraphics.class;
@@ -50,5 +55,9 @@ public class CustomGraphicsRange extends DiscreteRange<CyCustomGraphics>  {
 		return value instanceof CyCustomGraphics2
 				|| value == NullCustomGraphics.getNullObject()
 				|| manager.getAllCustomGraphics().contains(value);
+	}
+	
+	public static void setManager(CustomGraphicsManager manager) {
+		CustomGraphicsRange.manager = manager;
 	}
 }

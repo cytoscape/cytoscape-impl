@@ -29,7 +29,6 @@ import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNetworkViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
-import org.cytoscape.cg.model.CustomGraphicsManager;
 import org.cytoscape.ding.action.GraphicsDetailAction;
 import org.cytoscape.ding.debug.DingDebugMediator;
 import org.cytoscape.ding.dependency.CustomGraphicsSizeDependencyFactory;
@@ -139,8 +138,7 @@ public class CyActivator extends AbstractCyActivator {
 	}
 
 	private void startPresentationImpl(BundleContext bc, CyServiceRegistrar serviceRegistrar) {
-		var cgManager = serviceRegistrar.getService(CustomGraphicsManager.class);
-		var dVisualLexicon = new DVisualLexicon(cgManager);
+		var dVisualLexicon = new DVisualLexicon();
 
 		var nvltfActionSupport = new NVLTFActionSupport(serviceRegistrar);
 		var vtfListener = new ViewTaskFactoryListener(nvltfActionSupport);

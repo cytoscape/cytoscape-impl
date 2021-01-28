@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.cg.internal.json.ColorJsonDeserializer;
@@ -62,24 +61,24 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 		this.properties = new HashMap<String, Object>();
 	}
 	
-	protected AbstractCustomGraphics2(final String displayName, final String input) {
+	protected AbstractCustomGraphics2(String displayName, String input) {
 		this(displayName);
 		addProperties(parseInput(input));
 	}
 	
-	protected AbstractCustomGraphics2(final String displayName, final Map<String, ?> properties) {
+	protected AbstractCustomGraphics2(String displayName, Map<String, ?> properties) {
 		this(displayName);
 		addProperties(properties);
 	}
 	
 	@Override
 	public Map<String, Object> getProperties() {
-		final Map<String, Object> map = new LinkedHashMap<>();
+		var map = new LinkedHashMap<String, Object>();
 		
 		// Make sure the returned map does not contain types not exposed in the API
-		for (final Entry<String, Object> entry : properties.entrySet()) {
-			final String key = entry.getKey();
-			Object value = entry.getValue();
+		for (var entry : properties.entrySet()) {
+			var key = entry.getKey();
+			var value = entry.getValue();
 			
 			if (value instanceof ColorScheme)
 				value = ((ColorScheme)value).getKey();
@@ -103,12 +102,12 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 	}
 
 	@Override
-	public void setWidth(final int width) {
+	public void setWidth(int width) {
 		this.width = width;
 	}
 
 	@Override
-	public void setHeight(final int height) {
+	public void setHeight(int height) {
 		this.height = height;
 	}
 
@@ -128,7 +127,7 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 	}
 
 	@Override
-	public void setDisplayName(final String displayName) {
+	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
 	}
 
@@ -152,7 +151,7 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 		String output = "";
 		
 		try {
-			final ObjectMapper om = getObjectMapper();
+			var om = getObjectMapper();
 			output = om.writeValueAsString(this.properties);
 			output = getId() + ":" + output;
 		} catch (JsonProcessingException e) {
@@ -164,11 +163,11 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 	
 	public abstract String getId();
 	
-	public synchronized void set(final String key, Object value) {
+	public synchronized void set(String key, Object value) {
 		if (key == null)
 			throw new IllegalArgumentException("'key' must not be null.");
 		
-		final Class<?> type = getSettingType(key);
+		var type = getSettingType(key);
 		
 		if (type != null) {
 			if (value != null) {
@@ -180,8 +179,8 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 				correctType = correctType || type.isAssignableFrom(value.getClass());
 				
 				if (!correctType) {
-					final ObjectMapper om = getObjectMapper();
-					String json = value.toString();
+					var om = getObjectMapper();
+					var json = value.toString();
 					
 					if (type != List.class) {
 						try {
@@ -200,27 +199,28 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 	}
 	
 	@SuppressWarnings("unchecked")
-	public synchronized <S> S get(final String key, final Class<S> cls) {
-		Object obj = properties.get(key);
+	public synchronized <S> S get(String key, Class<S> cls) {
+		var obj = properties.get(key);
 		
 		return obj != null && cls.isAssignableFrom(obj.getClass()) ? (S) obj : null;
 	}
 	
-	public synchronized <S> S get(final String key, final Class<S> cls, final S defValue) {
-		S value = get(key, cls);
+	public synchronized <S> S get(String key, Class<S> cls, S defValue) {
+		var value = get(key, cls);
+		
 		return value != null ? value : defValue;
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public synchronized <S> List<S> getList(final String key, final Class<S> cls) {
-		Object obj = properties.get(key);
+	public synchronized <S> List<S> getList(String key, Class<S> cls) {
+		var obj = properties.get(key);
 		
 		return obj instanceof List ? (List)obj : Collections.emptyList();
 	}
 	
 	@SuppressWarnings("unchecked")
-	public synchronized <S> S[] getArray(final String key, final Class<S> cls) {
-		final Object obj = properties.get(key);
+	public synchronized <S> S[] getArray(String key, Class<S> cls) {
+		var obj = properties.get(key);
 		S[] arr = null;
 		
 		try {
@@ -232,8 +232,8 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 		return arr;
 	}
 	
-	public synchronized float[] getFloatArray(final String key) {
-		final Object obj = properties.get(key);
+	public synchronized float[] getFloatArray(String key) {
+		var obj = properties.get(key);
 		
 		try {
 			return (float[]) obj;
@@ -242,8 +242,8 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 		}
 	}
 	
-	public synchronized double[] getDoubleArray(final String key) {
-		final Object obj = properties.get(key);
+	public synchronized double[] getDoubleArray(String key) {
+		var obj = properties.get(key);
 		
 		try {
 			return (double[]) obj;
@@ -253,18 +253,18 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 	}
 	
 	@SuppressWarnings("unchecked")
-	protected Map<String, Object> parseInput(final String input) {
-		final Map<String, Object> props = new HashMap<String, Object>();
+	protected Map<String, Object> parseInput(String input) {
+		var props = new HashMap<String, Object>();
 		
 		if (input != null && !input.isEmpty()) {
 			try {
-				final ObjectMapper om = getObjectMapper();
-				final Map<String, Object> map = om.readValue(input, Map.class);
+				var om = getObjectMapper();
+				Map<String, Object> map = om.readValue(input, Map.class);
 				
 				if (map != null) {
-					for (final Entry<String, Object> entry : map.entrySet()) {
-						final String key = entry.getKey();
-						final Object value = entry.getValue();
+					for (var entry : map.entrySet()) {
+						var key = entry.getKey();
+						var value = entry.getValue();
 						props.put(key, value);
 					}
 				}
@@ -276,7 +276,7 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 		return props;
 	}
 	
-	public Class<?> getSettingType(final String key) {
+	public Class<?> getSettingType(String key) {
 		if (key.equalsIgnoreCase(COLORS)) return List.class;
 		if (key.equalsIgnoreCase(COLOR_SCHEME)) return ColorScheme.class;
 		if (key.equalsIgnoreCase(ORIENTATION)) return Orientation.class;
@@ -285,22 +285,22 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 		return null;
 	}
 	
-	public Class<?> getSettingElementType(final String key) {
+	public Class<?> getSettingElementType(String key) {
 		if (key.equalsIgnoreCase(COLORS)) return Color.class;
 		
 		return Object.class;
 	}
 	
-	protected void addProperties(final Map<String, ?> properties) {
+	protected void addProperties(Map<String, ?> properties) {
 		if (properties != null) {
-			for (final Entry<String, ?> entry : properties.entrySet()) {
+			for (var entry : properties.entrySet()) {
 				if (getSettingType(entry.getKey()) != null)
 					set(entry.getKey(), entry.getValue());
 			}
 		}
 	}
 
-	protected void addJsonSerializers(final SimpleModule module) {
+	protected void addJsonSerializers(SimpleModule module) {
 		module.addSerializer(new PropertiesJsonSerializer());
 		module.addSerializer(new ColorSchemeJsonSerializer());
 		module.addSerializer(new ColorJsonSerializer());
@@ -308,7 +308,7 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 		module.addSerializer(new Rectangle2DJsonSerializer());
 	}
 	
-	protected void addJsonDeserializers(final SimpleModule module) {
+	protected void addJsonDeserializers(SimpleModule module) {
 		module.addDeserializer(Map.class, new PropertiesJsonDeserializer(this));
 		module.addDeserializer(ColorScheme.class, new ColorSchemeJsonDeserializer());
 		module.addDeserializer(Color.class, new ColorJsonDeserializer());
@@ -319,7 +319,7 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 	private ObjectMapper getObjectMapper() {
 		// Lazy initialization of ObjectMapper, to make sure any other instance property is already initialized
 		if (mapper == null) {
-			final SimpleModule module = new SimpleModule();
+			var module = new SimpleModule();
 			addJsonSerializers(module);
 			addJsonDeserializers(module);
 			

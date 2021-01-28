@@ -15,9 +15,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.cg.internal.paint.TexturePaintFactory;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.table.CyTableView;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.Cy2DGraphicLayer;
 import org.jfree.chart.JFreeChart;
@@ -118,6 +121,32 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 
 	@Override
 	public void draw(Graphics2D g, Shape shape, CyNetworkView networkView, View<? extends CyIdentifiable> view) {
+		draw(g);
+	}
+	
+	@Override
+	public void draw(Graphics2D g, CyTableView tableView, CyColumn column, CyRow row) {
+		draw(g);
+	}
+	
+	@Override
+	public TexturePaint getPaint(Rectangle2D r) {
+		// If the bounds are the same as before, there is no need to recreate the "same" image again
+		if (img == null || paint == null || !r.equals(scaledBounds)) {
+			// Recreate and cache Image and TexturePaint
+			img = createImage(r);
+			paint = new TexturePaintFactory(img).getPaint(
+					new Rectangle2D.Double(r.getX(), r.getY(), r.getWidth(), r.getHeight()));
+		}
+		
+		scaledBounds = r;
+		
+		return paint;
+	}
+	
+	// ==[ PRIVATE METHODS ]============================================================================================
+	
+	protected void draw(Graphics2D g) {
 		var g2 = (Graphics2D) g.create();
 		
 		// Give JFreeChart a larger area to draw into, so the proportions of the chart elements looks better
@@ -147,23 +176,6 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 
 		g2.dispose();
 	}
-	
-	@Override
-	public TexturePaint getPaint(Rectangle2D r) {
-		// If the bounds are the same as before, there is no need to recreate the "same" image again
-		if (img == null || paint == null || !r.equals(scaledBounds)) {
-			// Recreate and cache Image and TexturePaint
-			img = createImage(r);
-			paint = new TexturePaintFactory(img).getPaint(
-					new Rectangle2D.Double(r.getX(), r.getY(), r.getWidth(), r.getHeight()));
-		}
-		
-		scaledBounds = r;
-		
-		return paint;
-	}
-	
-	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	protected JFreeChart getChart() {
 		if (chart == null) {

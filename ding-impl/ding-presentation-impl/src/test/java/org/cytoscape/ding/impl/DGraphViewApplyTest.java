@@ -8,7 +8,6 @@ import static org.mockito.Mockito.when;
 import java.awt.Color;
 import java.awt.Font;
 
-import org.cytoscape.cg.model.CustomGraphicsManager;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
@@ -80,7 +79,6 @@ public class DGraphViewApplyTest {
 	@Mock private DingGraphLOD dingGraphLOD;
 	@Mock private VisualMappingManager visualMappingManager;
 	@Mock private CyNetworkViewManager networkViewManager;
-	@Mock private CustomGraphicsManager cgManager;
 	@Mock private CyServiceRegistrar serviceRegistrar;
 	
 	// Network contents
@@ -106,7 +104,7 @@ public class DGraphViewApplyTest {
 
 		testSupport.getNetworkTableManager();
 		network = buildNetworkModel();
-		dingLexicon = new DVisualLexicon(cgManager);
+		dingLexicon = new DVisualLexicon();
 		handleFactory = new HandleFactoryImpl();
 		
 		when(serviceRegistrar.getService(UndoSupport.class)).thenReturn(undoSupport);

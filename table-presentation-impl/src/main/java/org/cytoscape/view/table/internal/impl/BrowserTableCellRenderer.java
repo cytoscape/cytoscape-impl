@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 
 import javax.swing.BorderFactory;
@@ -16,6 +17,7 @@ import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
 
 import org.cytoscape.cg.model.NullCustomGraphics;
+import org.cytoscape.cg.model.SVGLayer;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -23,6 +25,7 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.table.CyColumnView;
 import org.cytoscape.view.model.table.CyTableView;
+import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.Cy2DGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.ImageCustomGraphicLayer;
@@ -200,7 +203,7 @@ class BrowserTableCellRenderer extends JPanel implements TableCellRenderer {
 			var h = getHeight();
 			var bounds = new Rectangle2D.Float(0, 0, w, h);
 			
-			for (var layer : cg.getLayers(tableView, columnView)) {
+			for (var layer : cg.getLayers(tableView, columnView, row)) {
 				if (layer instanceof PaintedShape) {
 					var ps = (PaintedShape) layer;
 					var shape = ps.getShape();
@@ -219,11 +222,37 @@ class BrowserTableCellRenderer extends JPanel implements TableCellRenderer {
 					g2.setPaint(ps.getPaint());
 					g2.fill(shape);
 				} else if (layer instanceof Cy2DGraphicLayer) {
-					((Cy2DGraphicLayer) layer).draw(g2, tableView, col, row);
+					if (layer instanceof SVGLayer) {
+						var rect = new Rectangle2D.Double(getX() + w / 2.0f, getY() + h / 2.0f, w, h);
+						((SVGLayer) layer).draw(g2, rect, rect);
+					} else {
+						layer = affineTransform(layer);
+						((Cy2DGraphicLayer) layer).draw(g2, tableView, col, row);
+					}
 				} else if (layer instanceof ImageCustomGraphicLayer) {
 					var b = layer.getBounds2D().getBounds();
+					
+					// If this is just a paint, getBounds2D will return null and we can use our own width and height
+					if (b != null) {
+						double cgW = b.getWidth();
+						double cgH = b.getHeight();
+
+						// In case size is same, return the original.
+						if (w != cgW || h != cgH) {
+							double scale = Math.min(w / cgW, h / cgH);
+							var xform = AffineTransform.getScaleInstance(scale, scale);
+							layer = layer.transform(xform);
+							b = layer.getBounds2D().getBounds();
+						}
+					}
+					
+					double cw = b.getWidth();
+					double ch = b.getHeight();
+					double xOffset = (w - cw) / 2.0;
+					double yOffset = (h - ch) / 2.0;
+					
 					var img = ((ImageCustomGraphicLayer) layer).getPaint(b).getImage();
-					g2.drawImage(img, b.x, b.y, b.width, b.height, null);
+					g2.drawImage(img, (int) xOffset, (int) yOffset, (int) cw, (int) ch, null);
 				} else {
 					g2.setPaint(layer.getPaint(bounds));
 					g2.fill(bounds);
@@ -232,6 +261,29 @@ class BrowserTableCellRenderer extends JPanel implements TableCellRenderer {
 			
 			g2.dispose();
 		}
+	}
+	
+	private CustomGraphicLayer affineTransform(CustomGraphicLayer layer) {
+		var b = layer.getBounds2D();
+		
+		// If this is just a paint, getBounds2D will return null and we can use our own width and height
+		if (b != null) {
+			double w = getWidth();
+			double h = getHeight();
+			double cw = b.getWidth();
+			double ch = b.getHeight();
+			double cx = b.getX();
+			double cy = b.getY();
+			double xOffset = -cx + ((w - cw) / 2.0);
+			double yOffset = -cy + ((h - ch) / 2.0);
+			
+			var xform = new AffineTransform();
+			xform.translate(xOffset, yOffset);
+			xform.scale(w / cw, h / ch);
+			layer = layer.transform(xform);
+		}
+		
+		return layer;
 	}
 	
 	private static class EquationIcon implements Icon {

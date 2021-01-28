@@ -14,22 +14,22 @@ public abstract class AbstractGradient<T extends CustomGraphicLayer> extends Abs
 	
 	public static final float DEF_FIT_RATIO = 1.0f;
 	
-	protected AbstractGradient(final String displayName) {
+	protected AbstractGradient(String displayName) {
 		super(displayName);
 		fitRatio = DEF_FIT_RATIO;
 	}
 	
-	protected AbstractGradient(final String displayName, final String input) {
+	protected AbstractGradient(String displayName, String input) {
 		super(displayName, input);
 		fitRatio = DEF_FIT_RATIO;
 	}
 	
-	protected AbstractGradient(final AbstractGradient<T> gradient) {
+	protected AbstractGradient(AbstractGradient<T> gradient) {
 		this(gradient.getDisplayName());
 		addProperties(gradient.getProperties());
 	}
 	
-	protected AbstractGradient(final String displayName, final Map<String, Object> properties) {
+	protected AbstractGradient(String displayName, Map<String, Object> properties) {
 		super(displayName, properties);
 		fitRatio = DEF_FIT_RATIO;
 	}
@@ -40,7 +40,7 @@ public abstract class AbstractGradient<T extends CustomGraphicLayer> extends Abs
 	}
 	
 	@Override
-	public Class<?> getSettingType(final String key) {
+	public Class<?> getSettingType(String key) {
 		if (key.equalsIgnoreCase(GRADIENT_FRACTIONS)) return List.class;
 		if (key.equalsIgnoreCase(GRADIENT_COLORS)) return List.class;
 		
@@ -48,7 +48,7 @@ public abstract class AbstractGradient<T extends CustomGraphicLayer> extends Abs
 	}
 	
 	@Override
-	public Class<?> getSettingElementType(final String key) {
+	public Class<?> getSettingElementType(String key) {
 		if (key.equalsIgnoreCase(GRADIENT_FRACTIONS)) return Float.class;
 		if (key.equalsIgnoreCase(GRADIENT_COLORS)) return Color.class;
 		

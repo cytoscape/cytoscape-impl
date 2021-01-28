@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.cytoscape.cg.model.CustomGraphicsManager;
 import org.cytoscape.cg.model.CustomGraphicsRange;
 import org.cytoscape.cg.model.CustomGraphicsVisualProperty;
 import org.cytoscape.cg.model.NullCustomGraphics;
@@ -110,7 +109,7 @@ public class DVisualLexicon extends BasicVisualLexicon {
 			0.0, ANGLE_DOUBLE_RANGE, "NODE_LABEL_ROTATION", "Node Label Rotation", CyNode.class);
 
 	// Range object for custom graphics.
-	private static final CustomGraphicsRange CG_RANGE = new CustomGraphicsRange();
+	private static final CustomGraphicsRange CG_RANGE = CustomGraphicsRange.getInstance();
 
 	public static final VisualProperty<Visualizable> NODE_CUSTOMPAINT_1 = new DefaultVisualizableVisualProperty(
 			"NODE_CUSTOMPAINT_1", "Node Custom Paint 1", CyNode.class);
@@ -376,7 +375,7 @@ public class DVisualLexicon extends BasicVisualLexicon {
 		UNSUPPORTED_VP_SET.add(BasicVisualLexicon.NETWORK_DEPTH);
 	}
 
-	public DVisualLexicon(final CustomGraphicsManager manager) {
+	public DVisualLexicon() {
 		super(DING_ROOT);
 
 		// Add Ding-dependent line types.
@@ -395,8 +394,6 @@ public class DVisualLexicon extends BasicVisualLexicon {
 		
 		// Add Ding-dependent node shapes.
 		((DiscreteRange<NodeShape>) NODE_SHAPE.getRange()).addRangeValue(DNodeShape.VEE);
-
-		CG_RANGE.setManager(manager);
 
 		addVisualProperty(NETWORK_FORCE_HIGH_DETAIL, NETWORK);
 		addVisualProperty(NETWORK_NODE_SELECTION, NETWORK);

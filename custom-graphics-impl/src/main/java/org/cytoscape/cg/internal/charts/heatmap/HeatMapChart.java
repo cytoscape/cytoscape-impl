@@ -4,8 +4,6 @@ import java.awt.Color;
 import java.awt.Image;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
@@ -14,10 +12,8 @@ import javax.swing.ImageIcon;
 import org.cytoscape.cg.internal.charts.AbstractChart;
 import org.cytoscape.cg.internal.charts.LabelPosition;
 import org.cytoscape.cg.model.Orientation;
-import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 
 public class HeatMapChart extends AbstractChart<HeatMapLayer> {
@@ -35,6 +31,8 @@ public class HeatMapChart extends AbstractChart<HeatMapLayer> {
 			e.printStackTrace();
 		}
 	}
+	
+	// ==[ CONSTRUCTORS ]===============================================================================================
 
 	public HeatMapChart(Map<String, Object> properties, CyServiceRegistrar serviceRegistrar) {
 		super(DISPLAY_NAME, properties, serviceRegistrar);
@@ -47,19 +45,30 @@ public class HeatMapChart extends AbstractChart<HeatMapLayer> {
 	public HeatMapChart(String input, CyServiceRegistrar serviceRegistrar) {
 		super(DISPLAY_NAME, input, serviceRegistrar);
 	}
+	
+	// ==[ PUBLIC METHODS ]=============================================================================================
 
-	@Override 
-	public List<HeatMapLayer> getLayers(CyNetworkView networkView, View<? extends CyIdentifiable> view) {
-		var network = networkView.getModel();
-		var model = view.getModel();
-
-		var itemLabels = getLabelsFromColumn(network, model, get(ITEM_LABELS_COLUMN, CyColumnIdentifier.class));
-		var domainLabels = getLabelsFromColumn(network, model, get(DOMAIN_LABELS_COLUMN, CyColumnIdentifier.class));
-		var rangeLabels = getLabelsFromColumn(network, model, get(RANGE_LABELS_COLUMN, CyColumnIdentifier.class));
+	@Override
+	public Image getRenderedImage() {
+		return ICON.getImage();
+	}
+	
+	@Override
+	public String getId() {
+		return FACTORY_ID;
+	}
+	
+	// ==[ PRIVATE METHODS ]============================================================================================
+	
+	@Override
+	protected HeatMapLayer getLayer(CyRow row) {
+		var itemLabels = getLabelsFromColumn(row, get(ITEM_LABELS_COLUMN, CyColumnIdentifier.class));
+		var domainLabels = getLabelsFromColumn(row, get(DOMAIN_LABELS_COLUMN, CyColumnIdentifier.class));
+		var rangeLabels = getLabelsFromColumn(row, get(RANGE_LABELS_COLUMN, CyColumnIdentifier.class));
 		var global = get(GLOBAL_RANGE, Boolean.class, true);
 		var range = global ? getList(RANGE, Double.class) : null;
 
-		var data = getData(network, model);
+		var data = getData(row);
 
 		var colors = getColors(data);
 		var size = 32.0;
@@ -75,16 +84,6 @@ public class HeatMapChart extends AbstractChart<HeatMapLayer> {
 		var layer = new HeatMapLayer(data, itemLabels, domainLabels, rangeLabels, showDomainAxis, showRangeAxis,
 				domainLabelPosition, colors, axisColor, axisFontSize, range, orientation, bounds);
 
-		return Collections.singletonList(layer);
-	}
-
-	@Override
-	public Image getRenderedImage() {
-		return ICON.getImage();
-	}
-	
-	@Override
-	public String getId() {
-		return FACTORY_ID;
+		return layer;
 	}
 }
