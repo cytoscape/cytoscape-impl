@@ -835,10 +835,15 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	}
 
 	private TableType getDataTypeOptions() {
-		if (getWhereImportTable().getSelectedValue().matches(NETWORK_COLLECTION))
-			return dataTypeTargetForNetworkCollection.getSelectedValue();
+		if (getWhereImportTable().getSelectedValue().matches(NETWORK_COLLECTION)) {
+      if (dataTypeTargetForNetworkCollection != null)
+			  return dataTypeTargetForNetworkCollection.getSelectedValue();
+      return null;
+    }
 		
-		return dataTypeTargetForNetworkList.getSelectedValue();
+    if (dataTypeTargetForNetworkList != null)
+		  return dataTypeTargetForNetworkList.getSelectedValue();
+    return null;
 	}
 
 	private boolean isKeyMandatory() {
