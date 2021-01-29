@@ -3,14 +3,9 @@ package org.cytoscape.cg.internal.gradient.linear;
 import java.awt.Color;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.cg.internal.gradient.AbstractGradient;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
 
 public class LinearGradient extends AbstractGradient<LinearGradientLayer> {
 
@@ -37,14 +32,6 @@ public class LinearGradient extends AbstractGradient<LinearGradientLayer> {
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================
-	
-	@Override
-	@SuppressWarnings("unchecked")
-	public List<LinearGradientLayer> getLayers(CyNetworkView networkView, View<? extends CyIdentifiable> grView) {
-		var layer = createLayer();
-		
-		return layer != null ? Collections.singletonList(layer) : Collections.EMPTY_LIST;
-	}
 	
 	@Override
 	public synchronized Image getRenderedImage() {
@@ -79,7 +66,8 @@ public class LinearGradient extends AbstractGradient<LinearGradientLayer> {
 	
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
-	private LinearGradientLayer createLayer() {
+	@Override
+	protected LinearGradientLayer createLayer() {
 		LinearGradientLayer layer = null;
 		var angle = get(ANGLE, Double.class, 0.0);
 		var fractions = getList(GRADIENT_FRACTIONS, Float.class);

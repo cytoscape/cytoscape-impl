@@ -49,9 +49,8 @@ public abstract class AbstractGradientLayer implements CustomGraphicLayer {
 	// ==[ PUBLIC METHODS ]=============================================================================================
 	
 //	@Override
-//	public void draw(Graphics2D g, Shape shape, CyNetworkView networkView,
-//			View<? extends CyIdentifiable> view) {
-//		Paint paint = getPaint(shape.getBounds2D());
+//	public void draw(Graphics2D g, Shape shape, CyNetworkView networkView, View<? extends CyIdentifiable> view) {
+//		final Paint paint = getPaint(shape.getBounds2D());
 //		g.setPaint(paint);
 //		g.fill(shape);
 //	}

@@ -8,14 +8,10 @@ import java.awt.Shape;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.cg.internal.gradient.AbstractGradient;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
 
 public class RadialGradient extends AbstractGradient<RadialGradientLayer> {
 
@@ -43,15 +39,6 @@ public class RadialGradient extends AbstractGradient<RadialGradientLayer> {
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================
-	
-	@Override
-	@SuppressWarnings("unchecked")
-	public List<RadialGradientLayer> getLayers(final CyNetworkView networkView,
-			final View<? extends CyIdentifiable> grView) {
-		final RadialGradientLayer layer = createLayer();
-		
-		return layer != null ? Collections.singletonList(layer) : Collections.EMPTY_LIST;
-	}
 	
 	@Override
 	public synchronized Image getRenderedImage() {
@@ -87,7 +74,8 @@ public class RadialGradient extends AbstractGradient<RadialGradientLayer> {
 	
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
-	private RadialGradientLayer createLayer() {
+	@Override
+	protected RadialGradientLayer createLayer() {
 		RadialGradientLayer layer = null;
 		final float radius = get(RADIUS, Float.class, 1.0f);
 		final Point2D center = get(CENTER, Point2D.class, new Point2D.Float(radius/2, radius/2));
