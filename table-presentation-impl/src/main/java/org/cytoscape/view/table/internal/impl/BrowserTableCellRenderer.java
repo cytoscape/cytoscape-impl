@@ -223,7 +223,7 @@ class BrowserTableCellRenderer extends JPanel implements TableCellRenderer {
 					g2.fill(shape);
 				} else if (layer instanceof Cy2DGraphicLayer) {
 					if (layer instanceof SVGLayer) {
-						var rect = new Rectangle2D.Double(getX() + w / 2.0f, getY() + h / 2.0f, w, h);
+						var rect = new Rectangle2D.Double(w / 2.0f, h / 2.0f, w, h);
 						((SVGLayer) layer).draw(g2, rect, rect);
 					} else {
 						layer = affineTransform(layer);
