@@ -11,17 +11,17 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 public class RadialGradientFactory implements CyCustomGraphics2Factory<RadialGradientLayer> {
 	
 	@Override
-	public CyCustomGraphics2<RadialGradientLayer> getInstance(final String input) {
+	public CyCustomGraphics2<RadialGradientLayer> getInstance(String input) {
 		return new RadialGradient(input);
 	}
 
 	@Override
-	public CyCustomGraphics2<RadialGradientLayer> getInstance(final CyCustomGraphics2<RadialGradientLayer> gradient) {
+	public CyCustomGraphics2<RadialGradientLayer> getInstance(CyCustomGraphics2<RadialGradientLayer> gradient) {
 		return new RadialGradient((RadialGradient)gradient);
 	}
 
 	@Override
-	public CyCustomGraphics2<RadialGradientLayer> getInstance(final Map<String, Object> properties) {
+	public CyCustomGraphics2<RadialGradientLayer> getInstance(Map<String, Object> properties) {
 		return new RadialGradient(properties);
 	}
 
@@ -46,7 +46,7 @@ public class RadialGradientFactory implements CyCustomGraphics2Factory<RadialGra
 	}
 	
 	@Override
-	public JComponent createEditor(final CyCustomGraphics2<RadialGradientLayer> gradient) {
+	public JComponent createEditor(CyCustomGraphics2<RadialGradientLayer> gradient) {
 		return new RadialGradientEditor((RadialGradient)gradient);
 	}
 	

@@ -28,10 +28,12 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.cytoscape.cg.model.CyCustomGraphics2Manager;
+import org.cytoscape.cg.model.CustomGraphics2Manager;
 import org.cytoscape.cg.model.NullCustomGraphics;
 import org.cytoscape.cg.util.CustomGraphicsBrowser;
 import org.cytoscape.cg.util.ImageCustomGraphicsSelector;
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.VisualProperty;
@@ -85,7 +87,7 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 			initialized = true;
 		}
 		
-		update();
+		update(vp.getTargetDataType());
 		
 		dialog.pack();
 		dialog.setLocationRelativeTo(parent);
@@ -134,29 +136,41 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 		dialog.getRootPane().setDefaultButton(getApplyBtn());
 	}
 	
-	private void update() {
-		getImageSelector().update(oldCustomGraphics);
-		Component newSelectedComp = getImageSelector();
-		var iter = cg2PnlMap.entrySet().iterator();
+	private void update(Class<? extends CyIdentifiable> targetType) {
+		// Remove all tabs
+		getGroupTpn().removeAll();
 		
-		while (iter.hasNext()) {
-			CustomGraphics2Panel cg2Pnl = iter.next().getValue();
-			cg2Pnl.update(oldCustomGraphics instanceof CyCustomGraphics2 ?
-					(CyCustomGraphics2) oldCustomGraphics : null);
+		// Update the "Images" tab and add it again (right now it's supported by both CyNode and CyColumn targets)
+		getImageSelector().update(oldCustomGraphics);
+		getGroupTpn().addTab("Images", getImageSelector());
+		
+		Component newSelectedComp = getImageSelector(); // Start with this tab being the selected one
+		
+		// Add the other tabs -- they edit CyCustomGraphics2 that are supported by the current target type
+		var oldCg2 = oldCustomGraphics instanceof CyCustomGraphics2 ? (CyCustomGraphics2) oldCustomGraphics : null;
+		var cg2Mgr = serviceRegistrar.getService(CustomGraphics2Manager.class);
+		
+		for (var group : cg2Mgr.getGroups()) {
+			var cg2Pnl = getCG2Pnl(group);
 			
-			if (cg2Pnl.getEditorCount() == 0) {
-				iter.remove();
+			if (cg2Pnl != null) {
+				cg2Pnl.update(oldCg2, targetType);
 				
-				if (getGroupTpn().indexOfComponent(cg2Pnl) >= 0)
-					getGroupTpn().remove(cg2Pnl);
-				
-				continue;
+				if (cg2Pnl.getEditorCount() > 0) {
+					var title = group;
+					
+					if (targetType == CyColumn.class && group == CustomGraphics2Manager.GROUP_CHARTS)
+						title = "Sparklines";
+					
+					getGroupTpn().addTab(title, cg2Pnl);
+					
+					if (oldCustomGraphics instanceof CyCustomGraphics2 && cg2Pnl.canEdit((CyCustomGraphics2) oldCustomGraphics))
+						newSelectedComp = cg2Pnl; // This is the tab that must be selected
+				}
 			}
-			
-			if (oldCustomGraphics instanceof CyCustomGraphics2 && cg2Pnl.canEdit((CyCustomGraphics2) oldCustomGraphics))
-				newSelectedComp = cg2Pnl;
 		}
 		
+		// Select the correct tab
 		getGroupTpn().setSelectedComponent(newSelectedComp);
 	}
 	
@@ -186,16 +200,6 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 	private JTabbedPane getGroupTpn() {
 		if (groupTpn == null) {
 			groupTpn = new JTabbedPane();
-			groupTpn.addTab("Images", getImageSelector());
-			
-			var customGraphics2Mgr = serviceRegistrar.getService(CyCustomGraphics2Manager.class);
-			
-			for (var group : customGraphics2Mgr.getGroups()) {
-				var cg2Pnl = getCG2Pnl(group);
-				
-				if (cg2Pnl != null)
-					groupTpn.addTab(group, cg2Pnl);
-			}
 		}
 		
 		return groupTpn;
@@ -311,11 +315,11 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 			return getTypeTpn().getTabCount();
 		}
 		
-		private void update(CyCustomGraphics2 cg2) {
+		private void update(CyCustomGraphics2 cg2, Class<? extends CyIdentifiable> targetType) {
 			updatingTypes = true;
 			
-			var customGraphics2Mgr = serviceRegistrar.getService(CyCustomGraphics2Manager.class);
-			supportedFactories = customGraphics2Mgr.getCyCustomGraphics2Factories(group);
+			var cg2Mgr = serviceRegistrar.getService(CustomGraphics2Manager.class);
+			supportedFactories = cg2Mgr.getCustomGraphics2Factories(targetType, group);
 			
 			CustomGraphics2EditorPane selectedEditorPn = null;
 			int maxWidth = 100;
@@ -353,10 +357,12 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 					}
 				}
 				
-				if (selectedEditorPn != null)
-					getTypeTpn().setSelectedComponent(selectedEditorPn);
-				else
-					getTypeTpn().setSelectedIndex(0);
+				if (getEditorCount() > 0) {
+					if (selectedEditorPn != null)
+						getTypeTpn().setSelectedComponent(selectedEditorPn);
+					else
+						getTypeTpn().setSelectedIndex(0);
+				}
 			} finally {
 				updatingTypes = false;
 			}

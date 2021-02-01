@@ -7,6 +7,7 @@ import java.util.Properties;
 import java.util.SortedSet;
 
 import org.cytoscape.cg.internal.image.MissingImageCustomGraphics;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 
@@ -26,6 +27,8 @@ public interface CustomGraphicsManager {
 	CyCustomGraphicsFactory getCustomGraphicsFactory(Class<? extends CyCustomGraphics> cls);
 	CyCustomGraphicsFactory getCustomGraphicsFactory(String className);
 	Collection<CyCustomGraphicsFactory> getAllCustomGraphicsFactories();
+	Collection<CyCustomGraphicsFactory> getCustomGraphicsFactories(Class<? extends CyIdentifiable> targetType);
+
 	
 	void addCustomGraphics(CyCustomGraphics cg, URL source);
 	

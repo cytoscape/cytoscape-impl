@@ -30,6 +30,7 @@ import org.cytoscape.cg.model.CustomGraphicsManager;
 import org.cytoscape.cg.model.IDGenerator;
 import org.cytoscape.cg.model.NullCustomGraphics;
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
@@ -145,6 +146,24 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	@Override
 	public Collection<CyCustomGraphicsFactory> getAllCustomGraphicsFactories() {
 		return factoryMap.values();
+	}
+	
+	@Override
+	@SuppressWarnings("unchecked")
+	public Collection<CyCustomGraphicsFactory> getCustomGraphicsFactories(Class<? extends CyIdentifiable> targetType) {
+		Collection<CyCustomGraphicsFactory> col = null;
+		var all = factoryMap.values();
+		
+		if (all != null) {
+			col = new HashSet<>();
+			
+			for (var f : all) {
+				if (f.getSupportedTargetTypes().contains(targetType))
+					col.add(f);
+			}
+		}
+		
+		return col != null ? col : (Collection) Collections.emptySet();
 	}
 
 	@Override

@@ -20,13 +20,13 @@ import org.cytoscape.cg.internal.gradient.radial.RadialGradientFactory;
 import org.cytoscape.cg.internal.image.BitmapCustomGraphicsFactory;
 import org.cytoscape.cg.internal.image.SVGCustomGraphicsFactory;
 import org.cytoscape.cg.internal.model.CustomGraphicsManagerImpl;
-import org.cytoscape.cg.internal.model.CyCustomGraphics2ManagerImpl;
+import org.cytoscape.cg.internal.model.CustomGraphics2ManagerImpl;
 import org.cytoscape.cg.internal.vector.GradientOvalFactory;
 import org.cytoscape.cg.internal.vector.GradientRoundRectangleFactory;
 import org.cytoscape.cg.model.CustomGraphicsManager;
 import org.cytoscape.cg.model.CustomGraphicsRange;
 import org.cytoscape.cg.model.CustomGraphicsTranslator;
-import org.cytoscape.cg.model.CyCustomGraphics2Manager;
+import org.cytoscape.cg.model.CustomGraphics2Manager;
 import org.cytoscape.cg.util.CustomGraphicsBrowser;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -41,7 +41,7 @@ import org.osgi.framework.BundleContext;
 public class CyActivator extends AbstractCyActivator {
 	
 	private CustomGraphicsManager cgManager;
-	private CyCustomGraphics2Manager cg2Manager;
+	private CustomGraphics2Manager cg2Manager;
 	private CustomGraphicsBrowser cgBrowser;
 	
 	@Override
@@ -92,16 +92,16 @@ public class CyActivator extends AbstractCyActivator {
 				CyCustomGraphicsFactory.class);
 		
 		// Register this service listener so that app writers can provide their own CyCustomGraphics2 factories
-		cg2Manager = CyCustomGraphics2ManagerImpl.getInstance();
+		cg2Manager = CustomGraphics2ManagerImpl.getInstance();
 		registerAllServices(bc, cg2Manager);
-		registerServiceListener(bc, ((CyCustomGraphics2ManagerImpl) cg2Manager)::addFactory, 
-				((CyCustomGraphics2ManagerImpl) cg2Manager)::removeFactory, CyCustomGraphics2Factory.class);
+		registerServiceListener(bc, ((CustomGraphics2ManagerImpl) cg2Manager)::addFactory, 
+				((CustomGraphics2ManagerImpl) cg2Manager)::removeFactory, CyCustomGraphics2Factory.class);
 	}
 	
 	private void startCharts(BundleContext bc, CyServiceRegistrar serviceRegistrar) {
 		// Register Chart Factories
 		var props = new Properties();
-		props.setProperty(CyCustomGraphics2Factory.GROUP, CyCustomGraphics2Manager.GROUP_CHARTS);
+		props.setProperty(CyCustomGraphics2Factory.GROUP, CustomGraphics2Manager.GROUP_CHARTS);
 		{
 			var factory = new BarChartFactory(serviceRegistrar);
 			registerService(bc, factory, CyCustomGraphics2Factory.class, props);
@@ -131,7 +131,7 @@ public class CyActivator extends AbstractCyActivator {
 	private void startGradients(BundleContext bc, CyServiceRegistrar serviceRegistrar) {
 		// Register Gradient Factories
 		var props = new Properties();
-		props.setProperty(CyCustomGraphics2Factory.GROUP, CyCustomGraphics2Manager.GROUP_GRADIENTS);
+		props.setProperty(CyCustomGraphics2Factory.GROUP, CustomGraphics2Manager.GROUP_GRADIENTS);
 		{
 			var factory = new LinearGradientFactory();
 			registerService(bc, factory, CyCustomGraphics2Factory.class, props);

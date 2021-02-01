@@ -2,7 +2,7 @@
 package org.cytoscape.cg.model;
 
 import org.cytoscape.cg.internal.model.CustomGraphicsManagerImpl;
-import org.cytoscape.cg.internal.model.CyCustomGraphics2ManagerImpl;
+import org.cytoscape.cg.internal.model.CustomGraphics2ManagerImpl;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.AbstractVisualProperty;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
@@ -42,14 +42,14 @@ public class CustomGraphicsVisualProperty extends AbstractVisualProperty<CyCusto
 			// First check if it's a CyCustomGraphics2
 			// ---------------------------------------
 			// This is hack, but we've got no other way to get our hands on the
-			// CyCustomGraphics2Manager this way, because the DVisualLexicon is created statically
-			var cg2Mgr = CyCustomGraphics2ManagerImpl.getInstance();
-			var chartFactory = cg2Mgr.getCyCustomGraphics2Factory(parts[0]);
+			// CustomGraphics2Manager this way, because the DVisualLexicon is created statically
+			var cg2Mgr = CustomGraphics2ManagerImpl.getInstance();
+			var chartFactory = cg2Mgr.getCustomGraphics2Factory(parts[0]);
 			
 			if (chartFactory != null) {
 				cg = (CyCustomGraphics<CustomGraphicLayer>) chartFactory.getInstance(value.substring(offset + 1));
 			} else {
-				var gradFactory = cg2Mgr.getCyCustomGraphics2Factory(parts[0]);
+				var gradFactory = cg2Mgr.getCustomGraphics2Factory(parts[0]);
 				
 				if (gradFactory != null)
 					cg = (CyCustomGraphics<CustomGraphicLayer>) gradFactory.getInstance(value.substring(offset + 1));

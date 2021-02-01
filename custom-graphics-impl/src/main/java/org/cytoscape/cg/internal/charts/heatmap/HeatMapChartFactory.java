@@ -14,7 +14,7 @@ public class HeatMapChartFactory implements CyCustomGraphics2Factory<HeatMapLaye
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	public HeatMapChartFactory(final CyServiceRegistrar serviceRegistrar) {
+	public HeatMapChartFactory(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 	

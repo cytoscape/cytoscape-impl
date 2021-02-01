@@ -55,7 +55,7 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 	
 	protected final Logger logger;
 
-	protected AbstractCustomGraphics2(final String displayName) {
+	protected AbstractCustomGraphics2(String displayName) {
 		logger = LoggerFactory.getLogger(CyUserLog.NAME);
 		this.displayName = displayName;
 		this.properties = new HashMap<String, Object>();

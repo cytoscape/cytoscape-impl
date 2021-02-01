@@ -11,13 +11,14 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.cytoscape.cg.model.CyCustomGraphics2Manager;
+import org.cytoscape.cg.model.CustomGraphics2Manager;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 
 @SuppressWarnings("rawtypes")
-public class CyCustomGraphics2ManagerImpl implements CyCustomGraphics2Manager {
+public class CustomGraphics2ManagerImpl implements CustomGraphics2Manager {
 
 	private final Map<String, Set<CyCustomGraphics2Factory<? extends CustomGraphicLayer>>> groups;
 	private final Map<String, CyCustomGraphics2Factory<? extends CustomGraphicLayer>> factories;
@@ -25,9 +26,9 @@ public class CyCustomGraphics2ManagerImpl implements CyCustomGraphics2Manager {
 	private final Collator collator = Collator.getInstance(Locale.getDefault());
 	private final Comparator<CyCustomGraphics2Factory<? extends CustomGraphicLayer>> factoryComparator;
 	
-	private static final CyCustomGraphics2ManagerImpl me = new CyCustomGraphics2ManagerImpl();
+	private static final CustomGraphics2ManagerImpl me = new CustomGraphics2ManagerImpl();
 	
-	private CyCustomGraphics2ManagerImpl() {
+	private CustomGraphics2ManagerImpl() {
 		groups = new ConcurrentHashMap<>();
 		factories = new ConcurrentHashMap<>();
 		
@@ -40,7 +41,7 @@ public class CyCustomGraphics2ManagerImpl implements CyCustomGraphics2Manager {
 	}
 
 	@Override
-	public Set<CyCustomGraphics2Factory<? extends CustomGraphicLayer>> getAllCyCustomGraphics2Factories() {
+	public Set<CyCustomGraphics2Factory<? extends CustomGraphicLayer>> getAllCustomGraphics2Factories() {
 		var allFactories = factories.values();
 		var set = new TreeSet<>(factoryComparator);
 		set.addAll(allFactories);
@@ -50,25 +51,32 @@ public class CyCustomGraphics2ManagerImpl implements CyCustomGraphics2Manager {
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public Collection<CyCustomGraphics2Factory<? extends CustomGraphicLayer>> getCyCustomGraphics2Factories(String group) {
+	public Collection<CyCustomGraphics2Factory<? extends CustomGraphicLayer>> getCustomGraphics2Factories(
+			Class<? extends CyIdentifiable> targetType,
+			String group
+	) {
 		Collection<CyCustomGraphics2Factory<? extends CustomGraphicLayer>> col = null;
 		var set = groups.get(group);
 		
 		if (set != null) {
 			col = new TreeSet<>(factoryComparator);
-			col.addAll(set);
+			
+			for (var f : set) {
+				if (f.getSupportedTargetTypes().contains(targetType))
+					col.add(f);
+			}
 		}
 		
-		return col != null ? col : (Collection)Collections.emptySet();
+		return col != null ? col : (Collection) Collections.emptySet();
 	}
 
 	@Override
-	public CyCustomGraphics2Factory<? extends CustomGraphicLayer> getCyCustomGraphics2Factory(String factoryId) {
+	public CyCustomGraphics2Factory<? extends CustomGraphicLayer> getCustomGraphics2Factory(String factoryId) {
 		return factories.get(factoryId);
 	}
 	
 	@Override
-	public CyCustomGraphics2Factory<? extends CustomGraphicLayer> getCyCustomGraphics2Factory(
+	public CyCustomGraphics2Factory<? extends CustomGraphicLayer> getCustomGraphics2Factory(
 			Class<? extends CyCustomGraphics2<? extends CustomGraphicLayer>> cls) {
 		for (var cf : factories.values()) {
 			if (cf.getSupportedClass().isAssignableFrom(cls))
@@ -109,7 +117,7 @@ public class CyCustomGraphics2ManagerImpl implements CyCustomGraphics2Manager {
 		}
 	}
 	
-	public static CyCustomGraphics2ManagerImpl getInstance() {
+	public static CustomGraphics2ManagerImpl getInstance() {
 		return me;
 	}
 }

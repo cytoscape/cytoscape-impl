@@ -1,11 +1,17 @@
 package org.cytoscape.cg.internal.charts.line;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.Icon;
 import javax.swing.JComponent;
 
 import org.cytoscape.cg.internal.charts.ViewUtils;
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
@@ -56,6 +62,11 @@ public class LineChartFactory implements CyCustomGraphics2Factory<LineLayer> {
 	@Override
 	public JComponent createEditor(CyCustomGraphics2<LineLayer> chart) {
 		return new LineChartEditor((LineChart)chart, serviceRegistrar);
+	}
+	
+	@Override
+	public Set<Class<? extends CyIdentifiable>> getSupportedTargetTypes() {
+		return new HashSet<>(Arrays.asList(CyNode.class, CyColumn.class));
 	}
 	
 	@Override

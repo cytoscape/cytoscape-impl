@@ -10,12 +10,12 @@ import org.cytoscape.cg.internal.util.PaintFactory;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.PaintedShape;
 
-public class PaintCustomGraphic implements PaintedShape {
+public class PaintCustomGraphics implements PaintedShape {
 
 	private Shape shape;
 	private PaintFactory pf;
 
-	public PaintCustomGraphic(Shape shape, PaintFactory factory) {
+	public PaintCustomGraphics(Shape shape, PaintFactory factory) {
 		this.shape = shape;
 		this.pf = factory;
 	}
@@ -54,6 +54,6 @@ public class PaintCustomGraphic implements PaintedShape {
 	public CustomGraphicLayer transform(AffineTransform xform) {
 		var s = xform.createTransformedShape(shape);
 		
-		return new PaintCustomGraphic(s, pf);
+		return new PaintCustomGraphics(s, pf);
 	}
 }

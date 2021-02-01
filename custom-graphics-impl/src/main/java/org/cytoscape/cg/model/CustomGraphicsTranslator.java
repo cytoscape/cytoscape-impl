@@ -20,11 +20,11 @@ public class CustomGraphicsTranslator implements ValueTranslator<String, CyCusto
 	private static final Pattern SVG_PATTERN_2 = Pattern.compile("</svg>", Pattern.CASE_INSENSITIVE);
 	
 	private final CustomGraphicsManager cgMgr;
-	private final CyCustomGraphics2Manager cg2Mgr;
+	private final CustomGraphics2Manager cg2Mgr;
 
 	private final Map<String, String> mimeTypes = new WeakHashMap<>();
 
-	public CustomGraphicsTranslator(CustomGraphicsManager cgMgr, CyCustomGraphics2Manager cg2Mgr) {
+	public CustomGraphicsTranslator(CustomGraphicsManager cgMgr, CustomGraphics2Manager cg2Mgr) {
 		this.cgMgr = cgMgr;
 		this.cg2Mgr = cg2Mgr;
 	}
@@ -38,7 +38,7 @@ public class CustomGraphicsTranslator implements ValueTranslator<String, CyCusto
 
 		// CyCustomGraphics2 serialization format?
 		if (cg == null) {
-			for (var factory : cg2Mgr.getAllCyCustomGraphics2Factories()) {
+			for (var factory : cg2Mgr.getAllCustomGraphics2Factories()) {
 				if (factory.getId() != null && inputValue.startsWith(factory.getId() + ":")) {
 					cg = factory.getInstance(inputValue.substring(factory.getId().length() + 1));
 					break;
