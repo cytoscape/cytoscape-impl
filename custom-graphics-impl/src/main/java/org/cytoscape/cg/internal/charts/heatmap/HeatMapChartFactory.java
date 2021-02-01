@@ -5,7 +5,7 @@ import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 
-import org.cytoscape.cg.internal.charts.ViewUtils;
+import org.cytoscape.cg.internal.util.ViewUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
@@ -50,7 +50,7 @@ public class HeatMapChartFactory implements CyCustomGraphics2Factory<HeatMapLaye
 	
 	@Override
 	public Icon getIcon(int width, int height) {
-		return ViewUtils.resizeIcon(HeatMapChart.ICON, width, height);
+		return ViewUtil.resizeIcon(HeatMapChart.ICON, width, height);
 	}
 	
 	@Override

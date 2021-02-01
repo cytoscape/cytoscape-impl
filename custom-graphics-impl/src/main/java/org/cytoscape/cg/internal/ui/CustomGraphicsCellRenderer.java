@@ -15,7 +15,9 @@ import javax.swing.JPopupMenu.Separator;
 import javax.swing.ListCellRenderer;
 import javax.swing.border.Border;
 
+import org.cytoscape.cg.internal.util.ViewUtil;
 import org.cytoscape.cg.internal.util.VisualPropertyIconFactory;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 
 /**
@@ -25,7 +27,7 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 public class CustomGraphicsCellRenderer extends JPanel implements ListCellRenderer<CyCustomGraphics> {
 
 	private static final int ICON_SIZE = 130;
-	private static final int NAME_LENGTH_LIMIT = 24;
+	private static final int NAME_LENGTH_LIMIT = 28;
 	private static final Dimension CELL_SIZE = new Dimension(200, 150);
 
 	private final Map<CyCustomGraphics<?>, ImagePanel> panelMap;
@@ -43,8 +45,7 @@ public class CustomGraphicsCellRenderer extends JPanel implements ListCellRender
 			target = panelMap.get(cg);
 			
 			if (target == null) {
-				var name = cg.getDisplayName();
-				target = new ImagePanel(cg, name);
+				target = new ImagePanel(cg);
 				panelMap.put(cg, target);
 			}
 			
@@ -65,7 +66,7 @@ public class CustomGraphicsCellRenderer extends JPanel implements ListCellRender
 		final Color SEL_FG_COLOR;
 		final Color BORDER_COLOR;
 		
-		ImagePanel(CyCustomGraphics<?> cg, String name) {
+		ImagePanel(CyCustomGraphics<?> cg) {
 			super(new BorderLayout());
 			
 			var list = new JList<>();
@@ -76,13 +77,13 @@ public class CustomGraphicsCellRenderer extends JPanel implements ListCellRender
 			BORDER_COLOR = new Separator().getForeground();
 			
 			setPreferredSize(CELL_SIZE);
-			setToolTipText(name);
+			setToolTipText(cg.getDisplayName());
 			
-			if (name.length() > NAME_LENGTH_LIMIT)
-				name = name.substring(0, NAME_LENGTH_LIMIT) + "...";
+			var name = ViewUtil.getShortName(cg.getDisplayName());
 			
 			nameLbl = new JLabel(name);
 			nameLbl.setHorizontalAlignment(JLabel.CENTER);
+			nameLbl.setFont(nameLbl.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 			nameLbl.setOpaque(true);
 			
 			iconLbl = new JLabel();

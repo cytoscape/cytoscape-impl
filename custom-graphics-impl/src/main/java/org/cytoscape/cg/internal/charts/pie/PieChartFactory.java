@@ -8,7 +8,7 @@ import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 
-import org.cytoscape.cg.internal.charts.ViewUtils;
+import org.cytoscape.cg.internal.util.ViewUtil;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNode;
@@ -61,7 +61,7 @@ public class PieChartFactory implements CyCustomGraphics2Factory<PieLayer> {
 	
 	@Override
 	public Icon getIcon(int width, int height) {
-		return ViewUtils.resizeIcon(PieChart.ICON, width, height);
+		return ViewUtil.resizeIcon(PieChart.ICON, width, height);
 	}
 	
 	@Override

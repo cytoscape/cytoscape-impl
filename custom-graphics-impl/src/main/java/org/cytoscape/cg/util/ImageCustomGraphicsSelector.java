@@ -19,10 +19,11 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
-import org.cytoscape.cg.internal.editor.DiscreteValueList;
+import org.cytoscape.cg.internal.editor.ImageList;
 import org.cytoscape.cg.internal.ui.CustomGraphicsManagerDialog;
 import org.cytoscape.cg.model.CustomGraphicsManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
 
@@ -33,7 +34,7 @@ public class ImageCustomGraphicsSelector extends JPanel {
     private boolean firingActionEvent;
     private String actionCommand = "imageCustomGraphicsSelectorChanged";
 	
-	private DiscreteValueList<CyCustomGraphics> graphicsList;
+	private ImageList graphicsList;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	
@@ -55,6 +56,7 @@ public class ImageCustomGraphicsSelector extends JPanel {
 				update(getSelectedValue());
 			}
 		});
+		LookAndFeelUtil.makeSmall(openImgMgrBtn);
 		
 		var layout = new GroupLayout(this);
 		this.setLayout(layout);
@@ -164,11 +166,11 @@ public class ImageCustomGraphicsSelector extends JPanel {
 		}
     }
 	
-	protected DiscreteValueList<CyCustomGraphics> getGraphicsList() {
+	private ImageList getGraphicsList() {
 		if (graphicsList == null) {
 			var defViewPanel = serviceRegistrar.getService(DefaultViewPanel.class);
 			
-			graphicsList = new DiscreteValueList<>(CyCustomGraphics.class, defViewPanel);
+			graphicsList = new ImageList(defViewPanel);
 			graphicsList.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent evt) {

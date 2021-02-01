@@ -7,7 +7,9 @@ import javax.swing.JTable;
 import javax.swing.SwingConstants;
 
 import org.cytoscape.cg.internal.util.IconUtil;
+import org.cytoscape.cg.internal.util.ViewUtil;
 import org.cytoscape.cg.model.SVGCustomGraphics;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 
 import com.kitfox.svg.app.beans.SVGIcon;
@@ -19,9 +21,16 @@ public class CyCustomGraphicsCellRenderer extends DefaultCellRenderer {
 	private final int WIDTH = 20;
 	private final int HEIGHT = 20;
 	
+	public CyCustomGraphicsCellRenderer() {
+		super();
+		LookAndFeelUtil.makeSmall(this);
+	}
+	
 	@Override
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 			int row, int column) {
+		super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+		
 		if (isSelected) {
 			setBackground(table.getSelectionBackground());
 			setForeground(table.getSelectionForeground());
@@ -43,7 +52,7 @@ public class CyCustomGraphicsCellRenderer extends DefaultCellRenderer {
 				setIcon(img != null ? IconUtil.resizeIcon(new ImageIcon(img), WIDTH, HEIGHT) : null);
 			}
 			
-			setText(cg.getDisplayName());
+			setText(ViewUtil.getShortName(cg.getDisplayName()));
 			setHorizontalTextPosition(SwingConstants.RIGHT);
 			setVerticalTextPosition(SwingConstants.CENTER);
 			
