@@ -1,5 +1,7 @@
 package org.cytoscape.cg.internal.charts.bar;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.cg.model.ColorScheme.CONTRASTING;
 import static org.cytoscape.cg.model.ColorScheme.CUSTOM;
 import static org.cytoscape.cg.model.ColorScheme.MODULATED;
@@ -44,8 +46,8 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	private static final ColorScheme[] UP_DOWN_COLOR_SCHEMES;
 	
 	static {
-		final List<ColorScheme> heatStripSchemeList = new ArrayList<>();
-		final List<ColorScheme> upDownSchemeList = new ArrayList<>();
+		var heatStripSchemeList = new ArrayList<ColorScheme>();
+		var upDownSchemeList = new ArrayList<ColorScheme>();
 		
 		for (var cg : ColorGradient.values()) {
 			if (cg.getColors().size() == 2)
@@ -87,7 +89,7 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	
 	@Override
 	protected ColorScheme[] getColorSchemes() {
-		final BarChartType type = chart.get(BarChart.TYPE, BarChartType.class, BarChartType.GROUPED);
+		var type = chart.get(BarChart.TYPE, BarChartType.class, BarChartType.GROUPED);
 		
 		return type == BarChartType.HEAT_STRIPS ? 
 				HEAT_STRIP_COLOR_SCHEMES : 
@@ -96,15 +98,15 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	
 	@Override
 	protected JPanel getOtherBasicOptionsPnl() {
-		final JPanel p = super.getOtherAdvancedOptionsPnl();
+		var p = super.getOtherAdvancedOptionsPnl();
 		p.setVisible(true);
 		
-		final GroupLayout layout = new GroupLayout(p);
+		var layout = new GroupLayout(p);
 		p.setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
-		final JSeparator sep = new JSeparator();
+		var sep = new JSeparator();
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
 				.addGroup(layout.createSequentialGroup()
@@ -112,7 +114,8 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 						.addComponent(getStackedRd())
 						.addComponent(getHeatStripsRd())
 						.addComponent(getUpDownRd())
-				).addComponent(sep)
+				)
+				.addComponent(sep)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
@@ -120,7 +123,8 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 						.addComponent(getStackedRd())
 						.addComponent(getHeatStripsRd())
 						.addComponent(getUpDownRd())
-				).addComponent(sep, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+				)
+				.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
 		
 		return p;
@@ -128,23 +132,22 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	
 	@Override
 	protected JPanel getOtherAdvancedOptionsPnl() {
-		final JPanel p = super.getOtherBasicOptionsPnl();
+		var p = super.getOtherBasicOptionsPnl();
 		p.setVisible(true);
 		
-		final GroupLayout layout = new GroupLayout(p);
+		var layout = new GroupLayout(p);
 		p.setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
-					.addComponent(separationLbl)
-					.addComponent(getSeparationTxt(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-				          GroupLayout.PREFERRED_SIZE)
-				);
+				.addComponent(separationLbl)
+				.addComponent(getSeparationTxt(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
 		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, false)
-					.addComponent(separationLbl)
-					.addComponent(getSeparationTxt())
-				);
+				.addComponent(separationLbl)
+				.addComponent(getSeparationTxt())
+		);
 		
 		return p;
 	}
@@ -231,7 +234,7 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 			
 			separationTxt.addFocusListener(new FocusAdapter() {
 				@Override
-				public void focusLost(final FocusEvent e) {
+				public void focusLost(FocusEvent e) {
 					try {
 			            double sep = Double.parseDouble(separationTxt.getText());
 			            chart.set(BarChart.SEPARATION, sep);
@@ -262,7 +265,7 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	}
 	
 	protected void updateType() {
-		final BarChartType type = chart.get(BarChart.TYPE, BarChartType.class, BarChartType.GROUPED);
+		var type = chart.get(BarChart.TYPE, BarChartType.class, BarChartType.GROUPED);
 		final JRadioButton typeRd;
 		
 		if (type == BarChartType.STACKED)
@@ -284,14 +287,14 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	}
 	
 	@Override
-	protected double[] minMax(double min, double max, final List<? extends Number> values) {
+	protected double[] minMax(double min, double max, List<? extends Number> values) {
 		if (values != null) {
-			final boolean stacked = getStackedRd().isSelected();
+			boolean stacked = getStackedRd().isSelected();
 			double sum = 0;
 			
-			for (final Number v : values) {
+			for (var v : values) {
 				if (v != null) {
-					final double dv = v.doubleValue();
+					double dv = v.doubleValue();
 					
 					if (stacked) {
 						sum += dv;
@@ -329,16 +332,14 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	
 	private class BarColorSchemeEditor extends ColorSchemeEditor<BarChart> {
 
-		private static final long serialVersionUID = 1174473101447051638L;
-
-		public BarColorSchemeEditor(final BarChart chart, final ColorScheme[] colorSchemes, final CyNetwork network,
-				final IconManager iconMgr) {
+		public BarColorSchemeEditor(BarChart chart, ColorScheme[] colorSchemes, CyNetwork network,
+				IconManager iconMgr) {
 			super(chart, colorSchemes, false, network, iconMgr);
 		}
 
 		@Override
 		protected int getTotal() {
-			final BarChartType type = chart.get(BarChart.TYPE, BarChartType.class, BarChartType.GROUPED);
+			var type = chart.get(BarChart.TYPE, BarChartType.class, BarChartType.GROUPED);
 			
 			if (type == BarChartType.HEAT_STRIPS)
 				return total = 3;
@@ -349,9 +350,9 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 		}
 		
 		@Override
-		protected void style(final ColorPanel cp, final int index) {
+		protected void style(ColorPanel cp, int index) {
 			super.style(cp, index);
-			final BarChartType type = chart.get(BarChart.TYPE, BarChartType.class, BarChartType.GROUPED);
+			var type = chart.get(BarChart.TYPE, BarChartType.class, BarChartType.GROUPED);
 			
 			if (type == BarChartType.HEAT_STRIPS || type == BarChartType.UP_DOWN) {
 				cp.setFont(iconMgr.getIconFont(11));

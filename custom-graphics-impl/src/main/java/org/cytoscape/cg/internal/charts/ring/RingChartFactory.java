@@ -1,21 +1,24 @@
 package org.cytoscape.cg.internal.charts.ring;
 
+import java.util.Collection;
 import java.util.Map;
 
 import javax.swing.Icon;
 import javax.swing.JComponent;
 
+import org.cytoscape.cg.internal.charts.AbstractChartFactory;
 import org.cytoscape.cg.internal.util.ViewUtil;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 
-public class RingChartFactory implements CyCustomGraphics2Factory<RingLayer> {
+public class RingChartFactory extends AbstractChartFactory<RingLayer> {
 
-	private final CyServiceRegistrar serviceRegistrar;
-
-	public RingChartFactory(CyServiceRegistrar serviceRegistrar) {
-		this.serviceRegistrar = serviceRegistrar;
+	public RingChartFactory(
+			Collection<Class<? extends CyIdentifiable>> targetTypes,
+			CyServiceRegistrar serviceRegistrar
+	) {
+		super(targetTypes, serviceRegistrar);
 	}
 	
 	@Override
@@ -25,9 +28,9 @@ public class RingChartFactory implements CyCustomGraphics2Factory<RingLayer> {
 
 	@Override
 	public CyCustomGraphics2<RingLayer> getInstance(CyCustomGraphics2<RingLayer> chart) {
-		return new RingChart((RingChart)chart, serviceRegistrar);
+		return new RingChart((RingChart) chart, serviceRegistrar);
 	}
-	
+
 	@Override
 	public CyCustomGraphics2<RingLayer> getInstance(Map<String, Object> properties) {
 		return new RingChart(properties, serviceRegistrar);
@@ -37,7 +40,7 @@ public class RingChartFactory implements CyCustomGraphics2Factory<RingLayer> {
 	public String getId() {
 		return RingChart.FACTORY_ID;
 	}
-	
+
 	@Override
 	public Class<? extends CyCustomGraphics2<RingLayer>> getSupportedClass() {
 		return RingChart.class;
@@ -47,19 +50,14 @@ public class RingChartFactory implements CyCustomGraphics2Factory<RingLayer> {
 	public String getDisplayName() {
 		return "Ring";
 	}
-	
+
 	@Override
 	public Icon getIcon(int width, int height) {
 		return ViewUtil.resizeIcon(RingChart.ICON, width, height);
 	}
-	
+
 	@Override
 	public JComponent createEditor(CyCustomGraphics2<RingLayer> chart) {
-		return new RingChartEditor((RingChart)chart, serviceRegistrar);
-	}
-	
-	@Override
-	public String toString() {
-		return getDisplayName();
+		return new RingChartEditor((RingChart) chart, serviceRegistrar);
 	}
 }

@@ -2,6 +2,8 @@ package org.cytoscape.cg.internal.charts;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
+import static javax.swing.LayoutStyle.ComponentPlacement.UNRELATED;
 import static org.cytoscape.cg.internal.charts.AbstractChart.AUTO_RANGE;
 import static org.cytoscape.cg.internal.charts.AbstractChart.AXIS_COLOR;
 import static org.cytoscape.cg.internal.charts.AbstractChart.AXIS_LABEL_FONT_SIZE;
@@ -29,7 +31,6 @@ import static org.cytoscape.cg.model.ColorScheme.RANDOM;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isWinLAF;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -69,23 +70,25 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
-import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
-import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.cg.internal.util.SortedListModel;
 import org.cytoscape.cg.internal.util.SortedListModel.SortOrder;
+import org.cytoscape.cg.internal.util.ViewUtil;
 import org.cytoscape.cg.model.AbstractCustomGraphics2;
 import org.cytoscape.cg.model.ColorScheme;
 import org.cytoscape.cg.model.Orientation;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.BasicCollapsiblePanel;
+import org.cytoscape.util.swing.BasicCollapsiblePanel.CollapseListener;
 import org.cytoscape.util.swing.ColorButton;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
@@ -98,9 +101,8 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	
 	protected static Double[] ANGLES = new Double[] { 0.0, 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0 };
 	
-	private JTabbedPane optionsTpn;
-	private JPanel basicOptionsPnl;
-	private JPanel advancedOptionsPnl;
+	private BasicCollapsiblePanel basicOptionsPnl;
+	private BasicCollapsiblePanel advancedOptionsPnl;
 	private DataPanel dataPnl;
 	private JPanel rangePnl;
 	private JPanel labelsPnl;
@@ -164,17 +166,19 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	protected AbstractChartEditor(T chart,
-								  Class<?> dataType,
-								  boolean columnIsSeries,
-								  boolean setRange,
-								  boolean setOrientation,
-								  boolean setItemLabels,
-								  boolean setDomainLabels,
-								  boolean setRangeLabels,
-								  boolean hasAxes,
-								  boolean hasZeroBaseline,
-								  CyServiceRegistrar serviceRegistrar) {
+	protected AbstractChartEditor(
+			T chart, 
+			Class<?> dataType, 
+			boolean columnIsSeries, 
+			boolean setRange,
+			boolean setOrientation, 
+			boolean setItemLabels, 
+			boolean setDomainLabels, 
+			boolean setRangeLabels,
+			boolean hasAxes, 
+			boolean hasZeroBaseline, 
+			CyServiceRegistrar serviceRegistrar
+	) {
 		if (chart == null)
 			throw new IllegalArgumentException("'chart' argument must not be null.");
 		if (dataType == null)
@@ -230,8 +234,22 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		try {
 			createLabels();
 			setOpaque(!isAquaLAF()); // Transparent if Aqua
-			setLayout(new BorderLayout());
-			add(getOptionsTpn(), BorderLayout.CENTER);
+			
+			var layout = new GroupLayout(this);
+			setLayout(layout);
+			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(!isAquaLAF());
+			
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+					.addComponent(getBasicOptionsPnl(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(getAdvancedOptionsPnl(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(getBasicOptionsPnl(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getAdvancedOptionsPnl(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
+			
+			ViewUtil.recursiveDo(this, c -> LookAndFeelUtil.makeSmall(c));
 		} finally {
 			initializing = false;
 		}
@@ -254,37 +272,14 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		borderColorLbl = new JLabel("Border Color:");
 	}
 
-	protected JTabbedPane getOptionsTpn() {
-		if (optionsTpn == null) {
-			optionsTpn = new JTabbedPane(JTabbedPane.LEFT);
-			optionsTpn.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
-			
-			var scr1 = new JScrollPane(getBasicOptionsPnl(), 
-					JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-			scr1.setBorder(BorderFactory.createEmptyBorder());
-			scr1.setOpaque(!isAquaLAF()); // Transparent if Aqua
-			scr1.getViewport().setOpaque(!isAquaLAF());
-			
-			var scr2 = new JScrollPane(getAdvancedOptionsPnl(), 
-					JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-			scr2.setBorder(BorderFactory.createEmptyBorder());
-			scr2.setOpaque(!isAquaLAF());
-			scr2.getViewport().setOpaque(!isAquaLAF());
-			
-			optionsTpn.addTab("Data", scr1);
-			optionsTpn.addTab("Options", scr2);
-		}
-		
-		return optionsTpn;
-	}
-	
-	protected JPanel getBasicOptionsPnl() {
+	protected BasicCollapsiblePanel getBasicOptionsPnl() {
 		if (basicOptionsPnl == null) {
-			basicOptionsPnl = new JPanel();
+			basicOptionsPnl = new BasicCollapsiblePanel("Setup");
+			basicOptionsPnl.setCollapsed(false);
 			basicOptionsPnl.setOpaque(!isAquaLAF()); // Transparent if Aqua
 			
-			var layout = new GroupLayout(basicOptionsPnl);
-			basicOptionsPnl.setLayout(layout);
+			var layout = new GroupLayout(basicOptionsPnl.getContentPane());
+			basicOptionsPnl.getContentPane().setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
 			layout.setAutoCreateGaps(!isAquaLAF());
 			
@@ -296,20 +291,34 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addComponent(getOtherBasicOptionsPnl(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getDataPnl(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addPreferredGap(UNRELATED)
 					.addComponent(getRangePnl(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
+			
+			// Behaves like an accordion
+			basicOptionsPnl.addCollapseListener(new CollapseListener() {
+				@Override
+				public void expanded() {
+					getAdvancedOptionsPnl().setCollapsed(true);
+				}
+				@Override
+				public void collapsed() {
+					// Nothing to do here...
+				}
+			});
 		}
 		
 		return basicOptionsPnl;
 	}
 	
-	protected JPanel getAdvancedOptionsPnl() {
+	protected BasicCollapsiblePanel getAdvancedOptionsPnl() {
 		if (advancedOptionsPnl == null) {
-			advancedOptionsPnl = new JPanel();
+			advancedOptionsPnl = new BasicCollapsiblePanel("Customize");
+			advancedOptionsPnl.setCollapsed(true);
 			advancedOptionsPnl.setOpaque(!isAquaLAF()); // Transparent if Aqua
 			
-			var layout = new GroupLayout(advancedOptionsPnl);
-			advancedOptionsPnl.setLayout(layout);
+			var layout = new GroupLayout(advancedOptionsPnl.getContentPane());
+			advancedOptionsPnl.getContentPane().setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
 			layout.setAutoCreateGaps(!isAquaLAF());
 			
@@ -329,6 +338,18 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 					.addComponent(getBorderPnl())
 					.addComponent(getOtherAdvancedOptionsPnl())
 			);
+			
+			// Behaves like an accordion
+			advancedOptionsPnl.addCollapseListener(new CollapseListener() {
+				@Override
+				public void expanded() {
+					getBasicOptionsPnl().setCollapsed(true);
+				}
+				@Override
+				public void collapsed() {
+					// Nothing to do here...
+				}
+			});
 		}
 		
 		return advancedOptionsPnl;
@@ -358,19 +379,17 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			layout.setAutoCreateContainerGaps(false);
 			layout.setAutoCreateGaps(!isAquaLAF());
 			
-			var sep = new JSeparator();
-			
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
 					.addComponent(getGlobalRangeCkb())
 					.addGroup(layout.createSequentialGroup()
 							.addComponent(getAutoRangeCkb())
-							.addPreferredGap(ComponentPlacement.UNRELATED)
+							.addPreferredGap(UNRELATED)
 							.addComponent(rangeMinLbl)
 							.addComponent(getRangeMinTxt())
 							.addComponent(rangeMaxLbl)
 							.addComponent(getRangeMaxTxt())
 							.addComponent(getRefreshRangeBtn())
-					).addComponent(sep)
+					)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addComponent(getGlobalRangeCkb())
@@ -381,7 +400,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 							.addComponent(rangeMaxLbl)
 							.addComponent(getRangeMaxTxt(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							.addComponent(getRefreshRangeBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					).addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
 			);
 		}
 		
@@ -410,10 +429,10 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			if (setItemLabels) {
 				hGroup.addGroup(layout.createSequentialGroup()
 						.addComponent(getItemLabelsVisibleCkb())
-						.addPreferredGap(ComponentPlacement.UNRELATED)
+						.addPreferredGap(UNRELATED)
 						.addComponent(itemLabelsColumnLbl)
 						.addComponent(getItemLabelsColumnCmb(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addPreferredGap(ComponentPlacement.UNRELATED)
+						.addPreferredGap(UNRELATED)
 						.addComponent(itemFontSizeLbl)
 						.addComponent(getItemFontSizeTxt(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE));
 				vGroup.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
@@ -516,9 +535,9 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 							.addComponent(getRangeAxisVisibleCkb())
 							.addComponent(getRangeZeroBaselineVisibleCkb())
 						)
-						.addPreferredGap(ComponentPlacement.UNRELATED)
+						.addPreferredGap(UNRELATED)
 						.addComponent(vsep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addPreferredGap(ComponentPlacement.UNRELATED)
+						.addPreferredGap(UNRELATED)
 						.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
 							.addGroup(layout.createSequentialGroup()
 								.addComponent(axisWidthLbl)
@@ -581,20 +600,20 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 					.addGroup(layout.createSequentialGroup()
 						.addComponent(borderWidthLbl)
 						.addComponent(getBorderWidthTxt(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					)
-					.addGroup(layout.createSequentialGroup()
+						.addPreferredGap(UNRELATED)
 						.addComponent(borderColorLbl)
 						.addComponent(getBorderColorBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					).addComponent(sep)
+					)
+					.addComponent(sep)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 						.addComponent(borderWidthLbl)
 						.addComponent(getBorderWidthTxt())
-					).addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 						.addComponent(borderColorLbl)
 						.addComponent(getBorderColorBtn())
-					).addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
+					.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 		}
 		
@@ -1266,8 +1285,6 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			var listScr2 = new JScrollPane(getSelColumnsLs());
 			listScr2.setPreferredSize(new Dimension(200, listScr2.getPreferredSize().height));
 			
-			var sep = new JSeparator();
-			
 			var layout = new GroupLayout(this);
 			setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
@@ -1291,13 +1308,12 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 									.addGroup(layout.createSequentialGroup()
 											.addComponent(selColumnsLbl, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 											.addComponent(getMoveUpBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-											.addPreferredGap(ComponentPlacement.RELATED)
+											.addPreferredGap(RELATED)
 											.addComponent(getMoveDownBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 									)
 									.addComponent(listScr2, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 							)
 					)
-					.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addGroup(layout.createParallelGroup(Alignment.BASELINE, false)
@@ -1317,7 +1333,6 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 							)
 							.addComponent(listScr2, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					)
-					.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 		}
 		

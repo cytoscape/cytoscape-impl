@@ -1,5 +1,8 @@
 package org.cytoscape.cg.internal;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.singleton;
+
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Properties;
@@ -19,15 +22,17 @@ import org.cytoscape.cg.internal.gradient.linear.LinearGradientFactory;
 import org.cytoscape.cg.internal.gradient.radial.RadialGradientFactory;
 import org.cytoscape.cg.internal.image.BitmapCustomGraphicsFactory;
 import org.cytoscape.cg.internal.image.SVGCustomGraphicsFactory;
-import org.cytoscape.cg.internal.model.CustomGraphicsManagerImpl;
 import org.cytoscape.cg.internal.model.CustomGraphics2ManagerImpl;
+import org.cytoscape.cg.internal.model.CustomGraphicsManagerImpl;
 import org.cytoscape.cg.internal.vector.GradientOvalFactory;
 import org.cytoscape.cg.internal.vector.GradientRoundRectangleFactory;
+import org.cytoscape.cg.model.CustomGraphics2Manager;
 import org.cytoscape.cg.model.CustomGraphicsManager;
 import org.cytoscape.cg.model.CustomGraphicsRange;
 import org.cytoscape.cg.model.CustomGraphicsTranslator;
-import org.cytoscape.cg.model.CustomGraphics2Manager;
 import org.cytoscape.cg.util.CustomGraphicsBrowser;
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
@@ -103,27 +108,27 @@ public class CyActivator extends AbstractCyActivator {
 		var props = new Properties();
 		props.setProperty(CyCustomGraphics2Factory.GROUP, CustomGraphics2Manager.GROUP_CHARTS);
 		{
-			var factory = new BarChartFactory(serviceRegistrar);
+			var factory = new BarChartFactory(asList(CyNode.class, CyColumn.class), serviceRegistrar);
 			registerService(bc, factory, CyCustomGraphics2Factory.class, props);
 		}
 		{
-			var factory = new BoxChartFactory(serviceRegistrar);
+			var factory = new BoxChartFactory(singleton(CyNode.class), serviceRegistrar);
 			registerService(bc, factory, CyCustomGraphics2Factory.class, props);
 		}
 		{
-			var factory = new PieChartFactory(serviceRegistrar);
+			var factory = new PieChartFactory(asList(CyNode.class, CyColumn.class), serviceRegistrar);
 			registerService(bc, factory, CyCustomGraphics2Factory.class, props);
 		}
 		{
-			var factory = new RingChartFactory(serviceRegistrar);
+			var factory = new RingChartFactory(singleton(CyNode.class), serviceRegistrar);
 			registerService(bc, factory, CyCustomGraphics2Factory.class, props);
 		}
 		{
-			var factory = new LineChartFactory(serviceRegistrar);
+			var factory = new LineChartFactory(asList(CyNode.class, CyColumn.class), serviceRegistrar);
 			registerService(bc, factory, CyCustomGraphics2Factory.class, props);
 		}
 		{
-			var factory = new HeatMapChartFactory(serviceRegistrar);
+			var factory = new HeatMapChartFactory(singleton(CyNode.class), serviceRegistrar);
 			registerService(bc, factory, CyCustomGraphics2Factory.class, props);
 		}
 	}
