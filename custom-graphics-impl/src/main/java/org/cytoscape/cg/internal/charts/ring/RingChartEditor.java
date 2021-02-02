@@ -16,34 +16,9 @@ import org.cytoscape.cg.internal.charts.pie.PieChart;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
-/*
- * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
+@SuppressWarnings("serial")
 public class RingChartEditor extends AbstractChartEditor<RingChart> {
 
-	private static final long serialVersionUID = -1867268965571724061L;
-	
 	private JLabel startAngleLbl;
 	private JComboBox<Double> startAngleCmb;
 	private JLabel holeLbl;
@@ -51,7 +26,7 @@ public class RingChartEditor extends AbstractChartEditor<RingChart> {
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public RingChartEditor(final RingChart chart, final CyServiceRegistrar serviceRegistrar) {
+	public RingChartEditor(RingChart chart, CyServiceRegistrar serviceRegistrar) {
 		super(chart, Number.class, false, false, false, true, false, false, false, false, serviceRegistrar);
 		
 		domainLabelPositionLbl.setVisible(false);
@@ -71,10 +46,10 @@ public class RingChartEditor extends AbstractChartEditor<RingChart> {
 	
 	@Override
 	protected JPanel getOtherAdvancedOptionsPnl() {
-		final JPanel p = super.getOtherAdvancedOptionsPnl();
+		var p = super.getOtherAdvancedOptionsPnl();
 		p.setVisible(true);
 		
-		final GroupLayout layout = new GroupLayout(p);
+		var layout = new GroupLayout(p);
 		p.setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
@@ -119,7 +94,7 @@ public class RingChartEditor extends AbstractChartEditor<RingChart> {
 			
 			holeTxt.addFocusListener(new FocusAdapter() {
 				@Override
-				public void focusLost(final FocusEvent e) {
+				public void focusLost(FocusEvent e) {
 					try {
 			            double angle = Double.valueOf(holeTxt.getText().trim()).doubleValue();
 			            chart.set(RingChart.HOLE_SIZE, angle);

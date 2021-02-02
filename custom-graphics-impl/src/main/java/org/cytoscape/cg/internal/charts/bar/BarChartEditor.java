@@ -2,6 +2,7 @@ package org.cytoscape.cg.internal.charts.bar;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.cytoscape.cg.model.AbstractCustomGraphics2.ORIENTATION;
 import static org.cytoscape.cg.model.ColorScheme.CONTRASTING;
 import static org.cytoscape.cg.model.ColorScheme.CUSTOM;
 import static org.cytoscape.cg.model.ColorScheme.MODULATED;
@@ -31,6 +32,8 @@ import org.cytoscape.cg.internal.charts.ColorSchemeEditor;
 import org.cytoscape.cg.internal.charts.bar.BarChart.BarChartType;
 import org.cytoscape.cg.internal.charts.util.ColorGradient;
 import org.cytoscape.cg.model.ColorScheme;
+import org.cytoscape.cg.model.Orientation;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
@@ -133,7 +136,6 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	@Override
 	protected JPanel getOtherAdvancedOptionsPnl() {
 		var p = super.getOtherBasicOptionsPnl();
-		p.setVisible(true);
 		
 		var layout = new GroupLayout(p);
 		p.setLayout(layout);
@@ -284,6 +286,21 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	protected void update(boolean recalculateRange) {
 		updateType();
 		super.update(recalculateRange);
+	}
+	
+	@Override
+	protected void updateOptions() {
+		super.updateOptions();
+		
+		// Hide options that would just make table "sparklines" too cramped
+		boolean sparklines = targetType == CyColumn.class;
+		
+		getOtherAdvancedOptionsPnl().setVisible(!sparklines);
+		
+		if (sparklines) {
+			chart.set(ORIENTATION, Orientation.AUTO); // auto-orientation, to be decided by the BarChart
+			chart.set(BarChart.SEPARATION, 0.1); // 10% of separation between bars is a good default for sparklines
+		}
 	}
 	
 	@Override

@@ -67,12 +67,13 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
     
 	@Override
 	protected JFreeChart createChart(BoxAndWhiskerCategoryDataset dataset) {
-		final JFreeChart chart = ChartFactory.createBoxAndWhiskerChart(
+		var chart = ChartFactory.createBoxAndWhiskerChart(
 					null, // chart title
 					null, // domain axis label
 					null, // range axis label
 					dataset, // data
-					false); // include legend
+					false // include legend
+		);
 		
         chart.setAntiAlias(true);
         chart.setBorderVisible(false);
@@ -80,7 +81,7 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
         chart.setBackgroundImageAlpha(0.0f);
         chart.setPadding(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
         
-        final CategoryPlot plot = (CategoryPlot) chart.getPlot();
+        var plot = (CategoryPlot) chart.getPlot();
 		plot.setOutlineVisible(false);
 		plot.setInsets(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
 		plot.setAxisOffset(new RectangleInsets(1.0, 1.0, 1.0, 1.0));
@@ -96,13 +97,13 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
 			plot.setRangeZeroBaselineStroke(new EqualDashStroke(axisWidth));
 		}
 		
-		final PlotOrientation plotOrientation = 
+		var plotOrientation = 
 				orientation == Orientation.HORIZONTAL ? PlotOrientation.HORIZONTAL : PlotOrientation.VERTICAL;
 		plot.setOrientation(plotOrientation);
 		
-		final BasicStroke axisStroke = new BasicStroke(axisWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+		var axisStroke = new BasicStroke(axisWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		
-		final CategoryAxis domainAxis = (CategoryAxis) plot.getDomainAxis();
+		var domainAxis = (CategoryAxis) plot.getDomainAxis();
         domainAxis.setVisible(showDomainAxis);
         domainAxis.setAxisLineStroke(axisStroke);
         domainAxis.setAxisLinePaint(axisColor);
@@ -114,7 +115,7 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
         domainAxis.setLowerMargin(.025);
         domainAxis.setUpperMargin(.025);
         
-		final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+		var rangeAxis = (NumberAxis) plot.getRangeAxis();
 		rangeAxis.setVisible(showRangeAxis);
 		rangeAxis.setAxisLineStroke(axisStroke);
 		rangeAxis.setAxisLinePaint(axisColor);
@@ -131,14 +132,14 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
 			rangeAxis.setUpperBound(range.get(1));
 		}
 		
-		final BoxAndWhiskerRenderer renderer = (BoxAndWhiskerRenderer) plot.getRenderer();
+		var renderer = (BoxAndWhiskerRenderer) plot.getRenderer();
 		renderer.setFillBox(true);
 		renderer.setMeanVisible(false);
 		renderer.setBaseItemLabelsVisible(false); // Box chart does not support item labels, anyway
 		
-		final BasicStroke stroke = new BasicStroke(borderWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+		var stroke = new BasicStroke(borderWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		
-		final List<?> keys = dataset.getRowKeys();
+		var keys = dataset.getRowKeys();
 		
 		for (int i = 0; i < keys.size(); i++) {
 			renderer.setSeriesStroke(i, stroke);

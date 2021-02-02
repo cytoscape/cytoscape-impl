@@ -87,8 +87,19 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
     
 	@Override
 	protected JFreeChart createChart(CategoryDataset dataset) {
-		var plotOrientation = 
-				orientation == Orientation.HORIZONTAL ? PlotOrientation.HORIZONTAL : PlotOrientation.VERTICAL;
+		final PlotOrientation plotOrientation;
+		
+		if (orientation == null || orientation == Orientation.AUTO) {
+			// Auto-orientation, based on the number of bars, usually when rendering table sparklines
+			// (1 bar fits better in a table cell when horizontal; besides, two or more horizontal bars per cell
+			// could make the visualization of confusing when comparing rows, specially if the table does not show the
+			// internal grid lines to better separate the different charts)
+			var colCount = dataset.getColumnCount();
+			plotOrientation = colCount > 1 ? PlotOrientation.VERTICAL : PlotOrientation.HORIZONTAL;
+		} else {
+			plotOrientation = orientation == Orientation.HORIZONTAL ? PlotOrientation.HORIZONTAL : PlotOrientation.VERTICAL;
+		}
+		
 		final JFreeChart chart;
 		
 		if (type == BarChartType.STACKED)

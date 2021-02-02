@@ -28,6 +28,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.cytoscape.cg.internal.charts.AbstractChartEditor;
 import org.cytoscape.cg.model.CustomGraphics2Manager;
 import org.cytoscape.cg.model.NullCustomGraphics;
 import org.cytoscape.cg.util.CustomGraphicsBrowser;
@@ -329,7 +330,7 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 				CyCustomGraphics2 initialCg2 = null;
 				
 				for (var cf : supportedFactories) {
-					var cg2EditorPn = new CustomGraphics2EditorPane(cf);
+					var cg2EditorPn = new CustomGraphics2EditorPane(cf, targetType);
 					var icon = cf.getIcon(ICON_SIZE, ICON_SIZE);
 					
 					if (cg2 != null) {
@@ -410,12 +411,15 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 		
 		private class CustomGraphics2EditorPane extends JScrollPane {
 			
-			private final CyCustomGraphics2Factory<?> factory;
 			private JComponent editor;
 			private CyCustomGraphics2 cg2;
+			
+			private final CyCustomGraphics2Factory<?> factory;
+			private final Class<? extends CyIdentifiable> targetType;
 
-			CustomGraphics2EditorPane(CyCustomGraphics2Factory<?> factory) {
+			CustomGraphics2EditorPane(CyCustomGraphics2Factory<?> factory, Class<? extends CyIdentifiable> targetType) {
 				this.factory = factory;
+				this.targetType = targetType;
 				this.setBorder(BorderFactory.createEmptyBorder());
 				this.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 				this.getViewport().setOpaque(!LookAndFeelUtil.isAquaLAF());
@@ -424,6 +428,10 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 			void update(CyCustomGraphics2 initialCg2) {
 				this.cg2 = initialCg2;
 				editor = factory.createEditor(initialCg2);
+				
+				if (editor instanceof AbstractChartEditor)
+					((AbstractChartEditor) editor).setTargetType(targetType);
+				
 				this.setViewportView(editor);
 				this.updateUI();
 			}

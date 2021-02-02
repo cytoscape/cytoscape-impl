@@ -160,9 +160,10 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	protected final T chart;
 	protected final Class<?> dataType;
 	
-	protected final CyServiceRegistrar serviceRegistrar;
-
+	protected Class<? extends CyIdentifiable> targetType;
 	protected boolean initializing;
+	
+	protected final CyServiceRegistrar serviceRegistrar;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
@@ -225,6 +226,11 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================
+	
+	public void setTargetType(Class<? extends CyIdentifiable> targetType) {
+		this.targetType = targetType;
+		updateOptions();
+	}
 
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
@@ -411,7 +417,6 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		if (labelsPnl == null) {
 			labelsPnl = new JPanel();
 			labelsPnl.setOpaque(!isAquaLAF()); // Transparent if Aqua
-			labelsPnl.setVisible(setItemLabels || setDomainLabels || setRangeLabels);
 			
 			if (!labelsPnl.isVisible())
 				return labelsPnl;
@@ -482,10 +487,6 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		if (orientationPnl == null) {
 			orientationPnl = new JPanel();
 			orientationPnl.setOpaque(!isAquaLAF()); // Transparent if Aqua
-			orientationPnl.setVisible(setOrientation);
-			
-			if (!orientationPnl.isVisible())
-				return orientationPnl;
 			
 			var layout = new GroupLayout(orientationPnl);
 			orientationPnl.setLayout(layout);
@@ -515,10 +516,6 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		if (axesPnl == null) {
 			axesPnl = new JPanel();
 			axesPnl.setOpaque(!isAquaLAF()); // Transparent if Aqua
-			axesPnl.setVisible(hasAxes);
-			
-			if (!axesPnl.isVisible())
-				return axesPnl;
 			
 			var layout = new GroupLayout(axesPnl);
 			axesPnl.setLayout(layout);
@@ -918,7 +915,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	
 	protected ColorButton getAxisColorBtn() {
 		if (axisColorBtn == null) {
-			final Color color = chart.get(AXIS_COLOR, Color.class, Color.DARK_GRAY);
+			var color = chart.get(AXIS_COLOR, Color.class, Color.DARK_GRAY);
 			axisColorBtn = new ColorButton(color);
 			axisColorBtn.setVisible(hasAxes);
 			
@@ -1040,7 +1037,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	
 	protected ColorButton getBorderColorBtn() {
 		if (borderColorBtn == null) {
-			final Color color = chart.get(BORDER_COLOR, Color.class, Color.DARK_GRAY);
+			var color = chart.get(BORDER_COLOR, Color.class, Color.DARK_GRAY);
 			borderColorBtn = new ColorButton(color);
 			
 			borderColorBtn.addPropertyChangeListener("color", evt -> {
@@ -1120,6 +1117,20 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		updateGlobalRange();
 		updateRangeMinMax(recalculateRange);
 		updateItemLabel();
+		updateOptions();
+	}
+	
+	protected void updateOptions() {
+		// Hide options that would just make table "sparklines" too cramped
+		boolean sparklines = targetType == CyColumn.class;
+		
+		getLabelsPnl().setVisible(!sparklines && (setItemLabels || setDomainLabels || setRangeLabels));
+		getOrientationPnl().setVisible(!sparklines && setOrientation);
+		getAxesPnl().setVisible(!sparklines && hasAxes);
+		getBorderPnl().setVisible(!sparklines);
+		
+		if (sparklines)
+			chart.set(BORDER_WIDTH, 0.0f);
 	}
 
 	protected void updateOrientation() {
@@ -1271,7 +1282,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			
 			// Filter all columns that are list of numbers
 			for (var colId : columns.keySet()) {
-				final CyColumn c = columns.get(colId);
+				var c = columns.get(colId);
 				
 				if (isDataColumn(c))
 					dataColumns.add(colId);

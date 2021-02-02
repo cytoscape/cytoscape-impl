@@ -1,5 +1,8 @@
 package org.cytoscape.cg.internal.charts.line;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+
 import java.awt.Dimension;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -51,21 +54,22 @@ public class LineChartEditor extends AbstractChartEditor<LineChart> {
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
 				.addGroup(layout.createSequentialGroup()
 						.addComponent(lineWidthLbl)
-						.addComponent(getLineWidthTxt(), GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-								GroupLayout.PREFERRED_SIZE))
-				);
+						.addComponent(getLineWidthTxt(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 						.addComponent(lineWidthLbl)
-						.addComponent(getLineWidthTxt()))
-				);
+						.addComponent(getLineWidthTxt())
+				)
+		);
 		
 		return p;
 	}
 	
 	private JTextField getLineWidthTxt() {
 		if (lineWidthTxt == null) {
-			lineWidthTxt = new JTextField("" + chart.get(LineChart.LINE_WIDTH, Float.class, 1.0f));
+			lineWidthTxt = new JTextField("" + chart.get(LineChart.LINE_WIDTH, Float.class, 2.0f));
 			lineWidthTxt.setInputVerifier(new DoubleInputVerifier());
 			lineWidthTxt.setPreferredSize(new Dimension(40, lineWidthTxt.getMinimumSize().height));
 			lineWidthTxt.setHorizontalAlignment(JTextField.TRAILING);
