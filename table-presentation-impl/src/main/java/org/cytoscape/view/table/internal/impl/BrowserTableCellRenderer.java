@@ -268,14 +268,17 @@ class BrowserTableCellRenderer extends JPanel implements TableCellRenderer {
 		
 		// If this is just a paint, getBounds2D will return null and we can use our own width and height
 		if (b != null) {
-			double w = getWidth();
-			double h = getHeight();
+			int pad = 1; // minor padding to better separate sparklines in adjacent cells
+			int x = pad;
+			int y = pad;
+			double w = getWidth() - 2 * pad;
+			double h = getHeight() - 2 * pad;
 			double cw = b.getWidth();
 			double ch = b.getHeight();
 			double cx = b.getX();
 			double cy = b.getY();
-			double xOffset = -cx + ((w - cw) / 2.0);
-			double yOffset = -cy + ((h - ch) / 2.0);
+			double xOffset = -cx + x + ((w - cw) / 2.0);
+			double yOffset = -cy + y + ((h - ch) / 2.0);
 			
 			var xform = new AffineTransform();
 			xform.translate(xOffset, yOffset);
