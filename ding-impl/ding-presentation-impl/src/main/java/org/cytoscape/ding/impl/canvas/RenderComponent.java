@@ -244,8 +244,9 @@ public abstract class RenderComponent extends JComponent {
 		double newX = coords[0];
 		double newY = coords[1];
 		
-		var dx = (int) (oldX - newX);
-		var dy = (int) (oldY - newY);
+		double dpiScale = currentTransform.getDpiScaleFactor();
+		var dx = (int) ((oldX - newX) * dpiScale);
+		var dy = (int) ((oldY - newY) * dpiScale);
 		
 		return new int[] { dx, dy };
 	}
