@@ -4,7 +4,6 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
-import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.Map;
 
@@ -40,30 +39,30 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public BarLayer(Map<String/*category*/, List<Double>/*values*/> data,
-					BarChartType type,
-					List<String> itemLabels,
-					List<String> domainLabels,
-					List<String> rangeLabels,
-					boolean showItemLabels,
-					boolean showDomainAxis,
-					boolean showRangeAxis,
-					boolean showRangeZeroBaseline,
-					float itemFontSize,
-					LabelPosition domainLabelPosition,
-					List<Color> colors,
-					float axisWidth,
-					Color axisColor,
-					float axisFontSize,
-					float borderWidth,
-					Color borderColor,
-					double separation,
-					List<Double> range,
-					Orientation orientation,
-					Rectangle2D bounds) {
+	public BarLayer(
+			Map<String/* category */, List<Double>/* values */> data, 
+			BarChartType type,
+			List<String> itemLabels, 
+			List<String> domainLabels, 
+			List<String> rangeLabels, 
+			boolean showItemLabels,
+			boolean showDomainAxis, 
+			boolean showRangeAxis, 
+			boolean showRangeZeroBaseline, 
+			float itemFontSize,
+			LabelPosition domainLabelPosition, 
+			List<Color> colors, 
+			float axisWidth, 
+			Color axisColor, 
+			float axisFontSize,
+			float borderWidth, 
+			Color borderColor, 
+			double separation, 
+			List<Double> range, 
+			Orientation orientation
+	) {
         super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis, itemFontSize,
-        		domainLabelPosition, colors, axisWidth, axisColor, axisFontSize, borderWidth, borderColor, range,
-        		bounds);
+        		domainLabelPosition, colors, axisWidth, axisColor, axisFontSize, borderWidth, borderColor, range);
 		this.type = type;
 		this.showRangeZeroBaseline = showRangeZeroBaseline;
 		this.separation = separation;
@@ -111,7 +110,8 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 					plotOrientation,
 					false, // include legend
 					false, // tooltips
-					false); // urls
+					false // urls
+			);
 		else
 			chart = ChartFactory.createBarChart(
 					null, // chart title
@@ -121,7 +121,8 @@ public class BarLayer extends AbstractChartLayer<CategoryDataset> {
 					plotOrientation,
 					false, // include legend
 					false, // tooltips
-					false); // urls
+					false // urls
+			);
 		
         chart.setAntiAlias(true);
         chart.setBorderVisible(false);

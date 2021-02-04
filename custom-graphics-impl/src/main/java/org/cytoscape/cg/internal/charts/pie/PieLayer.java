@@ -2,7 +2,6 @@ package org.cytoscape.cg.internal.charts.pie;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,18 +27,19 @@ public class PieLayer extends AbstractChartLayer<PieDataset> {
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public PieLayer(final Map<String, List<Double>> data,
-					final List<String> itemLabels,
-					final boolean showLabels,
-					final float itemFontSize,
-					final List<Color> colors,
-					final float borderWidth,
-					final Color borderColor,
-					final double startAngle,
-					final Rotation rotation,
-					final Rectangle2D bounds) {
+	public PieLayer(
+			Map<String, List<Double>> data, 
+			List<String> itemLabels, 
+			boolean showLabels, 
+			float itemFontSize,
+			List<Color> colors, 
+			float borderWidth, 
+			Color borderColor, 
+			double startAngle, 
+			Rotation rotation
+	) {
 		super(data, itemLabels, null, null, showLabels, false, false, itemFontSize, LabelPosition.STANDARD, colors,
-				0.0f, TRANSPARENT_COLOR, 0.0f, borderWidth, borderColor, null, bounds);
+				0.0f, TRANSPARENT_COLOR, 0.0f, borderWidth, borderColor, null);
         this.startAngle = startAngle;
         this.rotation = rotation;
         this.labels = new HashMap<String, String>();
@@ -49,15 +49,15 @@ public class PieLayer extends AbstractChartLayer<PieDataset> {
 	
 	@Override
 	protected PieDataset createDataset() {
-		final List<Double> values = data.isEmpty() ? null : data.values().iterator().next();
-		final PieDataset dataset = createPieDataset(values);
+		var values = data.isEmpty() ? null : data.values().iterator().next();
+		var dataset = createPieDataset(values);
 		
 		if (showItemLabels && itemLabels != null) {
-			final List<?> keys = dataset.getKeys();
+			var keys = dataset.getKeys();
 			
 			for (int i = 0; i < keys.size(); i++) {
-				final String k = (String) keys.get(i);
-				final String label = itemLabels.size() > i ? itemLabels.get(i) : null;
+				var k = (String) keys.get(i);
+				var label = itemLabels.size() > i ? itemLabels.get(i) : null;
 				labels.put(k, label);
 			}
         }
@@ -66,13 +66,14 @@ public class PieLayer extends AbstractChartLayer<PieDataset> {
 	}
     
 	@Override
-	protected JFreeChart createChart(final PieDataset dataset) {
+	protected JFreeChart createChart(PieDataset dataset) {
 		JFreeChart chart = ChartFactory.createPieChart(
 				null, // chart title
 				dataset, // data
 				false, // include legend
 				false, // tooltips
-				false); // urls
+				false // urls
+		);
 		
         chart.setAntiAlias(true);
         chart.setBorderVisible(false);
@@ -80,7 +81,7 @@ public class PieLayer extends AbstractChartLayer<PieDataset> {
         chart.setBackgroundImageAlpha(0.0f);
         chart.setPadding(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
         
-		final PiePlot plot = (PiePlot) chart.getPlot();
+        var plot = (PiePlot) chart.getPlot();
 		plot.setCircular(true);
 		plot.setStartAngle(startAngle);
 		plot.setDirection(rotation == Rotation.ANTICLOCKWISE ?
@@ -101,13 +102,13 @@ public class PieLayer extends AbstractChartLayer<PieDataset> {
 		plot.setLabelShadowPaint(TRANSPARENT_COLOR);
 		plot.setLabelPaint(labelColor);
 		
-		final BasicStroke stroke = new BasicStroke(borderWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+		var stroke = new BasicStroke(borderWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		
-		final List<?> keys = dataset.getKeys();
+		var keys = dataset.getKeys();
 		
 		for (int i = 0; i < keys.size(); i++) {
-			final String k = (String) keys.get(i);
-			final Color c = colors.size() > i ? colors.get(i) : DEFAULT_ITEM_BG_COLOR;
+			var k = (String) keys.get(i);
+			var c = colors.size() > i ? colors.get(i) : DEFAULT_ITEM_BG_COLOR;
 			plot.setSectionPaint(k, c);
 			plot.setSectionOutlinePaint(k, borderWidth > 0 ? borderColor : TRANSPARENT_COLOR);
 			plot.setSectionOutlineStroke(k, stroke);

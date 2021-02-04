@@ -1,7 +1,6 @@
 package org.cytoscape.cg.internal.charts.heatmap;
 
 import java.awt.Color;
-import java.awt.geom.Rectangle2D;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -29,21 +28,22 @@ public class HeatMapLayer extends AbstractChartLayer<XYZDataset> {
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public HeatMapLayer(Map<String/*key*/, List<Double>/*z-values*/> data,
-						List<String> itemLabels,
-						List<String> domainLabels,
-						List<String> rangeLabels,
-						boolean showDomainAxis,
-						boolean showRangeAxis,
-						LabelPosition domainLabelPosition,
-						List<Color> colors,
-						Color axisColor,
-						float axisFontSize,
-						List<Double> range,
-						Orientation orientation,
-						Rectangle2D bounds) {
+	public HeatMapLayer(
+			Map<String/* key */, List<Double>/* z-values */> data, 
+			List<String> itemLabels,
+			List<String> domainLabels, 
+			List<String> rangeLabels, 
+			boolean showDomainAxis, 
+			boolean showRangeAxis,
+			LabelPosition domainLabelPosition, 
+			List<Color> colors, 
+			Color axisColor, 
+			float axisFontSize,
+			List<Double> range, 
+			Orientation orientation
+	) {
 		super(data, itemLabels, domainLabels, rangeLabels, false, showDomainAxis, showRangeAxis, 0.0f,
-				domainLabelPosition, colors, 0.0f, axisColor, axisFontSize, 0.0f, TRANSPARENT_COLOR, range, bounds);
+				domainLabelPosition, colors, 0.0f, axisColor, axisFontSize, 0.0f, TRANSPARENT_COLOR, range);
         this.orientation = orientation;
         
         // Range cannot be null

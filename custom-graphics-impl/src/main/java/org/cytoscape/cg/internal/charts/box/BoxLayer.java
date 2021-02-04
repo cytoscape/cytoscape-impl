@@ -3,7 +3,6 @@ package org.cytoscape.cg.internal.charts.box;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.geom.Rectangle2D;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -32,21 +31,22 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
 	@SuppressWarnings("unchecked")
-	public BoxLayer(Map<String/*series*/, List<Double>/*values*/> data,
-					boolean showRangeAxis,
-					boolean showRangeZeroBaseline,
-					List<Color> colors,
-					float axisWidth,
-					Color axisColor,
-					float axisFontSize,
-					float borderWidth,
-					Color borderColor,
-					List<Double> range,
-					Orientation orientation,
-					Rectangle2D bounds) {
+	public BoxLayer(
+			Map<String/* series */, List<Double>/* values */> data, 
+			boolean showRangeAxis,
+			boolean showRangeZeroBaseline, 
+			List<Color> colors, 
+			float axisWidth, 
+			Color axisColor, 
+			float axisFontSize,
+			float borderWidth, 
+			Color borderColor, 
+			List<Double> range, 
+			Orientation orientation
+	) {
         super(data, Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_LIST, false, false,
 				showRangeAxis, 0.0f, LabelPosition.STANDARD, colors, axisWidth, axisColor, axisFontSize,
-				borderWidth, borderColor, range, bounds);
+				borderWidth, borderColor, range);
         this.showRangeZeroBaseline = showRangeZeroBaseline;
         this.orientation = orientation;
 	}
@@ -57,7 +57,7 @@ public class BoxLayer extends AbstractChartLayer<BoxAndWhiskerCategoryDataset> {
 	protected BoxAndWhiskerCategoryDataset createDataset() {
 		var dataset = new DefaultBoxAndWhiskerCategoryDataset();
 		
-		for (String series : data.keySet()) {
+		for (var series : data.keySet()) {
 			var values = data.get(series);
 			dataset.add(values, series, "1"); // switch series and category name so labels are displayed for series
 		}

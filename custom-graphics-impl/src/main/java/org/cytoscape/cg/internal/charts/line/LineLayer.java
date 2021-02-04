@@ -3,7 +3,6 @@ package org.cytoscape.cg.internal.charts.line;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.Map;
 
@@ -29,26 +28,26 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public LineLayer(Map<String/*series*/, List<Double>/*values*/> data,
-					 List<String> itemLabels,
-					 List<String> domainLabels,
-					 List<String> rangeLabels,
-					 boolean showItemLabels,
-					 boolean showDomainAxis,
-					 boolean showRangeAxis,
-					 boolean showRangeZeroBaseline,
-					 float itemFontSize,
-					 LabelPosition domainLabelPosition,
-					 List<Color> colors,
-					 float axisWidth,
-					 Color axisColor,
-					 float axisFontSize,
-					 List<Double> range,
-					 float lineWidth,
-					 Rectangle2D bounds) {
+	public LineLayer(
+			Map<String/* series */, List<Double>/* values */> data, 
+			List<String> itemLabels,
+			List<String> domainLabels, 
+			List<String> rangeLabels, 
+			boolean showItemLabels, 
+			boolean showDomainAxis,
+			boolean showRangeAxis, 
+			boolean showRangeZeroBaseline, 
+			float itemFontSize, 
+			LabelPosition domainLabelPosition,
+			List<Color> colors, 
+			float axisWidth, 
+			Color axisColor, 
+			float axisFontSize, 
+			List<Double> range,
+			float lineWidth
+	) {
         super(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis, showRangeAxis, itemFontSize,
-        		domainLabelPosition, colors, axisWidth, axisColor, axisFontSize, 0.0f, TRANSPARENT_COLOR, range,
-        		bounds);
+        		domainLabelPosition, colors, axisWidth, axisColor, axisFontSize, 0.0f, TRANSPARENT_COLOR, range);
         this.showRangeZeroBaseline = showRangeZeroBaseline;
         this.lineWidth = lineWidth >= 0 ? lineWidth : 1.0f;
 	}
@@ -62,7 +61,7 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
     
 	@Override
 	protected JFreeChart createChart(CategoryDataset dataset) {
-		final JFreeChart chart = ChartFactory.createLineChart(
+		var chart = ChartFactory.createLineChart(
 				null, // chart title
 				null, // domain axis label
 				null, // range axis label
@@ -70,7 +69,8 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 				PlotOrientation.VERTICAL,
 				false, // include legend
 				false, // tooltips
-				false); // urls
+				false // urls
+		);
 		
         chart.setAntiAlias(true);
         chart.setBorderVisible(false);
@@ -78,7 +78,7 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
         chart.setBackgroundImageAlpha(0.0f);
         chart.setPadding(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
         
-        final CategoryPlot plot = (CategoryPlot) chart.getPlot();
+        var plot = (CategoryPlot) chart.getPlot();
 		plot.setOutlineVisible(false);
 		plot.setInsets(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
 		plot.setAxisOffset(new RectangleInsets(1.0, 1.0, 1.0, 1.0));
@@ -94,14 +94,13 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 			plot.setRangeZeroBaselineStroke(new EqualDashStroke(axisWidth));
 		}
 		
-		final BasicStroke axisStroke = new BasicStroke(axisWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
-		final BasicStroke gridLineStroke =
-				new BasicStroke(axisWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND,
-						 0.5f, new float[]{ 0.5f }, 0.0f);
+		var axisStroke = new BasicStroke(axisWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+		var gridLineStroke = new BasicStroke(axisWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0.5f,
+				new float[] { 0.5f }, 0.0f);
 		
 		plot.setRangeGridlineStroke(gridLineStroke);
 		
-		final CategoryAxis domainAxis = (CategoryAxis) plot.getDomainAxis();
+		var domainAxis = (CategoryAxis) plot.getDomainAxis();
         domainAxis.setVisible(showDomainAxis);
         domainAxis.setAxisLineStroke(axisStroke);
         domainAxis.setAxisLinePaint(axisColor);
@@ -116,7 +115,7 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
         domainAxis.setLowerMargin(0.0);
         domainAxis.setUpperMargin(0.0);
         
-		final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+        var rangeAxis = (NumberAxis) plot.getRangeAxis();
 		rangeAxis.setVisible(showRangeAxis);
 		rangeAxis.setAxisLineStroke(axisStroke);
 		rangeAxis.setAxisLinePaint(axisColor);
@@ -133,19 +132,19 @@ public class LineLayer extends AbstractChartLayer<CategoryDataset> {
 			rangeAxis.setUpperBound(range.get(1) * 1.1);
 		}
 		
-		final LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
+		var renderer = (LineAndShapeRenderer) plot.getRenderer();
 		renderer.setBaseItemLabelGenerator(showItemLabels ? new CustomCategoryItemLabelGenerator(itemLabels) : null);
 		renderer.setBaseItemLabelsVisible(showItemLabels);
 		renderer.setBaseItemLabelFont(renderer.getBaseItemLabelFont().deriveFont(itemFontSize));
 		renderer.setBaseItemLabelPaint(labelColor);
 		
-		final BasicStroke seriesStroke = new BasicStroke(lineWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+		var seriesStroke = new BasicStroke(lineWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 		
-		final List<?> keys = dataset.getRowKeys();
+		var keys = dataset.getRowKeys();
 		
 		if (colors != null && colors.size() >= keys.size()) {
 			for (int i = 0; i < keys.size(); i++) {
-				final Color c = colors.get(i);
+				var c = colors.get(i);
 				renderer.setSeriesPaint(i, c);
 				renderer.setSeriesStroke(i, seriesStroke);
 			}

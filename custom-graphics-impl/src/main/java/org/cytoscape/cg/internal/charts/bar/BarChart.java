@@ -2,7 +2,6 @@ package org.cytoscape.cg.internal.charts.bar;
 
 import java.awt.Color;
 import java.awt.Image;
-import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.Map;
 
@@ -98,8 +97,6 @@ public class BarChart extends AbstractChart<BarLayer> {
 			domainLabels = getSingleValueColumnNames(row);
 
 		var colors = getColors(data);
-		final double size = 32;
-		var bounds = new Rectangle2D.Double(-size / 2, -size / 2, size, size);
 
 		var orientation = get(ORIENTATION, Orientation.class);
 		var showLabels = get(SHOW_ITEM_LABELS, Boolean.class, false);
@@ -119,7 +116,7 @@ public class BarChart extends AbstractChart<BarLayer> {
 
 		var layer = new BarLayer(data, type, itemLabels, domainLabels, rangeLabels, showLabels, showDomainAxis,
 				showRangeAxis, showRangeZeroBaseline, itemFontSize, domainLabelPosition, colors, axisWidth, axisColor,
-				axisFontSize, borderWidth, borderColor, separation, range, orientation, bounds);
+				axisFontSize, borderWidth, borderColor, separation, range, orientation);
 
 		return layer;
 	}

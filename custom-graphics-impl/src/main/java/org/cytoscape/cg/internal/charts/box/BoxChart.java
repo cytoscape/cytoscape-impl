@@ -2,7 +2,6 @@ package org.cytoscape.cg.internal.charts.box;
 
 import java.awt.Color;
 import java.awt.Image;
-import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.Map;
 
@@ -64,10 +63,7 @@ public class BoxChart extends AbstractChart<BoxLayer> {
 		var range = global ? getList(RANGE, Double.class) : null;
 		
 		var data = getData(row);
-
 		var colors = getColors(data);
-		final double size = 32;
-		var bounds = new Rectangle2D.Double(-size / 2, -size / 2, size, size);
 		
 		var orientation = get(ORIENTATION, Orientation.class);
 		var showRangeAxis = get(SHOW_RANGE_AXIS, Boolean.class, false);
@@ -79,7 +75,7 @@ public class BoxChart extends AbstractChart<BoxLayer> {
 		var borderColor = get(BORDER_COLOR, Color.class, Color.DARK_GRAY);
 		
 		var layer = new BoxLayer(data, showRangeAxis, showRangeZeroBaseline, colors, axisWidth, axisColor, axisFontSize,
-				borderWidth, borderColor, range, orientation, bounds);
+				borderWidth, borderColor, range, orientation);
 		
 		return layer;
 	}

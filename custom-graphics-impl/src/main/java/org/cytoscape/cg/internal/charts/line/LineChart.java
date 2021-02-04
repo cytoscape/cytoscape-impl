@@ -2,7 +2,6 @@ package org.cytoscape.cg.internal.charts.line;
 
 import java.awt.Color;
 import java.awt.Image;
-import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.Map;
 
@@ -83,9 +82,7 @@ public class LineChart extends AbstractChart<LineLayer> {
 			domainLabels = getSingleValueColumnNames(row);
 
 		var colors = getColors(data);
-		final double size = 32;
-		var bounds = new Rectangle2D.Double(-size / 2, -size / 2, size, size);
-
+		
 		var showItemLabels = get(SHOW_ITEM_LABELS, Boolean.class, false);
 		var showDomainAxis = get(SHOW_DOMAIN_AXIS, Boolean.class, false);
 		var showRangeAxis = get(SHOW_RANGE_AXIS, Boolean.class, false);
@@ -99,7 +96,7 @@ public class LineChart extends AbstractChart<LineLayer> {
 
 		var layer = new LineLayer(data, itemLabels, domainLabels, rangeLabels, showItemLabels, showDomainAxis,
 				showRangeAxis, showRangeZeroBaseline, itemFontSize, domainLabelPosition, colors, axisWidth, axisColor,
-				axisFontSize, range, lineWidth, bounds);
+				axisFontSize, range, lineWidth);
 
 		return layer;
 	}

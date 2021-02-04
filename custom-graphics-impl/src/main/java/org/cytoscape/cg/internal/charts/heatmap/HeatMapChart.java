@@ -2,7 +2,6 @@ package org.cytoscape.cg.internal.charts.heatmap;
 
 import java.awt.Color;
 import java.awt.Image;
-import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.Map;
 
@@ -69,10 +68,7 @@ public class HeatMapChart extends AbstractChart<HeatMapLayer> {
 		var range = global ? getList(RANGE, Double.class) : null;
 
 		var data = getData(row);
-
 		var colors = getColors(data);
-		var size = 32.0;
-		var bounds = new Rectangle2D.Double(-size / 2, -size / 2, size, size);
 
 		var showDomainAxis = get(SHOW_DOMAIN_AXIS, Boolean.class, false);
 		var showRangeAxis = get(SHOW_RANGE_AXIS, Boolean.class, false);
@@ -82,7 +78,7 @@ public class HeatMapChart extends AbstractChart<HeatMapLayer> {
 		var orientation = get(ORIENTATION, Orientation.class);
 
 		var layer = new HeatMapLayer(data, itemLabels, domainLabels, rangeLabels, showDomainAxis, showRangeAxis,
-				domainLabelPosition, colors, axisColor, axisFontSize, range, orientation, bounds);
+				domainLabelPosition, colors, axisColor, axisFontSize, range, orientation);
 
 		return layer;
 	}

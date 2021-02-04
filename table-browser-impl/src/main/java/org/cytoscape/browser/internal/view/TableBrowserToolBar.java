@@ -16,9 +16,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import javax.swing.AbstractButton;
 import javax.swing.GroupLayout;
@@ -52,7 +50,6 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTable.Mutability;
-import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.TableTaskFactory;
@@ -63,9 +60,7 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.model.ContinuousRange;
-import org.cytoscape.view.model.View;
 import org.cytoscape.work.SynchronousTaskManager;
-import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 /*
@@ -219,7 +214,7 @@ public class TableBrowserToolBar extends JPanel {
 		updateEnableState();
 	}
 	
-	private void addComponent(final JComponent component, final ComponentPlacement placement) {
+	private void addComponent(JComponent component, ComponentPlacement placement) {
 		if (placement != null)
 			hToolBarGroup.addPreferredGap(placement);
 		
@@ -229,7 +224,7 @@ public class TableBrowserToolBar extends JPanel {
 		components.add(component);
 	}
 
-	protected void styleButton(final AbstractButton btn, final Font font) {
+	protected void styleButton(AbstractButton btn, Font font) {
 		btn.setFont(font);
 		btn.setBorder(null);
 		btn.setContentAreaFilled(false);
@@ -329,14 +324,14 @@ public class TableBrowserToolBar extends JPanel {
 		public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
 			// Update actual table
 			try {
-				final Set<String> visibleAttributes = getColumnSelector().getSelectedColumnNames();
-				Collection<View<CyColumn>> columnViews = tableRenderer.getTableView().getColumnViews();
+				var visibleAttributes = getColumnSelector().getSelectedColumnNames();
+				var columnViews = tableRenderer.getTableView().getColumnViews();
 				
-				for(View<CyColumn> columnView : columnViews) {
+				for (var columnView : columnViews) {
 					boolean visible = visibleAttributes.contains(columnView.getModel().getName());
 					TableRenderer.setColumnVisible(columnView, visible);
 				}
-				
+
 				updateEnableState();
 			} catch (Exception ex) { }
 		}
@@ -381,81 +376,81 @@ public class TableBrowserToolBar extends JPanel {
 
 		return createColumnPopup;
 	}
-
-	private JMenuItem getJMenuItemStringAttribute(final boolean isShared) {
-		final JMenuItem mi = new JMenuItem();
+	
+	private JMenuItem getJMenuItemStringAttribute(boolean isShared) {
+		var mi = new JMenuItem();
 		mi.setText("String");
 		mi.addActionListener(e -> createNewAttribute("String", isShared));
 
 		return mi;
 	}
 
-	private JMenuItem getJMenuItemIntegerAttribute(final boolean isShared) {
-		final JMenuItem mi = new JMenuItem();
+	private JMenuItem getJMenuItemIntegerAttribute(boolean isShared) {
+		var mi = new JMenuItem();
 		mi.setText("Integer");
 		mi.addActionListener(e -> createNewAttribute("Integer", isShared));
 
 		return mi;
 	}
 
-	private JMenuItem getJMenuItemLongIntegerAttribute(final boolean isShared) {
-		final JMenuItem mi = new JMenuItem();
+	private JMenuItem getJMenuItemLongIntegerAttribute(boolean isShared) {
+		var mi = new JMenuItem();
 		mi.setText("Long Integer");
 		mi.addActionListener(e -> createNewAttribute("Long Integer", isShared));
 		
 		return mi;
 	}
 
-	private JMenuItem getJMenuItemFloatingPointAttribute(final boolean isShared) {
-		final JMenuItem mi = new JMenuItem();
+	private JMenuItem getJMenuItemFloatingPointAttribute(boolean isShared) {
+		var mi = new JMenuItem();
 		mi.setText("Floating Point");
 		mi.addActionListener(e -> createNewAttribute("Floating Point", isShared));
 
 		return mi;
 	}
 
-	private JMenuItem getJMenuItemBooleanAttribute(final boolean isShared) {
-		final JMenuItem mi = new JMenuItem();
+	private JMenuItem getJMenuItemBooleanAttribute(boolean isShared) {
+		var mi = new JMenuItem();
 		mi.setText("Boolean");
 		mi.addActionListener(e -> createNewAttribute("Boolean", isShared));
 
 		return mi;
 	}
 
-	private JMenuItem getJMenuItemStringListAttribute(final boolean isShared) {
-		final JMenuItem mi = new JMenuItem();
+	private JMenuItem getJMenuItemStringListAttribute(boolean isShared) {
+		var mi = new JMenuItem();
 		mi.setText("String");
 		mi.addActionListener(e -> createNewAttribute("String List", isShared));
 
 		return mi;
 	}
 
-	private JMenuItem getJMenuItemIntegerListAttribute(final boolean isShared) {
-		final JMenuItem mi = new JMenuItem();
+	private JMenuItem getJMenuItemIntegerListAttribute(boolean isShared) {
+		var mi = new JMenuItem();
 		mi.setText("Integer");
 		mi.addActionListener(e -> createNewAttribute("Integer List", isShared));
 
 		return mi;
 	}
 
-	private JMenuItem getJMenuItemLongIntegerListAttribute(final boolean isShared) {
-		final JMenuItem mi = new JMenuItem();
+	private JMenuItem getJMenuItemLongIntegerListAttribute(boolean isShared) {
+		var mi = new JMenuItem();
 		mi.setText("Long Integer");
 		mi.addActionListener(e -> createNewAttribute("Long Integer List", isShared));
 
 		return mi;
 	}
 
-	private JMenuItem getJMenuItemFloatingPointListAttribute(final boolean isShared) {
-		final JMenuItem mi = new JMenuItem();
+	private JMenuItem getJMenuItemFloatingPointListAttribute(boolean isShared) {
+		var mi = new JMenuItem();
 		mi.setText("Floating Point");
 		mi.addActionListener(e -> createNewAttribute("Floating Point List", isShared));
 
 		return mi;
 	}
 
-	private JMenuItem getJMenuItemBooleanListAttribute(final boolean isShared) {
-		final JMenuItem mi = new JMenuItem();
+	private JMenuItem getJMenuItemBooleanListAttribute(boolean isShared) {
+		var mi = new JMenuItem();
 		mi.setText("Boolean");
 		mi.addActionListener(e -> createNewAttribute("Boolean List", isShared));
 
@@ -469,7 +464,7 @@ public class TableBrowserToolBar extends JPanel {
 			toolBar.setOrientation(JToolBar.HORIZONTAL);
 			toolBar.setOpaque(!isAquaLAF());
 
-			final GroupLayout layout = new GroupLayout(toolBar);
+			var layout = new GroupLayout(toolBar);
 			toolBar.setLayout(layout);
 			hToolBarGroup = layout.createSequentialGroup();
 			vToolBarGroup = layout.createParallelGroup(Alignment.CENTER, false);
@@ -540,10 +535,11 @@ public class TableBrowserToolBar extends JPanel {
 			styleButton(fnBuilderButton, iconFont.deriveFont(18.0f));
 
 			fnBuilderButton.addActionListener(e -> {
-				TableTaskFactory factory = serviceRegistrar.getService(TableTaskFactory.class, "(task=equationEditor)");
-				if(factory != null) {
-					SynchronousTaskManager<?> taskManager = serviceRegistrar.getService(SynchronousTaskManager.class);
-					TaskIterator iter = factory.createTaskIterator(tableRenderer.getDataTable());
+				var factory = serviceRegistrar.getService(TableTaskFactory.class, "(task=equationEditor)");
+				
+				if (factory != null) {
+					var taskManager = serviceRegistrar.getService(SynchronousTaskManager.class);
+					var iter = factory.createTaskIterator(tableRenderer.getDataTable());
 					taskManager.execute(iter);
 				}
 			});
@@ -552,7 +548,7 @@ public class TableBrowserToolBar extends JPanel {
 		return fnBuilderButton;
 	}
 
-//	private String getColumnName(final int cellRow, final int cellColumn) {
+//	private String getColumnName(int cellRow, int cellColumn) {
 //		int colIndexModel = browserTable.convertColumnIndexToModel(cellColumn);
 //		return browserTableModel.getColumnName( colIndexModel);
 //	}
@@ -587,8 +583,8 @@ public class TableBrowserToolBar extends JPanel {
 	}
 	
 	private void showColumnDeletionDialog() {
-		final JFrame frame = (JFrame) SwingUtilities.getRoot(this);
-		final DeletionDialog dDialog = new DeletionDialog(frame, tableRenderer.getDataTable());
+		var frame = (JFrame) SwingUtilities.getRoot(this);
+		var dDialog = new DeletionDialog(frame, tableRenderer.getDataTable());
 
 		dDialog.pack();
 		dDialog.setLocationRelativeTo(toolBar);
@@ -599,39 +595,40 @@ public class TableBrowserToolBar extends JPanel {
 		var table = tableRenderer.getDataTable();
 
 		if (table.getMutability() == CyTable.Mutability.MUTABLE) {
-			String title = "Please confirm this action";
-			String msg = "Are you sure you want to delete this table?";
+			var title = "Please confirm this action";
+			var msg = "Are you sure you want to delete this table?";
 			int confirmValue = JOptionPane.showConfirmDialog(this, msg, title, JOptionPane.YES_NO_OPTION,
 					JOptionPane.QUESTION_MESSAGE);
 
 			// if user selects yes delete the table
 			if (confirmValue == JOptionPane.OK_OPTION) {
-				final DialogTaskManager taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
-				final DeleteTableTaskFactory deleteTableTaskFactory =
-						serviceRegistrar.getService(DeleteTableTaskFactory.class);
+				var taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
+				var deleteTableTaskFactory = serviceRegistrar.getService(DeleteTableTaskFactory.class);
 				
 				taskMgr.execute(deleteTableTaskFactory.createTaskIterator(table));
 			}
 		} else if (table.getMutability() == CyTable.Mutability.PERMANENTLY_IMMUTABLE) {
-			String title = "Error";
-			String msg = "Can not delete this table, it is PERMANENTLY_IMMUTABLE";
+			var title = "Error";
+			var msg = "Can not delete this table, it is PERMANENTLY_IMMUTABLE";
 			JOptionPane.showMessageDialog(this, msg, title, JOptionPane.ERROR_MESSAGE);
 		} else if (table.getMutability() == CyTable.Mutability.IMMUTABLE_DUE_TO_VIRT_COLUMN_REFERENCES) {
-			String title = "Error";
-			String msg = "Can not delete this table, it is IMMUTABLE_DUE_TO_VIRT_COLUMN_REFERENCES";
+			var title = "Error";
+			var msg = "Can not delete this table, it is IMMUTABLE_DUE_TO_VIRT_COLUMN_REFERENCES";
 			JOptionPane.showMessageDialog(this, msg, title, JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
 	private String[] getAttributeArray() {
-		final CyTable attrs = tableRenderer.getDataTable();
-		final Collection<CyColumn> columns = attrs.getColumns();
-		final String[] attributeArray = new String[columns.size() - 1];
+		var attrs = tableRenderer.getDataTable();
+		var columns = attrs.getColumns();
+		var attributeArray = new String[columns.size() - 1];
 		int index = 0;
-		for (final CyColumn column : columns) {
-			if (!column.isPrimaryKey())
-				attributeArray[index++] = column.getName();
+		
+		for (var col : columns) {
+			if (!col.isPrimaryKey())
+				attributeArray[index++] = col.getName();
 		}
+		
 		Arrays.sort(attributeArray);
 
 		return attributeArray;
@@ -692,8 +689,8 @@ public class TableBrowserToolBar extends JPanel {
 			styleButton(importButton, iconMgr.getIconFont(IconUtil.CY_FONT_NAME, TableBrowserToolBar.ICON_FONT_SIZE));
 			
 			importButton.addActionListener(e -> {
-				LoadTableFileTaskFactory factory = serviceRegistrar.getService(LoadTableFileTaskFactory.class);
-				DialogTaskManager taskManager = serviceRegistrar.getService(DialogTaskManager.class);
+				var factory = serviceRegistrar.getService(LoadTableFileTaskFactory.class);
+				var taskManager = serviceRegistrar.getService(DialogTaskManager.class);
 				taskManager.execute(factory.createTaskIterator());
 			});
 		}
@@ -708,8 +705,8 @@ public class TableBrowserToolBar extends JPanel {
 			styleButton(exportButton, iconMgr.getIconFont(IconUtil.CY_FONT_NAME, TableBrowserToolBar.ICON_FONT_SIZE));
 			
 			exportButton.addActionListener(e -> {
-				ExportTableTaskFactory factory = serviceRegistrar.getService(ExportTableTaskFactory.class);
-				DialogTaskManager taskManager = serviceRegistrar.getService(DialogTaskManager.class);
+				var factory = serviceRegistrar.getService(ExportTableTaskFactory.class);
+				var taskManager = serviceRegistrar.getService(DialogTaskManager.class);
 				taskManager.execute(factory.createTaskIterator(tableRenderer.getDataTable()));
 			});
 		}
@@ -717,15 +714,18 @@ public class TableBrowserToolBar extends JPanel {
 		return exportButton;
 	}
 	
-	private void createNewAttribute(final String type, boolean isShared) {
+	private void createNewAttribute(String type, boolean isShared) {
 		try {
-			final String[] existingAttrs = getAttributeArray();
+			var existingAttrs = getAttributeArray();
 			String newAttribName = null;
 			
 			do {
-				newAttribName = JOptionPane.showInputDialog(this, "Column Name: ",
-									    "Create New " + type + " Column",
-									    JOptionPane.QUESTION_MESSAGE);
+				newAttribName = JOptionPane.showInputDialog(
+						this,
+						"Column Name: ",
+						"Create New " + type + " Column",
+						JOptionPane.QUESTION_MESSAGE
+				);
 				
 				if (newAttribName == null)
 					return;
@@ -747,10 +747,10 @@ public class TableBrowserToolBar extends JPanel {
 			final CyTable attrs;
 			
 			if (isShared) {
-				final CyNetwork network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
+				var network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 							
 				if (network instanceof CySubNetwork) {
-					final CyRootNetwork rootNetwork = ((CySubNetwork) network).getRootNetwork();
+					var rootNetwork = ((CySubNetwork) network).getRootNetwork();
 					CyTable sharedTable = null;
 					
 					if (this.objType == CyNode.class)

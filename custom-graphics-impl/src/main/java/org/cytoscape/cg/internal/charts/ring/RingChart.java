@@ -2,7 +2,6 @@ package org.cytoscape.cg.internal.charts.ring;
 
 import java.awt.Color;
 import java.awt.Image;
-import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.Map;
 
@@ -77,17 +76,15 @@ public class RingChart extends AbstractChart<RingLayer> {
 		var labels = getItemLabels(row);
 
 		var data = getData(row);
-
 		var colors = getColors(data);
-		final double size = 32;
-		final Rectangle2D bounds = new Rectangle2D.Double(-size / 2, -size / 2, size, size);
+		
 		var showLabels = get(SHOW_ITEM_LABELS, Boolean.class, false);
 		var itemFontSize = convertFontSize(get(ITEM_LABEL_FONT_SIZE, Integer.class, 1));
 		var borderWidth = get(BORDER_WIDTH, Float.class, 0.25f);
 		var borderColor = get(BORDER_COLOR, Color.class, Color.DARK_GRAY);
 
 		var layer = new RingLayer(data, labels, showLabels, itemFontSize, colors, borderWidth, borderColor, startAngle,
-				hole, rotation, bounds);
+				hole, rotation);
 
 		return layer;
 	}

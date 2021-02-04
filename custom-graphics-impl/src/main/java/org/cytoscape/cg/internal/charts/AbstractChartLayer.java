@@ -83,8 +83,7 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 			float axisFontSize,
 			float borderWidth,
 			Color borderColor,
-			List<Double> range,
-			Rectangle2D bounds
+			List<Double> range
 	) {
 		this.data = data;
 		this.itemLabels = itemLabels;
@@ -101,8 +100,12 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 		this.axisFontSize = axisFontSize;
 		this.borderWidth = borderWidth;
 		this.borderColor = borderColor;
-		this.bounds = scaledBounds = bounds;
 		this.range = range;
+		
+		// Initial bounds
+		var size = 32.0;
+		var bounds = new Rectangle2D.Double(-size / 2, -size / 2, size, size);
+		this.bounds = scaledBounds = bounds;
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================
