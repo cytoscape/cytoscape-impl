@@ -26,9 +26,8 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 @SuppressWarnings({ "serial", "rawtypes" })
 public class CustomGraphicsCellRenderer extends JPanel implements ListCellRenderer<CyCustomGraphics> {
 
-	private static final int ICON_SIZE = 130;
-	private static final int NAME_LENGTH_LIMIT = 28;
-	private static final Dimension CELL_SIZE = new Dimension(200, 150);
+	private static final int ICON_SIZE = 96;
+	private static final int CELL_WIDTH = 150;
 
 	private final Map<CyCustomGraphics<?>, ImagePanel> panelMap;
 
@@ -76,7 +75,6 @@ public class CustomGraphicsCellRenderer extends JPanel implements ListCellRender
 			SEL_FG_COLOR = list.getSelectionForeground();
 			BORDER_COLOR = new Separator().getForeground();
 			
-			setPreferredSize(CELL_SIZE);
 			setToolTipText(cg.getDisplayName());
 			
 			var name = ViewUtil.getShortName(cg.getDisplayName());
@@ -96,6 +94,8 @@ public class CustomGraphicsCellRenderer extends JPanel implements ListCellRender
 			
 			add(iconLbl, BorderLayout.CENTER);
 			add(nameLbl, BorderLayout.SOUTH);
+			
+			setPreferredSize(new Dimension(CELL_WIDTH, 10 + getPreferredSize().height));
 		}
 		
 		void setSelected(boolean selected) {

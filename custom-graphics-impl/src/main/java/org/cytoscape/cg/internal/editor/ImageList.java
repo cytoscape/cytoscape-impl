@@ -37,7 +37,7 @@ import org.jdesktop.swingx.icon.EmptyIcon;
 @SuppressWarnings("serial")
 public class ImageList extends JXList {
 	
-	private static final int ICON_SIZE = 32;
+	private static final int ICON_SIZE = 40;
 	
 	private final Set<CyCustomGraphics> values;
 	private final Map<CyCustomGraphics, Icon> iconMap;
@@ -80,7 +80,7 @@ public class ImageList extends JXList {
 		if (engine != null) {
 			synchronized (values) {
 				for (CyCustomGraphics<?> val : values) {
-					var icon = VisualPropertyIconFactory.createIcon(val, ICON_SIZE, 32);
+					var icon = VisualPropertyIconFactory.createIcon(val, ICON_SIZE, ICON_SIZE);
 					
 					if (icon != null)
 						iconMap.put(val, icon);
@@ -128,7 +128,7 @@ public class ImageList extends JXList {
 			setOpaque(true);
 			
 			var border = BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground"));
-			var paddingBorder = BorderFactory.createEmptyBorder(4, 4, 4, 4);
+			var paddingBorder = BorderFactory.createEmptyBorder(0, 4, 0, 4);
 			setBorder(BorderFactory.createCompoundBorder(border, paddingBorder));
 			
 			setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
