@@ -19,9 +19,11 @@ import org.cytoscape.view.model.internal.base.VPStore;
 import org.cytoscape.view.model.internal.network.CyEdgeViewImpl;
 import org.cytoscape.view.model.internal.network.CyNetworkViewImpl;
 import org.cytoscape.view.model.internal.network.CyNodeViewImpl;
+import org.cytoscape.view.model.internal.network.VPEdgeStore;
 import org.cytoscape.view.model.internal.network.VPNetworkStore;
+import org.cytoscape.view.model.internal.network.VPNodeStore;
 import org.cytoscape.view.model.internal.network.spacial.SimpleSpacialIndex2DSnapshotImpl;
-import org.cytoscape.view.model.spacial.SpacialIndex2D;
+import org.cytoscape.view.model.spacial.NetworkSpacialIndex2D;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 import io.vavr.collection.HashSet;
@@ -42,11 +44,11 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	// Key is SUID of View object
 	private final Map<Long,Set<CyEdgeViewImpl>> adjacentEdgeMap;
 	
-	protected final VPStore nodeVPs;
-	protected final VPStore edgeVPs;
+	protected final VPNodeStore nodeVPs;
+	protected final VPEdgeStore edgeVPs;
 	protected final VPNetworkStore netVPs;
 	
-	private final SpacialIndex2D<Long> spacialIndex;
+	private final NetworkSpacialIndex2D spacialIndex;
 	private final boolean isBVL;
 	
 	// Store of immutable node/edge objects
@@ -64,8 +66,8 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 			Map<Long,CyEdgeViewImpl> dataSuidToEdge,
 			Map<Long,CyEdgeViewImpl> viewSuidToEdge,
 			Map<Long,Set<CyEdgeViewImpl>> adjacentEdgeMap,
-			VPStore nodeVPs,
-			VPStore edgeVPs,
+			VPNodeStore nodeVPs,
+			VPEdgeStore edgeVPs,
 			VPNetworkStore netVPs,
 			VisualLexicon lexicon
 	) {
@@ -154,7 +156,7 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	}
 	
 	@Override
-	public SpacialIndex2D<Long> getSpacialIndex2D() {
+	public NetworkSpacialIndex2D getSpacialIndex2D() {
 		return spacialIndex;
 	}
 	
@@ -251,8 +253,16 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 		return list;
 	}
 
-	public Double getZ(Long nodeViewSuid) {
+	public Double getNodeZ(Long nodeViewSuid) {
 		return nodeVPs.getVisualProperty(nodeViewSuid, BasicVisualLexicon.NODE_Z_LOCATION);
+	}
+	
+	public Double getEdgeZ(Long edgeViewSuid) {
+		return edgeVPs.getVisualProperty(edgeViewSuid, BasicVisualLexicon.EDGE_Z_ORDER);
+	}
+	
+	public boolean hasEdgeZ() {
+		return edgeVPs.hasZ();
 	}
 
 	@Override

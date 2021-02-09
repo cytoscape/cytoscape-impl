@@ -1,10 +1,6 @@
 package org.cytoscape.view.model.internal.network;
 
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_HEIGHT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_VISIBLE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_WIDTH;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -68,8 +64,8 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	protected final ViewLock nodeLock;
 	protected final ViewLock edgeLock;
 	
-	protected final VPStore nodeVPs;
-	protected final VPStore edgeVPs;
+	protected final VPNodeStore nodeVPs;
+	protected final VPEdgeStore edgeVPs;
 	protected final VPNetworkStore netVPs;
 	
 
@@ -83,8 +79,8 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		this.nodeLock = new ViewLock(netLock);
 		this.edgeLock = new ViewLock(netLock);
 		
-		this.edgeVPs = new VPStore(CyEdge.class, visualLexicon, config);
-		this.nodeVPs = new VPStore(CyNode.class, visualLexicon, config);
+		this.edgeVPs = new VPEdgeStore(visualLexicon, config);
+		this.nodeVPs = new VPNodeStore(visualLexicon, config);
 		this.netVPs  = new VPNetworkStore(visualLexicon, config);
 	}
 	
