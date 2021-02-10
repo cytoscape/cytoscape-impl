@@ -1,10 +1,6 @@
 package org.cytoscape.view.model.network;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -30,6 +26,7 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.internal.network.CyNetworkViewFactoryConfigImpl;
 import org.cytoscape.view.model.internal.network.CyNetworkViewFactoryProviderImpl;
 import org.cytoscape.view.model.internal.network.CyNetworkViewImpl;
+import org.cytoscape.view.model.spacial.EdgeSpacialIndex2DEnumerator;
 import org.cytoscape.view.model.spacial.SpacialIndex2D;
 import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -119,6 +116,14 @@ public class NetworkViewTestUtils {
 		List<Long> list = new ArrayList<>(indexEnum.size());
 		while(indexEnum.hasNext()) {
 			list.add(indexEnum.next());
+		}
+		return list;
+	}
+	
+	public static List<Long> enumToList(EdgeSpacialIndex2DEnumerator indexEnum) {
+		List<Long> list = new ArrayList<>(indexEnum.size());
+		while(indexEnum.hasNext()) {
+			list.add(indexEnum.nextEdge().getSUID());
 		}
 		return list;
 	}

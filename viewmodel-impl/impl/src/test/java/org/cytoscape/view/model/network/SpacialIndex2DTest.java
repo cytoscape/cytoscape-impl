@@ -1,23 +1,8 @@
 package org.cytoscape.view.model.network;
 
-import static org.cytoscape.view.model.network.NetworkViewTestUtils.assertHidden;
-import static org.cytoscape.view.model.network.NetworkViewTestUtils.assertMBR;
-import static org.cytoscape.view.model.network.NetworkViewTestUtils.assertVisible;
-import static org.cytoscape.view.model.network.NetworkViewTestUtils.createNetworkView;
-import static org.cytoscape.view.model.network.NetworkViewTestUtils.enumToList;
-import static org.cytoscape.view.model.network.NetworkViewTestUtils.setGeometry;
-import static org.cytoscape.view.model.network.NetworkViewTestUtils.toMap;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_VISIBLE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_HEIGHT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_VISIBLE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_WIDTH;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.cytoscape.view.model.network.NetworkViewTestUtils.*;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
+import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -30,6 +15,9 @@ import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.internal.network.CyNetworkViewImpl;
+import org.cytoscape.view.model.spacial.EdgeSpacialIndex2DEnumerator;
+import org.cytoscape.view.model.spacial.NetworkSpacialIndex2D;
+import org.cytoscape.view.model.spacial.NodeSpacialIndex2DEnumerator;
 import org.cytoscape.view.model.spacial.SpacialIndex2D;
 import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -223,7 +211,7 @@ public class SpacialIndex2DTest {
 	
 	
 	@Test
-	public void testZSort() {
+	public void testNodeZSort() {
 		CyNetwork network = networkSupport.getNetwork();
 		CyNode n1 = network.addNode();
 		CyNode n2 = network.addNode();
@@ -268,7 +256,7 @@ public class SpacialIndex2DTest {
 			nv8.getSUID()
 		);
 		
-		SpacialIndex2D<Long> spacialIndex = networkView.createSnapshot().getSpacialIndex2D();
+		NetworkSpacialIndex2D spacialIndex = networkView.createSnapshot().getSpacialIndex2D();
 		
 		SpacialIndex2DEnumerator<Long> allEnum = spacialIndex.queryAll();
 		List<Long> suids = enumToList(allEnum);
@@ -277,6 +265,93 @@ public class SpacialIndex2DTest {
 		SpacialIndex2DEnumerator<Long> overlapEnum = spacialIndex.queryOverlap(0, 0, 4, 4);
 		List<Long> suids2 = enumToList(overlapEnum);
 		assertEquals(expectedOrder, suids2);
+		
+		NodeSpacialIndex2DEnumerator allNodesEnum = spacialIndex.queryAllNodes();
+		List<Long> suids3 = enumToList(allNodesEnum);
+		assertEquals(expectedOrder, suids3);
+		
+		NodeSpacialIndex2DEnumerator overlapNodesEnum = spacialIndex.queryOverlapNodes(0, 0, 4, 4);
+		List<Long> suids4 = enumToList(overlapNodesEnum);
+		assertEquals(expectedOrder, suids4);
 	}
 	
+	
+	@Test
+	public void testEdgeZSort() {
+		CyNetwork network = networkSupport.getNetwork();
+		CyNode n1 = network.addNode();
+		CyNode n2 = network.addNode();
+		CyNode n3 = network.addNode();
+		CyNode n4 = network.addNode();
+		CyNode n5 = network.addNode();
+		CyNode n6 = network.addNode();
+		
+		CyEdge e1 = network.addEdge(n1, n2, false);
+		CyEdge e2 = network.addEdge(n1, n3, false);
+		CyEdge e3 = network.addEdge(n1, n4, false);
+		CyEdge e4 = network.addEdge(n1, n5, false);
+		CyEdge e5 = network.addEdge(n1, n6, false);
+		CyEdge e6 = network.addEdge(n2, n3, false);
+		CyEdge e7 = network.addEdge(n2, n4, false);
+		CyEdge e8 = network.addEdge(n2, n5, false);
+		CyEdge e9 = network.addEdge(n3, n6, false);
+		
+		CyNetworkViewImpl networkView = createNetworkView(network);
+		
+		View<CyNode> nv1 = networkView.getNodeView(n1);
+		View<CyNode> nv2 = networkView.getNodeView(n2);
+		View<CyNode> nv3 = networkView.getNodeView(n3);
+		View<CyNode> nv4 = networkView.getNodeView(n4);
+		View<CyNode> nv5 = networkView.getNodeView(n5);
+		View<CyNode> nv6 = networkView.getNodeView(n6);
+		
+		setGeometry(nv1, 1, 1, 2, 2, 1);
+		setGeometry(nv2, 1, 1, 2, 2, 6);
+		setGeometry(nv3, 1, 1, 2, 2, 2);
+		setGeometry(nv4, 1, 1, 2, 2, 8);
+		setGeometry(nv5, 1, 1, 2, 2, 4);
+		setGeometry(nv6, 1, 1, 2, 2, 3);
+		
+		View<CyEdge> ev1 = networkView.getEdgeView(e1);
+		View<CyEdge> ev2 = networkView.getEdgeView(e2);
+		View<CyEdge> ev3 = networkView.getEdgeView(e3);
+		View<CyEdge> ev4 = networkView.getEdgeView(e4);
+		View<CyEdge> ev5 = networkView.getEdgeView(e5);
+		View<CyEdge> ev6 = networkView.getEdgeView(e6);
+		View<CyEdge> ev7 = networkView.getEdgeView(e7);
+		View<CyEdge> ev8 = networkView.getEdgeView(e8);
+		View<CyEdge> ev9 = networkView.getEdgeView(e9);
+		
+		ev1.setVisualProperty(EDGE_Z_ORDER, 5.0);
+		ev2.setVisualProperty(EDGE_Z_ORDER, 2.0);
+		ev3.setVisualProperty(EDGE_Z_ORDER, 9.0);
+		ev4.setVisualProperty(EDGE_Z_ORDER, 4.0);
+		ev5.setVisualProperty(EDGE_Z_ORDER, 7.0);
+		ev6.setVisualProperty(EDGE_Z_ORDER, 1.0);
+		ev7.setVisualProperty(EDGE_Z_ORDER, 6.0);
+		ev8.setVisualProperty(EDGE_Z_ORDER, 8.0);
+		ev9.setVisualProperty(EDGE_Z_ORDER, 3.0);
+		
+		List<Long> expectedOrder = Arrays.asList(
+			ev6.getSUID(), 
+			ev2.getSUID(), 
+			ev9.getSUID(), 
+			ev4.getSUID(), 
+			ev1.getSUID(), 
+			ev7.getSUID(), 
+			ev5.getSUID(), 
+			ev8.getSUID(), 
+			ev3.getSUID() 
+		);
+		
+		NetworkSpacialIndex2D spacialIndex = networkView.createSnapshot().getSpacialIndex2D();
+		
+		EdgeSpacialIndex2DEnumerator allEnum = spacialIndex.queryAllEdges();
+		List<Long> suids = enumToList(allEnum);
+		assertEquals(expectedOrder, suids);
+		
+		EdgeSpacialIndex2DEnumerator overlapEnum = spacialIndex.queryOverlapEdges(0, 0, 4, 4);
+		List<Long> suids2 = enumToList(overlapEnum);
+		assertEquals(expectedOrder, suids2);
+	}
 }
