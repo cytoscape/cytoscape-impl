@@ -186,6 +186,11 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 				tableColumn.setHeaderRenderer(new BrowserTableHeaderRenderer(serviceRegistrar));
 				columnModel.addColumn(tableColumn, view.getSUID(), visible, gravity);
 			}
+			
+			var view = tableView.getColumnView(CyNetwork.SELECTED);
+			
+			if (view != null && !tableView.isSet(BasicTableVisualLexicon.COLUMN_EDITABLE))
+				view.setVisualProperty(BasicTableVisualLexicon.COLUMN_EDITABLE, false);
 		}
 		
 		columnModel.reorderColumnsToRespectGravity();
@@ -208,8 +213,22 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	}
 
 	@Override
-	public boolean isCellEditable(final int row, final int column) {
-		return this.getModel().isCellEditable(convertRowIndexToModel(row), convertColumnIndexToModel(column));
+	public boolean isCellEditable(int row, int column) {
+		if (super.isCellEditable(row, column)) {
+			// Also check the visual property...
+			if (getModel() instanceof BrowserTableModel) {
+				var model = (BrowserTableModel) getModel();
+				var tableView = model.getTableView();
+				var name = getColumnName(column);
+				var view = tableView.getColumnView(name);
+				
+				return view.getVisualProperty(BasicTableVisualLexicon.COLUMN_EDITABLE) == Boolean.TRUE;
+			} else {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 
 	@Override
