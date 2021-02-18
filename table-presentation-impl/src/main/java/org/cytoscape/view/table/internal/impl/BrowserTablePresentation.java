@@ -2,6 +2,7 @@ package org.cytoscape.view.table.internal.impl;
 
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_BACKGROUND_PAINT;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_FONT_FACE;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_FONT_SIZE;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_TEXT_COLOR;
 import static org.cytoscape.view.table.internal.BrowserTableVisualLexicon.CELL_CUSTOMGRAPHICS;
 
@@ -67,10 +68,17 @@ public class BrowserTablePresentation {
 		if (value instanceof Boolean) {
 			font = iconManager.getIconFont(12.0f);
 		} else if (colView.isSet(CELL_FONT_FACE)) {
-			var fn = colView.getCellVisualProperty(CELL_FONT_FACE);
+			var fn1 = colView.getCellVisualProperty(CELL_FONT_FACE);
 			
-			if (fn != null)
-				font = fn.apply(row);
+			if (fn1 != null)
+				font = fn1.apply(row);
+			
+			var fn2 = colView.getCellVisualProperty(CELL_FONT_SIZE);
+			
+			if (fn2 != null) {
+				float size = fn2.apply(row);
+				font = font.deriveFont(size);
+			}
 		}
 		
 		return font;
