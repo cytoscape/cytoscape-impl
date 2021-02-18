@@ -68,15 +68,17 @@ public class BrowserTablePresentation {
 		if (value instanceof Boolean) {
 			font = iconManager.getIconFont(12.0f);
 		} else if (colView.isSet(CELL_FONT_FACE)) {
-			var fn1 = colView.getCellVisualProperty(CELL_FONT_FACE);
+			var fn = colView.getCellVisualProperty(CELL_FONT_FACE);
+
+			if (fn != null)
+				font = fn.apply(row);
+		}
+		
+		if (colView.isSet(CELL_FONT_SIZE)) {
+			var fn = colView.getCellVisualProperty(CELL_FONT_SIZE);
 			
-			if (fn1 != null)
-				font = fn1.apply(row);
-			
-			var fn2 = colView.getCellVisualProperty(CELL_FONT_SIZE);
-			
-			if (fn2 != null) {
-				float size = fn2.apply(row);
+			if (fn != null) {
+				float size = fn.apply(row);
 				font = font.deriveFont(size);
 			}
 		}
