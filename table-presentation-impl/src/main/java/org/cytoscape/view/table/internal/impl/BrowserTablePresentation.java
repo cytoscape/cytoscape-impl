@@ -4,6 +4,7 @@ import static org.cytoscape.view.presentation.property.table.BasicTableVisualLex
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_FONT_FACE;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_FONT_SIZE;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_TEXT_COLOR;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_TOOLTIP;
 import static org.cytoscape.view.table.internal.BrowserTableVisualLexicon.CELL_CUSTOMGRAPHICS;
 
 import java.awt.Color;
@@ -84,6 +85,19 @@ public class BrowserTablePresentation {
 		}
 		
 		return font;
+	}
+	
+	public String getTooltip(CyRow row, CyColumnView colView, String defaultTooltip) {
+		var tooltip = defaultTooltip;
+		
+		if (colView.isSet(CELL_TOOLTIP)) {
+			var fn = colView.getCellVisualProperty(CELL_TOOLTIP);
+			
+			if (fn != null)
+				tooltip = fn.apply(row);
+		}
+		
+		return tooltip;
 	}
 
 	public CyCustomGraphics<?> getCustomGraphics(CyRow row, CyColumnView colView) {

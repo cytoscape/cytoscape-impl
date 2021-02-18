@@ -158,7 +158,11 @@ class BrowserTableCellRenderer extends JPanel implements TableCellRenderer {
 				text = validatedObj.toString();
 			}
 
-			tooltip = validatedObj instanceof Boolean ? validatedObj.toString() : text;
+			tooltip = validatedObj instanceof Boolean ? validatedObj.toString() : text; // default tooltip
+			tooltip = presentation.getTooltip(row, columnView, tooltip);
+			
+			if (tooltip != null && tooltip.isBlank())
+				tooltip = null; // don't show an empty tooltip rectangle!
 		}
 		
 		if (isSelected) {
