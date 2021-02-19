@@ -135,7 +135,7 @@ public class DiscreteValueEditor<T> implements VisualPropertyValueEditor<T> {
 		if (newValue == null)
 			newValue = initialValue;
 		
-		return newValue instanceof Font ? (T) ((Font)newValue).deriveFont(12F) : newValue;
+		return newValue;
 	}
 
 	@Override
