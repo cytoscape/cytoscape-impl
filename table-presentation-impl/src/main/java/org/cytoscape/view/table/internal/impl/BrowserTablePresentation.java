@@ -93,8 +93,15 @@ public class BrowserTablePresentation {
 		if (colView.isSet(CELL_TOOLTIP)) {
 			var fn = colView.getCellVisualProperty(CELL_TOOLTIP);
 			
-			if (fn != null)
+			if (fn != null) {
 				tooltip = fn.apply(row);
+				
+				// Unfortunately, the default VP value cannot be null, so let's assume empty is the same as null.
+				// Also, once the UI sets an empty String as value, it may be impossible for the user to remove it,
+				// so it makes more sense that empty means "not set", in which case we should use the defaultTooltip.
+				if (tooltip == null || tooltip.isEmpty())
+					tooltip = defaultTooltip;
+			}
 		}
 		
 		return tooltip;
