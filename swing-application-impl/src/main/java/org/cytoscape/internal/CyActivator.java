@@ -748,8 +748,10 @@ public class CyActivator extends AbstractCyActivator {
 								)
 						)
 				);
-				UIManager.put("TableHeader.background", new Color(244, 244, 244));
-				UIManager.put("Table.gridColor", UIManager.getColor("Table.background"));
+				UIManager.put("TableHeader.background", new Color(240, 240, 240));
+				UIManager.put("Table.alternateRowColor", new Color(244, 245, 245));
+				UIManager.put("Table.showGrid", false);
+				UIManager.put("Table.gridColor", new Color(216, 216, 216));
 				UIManager.put("Table.font", tableFont);
 				UIManager.put("Tree.font", tableFont);
 			} else if (isWinLAF()) {
@@ -765,12 +767,13 @@ public class CyActivator extends AbstractCyActivator {
 						)
 				);
 				UIManager.put("TableHeader.background", UIManager.getColor("Table.background"));
-				UIManager.put("Table.gridColor", UIManager.getColor("Table.background"));
+				UIManager.put("Table.alternateRowColor", new Color(245, 245, 245));
+				UIManager.put("Table.showGrid", false);
 				UIManager.put("Viewport.background", UIManager.getColor("Table.background"));
 				UIManager.put("ScrollPane.background", UIManager.getColor("Table.background"));
 				UIManager.put("Separator.foreground", new Color(208, 208, 208));
 				
-				final Color selBgColor = UIManager.getColor("TextField.selectionBackground");
+				var selBgColor = UIManager.getColor("TextField.selectionBackground");
 				
 				if (selBgColor != null)
 					UIManager.put("Focus.color", new Color(selBgColor.getRGB()));
@@ -786,7 +789,7 @@ public class CyActivator extends AbstractCyActivator {
 				// Make all table rows white, like the other LAFs
 				UIManager.put("Table.background", Color.WHITE);
 				UIManager.put("Table.foreground", new Color(UIManager.getColor("Table.foreground").getRGB()));
-				UIManager.put("Table.alternateRowColor", Color.WHITE);
+//				UIManager.put("Table.alternateRowColor", Color.WHITE);
 				UIManager.put("Table:\"Table.cellRenderer\".background", Color.WHITE);
 				
 				UIManager.put("Viewport.background", Color.WHITE);
@@ -828,6 +831,7 @@ public class CyActivator extends AbstractCyActivator {
 						)
 				);
 				UIManager.put("TableHeader.background", UIManager.getColor("Table.background"));
+				UIManager.put("Table.alternateRowColor", new Color(245, 245, 245));
 			}
 			
 			// Tree icons -- we need a right-to-left arrow!

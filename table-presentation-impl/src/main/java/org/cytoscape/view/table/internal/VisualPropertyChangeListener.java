@@ -5,6 +5,8 @@ import static org.cytoscape.view.presentation.property.table.BasicTableVisualLex
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_GRAVITY;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_VISIBLE;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.ROW_HEIGHT;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_ALTERNATE_ROW_COLORS;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_SHOW_GRID;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_VIEW_MODE;
 import static org.cytoscape.view.table.internal.util.ViewUtil.invokeOnEDT;
 
@@ -81,6 +83,13 @@ public class VisualPropertyChangeListener implements TableViewChangedListener {
 				} else if (vp == ROW_HEIGHT) {
 					if (value instanceof Number)
 						changeRowHeight(((Number) value).intValue());
+				} else if (vp == TABLE_SHOW_GRID) {
+					invokeOnEDT(() -> {
+						browserTable.setShowGrid(value == Boolean.TRUE);
+						browserTable.repaint();
+					});
+				} else if (vp == TABLE_ALTERNATE_ROW_COLORS) {
+					invokeOnEDT(() -> browserTable.repaint());
 				}
 			}
 		}
@@ -129,13 +138,15 @@ public class VisualPropertyChangeListener implements TableViewChangedListener {
 				suidSelected.add(row.get(CyIdentifiable.SUID, Long.class));
 			}
 
-			if (!suidSelected.isEmpty()) {
+			if (!suidSelected.isEmpty())
 				browserTable.changeRowSelection(suidSelected, suidUnselected);
-			}
 		}
 	}
 	
 	private void changeRowHeight(int height) {
-		invokeOnEDT(() -> browserTable.setRowHeight(height));
+		// TODO: calculate h based on the presence of sparklines, wrapped text, etc
+		int h = height > 0 ? height : 16;
+		
+		invokeOnEDT(() -> browserTable.setRowHeight(h));
 	}
 }

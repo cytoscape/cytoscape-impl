@@ -116,7 +116,7 @@ class BrowserTableCellRenderer extends JPanel implements TableCellRenderer {
 		
 		columnView = (CyColumnView) tableView.getColumnView(col);
 		
-		var bg = presentation.getBackgroundColor(row, columnView);
+		var bg = presentation.getBackgroundColor(row, rowIndex, columnView, tableView);
 		var fg = presentation.getForegroundColor(row, columnView);
 		var font = presentation.getFont(row, columnView, validatedObj);
 	

@@ -1,5 +1,6 @@
 package org.cytoscape.view.table.internal.impl;
 
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_SHOW_GRID;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.ALL;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.AUTO;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.SELECTED;
@@ -174,6 +175,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			// which means the default from the BasicTableVisualLexicon could be too small and crop the cell text
 			if (tableView.isSet(BasicTableVisualLexicon.ROW_HEIGHT))
 				setRowHeight(tableView.getVisualProperty(BasicTableVisualLexicon.ROW_HEIGHT));
+			
+			setShowGrid(tableView.getVisualProperty(TABLE_SHOW_GRID) == Boolean.TRUE);
 			
 			for (int i = 0; i < model.getColumnCount(); i++) {
 				var name = model.getColumnName(i);

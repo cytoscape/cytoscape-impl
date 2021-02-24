@@ -5,6 +5,7 @@ import static org.cytoscape.view.presentation.property.table.BasicTableVisualLex
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_FONT_SIZE;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_TEXT_COLOR;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_TOOLTIP;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_ALTERNATE_ROW_COLORS;
 import static org.cytoscape.view.table.internal.BrowserTableVisualLexicon.CELL_CUSTOMGRAPHICS;
 
 import java.awt.Color;
@@ -17,6 +18,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.table.CyColumnView;
+import org.cytoscape.view.model.table.CyTableView;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 
 public class BrowserTablePresentation {
@@ -29,17 +31,22 @@ public class BrowserTablePresentation {
 		this.defaultFont = defaultFont.deriveFont(LookAndFeelUtil.getSmallFontSize());
 	}
 
-	public Color getBackgroundColor(CyRow row, CyColumnView colView) {
+	public Color getBackgroundColor(CyRow row, int rowIndex, CyColumnView colView, CyTableView tableView) {
 		var color = UIManager.getColor("Table.background");
 		
-		if (color == null || colView.isSet(CELL_BACKGROUND_PAINT)) {
-			var fn = colView.getCellVisualProperty(CELL_BACKGROUND_PAINT);
-			
-			if (fn != null) {
-				var val = fn.apply(row);
+		if (tableView.getVisualProperty(TABLE_ALTERNATE_ROW_COLORS) == Boolean.TRUE) {
+			if (rowIndex % 2 != 0)
+				color = UIManager.getColor("Table.alternateRowColor");
+		} else {
+			if (color == null || colView.isSet(CELL_BACKGROUND_PAINT)) {
+				var fn = colView.getCellVisualProperty(CELL_BACKGROUND_PAINT);
 				
-				if (val instanceof Color)
-					color = (Color) val;
+				if (fn != null) {
+					var val = fn.apply(row);
+					
+					if (val instanceof Color)
+						color = (Color) val;
+				}
 			}
 		}
 		
