@@ -123,12 +123,11 @@ public class VisualPropertyChangeListener implements TableViewChangedListener {
 	// MKTODO this needs to go in the renderer
 	private void changeSelectionMode(TableMode tableMode) {
 		var model = (BrowserTableModel) browserTable.getModel();
-
 		var viewMode = ViewMode.fromVisualPropertyValue(tableMode);
 		model.setViewMode(viewMode);
 		model.updateViewMode();
-
-		if (viewMode == ViewMode.ALL && browserTable.getColumn(CyNetwork.SELECTED) != null) {
+		
+		if (viewMode == ViewMode.ALL && tableView.getModel().getColumn(CyNetwork.SELECTED) != null) {
 			// Show the current selected rows
 			var suidSelected = new HashSet<Long>();
 			var suidUnselected = new HashSet<Long>();
