@@ -7,13 +7,13 @@
 	</parent>
 
 	<properties>
-		<bundle.symbolicName>org.cytoscape.custom-graphics-impl</bundle.symbolicName>
+		<bundle.symbolicName>org.cytoscape.custom-graphics-internal</bundle.symbolicName>
 		<bundle.namespace>org.cytoscape.cg</bundle.namespace>
 	</properties>
 
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>custom-graphics-impl</artifactId>
-	<name>Cytoscape Custom Graphics Impl (${project.artifactId})</name>
+	<artifactId>custom-graphics-internal</artifactId>
+	<name>Cytoscape Custom Graphics Internal (${project.artifactId})</name>
 	<packaging>bundle</packaging>
 
 	<build>
@@ -108,7 +108,7 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>vizmap-gui-api</artifactId>
 		</dependency>
-		
+
 		<!-- 3rd party library -->
 		<dependency>
 			<groupId>commons-io</groupId>
@@ -171,7 +171,7 @@
 			<artifactId>guava</artifactId>
 			<version>22.0</version>
 		</dependency>
-		
+
 		<!-- test -->
 		<dependency>
 			<groupId>org.cytoscape</groupId>

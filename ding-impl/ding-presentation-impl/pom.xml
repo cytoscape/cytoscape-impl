@@ -121,7 +121,7 @@
 		<!-- Internal API -->
 		<dependency>
 			<groupId>org.cytoscape</groupId>
-			<artifactId>custom-graphics-impl</artifactId>
+			<artifactId>custom-graphics-internal</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
