@@ -29,14 +29,12 @@ import static org.cytoscape.work.ServiceProperties.TOOLTIP;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.text.Collator;
 import java.util.Comparator;
 import java.util.Locale;
 import java.util.Properties;
 
 import javax.swing.BorderFactory;
-import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
 import javax.swing.UIManager;
@@ -151,7 +149,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -263,8 +261,8 @@ public class CyActivator extends AbstractCyActivator {
 
 
 	@Override
-	public void start(final BundleContext bc) throws Exception {
-		final CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
+	public void start(BundleContext bc) throws Exception {
+		var serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 		
 		invokeOnEDTAndWait(() -> {
 			setLookAndFeel(bc);
@@ -499,17 +497,17 @@ public class CyActivator extends AbstractCyActivator {
 		}
 	}
 
-	private void initComponents(final BundleContext bc, final CyServiceRegistrar serviceRegistrar) {
-		CyApplicationManager applicationManager = getService(bc, CyApplicationManager.class);
-		CyNetworkViewManager netViewManager = getService(bc, CyNetworkViewManager.class);
-		IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+	private void initComponents(BundleContext bc, CyServiceRegistrar serviceRegistrar) {
+		var applicationManager = getService(bc, CyApplicationManager.class);
+		var netViewManager = getService(bc, CyNetworkViewManager.class);
+		var iconManager = serviceRegistrar.getService(IconManager.class);
 		
-		final RootNetworkManager rootNetManager = new RootNetworkManager(serviceRegistrar);
+		var rootNetManager = new RootNetworkManager(serviceRegistrar);
 		registerService(bc, rootNetManager, NetworkAboutToBeDestroyedListener.class);
 		registerService(bc, rootNetManager, SessionAboutToBeLoadedListener.class);
 		
-		final CytoscapeMenuBar cytoscapeMenuBar = new CytoscapeMenuBar(serviceRegistrar);
-		final CytoscapeToolBar cytoscapeToolBar = new CytoscapeToolBar(serviceRegistrar);
+		var cytoscapeMenuBar = new CytoscapeMenuBar(serviceRegistrar);
+		var cytoscapeToolBar = new CytoscapeToolBar(serviceRegistrar);
 		cytoscapeMenus = new CytoscapeMenus(cytoscapeMenuBar, cytoscapeToolBar);
 		toolBarEnableUpdater = new ToolBarEnableUpdater(cytoscapeToolBar, serviceRegistrar);
 		
@@ -527,7 +525,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		cytoscapeDesktop = new CytoscapeDesktop(cytoscapeMenus, netViewMediator, serviceRegistrar);
 
-		final SessionIO sessionIO = new SessionIO();
+		var sessionIO = new SessionIO();
 		sessionHandler = new SessionHandler(cytoscapeDesktop, netViewMediator, sessionIO, netMainPanel, serviceRegistrar);
 		
 		layoutMenuPopulator = new LayoutMenuPopulator(cytoscapeMenuBar, serviceRegistrar);
@@ -608,7 +606,7 @@ public class CyActivator extends AbstractCyActivator {
 		welcomeScreenAction = new CheckForUpdatesAction(serviceRegistrar);
 	}
 	
-	private void setLookAndFeel(final BundleContext bc) {
+	private void setLookAndFeel(BundleContext bc) {
 		var iconManager = getService(bc, IconManager.class);
 		
 		// Set Look and Feel
@@ -657,7 +655,7 @@ public class CyActivator extends AbstractCyActivator {
 			if (UIManager.getFont("Label.font") == null)
 				UIManager.put("Label.font", new JLabel().getFont());
 			
-			Color tsb = UIManager.getColor("Table.selectionBackground");
+			var tsb = UIManager.getColor("Table.selectionBackground");
 			if (tsb == null) tsb = UIManager.getColor("Tree.selectionBackground");
 			if (tsb == null) tsb = UIManager.getColor("Table[Enabled+Selected].textBackground");
 			
@@ -666,7 +664,7 @@ public class CyActivator extends AbstractCyActivator {
 				tsb = hsl.adjustLuminance(isAquaLAF() ? 94.0f : 90.0f);
 			}
 			
-			final Color tableSelectionBg = tsb != null && !tsb.equals(Color.WHITE) ? tsb : new Color(222, 234, 252);
+			var tableSelectionBg = tsb != null && !tsb.equals(Color.WHITE) ? tsb : new Color(222, 234, 252);
 			
 			UIManager.put("Table.focusCellBackground", UIManager.getColor("Tree.selectionBackground"));
 			UIManager.put("Table.focusCellForeground", UIManager.getColor("Tree.selectionForeground"));
@@ -711,6 +709,7 @@ public class CyActivator extends AbstractCyActivator {
 			UIManager.put("RadioButtonMenuItem.disabledForeground", disabledFg);
 			UIManager.put("Table.disabledForeground", disabledFg);
 			UIManager.put("Table.disabledText", disabledFg);
+			UIManager.put("Table.showGrid", false);
 			UIManager.put("TableHeader.disabledForeground", disabledFg);
 			UIManager.put("TextField.inactiveForeground", disabledFg);
 			UIManager.put("TextField.disabledForeground", disabledFg);
@@ -731,7 +730,7 @@ public class CyActivator extends AbstractCyActivator {
 			// Cytoscape
 			UIManager.put("Label.infoForeground", ColorUtil.setBrightness(UIManager.getColor("Label.foreground"), 0.48f));
 			
-			final Font tableFont = UIManager.getFont("Label.font").deriveFont(11.0f);
+			var tableFont = UIManager.getFont("Label.font").deriveFont(11.0f);
 			
 			if (isAquaLAF()) {
 				// Mac OS X + Aqua:
@@ -750,8 +749,7 @@ public class CyActivator extends AbstractCyActivator {
 				);
 				UIManager.put("TableHeader.background", new Color(240, 240, 240));
 				UIManager.put("Table.alternateRowColor", new Color(244, 245, 245));
-				UIManager.put("Table.showGrid", false);
-				UIManager.put("Table.gridColor", new Color(216, 216, 216));
+				UIManager.put("Table.gridColor", new Color(216, 216, 216, 0)); // starts with a 100% transparency, or Swing will not respect a false "Table.showGrid"
 				UIManager.put("Table.font", tableFont);
 				UIManager.put("Tree.font", tableFont);
 			} else if (isWinLAF()) {
@@ -767,8 +765,7 @@ public class CyActivator extends AbstractCyActivator {
 						)
 				);
 				UIManager.put("TableHeader.background", UIManager.getColor("Table.background"));
-				UIManager.put("Table.alternateRowColor", new Color(245, 245, 245));
-				UIManager.put("Table.showGrid", false);
+				UIManager.put("Table.alternateRowColor", new Color(245, 245, 245, 0));
 				UIManager.put("Viewport.background", UIManager.getColor("Table.background"));
 				UIManager.put("ScrollPane.background", UIManager.getColor("Table.background"));
 				UIManager.put("Separator.foreground", new Color(208, 208, 208));
@@ -787,22 +784,19 @@ public class CyActivator extends AbstractCyActivator {
 				UIManager.put("nimbusDisabledText", new Color(142, 143, 145));
 				
 				// Make all table rows white, like the other LAFs
-				UIManager.put("Table.background", Color.WHITE);
+//				UIManager.put("Table.background", Color.WHITE);
 				UIManager.put("Table.foreground", new Color(UIManager.getColor("Table.foreground").getRGB()));
 //				UIManager.put("Table.alternateRowColor", Color.WHITE);
 				UIManager.put("Table:\"Table.cellRenderer\".background", Color.WHITE);
+				UIManager.put("Table.gridColor", new Color(242, 242, 242, 0));
+				UIManager.put("Table.font", tableFont);
 				
 				UIManager.put("Viewport.background", Color.WHITE);
 				UIManager.put("ScrollPane.background", Color.WHITE);
-				
-				UIManager.put("Table.showGrid", true);
-				UIManager.put("Table.gridColor", new Color(242, 242, 242));
-				UIManager.put("Table.font", tableFont);
 				UIManager.put("Tree.font", tableFont);
-				
 				UIManager.put("Separator.foreground", UIManager.getColor("nimbusBorder"));
 				
-				Color nimbusColor = UIManager.getColor("nimbusFocus");
+				var nimbusColor = UIManager.getColor("nimbusFocus");
 				
 				if (nimbusColor == null)
 					nimbusColor = new Color(115, 164, 209);
@@ -838,11 +832,11 @@ public class CyActivator extends AbstractCyActivator {
 			if (UIManager.getIcon("Tree.rightToLeftCollapsedIcon") == null && (isWinLAF() || isGtkLAF())) {
 				// These custom icons did not work well with original JTrees on Nimbus (they were misaligned)
 				// and Aqua usually does not need this.
-				Icon treeIcon = UIManager.getIcon("Tree.collapsedIcon");
+				var treeIcon = UIManager.getIcon("Tree.collapsedIcon");
 				int w = treeIcon != null ? Math.max(12, treeIcon.getIconWidth()) : 16;
 				int h = treeIcon != null ? Math.max(12, treeIcon.getIconHeight()) : 16;
-				Font font = iconManager.getIconFont(10f);
-				Color c = UIManager.getColor("Label.infoForeground");
+				var font = iconManager.getIconFont(10f);
+				var c = UIManager.getColor("Label.infoForeground");
 				UIManager.put("Tree.expandedIcon", new TextIcon(IconManager.ICON_CHEVRON_DOWN, font, c, w, h));
 				UIManager.put("Tree.collapsedIcon", new TextIcon(IconManager.ICON_CHEVRON_RIGHT, font, c, w, h));
 				UIManager.put("Tree.rightToLeftCollapsedIcon", new TextIcon(IconManager.ICON_CHEVRON_LEFT, font, c, w, h));
@@ -917,7 +911,7 @@ public class CyActivator extends AbstractCyActivator {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private CyProperty<Properties> getCy3Property(final BundleContext bc) {
+	private CyProperty<Properties> getCy3Property(BundleContext bc) {
 		return getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 	}
 	
@@ -930,16 +924,16 @@ public class CyActivator extends AbstractCyActivator {
 		private final NetworkMainPanel netMainPanel;
 		private final Collator collator;
 		
-		ViewComparator(final NetworkMainPanel netMainPanel) {
+		ViewComparator(NetworkMainPanel netMainPanel) {
 			this.netMainPanel = netMainPanel;
 			collator = Collator.getInstance(Locale.getDefault());
 		}
 		
 		@Override
-		public int compare(final CyNetworkView v1, final CyNetworkView v2) {
+		public int compare(CyNetworkView v1, CyNetworkView v2) {
 			// Sort by view title, but group them by collection (root-network) and subnetwork
-			final Integer idx1 = netMainPanel.indexOf(v1.getModel());
-			final Integer idx2 = netMainPanel.indexOf(v2.getModel());
+			Integer idx1 = netMainPanel.indexOf(v1.getModel());
+			Integer idx2 = netMainPanel.indexOf(v2.getModel());
 			int value = idx1.compareTo(idx2);
 			
 			if (value == 0) {

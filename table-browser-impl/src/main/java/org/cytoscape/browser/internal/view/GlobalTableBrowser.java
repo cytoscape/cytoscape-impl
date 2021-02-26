@@ -15,6 +15,8 @@ import javax.swing.JComboBox;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CytoPanelComponent;
+import org.cytoscape.browser.internal.view.tools.GeneralOptionsControl;
+import org.cytoscape.browser.internal.view.tools.RowHeightControl;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
@@ -31,7 +33,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -54,69 +56,69 @@ public class GlobalTableBrowser extends AbstractTableBrowser
                                 implements TableAboutToBeDeletedListener,
                                            TableAddedListener, TablePrivacyChangedListener {
 
-	private final GlobalTableChooser tableChooser;
+	private GlobalTableChooser tableChooser;
 
-	public GlobalTableBrowser(
-			final String tabTitle,
-			final CyServiceRegistrar serviceRegistrar
-	) {
-		super(tabTitle, serviceRegistrar);
+	public GlobalTableBrowser(String tabTitle, CyServiceRegistrar serviceRegistrar) {
+		super(tabTitle, null, serviceRegistrar);
 		
-		tableChooser = new GlobalTableChooser();
-		tableChooser.addActionListener(e -> setCurrentTable());
-		final Dimension d = new Dimension(SELECTOR_WIDTH, tableChooser.getPreferredSize().height);
-		tableChooser.setMaximumSize(d);
-		tableChooser.setMinimumSize(d);
-		tableChooser.setPreferredSize(d);
-		tableChooser.setSize(d);
-		tableChooser.setToolTipText("\"Tables\" are data tables not associated with specific networks.");
-		tableChooser.setEnabled(false);
+		var controls = List.of(
+				new RowHeightControl(serviceRegistrar),
+				new GeneralOptionsControl(serviceRegistrar)
+		);
 		
-		setToolBar(new TableBrowserToolBar(serviceRegistrar, tableChooser, null));
+		getOptionsBar().setFormatControls(controls);
+	}
+	
+	@Override
+	protected TableBrowserToolBar getToolBar() {
+		if (toolBar == null) {
+			toolBar = new TableBrowserToolBar(serviceRegistrar, getTableChooser(), null);
+		}
+		
+		return toolBar;
 	}
 
 	@Override
 	protected boolean containsTable(CyTable table) {
-		return ((GlobalTableComboBoxModel)tableChooser.getModel()).contains(table);
+		return ((GlobalTableComboBoxModel) getTableChooser().getModel()).contains(table);
 	}
-	
-	
+
 	@Override
 	public String getIdentifier() {
 		return "org.cytoscape.UnassignedTables";
 	}
-	
+
 	public void setCurrentTable() {
-		final CyTable table = (CyTable) tableChooser.getSelectedItem();
+		var table = (CyTable) getTableChooser().getSelectedItem();
+
 		if (table == currentTable || table == null)
 			return;
 
-		currentTable = table;
+		setCurrentTable(table);
 		showSelectedTable();
 		
 		serviceRegistrar.getService(CyApplicationManager.class).setCurrentTable(table);
 	}
 
-	
 	/**
 	 * Switch to new table when it is registered to the table manager.
 	 * 
 	 * Note: This combo box only displays Global Table.
 	 */
 	@Override
-	public void handleEvent(final TableAddedEvent e) {
-		final CyTable newTable = e.getTable();
+	public void handleEvent(TableAddedEvent e) {
+		var newTable = e.getTable();
 
 		if (newTable.isPublic() || showPrivateTables()) {
-			final CyTableManager tableManager = serviceRegistrar.getService(CyTableManager.class);
+			var tableManager = serviceRegistrar.getService(CyTableManager.class);
 			
 			if (tableManager.getGlobalTables().contains(newTable)) {
-				final GlobalTableComboBoxModel comboBoxModel = (GlobalTableComboBoxModel) tableChooser.getModel();
+				var comboBoxModel = (GlobalTableComboBoxModel) getTableChooser().getModel();
 				comboBoxModel.addAndSetSelectedItem(newTable);
-				getToolBar().updateEnableState(tableChooser);
+				getToolBar().updateEnableState(getTableChooser());
 			}
 			
-			if (tableChooser.getItemCount() == 1) {
+			if (getTableChooser().getItemCount() == 1) {
 				invokeOnEDT(() -> {
 					serviceRegistrar.registerService(GlobalTableBrowser.this, CytoPanelComponent.class);
 				});
@@ -125,14 +127,14 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 	}
 	
 	@Override
-	public void handleEvent(final TableAboutToBeDeletedEvent e) {
-		final CyTable cyTable = e.getTable();
+	public void handleEvent(TableAboutToBeDeletedEvent e) {
+		var cyTable = e.getTable();
 		
 		if (cyTable.isPublic() || showPrivateTables()) {
 			invokeOnEDT(() -> {
-				final GlobalTableComboBoxModel comboBoxModel = (GlobalTableComboBoxModel) tableChooser.getModel();
+				var comboBoxModel = (GlobalTableComboBoxModel) getTableChooser().getModel();
 				comboBoxModel.removeItem(cyTable);
-				getToolBar().updateEnableState(tableChooser);
+				getToolBar().updateEnableState(getTableChooser());
 				
 				if (comboBoxModel.getSize() == 0) {
 					// The last table is deleted, refresh the browser table (this is a special case)
@@ -144,20 +146,19 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 			});
 		}
 	}
-	
 
 	@Override
 	public void handleEvent(TablePrivacyChangedEvent e) {
-		final CyTable table = e.getSource();
-		final GlobalTableComboBoxModel comboBoxModel = (GlobalTableComboBoxModel) tableChooser.getModel();
-		final boolean showPrivateTables = showPrivateTables();
+		var table = e.getSource();
+		var comboBoxModel = (GlobalTableComboBoxModel) getTableChooser().getModel();
+		boolean showPrivateTables = showPrivateTables();
 		
 		if (!table.isPublic() && !showPrivateTables){
 			comboBoxModel.removeItem(table);
 
 			if (comboBoxModel.getSize() == 0) {
 				invokeOnEDT(() -> {
-					tableChooser.setEnabled(false);
+					getTableChooser().setEnabled(false);
 					// The last table is deleted, refresh the browser table (this is a special case)
 					removeTable(table);
 					serviceRegistrar.unregisterService(GlobalTableBrowser.this, CytoPanelComponent.class);
@@ -169,6 +170,22 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 		}
 		
 		serviceRegistrar.getService(CyApplicationManager.class).setCurrentTable(currentTable);
+	}
+	
+	private GlobalTableChooser getTableChooser() {
+		if (tableChooser == null) {
+			tableChooser = new GlobalTableChooser();
+			tableChooser.addActionListener(e -> setCurrentTable());
+			var d = new Dimension(SELECTOR_WIDTH, tableChooser.getPreferredSize().height);
+			tableChooser.setMaximumSize(d);
+			tableChooser.setMinimumSize(d);
+			tableChooser.setPreferredSize(d);
+			tableChooser.setSize(d);
+			tableChooser.setToolTipText("\"Tables\" are data tables not associated with specific networks.");
+			tableChooser.setEnabled(false);
+		}
+		
+		return tableChooser;
 	}
 	
 	private class GlobalTableChooser extends JComboBox<CyTable> {
@@ -188,12 +205,12 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 		private final Map<CyTable, String> tableToStringMap;
 		private final List<CyTable> tables;
 
-		GlobalTableComboBoxModel(final Map<CyTable, String> tableToStringMap) {
+		GlobalTableComboBoxModel(Map<CyTable, String> tableToStringMap) {
 			this.tableToStringMap = tableToStringMap;
 			tables = new ArrayList<>();
 			tableComparator = new Comparator<CyTable>() {
 				@Override
-				public int compare(final CyTable table1, final CyTable table2) {
+				public int compare(CyTable table1, CyTable table2) {
 					return table1.getTitle().compareTo(table2.getTitle());
 				}
 			};
@@ -202,7 +219,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 		private void updateTableToStringMap() {
 			tableToStringMap.clear();
 			
-			for (final CyTable table : tables)
+			for (var table : tables)
 				tableToStringMap.put(table, table.getTitle());
 		}
 
@@ -220,7 +237,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 			return tables.get(index);
 		}
 
-		void addAndSetSelectedItem(final CyTable newTable) {
+		void addAndSetSelectedItem(CyTable newTable) {
 			if (!tables.contains(newTable)) {
 				tables.add(newTable);
 				Collections.sort(tables, tableComparator);
@@ -234,7 +251,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 			});
 		}
 
-		void removeItem(final CyTable deletedTable) {
+		void removeItem(CyTable deletedTable) {
 			if (tables.contains(deletedTable)) {
 				tables.remove(deletedTable);
 				

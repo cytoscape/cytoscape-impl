@@ -25,7 +25,7 @@ public class BrowserTablePresentation {
 	
 	private final IconManager iconManager;
 	private final Font defaultFont;
-
+	
 	public BrowserTablePresentation(CyServiceRegistrar registrar, Font defaultFont) {
 		this.iconManager = registrar.getService(IconManager.class);
 		this.defaultFont = defaultFont.deriveFont(LookAndFeelUtil.getSmallFontSize());

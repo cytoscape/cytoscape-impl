@@ -128,7 +128,7 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView,
 		return viewSuidToCol.size();
 	}
 	
-	public CyColumnViewImpl addColumn(CyColumn model) {System.out.println(". " + model.getNameOnly());
+	public CyColumnViewImpl addColumn(CyColumn model) {
 		if (dataSuidToCol.containsKey(model.getSUID()))
 			return null;
 

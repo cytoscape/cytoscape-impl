@@ -84,10 +84,7 @@ public class VisualPropertyChangeListener implements TableViewChangedListener {
 					if (value instanceof Number)
 						changeRowHeight(((Number) value).intValue());
 				} else if (vp == TABLE_SHOW_GRID) {
-					invokeOnEDT(() -> {
-						browserTable.setShowGrid(value == Boolean.TRUE);
-						browserTable.repaint();
-					});
+					invokeOnEDT(() -> browserTable.setShowGrid(value == Boolean.TRUE));
 				} else if (vp == TABLE_ALTERNATE_ROW_COLORS) {
 					invokeOnEDT(() -> browserTable.repaint());
 				}
