@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 import javax.swing.event.SwingPropertyChangeSupport;
 
 import org.cytoscape.application.CyUserLog;
+import org.cytoscape.cg.event.CustomGraphicsLibraryUpdatedEvent;
+import org.cytoscape.cg.event.CustomGraphicsLibraryUpdatedListener;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
@@ -35,7 +37,8 @@ import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
-import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +66,7 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
-public class CyAnnotator implements SessionAboutToBeSavedListener {
+public class CyAnnotator implements SessionAboutToBeSavedListener, CustomGraphicsLibraryUpdatedListener {
 	
 	public static final String PROP_ANNOTATIONS = "annotations";
 	public static final String PROP_REORDERED   = "annotationsReordered";
@@ -98,6 +101,12 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		this.registrar = registrar;
 		this.annotationFactoryManager = annotationFactoryManager;
 		this.annotationSelection = new AnnotationSelection(this);
+	}
+	
+	@Override
+	public void handleEvent(CustomGraphicsLibraryUpdatedEvent evt) {
+		var iterator = new TaskIterator(new ReloadImagesTask(this));
+		registrar.getService(TaskManager.class).execute(iterator);
 	}
 	
 	public void markUndoEdit(String label) {
@@ -397,10 +406,6 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 
 	public ArrowAnnotationImpl getRepositioningArrow() {
 		return repositioning;
-	}
-
-	public Task getReloadImagesTask() {
-		return new ReloadImagesTask(this);
 	}
 
 	public String getDefaultAnnotationName(String desiredName) {

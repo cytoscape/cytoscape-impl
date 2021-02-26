@@ -1,23 +1,23 @@
 package org.cytoscape.ding.internal.charts;
 
 import static java.util.Arrays.asList;
-import static org.cytoscape.ding.customgraphics.AbstractCustomGraphics2.COLORS;
-import static org.cytoscape.ding.customgraphics.AbstractCustomGraphics2.COLOR_SCHEME;
-import static org.cytoscape.ding.customgraphics.AbstractCustomGraphics2.ORIENTATION;
-import static org.cytoscape.ding.internal.charts.AbstractChart.AUTO_RANGE;
-import static org.cytoscape.ding.internal.charts.AbstractChart.AXIS_COLOR;
-import static org.cytoscape.ding.internal.charts.AbstractChart.AXIS_WIDTH;
-import static org.cytoscape.ding.internal.charts.AbstractChart.BORDER_COLOR;
-import static org.cytoscape.ding.internal.charts.AbstractChart.BORDER_WIDTH;
-import static org.cytoscape.ding.internal.charts.AbstractChart.DATA_COLUMNS;
-import static org.cytoscape.ding.internal.charts.AbstractChart.DOMAIN_LABELS_COLUMN;
-import static org.cytoscape.ding.internal.charts.AbstractChart.DOMAIN_LABEL_POSITION;
-import static org.cytoscape.ding.internal.charts.AbstractChart.GLOBAL_RANGE;
-import static org.cytoscape.ding.internal.charts.AbstractChart.RANGE;
-import static org.cytoscape.ding.internal.charts.AbstractChart.RANGE_LABELS_COLUMN;
-import static org.cytoscape.ding.internal.charts.AbstractChart.SHOW_DOMAIN_AXIS;
-import static org.cytoscape.ding.internal.charts.AbstractChart.SHOW_RANGE_AXIS;
-import static org.cytoscape.ding.internal.charts.AbstractChart.VALUES;
+import static org.cytoscape.cg.internal.charts.AbstractChart.AUTO_RANGE;
+import static org.cytoscape.cg.internal.charts.AbstractChart.AXIS_COLOR;
+import static org.cytoscape.cg.internal.charts.AbstractChart.AXIS_WIDTH;
+import static org.cytoscape.cg.internal.charts.AbstractChart.BORDER_COLOR;
+import static org.cytoscape.cg.internal.charts.AbstractChart.BORDER_WIDTH;
+import static org.cytoscape.cg.internal.charts.AbstractChart.DATA_COLUMNS;
+import static org.cytoscape.cg.internal.charts.AbstractChart.DOMAIN_LABELS_COLUMN;
+import static org.cytoscape.cg.internal.charts.AbstractChart.DOMAIN_LABEL_POSITION;
+import static org.cytoscape.cg.internal.charts.AbstractChart.GLOBAL_RANGE;
+import static org.cytoscape.cg.internal.charts.AbstractChart.RANGE;
+import static org.cytoscape.cg.internal.charts.AbstractChart.RANGE_LABELS_COLUMN;
+import static org.cytoscape.cg.internal.charts.AbstractChart.SHOW_DOMAIN_AXIS;
+import static org.cytoscape.cg.internal.charts.AbstractChart.SHOW_RANGE_AXIS;
+import static org.cytoscape.cg.internal.charts.AbstractChart.VALUES;
+import static org.cytoscape.cg.model.AbstractCustomGraphics2.COLORS;
+import static org.cytoscape.cg.model.AbstractCustomGraphics2.COLOR_SCHEME;
+import static org.cytoscape.cg.model.AbstractCustomGraphics2.ORIENTATION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -25,10 +25,11 @@ import static org.junit.Assert.assertTrue;
 import java.awt.Color;
 import java.util.Map;
 
+import org.cytoscape.cg.internal.charts.LabelPosition;
+import org.cytoscape.cg.internal.charts.heatmap.HeatMapChart;
+import org.cytoscape.cg.model.ColorScheme;
+import org.cytoscape.cg.model.Orientation;
 import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2Test;
-import org.cytoscape.ding.customgraphics.ColorScheme;
-import org.cytoscape.ding.customgraphics.Orientation;
-import org.cytoscape.ding.internal.charts.heatmap.HeatMapChart;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,7 +40,7 @@ import org.junit.Test;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 

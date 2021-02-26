@@ -16,14 +16,14 @@ import javax.swing.JTabbedPane;
 import javax.swing.filechooser.FileFilter;
 
 import org.apache.commons.io.FilenameUtils;
-import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.ding.customgraphics.image.BitmapCustomGraphics;
-import org.cytoscape.ding.customgraphics.image.SVGCustomGraphics;
-import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsBrowser;
+import org.cytoscape.cg.model.BitmapCustomGraphics;
+import org.cytoscape.cg.model.CustomGraphicsManager;
+import org.cytoscape.cg.model.SVGCustomGraphics;
+import org.cytoscape.cg.util.CustomGraphicsBrowser;
+import org.cytoscape.cg.util.ImageCustomGraphicsSelector;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
-import org.cytoscape.ding.impl.editor.ImageCustomGraphicsSelector;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.slf4j.Logger;
@@ -66,7 +66,6 @@ public class LoadImageDialog extends AbstractAnnotationDialog<ImageAnnotationImp
 	private JFileChooser fileChooser;
 	private ImageCustomGraphicsSelector imageSelector;
 	
-	private final CustomGraphicsBrowser browser;
 	private final CyServiceRegistrar serviceRegistrar;
 	
 	private static File lastDirectory;
@@ -77,12 +76,10 @@ public class LoadImageDialog extends AbstractAnnotationDialog<ImageAnnotationImp
 			DRenderingEngine re,
 			Point2D start,
 			Window owner,
-			CustomGraphicsBrowser browser,
 			CyServiceRegistrar serviceRegistrar
 	) {
 		super(NAME, re, start, owner);
 		
-		this.browser = browser;
 		this.serviceRegistrar = serviceRegistrar;
 		
 		setTitle("Select an Image");
@@ -185,7 +182,8 @@ public class LoadImageDialog extends AbstractAnnotationDialog<ImageAnnotationImp
 	
 	private ImageCustomGraphicsSelector getImageSelector() {
 		if (imageSelector == null) {
-			imageSelector = new ImageCustomGraphicsSelector(browser, serviceRegistrar);
+			var cgBrowser = new CustomGraphicsBrowser(serviceRegistrar);
+			imageSelector = new ImageCustomGraphicsSelector(cgBrowser, serviceRegistrar);
 			imageSelector.addActionListener(evt -> getApplyButton().doClick());
 		}
 		

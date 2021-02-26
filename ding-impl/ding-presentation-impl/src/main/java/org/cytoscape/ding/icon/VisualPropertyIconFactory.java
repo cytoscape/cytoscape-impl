@@ -5,6 +5,7 @@ import java.awt.Font;
 
 import javax.swing.Icon;
 
+import org.cytoscape.cg.util.CustomGraphicsIcon;
 import org.cytoscape.ding.DArrowShape;
 import org.cytoscape.ding.DNodeShape;
 import org.cytoscape.ding.impl.DLineType;

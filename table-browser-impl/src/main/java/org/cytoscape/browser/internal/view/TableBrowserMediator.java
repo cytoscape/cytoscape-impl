@@ -2,18 +2,14 @@ package org.cytoscape.browser.internal.view;
 
 import static org.cytoscape.browser.internal.util.ViewUtil.invokeOnEDTAndWait;
 
-import java.awt.Component;
-
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
@@ -23,7 +19,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -66,7 +62,7 @@ public class TableBrowserMediator implements SetCurrentNetworkListener, CytoPane
 
 	@Override
 	public void handleEvent(SetCurrentNetworkEvent evt) {
-		CyNetwork network = evt.getNetwork();
+		var network = evt.getNetwork();
 		
 		invokeOnEDTAndWait(() -> {
 			// Update UI
@@ -75,8 +71,8 @@ public class TableBrowserMediator implements SetCurrentNetworkListener, CytoPane
 			networkTableBrowser.update(network);
 			
 			// Get the new current table
-			CytoPanel cytoPanel = serviceRegistrar.getService(CySwingApplication.class).getCytoPanel(CytoPanelName.SOUTH);
-			Component comp = cytoPanel.getSelectedComponent();
+			var cytoPanel = serviceRegistrar.getService(CySwingApplication.class).getCytoPanel(CytoPanelName.SOUTH);
+			var comp = cytoPanel.getSelectedComponent();
 			CyTable table = null;
 			
 			if (nodeTableBrowser.getComponent() == comp)
@@ -96,13 +92,13 @@ public class TableBrowserMediator implements SetCurrentNetworkListener, CytoPane
 	
 	@Override
 	public void handleEvent(CytoPanelComponentSelectedEvent evt) {
-		CytoPanel cytoPanel = evt.getCytoPanel();
+		var cytoPanel = evt.getCytoPanel();
 		int idx = evt.getSelectedIndex();
 		
 		if (cytoPanel.getCytoPanelName() != CytoPanelName.SOUTH || idx < 0 || idx >= cytoPanel.getCytoPanelComponentCount())
 			return;
 		
-		Component comp = cytoPanel.getComponentAt(idx);
+		var comp = cytoPanel.getComponentAt(idx);
 			
 		if (comp == null)
 			return;
@@ -122,12 +118,12 @@ public class TableBrowserMediator implements SetCurrentNetworkListener, CytoPane
 			serviceRegistrar.getService(CyApplicationManager.class).setCurrentTable(table);
 	}
 	
-	
 	public void hideColumn(CyColumn column) {
-		CyTable table = column.getTable();
+		var table = column.getTable();
 		
 		invokeOnEDTAndWait(() -> {
-			TableRenderer browserTable = getTableRenderer(table);
+			var browserTable = getTableRenderer(table);
+			
 			if (browserTable != null)
 				browserTable.setColumnVisible(column.getName(), false);
 		});

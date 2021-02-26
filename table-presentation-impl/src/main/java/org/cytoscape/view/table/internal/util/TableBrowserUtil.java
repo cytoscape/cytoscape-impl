@@ -1,12 +1,26 @@
 package org.cytoscape.view.table.internal.util;
 
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.swing.JTable;
+
+import org.cytoscape.model.CyTable;
+import org.cytoscape.view.model.table.CyTableView;
+import org.cytoscape.view.table.internal.impl.BrowserTable;
+import org.cytoscape.view.table.internal.impl.BrowserTableModel;
+
 /*
  * #%L
  * Cytoscape Table Browser Impl (table-browser-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,34 +38,17 @@ package org.cytoscape.view.table.internal.util;
  * #L%
  */
 
-
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.swing.JTable;
-
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.view.model.table.CyTableView;
-import org.cytoscape.view.table.internal.impl.BrowserTable;
-import org.cytoscape.view.table.internal.impl.BrowserTableModel;
-
 public final class TableBrowserUtil {
 
 	private static final int EOF = -1;
 
-	
 	public static CyTableView getTableView(JTable table) {
-		BrowserTable browserTable = (BrowserTable) table;
-		BrowserTableModel model = (BrowserTableModel) browserTable.getModel();
+		var browserTable = (BrowserTable) table;
+		var model = (BrowserTableModel) browserTable.getModel();
+
 		return model.getTableView();
 	}
-	
-	
+
 	/**
 	 *  Creates a Map with the CyColumn names and their types as mapped to the types used by attribute equations.
 	 *  Types (and associated names) not used by attribute equations are omitted.
@@ -59,46 +56,46 @@ public final class TableBrowserUtil {
 	 *  @param table the attributes to map
 	 *  @param ignore if not null, skip the attribute with this name
 	 */
-	public static Map<String, Class<?>> getAttNameToTypeMap(final CyTable table, final String ignore) {
-		final Map<String, Class<?>> map = new HashMap<>();
-		
-		for (final CyColumn column : table.getColumns())
+	public static Map<String, Class<?>> getAttNameToTypeMap(CyTable table, String ignore) {
+		var map = new HashMap<String, Class<?>>();
+
+		for (var column : table.getColumns())
 			map.put(column.getName(), column.getType());
-		
+
 		if (ignore != null)
 			map.remove(ignore);
-		
+
 		return map;
 	}
 	
-	public static Object parseLong(final String text, final StringBuilder errorMessage) {
+	public static Object parseLong(String text, StringBuilder errorMessage) {
 		try {
 			return Long.valueOf(text);
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			errorMessage.append("Can't convert text to a whole number.");
 			return null;
 		}
 	}
 
-	public static Object parseInteger(final String text, final StringBuilder errorMessage) {
+	public static Object parseInteger(String text, StringBuilder errorMessage) {
 		try {
 			return Integer.valueOf(text);
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			errorMessage.append("Can't convert text to a whole number.");
 			return null;
 		}
 	}
 
-	public static Object parseDouble(final String text, final StringBuilder errorMessage) {
+	public static Object parseDouble(String text, StringBuilder errorMessage) {
 		try {
 			return Double.valueOf(text);
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			errorMessage.append("Can't convert text to a floating point number.");
 			return null;
 		}
 	}
 
-	public static Object parseBoolean(final String text, final StringBuilder errorMessage) {
+	public static Object parseBoolean(String text, StringBuilder errorMessage) {
 		if (text.compareToIgnoreCase("true") == 0)
 			return Boolean.valueOf(true);
 
@@ -110,12 +107,11 @@ public final class TableBrowserUtil {
 	}
 
 	public static List<Object> parseCellInput(CyTable dataTable, String columnName, Object value){
-		final String text = (String)value;
-
-		final Class<?> columnType = dataTable.getColumn(columnName).getType();
+		var text = (String)value;
+		var columnType = dataTable.getColumn(columnName).getType();
 
 		Object parsedValue;
-		final StringBuilder errorMessage = new StringBuilder();
+		var errorMessage = new StringBuilder();
 
 		if (columnType == String.class)
 			parsedValue = text;
@@ -135,7 +131,7 @@ public final class TableBrowserUtil {
 			throw new IllegalStateException("unknown column type: "
 					+ columnType.getName() + ".");
 
-		ArrayList<Object> retValue = new ArrayList<Object>();
+		var retValue = new ArrayList<Object>();
 		retValue.add(parsedValue);;
 		retValue.add(errorMessage);
 
@@ -148,17 +144,18 @@ public final class TableBrowserUtil {
 	};
 
 	@SuppressWarnings("fallthrough")
-	static List<Object> parseList(final String text, final Class<?> listElementType, final StringBuilder errorMessage) {
-		final List<Object> newList = new ArrayList<>();
-		final StringReader reader = new StringReader(text);
-
-		ListParserState state = ListParserState.OPENING_BRACE_EXPECTED;
+	static List<Object> parseList(String text, Class<?> listElementType, StringBuilder errorMessage) {
+		var newList = new ArrayList<Object>();
+		var reader = new StringReader(text);
+		var state = ListParserState.OPENING_BRACE_EXPECTED;
+		
 		for (;;) {
 			int ch = EOF;
+			
 			try {
 				reader.mark(0);
 				ch = reader.read();
-			} catch (final IOException e) {
+			} catch (IOException e) {
 				throw new IllegalStateException("We should *never* get here.");
 			}
 
@@ -186,15 +183,16 @@ public final class TableBrowserUtil {
 				}
 				try {
 					reader.reset();
-				} catch (final IOException e) {
+				} catch (IOException e) {
 					throw new IllegalStateException("We should *never* get here.");
 				}
 
-				final Object item = getListItem(reader, listElementType, errorMessage);
+				var item = getListItem(reader, listElementType, errorMessage);
+				
 				if (item == null)
 					return null;
+				
 				newList.add(item);
-
 				state = ListParserState.COMMA_OR_CLOSING_BRACE_EXPECTED;
 				break;
 			case COMMA_OR_CLOSING_BRACE_EXPECTED:
@@ -219,54 +217,57 @@ public final class TableBrowserUtil {
 		}
 	}
 
-	private static Object getListItem(final StringReader reader, final Class<?> listElementType,
-			final StringBuilder errorMessage)
-	{
-		if (listElementType == Double.class)
+	private static Object getListItem(StringReader reader, Class<?> listElementType, StringBuilder errorMessage) {
+		if (listElementType == Double.class) {
 			return getDouble(reader, errorMessage);
-		else if (listElementType == String.class)
+		} else if (listElementType == String.class) {
 			return getString(reader, errorMessage);
-		else if (listElementType == Integer.class || listElementType == Long.class) {
+		} else if (listElementType == Integer.class || listElementType == Long.class) {
 			// Process optional leading sign:
 			int ch = EOF;
+			
 			try {
 				reader.mark(0);
 				ch = reader.read();
-			} catch (final IOException e) {
+			} catch (IOException e) {
 				throw new IllegalStateException("We should *never* get here.");
 			}
-			final StringBuilder builder = new StringBuilder();
-			if (ch == '-')
+			
+			var builder = new StringBuilder();
+			
+			if (ch == '-') {
 				builder.append((char)ch);
-			else if (ch == '+')
+			} else if (ch == '+') {
 				/* Intentionally empty. */;
-			else {
+			} else {
 				try {
 					reader.reset();
-				} catch (final IOException e) {
+				} catch (IOException e) {
 					throw new IllegalStateException("We should *never* get here.");
 				}
 			}
 
 			grabAsciiDigits(reader, builder);
+			
 			try {
 				if (listElementType == Integer.class)
 					return Integer.valueOf(builder.toString());
 				else
 					return Long.valueOf(builder.toString());
-			} catch (final NumberFormatException e) {
+			} catch (NumberFormatException e) {
 				errorMessage.append("Found invalid integer or long integer list item.");
 				return null;
 			}
 		} else if (listElementType == Boolean.class) {
-			final StringBuilder builder = new StringBuilder();
+			var builder = new StringBuilder();
 			grabAsciiLetters(reader, builder);
-			final String boolValueCandidate = builder.toString();
-			if (boolValueCandidate.equalsIgnoreCase("true"))
+			var boolValueCandidate = builder.toString();
+			
+			if (boolValueCandidate.equalsIgnoreCase("true")) {
 				return Boolean.valueOf(true);
-			else if (boolValueCandidate.equalsIgnoreCase("false"))
+			} else if (boolValueCandidate.equalsIgnoreCase("false")) {
 				return Boolean.valueOf(false);
-			else {
+			} else {
 				errorMessage.append("\"" + boolValueCandidate
 						+ "\" is not a valid boolean list item.");
 				return null;
@@ -277,7 +278,7 @@ public final class TableBrowserUtil {
 	}
 
 
-	private static Double getDouble(final StringReader reader, final StringBuilder errorMessage) {
+	private static Double getDouble(StringReader reader, StringBuilder errorMessage) {
 		try {
 			reader.mark(0);
 			int ch = reader.read();
@@ -286,7 +287,7 @@ public final class TableBrowserUtil {
 				return null;
 			}
 
-			final StringBuilder builder = new StringBuilder();
+			var builder = new StringBuilder();
 
 			// Process optional leading sign:
 			if (ch == '-' || ch == '+')
@@ -296,7 +297,7 @@ public final class TableBrowserUtil {
 
 			int savedLength = builder.length();
 			grabAsciiDigits(reader, builder);
-			final boolean needAfterDecimalPointDigits = builder.length() == savedLength;
+			boolean needAfterDecimalPointDigits = builder.length() == savedLength;
 
 			// Process optional decimal point followed by zero or more digits:
 			reader.mark(0);
@@ -347,16 +348,16 @@ public final class TableBrowserUtil {
 				errorMessage.append("Malformed number.");
 				return null;
 			}
-		} catch (final IOException e) {
+		} catch (IOException e) {
 			throw new IllegalStateException("This should *never* happen.");
 		}
 	}
 
-	private static void grabAsciiDigits(final StringReader reader, final StringBuilder builder) {
+	private static void grabAsciiDigits(StringReader reader, StringBuilder builder) {
 		try {
 			for (;;) {
 				reader.mark(0);
-				final int ch = reader.read();
+				int ch = reader.read();
 				if (ch == EOF || (char)ch < '0' || (char)ch > '9') {
 					reader.reset();
 					return;
@@ -364,22 +365,22 @@ public final class TableBrowserUtil {
 
 				builder.append((char)ch);
 			}
-		} catch (final IOException e) {
+		} catch (IOException e) {
 			throw new IllegalStateException("This should *never* happen.");
 		}
 	}
 
-	private static String getString(final StringReader reader, final StringBuilder errorMessage) {
+	private static String getString(StringReader reader, StringBuilder errorMessage) {
 		try {
 			if (reader.read() != '"') {
 				errorMessage.append("Strings must start with a double quote symbol.");
 				return null;
 			}
 
-			final StringBuilder builder = new StringBuilder();
-
+			var builder = new StringBuilder();
 			int ch = reader.read();
 			boolean escaped = false;
+			
 			while (escaped || ch != '"') {
 				if (ch == EOF) {
 					errorMessage.append("Unterminated string list item.");
@@ -422,17 +423,17 @@ public final class TableBrowserUtil {
 			}
 
 			return builder.toString();
-		} catch (final IOException e) {
+		} catch (IOException e) {
 			throw new IllegalStateException("This should *never* happen.");
 		}
 	}
 
-	private static void grabAsciiLetters(final StringReader reader, final StringBuilder builder)
+	private static void grabAsciiLetters(StringReader reader, StringBuilder builder)
 	{
 		try {
 			for (;;) {
 				reader.mark(0);
-				final int ch = reader.read();
+				int ch = reader.read();
 				if (ch == EOF
 				    || (((char)ch < 'a' || (char)ch > 'z')
 					&& ((char)ch < 'A' || (char)ch > 'Z')))
@@ -443,7 +444,7 @@ public final class TableBrowserUtil {
 
 				builder.append((char)ch);
 			}
-		} catch (final IOException e) {
+		} catch (IOException e) {
 			throw new IllegalStateException("This should *never* happen.");
 		}
 	}

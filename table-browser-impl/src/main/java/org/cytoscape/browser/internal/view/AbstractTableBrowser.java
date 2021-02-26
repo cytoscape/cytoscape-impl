@@ -11,7 +11,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
@@ -26,7 +25,10 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -43,7 +45,8 @@ import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.browser.internal.io.TableColumnStat;
 import org.cytoscape.browser.internal.io.TableColumnStatFileIO;
-import org.cytoscape.model.CyColumn;
+import org.cytoscape.browser.internal.util.ViewUtil;
+import org.cytoscape.browser.internal.view.tools.AbstractToolBarControl;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.property.CyProperty;
@@ -55,10 +58,8 @@ import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.read.LoadTableFileTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
-import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.events.TableViewAddedEvent;
 import org.cytoscape.view.model.events.TableViewAddedListener;
-import org.cytoscape.view.model.table.CyTableView;
 import org.cytoscape.view.model.table.CyTableViewFactory;
 import org.cytoscape.view.model.table.CyTableViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
@@ -75,7 +76,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -105,7 +106,8 @@ public abstract class AbstractTableBrowser extends JPanel
 	static final int SELECTOR_WIDTH = 400;
 	private static final Dimension PANEL_SIZE = new Dimension(550, 400);
 	
-	private TableBrowserToolBar toolBar;
+	protected TableBrowserToolBar toolBar;
+	protected OptionsBar optionsBar;
 	private JPanel dropPanel;
 	
 	private final JPanel mainPane = new JPanel();
@@ -123,15 +125,19 @@ public abstract class AbstractTableBrowser extends JPanel
 
 	protected TextIcon icon;
 	
+	protected final Class<? extends CyIdentifiable> objType;
+	
 	protected final CyServiceRegistrar serviceRegistrar;
 	private final Object lock = new Object();
 
 	AbstractTableBrowser(
-			final String tabTitle,
-			final CyServiceRegistrar serviceRegistrar
+			String tabTitle,
+			Class<? extends CyIdentifiable> objType,
+			CyServiceRegistrar serviceRegistrar
 	) {
-		this.serviceRegistrar = serviceRegistrar;
 		this.tabTitle = tabTitle;
+		this.objType = objType;
+		this.serviceRegistrar = serviceRegistrar;
 		
 		appFileName  = tabTitle.replaceAll(" ", "").concat(".props");
 		tableRenderers = new HashMap<>();
@@ -144,10 +150,32 @@ public abstract class AbstractTableBrowser extends JPanel
 		mainPane.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
 		mainPane.setLayout(new BorderLayout());
 		
+		var layout = new GroupLayout(this);
+		setLayout(layout);
+		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(false);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+				.addComponent(getToolBar(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getOptionsBar(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(mainPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(getToolBar(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(getOptionsBar(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(mainPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+		
 		add(mainPane, BorderLayout.CENTER);
+		add(getToolBar(), BorderLayout.NORTH);
+		
+		getToolBar().getFormatButton().addActionListener(evt -> {
+			getOptionsBar().setVisible(getToolBar().getFormatButton().isSelected());
+		});
+		
 		showDropPanel();
 		
-		BrowserDropListener dropListener = new BrowserDropListener();
+		var dropListener = new BrowserDropListener();
 		setTransferHandler(dropListener);
 		new DropTarget(this, dropListener);
 		
@@ -156,7 +184,6 @@ public abstract class AbstractTableBrowser extends JPanel
 	
 	protected abstract boolean containsTable(CyTable table);
 	
-
 	@Override
 	public Component getComponent() {
 		return this;
@@ -185,10 +212,15 @@ public abstract class AbstractTableBrowser extends JPanel
 		return currentTable;
 	}
 	
+	public void setCurrentTable(CyTable currentTable) {
+		this.currentTable = currentTable;
+		update();
+	}
+	
 	/**
 	 * Delete the given table from the JTable
 	 */
-	public void removeTable(final CyTable cyTable) {
+	public void removeTable(CyTable cyTable) {
 		TableRenderer renderer = null;
 		
 		synchronized (lock) {
@@ -219,11 +251,11 @@ public abstract class AbstractTableBrowser extends JPanel
 	
 	protected void update() {
 		updateToolBar();
+		getOptionsBar().update();
 	}
 
 	private void updateToolBar() {
-		if (toolBar != null)
-			toolBar.setVisible(currentTable != null);
+		getToolBar().setVisible(currentTable != null);
 	}
 	
 	private void showDropPanel() {
@@ -236,7 +268,7 @@ public abstract class AbstractTableBrowser extends JPanel
 			dropPanel = new JPanel();
 			dropPanel.setBackground(UIManager.getColor("Table.background"));
 			
-			Color fg = UIManager.getColor("Label.disabledForeground");
+			var fg = UIManager.getColor("Label.disabledForeground");
 			fg = new Color(fg.getRed(), fg.getGreen(), fg.getBlue(), 120);
 			
 			dropPanel.setBorder(BorderFactory.createCompoundBorder(
@@ -250,7 +282,7 @@ public abstract class AbstractTableBrowser extends JPanel
 			dropLabel.setFont(dropLabel.getFont().deriveFont(18.0f).deriveFont(Font.BOLD));
 			dropLabel.setForeground(fg);
 			
-			final GroupLayout layout = new GroupLayout(dropPanel);
+			var layout = new GroupLayout(dropPanel);
 			dropPanel.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
 			layout.setAutoCreateGaps(false);
@@ -275,7 +307,7 @@ public abstract class AbstractTableBrowser extends JPanel
 	}
 	
 	void showSelectedTable() {
-		final TableRenderer tableRenderer = getCurrentRenderer();
+		var tableRenderer = getCurrentRenderer();
 		
 		if (tableRenderer != null) {
 			mainPane.removeAll();
@@ -310,14 +342,14 @@ public abstract class AbstractTableBrowser extends JPanel
 		return renderer;
 	}
 
-	
 	private void createDefaultTableView() {
 		var tableViewManager = serviceRegistrar.getService(CyTableViewManager.class);
 		
 		// If no table view exists yet then automatically create one using the default renderer.
 		var tableView = tableViewManager.getTableView(currentTable);
-		if(tableView == null) {
-			CyTableViewFactory tableViewFactory = serviceRegistrar.getService(CyTableViewFactory.class);
+		
+		if (tableView == null) {
+			var tableViewFactory = serviceRegistrar.getService(CyTableViewFactory.class);
 			tableView = tableViewFactory.createTableView(currentTable);
 			
 			// this will fire the event that runs the below handler
@@ -327,24 +359,25 @@ public abstract class AbstractTableBrowser extends JPanel
 	
 	@Override
 	public void handleEvent(TableViewAddedEvent event) {
-		CyTableView tableView = event.getTableView();
+		var tableView = event.getTableView();
 		
-		if(!containsTable(tableView.getModel()))
+		if (!containsTable(tableView.getModel()))
 			return;
-		
+
 		// a renderer may already exist
 		TableRenderer exitingRenderer = null;
+		
 		synchronized (lock) {
 			exitingRenderer = tableRenderers.remove(tableView.getModel());
 		}
-		if(exitingRenderer != null) {
+		
+		if (exitingRenderer != null)
 			exitingRenderer.dispose();
-		}
 		
 		var renderingEngineManager = serviceRegistrar.getService(RenderingEngineManager.class);
 		var applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
 		
-		JComponent container = new JPanel();
+		var container = new JPanel();
 		
 		// create a rendering engine for the table view
 		var tableViewRenderer = applicationManager.getTableViewRenderer(tableView.getRendererId());
@@ -361,8 +394,7 @@ public abstract class AbstractTableBrowser extends JPanel
 		showSelectedTable();
 	}
 	
-	
-	public TableRenderer getTableRenderer(final CyTable table) {
+	public TableRenderer getTableRenderer(CyTable table) {
 		synchronized (lock) {
 			return tableRenderers.get(table);
 		}
@@ -380,25 +412,25 @@ public abstract class AbstractTableBrowser extends JPanel
 	// We have to keep this for backwards compatibility
 	@Override
 	public void handleEvent(SessionLoadedEvent e) {
-		Map<String, TableColumnStat> tscMap = TableColumnStatFileIO.read(e, appFileName);
+		var tscMap = TableColumnStatFileIO.read(e, appFileName);
 		
 		if (tscMap == null || tscMap.isEmpty())
 			return;
 		
-		Map<CyTable,TableRenderer> browserTablesMap = getTableRenderersMap();
+		var browserTablesMap = getTableRenderersMap();
 		
-		for (CyTable table : browserTablesMap.keySet()){
+		for (var table : browserTablesMap.keySet()){
 			if (!tscMap.containsKey(table.getTitle()))
 				continue;
 			
-			TableColumnStat tcs = tscMap.get(table.getTitle());
-			TableRenderer renderer = getTableRenderer(table);
+			var tcs = tscMap.get(table.getTitle());
+			var renderer = getTableRenderer(table);
 			
-			List<String> orderedCols = tcs.getOrderedCol();
-			List<String> visibleCols = tcs.getVisibleCols(); // MKTODO this should be a Set
+			var orderedCols = tcs.getOrderedCol();
+			var visibleCols = tcs.getVisibleCols(); // MKTODO this should be a Set
 			
 			for (int i = 0; i < orderedCols.size(); i++) {
-				String colName = orderedCols.get(i);
+				var colName = orderedCols.get(i);
 				renderer.setColumnGravity(colName, i);
 				renderer.setColumnVisible(colName, visibleCols.contains(colName));
 			}
@@ -407,26 +439,26 @@ public abstract class AbstractTableBrowser extends JPanel
 
 	@Override
 	public void handleEvent(SessionAboutToBeSavedEvent e) {
-		Map<CyTable,TableRenderer> tableRendererMap = getTableRenderersMap();
-		List<TableColumnStat> tableColumnStatList = new ArrayList<>();
+		var tableRendererMap = getTableRenderersMap();
+		var tableColumnStatList = new ArrayList<TableColumnStat>();
 
-		for (CyTable table : tableRendererMap.keySet()){
-			TableColumnStat tcs = new TableColumnStat(table.getTitle());
-			
-			TableRenderer renderer = getTableRenderer(table);
-			
+		for (var table : tableRendererMap.keySet()) {
+			var tcs = new TableColumnStat(table.getTitle());
+			var renderer = getTableRenderer(table);
+
 			var sortedColViews = renderer.getColumnViewsSortedByGravity();
-			for(int i = 0; i < sortedColViews.size(); i++) {
-				View<CyColumn> colView = sortedColViews.get(i);
+			
+			for (int i = 0; i < sortedColViews.size(); i++) {
+				var colView = sortedColViews.get(i);
 				boolean vis = renderer.getColumnVisible(colView);
 				tcs.addColumnStat(colView.getModel().getName(), i, vis);
 			}
 
 			tableColumnStatList.add(tcs);
 		}
-		TableColumnStatFileIO.write(tableColumnStatList, e, appFileName );	
+		
+		TableColumnStatFileIO.write(tableColumnStatList, e, appFileName);
 	}
-	
 	
 	@SuppressWarnings("unchecked")
 	protected boolean showPrivateTables() {
@@ -434,18 +466,52 @@ public abstract class AbstractTableBrowser extends JPanel
 		return cyProp != null && "true".equalsIgnoreCase(cyProp.getProperties().getProperty("showPrivateTables"));
 	}
 	
-	protected TableBrowserToolBar getToolBar() {
-		return toolBar;
+	protected abstract TableBrowserToolBar getToolBar();
+	
+	protected OptionsBar getOptionsBar() {
+		if (optionsBar == null) {
+			optionsBar = new OptionsBar();
+			optionsBar.setVisible(false);
+		}
+		
+		return optionsBar;
 	}
 	
-	protected void setToolBar(TableBrowserToolBar toolBar) {
-		if (toolBar == null && this.toolBar != null)
-			remove(this.toolBar);
-		else if (toolBar != null)
-			add(toolBar, BorderLayout.NORTH);
+	class OptionsBar extends JPanel {
+		
+		protected List<AbstractToolBarControl> controls = new ArrayList<>();
+		
+		OptionsBar() {
+			setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
+			setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
+		}
+		
+		void setFormatControls(List<AbstractToolBarControl> list) {
+			controls.clear();
+			removeAll();
 			
-		this.toolBar = toolBar;
-		updateToolBar();
+			int idx = 0;
+			
+			for (var c : list) {
+				c.setCurrentTable(getCurrentTable());
+				controls.add(c);
+				
+				c.setMaximumSize(c.getPreferredSize());
+				add(c);
+				
+				var sep = ViewUtil.createToolBarSeparator();
+				sep.setMaximumSize(new Dimension(10, Short.MAX_VALUE));
+				add(sep);
+				
+				if (++idx == list.size())
+					add(Box.createHorizontalGlue());
+			}
+		}
+		
+		void update() {
+			for (var c : controls)
+				c.setCurrentTable(getCurrentTable());
+		}
 	}
 	
 	private class BrowserDropListener extends TransferHandler implements DropTargetListener {
@@ -482,11 +548,11 @@ public abstract class AbstractTableBrowser extends JPanel
 			}
 			
 			evt.acceptDrop(evt.getDropAction());
-			final Transferable t = evt.getTransferable();
+			var t = evt.getTransferable();
 			
 			if (evt.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {       
 	            // Get the fileList that is being dropped.
-		        List<File> data;
+		        final List<File> data;
 		        
 		        try {
 		            data = (List<File>) t.getTransferData(DataFlavor.javaFileListFlavor);
@@ -511,18 +577,18 @@ public abstract class AbstractTableBrowser extends JPanel
             return info.isDrop() && !isAcceptable(info);
         }
 		
-		private void loadFiles(final List<File> data) {
-			final DialogTaskManager taskManager = serviceRegistrar.getService(DialogTaskManager.class);
-			final LoadTableFileTaskFactory factory = serviceRegistrar.getService(LoadTableFileTaskFactory.class);
+		private void loadFiles(List<File> data) {
+			var taskManager = serviceRegistrar.getService(DialogTaskManager.class);
+			var factory = serviceRegistrar.getService(LoadTableFileTaskFactory.class);
 
 			if (factory != null)
 				loadFiles(data.iterator(), taskManager, factory);
 		}
 		
-		private void loadFiles(final Iterator<File> iterator, final DialogTaskManager taskManager,
-				final LoadTableFileTaskFactory factory) {
+		private void loadFiles(Iterator<File> iterator, DialogTaskManager taskManager,
+				LoadTableFileTaskFactory factory) {
 			while (iterator.hasNext()) {
-				final File file = iterator.next();
+				var file = iterator.next();
 				
 				if (!file.isDirectory()) {
 					try {
