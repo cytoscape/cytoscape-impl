@@ -268,7 +268,7 @@ public class SimpleSpacialIndex2DSnapshotImpl implements NetworkSpacialIndex2D {
 			return overlapNodes;
 		}
 		
-		public List<View<CyEdge>> getAdjacentEdges() {
+		public synchronized List<View<CyEdge>> getAdjacentEdges() {
 			if(edges == null) {
 				edges = new ArrayList<>();
 				
