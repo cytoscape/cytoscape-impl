@@ -256,6 +256,7 @@ public abstract class AbstractTableBrowser extends JPanel
 
 	private void updateToolBar() {
 		getToolBar().setVisible(currentTable != null);
+		getOptionsBar().setVisible(currentTable != null && getToolBar().getFormatButton().isSelected());
 	}
 	
 	private void showDropPanel() {
