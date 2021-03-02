@@ -29,4 +29,11 @@ class Sink implements TransformerSink<CyIdentifiable> {
 		return edges;
 	}
 
+	public int getNodeCount() {
+		return nodes.size();
+	}
+	
+	public int getEdgeCount() {
+		return edges.size();
+	}
 }

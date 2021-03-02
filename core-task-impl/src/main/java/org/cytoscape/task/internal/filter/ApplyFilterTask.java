@@ -71,7 +71,9 @@ public class ApplyFilterTask extends AbstractTask {
 			return;
 		}
 		
-		SelectFilterTask.applyFilter(serviceRegistrar, network, transformer, action.get());
+		int[] result = SelectFilterTask.applyFilter(serviceRegistrar, network, transformer, action.get());
+		
+		taskMonitor.showMessage(Level.INFO, SelectFilterTask.getResultMessage(result));
 	}
 
 }

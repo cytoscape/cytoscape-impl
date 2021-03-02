@@ -79,7 +79,9 @@ public class CreateFilterTask extends AbstractTask {
 		if(apply) {
 			CyNetwork network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 			if(network != null) {
-				SelectFilterTask.applyFilter(serviceRegistrar, network, transformer, SelectTunable.Action.SELECT);
+				int[] result = SelectFilterTask.applyFilter(serviceRegistrar, network, transformer, SelectTunable.Action.SELECT);
+				
+				taskMonitor.showMessage(Level.INFO, SelectFilterTask.getResultMessage(result));
 			}
 		}
 	}
