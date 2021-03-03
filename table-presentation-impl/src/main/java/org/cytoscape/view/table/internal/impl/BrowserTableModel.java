@@ -1,9 +1,7 @@
 package org.cytoscape.view.table.internal.impl;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -56,9 +54,10 @@ import org.cytoscape.view.table.internal.util.ValidatedObjectAndEditString;
  * #L%
  */
 
+@SuppressWarnings("serial")
 public final class BrowserTableModel extends AbstractTableModel
-									 implements RowsCreatedListener, RowsDeletedListener, TableAboutToBeDeletedListener {
-	
+		implements RowsCreatedListener, RowsDeletedListener, TableAboutToBeDeletedListener {
+
 	public static enum ViewMode {
 		ALL,
 		SELECTED,
@@ -66,24 +65,22 @@ public final class BrowserTableModel extends AbstractTableModel
 		
 		// MKTODO should probably refactor this class to remove ViewMode and use TableMode directly
 		public static ViewMode fromVisualPropertyValue(TableMode tableMode) {
-			if(tableMode == TableModeVisualProperty.ALL)
+			if (tableMode == TableModeVisualProperty.ALL)
 				return ALL;
-			else if(tableMode == TableModeVisualProperty.SELECTED)
+			else if (tableMode == TableModeVisualProperty.SELECTED)
 				return SELECTED;
 			else
 				return AUTO;
 		}
 		
 		public TableMode toVisualPropertyValue() {
-			switch(this) {
-				case ALL: return TableModeVisualProperty.ALL;
+			switch (this) {
+				case ALL:      return TableModeVisualProperty.ALL;
 				case SELECTED: return TableModeVisualProperty.SELECTED;
-				default: return TableModeVisualProperty.AUTO;
+				default:       return TableModeVisualProperty.AUTO;
 			}
 		}
 	}
-
-	private static final long serialVersionUID = -517521404005631245L;
 
 	private final CyTableView tableView;
 	private final CyTable dataTable;
@@ -110,21 +107,21 @@ public final class BrowserTableModel extends AbstractTableModel
 		lock = new ReentrantReadWriteLock();
 		
 		// add each row to an array to allow fast lookup from an index
-		final Collection<CyRow> rows = dataTable.getAllRows();
+		var rows = dataTable.getAllRows();
 		this.rowIndexToPrimaryKey = new Object[rows.size()]; 
 		this.maxRowIndex = 0;
-		final String primaryKey = dataTable.getPrimaryKey().getName();
+		var primaryKey = dataTable.getPrimaryKey().getName();
 		
 		for (CyRow row : rows)
 			rowIndexToPrimaryKey[maxRowIndex++] = row.getRaw(primaryKey);
 	}
 
-	private List<String> getAttributeNames(final CyTable table) {
-		ArrayList<String> names = new ArrayList<>();
-		
-		for (CyColumn column : table.getColumns())
+	private List<String> getAttributeNames(CyTable table) {
+		var names = new ArrayList<String>();
+
+		for (var column : table.getColumns())
 			names.add(column.getName());
-		
+
 		return names;
 	}
 
@@ -137,7 +134,7 @@ public final class BrowserTableModel extends AbstractTableModel
 	}
 
 	@Override
-	public Class<?> getColumnClass(final int columnIndex) {
+	public Class<?> getColumnClass(int columnIndex) {
 		return ValidatedObjectAndEditString.class;
 	}
 	
@@ -147,12 +144,14 @@ public final class BrowserTableModel extends AbstractTableModel
 
 	@Override
 	public int getRowCount() {
-		final Collection<CyColumn> columns = dataTable.getColumns();
+		var columns = dataTable.getColumns();
+		
 		if (columns.isEmpty())
 			return 0;
 
 		// Show selection mode OR all rows
 		int count = 0;
+		
 		switch (viewMode) {
 			case SELECTED:
 				count = dataTable.getMatchingRows(CyNetwork.SELECTED, Boolean.TRUE).size();
@@ -176,15 +175,16 @@ public final class BrowserTableModel extends AbstractTableModel
 		return attrNames.size();
 	}
 
-	public Object getValueAt(final int rowIndex, final String columnName) {
-		final CyRow row = getCyRow(rowIndex);
+	public Object getValueAt(int rowIndex, String columnName) {
+		var row = getCyRow(rowIndex);
+		
 		return getValidatedObjectAndEditString(row, columnName);
 	}
 
 	@Override
-	public Object getValueAt(final int rowIndex, final int columnIndex) {	
-		final String columnName = getColumnName(columnIndex);
-		final CyRow row = getCyRow(rowIndex);
+	public Object getValueAt(int rowIndex, int columnIndex) {	
+		var columnName = getColumnName(columnIndex);
+		var row = getCyRow(rowIndex);
 		
 		return getValidatedObjectAndEditString(row, columnName);
 	}
@@ -195,13 +195,13 @@ public final class BrowserTableModel extends AbstractTableModel
 		return columnName != null ? dataTable.getColumn(columnName) : null;
 	}
 
-	CyColumn getColumnByModelIndex(final int modelIndex)  {
-		final String columnName = getColumnName(modelIndex);
+	CyColumn getColumnByModelIndex(int modelIndex)  {
+		var columnName = getColumnName(modelIndex);
 
 		return dataTable.getColumn(columnName);
 	}
 
-	public CyRow getCyRow(final int rowIndex) {
+	public CyRow getCyRow(int rowIndex) {
 		try {
 			switch (viewMode) {
 				case SELECTED:
@@ -227,31 +227,31 @@ public final class BrowserTableModel extends AbstractTableModel
 		return null;
 	}
 
-	private ValidatedObjectAndEditString getValidatedObjectAndEditString(final CyRow row, final String columnName) {
+	private ValidatedObjectAndEditString getValidatedObjectAndEditString(CyRow row, String columnName) {
 		if (row == null)
 			return null;
 
-		Object raw = row.getRaw(columnName);
-		
+		var raw = row.getRaw(columnName);
+
 		if (raw == null) {
 			CyColumn column = row.getTable().getColumn(columnName);
-			
+
 			if (column != null)
 				raw = column.getDefaultValue();
 		}
-		
+
 		if (raw == null)
 			return null;
 
 		// Optimisation hack:
-		final boolean isEquation = raw instanceof Equation;
-		final Object cooked = isEquation ? getColumnValue(row, columnName) : raw;
-		final String editString = createEditString(raw);
+		var isEquation = raw instanceof Equation;
+		var cooked = isEquation ? getColumnValue(row, columnName) : raw;
+		var editString = createEditString(raw);
 		
 		if (cooked != null)
 			return new ValidatedObjectAndEditString(cooked, editString, isEquation);
 
-		final String lastInternalError = dataTable.getLastInternalError();
+		var lastInternalError = dataTable.getLastInternalError();
 		
 		return new ValidatedObjectAndEditString(cooked, editString, lastInternalError, isEquation);
 	}
@@ -261,12 +261,8 @@ public final class BrowserTableModel extends AbstractTableModel
 		if (SwingUtilities.isEventDispatchThread()) {
 			super.fireTableStructureChanged();
 		} else {
-			final AbstractTableModel model = (AbstractTableModel) this;
-			SwingUtilities.invokeLater (new Runnable () {
-				public void run() {
-					model.fireTableStructureChanged();
-				}
-			});
+			var model = (AbstractTableModel) this;
+			SwingUtilities.invokeLater(() -> model.fireTableStructureChanged());
 		}
 	}
 
@@ -275,40 +271,33 @@ public final class BrowserTableModel extends AbstractTableModel
 		if (SwingUtilities.isEventDispatchThread()) {
 			super.fireTableDataChanged();
 		} else {
-			final AbstractTableModel model = (AbstractTableModel) this;
-			SwingUtilities.invokeLater (new Runnable () {
-				public void run() {
-					model.fireTableDataChanged();
-				}
-			});
+			var model = (AbstractTableModel) this;
+			SwingUtilities.invokeLater(() -> model.fireTableDataChanged());
 		}
 	}
 
 	@Override
-	public void fireTableChanged (final TableModelEvent event) {
+	public void fireTableChanged(TableModelEvent event) {
 		if (SwingUtilities.isEventDispatchThread()) {
 			super.fireTableChanged(event);
 		} else {
-			final AbstractTableModel model = (AbstractTableModel) this;
-			SwingUtilities.invokeLater (new Runnable () {
-				public void run() {
-					model.fireTableChanged(event);
-				}
-			});
+			var model = (AbstractTableModel) this;
+			SwingUtilities.invokeLater(() -> model.fireTableChanged(event));
 		}
 	}
 
 	private String createEditString(Object raw) {
 		if (raw instanceof List) {
-			StringBuilder builder = new StringBuilder();
+			var builder = new StringBuilder();
 			builder.append('[');
 			boolean first = true;
-			for (Object item : (List<?>) raw) {
-				if (first) {
+			
+			for (var item : (List<?>) raw) {
+				if (first)
 					first = false;
-				} else {
+				else
 					builder.append(',');
-				}
+				
 				if (item instanceof String) {
 					builder.append('"');
 					escape(item.toString(), builder);
@@ -317,47 +306,53 @@ public final class BrowserTableModel extends AbstractTableModel
 					builder.append(item.toString());
 				}
 			}
+			
 			builder.append(']');
+			
 			return builder.toString();
 		}
+		
 		return raw.toString();
 	}
 
 	private void escape(String string, StringBuilder builder) {
 		for (int i = 0; i < string.length(); i++) {
 			char c = string.charAt(i);
+			
 			switch (c) {
-			case '\b':
-				builder.append("\\b");
-				break;
-			case '\t':
-				builder.append("\\t");
-				break;
-			case '\n':
-				builder.append("\\n");
-				break;
-			case '\f':
-				builder.append("\\f");
-				break;
-			case '\r':
-				builder.append("\\r");
-				break;
-			case '\\':
-				builder.append("\\\\");
-				break;
-			case '"':
-				builder.append("\\\"");
-				break;
-			default:
-				builder.append(c);
+				case '\b':
+					builder.append("\\b");
+					break;
+				case '\t':
+					builder.append("\\t");
+					break;
+				case '\n':
+					builder.append("\\n");
+					break;
+				case '\f':
+					builder.append("\\f");
+					break;
+				case '\r':
+					builder.append("\\r");
+					break;
+				case '\\':
+					builder.append("\\\\");
+					break;
+				case '"':
+					builder.append("\\\"");
+					break;
+				default:
+					builder.append(c);
 			}
 		}
 	}
 
-	private static Object getColumnValue(final CyRow row, final String columnName) {
-		final CyColumn column = row.getTable().getColumn(columnName);
+	private static Object getColumnValue(CyRow row, String columnName) {
+		var column = row.getTable().getColumn(columnName);
+		
 		if (column.getType() == List.class) {
-			final Class<?> listElementType = column.getListElementType();
+			var listElementType = column.getListElementType();
+			
 			return row.getList(columnName, listElementType);
 		} else{
 			return row.get(columnName, column.getType());
@@ -374,12 +369,13 @@ public final class BrowserTableModel extends AbstractTableModel
 			selectedRows = null;
 	
 			// add new rows to rowIndexToPrimaryKey array
-			Object[] newRowIndex = new Object[rowIndexToPrimaryKey.length + e.getPayloadCollection().size()];
-			System.arraycopy(rowIndexToPrimaryKey,0,newRowIndex,0,rowIndexToPrimaryKey.length);
+			var newRowIndex = new Object[rowIndexToPrimaryKey.length + e.getPayloadCollection().size()];
+			System.arraycopy(rowIndexToPrimaryKey, 0, newRowIndex, 0, rowIndexToPrimaryKey.length);
 			rowIndexToPrimaryKey = newRowIndex;
-			for ( Object pk : e.getPayloadCollection() )
+
+			for (var pk : e.getPayloadCollection())
 				rowIndexToPrimaryKey[maxRowIndex++] = pk;
-	
+
 			fireTableDataChanged();
 		} finally {
 			lock.writeLock().unlock();
@@ -389,24 +385,25 @@ public final class BrowserTableModel extends AbstractTableModel
 	@Override
 	public void handleEvent(RowsDeletedEvent e) {
 		lock.writeLock().lock();
+
 		try {
 			if (!e.getSource().equals(this.dataTable))
 				return;
-	
-			int index=0;
-			
-			final Collection<CyRow> rows = dataTable.getAllRows();
-			
-			final String primaryKey = dataTable.getPrimaryKey().getName();
+
+			int index = 0;
+
+			var rows = dataTable.getAllRows();
+
+			var primaryKey = dataTable.getPrimaryKey().getName();
 
 			rowIndexToPrimaryKey = new Object[rows.size()];
-			
-			for ( CyRow row : rows ) 
+
+			for (var row : rows)
 				rowIndexToPrimaryKey[index++] = row.getRaw(primaryKey);
+
 			maxRowIndex = index;
 			selectedRows = null;
-			
-	
+
 			fireTableDataChanged();
 		} finally {
 			lock.writeLock().unlock();
@@ -416,10 +413,11 @@ public final class BrowserTableModel extends AbstractTableModel
 	@Override
 	public void handleEvent(TableAboutToBeDeletedEvent e) {
 		lock.writeLock().lock();
+		
 		try {
-			if (!e.getSource().equals(dataTable)) {
+			if (!e.getTable().equals(dataTable))
 				return;
-			}
+			
 			disposed = true;
 		} finally {
 			lock.writeLock().unlock();
@@ -432,13 +430,11 @@ public final class BrowserTableModel extends AbstractTableModel
 
 	/**
 	 * Switch view mode.
-	 * 
-	 * @param viewMode
 	 */
 	public void setViewMode(ViewMode viewMode) {
 		selectedRows = null;
-		final CyColumn selectedColumn = dataTable.getColumn(CyNetwork.SELECTED);
-		
+		var selectedColumn = dataTable.getColumn(CyNetwork.SELECTED);
+
 		if (viewMode != ViewMode.ALL && selectedColumn != null && selectedColumn.getType() == Boolean.class)
 			this.viewMode = viewMode;
 		else
@@ -453,110 +449,108 @@ public final class BrowserTableModel extends AbstractTableModel
 		return viewMode;
 	}
 
-	public String getCyColumnName( final int column){
+	public String getCyColumnName(int column) {
 		return (String) dataTable.getColumns().toArray()[column];
 	}
 
 	@Override
-	public String getColumnName(final int column) {
+	public String getColumnName(int column) {
 		return mapColumnIndexToColumnName(column);
 	}
 
-	public int mapColumnNameToColumnIndex(final String columnName) {
+	public int mapColumnNameToColumnIndex(String columnName) {
 		if (attrNames.contains(columnName))
 			return attrNames.indexOf(columnName);
-		
+
 		return -1;
 	}
 
-	private String mapColumnIndexToColumnName(int index) {		
+	private String mapColumnIndexToColumnName(int index) {
 		if (index >= 0 && index <= attrNames.size())
 			return attrNames.get(index);
 
 		throw new ArrayIndexOutOfBoundsException();
 	}
 
-	CyRow getRow(final Object suid) {
+	CyRow getRow(Object suid) {
 		return dataTable.getRow(suid);
 	}
 
 	@Override
-	public void setValueAt(final Object value, final int rowIndex, final int columnIndex) {
-		final String text = (String)value;
-		final CyRow row = getCyRow(rowIndex);
-		final String columnName = mapColumnIndexToColumnName(columnIndex);
-		final Class<?> columnType = dataTable.getColumn(columnName).getType();
-		final Class<?> listElementType = dataTable.getColumn(columnName).getListElementType();
+	public void setValueAt(Object value, int rowIndex, int columnIndex) {
+		var text = (String)value;
+		var row = getCyRow(rowIndex);
+		var columnName = mapColumnIndexToColumnName(columnIndex);
+		var columnType = dataTable.getColumn(columnName).getType();
+		var listElementType = dataTable.getColumn(columnName).getListElementType();
 
 		if (text.isEmpty()) {
 			if (!row.isSet(columnName))
 				return;
+			
 			row.set(columnName, null);
 		} else if (text.startsWith("=")) {
-			final Map<String, Class<?>> attrNameToTypeMap = TableBrowserUtil.getAttNameToTypeMap(dataTable, null);
+			var attrNameToTypeMap = TableBrowserUtil.getAttNameToTypeMap(dataTable, null);
 			
 			if (compiler.compile(text, attrNameToTypeMap)) {
-				final Equation eqn = compiler.getEquation();
-				final Class<?> eqnType = eqn.getType();
+				var eqn = compiler.getEquation();
+				var eqnType = eqn.getType();
 
 				// Is the equation type compatible with the column type?
-				if (eqnTypeIsCompatible(columnType, listElementType, eqnType)){
+				if (eqnTypeIsCompatible(columnType, listElementType, eqnType)) {
 					row.set(columnName, eqn);
-				}
-				else { // The equation type is incompatible w/ the column type!
-					final Class<?> expectedType = columnType == Integer.class ? Long.class : columnType;
-					final String errorMsg = "Equation result type is "
+				} else { // The equation type is incompatible w/ the column type!
+					var expectedType = columnType == Integer.class ? Long.class : columnType;
+					var errorMsg = "Equation result type is "
 						+ getUnqualifiedName(eqnType) + ", column type is "
 						+ getUnqualifiedName(columnType) + ".";
-					final Equation errorEqn = compiler.getErrorEquation(text, expectedType, errorMsg);
+					var errorEqn = compiler.getErrorEquation(text, expectedType, errorMsg);
 					row.set(columnName, errorEqn);
 				}
 			} else {
-				final Class<?> eqnType = columnType == Integer.class ? Long.class : columnType;
-				final String errorMsg = compiler.getLastErrorMsg();
-				final Equation errorEqn = compiler.getErrorEquation(text, eqnType, errorMsg);
+				var eqnType = columnType == Integer.class ? Long.class : columnType;
+				var errorMsg = compiler.getLastErrorMsg();
+				var errorEqn = compiler.getErrorEquation(text, eqnType, errorMsg);
 				row.set(columnName, errorEqn);
 			}
 		} else { // Not an equation!
-			final List<Object> parsedData = TableBrowserUtil.parseCellInput(dataTable, columnName, value);
+			var parsedData = TableBrowserUtil.parseCellInput(dataTable, columnName, value);
 			
-			if (parsedData.get(0) != null)
+			if (parsedData.get(0) != null) {
 				row.set(columnName, parsedData.get(0));
-			else {
+			} else {
 				// Error!
 				showErrorWindow(parsedData.get(1).toString());
 				// + " should be an Integer (or the number is too big/small).");
 			}
 		}
 
-		final TableModelEvent event = new TableModelEvent(this, rowIndex, rowIndex, columnIndex);
+		var event = new TableModelEvent(this, rowIndex, rowIndex, columnIndex);
 		fireTableChanged(event);
 		fireTableDataChanged();
 	}
 
 	// Pop-up window for error message
-	private static void showErrorWindow(final String errMessage) {
-		JOptionPane.showMessageDialog(null, errMessage, "Invalid Value",
-				JOptionPane.ERROR_MESSAGE);
+	private static void showErrorWindow(String errMessage) {
+		JOptionPane.showMessageDialog(null, errMessage, "Invalid Value", JOptionPane.ERROR_MESSAGE);
 	}
 
-	private boolean eqnTypeIsCompatible(final Class<?> columnType, final Class<?> listElementType, final Class<?> eqnType) {
+	private boolean eqnTypeIsCompatible(Class<?> columnType, Class<?> listElementType, Class<?> eqnType) {
 		return EquationUtil.eqnTypeIsCompatible(columnType, listElementType, eqnType);
 	}
 
-	private String getUnqualifiedName(final Class<?> type) {
-		final String typeName = type.getName();
-		final int lastDotPos = typeName.lastIndexOf('.');
+	private String getUnqualifiedName(Class<?> type) {
+		var typeName = type.getName();
+		var lastDotPos = typeName.lastIndexOf('.');
+
 		return lastDotPos == -1 ? typeName : typeName.substring(lastDotPos + 1);
 	}
 
 	@Override
-	public boolean isCellEditable(final int rowIndex, final int columnIndex) {
-		CyColumn column = getColumnByModelIndex(columnIndex);
-		if (column == null) {
-			return false;
-		}
-		return !column.isPrimaryKey();
+	public boolean isCellEditable(int rowIndex, int columnIndex) {
+		var column = getColumnByModelIndex(columnIndex);
+		
+		return column == null ? false : !column.isPrimaryKey();
 	}
 
 	public boolean isPrimaryKey(int columnIndex) {
@@ -585,21 +579,21 @@ public final class BrowserTableModel extends AbstractTableModel
 		return lock;
 	}
 
-	private static void dumpTable(final CyTable table) {
+	private static void dumpTable(CyTable table) {
 		System.out.println("Begin Table: " + table.getTitle());
-		final Collection<CyColumn> cols = table.getColumns();
-		for (final CyColumn col : cols) {
+		var cols = table.getColumns();
+		for (var col : cols) {
 			System.out.print(col.getName());
 			System.out.print('\t');
 		}
 		System.out.println();
-		for (final CyColumn col : cols) {
+		for (var col : cols) {
 			System.out.print(col.getType().getSimpleName());
 			System.out.print('\t');
 		}
 		System.out.println();
-		for (final CyRow row : table.getAllRows()) {
-			for (final CyColumn col : cols) {
+		for (var row : table.getAllRows()) {
+			for (var col : cols) {
 				System.out.print(row.getRaw(col.getName()));
 				System.out.print('\t');
 			}

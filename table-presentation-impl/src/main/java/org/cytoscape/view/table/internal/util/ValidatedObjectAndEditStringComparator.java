@@ -1,12 +1,14 @@
 package org.cytoscape.view.table.internal.util;
 
+import java.util.Comparator;
+
 /*
  * #%L
  * Cytoscape Table Browser Impl (table-browser-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2011 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2011 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,10 +26,6 @@ package org.cytoscape.view.table.internal.util;
  * #L%
  */
 
-
-import java.util.Comparator;
-
-
 public class ValidatedObjectAndEditStringComparator implements Comparator<ValidatedObjectAndEditString> {
 	
 	private final Class<?> internalColumnType;
@@ -37,10 +35,11 @@ public class ValidatedObjectAndEditStringComparator implements Comparator<Valida
 	}
 
 	@Override
-	public int compare(final ValidatedObjectAndEditString v1, final ValidatedObjectAndEditString v2) {
+	public int compare(ValidatedObjectAndEditString v1, ValidatedObjectAndEditString v2) {
 		// Deal with ValidatedObjectAndEditString objects that must display an error message:
-		final String errorText1 = v1.getErrorText();
-		final String errorText2 = v2.getErrorText();
+		var errorText1 = v1.getErrorText();
+		var errorText2 = v2.getErrorText();
+		
 		if (errorText1 != null && errorText2 != null)
 			return errorText1.compareToIgnoreCase(errorText2);
 		if (errorText2 != null)
@@ -48,8 +47,8 @@ public class ValidatedObjectAndEditStringComparator implements Comparator<Valida
 		if (errorText1 != null)
 			return -1;
 
-		final Object val1 = v1.getValidatedObject();
-		final Object val2 = v2.getValidatedObject();
+		var val1 = v1.getValidatedObject();
+		var val2 = v2.getValidatedObject();
 
 		if (internalColumnType == Double.class)
 			return doubleCompare((double)(Double)val1, (double)(Double)val2);
@@ -64,36 +63,36 @@ public class ValidatedObjectAndEditStringComparator implements Comparator<Valida
 		return stringCompare(val1.toString(), val2.toString());
 	}
 
-	private static int doubleCompare(final double d1, final double d2) {
+	private static int doubleCompare(double d1, double d2) {
 		if (d1 < d2)
 			return -1;
 		return d1 > d2 ? +1 : 0;
 	}
 
-	private static int longCompare(final long l1, final long l2) {
+	private static int longCompare(long l1, long l2) {
 		if (l1 < l2)
 			return -1;
 		return l1 > l2 ? +1 : 0;
 	}
 
-	private static int integerCompare(final int i1, int i2) {
+	private static int integerCompare(int i1, int i2) {
 		if (i1 < i2)
 			return -1;
 		return i1 > i2 ? +1 : 0;
 	}
 
-	private static int booleanCompare(final boolean b1, final boolean b2) {
+	private static int booleanCompare(boolean b1, boolean b2) {
 		if ((b1 && b2) || (!b1 && !b2))
 			return 0;
 		return b1 ? -1 : +1;
 	}
 
-	private static int stringCompare(final String s1, final String s2) {
+	private static int stringCompare(String s1, String s2) {
 		return s1.compareToIgnoreCase(s2);
 	}
 
 	@Override
-	public boolean equals(final Object obj) {
+	public boolean equals(Object obj) {
 		return (obj instanceof ValidatedObjectAndEditStringComparator)
 			&& ((ValidatedObjectAndEditStringComparator)obj).internalColumnType == internalColumnType;
 	}

@@ -10,7 +10,6 @@ import java.awt.Font;
 
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.NetworkViewTestSupport;
-import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
@@ -41,7 +40,7 @@ import org.mockito.MockitoAnnotations;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -80,7 +79,6 @@ public class DGraphViewApplyTest {
 	@Mock private DingGraphLOD dingGraphLOD;
 	@Mock private VisualMappingManager visualMappingManager;
 	@Mock private CyNetworkViewManager networkViewManager;
-	@Mock private CustomGraphicsManager cgManager;
 	@Mock private CyServiceRegistrar serviceRegistrar;
 	
 	// Network contents
@@ -106,7 +104,7 @@ public class DGraphViewApplyTest {
 
 		testSupport.getNetworkTableManager();
 		network = buildNetworkModel();
-		dingLexicon = new DVisualLexicon(cgManager);
+		dingLexicon = new DVisualLexicon();
 		handleFactory = new HandleFactoryImpl();
 		
 		when(serviceRegistrar.getService(UndoSupport.class)).thenReturn(undoSupport);

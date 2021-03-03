@@ -23,6 +23,7 @@
 
 	<modules>
 		<module>command-executor-impl</module>
+		<module>custom-graphics-internal</module>
 		<module>ding-impl</module>
 		<module>editor-impl</module>
 		<module>equations-functions-impl</module>

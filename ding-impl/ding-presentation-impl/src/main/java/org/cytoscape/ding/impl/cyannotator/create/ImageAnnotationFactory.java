@@ -7,8 +7,7 @@ import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.UIManager;
 
-import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsBrowser;
+import org.cytoscape.cg.model.CustomGraphicsManager;
 import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ImageAnnotationEditor;
@@ -27,7 +26,7 @@ import org.cytoscape.view.presentation.annotations.ImageAnnotation;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2020 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -51,17 +50,14 @@ public class ImageAnnotationFactory extends AbstractDingAnnotationFactory<ImageA
 
 	private Icon icon;
 	
-	private final CustomGraphicsBrowser browser;
-	
-	public ImageAnnotationFactory(CustomGraphicsBrowser browser, CyServiceRegistrar serviceRegistrar) {
+	public ImageAnnotationFactory(CyServiceRegistrar serviceRegistrar) {
 		super(ImageAnnotation.class, serviceRegistrar);
-		this.browser = browser;
 	}
 
 	public LoadImageDialog createLoadImageDialog(CyNetworkView view, Point2D location) {
 		var re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
 		
-		return new LoadImageDialog(re, location, ViewUtil.getActiveWindow(re), browser, serviceRegistrar);
+		return new LoadImageDialog(re, location, ViewUtil.getActiveWindow(re), serviceRegistrar);
 	}
 	
 	@Override

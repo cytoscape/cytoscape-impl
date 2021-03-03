@@ -92,7 +92,16 @@ public class HelpGenerator {
 		boolean found = false;
 		List<String> commands = availableCommands.getCommands(tokens[1]);
 		for (String c: commands) {
+      // This can't be equalsIgnoreCase.  We either need to lowercase all
+      // commands and arguments and then lowercase all inputs or we need to
+      // mandate case-specificity
+      /*
 			if (c.equalsIgnoreCase(command)) {
+				found = true;
+				break;
+			}
+      */
+			if (c.equals(command)) {
 				found = true;
 				break;
 			}

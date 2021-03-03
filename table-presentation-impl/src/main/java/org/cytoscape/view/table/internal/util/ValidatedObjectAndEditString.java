@@ -6,7 +6,7 @@ package org.cytoscape.view.table.internal.util;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2010 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,7 +24,6 @@ package org.cytoscape.view.table.internal.util;
  * #L%
  */
 
-
 public class ValidatedObjectAndEditString implements Comparable<Object> {
 	
 	private final Object validatedObject;
@@ -32,20 +31,19 @@ public class ValidatedObjectAndEditString implements Comparable<Object> {
 	private String errorText;
 	private boolean isEquation;
 
-	public ValidatedObjectAndEditString(final Object validatedObject, final String editString,
-	                                    final String errorText, final boolean isEquation) {
+	public ValidatedObjectAndEditString(Object validatedObject, String editString, String errorText,
+			boolean isEquation) {
 		this.validatedObject = validatedObject;
 		this.editString = editString;
 		this.errorText = errorText;
 		this.isEquation = isEquation;
 	}
 
-	public ValidatedObjectAndEditString(final Object validatedObject, final String editString,
-			final boolean isEquation) {
+	public ValidatedObjectAndEditString(Object validatedObject, String editString, boolean isEquation) {
 		this(validatedObject, editString, null, isEquation);
 	}
 
-	public ValidatedObjectAndEditString(final Object validatedObject) {
+	public ValidatedObjectAndEditString(Object validatedObject) {
 		this(validatedObject, null, false);
 	}
 
@@ -77,7 +75,7 @@ public class ValidatedObjectAndEditString implements Comparable<Object> {
 	@Override
 	@SuppressWarnings("unchecked")
     public int compareTo(Object o) {
-        ValidatedObjectAndEditString v = (ValidatedObjectAndEditString) o;
+        var v = (ValidatedObjectAndEditString) o;
         
         if (validatedObject instanceof Comparable && v.validatedObject instanceof Comparable) {
             Comparable<Object> c1 = (Comparable<Object>) validatedObject;

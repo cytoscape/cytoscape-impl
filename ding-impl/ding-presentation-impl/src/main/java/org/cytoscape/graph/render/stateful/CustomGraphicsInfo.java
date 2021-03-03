@@ -1,13 +1,12 @@
 package org.cytoscape.graph.render.stateful;
 
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.ding.DVisualLexicon;
-import org.cytoscape.ding.customgraphics.CustomGraphicsPositionCalculator;
+import org.cytoscape.ding.internal.util.CustomGraphicsPositionCalculator;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
@@ -24,7 +23,7 @@ import org.cytoscape.view.vizmap.VisualPropertyDependency;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2020 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -50,7 +49,7 @@ public class CustomGraphicsInfo {
 	private ObjectPosition position;
 	private Double size;
 	
-	public CustomGraphicsInfo(final VisualProperty<CyCustomGraphics> visualProperty) {
+	public CustomGraphicsInfo(VisualProperty<CyCustomGraphics> visualProperty) {
 		this.visualProperty = visualProperty;
 	}
 
@@ -82,29 +81,34 @@ public class CustomGraphicsInfo {
 		this.size = size;
 	}
 	
-	public List<CustomGraphicLayer> createLayers(final CyNetworkView netView, final View<CyNode> nodeView, final NodeDetails details, final Set<VisualPropertyDependency<?>> dependencies) {
-		final List<CustomGraphicLayer> transformedLayers = new ArrayList<>();
+	public List<CustomGraphicLayer> createLayers(
+			CyNetworkView netView,
+			View<CyNode> nodeView,
+			NodeDetails details,
+			Set<VisualPropertyDependency<?>> dependencies
+	) {
+		List<CustomGraphicLayer> transformedLayers = new ArrayList<>();
 		
 		if (customGraphics == null)
 			return transformedLayers;
 		
-		final List<? extends CustomGraphicLayer> originalLayers = customGraphics.getLayers(netView, nodeView);
+		var originalLayers = customGraphics.getLayers(netView, nodeView);
 
 		if (originalLayers == null || originalLayers.isEmpty())
 			return transformedLayers;
 
-		final float fitRatio = customGraphics.getFitRatio();
+		float fitRatio = customGraphics.getFitRatio();
 		
 		// Check dependency. Sync size or not.
 		boolean sync = syncToNode(dependencies);
 		Double cgSize = size;
 		ObjectPosition cgPos = position;
-		final double nw = details.getWidth(nodeView);
-		final double nh = details.getHeight(nodeView);
+		double nw = details.getWidth(nodeView);
+		double nh = details.getHeight(nodeView);
 		
-		for (CustomGraphicLayer layer : originalLayers) {
+		for (var layer : originalLayers) {
 			// Assume it's a Ding layer
-			CustomGraphicLayer finalLayer = layer;
+			var finalLayer = layer;
 
 			// Resize the layer
 			double cgw = 0.0;
@@ -112,14 +116,13 @@ public class CustomGraphicsInfo {
 			
 			if (sync) {
 				// Size is locked to node size.
-				final float bw = details.getBorderWidth(nodeView);
+				float bw = details.getBorderWidth(nodeView);
 				cgw = nw - bw;
 				cgh = nh - bw;
 			} else {
 				// Width and height should be set to custom size
 				if (cgSize == null) {
-					final VisualProperty<Double> sizeVP =
-							DVisualLexicon.getAssociatedCustomGraphicsSizeVP(visualProperty);
+					var sizeVP = DVisualLexicon.getAssociatedCustomGraphicsSizeVP(visualProperty);
 					cgSize = nodeView.getVisualProperty(sizeVP);
 				}
 				
@@ -142,7 +145,7 @@ public class CustomGraphicsInfo {
 		return transformedLayers;
 	}
 	
-	private boolean syncToNode(final Set<VisualPropertyDependency<?>> dependencies) {
+	private boolean syncToNode(Set<VisualPropertyDependency<?>> dependencies) {
 		if (dependencies != null) {
 			for (VisualPropertyDependency<?> dep:dependencies) {
 				if (dep.getIdString().equals("nodeCustomGraphicsSizeSync")) {
@@ -154,15 +157,17 @@ public class CustomGraphicsInfo {
 	}
 
 	private CustomGraphicLayer syncSize(CustomGraphicLayer layer, double width, double height, float fitRatio) {
-		final Rectangle2D originalBounds = layer.getBounds2D();
+		var originalBounds = layer.getBounds2D();
 		
 		// If this is just a paint, getBounds2D will return null and we can use our own width and height
-		if (originalBounds == null) return layer;
+		if (originalBounds == null)
+			return layer;
 
-		if (width == 0.0 || height == 0.0) return layer;
+		if (width == 0.0 || height == 0.0)
+			return layer;
 
-		final double cgW = originalBounds.getWidth();
-		final double cgH = originalBounds.getHeight();
+		double cgW = originalBounds.getWidth();
+		double cgH = originalBounds.getHeight();
 
 		// In case size is same, return the original.
 		if (width == cgW && height == cgH)
@@ -193,7 +198,7 @@ public class CustomGraphicsInfo {
 	
 	@Override
 	public int hashCode() {
-		final int prime = 37;
+		int prime = 37;
 		int result = 5;
 		result = prime
 				* result

@@ -95,11 +95,16 @@ public class SelectFilterTask extends AbstractTask {
 			return;
 		}
 		
-		applyFilter(serviceRegistrar, network, transformer, action.get());
+		int[] result = applyFilter(serviceRegistrar, network, transformer, action.get());
+		
+		tm.showMessage(Level.INFO, getResultMessage(result));
 	}
 	
+	public static String getResultMessage(int result[]) {
+		return String.format("Filter applied, selected %d nodes and %d edges.", result[0], result[1]);
+	}
 	
-	public static void applyFilter(CyServiceRegistrar registrar, CyNetwork network, NamedTransformer<CyNetwork,CyIdentifiable> transformer, SelectTunable.Action action) {
+	public static int[] applyFilter(CyServiceRegistrar registrar, CyNetwork network, NamedTransformer<CyNetwork,CyIdentifiable> transformer, SelectTunable.Action action) {
 		SelectUtils selectUtils = new SelectUtils(registrar);
 
 		// De-select all nodes and edges.
@@ -120,5 +125,7 @@ public class SelectFilterTask extends AbstractTask {
 				selectUtils.setVisible(networkView, sink.getNodes(), sink.getEdges());
 			}
 		}
+		
+		return new int[] { sink.getNodeCount(), sink.getEdgeCount() };
 	}
 }
