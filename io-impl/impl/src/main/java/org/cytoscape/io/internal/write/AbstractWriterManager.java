@@ -55,7 +55,7 @@ public class AbstractWriterManager<T extends CyWriterFactory>  implements CyWrit
 	
 	public void addCyWriterFactory(T factory, Map<String,String> props) {
 		if ( factory != null && factory.getFileFilter().getDataCategory() == category ) {
-			logger.info("adding IO taskFactory ");
+			logger.debug("adding IO taskFactory ");
 			factories.put(factory.getFileFilter(), factory);
 		} else
 			logger.warn("Specified factory is null or has wrong DataCategory (" + category + ")");

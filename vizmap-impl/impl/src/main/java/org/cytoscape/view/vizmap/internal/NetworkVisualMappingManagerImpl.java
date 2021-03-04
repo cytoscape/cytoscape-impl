@@ -178,7 +178,7 @@ public class NetworkVisualMappingManagerImpl implements VisualMappingManager, Se
 		if (vs == defaultStyle)
 			throw new IllegalArgumentException("Cannot remove default visual style.");
 
-		logger.info("Visual Style about to be removed from VMM: " + vs.getTitle());
+		logger.debug("Visual Style about to be removed from VMM: " + vs.getTitle());
 		
 		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 		eventHelper.fireEvent(new VisualStyleAboutToBeRemovedEvent(this, vs));
@@ -204,7 +204,7 @@ public class NetworkVisualMappingManagerImpl implements VisualMappingManager, Se
 		for (CyNetworkView view : viewsToUpdate) {
 			setVisualStyle(defaultStyle, view);
 		}
-		logger.info("Total Number of VS in VMM after remove = " + visualStyles.size());
+		logger.debug("Total Number of VS in VMM after remove = " + visualStyles.size());
 	}
 
 	/**
@@ -229,8 +229,8 @@ public class NetworkVisualMappingManagerImpl implements VisualMappingManager, Se
 			this.visualStyles.add(vs);
 		}
 		
-		logger.info("New visual Style registered to VMM: " + vs.getTitle());
-		logger.info("Total Number of VS in VMM = " + visualStyles.size());
+		logger.debug("New visual Style registered to VMM: " + vs.getTitle());
+		logger.debug("Total Number of VS in VMM = " + visualStyles.size());
 		
 		if (vs.getTitle() != null && vs.getTitle().equals(DEFAULT_STYLE_NAME))
 			defaultStyle = vs;

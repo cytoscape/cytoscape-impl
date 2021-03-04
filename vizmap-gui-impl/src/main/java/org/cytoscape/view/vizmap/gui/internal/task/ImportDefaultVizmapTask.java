@@ -115,7 +115,7 @@ public class ImportDefaultVizmapTask extends AbstractTask {
 					if (vs.getTitle().equals(DEFAULT_STYLE_NAME)) {
 						newDefStyle = vs; // Don't add another "default" style!
 					} else {
-						taskMonitor.setStatusMessage(count + " of " + total + ": " + vs.getTitle());
+						logger.debug(count + " of " + total + ": " + vs.getTitle());
 						vmMgr.addVisualStyle(vs);
 						taskMonitor.setProgress(count / total);
 						count++;

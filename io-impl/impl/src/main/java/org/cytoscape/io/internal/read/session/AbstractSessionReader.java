@@ -248,7 +248,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	
 			// Extract cysession.xml and the other files, except the XGMML ones:
 			while ((zen = zis.getNextEntry()) != null && !cancelled) {
-				tm.setStatusMessage("Extracting zip entry #" + ++count);
+				// tm.setStatusMessage("Extracting zip entry #" + ++count);
 				
 				String entryName = zen.getName();
 	

@@ -202,7 +202,7 @@ public class FilterApp implements CyShutdownListener, SessionLoadedListener, CyS
 			if (is != null)
 				filters = reader.read(is);
 			else
-				logger.warn("could not find resource: " + file.getAbsolutePath());
+				logger.debug("could not find resource: " + file.getAbsolutePath());
 		} finally {
 			if (is != null) {
 				try { is.close(); } catch (IOException ioe) {}

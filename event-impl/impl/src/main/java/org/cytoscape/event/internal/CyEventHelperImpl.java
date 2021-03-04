@@ -86,7 +86,7 @@ public class CyEventHelperImpl implements CyEventHelper {
 		if (eventSource == null)
 			return;
 
-		logger.info("Silencing event source: " + eventSource.toString());
+		logger.debug("Silencing event source: " + eventSource.toString());
 		normal.silenceEventSource(eventSource);
 
 		synchronized (lock) {
@@ -99,7 +99,7 @@ public class CyEventHelperImpl implements CyEventHelper {
 		if (eventSource == null)
 			return;
 		
-		logger.info("Unsilencing event source: " + eventSource.toString());
+		logger.debug("Unsilencing event source: " + eventSource.toString());
 		normal.unsilenceEventSource(eventSource);
 		
 		synchronized (lock) {
