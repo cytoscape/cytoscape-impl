@@ -70,8 +70,13 @@ public class PassthroughMappingImpl<K, V> extends AbstractVisualMappingFunction<
 			
 			Object value = translator.translate(tableValue);
 			
-			if (value instanceof String)
-				value = vp.parseSerializableString((String) value);
+			if (value instanceof String) {
+				try {
+					value = vp.parseSerializableString((String) value);
+				} catch(Exception e) {
+					return null;
+				}
+			}
 			
 			if (value != null) {
 				try {

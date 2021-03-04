@@ -17,6 +17,8 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.json.JSONResult;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class ListAppsTask extends AbstractAppTask implements ObservableTask {
 	AppStatus status;
@@ -35,7 +37,22 @@ public class ListAppsTask extends AbstractAppTask implements ObservableTask {
 	public List<Class<?>> getResultClasses() {
 		return Arrays.asList(List.class, String.class, JSONResult.class);
 	}
-
+	
+	public void appendJSONField(JSONObject appJSON, final String field, final String value) {
+		
+		try {
+			appJSON.put(field, value);
+		} catch (JSONException e) {
+			try {
+				appJSON.put(field, "#Invalid JSON#");
+			} catch (JSONException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+		}
+		
+	}
+	
 	@SuppressWarnings({ "unchecked" })
 	@Override
 	public <R> R getResults(Class<? extends R> type) {
@@ -46,10 +63,12 @@ public class ListAppsTask extends AbstractAppTask implements ObservableTask {
 				int count = statusAppList.size();
 				int index = 0;
 				for (App app: statusAppList) {
-					stringBuilder.append("{\"appName\": \""+app.getAppName()+"\",");
-					stringBuilder.append("\"version\": \""+app.getVersion()+"\",");
-					stringBuilder.append("\"description\": \""+app.getDescription()+"\",");
-					stringBuilder.append("\"status\": \""+app.getReadableStatus()+"\"}");
+					JSONObject appJSON = new JSONObject();
+					appendJSONField(appJSON, "appName", app.getAppName());
+					appendJSONField(appJSON, "version", app.getVersion());
+					appendJSONField(appJSON, "description", app.getDescription());
+					appendJSONField(appJSON, "status", app.getReadableStatus());
+					stringBuilder.append(appJSON.toString());
 					index++;
 					if (index < count)
 						stringBuilder.append(",");

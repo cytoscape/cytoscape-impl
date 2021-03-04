@@ -6,8 +6,10 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -95,13 +97,28 @@ public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 
 		applyDependencies(netView);
 		
-		final ExecutorService exe = Executors.newCachedThreadPool();
-		exe.submit(new ApplyMappingsTask(netView, nodeViews, BasicVisualLexicon.NODE, lexicon));
-		exe.submit(new ApplyMappingsTask(netView, edgeViews, BasicVisualLexicon.EDGE, lexicon));
-		exe.submit(new ApplyMappingsTask(netView, networkViewSet, BasicVisualLexicon.NETWORK, lexicon));
+		ExecutorService exe = Executors.newCachedThreadPool();
+		Future<?> nodeFuture = exe.submit(new ApplyMappingsTask(netView, nodeViews, BasicVisualLexicon.NODE, lexicon));
+		Future<?> edgeFuture = exe.submit(new ApplyMappingsTask(netView, edgeViews, BasicVisualLexicon.EDGE, lexicon));
+		Future<?> netwFuture = exe.submit(new ApplyMappingsTask(netView, networkViewSet, BasicVisualLexicon.NETWORK, lexicon));
 		
 		try {
 			exe.shutdown();
+			try {
+				nodeFuture.get();
+			} catch(ExecutionException e) {
+				logger.error("Error applying node visual properties", e);
+			}
+			try {
+				edgeFuture.get();
+			} catch(ExecutionException e) {
+				logger.error("Error applying edge visual properties", e);
+			}
+			try {
+				netwFuture.get();
+			} catch(ExecutionException e) {
+				logger.error("Error applying network visual properties", e);
+			}
 			exe.awaitTermination(15, TimeUnit.MINUTES);
 		} catch (Exception ex) {
 			logger.warn("Create apply operation failed.", ex);
