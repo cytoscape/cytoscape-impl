@@ -12,6 +12,7 @@ import java.awt.Color;
 import java.awt.Font;
 
 import javax.swing.UIManager;
+import javax.swing.plaf.ColorUIResource;
 
 import org.cytoscape.model.CyRow;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -35,8 +36,15 @@ public class BrowserTablePresentation {
 		var color = UIManager.getColor("Table.background");
 		
 		if (tableView.getVisualProperty(TABLE_ALTERNATE_ROW_COLORS) == Boolean.TRUE) {
-			if (rowIndex % 2 != 0)
+			if (rowIndex % 2 != 0) {
 				color = UIManager.getColor("Table.alternateRowColor");
+				
+				// The property "Table.alternateRowColor" may have started with a 100% transparency,
+				// because we want to preserve the correct LAF color, but don't want then to affect all JTables.
+				// We can now set the "correct" transparency of the LAF color and set it again.
+				if (color.getAlpha() == 0)
+					color = new Color(color.getRed(), color.getGreen(), color.getBlue(), 255);
+			}
 		} else {
 			if (color == null || colView.isSet(CELL_BACKGROUND_PAINT)) {
 				var fn = colView.getCellVisualProperty(CELL_BACKGROUND_PAINT);
@@ -44,8 +52,14 @@ public class BrowserTablePresentation {
 				if (fn != null) {
 					var val = fn.apply(row);
 					
-					if (val instanceof Color)
+					if (val instanceof Color) {
 						color = (Color) val;
+						
+						// To fix a glitch on Nimbus where ColorUIResource is not applied properly,
+						// which renders the rows with the standard LAF alternate colors instead
+						if (color instanceof ColorUIResource) 
+							color = new Color(color.getRGB());
+					}
 				}
 			}
 		}

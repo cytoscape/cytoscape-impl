@@ -3,7 +3,6 @@ package org.cytoscape.browser.internal.view;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
-import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -143,12 +142,13 @@ public abstract class AbstractTableBrowser extends JPanel
 		tableRenderers = new HashMap<>();
 		
 		setLayout(new BorderLayout());
-		setOpaque(!isAquaLAF());
 		setPreferredSize(PANEL_SIZE);
 		setSize(PANEL_SIZE);
 		
-		mainPane.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
 		mainPane.setLayout(new BorderLayout());
+		
+		getToolBar().setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground")));
+		getOptionsBar().setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground")));
 		
 		var layout = new GroupLayout(this);
 		setLayout(layout);
@@ -165,9 +165,6 @@ public abstract class AbstractTableBrowser extends JPanel
 				.addComponent(getOptionsBar(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(mainPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 		);
-		
-		add(mainPane, BorderLayout.CENTER);
-		add(getToolBar(), BorderLayout.NORTH);
 		
 		getToolBar().getFormatButton().addActionListener(evt -> {
 			getOptionsBar().setVisible(getToolBar().getFormatButton().isSelected());
@@ -483,7 +480,6 @@ public abstract class AbstractTableBrowser extends JPanel
 		protected List<AbstractToolBarControl> controls = new ArrayList<>();
 		
 		OptionsBar() {
-			setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
 			setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
 		}
 		
