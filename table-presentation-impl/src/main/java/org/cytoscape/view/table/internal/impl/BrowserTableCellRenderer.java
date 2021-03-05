@@ -65,7 +65,7 @@ class BrowserTableCellRenderer extends JPanel implements TableCellRenderer {
 
 	// Define fonts & colors for the cells
 	private static final int H_PAD = 8;
-	private static final int V_PAD = 2;
+	private static final int V_PAD = 0;
 	private static EquationIcon EQUATION_ICON = new EquationIcon();
 	
 	private final JLabel label;
