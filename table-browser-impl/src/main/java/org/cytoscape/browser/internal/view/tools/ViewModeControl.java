@@ -1,6 +1,6 @@
 package org.cytoscape.browser.internal.view.tools;
 
-import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isWinLAF;
 import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_VIEW_MODE;
 
@@ -76,17 +76,21 @@ public class ViewModeControl extends AbstractToolBarControl {
 		var layout = new GroupLayout(getContentPane());
 		getContentPane().setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
-		layout.setAutoCreateGaps(!isAquaLAF());
+		layout.setAutoCreateGaps(isWinLAF());
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
 				.addComponent(getAutoButton())
 				.addComponent(getAllButton())
 				.addComponent(getSelectedButton())
 		);
-		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, true)
-				.addComponent(getAutoButton())
-				.addComponent(getAllButton())
-				.addComponent(getSelectedButton())
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addGap(0, 0, Short.MAX_VALUE)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, true)
+						.addComponent(getAutoButton())
+						.addComponent(getAllButton())
+						.addComponent(getSelectedButton())
+				)
+				.addGap(0, 0, Short.MAX_VALUE)
 		);
 		
 		makeSmall(getAutoButton(), getAllButton(), getSelectedButton());

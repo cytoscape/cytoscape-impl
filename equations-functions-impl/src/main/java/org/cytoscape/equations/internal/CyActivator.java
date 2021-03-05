@@ -5,7 +5,9 @@ import java.util.Properties;
 import org.cytoscape.equations.EquationParser;
 import org.cytoscape.equations.Function;
 import org.cytoscape.equations.internal.functions.Degree;
+import org.cytoscape.equations.internal.functions.GetTableCell;
 import org.cytoscape.equations.internal.functions.InDegree;
+import org.cytoscape.equations.internal.functions.IsDirected;
 import org.cytoscape.equations.internal.functions.OutDegree;
 import org.cytoscape.equations.internal.functions.SourceID;
 import org.cytoscape.equations.internal.functions.TargetID;
@@ -46,9 +48,16 @@ public class CyActivator extends AbstractCyActivator {
 
 		final Function degree = new Degree(serviceRegistrar);
 		final Function inDegree = new InDegree(serviceRegistrar);
+		final Function isDirected = new IsDirected(serviceRegistrar);
 		final Function outDegree = new OutDegree(serviceRegistrar);
 		final Function sourceId = new SourceID(serviceRegistrar);
 		final Function targetId = new TargetID(serviceRegistrar);
+
+		final Function stringColumn = new GetTableCell(serviceRegistrar, String.class);
+		final Function intColumn = new GetTableCell(serviceRegistrar, Integer.class);
+		final Function longColumn = new GetTableCell(serviceRegistrar, Long.class);
+		final Function doubleColumn = new GetTableCell(serviceRegistrar, Double.class);
+		final Function booleanColumn = new GetTableCell(serviceRegistrar, Boolean.class);
 		
 		final CyEventHelper eventHelper = getService(bc, CyEventHelper.class);
 		final EquationParser parser = getService(bc, EquationParser.class);
@@ -56,9 +65,16 @@ public class CyActivator extends AbstractCyActivator {
 		
 		registerAllServices(bc, degree, new Properties());
 		registerAllServices(bc, inDegree, new Properties());
+		registerAllServices(bc, isDirected, new Properties());
 		registerAllServices(bc, outDegree, new Properties());
 		registerAllServices(bc, sourceId, new Properties());
 		registerAllServices(bc, targetId, new Properties());
+
+		registerAllServices(bc, stringColumn, new Properties());
+		registerAllServices(bc, intColumn, new Properties());
+		registerAllServices(bc, longColumn, new Properties());
+		registerAllServices(bc, doubleColumn, new Properties());
+		registerAllServices(bc, booleanColumn, new Properties());
 		
 		eventHelper.unsilenceEventSource(parser);
 	}
