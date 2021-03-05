@@ -89,6 +89,16 @@ public class ViewUtil {
 		styleToolBarButton(btn, font, hPad, vPad);
 	}
 	
+	public static void styleToolBarButton(AbstractButton btn, int width, int height, Font font) {
+		styleToolBarButton(btn, font, 0, 0);
+		
+		var d = new Dimension(width, height);
+		btn.setPreferredSize(d);
+		btn.setMinimumSize(d);
+		btn.setMaximumSize(d);
+		btn.setSize(d);
+	}
+	
 	public static void styleToolBarButton(AbstractButton btn, Font font, int hPad, int vPad) {
 		if (font != null)
 			btn.setFont(font);

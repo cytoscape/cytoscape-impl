@@ -69,6 +69,9 @@ public abstract class AbstractToolBarControl extends JPanel {
 		setOpaque(!isAquaLAF());
 		setLayout(new BorderLayout());
 		
+		if (!isAquaLAF())
+			setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
+		
 		if (title != null)
 			add(getTitleLabel(), BorderLayout.NORTH);
 		

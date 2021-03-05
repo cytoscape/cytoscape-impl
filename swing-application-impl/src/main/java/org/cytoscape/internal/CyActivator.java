@@ -9,8 +9,23 @@ import static org.cytoscape.internal.util.IconUtil.COLORS_3;
 import static org.cytoscape.internal.util.IconUtil.CY_FONT_NAME;
 import static org.cytoscape.internal.util.IconUtil.LAYERED_NEW_FROM_SELECTED;
 import static org.cytoscape.internal.view.util.ViewUtil.invokeOnEDTAndWait;
-import static org.cytoscape.util.swing.LookAndFeelUtil.*;
-import static org.cytoscape.work.ServiceProperties.*;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isMac;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isNimbusLAF;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isWinLAF;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isWindows;
+import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
+import static org.cytoscape.work.ServiceProperties.COMMAND;
+import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
+import static org.cytoscape.work.ServiceProperties.COMMAND_EXAMPLE_JSON;
+import static org.cytoscape.work.ServiceProperties.COMMAND_LONG_DESCRIPTION;
+import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
+import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
+import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+import static org.cytoscape.work.ServiceProperties.TITLE;
+import static org.cytoscape.work.ServiceProperties.TOOLTIP;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -688,7 +703,6 @@ public class CyActivator extends AbstractCyActivator {
 			UIManager.put("RadioButtonMenuItem.disabledForeground", disabledFg);
 			UIManager.put("Table.disabledForeground", disabledFg);
 			UIManager.put("Table.disabledText", disabledFg);
-			UIManager.put("Table.showGrid", false);
 			UIManager.put("TableHeader.disabledForeground", disabledFg);
 			UIManager.put("TextField.inactiveForeground", disabledFg);
 			UIManager.put("TextField.disabledForeground", disabledFg);
@@ -727,7 +741,8 @@ public class CyActivator extends AbstractCyActivator {
 						)
 				);
 				UIManager.put("TableHeader.background", new Color(240, 240, 240));
-				UIManager.put("Table.alternateRowColor", new Color(244, 245, 245));
+				UIManager.put("Table.alternateRowColor", new Color(244, 245, 245, 0));
+				UIManager.put("Table.showGrid", false);
 				UIManager.put("Table.gridColor", new Color(216, 216, 216, 0)); // starts with a 100% transparency, or Swing will not respect a false "Table.showGrid"
 				UIManager.put("Table.font", tableFont);
 				UIManager.put("Tree.font", tableFont);
@@ -763,11 +778,12 @@ public class CyActivator extends AbstractCyActivator {
 				UIManager.put("nimbusDisabledText", new Color(142, 143, 145));
 				
 				// Make all table rows white, like the other LAFs
-//				UIManager.put("Table.background", Color.WHITE);
+				UIManager.put("Table.background", Color.WHITE);
 				UIManager.put("Table.foreground", new Color(UIManager.getColor("Table.foreground").getRGB()));
-//				UIManager.put("Table.alternateRowColor", Color.WHITE);
+				UIManager.put("Table.alternateRowColor", new Color(242, 242, 242, 0));
 				UIManager.put("Table:\"Table.cellRenderer\".background", Color.WHITE);
-				UIManager.put("Table.gridColor", new Color(242, 242, 242, 0));
+				UIManager.put("Table.showGrid", true);
+				UIManager.put("Table.gridColor", UIManager.getColor("Separator.background"));
 				UIManager.put("Table.font", tableFont);
 				
 				UIManager.put("Viewport.background", Color.WHITE);
@@ -804,7 +820,7 @@ public class CyActivator extends AbstractCyActivator {
 						)
 				);
 				UIManager.put("TableHeader.background", UIManager.getColor("Table.background"));
-				UIManager.put("Table.alternateRowColor", new Color(245, 245, 245));
+				UIManager.put("Table.alternateRowColor", new Color(245, 245, 245, 0));
 			}
 			
 			// Tree icons -- we need a right-to-left arrow!

@@ -1,6 +1,6 @@
 package org.cytoscape.browser.internal.view.tools;
 
-import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isWinLAF;
 import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.ROW_HEIGHT;
 
@@ -105,18 +105,22 @@ public class RowHeightControl extends AbstractToolBarControl {
 	private void init() {
 		var layout = new GroupLayout(getContentPane());
 		getContentPane().setLayout(layout);
-		layout.setAutoCreateContainerGaps(!isAquaLAF());
-		layout.setAutoCreateGaps(!isAquaLAF());
+		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(isWinLAF());
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
 				.addComponent(getAutoButton())
 				.addComponent(getHeightSlider())
 				.addComponent(getHeightText())
 		);
-		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, false)
-				.addComponent(getAutoButton())
-				.addComponent(getHeightSlider())
-				.addComponent(getHeightText())
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addGap(0, 0, Short.MAX_VALUE)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(getAutoButton())
+						.addComponent(getHeightSlider())
+						.addComponent(getHeightText())
+				)
+				.addGap(0, 0, Short.MAX_VALUE)
 		);
 		
 		makeSmall(getAutoButton(), getHeightSlider(), getHeightText());

@@ -5,10 +5,8 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.browser.internal.util.ViewUtil.styleToolBarButton;
 import static org.cytoscape.util.swing.IconManager.ICON_COG;
 import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
-import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_VISIBLE;
 
-import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -17,6 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.GroupLayout.ParallelGroup;
@@ -28,7 +27,6 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
@@ -88,8 +86,10 @@ import org.cytoscape.work.swing.DialogTaskManager;
  * Toolbar for the Browser.  All buttons related to this should be placed here.
  */
 @SuppressWarnings("serial")
-public class TableBrowserToolBar extends JPanel {
+public class TableBrowserToolBar extends JToolBar {
 	
+	public static final int ICON_WIDTH = 32;
+	public static final int ICON_HEIGHT = 31;
 	public static final float ICON_FONT_SIZE = 22.0f;
 
 	private TableRenderer tableRenderer;
@@ -99,7 +99,6 @@ public class TableBrowserToolBar extends JPanel {
 	private CyColumnSelector columnSelector;
 	private JPopupMenu createColumnPopup;
 
-	private JToolBar toolBar;
 	private SequentialGroup hToolBarGroup;
 	private ParallelGroup vToolBarGroup;
 	
@@ -163,6 +162,7 @@ public class TableBrowserToolBar extends JPanel {
 		if (tableRenderer != null) {
 			if (comp == deleteTableButton) {
 				enabled = tableRenderer.getDataTable().getMutability() == Mutability.MUTABLE;
+				comp.setVisible(enabled);
 			} else if (comp == deleteColumnsButton) {
 				enabled = tableRenderer.getDataTable().getColumns().stream().anyMatch(col -> !col.isImmutable());
 			} else if (comp == fnBuilderButton) {
@@ -185,27 +185,55 @@ public class TableBrowserToolBar extends JPanel {
 	}
 	
 	private void init() {
-		setLayout(new BorderLayout());
-		setOpaque(!isAquaLAF());
-		add(getToolBar(), BorderLayout.CENTER);
+		setFloatable(false);
 
+		var layout = new GroupLayout(this);
+		setLayout(layout);
+		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(false);
+		
+		hToolBarGroup = layout.createSequentialGroup();
+		vToolBarGroup = layout.createParallelGroup(Alignment.CENTER, true);
+		
+		// Layout information.
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+				.addContainerGap()
+				.addGroup(hToolBarGroup)
+				.addContainerGap()
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addGap(1)
+				.addGroup(vToolBarGroup)
+				.addGap(1)
+		);
+		
 		// Add buttons
-		addComponent(getFormatButton(), ComponentPlacement.RELATED);
+		addComponent(getFormatButton());
 		addComponent(getShowColumnsButton(), ComponentPlacement.RELATED);
 		addComponent(getCreateColumnButton(), ComponentPlacement.RELATED);
-		addComponent(getDeleteColumnsButton(), ComponentPlacement.RELATED);
-		addComponent(getDeleteTableButton(), ComponentPlacement.RELATED);
-		addComponent(getFnBuilderButton(), ComponentPlacement.RELATED);
+		addComponent(getDeleteColumnsButton());
+		addComponent(getFnBuilderButton(), ComponentPlacement.UNRELATED);
 //		addComponent(getMapGlobalTableButton(). ComponentPlacement.RELATED);
 		addComponent(getImportButton(), ComponentPlacement.UNRELATED);
-		addComponent(getExportButton(), ComponentPlacement.RELATED);
+		addComponent(getExportButton());
+		addComponent(getDeleteTableButton(), ComponentPlacement.UNRELATED);
 		
 		if (tableChooser != null) {
 			hToolBarGroup.addGap(0, 20, Short.MAX_VALUE);
 			addComponent(tableChooser, ComponentPlacement.UNRELATED);
 		}
 		
+		LookAndFeelUtil.equalizeSize(
+				getFormatButton(), getShowColumnsButton(), getCreateColumnButton(),
+				getDeleteColumnsButton(), getFnBuilderButton(),
+				getImportButton(), getExportButton(), getDeleteTableButton()
+		);
+		
 		updateEnableState();
+	}
+	
+	private void addComponent(JComponent component) {
+		addComponent(component, null);
 	}
 	
 	private void addComponent(JComponent component, ComponentPlacement placement) {
@@ -218,24 +246,13 @@ public class TableBrowserToolBar extends JPanel {
 		components.add(component);
 	}
 
-//	protected void styleButton(AbstractButton btn, Font font) {
-//		btn.setFont(font);
-//		btn.setBorder(null);
-//		btn.setContentAreaFilled(false);
-//		btn.setBorderPainted(false);
-//		
-//		int w = 32, h = 32;
-//		
-//		if (tableChooser != null)
-//			h = Math.max(h, tableChooser.getPreferredSize().height);
-//		
-//		btn.setMinimumSize(new Dimension(w, h));
-//		btn.setPreferredSize(new Dimension(w, h));
-//	}
-	
 	private JPopupMenu getColumnSelectorPopup() {
 		if (columnSelectorPopup == null) {
 			columnSelectorPopup = new JPopupMenu();
+			
+			// The default border (specially on Nimbus) has an ugly top/bottom gap
+			columnSelectorPopup.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
+			
 			columnSelectorPopup.add(getColumnSelector());
 			columnSelectorPopup.addPopupMenuListener(new MenuListener());
 			columnSelectorPopup.addMouseListener(new MouseAdapter() {
@@ -271,7 +288,6 @@ public class TableBrowserToolBar extends JPanel {
 		@Override
 		public void popupMenuCanceled(PopupMenuEvent e) { }
 	}
-	
 	
 	private CyColumnSelector getColumnSelector() {
 		if (columnSelector == null) {
@@ -388,31 +404,11 @@ public class TableBrowserToolBar extends JPanel {
 		return mi;
 	}
 
-	private JToolBar getToolBar() {
-		if (toolBar == null) {
-			toolBar = new JToolBar();
-			toolBar.setFloatable(false);
-			toolBar.setOrientation(JToolBar.HORIZONTAL);
-			toolBar.setOpaque(!isAquaLAF());
-
-			var layout = new GroupLayout(toolBar);
-			toolBar.setLayout(layout);
-			hToolBarGroup = layout.createSequentialGroup();
-			vToolBarGroup = layout.createParallelGroup(Alignment.CENTER, false);
-			
-			// Layout information.
-			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(hToolBarGroup));
-			layout.setVerticalGroup(vToolBarGroup);
-		}
-
-		return toolBar;
-	}
-	
 	protected JToggleButton getFormatButton() {
 		if (formatButton == null) {
 			formatButton = new JToggleButton(ICON_COG);
 			formatButton.setToolTipText("Toggle Options");
-			styleToolBarButton(formatButton, iconMgr.getIconFont(ICON_FONT_SIZE * 4/5));
+			styleToolBarButton(formatButton, ICON_WIDTH, ICON_HEIGHT, iconMgr.getIconFont(ICON_FONT_SIZE * 4/5));
 		}
 		
 		return formatButton;
@@ -422,7 +418,7 @@ public class TableBrowserToolBar extends JPanel {
 		if (showColumnsButton == null) {
 			showColumnsButton = new JButton(IconUtil.COLUMN_SHOW);
 			showColumnsButton.setToolTipText("Show Columns...");
-			styleToolBarButton(showColumnsButton, iconMgr.getIconFont(IconUtil.CY_FONT_NAME, ICON_FONT_SIZE));
+			styleToolBarButton(showColumnsButton, ICON_WIDTH, ICON_HEIGHT, iconMgr.getIconFont(IconUtil.CY_FONT_NAME, ICON_FONT_SIZE));
 
 			showColumnsButton.addActionListener(e -> {
 				if (tableRenderer != null) {
@@ -461,7 +457,7 @@ public class TableBrowserToolBar extends JPanel {
 				throw new RuntimeException("Error loading font", e);
 			}
 			
-			styleToolBarButton(fnBuilderButton, iconFont.deriveFont(18.0f));
+			styleToolBarButton(fnBuilderButton, ICON_WIDTH, ICON_HEIGHT, iconFont.deriveFont(18.0f));
 
 			fnBuilderButton.addActionListener(e -> {
 				var factory = serviceRegistrar.getService(TableTaskFactory.class, "(task=equationEditor)");
@@ -486,7 +482,7 @@ public class TableBrowserToolBar extends JPanel {
 		if (deleteColumnsButton == null) {
 			deleteColumnsButton = new JButton(IconUtil.COLUMN_REMOVE);
 			deleteColumnsButton.setToolTipText("Delete Columns...");
-			styleToolBarButton(deleteColumnsButton, iconMgr.getIconFont(IconUtil.CY_FONT_NAME, ICON_FONT_SIZE));
+			styleToolBarButton(deleteColumnsButton, ICON_WIDTH, ICON_HEIGHT, iconMgr.getIconFont(IconUtil.CY_FONT_NAME, ICON_FONT_SIZE));
 			
 			// Create pop-up window for deletion
 			deleteColumnsButton.addActionListener(e -> {
@@ -502,7 +498,7 @@ public class TableBrowserToolBar extends JPanel {
 		if (deleteTableButton == null) {
 			deleteTableButton = new JButton(ICON_TRASH_O);
 			deleteTableButton.setToolTipText("Delete Table...");
-			styleToolBarButton(deleteTableButton, iconMgr.getIconFont(ICON_FONT_SIZE));
+			styleToolBarButton(deleteTableButton, ICON_WIDTH, ICON_HEIGHT, iconMgr.getIconFont(ICON_FONT_SIZE));
 			
 			// Create pop-up window for deletion
 			deleteTableButton.addActionListener(e -> deleteTable());
@@ -516,7 +512,7 @@ public class TableBrowserToolBar extends JPanel {
 		var dDialog = new DeletionDialog(frame, tableRenderer.getDataTable());
 
 		dDialog.pack();
-		dDialog.setLocationRelativeTo(toolBar);
+		dDialog.setLocationRelativeTo(this);
 		dDialog.setVisible(true);
 	}
 
@@ -567,7 +563,7 @@ public class TableBrowserToolBar extends JPanel {
 		if (createColumnButton == null) {
 			createColumnButton = new JButton(IconUtil.COLUMN_ADD);
 			createColumnButton.setToolTipText("Create New Column...");
-			styleToolBarButton(createColumnButton, iconMgr.getIconFont(IconUtil.CY_FONT_NAME, ICON_FONT_SIZE));
+			styleToolBarButton(createColumnButton, ICON_WIDTH, ICON_HEIGHT, iconMgr.getIconFont(IconUtil.CY_FONT_NAME, ICON_FONT_SIZE));
 			
 			createColumnButton.addActionListener(e -> {
 				if (tableRenderer != null)
@@ -605,7 +601,7 @@ public class TableBrowserToolBar extends JPanel {
 		if (importButton == null) {
 			importButton = new JButton(IconUtil.FILE_IMPORT);
 			importButton.setToolTipText("Import Table from File...");
-			styleToolBarButton(importButton, iconMgr.getIconFont(IconUtil.CY_FONT_NAME, ICON_FONT_SIZE));
+			styleToolBarButton(importButton, ICON_WIDTH, ICON_HEIGHT, iconMgr.getIconFont(IconUtil.CY_FONT_NAME, ICON_FONT_SIZE));
 			
 			importButton.addActionListener(e -> {
 				var factory = serviceRegistrar.getService(LoadTableFileTaskFactory.class);
@@ -621,7 +617,7 @@ public class TableBrowserToolBar extends JPanel {
 		if (exportButton == null) {
 			exportButton = new JButton(IconUtil.FILE_EXPORT);
 			exportButton.setToolTipText("Export Table to File...");
-			styleToolBarButton(exportButton, iconMgr.getIconFont(IconUtil.CY_FONT_NAME, ICON_FONT_SIZE));
+			styleToolBarButton(exportButton, ICON_WIDTH, ICON_HEIGHT, iconMgr.getIconFont(IconUtil.CY_FONT_NAME, ICON_FONT_SIZE));
 			
 			exportButton.addActionListener(e -> {
 				var factory = serviceRegistrar.getService(ExportTableTaskFactory.class);

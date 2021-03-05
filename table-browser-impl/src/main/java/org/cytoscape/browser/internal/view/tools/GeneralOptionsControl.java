@@ -2,7 +2,7 @@ package org.cytoscape.browser.internal.view.tools;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
-import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isWinLAF;
 import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_ALTERNATE_ROW_COLORS;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_SHOW_GRID;
@@ -66,7 +66,7 @@ public class GeneralOptionsControl extends AbstractToolBarControl {
 		var layout = new GroupLayout(getContentPane());
 		getContentPane().setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
-		layout.setAutoCreateGaps(!isAquaLAF());
+		layout.setAutoCreateGaps(isWinLAF());
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
 				.addComponent(getShowTableGridCheck(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
