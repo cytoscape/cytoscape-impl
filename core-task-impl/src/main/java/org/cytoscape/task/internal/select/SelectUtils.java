@@ -79,7 +79,7 @@ public final class SelectUtils {
 
 		// The list of objects will be all nodes or all edges
 		for (final CyIdentifiable nodeOrEdge : objects) {
-			CyRow row = table.getRow(nodeOrEdge.getSUID());
+			CyRow row = nodeOrEdge != null ? table.getRow(nodeOrEdge.getSUID()) : null;
 
 			if (row != null) {
 				row.set(CyNetwork.SELECTED, value);
