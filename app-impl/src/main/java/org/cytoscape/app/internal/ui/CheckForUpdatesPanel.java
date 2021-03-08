@@ -32,10 +32,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.swing.GroupLayout;
@@ -59,7 +57,6 @@ import org.cytoscape.app.internal.net.Update;
 import org.cytoscape.app.internal.net.UpdateManager;
 import org.cytoscape.app.internal.net.WebApp;
 import org.cytoscape.app.internal.net.WebQuerier;
-import org.cytoscape.app.internal.task.InstallAppsFromWebAppTask;
 import org.cytoscape.app.internal.task.InstallUpdatesTask;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
@@ -272,8 +269,7 @@ public class CheckForUpdatesPanel extends JPanel {
 					siteName = downloadSite.getSiteName();
 					siteUrl = downloadSite.getSiteUrl();
 					
-					taskMonitor.setStatusMessage("Obtaining apps listing from " 
-							+ siteName + "(" + siteUrl + ") ...");
+					taskMonitor.setStatusMessage("Obtaining apps listing from "  + siteName + "(" + siteUrl + ") ...");
 					taskMonitor.setProgress(progress);
 					
 					progress += 1.0 / (downloadSitesManager.getDownloadSites().size() + 1);

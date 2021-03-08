@@ -74,7 +74,6 @@ public class ManageDownloadSitesDialog extends JDialog {
     private JButton closeButton;
     private JButton saveButton;
     private JButton removeButton;
-    private JLabel listedSitesLabel;
     private JLabel siteNameLabel;
     private JTextField siteNameTextField;
     private JLabel siteUrlLabel;
@@ -120,7 +119,6 @@ public class ManageDownloadSitesDialog extends JDialog {
     	setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Manage Download Sites");
     	
-        listedSitesLabel = new JLabel("Listed sites: 0");
         sitesTable = new JTable();
     	sitesScrollPane = new JScrollPane(sitesTable);
         newButton = new JButton("New");
@@ -252,13 +250,11 @@ public class ManageDownloadSitesDialog extends JDialog {
         layout.setAutoCreateGaps(true);
         
         layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
-				.addComponent(listedSitesLabel)
 		        .addComponent(sitesScrollPane)
 		        .addComponent(detailPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 		        .addComponent(buttonPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(layout.createSequentialGroup()
-                .addComponent(listedSitesLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
                 .addComponent(sitesScrollPane, DEFAULT_SIZE, 120, Short.MAX_VALUE)
                 .addComponent(detailPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
                 .addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -286,9 +282,7 @@ public class ManageDownloadSitesDialog extends JDialog {
         	if (enteredSiteName.trim().isEmpty() || enteredSiteUrl.trim().isEmpty())
         		return;
         	
-        	downloadSite = new DownloadSite();
-        	downloadSite.setSiteName(enteredSiteName);
-        	downloadSite.setSiteUrl(enteredSiteUrl);
+        	downloadSite = new DownloadSite(enteredSiteName, enteredSiteUrl);
         	
         	downloadSitesManager.addDownloadSite(downloadSite);
     		downloadSitesManager.saveDownloadSites();
@@ -420,8 +414,6 @@ public class ManageDownloadSitesDialog extends JDialog {
 		    	
 		    	sitesTable.getColumnModel().getColumn(0).setPreferredWidth(140);
 		        sitesTable.getColumnModel().getColumn(1).setPreferredWidth(285);
-		        
-		        listedSitesLabel.setText("Listed sites: " + downloadSites.size());
 			}
     	});
     }

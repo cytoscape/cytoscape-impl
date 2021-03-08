@@ -32,17 +32,12 @@ import org.cytoscape.app.internal.net.WebQuerier;
  */
 public class DownloadSite {
 	
-	/** The name of the site, does not have to be an official name, mainly used for convenient displaying
-	 */
 	private String siteName;
-	
-	/** The site's url.
-	 */
 	private String siteUrl;
 	
-	public DownloadSite() {
-		this.siteName = "";
-		this.siteUrl = "";
+	public DownloadSite(String siteName, String siteUrl) {
+		setSiteName(siteName);
+		setSiteUrl(siteUrl);
 	}
 	
 	public String getSiteName() {
@@ -57,9 +52,8 @@ public class DownloadSite {
 		return siteUrl;
 	}
 
-	public void setSiteUrl(final String siteUrl) {
-		final String newUrl = siteUrl.trim().equals("http://apps.cytoscape.org/") || siteUrl.trim().equals("http://apps.cytoscape.org") ? WebQuerier.DEFAULT_APP_STORE_URL : siteUrl;
-		this.siteUrl = newUrl;
+	public void setSiteUrl(String siteUrl) {
+		this.siteUrl = siteUrl.trim().equals("http://apps.cytoscape.org/") || siteUrl.trim().equals("http://apps.cytoscape.org") ? WebQuerier.DEFAULT_APP_STORE_URL : siteUrl;
 	}
 
 	

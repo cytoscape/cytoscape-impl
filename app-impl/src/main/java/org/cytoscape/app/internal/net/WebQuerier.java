@@ -78,9 +78,7 @@ public class WebQuerier {
 	private static final String REQUEST_JSON_HEADER_VALUE = "XMLHttpRequest";
 	
 	static {
-		DownloadSite site = new DownloadSite();
-		site.setSiteName("Cytoscape App Store");
-		site.setSiteUrl(DEFAULT_APP_STORE_URL);
+		DownloadSite site = new DownloadSite("Cytoscape App Store", DEFAULT_APP_STORE_URL);
 		DEFAULT_DOWNLOAD_SITES.add(site);
 	}
 	
