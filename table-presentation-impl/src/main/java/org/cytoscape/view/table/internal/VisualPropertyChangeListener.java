@@ -4,6 +4,7 @@ import static org.cytoscape.view.presentation.property.table.BasicTableVisualLex
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_FORMAT;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_GRAVITY;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_VISIBLE;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_WIDTH;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.ROW_HEIGHT;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_ALTERNATE_ROW_COLORS;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_SHOW_GRID;
@@ -107,6 +108,17 @@ public class VisualPropertyChangeListener implements TableViewChangedListener {
 			browserTable.repaint();
 		} else if (vp == COLUMN_FORMAT) {
 			browserTable.repaint();
+		} else if (vp == COLUMN_WIDTH) {
+			if (value instanceof Number) {
+				int width = ((Number) value).intValue();
+				
+				if (width > 0) {
+					var colModel = (BrowserTableColumnModel) browserTable.getColumnModel();
+					var col = colModel.getTableColumn(colView.getSUID());
+					col.setPreferredWidth(width);
+					col.setWidth(width);
+				}
+			}
 		} else if (vp == COLUMN_GRAVITY) {
 			if (value instanceof Number) {
 				double gravity = ((Number) value).doubleValue();
