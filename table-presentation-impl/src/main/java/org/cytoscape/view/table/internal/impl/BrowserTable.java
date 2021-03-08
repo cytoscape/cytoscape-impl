@@ -57,6 +57,7 @@ import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.TableColumnModelEvent;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -389,6 +390,26 @@ public class BrowserTable extends JTable
 	}
 	
 	@Override
+	public void columnAdded(TableColumnModelEvent e) {
+		super.columnAdded(e);
+		
+		// Update the COLUMN_WIDTH visual property value.
+		var idx = e.getToIndex();
+		var tableModel = (BrowserTableModel) getModel();
+		var columnModel = (BrowserTableColumnModel) getColumnModel();
+		var column = columnModel.getColumn(idx);
+		var tableView = tableModel.getTableView();
+		var name = tableModel.getColumnName(convertColumnIndexToModel(idx));
+		var view = tableView.getColumnView(name);
+				
+		var newWidth = column.getWidth();
+		var oldWidth = view.getVisualProperty(COLUMN_WIDTH);
+
+		if (oldWidth == null || newWidth != oldWidth)
+			view.setVisualProperty(COLUMN_WIDTH, newWidth);
+	}
+	
+	@Override
 	public JToolTip createToolTip() {
 		TextWrapToolTip tip = new TextWrapToolTip();
 		tip.setMaximumSize(new Dimension(480, 320));
@@ -716,13 +737,13 @@ public class BrowserTable extends JTable
 					// So let's make it simple and update the WIDTH values of all columns.
 					var tableModel = (BrowserTableModel) getModel();
 					var columnModel = (BrowserTableColumnModel) getColumnModel();
+					var tableView = tableModel.getTableView();
 
 					for (int i = 0; i < getColumnCount(); i++) {
 						var column = columnModel.getColumn(i);
 						var newWidth = column.getWidth();
 						
 						if (newWidth > 0) {
-							var tableView = tableModel.getTableView();
 							var name = tableModel.getColumnName(convertColumnIndexToModel(i));
 							var view = tableView.getColumnView(name);
 							var oldWidth = view.getVisualProperty(COLUMN_WIDTH);
@@ -824,7 +845,7 @@ public class BrowserTable extends JTable
 			var networkTableManager = serviceRegistrar.getService(CyNetworkTableManager.class);
 			var tableType = networkTableManager.getTableType(tableModel.getDataTable());
 			
-			final CyColumn cyColumn = tableModel.getColumn(convertColumnIndexToModel(column));
+			var cyColumn = tableModel.getColumn(convertColumnIndexToModel(column));
 			popupMenuHelper.createColumnHeaderMenu(cyColumn, tableType, BrowserTable.this, e.getX(), e.getY());
 		}
 	}
