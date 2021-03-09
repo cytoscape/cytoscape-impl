@@ -7,7 +7,7 @@ import static org.cytoscape.view.presentation.property.table.BasicTableVisualLex
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_WIDTH;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.ROW_HEIGHT;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_ALTERNATE_ROW_COLORS;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_SHOW_GRID;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_GRID_VISIBLE;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_VIEW_MODE;
 import static org.cytoscape.view.table.internal.util.ViewUtil.invokeOnEDT;
 
@@ -84,7 +84,7 @@ public class VisualPropertyChangeListener implements TableViewChangedListener {
 				} else if (vp == ROW_HEIGHT) {
 					if (value instanceof Number)
 						changeRowHeight(((Number) value).intValue());
-				} else if (vp == TABLE_SHOW_GRID) {
+				} else if (vp == TABLE_GRID_VISIBLE) {
 					invokeOnEDT(() -> browserTable.setShowGrid(value == Boolean.TRUE));
 				} else if (vp == TABLE_ALTERNATE_ROW_COLORS) {
 					invokeOnEDT(() -> browserTable.repaint());

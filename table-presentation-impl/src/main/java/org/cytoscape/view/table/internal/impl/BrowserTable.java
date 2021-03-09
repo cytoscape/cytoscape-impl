@@ -5,7 +5,7 @@ import static org.cytoscape.view.presentation.property.table.BasicTableVisualLex
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_VISIBLE;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_WIDTH;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.ROW_HEIGHT;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_SHOW_GRID;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_GRID_VISIBLE;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.ALL;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.AUTO;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.SELECTED;
@@ -184,7 +184,7 @@ public class BrowserTable extends JTable
 			if (tableView.isSet(ROW_HEIGHT))
 				setRowHeight(tableView.getVisualProperty(ROW_HEIGHT));
 			
-			setShowGrid(tableView.getVisualProperty(TABLE_SHOW_GRID) == Boolean.TRUE);
+			setShowGrid(tableView.getVisualProperty(TABLE_GRID_VISIBLE) == Boolean.TRUE);
 			
 			for (int i = 0; i < model.getColumnCount(); i++) {
 				var name = model.getColumnName(i);
@@ -706,7 +706,7 @@ public class BrowserTable extends JTable
 		setAutoCreateColumnsFromModel(false);
 		setAutoCreateRowSorter(true);
 		setCellSelectionEnabled(true);
-		setShowGrid(TABLE_SHOW_GRID.getDefault());
+		setShowGrid(TABLE_GRID_VISIBLE.getDefault());
 		setDefaultEditor(Object.class, multiLineCellEditor);
 		getPopupMenu();
 		getHeaderPopupMenu();

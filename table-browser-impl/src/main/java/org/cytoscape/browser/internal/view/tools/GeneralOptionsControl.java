@@ -5,7 +5,7 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isWinLAF;
 import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_ALTERNATE_ROW_COLORS;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_SHOW_GRID;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_GRID_VISIBLE;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -54,7 +54,7 @@ public class GeneralOptionsControl extends AbstractToolBarControl {
 		var tableView = getTableView();
 		
 		if (tableView != null) {
-			var showGrid = tableView.getVisualProperty(TABLE_SHOW_GRID);
+			var showGrid = tableView.getVisualProperty(TABLE_GRID_VISIBLE);
 			getShowTableGridCheck().setSelected(showGrid);
 			
 			var altRowColors = tableView.getVisualProperty(TABLE_ALTERNATE_ROW_COLORS);
@@ -87,7 +87,7 @@ public class GeneralOptionsControl extends AbstractToolBarControl {
 		if (showTableGridCheck == null) {
 			showTableGridCheck = new JCheckBox("Show Table Grid");
 			showTableGridCheck.setHorizontalAlignment(JCheckBox.LEFT);
-			showTableGridCheck.addActionListener(evt -> apply(TABLE_SHOW_GRID, showTableGridCheck.isSelected()));
+			showTableGridCheck.addActionListener(evt -> apply(TABLE_GRID_VISIBLE, showTableGridCheck.isSelected()));
 		}
 		
 		return showTableGridCheck;
