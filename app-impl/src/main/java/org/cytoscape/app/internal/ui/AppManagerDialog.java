@@ -25,6 +25,7 @@ import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
 import org.cytoscape.app.internal.ui.downloadsites.ManageDownloadSitesDialog;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.swing.DialogTaskManager;
 
@@ -108,8 +109,9 @@ public class AppManagerDialog extends JDialog {
 
 		final FileUtil fileUtil = serviceRegistrar.getService(FileUtil.class);
 		final DialogTaskManager taskManager = serviceRegistrar.getService(DialogTaskManager.class);
+		final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
 
-		installAppsPanel = new InstallAppsPanel(appManager, downloadSitesManager, fileUtil, taskManager, this);
+		installAppsPanel = new InstallAppsPanel(appManager, downloadSitesManager, fileUtil, iconManager, taskManager, this);
 		installAppsPanel.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 
 		currentlyInstalledAppsPanel = new CurrentlyInstalledAppsPanel(appManager);

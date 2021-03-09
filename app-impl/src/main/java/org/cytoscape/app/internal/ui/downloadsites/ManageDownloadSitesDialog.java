@@ -32,15 +32,12 @@ import static javax.swing.GroupLayout.Alignment.TRAILING;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.AbstractAction;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
@@ -148,55 +145,25 @@ public class ManageDownloadSitesDialog extends JDialog {
         siteUrlTextField.getDocument().addDocumentListener(docListener);
         
         sitesTable.setModel(new DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-                "Name", "URL"
-            }
+            new Object [][] { },
+            new String [] { "Name", "URL" }
         ) {
-            boolean[] canEdit = new boolean [] {
-                false, false
-            };
-
-            @Override
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
+            @Override public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return false;
             }
         });
         sitesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         sitesTable.getColumnModel().getColumn(0).setPreferredWidth(50);
         sitesTable.getColumnModel().getColumn(1).setPreferredWidth(285);
 
-        newButton.addActionListener(new ActionListener() {
-        	@Override
-            public void actionPerformed(ActionEvent evt) {
-                newButtonActionPerformed(evt);
-            }
-        });
-
-        saveButton.addActionListener(new ActionListener() {
-        	@Override
-            public void actionPerformed(ActionEvent evt) {
-                saveButtonActionPerformed(evt);
-            }
-        });
-
-        removeButton.addActionListener(new ActionListener() {
-        	@Override
-            public void actionPerformed(ActionEvent evt) {
-                removeButtonActionPerformed(evt);
-            }
-        });
+        newButton.addActionListener(this::newButtonActionPerformed);
+        saveButton.addActionListener(this::saveButtonActionPerformed);
+        removeButton.addActionListener(this::removeButtonActionPerformed);
 
         LookAndFeelUtil.equalizeSize(newButton, removeButton, saveButton);
         
-        closeButton = new JButton(new AbstractAction("Close") {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				dispose();
-			}
-		});
+        closeButton = new JButton("Close");
+        closeButton.addActionListener(e -> dispose());
 
         final JPanel detailPanel = new JPanel();
         detailPanel.setBorder(LookAndFeelUtil.createPanelBorder());
@@ -370,48 +337,28 @@ public class ManageDownloadSitesDialog extends JDialog {
 		return (isDefaultSite && copiesOfSite <= 1);
     }
     
-    private void repopulateTable() {
+    @SuppressWarnings("serial")
+	private void repopulateTable() {
     	final DefaultTableModel tableModel = new DefaultTableModel(
-	            new Object [][] {
-	            },
-	            new String [] {
-	                "Name", "URL"
-	            }
+	            new Object [][] { },
+	            new String [] {  "Name", "URL" }
 	        ) {
-				private static final long serialVersionUID = -1712121531730828785L;
-				
-				boolean[] canEdit = new boolean [] {
-	                false, false
-	            };
-	
 	            public boolean isCellEditable(int rowIndex, int columnIndex) {
-	                return canEdit [columnIndex];
+	                return false;
 	            }
 			};
 		
-		final List<DownloadSite> downloadSites = new LinkedList<DownloadSite>(
-    			downloadSitesManager.getDownloadSites());
-    	
-    	// Sort by name
-    	Collections.sort(downloadSites, new Comparator<DownloadSite>() {
-			@Override
-			public int compare(DownloadSite o1, DownloadSite o2) {
-				return o1.getSiteName().compareTo(o2.getSiteName());
-			}
-		});
+		List<DownloadSite> downloadSites = new LinkedList<>(downloadSitesManager.getDownloadSites());
+    	Collections.sort(downloadSites, (o1, o2) -> o1.getSiteName().compareTo(o2.getSiteName()));
     	
     	for (DownloadSite downloadSite : downloadSites) {
-    		tableModel.addRow(new Object[]{
-    				downloadSite,
-    				downloadSite.getSiteUrl()
-    		});
+    		tableModel.addRow(new Object[]{ downloadSite, downloadSite.getSiteUrl() });
     	}
     	
     	SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
 		    	sitesTable.setModel(tableModel);
-		    	
 		    	sitesTable.getColumnModel().getColumn(0).setPreferredWidth(140);
 		        sitesTable.getColumnModel().getColumn(1).setPreferredWidth(285);
 			}

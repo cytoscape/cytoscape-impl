@@ -303,8 +303,12 @@ public class WebQuerier {
 	}
 	
 	public Set<WebApp> getAllApps() {
+		return getAllApps(false);
+	}
+	
+	public Set<WebApp> getAllApps(boolean forceRefresh) {
 		// If we have a cached result from the previous query, use that one
-		if (this.appsByUrl.get(currentAppStoreUrl) != null) {
+		if (!forceRefresh && this.appsByUrl.get(currentAppStoreUrl) != null) {
 			return this.appsByUrl.get(currentAppStoreUrl);
 		}
 		
@@ -644,10 +648,9 @@ public class WebQuerier {
 	public Set<Update> checkForUpdates(Set<App> apps, AppManager appManager) {
 		Set<Update> updates = new HashSet<>();
 		
-		Update update;
 		for (App app : apps) {
 			for (String url : appsByUrl.keySet()) {
-				update = checkForUpdate(app, url, appManager);
+				Update update = checkForUpdate(app, url, appManager);
 				
 				if (update != null) {
 					updates.add(update);
@@ -719,13 +722,11 @@ public class WebQuerier {
 						update.setApp(app);
 						update.setWebApp(webApp);
 						update.setRelease(highestVersionRelease);
-						
 						return update;
 					}
 				}
 			}
 		}
-		
 		return null;
 	}
 	

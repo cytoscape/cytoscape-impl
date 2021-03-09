@@ -97,17 +97,13 @@ public class DownloadSitesManager {
 			}
 			
 			// Remove extra entries
-			boolean isExtraKey;
-			
 			Set<Object> keysToRemove = new HashSet<Object>();
 			
 			for (Object key : cyProperty.getProperties().keySet()) {
 				
 				if (key instanceof String) {
 					String keyString = (String) key;
-
 					siteNumber = 0;
-					isExtraKey = false;
 					
 					try {
 						if (keyString.startsWith(DOWNLOAD_SITE_NAME_KEY_PREFIX)) {
@@ -122,7 +118,6 @@ public class DownloadSitesManager {
 					}
 					
 					if (siteNumber >= downloadSiteCount + 1) {
-						isExtraKey = true;
 						keysToRemove.add(key);
 					}
 				}

@@ -30,13 +30,11 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Desktop;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -51,7 +49,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
-import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -67,6 +64,7 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JTree;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
@@ -95,16 +93,14 @@ import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager.DownloadSitesChangedEvent;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager.DownloadSitesChangedListener;
-import org.cytoscape.application.CyUserLog;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.work.Task;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskMonitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class represents the panel in the App Manager dialog's tab used for installing new apps.
@@ -112,13 +108,12 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 public class InstallAppsPanel extends JPanel {
 	
-	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
-	
     private JPanel descriptionPanel;
     private JScrollPane descriptionScrollPane;
     private JSplitPane descriptionSplitPane;
     private JTextPane descriptionTextPane;
-    private JComboBox downloadSiteComboBox;
+    private JComboBox<DownloadSite> downloadSiteComboBox;
+    private JButton refreshButton;
     private JLabel downloadSiteLabel;
     private JTextField filterTextField;
     private JButton installButton;
@@ -138,6 +133,7 @@ public class InstallAppsPanel extends JPanel {
 	private DownloadSitesManager downloadSitesManager;
 	private FileUtil fileUtil;
 	private TaskManager taskManager;
+	private IconManager iconManager;
 	private Container parent;
 	
 	private WebApp selectedApp;
@@ -149,12 +145,14 @@ public class InstallAppsPanel extends JPanel {
     		final AppManager appManager, 
     		final DownloadSitesManager downloadSitesManager, 
     		final FileUtil fileUtil,
+    		final IconManager iconManager,
     		final TaskManager taskManager,
     		final Container parent
     ) {
         this.appManager = appManager;
         this.downloadSitesManager = downloadSitesManager;
         this.fileUtil = fileUtil;
+        this.iconManager = iconManager;
         this.taskManager = taskManager;
         this.parent = parent;
     	initComponents();
@@ -197,69 +195,53 @@ public class InstallAppsPanel extends JPanel {
         this.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentShown(ComponentEvent e) {
-                queryForApps();
+                queryForApps(false);
             }
         });
     }
     
     private void setupDownloadSitesChangedListener() {
     	downloadSitesManager.addDownloadSitesChangedListener(new DownloadSitesChangedListener() {
-			
 			@Override
 			public void downloadSitesChanged(DownloadSitesChangedEvent downloadSitesChangedEvent) {
-				final DefaultComboBoxModel defaultComboBoxModel = new DefaultComboBoxModel(
-						new Vector<DownloadSite>(downloadSitesManager.getDownloadSites()));
+				List<DownloadSite> sites = downloadSitesManager.getDownloadSites();
+				DefaultComboBoxModel<DownloadSite> model = new DefaultComboBoxModel<>(new Vector<>(sites));
 				
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						downloadSiteComboBox.setModel(defaultComboBoxModel);
-					}
+				SwingUtilities.invokeLater(() -> {
+					downloadSiteComboBox.setModel(model);
 				});
 			}
 		});
     }
 
-    private boolean hasTagTreeBeenPopulated = false;
+    
+    private void queryAppsActionListener(boolean forceRefresh) {
+    	WebQuerier webQuerier = appManager.getWebQuerier();
+    	DownloadSite downloadSite = (DownloadSite) downloadSiteComboBox.getSelectedItem();
+	    if (downloadSite != null) {
+    		webQuerier.setCurrentAppStoreUrl(downloadSite.getSiteUrl());
+    		queryForApps(forceRefresh);
+		}
+    }
     
     // Queries the currently set app store url for available apps.
-    private void queryForApps() {
-        if (hasTagTreeBeenPopulated)
-            return;
+    private void queryForApps(boolean forceRefresh) {
+        WebQuerier webQuerier = appManager.getWebQuerier();
 
-        final WebQuerier webQuerier = appManager.getWebQuerier();
-
-    	taskManager.execute(new TaskIterator(new Task() {
-			
-			// Obtain information for all available apps, then append tag information
+    	taskManager.execute(new TaskIterator(new AbstractTask() {
 			@Override
 			public void run(TaskMonitor taskMonitor) throws Exception {
-		    	
 				taskMonitor.setTitle("Getting available apps");
-				taskMonitor.setStatusMessage("Obtaining apps from: " 
-						+ webQuerier.getCurrentAppStoreUrl());
+				taskMonitor.setStatusMessage("Obtaining apps from: " + webQuerier.getCurrentAppStoreUrl());
 				
-				Set<WebApp> availableApps = webQuerier.getAllApps();
+				Set<WebApp> availableApps = webQuerier.getAllApps(forceRefresh);
                 if (availableApps == null)
                     return;
 			
-				// Once the information is obtained, update the tree
-				
-				SwingUtilities.invokeLater(new Runnable() {
-
-					@Override
-					public void run() {
-						// populateTree(appManager.getWebQuerier().getAllApps());
-						buildTagsTree();
-						
-						fillResultsTree(appManager.getWebQuerier().getAllApps());
-					}
-					
+				SwingUtilities.invokeLater(() -> {
+					buildTagsTree();
+					fillResultsTree(appManager.getWebQuerier().getAllApps());
 				});
-			}
-
-			@Override
-			public void cancel() {
 			}
 		}));
     }
@@ -280,9 +262,21 @@ public class InstallAppsPanel extends JPanel {
         viewOnAppStoreButton = new JButton("View on App Store");
         installButton = new JButton("Install");
         downloadSiteLabel = new JLabel("Download Site:");
-        downloadSiteComboBox = new JComboBox();
+        downloadSiteComboBox = new JComboBox<>();
         manageSitesButton = new JButton("Manage Sites...");
-
+        
+        refreshButton = new JButton(IconManager.ICON_REFRESH);
+        refreshButton.setFont(iconManager.getIconFont(14.0f));
+        refreshButton.setToolTipText("Refresh App List");
+        var pref = refreshButton.getPreferredSize();
+        var d = new Dimension(pref.height, pref.height);
+        refreshButton.setPreferredSize(d);
+        refreshButton.setMinimumSize(d);
+        refreshButton.setMaximumSize(d);
+        refreshButton.setSize(d);
+        refreshButton.setHorizontalTextPosition(SwingConstants.CENTER);
+		refreshButton.setVerticalTextPosition(SwingConstants.TOP);
+		
         searchAppsLabel.setVisible(!LookAndFeelUtil.isAquaLAF());
         filterTextField.putClientProperty("JTextField.variant", "search"); // Aqua LAF only
         filterTextField.setToolTipText("To search, start typing");
@@ -345,15 +339,8 @@ public class InstallAppsPanel extends JPanel {
         installButton.setEnabled(false);
         installButton.addActionListener(evt -> installButtonActionPerformed(evt));
 
-        downloadSiteComboBox.setModel(new DefaultComboBoxModel(new String[] { WebQuerier.DEFAULT_APP_STORE_URL }));
-        downloadSiteComboBox.addItemListener(evt -> downloadSiteComboBoxItemStateChanged(evt));
-        downloadSiteComboBox.addActionListener(evt -> downloadSiteComboBoxActionPerformed(evt));
-        downloadSiteComboBox.addKeyListener(new KeyAdapter() {
-        	@Override
-            public void keyPressed(KeyEvent evt) {
-                downloadSiteComboBoxKeyPressed(evt);
-            }
-        });
+        List<DownloadSite> sites = downloadSitesManager.getDownloadSites();
+        downloadSiteComboBox.setModel(new DefaultComboBoxModel<>(new Vector<>(sites)));
 
         manageSitesButton.addActionListener(evt -> manageSitesButtonActionPerformed(evt));
         
@@ -370,6 +357,7 @@ public class InstallAppsPanel extends JPanel {
                 .addGroup(layout.createSequentialGroup()
                         .addComponent(downloadSiteLabel)
                         .addComponent(downloadSiteComboBox, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(refreshButton)
                         .addComponent(manageSitesButton)
                 )
                 .addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -389,6 +377,7 @@ public class InstallAppsPanel extends JPanel {
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
 	                    .addComponent(downloadSiteLabel)
 	                    .addComponent(downloadSiteComboBox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+	                    .addComponent(refreshButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 	                    .addComponent(manageSitesButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
                 )
                 .addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -404,60 +393,12 @@ public class InstallAppsPanel extends JPanel {
                 )
         );
 
-        // Add a key listener to the download site combo box to listen for the enter key event
-        final WebQuerier webQuerier = this.appManager.getWebQuerier();
-        
-        downloadSiteComboBox.getEditor().getEditorComponent().addKeyListener(new KeyAdapter() {
-			
-			@Override
-			public void keyPressed(KeyEvent e) {
-				final ComboBoxEditor editor = downloadSiteComboBox.getEditor();
-		    	final Object selectedValue = editor.getItem();
-				
-				if (e.isActionKey() || e.getKeyCode() == KeyEvent.VK_ENTER) {
-			    	if (downloadSiteComboBox.getModel() instanceof DefaultComboBoxModel
-			    			&& selectedValue != null) {
-			    		final DefaultComboBoxModel comboBoxModel = (DefaultComboBoxModel) downloadSiteComboBox.getModel();
-			    	
-			    		SwingUtilities.invokeLater(new Runnable() {
-			    			
-			    			@Override
-			    			public void run() {
-				    			boolean selectedAlreadyInList = false;
-				    	    	
-				        		for (int i = 0; i < comboBoxModel.getSize(); i++) {
-				        			Object listElement = comboBoxModel.getElementAt(i);
-				        			
-				        			if (listElement.equals(selectedValue)) {
-				        				selectedAlreadyInList = true;
-				        				
-				        				break;	
-				        			}
-				        		}
-				        		
-				        		if (!selectedAlreadyInList) {
-				        			comboBoxModel.insertElementAt(selectedValue, 1);
-				        			
-				        			editor.setItem(selectedValue);
-				        		}
-			    			}
-			    			
-			    		});
-			    	}
-			    	
-			    	if (webQuerier.getCurrentAppStoreUrl() != selectedValue.toString()) {
-			    		webQuerier.setCurrentAppStoreUrl(selectedValue.toString());
-			    		
-			    		queryForApps();
-			    	}
-				}
-			}
-		});
+        downloadSiteComboBox.addActionListener(evt -> queryAppsActionListener(false));
+        refreshButton.addActionListener(evt -> queryAppsActionListener(true));
         
         // Make the JTextPane render HTML using the default UI font
         Font font = UIManager.getFont("Label.font");
-        String bodyRule = "body { font-family: " + font.getFamily() + "; " +
-                "font-size: " + font.getSize() + "pt; }";
+        String bodyRule = "body { font-family: " + font.getFamily() + "; " + "font-size: " + font.getSize() + "pt; }";
         ((HTMLDocument) descriptionTextPane.getDocument()).getStyleSheet().addRule(bodyRule);
         
         // Setup the TreeCellRenderer to make the app tags use the folder icon instead of the default leaf icon, 
@@ -480,13 +421,14 @@ public class InstallAppsPanel extends JPanel {
 		tagsTree.setCellRenderer(tagsTreeCellRenderer);
     }
     
+    
     @Override
     public void addNotify() {
     	super.addNotify();
-    	
     	if (filterTextField != null)
     		filterTextField.requestFocusInWindow();
     }
+    
     
 	private void installFromFileButtonActionPerformed(ActionEvent evt) {
 		// Setup a the file filter for the open file dialog
@@ -605,13 +547,10 @@ public class InstallAppsPanel extends JPanel {
     	// tagsTree.expandRow(2);
     	
     	currentSelectedAppTag = null;
-        hasTagTreeBeenPopulated = true;
     }
  
     private void updateResultsTree() {
-    	// bild tags tree if it hasn't been populated
-    	if(!hasTagTreeBeenPopulated)
-    		buildTagsTree();
+    	buildTagsTree();
     	
     	TreePath selectionPath = tagsTree.getSelectionPath();
     	
@@ -778,57 +717,6 @@ public class InstallAppsPanel extends JPanel {
 				e.printStackTrace();
 			}
 		}
-    }
-    
-    private void downloadSiteComboBoxItemStateChanged(ItemEvent evt) {
-    }
-
-    private void downloadSiteComboBoxActionPerformed(ActionEvent evt) {
-    	
-    	final Object selected = downloadSiteComboBox.getSelectedItem();
-    	
-    	if (downloadSiteComboBox.getModel() instanceof DefaultComboBoxModel
-    			&& selected != null) {
-    		final DefaultComboBoxModel comboBoxModel = (DefaultComboBoxModel) downloadSiteComboBox.getModel();
-    	
-    		SwingUtilities.invokeLater(new Runnable() {
-    			
-    			@Override
-    			public void run() {
-	    			boolean selectedAlreadyInList = false;
-	    	    	
-	        		for (int i = 0; i < comboBoxModel.getSize(); i++) {
-	        			Object listElement = comboBoxModel.getElementAt(i);
-	        			
-	        			if (listElement.equals(selected)) {
-	        				selectedAlreadyInList = true;
-	        				
-	        				if (i > 0) {
-	        					// comboBoxModel.removeElementAt(i);
-	        					// comboBoxModel.insertElementAt(listElement, 1);
-	        				}
-	        				
-	        				break;
-	        			}
-	        		}
-	        		
-	        		if (!selectedAlreadyInList) {
-	        			comboBoxModel.insertElementAt(selected, 1);
-	        		}
-    			}
-    			
-    		});
-    		
-    		if (appManager.getWebQuerier().getCurrentAppStoreUrl() != selected.toString()) {
-    			appManager.getWebQuerier().setCurrentAppStoreUrl(selected.toString());
-	    		
-	    		queryForApps();
-	    	}
-    	}
-   
-    }
-    
-    private void downloadSiteComboBoxKeyPressed(KeyEvent evt) {
     }
     
     private void manageSitesButtonActionPerformed(ActionEvent evt) {
