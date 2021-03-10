@@ -486,7 +486,7 @@ public class BrowserTable extends JTable
 	public void mouseClicked(MouseEvent e) {
 		if (SwingUtilities.isLeftMouseButton(e) && (getSelectedRows().length != 0)) {
 			int viewColumn = getColumnModel().getColumnIndexAtX(e.getX());
-			int viewRow = e.getY() / getRowHeight();
+			int viewRow = rowAtPoint(e.getPoint());
 			int modelColumn = convertColumnIndexToModel(viewColumn);
 			int modelRow = convertRowIndexToModel(viewRow);
 			
@@ -857,7 +857,7 @@ public class BrowserTable extends JTable
 			
 			// Show context menu
 			int viewColumn = getColumnModel().getColumnIndexAtX(e.getX());
-			int viewRow = e.getY() / getRowHeight();
+			int viewRow = rowAtPoint(e.getPoint());
 			int modelColumn = convertColumnIndexToModel(viewColumn);
 			int modelRow = convertRowIndexToModel(viewRow);
 			
@@ -883,7 +883,7 @@ public class BrowserTable extends JTable
 	}
 	
 	private void selectFocusedCell(MouseEvent e) {
-		int row = e.getY() / getRowHeight();
+		int row = rowAtPoint(e.getPoint());
 		int column = getColumnModel().getColumnIndexAtX(e.getX());
 		
 		int[] selectedRows = this.getSelectedRows();
