@@ -6,17 +6,13 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JDialog;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 
 import org.cytoscape.app.internal.manager.AppManager;
@@ -63,7 +59,7 @@ public class AppManagerDialog extends JDialog {
 	private CurrentlyInstalledAppsPanel currentlyInstalledAppsPanel;
 	private InstallAppsPanel installAppsPanel;
 	private JTabbedPane mainTabbedPane;
-	private JLabel networkErrorLabel;
+	private NetworkErrorPanel networkErrorPanel;
 
 	private ManageDownloadSitesDialog manageDownloadSitesDialog;
 	private DownloadSitesManager downloadSitesManager;
@@ -100,12 +96,8 @@ public class AppManagerDialog extends JDialog {
     	setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("App Manager");
     	
-    	networkErrorLabel = new JLabel(
-        		"Cannot access the App Store. Please check your internet connection.",
-        		UIManager.getIcon("OptionPane.warningIcon"),
-        		SwingConstants.LEFT);
-		networkErrorLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-		networkErrorLabel.setVisible(false);
+        networkErrorPanel = new NetworkErrorPanel(serviceRegistrar.getService(IconManager.class));
+        networkErrorPanel.setVisible(false);
 
 		final FileUtil fileUtil = serviceRegistrar.getService(FileUtil.class);
 		final DialogTaskManager taskManager = serviceRegistrar.getService(DialogTaskManager.class);
@@ -140,12 +132,12 @@ public class AppManagerDialog extends JDialog {
 		layout.setAutoCreateGaps(true);
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
-				.addComponent(networkErrorLabel)
+				.addComponent(networkErrorPanel)
         		.addComponent(mainTabbedPane, DEFAULT_SIZE, 640, Short.MAX_VALUE)
         		.addComponent(buttonPanel)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addComponent(networkErrorLabel)
+				.addComponent(networkErrorPanel)
 				.addComponent(mainTabbedPane, DEFAULT_SIZE, 490, Short.MAX_VALUE)
 				.addComponent(buttonPanel)
 		);
@@ -166,17 +158,21 @@ public class AppManagerDialog extends JDialog {
 		}
 	}
 
-	public void showNetworkError() {
-		if (!SwingUtilities.isEventDispatchThread())
-			SwingUtilities.invokeLater(() -> showNetworkError());
-		else
-			networkErrorLabel.setVisible(true);
+	public void showNetworkError(String errorMessage) {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(() -> showNetworkError(errorMessage));
+		} else {
+			networkErrorPanel.addMessage(errorMessage);
+			networkErrorPanel.setVisible(true);
+		}
 	}
 
 	public void hideNetworkError() {
-		if (!SwingUtilities.isEventDispatchThread())
+		if (!SwingUtilities.isEventDispatchThread()) {
 			SwingUtilities.invokeLater(() -> hideNetworkError());
-		else
-			networkErrorLabel.setVisible(false);
+		} else {
+			networkErrorPanel.clearMessages();
+			networkErrorPanel.setVisible(false);
+		}
 	}
 }

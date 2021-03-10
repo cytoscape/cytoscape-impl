@@ -255,7 +255,11 @@ public class CheckForUpdatesPanel extends JPanel {
 			public void run(TaskMonitor taskMonitor) throws Exception {
 				taskMonitor.setTitle("Checking for updates");
 				
+				appManager.getAppManagerDialog().hideNetworkError();
+				
 				WebQuerier webQuerier = appManager.getWebQuerier();
+				webQuerier.setShowMultipleWarnings(true);
+				
 				double progress = 0.0;
 				
 				// Obtain apps listing from each site if not done so
@@ -268,10 +272,13 @@ public class CheckForUpdatesPanel extends JPanel {
 					
 					progress += 1.0 / (downloadSitesManager.getDownloadSites().size() + 1);
 					
+					webQuerier.setCurrentSiteName(siteName);
 					webQuerier.setCurrentAppStoreUrl(siteUrl);
 					
 					webQuerier.getAllApps(); // caches results in the webQuerier
 				}
+				
+				webQuerier.setShowMultipleWarnings(false);
 				
 				taskMonitor.setStatusMessage("Reading listings for new versions");
 				taskMonitor.setProgress(0.98); // We're 98% done.

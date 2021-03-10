@@ -117,8 +117,11 @@ public class WebQuerier {
 	 */
 	private Map<String, Map<String, AppTag>> appTagsByUrl;
 	
+	private boolean showMultipleWarnings = false;
+	
 	
 	private String currentAppStoreUrl = DEFAULT_APP_STORE_URL;
+	private String currentSiteName = null;
 
 	private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+)([.](\\d+)([.](\\d+)([.]([-_a-zA-Z0-9]+))?)?)?");
 	
@@ -200,6 +203,11 @@ public class WebQuerier {
 		Set<WebApp> webApps = getAllApps();
 		DebugHelper.print("Apps found: " + webApps.size());
 		*/
+	}
+	
+	
+	public void setShowMultipleWarnings(boolean show) {
+		this.showMultipleWarnings = show;
 	}
 	
 	/**
@@ -286,6 +294,11 @@ public class WebQuerier {
 		}
 	}
 	
+	
+	public void setCurrentSiteName(String site) {
+		this.currentSiteName = site;
+	}
+	
 	/**
 	 * Return the set of all tag names found on the app store. 
 	 * @return The set of all available tag names
@@ -307,6 +320,10 @@ public class WebQuerier {
 	}
 	
 	public Set<WebApp> getAllApps(boolean forceRefresh) {
+		if (!showMultipleWarnings && appManager != null && appManager.getAppManagerDialog() != null) {
+			appManager.getAppManagerDialog().hideNetworkError();
+		}
+		
 		// If we have a cached result from the previous query, use that one
 		if (!forceRefresh && this.appsByUrl.get(currentAppStoreUrl) != null) {
 			return this.appsByUrl.get(currentAppStoreUrl);
@@ -321,10 +338,6 @@ public class WebQuerier {
 			// Obtain information about the app from the website
 			jsonResult = query(currentAppStoreUrl + "backend/all_apps");
 
-			if (appManager != null && appManager.getAppManagerDialog() != null) {
-				appManager.getAppManagerDialog().hideNetworkError();
-			}
-			
 			// Parse the JSON result
 			JSONArray jsonArray = new JSONArray(jsonResult);
 			JSONObject jsonObject = null;
@@ -441,7 +454,11 @@ public class WebQuerier {
 			
 		} catch (final IOException e) {
 			if (appManager != null && appManager.getAppManagerDialog() != null) {
-				appManager.getAppManagerDialog().showNetworkError();
+				var dialog = appManager.getAppManagerDialog();
+				if(currentSiteName == null)
+					dialog.showNetworkError("Cannot access the App Store at: " + currentAppStoreUrl);
+				else
+					dialog.showNetworkError("Cannot access " + currentSiteName + " at: " + currentAppStoreUrl);
 			}
 			e.printStackTrace();
 			result = null;

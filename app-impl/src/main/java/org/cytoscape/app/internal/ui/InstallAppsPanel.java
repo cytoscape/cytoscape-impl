@@ -219,6 +219,7 @@ public class InstallAppsPanel extends JPanel {
     	WebQuerier webQuerier = appManager.getWebQuerier();
     	DownloadSite downloadSite = (DownloadSite) downloadSiteComboBox.getSelectedItem();
 	    if (downloadSite != null) {
+	    	webQuerier.setCurrentSiteName(downloadSite.getSiteName());
     		webQuerier.setCurrentAppStoreUrl(downloadSite.getSiteUrl());
     		queryForApps(forceRefresh);
 		}
