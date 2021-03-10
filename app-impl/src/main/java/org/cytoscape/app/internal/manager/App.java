@@ -466,4 +466,12 @@ public abstract class App {
 			tempFile.renameTo(targetFile);
 		}
 	}
+	// App name, version, status, file
+
+	@Override
+	public String toString() {
+		String cls = this.getClass().getSimpleName();
+		return String.format("%s [appName=%s, version=%s, status=%s, appFile=%s]", cls, appName, version, status, appFile);
+	}
+	
 }

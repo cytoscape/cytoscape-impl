@@ -131,6 +131,7 @@ public class UpdateManager implements AppsFinishedStartingListener {
 		final ExecutorService service = Executors.newSingleThreadExecutor();
 		service.submit(() -> {
 			for (DownloadSite downloadSite : downloadSitesManager.getDownloadSites()) {
+				appManager.getWebQuerier().setCurrentSiteName(downloadSite.getSiteName());
 				appManager.getWebQuerier().setCurrentAppStoreUrl(downloadSite.getSiteUrl());
 				appManager.getWebQuerier().getAllApps();
 			}

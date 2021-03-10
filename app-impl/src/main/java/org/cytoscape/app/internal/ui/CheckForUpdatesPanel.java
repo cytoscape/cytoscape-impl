@@ -32,10 +32,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.swing.GroupLayout;
@@ -57,16 +55,14 @@ import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.Update;
 import org.cytoscape.app.internal.net.UpdateManager;
-import org.cytoscape.app.internal.net.WebApp;
 import org.cytoscape.app.internal.net.WebQuerier;
-import org.cytoscape.app.internal.task.InstallAppsFromWebAppTask;
 import org.cytoscape.app.internal.task.InstallUpdatesTask;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskMonitor;
@@ -213,8 +209,7 @@ public class CheckForUpdatesPanel extends JPanel {
 			public void updatesChanged(UpdatesChangedEvent event) {
 
         		int updateCount = updateManager.getUpdates().size();
-        		updatesAvailableLabel.setText(updateCount + " " 
-        				+ (updateCount == 1 ? "update" : "updates") + " available.");
+        		updatesAvailableLabel.setText(updateCount + " " + (updateCount == 1 ? "update" : "updates") + " available.");
         		
         		Calendar lastUpdateCheckTime = updateManager.getLastUpdateCheckTime();
         		
@@ -243,7 +238,6 @@ public class CheckForUpdatesPanel extends JPanel {
         installAllButton.setEnabled(true);
         
         this.addComponentListener(new ComponentAdapter() {
-		
         	@Override
         	public void componentShown(ComponentEvent e) {
         		checkUpdates();
@@ -256,42 +250,40 @@ public class CheckForUpdatesPanel extends JPanel {
     private void checkUpdates() {
     	final Set<App> appsToCheckUpdates = appManager.getInstalledApps();
 
-		taskManager.execute(new TaskIterator(new Task() {
-			
+		taskManager.execute(new TaskIterator(new AbstractTask() {
 			@Override
 			public void run(TaskMonitor taskMonitor) throws Exception {
 				taskMonitor.setTitle("Checking for updates");
 				
+				appManager.getAppManagerDialog().hideNetworkError();
+				
 				WebQuerier webQuerier = appManager.getWebQuerier();
-				String siteName, siteUrl;
+				webQuerier.setShowMultipleWarnings(true);
+				
 				double progress = 0.0;
 				
 				// Obtain apps listing from each site if not done so
-				for (DownloadSite downloadSite : downloadSitesManager.getDownloadSites()) {
+				for(DownloadSite downloadSite : downloadSitesManager.getDownloadSites()) {
+					String siteName = downloadSite.getSiteName();
+					String siteUrl  = downloadSite.getSiteUrl();
 					
-					siteName = downloadSite.getSiteName();
-					siteUrl = downloadSite.getSiteUrl();
-					
-					taskMonitor.setStatusMessage("Obtaining apps listing from " 
-							+ siteName + "(" + siteUrl + ") ...");
+					taskMonitor.setStatusMessage("Obtaining apps listing from "  + siteName + "(" + siteUrl + ") ...");
 					taskMonitor.setProgress(progress);
 					
 					progress += 1.0 / (downloadSitesManager.getDownloadSites().size() + 1);
 					
+					webQuerier.setCurrentSiteName(siteName);
 					webQuerier.setCurrentAppStoreUrl(siteUrl);
-					Set<WebApp> webApps = webQuerier.getAllApps();
+					
+					webQuerier.getAllApps(); // caches results in the webQuerier
 				}
+				
+				webQuerier.setShowMultipleWarnings(false);
 				
 				taskMonitor.setStatusMessage("Reading listings for new versions");
 				taskMonitor.setProgress(0.98); // We're 98% done.
 				
 				updateManager.checkForUpdates(appsToCheckUpdates);
-			}
-			
-			@Override
-			public void cancel() {
-				// TODO Auto-generated method stub
-				
 			}
 		}));
     }
