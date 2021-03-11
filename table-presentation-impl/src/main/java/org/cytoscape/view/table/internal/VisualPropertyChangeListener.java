@@ -1,6 +1,7 @@
 package org.cytoscape.view.table.internal;
 
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_BACKGROUND_PAINT;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_TEXT_WRAPPED;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_FORMAT;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_GRAVITY;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_VISIBLE;
@@ -82,8 +83,7 @@ public class VisualPropertyChangeListener implements TableViewChangedListener {
 				if (vp == TABLE_VIEW_MODE) {
 					changeSelectionMode((TableMode) value);
 				} else if (vp == ROW_HEIGHT) {
-					if (value instanceof Number)
-						changeRowHeight(((Number) value).intValue());
+					invokeOnEDT(() -> browserTable.resetRowHeight());
 				} else if (vp == TABLE_GRID_VISIBLE) {
 					invokeOnEDT(() -> browserTable.setShowGrid(value == Boolean.TRUE));
 				} else if (vp == TABLE_ALTERNATE_ROW_COLORS) {
@@ -119,6 +119,9 @@ public class VisualPropertyChangeListener implements TableViewChangedListener {
 					col.setWidth(width);
 				}
 			}
+		} else if (vp == CELL_TEXT_WRAPPED) {
+			if (value != Boolean.TRUE)
+				invokeOnEDT(() -> browserTable.resetRowHeight());
 		} else if (vp == COLUMN_GRAVITY) {
 			if (value instanceof Number) {
 				double gravity = ((Number) value).doubleValue();
@@ -149,12 +152,5 @@ public class VisualPropertyChangeListener implements TableViewChangedListener {
 			if (!suidSelected.isEmpty())
 				browserTable.changeRowSelection(suidSelected, suidUnselected);
 		}
-	}
-	
-	private void changeRowHeight(int height) {
-		// TODO: calculate h based on the presence of sparklines, wrapped text, etc
-		int h = height > 0 ? height : 16;
-		
-		invokeOnEDT(() -> browserTable.setRowHeight(h));
 	}
 }
