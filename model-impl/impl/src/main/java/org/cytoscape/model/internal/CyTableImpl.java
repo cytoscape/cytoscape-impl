@@ -633,23 +633,33 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		if (value == null)
 			throw new NullPointerException("value must not be null.");
 		
+		// First check if the column type is List. We cannot call setListX() inside the synchronized block, 
+		// that can lead  to deadlock when setListX() calls fireVirtualColumnRowSetEvent().
+		final boolean isList;
+		synchronized(lock) {
+			String normalizedColName = normalizeColumnName(columnName);
+			if (types.get(normalizedColName) == null)
+				throw new IllegalArgumentException("column: '" + columnName + "' does not yet exist.");
+
+			Class<?> columnType = types.get(normalizedColName).getType();
+			isList = columnType == List.class;
+		}
+		if(isList) {
+			setListX(key, columnName, value);
+			return;
+		}
+		
 		final Object newValue;
 		final Object newRawValue;
 		final VirtualColumn virtColumn;
-		
 		boolean changed = true;
+		
 		synchronized(lock) {
 			final String normalizedColName = normalizeColumnName(columnName);
-			
 			if (types.get(normalizedColName) == null)
 				throw new IllegalArgumentException("column: '" + columnName + "' does not yet exist.");
 
 			final Class<?> columnType = types.get(normalizedColName).getType();
-			if (columnType == List.class) {
-				setListX(key, columnName, value);
-				return;
-			}
-
 			if (!(value instanceof Equation))
 				checkType(value);
 
@@ -683,9 +693,10 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 				}
 			}
 		}
-
+		
 		if (fireEvents && changed && virtColumn == null) {
 			// Fire an event for each table in the virtual column chain
+			// this MUST be called outside the synchronized block
 			fireVirtualColumnRowSetEvent(this, key, columnName, newValue, newRawValue);
 		}
 	}
@@ -700,11 +711,12 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	 * local column and every dependent table that contains a virtual column.
 	 */
 	private void fireVirtualColumnRowSetEvent(CyTableImpl table, Object key, String columnName, Object newValue, Object newRawValue) {
+		// this MUST be called outside of synchronized blocks
 		fireVirtualColumnRowSetEvent(this, key, columnName, newValue, newRawValue, Collections.newSetFromMap(new IdentityHashMap<>()));
 	}
 	
 	private void fireVirtualColumnRowSetEvent(CyTableImpl table, Object key, String columnName, Object newValue, Object newRawValue, Set<VirtualColumnInfo> seen) {
-		// Fire an event for this table
+		// this MUST be called outside of synchronized blocks
 		CyRow row = table.getRowNoCreate(key);
 		if (row == null) {
 			return;
