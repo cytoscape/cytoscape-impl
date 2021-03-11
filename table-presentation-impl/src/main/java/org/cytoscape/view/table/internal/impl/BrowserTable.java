@@ -1,5 +1,8 @@
 package org.cytoscape.view.table.internal.impl;
 
+import static org.cytoscape.util.swing.LookAndFeelUtil.getSmallFontSize;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isMac;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isWindows;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_EDITABLE;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_GRAVITY;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_VISIBLE;
@@ -81,15 +84,12 @@ import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.TextWrapToolTip;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.events.AboutToRemoveColumnViewEvent;
 import org.cytoscape.view.model.events.AboutToRemoveColumnViewListener;
 import org.cytoscape.view.model.events.AddedColumnViewEvent;
 import org.cytoscape.view.model.events.AddedColumnViewListener;
-import org.cytoscape.view.model.table.CyTableView;
 import org.cytoscape.view.table.internal.util.TableBrowserUtil;
 import org.cytoscape.view.table.internal.util.ValidatedObjectAndEditString;
 import org.slf4j.Logger;
@@ -129,8 +129,8 @@ public class BrowserTable extends JTable
 	private static final String LINE_BREAK = "\n";
 	private static final String CELL_BREAK = "\t";
 
-	private static final Font BORDER_FONT = UIManager.getFont("Label.font").deriveFont(11f);
-
+	private static final Font BORDER_FONT = UIManager.getFont("Label.font").deriveFont(getSmallFontSize());
+	
 	private Clipboard systemClipboard;
 	private CellEditorRemover editorRemover;
 	private final TableCellRenderer cellRenderer;
@@ -248,7 +248,7 @@ public class BrowserTable extends JTable
 		if (super.isCellEditable(row, column)) {
 			// Also check the visual property...
 			if (getModel() instanceof BrowserTableModel) {
-				var model = (BrowserTableModel) getModel();
+				var model = getBrowserTableModel();
 				var tableView = model.getTableView();
 				var name = getColumnName(column);
 				var view = tableView.getColumnView(name);
@@ -395,7 +395,7 @@ public class BrowserTable extends JTable
 		
 		// Update the COLUMN_WIDTH visual property value.
 		var idx = e.getToIndex();
-		var tableModel = (BrowserTableModel) getModel();
+		var tableModel = getBrowserTableModel();
 		var columnModel = (BrowserTableColumnModel) getColumnModel();
 		var column = columnModel.getColumn(idx);
 		var tableView = tableModel.getTableView();
@@ -418,7 +418,7 @@ public class BrowserTable extends JTable
 	}
 	
 	public void showListContents(int modelRow, int modelColumn, MouseEvent e) {
-		var model = (BrowserTableModel) getModel();
+		var model = getBrowserTableModel();
 		var columnType = modelColumn >= 0 && modelColumn < model.getColumnCount()
 				? model.getColumn(modelColumn).getType()
 				: null;
@@ -452,7 +452,7 @@ public class BrowserTable extends JTable
 		openFormulaBuilderMenuItem.addActionListener(evt -> {
 			int cellRow = table.getSelectedRow();
 			int cellColumn = table.getSelectedColumn();
-			var tableModel = (BrowserTableModel) getModel();
+			var tableModel = getBrowserTableModel();
 			var rootFrame = (JFrame) SwingUtilities.getRoot(table);
 			
 			if (cellRow == -1 || cellColumn == -1 || !tableModel.isCellEditable(cellRow, cellColumn)) {
@@ -562,7 +562,7 @@ public class BrowserTable extends JTable
 
 	@Override
 	public void paint(Graphics g) {
-		var model = (BrowserTableModel) getModel();
+		var model = getBrowserTableModel();
 		var lock = model.getLock();
 		lock.readLock().lock();
 		
@@ -576,35 +576,35 @@ public class BrowserTable extends JTable
 
 	@Override
 	public void handleEvent(AddedColumnViewEvent e) {
-		BrowserTableModel model = (BrowserTableModel) getModel();
-		CyTableView tableView = model.getTableView();
-		
+		var model = getBrowserTableModel();
+		var tableView = model.getTableView();
+
 		if (e.getSource() != tableView)
 			return;
-		
+
 		var columnModel = (BrowserTableColumnModel) getColumnModel();
 
-		CyColumn col = e.getColumnView().getModel();
+		var col = e.getColumnView().getModel();
 		model.addColumn(col.getName());
-		
+
 		int colIndex = columnModel.getColumnCount(false);
-		
-		String name = col.getName();
-		View<CyColumn> view = model.getTableView().getColumnView(name);
+
+		var name = col.getName();
+		var view = model.getTableView().getColumnView(name);
 		boolean visible = view.getVisualProperty(COLUMN_VISIBLE);
-		double gravity  = view.getVisualProperty(COLUMN_GRAVITY);
-		
-		TableColumn tableColumn = new TableColumn(colIndex);
+		double gravity = view.getVisualProperty(COLUMN_GRAVITY);
+
+		var tableColumn = new TableColumn(colIndex);
 		tableColumn.setHeaderValue(name);
 		tableColumn.setHeaderRenderer(new BrowserTableHeaderRenderer(serviceRegistrar));
 		columnModel.addColumn(tableColumn, view.getSUID(), visible, gravity);
-		
+
 		columnModel.reorderColumnsToRespectGravity();
 	}
 
 	@Override
 	public void handleEvent(AboutToRemoveColumnViewEvent e) {
-		var model = (BrowserTableModel) getModel();
+		var model = getBrowserTableModel();
 		var tableView = model.getTableView();
 		
 		if (e.getSource() != tableView)
@@ -637,7 +637,7 @@ public class BrowserTable extends JTable
 
 	@Override
 	public void handleEvent(ColumnNameChangedEvent e) {
-		BrowserTableModel model = (BrowserTableModel) getModel();
+		BrowserTableModel model = getBrowserTableModel();
 		CyTable dataTable = model.getDataTable();
 
 		if (e.getSource() != dataTable)
@@ -663,7 +663,7 @@ public class BrowserTable extends JTable
 		if (ignoreRowSetEvents)
 			return;
 		
-		var model = (BrowserTableModel) getModel();
+		var model = getBrowserTableModel();
 		var dataTable = model.getDataTable();
 
 		if (e.getSource() != dataTable)
@@ -735,7 +735,7 @@ public class BrowserTable extends JTable
 					// getColumnModel().getColumnIndexAtX(e.getX()) does NOT work, because the mouse may have been
 					// released over another column, not the one being changed.
 					// So let's make it simple and update the WIDTH values of all columns.
-					var tableModel = (BrowserTableModel) getModel();
+					var tableModel = getBrowserTableModel();
 					var columnModel = (BrowserTableColumnModel) getColumnModel();
 					var tableView = tableModel.getTableView();
 
@@ -767,7 +767,7 @@ public class BrowserTable extends JTable
 	}
 	
 	private void setKeyStroke() {
-		int modifiers = LookAndFeelUtil.isMac() ? ActionEvent.META_MASK : ActionEvent.CTRL_MASK;
+		int modifiers = isMac() ? ActionEvent.META_MASK : ActionEvent.CTRL_MASK;
 		var copy = KeyStroke.getKeyStroke(KeyEvent.VK_C, modifiers, false);
 		// Identifying the copy KeyStroke user can modify this to copy on some other Key combination.
 		this.registerKeyboardAction(this, "Copy", copy, JComponent.WHEN_FOCUSED);
@@ -832,7 +832,7 @@ public class BrowserTable extends JTable
 	private void maybeShowHeaderPopup(MouseEvent e) {
 		if (e.isPopupTrigger()) {
 			int column = getColumnModel().getColumnIndexAtX(e.getX());
-			var tableModel = (BrowserTableModel) getModel();
+			var tableModel = getBrowserTableModel();
 
 			// Make sure the column we're clicking on actually exists!
 			if (column >= tableModel.getColumnCount() || column < 0)
@@ -852,7 +852,7 @@ public class BrowserTable extends JTable
 	
 	private void maybeShowPopup(MouseEvent e) {
 		if (e.isPopupTrigger()) {
-			if (LookAndFeelUtil.isWindows())
+			if (isWindows())
 				selectFocusedCell(e);
 			
 			// Show context menu
@@ -957,7 +957,7 @@ public class BrowserTable extends JTable
 	
 	private void renameColumnName(String oldName, String newName) {
 		var columnModel = (BrowserTableColumnModel) getColumnModel();
-		var model = (BrowserTableModel) getModel();
+		var model = getBrowserTableModel();
 		
 		int index = model.mapColumnNameToColumnIndex(oldName);
 		
@@ -991,7 +991,7 @@ public class BrowserTable extends JTable
 	}
 
 	public void changeRowSelection(Set<Long> suidSelected, Set<Long> suidUnselected) {
-		BrowserTableModel model = (BrowserTableModel) getModel();
+		BrowserTableModel model = getBrowserTableModel();
 		CyTable dataTable = model.getDataTable();
 		String pKeyName = dataTable.getPrimaryKey().getName();
 		int rowCount = getRowCount();

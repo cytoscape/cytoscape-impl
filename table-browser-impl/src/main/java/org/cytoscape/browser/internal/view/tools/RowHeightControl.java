@@ -13,6 +13,7 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
+import javax.swing.UIManager;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -49,7 +50,6 @@ import org.cytoscape.view.model.ContinuousRange;
 public class RowHeightControl extends AbstractToolBarControl {
 	
 	private static final int MIN_VALUE = 8; // less than this and the table is probably useless
-	private static final int DEFAULT_VALUE = 16;
 	
 	private JToggleButton autoButton;
 	private JSlider heightSlider;
@@ -146,9 +146,10 @@ public class RowHeightControl extends AbstractToolBarControl {
 			var range = (ContinuousRange<Integer>) ROW_HEIGHT.getRange();
 			var min = Math.max(MIN_VALUE, range.getMin());
 			var max = range.getMax();
+			var def = UIManager.getInt("Table.rowHeight");
 			
 			heightSlider = new JSlider(min, max);
-			heightSlider.setValue(value <= 0 ? DEFAULT_VALUE : clamp(value));
+			heightSlider.setValue(value <= 0 ? def : clamp(value));
 			heightSlider.setPreferredSize(new Dimension(120, heightSlider.getPreferredSize().height));
 			heightSlider.addChangeListener(evt -> {
 				if (adjusting)

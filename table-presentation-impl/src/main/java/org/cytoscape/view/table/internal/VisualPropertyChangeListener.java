@@ -123,8 +123,8 @@ public class VisualPropertyChangeListener implements TableViewChangedListener {
 			if (value instanceof Number) {
 				double gravity = ((Number) value).doubleValue();
 				var colModel = (BrowserTableColumnModel) browserTable.getColumnModel();
-				var col = colModel.getTableColumn(colView.getSUID());
-				colModel.setColumnGravity(col, gravity);
+				var column = colModel.getTableColumn(colView.getSUID());
+				colModel.setColumnGravity(column, gravity);
 			}
 		}
 	}

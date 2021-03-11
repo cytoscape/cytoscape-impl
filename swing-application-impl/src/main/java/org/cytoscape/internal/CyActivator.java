@@ -37,6 +37,7 @@ import java.util.Properties;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
+import javax.swing.JTable;
 import javax.swing.UIManager;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -703,6 +704,7 @@ public class CyActivator extends AbstractCyActivator {
 			UIManager.put("RadioButtonMenuItem.disabledForeground", disabledFg);
 			UIManager.put("Table.disabledForeground", disabledFg);
 			UIManager.put("Table.disabledText", disabledFg);
+			UIManager.put("Table.rowHeight", new JTable().getRowHeight());
 			UIManager.put("TableHeader.disabledForeground", disabledFg);
 			UIManager.put("TextField.inactiveForeground", disabledFg);
 			UIManager.put("TextField.disabledForeground", disabledFg);
