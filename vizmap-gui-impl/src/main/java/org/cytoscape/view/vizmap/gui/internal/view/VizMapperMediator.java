@@ -938,7 +938,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	private boolean shouldRebuildTableVisualPropertySheets(VisualStyle vs) {
 		var col = vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().getSelectedItem();
 		VisualStyle curStyle = vmProxy.getVisualStyle(col);
-		boolean rebuild = !vs.equals(curStyle);
+		boolean rebuild = vs == null ? curStyle != null : !vs.equals(curStyle);
 		return rebuild;
 	}
 	
