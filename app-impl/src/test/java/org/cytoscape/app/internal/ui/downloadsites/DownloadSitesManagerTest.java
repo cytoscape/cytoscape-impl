@@ -53,9 +53,7 @@ public class DownloadSitesManagerTest {
 		assertEquals(0, downloadSitesManager.getDownloadSites().size());
 		
 		// Insert 1, save, check result
-		DownloadSite downloadSite = new DownloadSite();
-		downloadSite.setSiteName("test1");
-		downloadSite.setSiteUrl("http://test1");
+		DownloadSite downloadSite = new DownloadSite("test1", "http://test1");
 		downloadSitesManager.getDownloadSites().add(downloadSite);
 
 		downloadSitesManager.saveDownloadSites();
@@ -70,9 +68,7 @@ public class DownloadSitesManagerTest {
 		assertNull(properties.getProperty(DownloadSitesManager.DOWNLOAD_SITE_URL_KEY_PREFIX + "2"));
 		
 		// Insert another, save, check
-		downloadSite = new DownloadSite();
-		downloadSite.setSiteName("test2");
-		downloadSite.setSiteUrl("http://test2");
+		downloadSite = new DownloadSite("test2", "http://test2");
 		downloadSitesManager.getDownloadSites().add(downloadSite);
 		
 		downloadSitesManager.saveDownloadSites();
@@ -107,8 +103,7 @@ public class DownloadSitesManagerTest {
 	
 	@Test
 	public void testHttpsConvert() {
-		DownloadSite downloadSite = new DownloadSite();
-		downloadSite.setSiteUrl("http://test1");
+		DownloadSite downloadSite = new DownloadSite("", "http://test1");
 		assertEquals("http://test1", downloadSite.getSiteUrl());
 
 		downloadSite.setSiteUrl("http://apps.cytoscape.org/");

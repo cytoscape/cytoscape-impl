@@ -38,7 +38,7 @@ public class TableRenderer implements CyDisposable {
 	}
 	
 	public CyTableView getTableView() {
-		return (CyTableView) renderingEngine.getViewModel();
+		return renderingEngine != null ? (CyTableView) renderingEngine.getViewModel() : null;
 	}
 
 	public CyTable getDataTable() {

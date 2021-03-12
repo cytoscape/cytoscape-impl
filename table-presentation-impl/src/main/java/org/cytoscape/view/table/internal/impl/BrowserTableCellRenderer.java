@@ -1,20 +1,34 @@
 package org.cytoscape.view.table.internal.impl;
 
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.ROW_HEIGHT;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
+import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
-import javax.swing.Icon;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.text.Element;
+import javax.swing.text.LabelView;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.View;
+import javax.swing.text.ViewFactory;
+import javax.swing.text.html.HTML;
+import javax.swing.text.html.HTMLEditorKit;
 
 import org.cytoscape.cg.model.NullCustomGraphics;
 import org.cytoscape.cg.model.SVGLayer;
@@ -61,18 +75,33 @@ import com.l2fprod.common.swing.renderer.DefaultCellRenderer;
 
 /** Cell renderer for attribute browser table. */
 @SuppressWarnings("serial")
-class BrowserTableCellRenderer extends JPanel implements TableCellRenderer {
+public class BrowserTableCellRenderer extends JPanel implements TableCellRenderer {
 
-	// Define fonts & colors for the cells
-	private static final int H_PAD = 8;
-	private static final int V_PAD = 0;
-	private static EquationIcon EQUATION_ICON = new EquationIcon();
+	/** Extra horizontal padding */
+	private static final int H_PAD = 5;
+	/** Extra vertical padding */
+	private static final int V_PAD = 0; // Careful when changing this value, it could crop the text or boolean icons!
 	
-	private final JLabel label;
+	private final Pattern htmlPattern = Pattern.compile(
+			"[\\S\\s]*\\<html[\\S\\s]*\\>[\\S\\s]*\\<\\/html[\\S\\s]*\\>[\\S\\s]*",
+			Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
+	);
+	
+	private JLabel label;
+	private JTextArea textArea;
+	
+	private Color bg;
+	private Color fg;
+	private Font font;
+	private String text;
+	private String tooltip;
+	private boolean isError;
+	private boolean isEquation;
+	private CyCustomGraphics<?> cg;
+	private final Border border;
 	
 	private CyColumn col;
 	private CyRow row;
-	private CyCustomGraphics<?> cg;
 	private CyTableView tableView;
 	private CyColumnView columnView;
 	
@@ -80,21 +109,17 @@ class BrowserTableCellRenderer extends JPanel implements TableCellRenderer {
 	private final BrowserTablePresentation presentation;
 	
 	public BrowserTableCellRenderer(CyServiceRegistrar serviceRegistrar) {
-		presentation = new BrowserTablePresentation(serviceRegistrar, defCellRenderer.getFont());
-		
-		label = new JLabel();
-		label.setOpaque(false);
+		presentation = new BrowserTablePresentation(defCellRenderer.getFont(), serviceRegistrar);
 		
 		setLayout(new BorderLayout());
-		add(label, BorderLayout.CENTER);
 		
 		// Add padding:
-		var border = defCellRenderer.getBorder();
+		var defBorder = defCellRenderer.getBorder();
 		
-		if (border == null)
+		if (defBorder == null)
 			border = BorderFactory.createEmptyBorder(V_PAD, H_PAD, V_PAD, H_PAD);
 		else
-			border = BorderFactory.createCompoundBorder(border, BorderFactory.createEmptyBorder(V_PAD, H_PAD, V_PAD, H_PAD));
+			border = BorderFactory.createCompoundBorder(defBorder, BorderFactory.createEmptyBorder(V_PAD, H_PAD, V_PAD, H_PAD));
 		
 		setBorder(border);
 	}
@@ -102,7 +127,9 @@ class BrowserTableCellRenderer extends JPanel implements TableCellRenderer {
 	@Override
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 			int rowIndex, int colIndex) {
-		if (colIndex < 0 || colIndex >= table.getColumnCount())
+		removeAll();
+		
+		if (colIndex < 0 || colIndex >= table.getColumnCount() || rowIndex > table.getRowCount())
 			return this;
 		
 		var objEditStr = (ValidatedObjectAndEditString) value;
@@ -116,24 +143,12 @@ class BrowserTableCellRenderer extends JPanel implements TableCellRenderer {
 		
 		columnView = (CyColumnView) tableView.getColumnView(col);
 		
-		var bg = presentation.getBackgroundColor(row, rowIndex, columnView, tableView);
-		var fg = presentation.getForegroundColor(row, columnView);
-		var font = presentation.getFont(row, columnView, validatedObj);
+		bg = presentation.getBackgroundColor(row, rowIndex, columnView, tableView);
+		fg = presentation.getForegroundColor(row, columnView);
+		font = presentation.getFont(row, columnView, validatedObj);
 	
-		label.setFont(font);
-		label.setIcon(objEditStr != null && objEditStr.isEquation() ? EQUATION_ICON : null);
-		label.setVerticalTextPosition(JLabel.CENTER);
-		label.setHorizontalTextPosition(JLabel.CENTER);
-
-		if (validatedObj instanceof Boolean)
-			label.setHorizontalAlignment(JLabel.CENTER);
-		else
-			label.setHorizontalAlignment(validatedObj instanceof Number ? JLabel.RIGHT : JLabel.LEFT);
-
-		String text = null;
-		String tooltip = null;
-		
-		boolean isError = objEditStr != null && objEditStr.getErrorText() != null;
+		isError = objEditStr != null && objEditStr.getErrorText() != null;
+		isEquation = objEditStr != null && objEditStr.isEquation();
 		
 		// First, set values
 		if (objEditStr == null || (validatedObj == null && objEditStr.getErrorText() == null)) {
@@ -185,14 +200,101 @@ class BrowserTableCellRenderer extends JPanel implements TableCellRenderer {
 		cg = presentation.getCustomGraphics(row, columnView);
 		
 		setBackground(bg);
-		setForeground(fg);
-		label.setForeground(fg);
+		setToolTipText(tooltip);
 		
+		final JComponent textComp;
+		
+		// Numbers and Booleans should not be wrapped, though error messages can be
+		boolean wrap = (isError || !(validatedObj instanceof Boolean) || !(validatedObj instanceof Number))
+				&& presentation.isTextWrapped(row, columnView);
+		
+		if (wrap) {
+			var matcher = htmlPattern.matcher(text);
+			
+			if (matcher.matches())
+				textComp = getTextPane(); // Just so we can render HTML text
+			else
+				textComp = getTextArea();
+		} else {
+			textComp = getLabel();
+			
+			if (validatedObj instanceof Boolean)
+				((JLabel) textComp).setHorizontalAlignment(JLabel.CENTER);
+			else
+				((JLabel) textComp).setHorizontalAlignment(validatedObj instanceof Number ? JLabel.RIGHT : JLabel.LEFT);
+		}
+		
+		if (wrap) {
+			var borderInsets = border.getBorderInsets(this);
+			int hpad = borderInsets.left + borderInsets.right;
+			int vpad = borderInsets.top + borderInsets.bottom;
+			textComp.setSize(table.getColumnModel().getColumn(colIndex).getWidth() - hpad, textComp.getPreferredSize().height);
+			var h = textComp.getPreferredSize().height + vpad;
+			
+			// Careful here! We don't want to cause an infinite loop.
+			if (h != table.getRowHeight(rowIndex) && h > tableView.getVisualProperty(ROW_HEIGHT))
+				table.setRowHeight(rowIndex, h);
+		}
+		
+		add(textComp, BorderLayout.CENTER);
+		
+		return this;
+	}
+
+	private JComponent getLabel() {
+		if (label == null) {
+			label = new JLabel();
+			label.setOpaque(false);
+			label.setVerticalTextPosition(JLabel.CENTER);
+		}
+		
+		label.setForeground(fg);
+		label.setFont(font);
 		label.setText(text);
 		label.setToolTipText(tooltip);
-		setToolTipText(tooltip);
+		
+		return label;
+	}
+	
+	private JTextArea getTextArea() {
+		if (textArea == null) {
+			textArea = new JTextArea();
+			textArea.setBorder(BorderFactory.createEmptyBorder());
+			textArea.setLineWrap(true);
+			textArea.setWrapStyleWord(true);
+		}
+		
+		textArea.setBackground(bg);
+		textArea.setForeground(fg);
+		textArea.setFont(font);
+		textArea.setText(text);
+		textArea.setToolTipText(tooltip);
+		
+		return textArea;
+	}
 
-		return this;
+	private JTextPane getTextPane() {
+		// If we don't create the JTextPane every time, text wrapping only works the first time
+		// (at least on macOS, there's a flag in the UI class that affects its preferred size's height,
+		// and it seems we cannot reset it once the component is created)
+		var textPane = new JTextPane();
+		textPane.setBorder(BorderFactory.createEmptyBorder());
+		textPane.setContentType("text/html");
+		textPane.setEditorKit(new WrappedHtmlEditorKit());
+		textPane.setBackground(bg);
+		textPane.setForeground(fg);
+		textPane.setText(text);
+		textPane.setToolTipText(tooltip);
+		
+		if (LookAndFeelUtil.isNimbusLAF()) {
+			var defaults = UIManager.getLookAndFeelDefaults();
+			defaults.put("TextPane.background", bg);
+			defaults.put("TextPane.foreground", fg);
+			textPane.putClientProperty("Nimbus.Overrides", defaults);
+			textPane.putClientProperty("Nimbus.Overrides.InheritDefaults", true);
+		}
+		
+		return textPane;
 	}
 	
 	@Override
@@ -265,6 +367,20 @@ class BrowserTableCellRenderer extends JPanel implements TableCellRenderer {
 			
 			g2.dispose();
 		}
+		
+		// Draw the equation icon
+		if (isEquation) {
+			var g2 = (Graphics2D) g.create();
+			
+			int w = 8;
+			int h = 8;
+			int[] xPoints = new int[] { 0, 0, w };
+			int[] yPoints = new int[] { h, 0, 0 };
+			g2.setColor(LookAndFeelUtil.getSuccessColor());
+			g2.fillPolygon(xPoints, yPoints, 3);
+			
+			g2.dispose();
+		}
 	}
 	
 	private CustomGraphicLayer affineTransform(CustomGraphicLayer layer) {
@@ -293,28 +409,55 @@ class BrowserTableCellRenderer extends JPanel implements TableCellRenderer {
 		return layer;
 	}
 	
-	private static class EquationIcon implements Icon {
+	private class WrappedHtmlEditorKit extends HTMLEditorKit {
 
-		static final int HEIGHT = 8;
-		static final int WIDTH = 8;
+		private ViewFactory viewFactory;
 
-		@Override
-		public int getIconHeight() {
-			return HEIGHT;
+		public WrappedHtmlEditorKit() {
+			this.viewFactory = new WrappedHtmlFactory();
 		}
 
 		@Override
-		public int getIconWidth() {
-			return WIDTH;
+		public ViewFactory getViewFactory() {
+			return this.viewFactory;
 		}
 
-		@Override
-		public void paintIcon(Component c, Graphics g, int x, int y) {
-			g.setColor(LookAndFeelUtil.getSuccessColor());
+		private class WrappedHtmlFactory extends HTMLEditorKit.HTMLFactory {
+			
+			@Override
+			public View create(Element elem) {
+				var v = super.create(elem);
 
-			int[] xPoints = new int[] { 0, 0, WIDTH };
-			int[] yPoints = new int[] { HEIGHT, 0, 0 };
-			g.fillPolygon(xPoints, yPoints, 3);
+				if (v instanceof LabelView) {
+					var o = elem.getAttributes().getAttribute(StyleConstants.NameAttribute);
+
+					if ((o instanceof HTML.Tag) && o == HTML.Tag.BR)
+						return v;
+
+					return new WrapLabelView(elem);
+				}
+
+				return v;
+			}
+
+			private class WrapLabelView extends LabelView {
+				
+				public WrapLabelView(Element elem) {
+					super(elem);
+				}
+
+				@Override
+				public float getMinimumSpan(int axis) {
+					switch (axis) {
+						case View.X_AXIS:
+							return 0;
+						case View.Y_AXIS:
+							return super.getMinimumSpan(axis);
+						default:
+							throw new IllegalArgumentException("Invalid axis: " + axis);
+					}
+				}
+			}
 		}
 	}
 }

@@ -65,11 +65,10 @@ public class DownloadSitesManager {
 	 * @return <code>true</code> on success, <code>false</code> on failure.
 	 */
 	public boolean loadDownloadSites() {
-		List<DownloadSite> newDownloadSites = new LinkedList<DownloadSite>();
+		List<DownloadSite> newDownloadSites = new LinkedList<>();
 		boolean loadFailed = false;
 		
-		String downloadSiteCountString = 
-				cyProperty.getProperties().getProperty(DOWNLOAD_SITES_COUNT_KEY);
+		String downloadSiteCountString = cyProperty.getProperties().getProperty(DOWNLOAD_SITES_COUNT_KEY);
 		
 		int downloadSiteCount = 0;
 		
@@ -90,28 +89,21 @@ public class DownloadSitesManager {
 				siteNumber = i + 1;
 				
 				siteName = cyProperty.getProperties().getProperty(DOWNLOAD_SITE_NAME_KEY_PREFIX + siteNumber);
-				siteUrl = cyProperty.getProperties().getProperty(DOWNLOAD_SITE_URL_KEY_PREFIX + siteNumber);
+				siteUrl  = cyProperty.getProperties().getProperty(DOWNLOAD_SITE_URL_KEY_PREFIX  + siteNumber);
 				
 				if (siteName != null && siteUrl != null) {
-					DownloadSite downloadSite = new DownloadSite();
-					downloadSite.setSiteName(siteName);
-					downloadSite.setSiteUrl(siteUrl);
-					newDownloadSites.add(downloadSite);
+					newDownloadSites.add(new DownloadSite(siteName, siteUrl));
 				}
 			}
 			
 			// Remove extra entries
-			boolean isExtraKey;
-			
 			Set<Object> keysToRemove = new HashSet<Object>();
 			
 			for (Object key : cyProperty.getProperties().keySet()) {
 				
 				if (key instanceof String) {
 					String keyString = (String) key;
-
 					siteNumber = 0;
-					isExtraKey = false;
 					
 					try {
 						if (keyString.startsWith(DOWNLOAD_SITE_NAME_KEY_PREFIX)) {
@@ -126,7 +118,6 @@ public class DownloadSitesManager {
 					}
 					
 					if (siteNumber >= downloadSiteCount + 1) {
-						isExtraKey = true;
 						keysToRemove.add(key);
 					}
 				}

@@ -4,6 +4,7 @@ import static org.cytoscape.view.presentation.property.table.BasicTableVisualLex
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_FONT_FACE;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_FONT_SIZE;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_TEXT_COLOR;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_TEXT_WRAPPED;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_TOOLTIP;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_ALTERNATE_ROW_COLORS;
 import static org.cytoscape.view.table.internal.BrowserTableVisualLexicon.CELL_CUSTOMGRAPHICS;
@@ -27,7 +28,7 @@ public class BrowserTablePresentation {
 	private final IconManager iconManager;
 	private final Font defaultFont;
 	
-	public BrowserTablePresentation(CyServiceRegistrar registrar, Font defaultFont) {
+	public BrowserTablePresentation(Font defaultFont, CyServiceRegistrar registrar) {
 		this.iconManager = registrar.getService(IconManager.class);
 		this.defaultFont = defaultFont.deriveFont(LookAndFeelUtil.getSmallFontSize());
 	}
@@ -127,10 +128,23 @@ public class BrowserTablePresentation {
 		
 		return tooltip;
 	}
-
+	
 	public CyCustomGraphics<?> getCustomGraphics(CyRow row, CyColumnView colView) {
 		var fn = colView.getCellVisualProperty(CELL_CUSTOMGRAPHICS);
 
 		return fn != null ? fn.apply(row) : null;
+	}
+	
+	public boolean isTextWrapped(CyRow row, CyColumnView colView) {
+		var b = false;
+		
+		if (colView.isSet(CELL_TEXT_WRAPPED)) {
+			var fn = colView.getCellVisualProperty(CELL_TEXT_WRAPPED);
+			
+			if (fn != null)
+				b = fn.apply(row);
+		}
+		
+		return b;
 	}
 }

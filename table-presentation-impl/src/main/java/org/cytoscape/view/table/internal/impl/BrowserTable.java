@@ -1,10 +1,14 @@
 package org.cytoscape.view.table.internal.impl;
 
+import static org.cytoscape.util.swing.LookAndFeelUtil.getSmallFontSize;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isMac;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isWindows;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_EDITABLE;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_GRAVITY;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_VISIBLE;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_WIDTH;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.ROW_HEIGHT;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_SHOW_GRID;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_GRID_VISIBLE;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.ALL;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.AUTO;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.SELECTED;
@@ -55,6 +59,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.TableColumnModelEvent;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -78,16 +84,12 @@ import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.TextWrapToolTip;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.events.AboutToRemoveColumnViewEvent;
 import org.cytoscape.view.model.events.AboutToRemoveColumnViewListener;
 import org.cytoscape.view.model.events.AddedColumnViewEvent;
 import org.cytoscape.view.model.events.AddedColumnViewListener;
-import org.cytoscape.view.model.table.CyTableView;
-import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
 import org.cytoscape.view.table.internal.util.TableBrowserUtil;
 import org.cytoscape.view.table.internal.util.ValidatedObjectAndEditString;
 import org.slf4j.Logger;
@@ -118,17 +120,17 @@ import org.slf4j.LoggerFactory;
  */
 
 @SuppressWarnings("serial")
-public class BrowserTable extends JTable implements MouseListener, ActionListener, MouseMotionListener,
-													 AboutToRemoveColumnViewListener, AddedColumnViewListener,
-													 ColumnNameChangedListener, RowsSetListener {
+public class BrowserTable extends JTable
+		implements MouseListener, ActionListener, MouseMotionListener, AboutToRemoveColumnViewListener,
+		AddedColumnViewListener, ColumnNameChangedListener, RowsSetListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	private static final String LINE_BREAK = "\n";
 	private static final String CELL_BREAK = "\t";
 
-	private static final Font BORDER_FONT = UIManager.getFont("Label.font").deriveFont(11f);
-
+	private static final Font BORDER_FONT = UIManager.getFont("Label.font").deriveFont(getSmallFontSize());
+	
 	private Clipboard systemClipboard;
 	private CellEditorRemover editorRemover;
 	private final TableCellRenderer cellRenderer;
@@ -144,6 +146,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	private final EquationCompiler compiler;
 	private final PopupMenuHelper popupMenuHelper;
 	private final CyServiceRegistrar serviceRegistrar;
+	
+	private boolean columnWidthChanged;
 	
 	private boolean ignoreRowSelectionEvents;
 	private boolean ignoreRowSetEvents;
@@ -180,7 +184,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			if (tableView.isSet(ROW_HEIGHT))
 				setRowHeight(tableView.getVisualProperty(ROW_HEIGHT));
 			
-			setShowGrid(tableView.getVisualProperty(TABLE_SHOW_GRID) == Boolean.TRUE);
+			setShowGrid(tableView.getVisualProperty(TABLE_GRID_VISIBLE) == Boolean.TRUE);
 			
 			for (int i = 0; i < model.getColumnCount(); i++) {
 				var name = model.getColumnName(i);
@@ -244,7 +248,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		if (super.isCellEditable(row, column)) {
 			// Also check the visual property...
 			if (getModel() instanceof BrowserTableModel) {
-				var model = (BrowserTableModel) getModel();
+				var model = getBrowserTableModel();
 				var tableView = model.getTableView();
 				var name = getColumnName(column);
 				var view = tableView.getColumnView(name);
@@ -386,6 +390,35 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	}
 	
 	@Override
+	public void columnAdded(TableColumnModelEvent e) {
+		super.columnAdded(e);
+		
+		// Update the COLUMN_WIDTH visual property value.
+		var idx = e.getToIndex();
+		var tableModel = getBrowserTableModel();
+		var columnModel = (BrowserTableColumnModel) getColumnModel();
+		var column = columnModel.getColumn(idx);
+		var tableView = tableModel.getTableView();
+		var name = tableModel.getColumnName(convertColumnIndexToModel(idx));
+		var view = tableView.getColumnView(name);
+				
+		var newWidth = column.getWidth();
+		var oldWidth = view.getVisualProperty(COLUMN_WIDTH);
+
+		if (oldWidth == null || newWidth != oldWidth)
+			view.setVisualProperty(COLUMN_WIDTH, newWidth);
+	}
+	
+	@Override
+	public void columnRemoved(TableColumnModelEvent e) {
+		super.columnRemoved(e);
+		
+		// The removed (or hidden) column might have CELL_TEXT_WRAPPED set to true,
+		// which affected the row height. So we need to reset it.
+		resetRowHeight();
+	}
+	
+	@Override
 	public JToolTip createToolTip() {
 		TextWrapToolTip tip = new TextWrapToolTip();
 		tip.setMaximumSize(new Dimension(480, 320));
@@ -394,7 +427,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	}
 	
 	public void showListContents(int modelRow, int modelColumn, MouseEvent e) {
-		var model = (BrowserTableModel) getModel();
+		var model = getBrowserTableModel();
 		var columnType = modelColumn >= 0 && modelColumn < model.getColumnCount()
 				? model.getColumn(modelColumn).getType()
 				: null;
@@ -428,7 +461,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		openFormulaBuilderMenuItem.addActionListener(evt -> {
 			int cellRow = table.getSelectedRow();
 			int cellColumn = table.getSelectedColumn();
-			var tableModel = (BrowserTableModel) getModel();
+			var tableModel = getBrowserTableModel();
 			var rootFrame = (JFrame) SwingUtilities.getRoot(table);
 			
 			if (cellRow == -1 || cellColumn == -1 || !tableModel.isCellEditable(cellRow, cellColumn)) {
@@ -462,7 +495,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	public void mouseClicked(MouseEvent e) {
 		if (SwingUtilities.isLeftMouseButton(e) && (getSelectedRows().length != 0)) {
 			int viewColumn = getColumnModel().getColumnIndexAtX(e.getX());
-			int viewRow = e.getY() / getRowHeight();
+			int viewRow = rowAtPoint(e.getPoint());
 			int modelColumn = convertColumnIndexToModel(viewColumn);
 			int modelRow = convertRowIndexToModel(viewRow);
 			
@@ -508,6 +541,27 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	public void mouseMoved(MouseEvent e) {
 		// Ignore...
 	}
+	
+	@Override
+	public void columnMarginChanged(ChangeEvent e) {
+		super.columnMarginChanged(e);
+		
+		// columnMarginChanged is called continuously as the column width is changed by dragging.
+		// Therefore, execute code below ONLY if we are not already aware of the column width having changed.
+		if (!isColumnWidthChanged()) {
+			// The condition below will NOT be true if the column width is being changed by code.
+			if (getTableHeader().getResizingColumn() != null) // User must have dragged column and changed width
+				setColumnWidthChanged(true);
+		}
+	}
+	
+    public boolean isColumnWidthChanged() {
+        return columnWidthChanged;
+    }
+
+    public void setColumnWidthChanged(boolean b) {
+        columnWidthChanged = b;
+    }
 
 	@Override
 	public void actionPerformed(ActionEvent event) {
@@ -517,7 +571,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 	@Override
 	public void paint(Graphics g) {
-		var model = (BrowserTableModel) getModel();
+		var model = getBrowserTableModel();
 		var lock = model.getLock();
 		lock.readLock().lock();
 		
@@ -531,35 +585,35 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 	@Override
 	public void handleEvent(AddedColumnViewEvent e) {
-		BrowserTableModel model = (BrowserTableModel) getModel();
-		CyTableView tableView = model.getTableView();
-		
+		var model = getBrowserTableModel();
+		var tableView = model.getTableView();
+
 		if (e.getSource() != tableView)
 			return;
-		
+
 		var columnModel = (BrowserTableColumnModel) getColumnModel();
 
-		CyColumn col = e.getColumnView().getModel();
+		var col = e.getColumnView().getModel();
 		model.addColumn(col.getName());
-		
+
 		int colIndex = columnModel.getColumnCount(false);
-		
-		String name = col.getName();
-		View<CyColumn> view = model.getTableView().getColumnView(name);
+
+		var name = col.getName();
+		var view = model.getTableView().getColumnView(name);
 		boolean visible = view.getVisualProperty(COLUMN_VISIBLE);
-		double gravity  = view.getVisualProperty(COLUMN_GRAVITY);
-		
-		TableColumn tableColumn = new TableColumn(colIndex);
+		double gravity = view.getVisualProperty(COLUMN_GRAVITY);
+
+		var tableColumn = new TableColumn(colIndex);
 		tableColumn.setHeaderValue(name);
 		tableColumn.setHeaderRenderer(new BrowserTableHeaderRenderer(serviceRegistrar));
 		columnModel.addColumn(tableColumn, view.getSUID(), visible, gravity);
-		
+
 		columnModel.reorderColumnsToRespectGravity();
 	}
 
 	@Override
 	public void handleEvent(AboutToRemoveColumnViewEvent e) {
-		var model = (BrowserTableModel) getModel();
+		var model = getBrowserTableModel();
 		var tableView = model.getTableView();
 		
 		if (e.getSource() != tableView)
@@ -592,7 +646,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 	@Override
 	public void handleEvent(ColumnNameChangedEvent e) {
-		BrowserTableModel model = (BrowserTableModel) getModel();
+		BrowserTableModel model = getBrowserTableModel();
 		CyTable dataTable = model.getDataTable();
 
 		if (e.getSource() != dataTable)
@@ -618,7 +672,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		if (ignoreRowSetEvents)
 			return;
 		
-		var model = (BrowserTableModel) getModel();
+		var model = getBrowserTableModel();
 		var dataTable = model.getDataTable();
 
 		if (e.getSource() != dataTable)
@@ -654,6 +708,27 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			}
 		}
 	}
+	
+	public void resetRowHeight() {
+		var model = getBrowserTableModel();
+		var tableView = model.getTableView();
+		
+		// Only apply the row height value from the visual property if it has been explicitly set,
+		// because it depends on "Table.font" property set to the current LAF,
+		// which means the default from the BasicTableVisualLexicon could be too small and crop the cell text
+		int h = tableView.isSet(ROW_HEIGHT) ? tableView.getVisualProperty(ROW_HEIGHT) : 0;
+		
+		if (h < 1)
+			h = UIManager.getInt("Table.rowHeight");
+		
+		if (h > 0) {
+			setRowHeight(h);
+			
+			// Remember that the cell renderer might set a different height to each row
+			// if CELL_TEXT_WRAPPED is true for any visible column
+			repaint();
+		}
+	}
 
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
@@ -661,7 +736,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		setAutoCreateColumnsFromModel(false);
 		setAutoCreateRowSorter(true);
 		setCellSelectionEnabled(true);
-		setShowGrid(BasicTableVisualLexicon.TABLE_SHOW_GRID.getDefault());
+		setShowGrid(TABLE_GRID_VISIBLE.getDefault());
 		setDefaultEditor(Object.class, multiLineCellEditor);
 		getPopupMenu();
 		getHeaderPopupMenu();
@@ -680,7 +755,34 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			}
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				maybeShowHeaderPopup(e);
+				if (e.isPopupTrigger()) {
+					maybeShowHeaderPopup(e);
+				} else if (isColumnWidthChanged()) {
+					// Reset the flag
+					setColumnWidthChanged(false);
+					
+					// Update the COLUMN_WIDTH visual property value.
+					// getColumnModel().getColumnIndexAtX(e.getX()) does NOT work, because the mouse may have been
+					// released over another column, not the one being changed.
+					// So let's make it simple and update the WIDTH values of all columns.
+					var tableModel = getBrowserTableModel();
+					var columnModel = (BrowserTableColumnModel) getColumnModel();
+					var tableView = tableModel.getTableView();
+
+					for (int i = 0; i < getColumnCount(); i++) {
+						var column = columnModel.getColumn(i);
+						var newWidth = column.getWidth();
+						
+						if (newWidth > 0) {
+							var name = tableModel.getColumnName(convertColumnIndexToModel(i));
+							var view = tableView.getColumnView(name);
+							var oldWidth = view.getVisualProperty(COLUMN_WIDTH);
+
+							if (oldWidth == null || newWidth != oldWidth)
+								view.setVisualProperty(COLUMN_WIDTH, newWidth);
+						}
+					}
+				}
 			}
 		});
 		
@@ -695,7 +797,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	}
 	
 	private void setKeyStroke() {
-		int modifiers = LookAndFeelUtil.isMac() ? ActionEvent.META_MASK : ActionEvent.CTRL_MASK;
+		int modifiers = isMac() ? ActionEvent.META_MASK : ActionEvent.CTRL_MASK;
 		var copy = KeyStroke.getKeyStroke(KeyEvent.VK_C, modifiers, false);
 		// Identifying the copy KeyStroke user can modify this to copy on some other Key combination.
 		this.registerKeyboardAction(this, "Copy", copy, JComponent.WHEN_FOCUSED);
@@ -760,7 +862,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	private void maybeShowHeaderPopup(MouseEvent e) {
 		if (e.isPopupTrigger()) {
 			int column = getColumnModel().getColumnIndexAtX(e.getX());
-			var tableModel = (BrowserTableModel) getModel();
+			var tableModel = getBrowserTableModel();
 
 			// Make sure the column we're clicking on actually exists!
 			if (column >= tableModel.getColumnCount() || column < 0)
@@ -773,19 +875,19 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			var networkTableManager = serviceRegistrar.getService(CyNetworkTableManager.class);
 			var tableType = networkTableManager.getTableType(tableModel.getDataTable());
 			
-			final CyColumn cyColumn = tableModel.getColumn(convertColumnIndexToModel(column));
+			var cyColumn = tableModel.getColumn(convertColumnIndexToModel(column));
 			popupMenuHelper.createColumnHeaderMenu(cyColumn, tableType, BrowserTable.this, e.getX(), e.getY());
 		}
 	}
 	
 	private void maybeShowPopup(MouseEvent e) {
 		if (e.isPopupTrigger()) {
-			if (LookAndFeelUtil.isWindows())
+			if (isWindows())
 				selectFocusedCell(e);
 			
 			// Show context menu
 			int viewColumn = getColumnModel().getColumnIndexAtX(e.getX());
-			int viewRow = e.getY() / getRowHeight();
+			int viewRow = rowAtPoint(e.getPoint());
 			int modelColumn = convertColumnIndexToModel(viewColumn);
 			int modelRow = convertRowIndexToModel(viewRow);
 			
@@ -811,7 +913,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	}
 	
 	private void selectFocusedCell(MouseEvent e) {
-		int row = e.getY() / getRowHeight();
+		int row = rowAtPoint(e.getPoint());
 		int column = getColumnModel().getColumnIndexAtX(e.getX());
 		
 		int[] selectedRows = this.getSelectedRows();
@@ -885,7 +987,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	
 	private void renameColumnName(String oldName, String newName) {
 		var columnModel = (BrowserTableColumnModel) getColumnModel();
-		var model = (BrowserTableModel) getModel();
+		var model = getBrowserTableModel();
 		
 		int index = model.mapColumnNameToColumnIndex(oldName);
 		
@@ -919,7 +1021,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	}
 
 	public void changeRowSelection(Set<Long> suidSelected, Set<Long> suidUnselected) {
-		BrowserTableModel model = (BrowserTableModel) getModel();
+		BrowserTableModel model = getBrowserTableModel();
 		CyTable dataTable = model.getDataTable();
 		String pKeyName = dataTable.getPrimaryKey().getName();
 		int rowCount = getRowCount();

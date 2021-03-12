@@ -207,7 +207,7 @@ public final class BrowserTableModel extends AbstractTableModel
 				case SELECTED:
 					if (selectedRows == null)
 						selectedRows = new ArrayList<>(dataTable.getMatchingRows(CyNetwork.SELECTED, true));
-					return selectedRows.get(rowIndex);
+					return rowIndex < selectedRows.size() ? selectedRows.get(rowIndex) : null;
 				case ALL:
 					return dataTable.getRow(rowIndexToPrimaryKey[rowIndex]);
 				case AUTO:
