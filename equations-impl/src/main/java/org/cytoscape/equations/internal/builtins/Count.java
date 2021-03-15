@@ -49,7 +49,7 @@ public class Count extends AbstractFunction {
 	 *  Used to provide help for users.
 	 *  @return a description of what this function does
 	 */
-	public String getFunctionSummary() { return "Returns the number of numeric values in a list."; }
+	public String getFunctionSummary() { return "Returns the length of a list, or the combined length of multiple lists."; }
 
 	public Class<?> getReturnType() { return Long.class; }
 

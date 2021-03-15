@@ -26,18 +26,16 @@ package org.cytoscape.equations.internal.builtins;
 
 
 import java.text.DateFormat;
-
 import java.util.Calendar;
+import java.util.Date;
 
 import org.cytoscape.equations.AbstractFunction;
 import org.cytoscape.equations.ArgDescriptor;
-import org.cytoscape.equations.ArgType;
 
 
 public class Now extends AbstractFunction {
 	public Now() {
-		super(new ArgDescriptor[] {
-			});
+		super(new ArgDescriptor[] {});
 	}
 
 	/**
@@ -50,7 +48,7 @@ public class Now extends AbstractFunction {
 	 *  Used to provide help for users.
 	 *  @return a description of what this function does
 	 */
-	public String getFunctionSummary() { return "Returns the current date and time."; }
+	public String getFunctionSummary() { return "Returns the current date and time as a string (text)."; }
 
 	public Class<?> getReturnType() { return Double.class; }
 
@@ -64,9 +62,9 @@ public class Now extends AbstractFunction {
 		final DateFormat timeFormat = DateFormat.getTimeInstance(DateFormat.SHORT);
  
 		try {
-			final String date = dateFormat.format(calendar.getTime());
-			final String time = timeFormat.format(calendar.getTime());
-
+			Date now = calendar.getTime();
+			String date = dateFormat.format(now);
+			String time = timeFormat.format(now);
 			return date + " " + time;
 		}
 		catch (final Exception e) {

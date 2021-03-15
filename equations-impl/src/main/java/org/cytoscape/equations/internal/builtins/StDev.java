@@ -48,7 +48,7 @@ public class StDev extends AbstractFunction {
 	 *  Used to provide help for users.
 	 *  @return a description of what this function does
 	 */
-	public String getFunctionSummary() { return "Returns the sample standard deviation of a list or lists of numbers."; }
+	public String getFunctionSummary() { return "Returns the sample standard deviation of a list of numbers."; }
 
 	public Class<?> getReturnType() { return Double.class; }
 

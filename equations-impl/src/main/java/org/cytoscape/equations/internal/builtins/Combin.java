@@ -49,7 +49,7 @@ public class Combin extends AbstractFunction {
 	 *  Used to provide help for users.
 	 *  @return a description of what this function does
 	 */
-	public String getFunctionSummary() { return "Returns of combinations of n objects, with k chosen at any one time."; }
+	public String getFunctionSummary() { return "Returns number of combinations of n objects, with k chosen at any one time."; }
 
 	public Class<?> getReturnType() { return Double.class; }
 

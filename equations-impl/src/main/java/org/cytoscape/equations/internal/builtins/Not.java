@@ -34,7 +34,7 @@ import org.cytoscape.equations.FunctionUtil;
 public class Not extends AbstractFunction {
 	public Not() {
 		super(new ArgDescriptor[] {
-				new ArgDescriptor(ArgType.BOOL, "logical_expr", "Any boolean value.")
+				new ArgDescriptor(ArgType.BOOL, "truth_value", "Any boolean value.")
 			});
 	}
 

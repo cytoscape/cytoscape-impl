@@ -3,6 +3,8 @@ package org.cytoscape.view.table.internal.equation;
 import java.util.Arrays;
 import java.util.List;
 
+import org.cytoscape.equations.ArgDescriptor;
+import org.cytoscape.equations.ArgType;
 import org.cytoscape.equations.Function;
 import org.cytoscape.model.CyColumn;
 
@@ -25,9 +27,67 @@ public class TutorialItems {
 			usage = usage.substring(10);
 		if(usage.endsWith("."))
 			usage = usage.substring(0, usage.length()-1);
-		return "<html><b>" + usage + "</b>&nbsp;&nbsp;&nbsp;<a href=\"\">insert</a><br><br>" + f.getFunctionSummary() + "</html>";
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("<html>");
+		sb.append("<b>").append(usage).append("</b>&nbsp;&nbsp;&nbsp;<a href=\"\">insert</a><br><br>");
+		sb.append(f.getFunctionSummary());
+		sb.append("<br><br>");
+		
+		List<ArgDescriptor> args = f.getArgumentDescriptors();
+		if(args != null && !args.isEmpty()) {
+			sb.append("Arguments:<br>");
+			for(ArgDescriptor arg : args) {
+				String name = arg.getArgName();
+				String type = getArgTypeText(arg.getArgType());
+				String desc = arg.getDescription();
+				sb.append("&nbsp;&nbsp;"); // indent
+				sb.append(name).append(" [").append(type).append("] - ").append(desc).append("<br>");
+			}
+		}
+		
+		sb.append("</html>");
+		return sb.toString();
 	}
 	
+	
+	private static String getArgTypeText(ArgType argType) {
+		switch(argType) {
+			case STRICT_STRING:
+			case STRING:
+			case STRINGS:
+			case OPT_STRICT_STRING:
+			case OPT_STRING:
+			case OPT_STRINGS:
+				return "string";
+			case BOOL:
+			case BOOLS:
+			case OPT_BOOL:
+			case OPT_BOOLS:
+			case OPT_STRICT_BOOL:
+			case STRICT_BOOL:
+				return "boolean";
+			case FLOAT:
+			case FLOATS:
+			case INT:
+			case INTS:
+			case OPT_STRICT_FLOAT:
+			case OPT_STRICT_INT:
+			case OPT_FLOAT:
+			case OPT_FLOATS:
+			case OPT_INT:
+			case OPT_INTS:
+			case STRICT_FLOAT:
+			case STRICT_INT:
+				return "number";
+			case ANY:
+			case ANY_LIST:
+			case OPT_ANY_LIST:
+			case STRICT_ANY_LIST:
+			default:
+				return "any";
+		}
+	}
 	
 	public static String getTutorialDocs(String item) {
 		switch(item) {
@@ -87,9 +147,16 @@ public class TutorialItems {
 	
 	
 	public static String getColumnDocs(CyColumn col) {
-		StringBuilder sb = new StringBuilder("<html>");
+		StringBuilder sb = new StringBuilder();
+		sb.append("<html>");
+		
 		String name = EquationEditorMediator.getAttributeReference(col);
 		sb.append("<b>").append(name).append("</b>&nbsp;&nbsp;&nbsp;<a href=\"\">insert</a><br><br>");
+		
+		if(col.isPrimaryKey() && "SUID".equals(col.getName())) {
+			sb.append("Every node and edge has an SUID attribute that acts as a unique identifier.<br><br>");
+		}
+		
 		sb.append("Full Name: ").append(col.getName()).append("<br>");
 		sb.append("Namespace: ").append(col.getNamespace() == null ? "-none-" : col.getNamespace()).append("<br>");
 		sb.append("Type: ");
@@ -114,4 +181,5 @@ public class TutorialItems {
 		sb.append("</html>");
 		return sb.toString();
 	}
+	
 }

@@ -37,7 +37,7 @@ public class NormDist extends AbstractFunction {
 				new ArgDescriptor(ArgType.FLOAT, "x", "Argument."),
 				new ArgDescriptor(ArgType.FLOAT, "mean", "The mean of the function."),
 				new ArgDescriptor(ArgType.FLOAT, "stddev", "The standard deviation of the function."),
-				new ArgDescriptor(ArgType.BOOL, "cumulative?", "If true we return the CDF, otherwise we return the pdf.")
+				new ArgDescriptor(ArgType.BOOL, "cumulative?", "If true CDF is returned, otherwise the PDF is returned.")
 			});
 	}
 

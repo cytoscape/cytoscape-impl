@@ -39,7 +39,7 @@ public class InDegree extends AbstractFunction {
 	private final CyServiceRegistrar serviceRegistrar;
 
 	public InDegree(final CyServiceRegistrar serviceRegistrar) {
-		super(new ArgDescriptor[] { new ArgDescriptor(ArgType.INT, "node_ID", "An ID identifying a node.") });
+		super(new ArgDescriptor[] { new ArgDescriptor(ArgType.INT, "node_SUID", "The SUID identifier attribute of a node.") });
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
@@ -50,7 +50,7 @@ public class InDegree extends AbstractFunction {
 
 	@Override
 	public String getFunctionSummary() {
-		return "Returns indegree of a node.";
+		return "Returns the indegree of a node. The indegree is the number of incoming edges connected to the node.";
 	}
 
 	@Override

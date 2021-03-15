@@ -98,7 +98,7 @@ public class EquationEditorMediator {
 		dialog.setModal(true);
 		dialog.getContentPane().setLayout(new BorderLayout());
 		dialog.getContentPane().add(builderPanel, BorderLayout.CENTER);
-		dialog.setPreferredSize(new Dimension(550, 430)); 
+		dialog.setPreferredSize(new Dimension(550, 500)); 
 		dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		dialog.pack();
 		dialog.setLocationRelativeTo(parent);
