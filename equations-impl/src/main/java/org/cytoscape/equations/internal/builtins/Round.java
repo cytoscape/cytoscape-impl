@@ -35,7 +35,7 @@ public class Round extends AbstractFunction {
 	public Round() {
 		super(new ArgDescriptor[] {
 				new ArgDescriptor(ArgType.FLOAT, "number", "Any number."),
-				new ArgDescriptor(ArgType.FLOAT, "digit_count", "Round to this number of significant digits.")
+				new ArgDescriptor(ArgType.FLOAT, "digit_count", "Nnumber of significant digits.")
 			});
 	}
 

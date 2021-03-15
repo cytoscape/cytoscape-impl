@@ -34,7 +34,7 @@ import org.cytoscape.equations.FunctionUtil;
 public class ASin extends AbstractFunction {
 	public ASin() {
 		super(new ArgDescriptor[] {
-				new ArgDescriptor(ArgType.FLOAT, "argument", "A number between -1 and +1, inclusive.")
+				new ArgDescriptor(ArgType.FLOAT, "number", "A number between -1 and +1, inclusive.")
 			});
 	}
 

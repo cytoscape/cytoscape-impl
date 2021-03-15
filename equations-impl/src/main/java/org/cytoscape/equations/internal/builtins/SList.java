@@ -49,7 +49,7 @@ public class SList extends AbstractFunction {
 	 *  Used to provide help for users.
 	 *  @return a description of what this function does
 	 */
-	public String getFunctionSummary() { return "Returns a list of strings (a.k.a. text objects)."; }
+	public String getFunctionSummary() { return "Returns a list of strings."; }
 
 	public Class<?> getReturnType() { return StringList.class; }
 

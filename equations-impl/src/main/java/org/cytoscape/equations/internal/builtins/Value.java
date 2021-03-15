@@ -45,7 +45,7 @@ public class Value extends AbstractFunction {
 	 *  Used to provide help for users.
 	 *  @return a description of what this function does
 	 */
-	public String getFunctionSummary() { return "Converts a string or a number to a number."; }
+	public String getFunctionSummary() { return "Converts a string to a number."; }
 
 	public Class<?> getReturnType() { return Double.class; }
 

@@ -38,7 +38,7 @@ public class TargetID extends AbstractFunction {
 	private final CyServiceRegistrar serviceRegistrar;
 	
 	public TargetID(final CyServiceRegistrar serviceRegistrar) {
-		super(new ArgDescriptor[] { new ArgDescriptor(ArgType.INT, "edge_ID", "An ID identifying an edge.") });
+		super(new ArgDescriptor[] { new ArgDescriptor(ArgType.INT, "edge_SUID", "The SUID identifier attribute of an edge.") });
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
@@ -49,7 +49,7 @@ public class TargetID extends AbstractFunction {
 
 	@Override
 	public String getFunctionSummary() {
-		return "Returns target ID of an edge.";
+		return "Returns the SUID of the edge's target node.";
 	}
 
 	@Override

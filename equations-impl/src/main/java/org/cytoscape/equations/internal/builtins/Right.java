@@ -35,7 +35,7 @@ public class Right extends AbstractFunction {
 	public Right() {
 		super(new ArgDescriptor[] {
 				new ArgDescriptor(ArgType.STRING, "text", "The source text."),
-				new ArgDescriptor(ArgType.OPT_FLOAT, "number", "How many characters to extract. (Default is 1.)"),
+				new ArgDescriptor(ArgType.OPT_FLOAT, "number", "How many characters to extract (optional, default is 1)"),
 			});
 	}
 
@@ -49,7 +49,7 @@ public class Right extends AbstractFunction {
 	 *  Used to provide help for users.
 	 *  @return a description of what this function does
 	 */
-	public String getFunctionSummary() { return "Returns a suffix of a string."; }
+	public String getFunctionSummary() { return "Returns the suffix of a string."; }
 
 	public Class<?> getReturnType() { return String.class; }
 

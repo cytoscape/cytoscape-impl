@@ -48,7 +48,7 @@ public class Product extends AbstractFunction {
 	 *  Used to provide help for users.
 	 *  @return a description of what this function does
 	 */
-	public String getFunctionSummary() { return "Returns the product of all of its arguments."; }
+	public String getFunctionSummary() { return "Returns the product the given numbers."; }
 
 	public Class<?> getReturnType() { return Double.class; }
 

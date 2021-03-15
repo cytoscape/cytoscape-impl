@@ -35,7 +35,7 @@ public class Left extends AbstractFunction {
 	public Left() {
 		super(new ArgDescriptor[] {
 				new ArgDescriptor(ArgType.STRING, "text", "The source text."),
-				new ArgDescriptor(ArgType.OPT_FLOAT, "number", "How many characters to extract. (Default is 1.)"),
+				new ArgDescriptor(ArgType.OPT_FLOAT, "number", "How many characters to extract. (Optional, default is 1)"),
 			});
 	}
 
@@ -49,7 +49,7 @@ public class Left extends AbstractFunction {
 	 *  Used to provide help for users.
 	 *  @return a description of what this function does
 	 */
-	public String getFunctionSummary() { return "Returns a prefix of s string."; }
+	public String getFunctionSummary() { return "Returns the prefix of a string."; }
 
 	public Class<?> getReturnType() { return String.class; }
 
