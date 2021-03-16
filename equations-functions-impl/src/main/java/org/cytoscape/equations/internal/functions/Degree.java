@@ -39,7 +39,7 @@ public class Degree extends AbstractFunction {
 	private final CyServiceRegistrar serviceRegistrar;
 
 	public Degree(final CyServiceRegistrar serviceRegistrar) {
-		super(new ArgDescriptor[] { new ArgDescriptor(ArgType.INT, "node_ID", "An ID identifying a node.") });
+		super(new ArgDescriptor[] { new ArgDescriptor(ArgType.INT, "node_SUID", "The SUID identifier attribute of a node.") });
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
@@ -50,7 +50,7 @@ public class Degree extends AbstractFunction {
 
 	@Override
 	public String getFunctionSummary() {
-		return "Returns degree of a node.";
+		return "Returns the degree of a node. The degree is the number of edges connected to the node.";
 	}
 
 	@Override

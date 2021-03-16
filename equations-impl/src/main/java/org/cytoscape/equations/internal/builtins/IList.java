@@ -49,7 +49,7 @@ public class IList extends AbstractFunction {
 	 *  Used to provide help for users.
 	 *  @return a description of what this function does
 	 */
-	public String getFunctionSummary() { return "Returns a list of whole numbers (a.k.a. integers)."; }
+	public String getFunctionSummary() { return "Returns a list of integer numbers."; }
 
 	public Class<?> getReturnType() { return LongList.class; }
 
