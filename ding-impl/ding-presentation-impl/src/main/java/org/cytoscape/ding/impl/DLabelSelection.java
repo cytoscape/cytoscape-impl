@@ -2,6 +2,9 @@ package org.cytoscape.ding.impl;
 
 import static org.cytoscape.ding.DVisualLexicon.NODE_LABEL_POSITION;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
@@ -93,9 +96,19 @@ public class DLabelSelection {
 		rectangle.setLocation(originalRectX + offsetX, originalRectY + offsetY);
 	}
 
+  // Adjust the angle when we know the delta
+	public double adjustAngle(double angle) {
+		if (previousRotation != null)
+			currentRotation = previousRotation - angle;
+		else
+			currentRotation = Math.toRadians(0d) - angle;
+
+    return angle;
+  }
+
 	// move the label rectangle to a new position with the offsets of the original
 	// position.
-	public void adjustAngle(double x1, double y1, int x2, int y2) {
+	public double adjustAngle(double x1, double y1, int x2, int y2) {
 		// First line
 		// double centerX = rectangle.getX()+rectangle.getWidth()/2;
 		// double centerY = rectangle.getY()+rectangle.getHeight()/2;
@@ -105,12 +118,41 @@ public class DLabelSelection {
 		// System.out.println("angle1 = "+Math.toDegrees(angle1));
 		double angle2 = Math.atan2(anchor.getY() - (double) y2, anchor.getX() - (double) x2);
 		// System.out.println("angle2 = "+Math.toDegrees(angle2));
-		if (previousRotation != null)
-			currentRotation = previousRotation - (angle1 - angle2);
-		else
-			currentRotation = Math.toRadians(0d) - (angle1 - angle2);
-		// System.out.println("new angle = "+Math.toDegrees(currentRotation));
+    return adjustAngle(angle1-angle2);
 	}
+
+  @Override
+  public boolean equals(Object sel) {
+    if (sel instanceof DLabelSelection) {
+      if (((DLabelSelection)sel).getNode().equals(node))
+        return true;
+    }
+    return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return node.hashCode();
+  }
+
+  public String toString() {
+    return node.toString();
+  }
+
+  public static Set<DLabelSelection> addLabelSelection(Set<DLabelSelection> selectedLabels, DLabelSelection newSelection) {
+    if (newSelection == null) return selectedLabels;
+    if (selectedLabels == null) selectedLabels = new HashSet<>();
+    selectedLabels.add(newSelection);
+    return selectedLabels;
+  }
+
+  public static DLabelSelection get(Set<DLabelSelection> selectedLabels, DLabelSelection label) {
+    for (DLabelSelection lbl: selectedLabels) {
+      if (lbl.equals(label))
+        return lbl;
+    }
+    return null;
+  }
 
 	private Point2D getAnchorPosition() {
 		// Get the center
