@@ -23,6 +23,8 @@ public class HelpGenerator {
 	
 	private AvailableCommands availableCommands;
 
+  private static int MAX_LIST = 20;
+
 	public HelpGenerator(AvailableCommands availableCommands) {
 		this.availableCommands = availableCommands;
 	}
@@ -188,11 +190,15 @@ public class HelpGenerator {
 				ListSingleSelection lss = (ListSingleSelection)object;
 				String str = "&lt;"+classString(clazz.getSimpleName())+"&nbsp(";
 				List<Object> list = lss.getPossibleValues();
-				for (int index = 0; index < list.size()-1; index++) { 
+        int size = Math.min(list.size()-1, MAX_LIST);
+				for (int index = 0; index < size; index++) { 
 					str += keyword(list.get(index).toString())+"|"; 
 				}
-				if (!list.isEmpty())
-					str += keyword(list.get(list.size()-1).toString()); 
+				if (!list.isEmpty()) {
+					str += keyword(list.get(size).toString()); 
+          if (size < list.size()-1)
+            str += "|...";
+        }
 				str += ")&gt;";
 
 				return fixedSpan(str);
@@ -202,11 +208,15 @@ public class HelpGenerator {
 				ListMultipleSelection lss = (ListMultipleSelection)object;
 				String str = "&lt;"+classString(clazz.getSimpleName())+"&nbsp[";
 				List<Object> list = lss.getPossibleValues();
-				for (int index = 0; index < list.size()-1; index++) { 
+        int size = Math.min(list.size()-1, MAX_LIST);
+				for (int index = 0; index < size; index++) { 
 					str += keyword(list.get(index).toString())+","; 
 				}
-				if (!list.isEmpty())
-					str += keyword(list.get(list.size()-1).toString());
+				if (!list.isEmpty()) {
+					str += keyword(list.get(size).toString());
+          if (size < list.size()-1)
+            str += ",...";
+        }
 				str += "]&gt;";
 
 				return fixedSpan(str);

@@ -44,7 +44,7 @@ public class EquationEditorPanel extends JPanel {
 		setLayout(layout);
 		
 		layout.setVerticalGroup(layout.createSequentialGroup()
-			.addComponent(getSyntaxPanel(), 0, 100, 100)
+			.addComponent(getSyntaxPanel(), 0, 120, 120)
 			.addGap(20)
 			.addGroup(layout.createParallelGroup()
 				.addComponent(getFunctionPanel(),  0, 80, Short.MAX_VALUE)

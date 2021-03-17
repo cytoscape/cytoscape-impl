@@ -29,14 +29,13 @@ import org.cytoscape.equations.AbstractFunction;
 import org.cytoscape.equations.ArgDescriptor;
 import org.cytoscape.equations.ArgType;
 import org.cytoscape.equations.FunctionUtil;
-import org.cytoscape.equations.internal.StringList;
 
 
 public class Concatenate extends AbstractFunction {
 	public Concatenate() {
 		super(new ArgDescriptor[] {
-				new ArgDescriptor(ArgType.OPT_STRINGS, "strings", "Zero or more numbers, strings or booleans or lists thereof."),
-			});
+			new ArgDescriptor(ArgType.OPT_STRINGS, "values", "Zero or more numbers, strings or booleans or lists thereof."),
+		});
 	}
 
 	/**
@@ -49,7 +48,7 @@ public class Concatenate extends AbstractFunction {
 	 *  Used to provide help for users.
 	 *  @return a description of what this function does
 	 */
-	public String getFunctionSummary() { return "Returns a string (a.k.a. text object)."; }
+	public String getFunctionSummary() { return "Converts each argument to a string (text), then joins them end-to-end into a single string."; }
 
 	public Class<?> getReturnType() { return String.class; }
 

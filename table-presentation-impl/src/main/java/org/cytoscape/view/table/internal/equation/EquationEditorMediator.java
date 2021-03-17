@@ -3,11 +3,11 @@ package org.cytoscape.view.table.internal.equation;
 import static java.util.Comparator.comparing;
 import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsFirst;
-import static java.util.stream.Collectors.toList;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -98,7 +98,7 @@ public class EquationEditorMediator {
 		dialog.setModal(true);
 		dialog.getContentPane().setLayout(new BorderLayout());
 		dialog.getContentPane().add(builderPanel, BorderLayout.CENTER);
-		dialog.setPreferredSize(new Dimension(550, 430)); 
+		dialog.setPreferredSize(new Dimension(550, 500)); 
 		dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		dialog.pack();
 		dialog.setLocationRelativeTo(parent);
@@ -193,12 +193,13 @@ public class EquationEditorMediator {
 		BrowserTableModel model = (BrowserTableModel) browserTable.getModel();
 		CyTable table = model.getDataTable();
 		
-		List<CyColumn> colsToShow = table.getColumns().stream()
-				.filter(col -> !"SUID".equals(col.getName()))
-				.sorted(comparing(CyColumn::getNamespace, nullsFirst(naturalOrder())).thenComparing(CyColumn::getNameOnly))
-				.collect(toList());
+		List<CyColumn> columns = new ArrayList<>(table.getColumns());
+		columns.sort(
+				comparing((CyColumn col) -> col.isPrimaryKey() && "SUID".equals(col.getName())) // puts "SUID" at the end
+				.thenComparing(CyColumn::getNamespace, nullsFirst(naturalOrder()))
+				.thenComparing(CyColumn::getNameOnly, naturalOrder()));
 		
-		builderPanel.getAttributePanel().setElements(colsToShow);
+		builderPanel.getAttributePanel().setElements(columns);
 		
 		JList<CyColumn> list = builderPanel.getAttributePanel().getList();
 		list.addListSelectionListener(e -> {

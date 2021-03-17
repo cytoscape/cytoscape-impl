@@ -12,6 +12,9 @@ import org.cytoscape.view.presentation.property.values.ObjectPosition;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 
+import org.cytoscape.ding.impl.InputHandlerGlassPane;
+
+
 /**
  * Class to undo or redo Label Move. 
  * @author jingchen
@@ -27,8 +30,9 @@ public class NodeLabelChangeEdit extends AbstractCyEdit {
 	private CyServiceRegistrar serviceRegistrar;
 	private CyNetworkView netView;
 	private Long  nodeId;
+  private InputHandlerGlassPane listener;
 
-	public NodeLabelChangeEdit(CyServiceRegistrar serviceRegistrar, ObjectPosition previousValue, Double previousRotation,
+	public NodeLabelChangeEdit(CyServiceRegistrar serviceRegistrar, InputHandlerGlassPane listener, ObjectPosition previousValue, Double previousRotation,
 			CyNetworkView netview, Long nodeId, String label) {
 		super(label);
 		this.serviceRegistrar = serviceRegistrar;
@@ -37,6 +41,7 @@ public class NodeLabelChangeEdit extends AbstractCyEdit {
 		this.oldRotation = previousRotation;
 		this.netView = netview;
 		this.nodeId = nodeId;
+    this.listener = listener;
 	}
 	
 
@@ -77,6 +82,7 @@ public class NodeLabelChangeEdit extends AbstractCyEdit {
 			else
 				node.clearValueLock(DVisualLexicon.NODE_LABEL_ROTATION);
 			
+      listener.resetLabelSelection();
 			updateView();
 		}		
 	}

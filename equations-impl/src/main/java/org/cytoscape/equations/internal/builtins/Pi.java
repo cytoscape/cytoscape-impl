@@ -27,13 +27,11 @@ package org.cytoscape.equations.internal.builtins;
 
 import org.cytoscape.equations.AbstractFunction;
 import org.cytoscape.equations.ArgDescriptor;
-import org.cytoscape.equations.ArgType;
 
 
 public class Pi extends AbstractFunction {
 	public Pi() {
-		super(new ArgDescriptor[] {
-			});
+		super(new ArgDescriptor[] { });
 	}
 
 	/**

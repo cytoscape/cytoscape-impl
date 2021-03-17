@@ -26,12 +26,10 @@ package org.cytoscape.equations.internal.builtins;
 
 
 import java.text.DateFormat;
-
 import java.util.Calendar;
 
 import org.cytoscape.equations.AbstractFunction;
 import org.cytoscape.equations.ArgDescriptor;
-import org.cytoscape.equations.ArgType;
 
 
 public class Today extends AbstractFunction {
@@ -49,7 +47,7 @@ public class Today extends AbstractFunction {
 	 *  Used to provide help for users.
 	 *  @return a description of what this function does
 	 */
-	public String getFunctionSummary() { return "Returns today's date."; }
+	public String getFunctionSummary() { return "Returns today's date as a string."; }
 
 	public Class<?> getReturnType() { return Double.class; }
 

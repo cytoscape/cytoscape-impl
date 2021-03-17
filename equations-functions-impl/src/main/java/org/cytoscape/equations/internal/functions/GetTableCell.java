@@ -43,7 +43,7 @@ public class GetTableCell extends AbstractFunction {
 	
 	public GetTableCell(final CyServiceRegistrar serviceRegistrar, Class<?> clazz) {
 		super(new ArgDescriptor[] { 
-      new ArgDescriptor(ArgType.INT, "SUID", "The SUID identifying the object."),
+      new ArgDescriptor(ArgType.INT, "SUID", "The SUID identifying the node or edge."),
       new ArgDescriptor(ArgType.STRING, "Column", "The name of the column to get.")
     });
 		this.serviceRegistrar = serviceRegistrar;

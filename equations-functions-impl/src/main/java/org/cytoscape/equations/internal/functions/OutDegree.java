@@ -39,7 +39,7 @@ public class OutDegree extends AbstractFunction {
 	private final CyServiceRegistrar serviceRegistrar;
 
 	public OutDegree(final CyServiceRegistrar serviceRegistrar) {
-		super(new ArgDescriptor[] { new ArgDescriptor(ArgType.INT, "node_ID", "An ID identifying a node.") });
+		super(new ArgDescriptor[] { new ArgDescriptor(ArgType.INT, "node_SUID", "The SUID identifier attribute of a node.") });
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
@@ -50,7 +50,7 @@ public class OutDegree extends AbstractFunction {
 
 	@Override
 	public String getFunctionSummary() {
-		return "Returns outdegree of a node.";
+		return "Returns the outdegree of a node. The outdegree is the number of outgoing edges connected to the node.";
 	}
 
 	@Override
