@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2009 - 2019 The Cytoscape Consortium
+ * Copyright (C) 2009 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -103,8 +103,8 @@ public class PopupMenuHelper {
 		var tracker = new PopupMenuGravityTracker(menu);
 
 		for (var entry : tableColumnFactoryMap.entrySet()) {
-			TableColumnTaskFactory taskFactory = entry.getKey();
-			TaskFactory provisioner = factoryProvisioner.createFor(taskFactory, column);
+			var taskFactory = entry.getKey();
+			var provisioner = factoryProvisioner.createFor(taskFactory, column);
 			createMenuItem(provisioner, tracker, entry.getValue(), tableType);
 		}
 
@@ -116,10 +116,10 @@ public class PopupMenuHelper {
 	public void createTableCellMenu(CyColumn column, Object primaryKeyValue, Class<? extends CyIdentifiable> tableType,
 			Component invoker, int x, int y, JTable table) {
 		var menu = new JPopupMenu();
-		Object value = column.getTable().getRow(primaryKeyValue).get(column.getName(), column.getType());
+		var value = column.getTable().getRow(primaryKeyValue).get(column.getName(), column.getType());
 
 		if (value != null) {
-			String urlString = value.toString();
+			var urlString = value.toString();
 			
 			if (urlString != null && (urlString.startsWith("http:") || urlString.startsWith("https:")))
 				menu.add(getOpenLinkMenu(value.toString()));
@@ -128,8 +128,8 @@ public class PopupMenuHelper {
 		var tracker = new PopupMenuGravityTracker(menu);
 
 		for (var entry : tableCellFactoryMap.entrySet()) {
-			TableCellTaskFactory taskFactory = entry.getKey();
-			TaskFactory provisioner = factoryProvisioner.createFor(taskFactory, column, primaryKeyValue);
+			var taskFactory = entry.getKey();
+			var provisioner = factoryProvisioner.createFor(taskFactory, column, primaryKeyValue);
 			createMenuItem(provisioner, tracker, entry.getValue(), tableType);
 		}
 

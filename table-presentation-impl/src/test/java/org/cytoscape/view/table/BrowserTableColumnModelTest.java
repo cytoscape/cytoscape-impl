@@ -63,7 +63,7 @@ public class BrowserTableColumnModelTest {
 		
 		PopupMenuHelper popupMenuHelper = new PopupMenuHelper(registrar);
 		
-		browserTable = new BrowserTable(equationCompiler, popupMenuHelper, registrar);
+		browserTable = new BrowserTable(popupMenuHelper, registrar);
 		
 		CyTableViewFactoryImpl factory = new CyTableViewFactoryImpl(registrar, new BrowserTableVisualLexicon(), "id");
 		tableView = factory.createTableView(table);

@@ -7,7 +7,6 @@ import java.util.Properties;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
 import org.cytoscape.browser.internal.task.ClearAllErrorsTaskFactory;
-import org.cytoscape.browser.internal.task.ColorColumnTestTaskFactory;
 import org.cytoscape.browser.internal.task.HideColumnTaskFactory;
 import org.cytoscape.browser.internal.task.SetColumnFormatTaskFactory;
 import org.cytoscape.browser.internal.view.DefaultTableBrowser;
@@ -36,7 +35,7 @@ import org.osgi.framework.BundleContext;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -86,12 +85,6 @@ public class CyActivator extends AbstractCyActivator {
 			var factory = new SetColumnFormatTaskFactory(serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(TITLE, "Format Column...");
-			registerService(bc, factory, TableColumnTaskFactory.class, props);
-		}
-		{
-			var factory = new ColorColumnTestTaskFactory(serviceRegistrar);
-			var props = new Properties();
-			props.setProperty(TITLE, "Test Cell Background Color...");
 			registerService(bc, factory, TableColumnTaskFactory.class, props);
 		}
 		

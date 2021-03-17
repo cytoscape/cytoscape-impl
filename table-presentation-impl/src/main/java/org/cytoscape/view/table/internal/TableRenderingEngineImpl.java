@@ -51,7 +51,7 @@ public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 	
 	private BrowserTable createBrowserTable() {
 		var compiler = registrar.getService(EquationCompiler.class);
-		var browserTable = new BrowserTable(compiler, popupMenuHelper, registrar);
+		var browserTable = new BrowserTable(popupMenuHelper, registrar);
 		var model = new BrowserTableModel(tableView, compiler); // why does it need the element type? 
 		
 		browserTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);

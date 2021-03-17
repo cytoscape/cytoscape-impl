@@ -31,7 +31,6 @@ import org.cytoscape.view.table.internal.impl.BrowserTable;
 import org.cytoscape.view.table.internal.impl.BrowserTableColumnModel;
 import org.cytoscape.view.table.internal.impl.BrowserTableColumnModelGravityEvent;
 import org.cytoscape.view.table.internal.impl.BrowserTableColumnModelListener;
-import org.cytoscape.view.table.internal.impl.BrowserTableModel;
 import org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode;
 
 public class VisualPropertyChangeListener implements TableViewChangedListener {
@@ -64,6 +63,7 @@ public class VisualPropertyChangeListener implements TableViewChangedListener {
 	}
 	
 	@Override
+	@SuppressWarnings("unchecked")
 	public void handleEvent(TableViewChangedEvent<?> e) {
 		if (e.getSource() != tableView)
 			return;
@@ -79,9 +79,8 @@ public class VisualPropertyChangeListener implements TableViewChangedListener {
 				var colView = (CyColumnView) record.getView();
 				updateColumnVP(colView, vp, value);
 
-				if (vp == COLUMN_GRAVITY) {
+				if (vp == COLUMN_GRAVITY)
 					reorderCols = true;
-				}
 			} else if (model instanceof CyRow) {
 				var rowView = (View<CyRow>) record.getView();
 				updateRowVP(rowView, vp, value);
@@ -163,10 +162,10 @@ public class VisualPropertyChangeListener implements TableViewChangedListener {
 
 	// MKTODO this needs to go in the renderer
 	private void changeSelectionMode(TableMode tableMode) {
-		var model = (BrowserTableModel) browserTable.getModel();
+		var tableModel = browserTable.getBrowserTableModel();
 		var viewMode = ViewMode.fromVisualPropertyValue(tableMode);
-		model.setViewMode(viewMode);
-		model.updateViewMode();
+		tableModel.setViewMode(viewMode);
+		tableModel.updateViewMode();
 		
 		if (viewMode == ViewMode.ALL && tableView.getModel().getColumn(CyNetwork.SELECTED) != null) {
 			// Show the current selected rows

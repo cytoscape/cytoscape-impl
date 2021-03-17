@@ -76,7 +76,7 @@ public class BrowserTableTest {
 		PopupMenuHelper popupMenuHelper = new PopupMenuHelper(registrar);
 		tableManager = mock(CyTableManager.class);
 		eventHelper = new DummyCyEventHelper();
-		browserTable = new BrowserTable(equationCompiler, popupMenuHelper, registrar);
+		browserTable = new BrowserTable(popupMenuHelper, registrar);
 
 		createTable();
 		assertEquals(4, table.getColumns().size());

@@ -20,7 +20,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.KeyboardFocusManager;
-import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
@@ -63,16 +62,13 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.TableColumnModelEvent;
 import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
-import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
@@ -86,7 +82,6 @@ import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.TextWrapToolTip;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.events.AboutToRemoveColumnViewEvent;
 import org.cytoscape.view.model.events.AboutToRemoveColumnViewListener;
 import org.cytoscape.view.model.events.AddedColumnViewEvent;
@@ -139,12 +134,10 @@ public class BrowserTable extends JTable
 
 	// For right-click menu
 	private JPopupMenu popupMenu;
-	private JPopupMenu headerPopupMenu;
 	private JMenuItem openFormulaBuilderMenuItem;
 
 	private MultiLineTableCellEditor multiLineCellEditor;
 	
-	private final EquationCompiler compiler;
 	private final PopupMenuHelper popupMenuHelper;
 	private final CyServiceRegistrar serviceRegistrar;
 	
@@ -155,8 +148,7 @@ public class BrowserTable extends JTable
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public BrowserTable(EquationCompiler compiler, PopupMenuHelper popupMenuHelper, CyServiceRegistrar serviceRegistrar) {
-		this.compiler = compiler;
+	public BrowserTable(PopupMenuHelper popupMenuHelper, CyServiceRegistrar serviceRegistrar) {
 		this.popupMenuHelper = popupMenuHelper;
 		this.serviceRegistrar = serviceRegistrar;
 		
@@ -280,16 +272,16 @@ public class BrowserTable extends JTable
 			fm.addPropertyChangeListener("permanentFocusOwner", editorRemover);
 		}
 
-		TableCellEditor editor = getCellEditor(row, column);
+		var editor = getCellEditor(row, column);
 
 		// remember the table row, because tableModel will disappear if
 		// user click on open space on canvas, so we have to remember it before it is gone
-		BrowserTableModel model = (BrowserTableModel) this.getModel();
-		CyRow cyRow = model.getCyRow(convertRowIndexToModel(row));
-		String columnName = model.getColumnName(convertColumnIndexToModel(column));
+		var model = (BrowserTableModel) this.getModel();
+		var cyRow = model.getCyRow(convertRowIndexToModel(row));
+		var columnName = model.getColumnName(convertColumnIndexToModel(column));
 		editorRemover.setCellData(cyRow, columnName);
 
-		if ((editor != null) && editor.isCellEditable(e)) {
+		if (editor != null && editor.isCellEditable(e)) {
 			// Do this first so that the bounds of the JTextArea editor will be correct.
 			setEditingRow(row);
 			setEditingColumn(column);
@@ -303,10 +295,10 @@ public class BrowserTable extends JTable
 				return false;
 			}
 
-			Rectangle cellRect = getCellRect(row, column, false);
+			var cellRect = getCellRect(row, column, false);
 
 			if (editor instanceof MultiLineTableCellEditor) {
-				Dimension prefSize = editorComp.getPreferredSize();
+				var prefSize = editorComp.getPreferredSize();
 				((JComponent) editorComp).putClientProperty(MultiLineTableCellEditor.UPDATE_BOUNDS, Boolean.TRUE);
 				editorComp.setBounds(cellRect.x, cellRect.y, Math.max(cellRect.width, prefSize.width),
 						Math.max(cellRect.height, prefSize.height));
@@ -327,39 +319,41 @@ public class BrowserTable extends JTable
 
 				@Override
 				public void keyTyped(KeyEvent e) {
-					
+					// Ignore...
 				}
 
 				@Override
 				public void keyReleased(KeyEvent e) {
+					// Ignore...
 				}
 
 				@Override
 				public void keyPressed(KeyEvent event) {
-					int new_row = row, new_column = column;
+					int newRow = row, newColumn = column;
 					int modifiers = event.getModifiers();
 
 					if (event.getKeyCode() == KeyEvent.VK_ENTER) {
 						if (modifiers == 0) {
-							new_row += 1;
+							newRow += 1;
 						} else if (modifiers == KeyEvent.VK_SHIFT) {
-							new_row -= 1;
+							newRow -= 1;
 						} else {
 							return;
 						}
 					} else if (event.getKeyCode() == KeyEvent.VK_TAB) {
 						if (modifiers == 0) {
-							new_column += 1;
+							newColumn += 1;
 						} else if (modifiers == KeyEvent.VK_SHIFT) {
-							new_column -= 1;
+							newColumn -= 1;
 						} else {
 							return;
 						}
 					} else {
 						return;
 					}
+					
 					deselect(event);
-					changeSelection(new_row, new_column, false, false);
+					changeSelection(newRow, newColumn, false, false);
 				}
 			});
 
@@ -395,19 +389,19 @@ public class BrowserTable extends JTable
 		super.columnAdded(e);
 		
 		// Update the COLUMN_WIDTH visual property value.
-		var idx = e.getToIndex();
+		var colIdx = e.getToIndex();
 		var tableModel = getBrowserTableModel();
 		var columnModel = (BrowserTableColumnModel) getColumnModel();
-		var column = columnModel.getColumn(idx);
+		var column = columnModel.getColumn(colIdx);
 		var tableView = tableModel.getTableView();
-		var name = tableModel.getColumnName(convertColumnIndexToModel(idx));
-		var view = tableView.getColumnView(name);
+		var name = tableModel.getColumnName(convertColumnIndexToModel(colIdx));
+		var columnView = tableView.getColumnView(name);
 				
 		var newWidth = column.getWidth();
-		var oldWidth = view.getVisualProperty(COLUMN_WIDTH);
+		var oldWidth = columnView.getVisualProperty(COLUMN_WIDTH);
 
 		if (oldWidth == null || newWidth != oldWidth)
-			view.setVisualProperty(COLUMN_WIDTH, newWidth);
+			columnView.setVisualProperty(COLUMN_WIDTH, newWidth);
 	}
 	
 	@Override
@@ -439,9 +433,10 @@ public class BrowserTable extends JTable
 	
 	@Override
 	public JToolTip createToolTip() {
-		TextWrapToolTip tip = new TextWrapToolTip();
+		var tip = new TextWrapToolTip();
 		tip.setMaximumSize(new Dimension(480, 320));
 		tip.setComponent(this);
+		
 		return tip;
 	}
 	
@@ -462,7 +457,7 @@ public class BrowserTable extends JTable
 			}
 		}
 	}
-
+	
 	/**
 	 * This method initializes popupMenu
 	 * 
@@ -551,7 +546,7 @@ public class BrowserTable extends JTable
 			
 			if (index != -1) {
 				int colWidth = getColumnModel().getColumn(index).getWidth();
-				this.columnWidthMap.put(this.getColumnName(index), new Integer(colWidth));
+				this.columnWidthMap.put(this.getColumnName(index), colWidth);
 			}
 		}
 	}
@@ -645,7 +640,7 @@ public class BrowserTable extends JTable
 		boolean columnFound = false;
 		int removedColIndex = -1;
 		
-		List<String> attrNames = model.getAllAttributeNames();
+		var attrNames = model.getAllAttributeNames();
 		
 		for (int i = 0; i < attrNames.size(); ++i) {
 			if (attrNames.get(i).equals(columnName)) {
@@ -658,9 +653,8 @@ public class BrowserTable extends JTable
 			}
 		}
 		
-		if (removedColIndex != -1){ //remove the item after the loop is done
+		if (removedColIndex != -1) // remove the item after the loop is done
 			model.removeColumn(removedColIndex);
-		}
 	}
 
 	@Override
@@ -751,7 +745,6 @@ public class BrowserTable extends JTable
 		setShowGrid(TABLE_GRID_VISIBLE.getDefault());
 		setDefaultEditor(Object.class, multiLineCellEditor);
 		getPopupMenu();
-		getHeaderPopupMenu();
 		setKeyStroke();
 		setTransferHandler(new BrowserTableTransferHandler());
 		
@@ -816,13 +809,6 @@ public class BrowserTable extends JTable
 		systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 	}
 	
-	private JPopupMenu getHeaderPopupMenu() {
-		if (headerPopupMenu == null)
-			headerPopupMenu = new JPopupMenu();
-		
-		return headerPopupMenu;
-	}
-	
 	private void showCellMenu(Class<?> type, List<?> listItems, String borderTitle, MouseEvent e) {
 		var cellMenu = new JPopupMenu();
 		var popupBorder = BorderFactory.createTitledBorder(null, borderTitle,
@@ -830,26 +816,25 @@ public class BrowserTable extends JTable
 		cellMenu.setBorder(popupBorder);
 		
 		JMenu curItem = null;
-		String dispName;
+		String dispName = null;
 
 		for (var item : listItems) {
 			dispName = item.toString();
 
-			if (dispName.length() > 60) {
+			if (dispName.length() > 60)
 				dispName = dispName.substring(0, 59) + " ...";
-			}
 
 			curItem = new JMenu(dispName);
 			curItem.add(getPopupMenu());
 
 			var copyAll = new JMenuItem("Copy all entries");
 			copyAll.addActionListener(evt -> {
-				final StringBuilder builder = new StringBuilder();
+				var builder = new StringBuilder();
 				
-				for (Object oneEntry : listItems)
+				for (var oneEntry : listItems)
 					builder.append(oneEntry.toString() + CELL_BREAK);
 
-				final StringSelection selection = new StringSelection(builder.toString());
+				var selection = new StringSelection(builder.toString());
 				systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 				systemClipboard.setContents(selection, selection);
 			});
@@ -857,14 +842,16 @@ public class BrowserTable extends JTable
 
 			var copy = new JMenuItem("Copy this entry");
 			copy.addActionListener(evt -> {
-				final StringSelection selection = new StringSelection(item.toString());
+				var selection = new StringSelection(item.toString());
 				systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 				systemClipboard.setContents(selection, selection);
 			});
 
 			curItem.add(copy);
+			
 			if (dispName != null && (dispName.startsWith("http:") || dispName.startsWith("https:")))
 				curItem.add(popupMenuHelper.getOpenLinkMenu(dispName));
+			
 			cellMenu.add(curItem);
 		}
 
@@ -1017,12 +1004,12 @@ public class BrowserTable extends JTable
 	 * @param rows
 	 */
 	private void bulkUpdate(Collection<RowSetRecord> rows) {
-		Set<Long> suidSelected = new HashSet<>();
-		Set<Long> suidUnselected = new HashSet<>();
+		var suidSelected = new HashSet<Long>();
+		var suidUnselected = new HashSet<Long>();
 
 		for (var rowSetRecord : rows) {
 			if (rowSetRecord.getColumn().equals(CyNetwork.SELECTED)) {
-				if (((Boolean)rowSetRecord.getValue()) == true)
+				if (((Boolean) rowSetRecord.getValue()) == true)
 					suidSelected.add(rowSetRecord.getRow().get(CyIdentifiable.SUID, Long.class));
 				else
 					suidUnselected.add(rowSetRecord.getRow().get(CyIdentifiable.SUID, Long.class));
@@ -1033,9 +1020,9 @@ public class BrowserTable extends JTable
 	}
 
 	public void changeRowSelection(Set<Long> suidSelected, Set<Long> suidUnselected) {
-		BrowserTableModel model = getBrowserTableModel();
-		CyTable dataTable = model.getDataTable();
-		String pKeyName = dataTable.getPrimaryKey().getName();
+		var model = getBrowserTableModel();
+		var dataTable = model.getDataTable();
+		var pKeyName = dataTable.getPrimaryKey().getName();
 		int rowCount = getRowCount();
 		
 		try {
@@ -1045,8 +1032,7 @@ public class BrowserTable extends JTable
 				// Getting the row from data table solves the problem with hidden or moved SUID column.
 				// However, since the rows might be sorted we need to convert the index to model
 				int modelRow = convertRowIndexToModel(i);
-				ValidatedObjectAndEditString tableKey =
-						(ValidatedObjectAndEditString) model.getValueAt(modelRow, pKeyName);
+				var tableKey = (ValidatedObjectAndEditString) model.getValueAt(modelRow, pKeyName);
 				Long pk = null;
 				
 				try {
@@ -1069,48 +1055,48 @@ public class BrowserTable extends JTable
 	}
 
 	private void selectFromTable() {
-		final TableModel model = this.getModel();
+		var model = this.getModel();
 		
 		if (model instanceof BrowserTableModel == false)
 			return;
 
-		final BrowserTableModel btModel = (BrowserTableModel) model;
+		var btModel = (BrowserTableModel) model;
 
 		if (btModel.getViewMode() != BrowserTableModel.ViewMode.ALL)
 			return;
 
-		final CyTable table = btModel.getDataTable();
-		final CyColumn pKey = table.getPrimaryKey();
-		final String pKeyName = pKey.getName();
+		var table = btModel.getDataTable();
+		var pKey = table.getPrimaryKey();
+		var pKeyName = pKey.getName();
 
-		final int[] rowsSelected = getSelectedRows();
+		var rowsSelected = getSelectedRows();
 		
 		if (rowsSelected.length == 0)
 			return;
 
-		final int selectedRowCount = getSelectedRowCount();
-		final Set<CyRow> targetRows = new HashSet<>();
+		int selectedRowCount = getSelectedRowCount();
+		var targetRows = new HashSet<CyRow>();
 		
 		for (int i = 0; i < selectedRowCount; i++) {
 			// getting the row from data table solves the problem with hidden or
 			// moved SUID column. However, since the rows might be sorted we
 			// need to convert the index to model
-			final ValidatedObjectAndEditString selected = (ValidatedObjectAndEditString) btModel.getValueAt(
+			var selected = (ValidatedObjectAndEditString) btModel.getValueAt(
 					convertRowIndexToModel(rowsSelected[i]), pKeyName);
 			targetRows.add(btModel.getRow(selected.getValidatedObject()));
 		}
 
 		// Clear selection for non-global table
-		final CyTableManager tableManager = serviceRegistrar.getService(CyTableManager.class);
+		var tableManager = serviceRegistrar.getService(CyTableManager.class);
 		
 		if (tableManager.getGlobalTables().contains(table) == false) {
-			List<CyRow> allRows = btModel.getDataTable().getAllRows();
+			var allRows = btModel.getDataTable().getAllRows();
 			
 			try {
 				ignoreRowSetEvents = true;
 				
-				for (CyRow row : allRows) {
-					final Boolean val = row.get(CyNetwork.SELECTED, Boolean.class);
+				for (var row : allRows) {
+					var val = row.get(CyNetwork.SELECTED, Boolean.class);
 					
 					if (targetRows.contains(row)) {
 						row.set(CyNetwork.SELECTED, true);
@@ -1121,11 +1107,11 @@ public class BrowserTable extends JTable
 						row.set(CyNetwork.SELECTED, false);
 				}
 				
-				final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
-				final CyNetworkView curView = applicationManager.getCurrentNetworkView();
+				var applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
+				var curView = applicationManager.getCurrentNetworkView();
 				
 				if (curView != null) {
-					final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+					var eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 					eventHelper.flushPayloadEvents();
 					curView.updateView();
 				}
@@ -1180,8 +1166,6 @@ public class BrowserTable extends JTable
 	}
 	
 	private class BrowserTableListSelectionModel extends DefaultListSelectionModel {
-		
-		private static final long serialVersionUID = 7119443698611148406L;
 		
 		private int lastSelectedRow = -1;
 		
@@ -1248,7 +1232,7 @@ public class BrowserTable extends JTable
 		}
 
 		private void updateAttributeAfterCellLostFocus() {
-			List<?> parsedData = TableBrowserUtil.parseCellInput(cyRow.getTable(), columnName,
+			var parsedData = TableBrowserUtil.parseCellInput(cyRow.getTable(), columnName,
 					MultiLineTableCellEditor.lastValueUserEntered);
 
 			if (parsedData.get(0) != null) {
@@ -1262,13 +1246,11 @@ public class BrowserTable extends JTable
 	
 	private static class BrowserTableTransferHandler extends TransferHandler {
 		
-		private static final long serialVersionUID = -4096856015305489834L;
-
 		@Override
 		protected Transferable createTransferable(JComponent source) {
 			// Encode cell data in Excel format so we can copy/paste list attributes as multi-line cells.
-			StringBuilder builder = new StringBuilder();
-			BrowserTable table = (BrowserTable) source;
+			var builder = new StringBuilder();
+			var table = (BrowserTable) source;
 			
 			for (int rowIndex : table.getSelectedRows()) {
 				boolean firstColumn = true;
@@ -1280,32 +1262,32 @@ public class BrowserTable extends JTable
 						firstColumn = false;
 					}
 					
-					Object object = table.getValueAt(rowIndex, columnIndex);
+					var object = table.getValueAt(rowIndex, columnIndex);
 					
 					if (object instanceof ValidatedObjectAndEditString) {
-						ValidatedObjectAndEditString raw = (ValidatedObjectAndEditString) object;
-						Object validatedObject = raw.getValidatedObject();
+						var raw = (ValidatedObjectAndEditString) object;
+						var validatedObject = raw.getValidatedObject();
 						
 						if (validatedObject instanceof Collection) {
 							builder.append("\"");
 							boolean firstRow = true;
 							
-							for (Object member : (Collection<?>) validatedObject) {
-								if (!firstRow) {
+							for (var member : (Collection<?>) validatedObject) {
+								if (!firstRow)
 									builder.append("\r");
-								} else {
+								else
 									firstRow = false;
-								}
+								
 								builder.append(member.toString().replaceAll("\"", "\"\""));
 							}
+							
 							builder.append("\"");
 						} else {
 							builder.append(validatedObject.toString());
 						}
 					} else {
-						if (object != null) {
+						if (object != null)
 							builder.append(object.toString());
-						}
 					}
 				}
 				builder.append(LINE_BREAK);
