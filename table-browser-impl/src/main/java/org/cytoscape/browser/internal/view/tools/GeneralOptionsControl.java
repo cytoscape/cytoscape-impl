@@ -11,6 +11,8 @@ import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JCheckBox;
 
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
 /*
@@ -43,8 +45,15 @@ public class GeneralOptionsControl extends AbstractToolBarControl {
 	private JCheckBox showTableGridCheck;
 	private JCheckBox altRowColorsCheck;
 	
+	private final Class<? extends CyIdentifiable> objType;
+	
 	public GeneralOptionsControl(CyServiceRegistrar serviceRegistrar) {
+		this(null, serviceRegistrar);
+	}
+
+	public GeneralOptionsControl(Class<? extends CyIdentifiable> objType, CyServiceRegistrar serviceRegistrar) {
 		super(serviceRegistrar);
+		this.objType = objType;
 		
 		init();
 	}
@@ -98,6 +107,7 @@ public class GeneralOptionsControl extends AbstractToolBarControl {
 			altRowColorsCheck = new JCheckBox("Alternate Row Colors");
 			altRowColorsCheck.setHorizontalAlignment(JCheckBox.LEFT);
 			altRowColorsCheck.addActionListener(evt -> apply(TABLE_ALTERNATE_ROW_COLORS, altRowColorsCheck.isSelected()));
+			altRowColorsCheck.setVisible(objType != CyNetwork.class); // The Network table has only one line
 		}
 		
 		return altRowColorsCheck;

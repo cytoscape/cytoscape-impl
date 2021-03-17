@@ -9,6 +9,7 @@ import static org.cytoscape.view.presentation.property.table.BasicTableVisualLex
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.ROW_HEIGHT;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_ALTERNATE_ROW_COLORS;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_GRID_VISIBLE;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_ROW_HEIGHT;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_VIEW_MODE;
 import static org.cytoscape.view.table.internal.util.ViewUtil.invokeOnEDT;
 
@@ -17,7 +18,9 @@ import java.util.HashSet;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.events.TableViewChangedEvent;
 import org.cytoscape.view.model.events.TableViewChangedListener;
@@ -79,10 +82,13 @@ public class VisualPropertyChangeListener implements TableViewChangedListener {
 				if (vp == COLUMN_GRAVITY) {
 					reorderCols = true;
 				}
+			} else if (model instanceof CyRow) {
+				var rowView = (View<CyRow>) record.getView();
+				updateRowVP(rowView, vp, value);
 			} else if (model instanceof CyTable) {
 				if (vp == TABLE_VIEW_MODE) {
 					changeSelectionMode((TableMode) value);
-				} else if (vp == ROW_HEIGHT) {
+				} else if (vp == TABLE_ROW_HEIGHT) {
 					invokeOnEDT(() -> browserTable.resetRowHeight());
 				} else if (vp == TABLE_GRID_VISIBLE) {
 					invokeOnEDT(() -> browserTable.setShowGrid(value == Boolean.TRUE));
@@ -128,6 +134,29 @@ public class VisualPropertyChangeListener implements TableViewChangedListener {
 				var colModel = (BrowserTableColumnModel) browserTable.getColumnModel();
 				var column = colModel.getTableColumn(colView.getSUID());
 				colModel.setColumnGravity(column, gravity);
+			}
+		}
+	}
+	
+	private void updateRowVP(View<CyRow> rowView, VisualProperty<?> vp, Object value) {
+		if (vp == ROW_HEIGHT) {
+			if (value instanceof Number) {
+				int h = ((Number) value).intValue();
+				
+				if (h > 0) {
+					var tableModel = browserTable.getBrowserTableModel();
+					var pkName = tableView.getModel().getPrimaryKey().getName();
+					var pk = rowView.getModel().getRaw(pkName);
+					
+					if (pk != null) {
+						var idx = tableModel.indexOfRow(rowView.getModel());
+						idx = browserTable.convertRowIndexToView(idx);
+						
+						// Always check the current row height to avoid an infinite loop!
+						if (idx >= 0 && idx < browserTable.getRowCount() && h != browserTable.getRowHeight(idx))
+							browserTable.setRowHeight(idx, h);
+					}
+				}
 			}
 		}
 	}

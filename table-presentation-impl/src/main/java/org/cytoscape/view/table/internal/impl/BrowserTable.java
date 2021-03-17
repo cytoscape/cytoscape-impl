@@ -9,6 +9,7 @@ import static org.cytoscape.view.presentation.property.table.BasicTableVisualLex
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_WIDTH;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.ROW_HEIGHT;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_GRID_VISIBLE;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_ROW_HEIGHT;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.ALL;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.AUTO;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.SELECTED;
@@ -181,8 +182,8 @@ public class BrowserTable extends JTable
 			// Only apply the row height value from the visual property if it has been explicitly set,
 			// because it depends on "Table.font" property set to the current LAF,
 			// which means the default from the BasicTableVisualLexicon could be too small and crop the cell text
-			if (tableView.isSet(ROW_HEIGHT))
-				setRowHeight(tableView.getVisualProperty(ROW_HEIGHT));
+			if (tableView.isSet(TABLE_ROW_HEIGHT))
+				setRowHeight(tableView.getVisualProperty(TABLE_ROW_HEIGHT));
 			
 			setShowGrid(tableView.getVisualProperty(TABLE_GRID_VISIBLE) == Boolean.TRUE);
 			
@@ -416,6 +417,24 @@ public class BrowserTable extends JTable
 		// The removed (or hidden) column might have CELL_TEXT_WRAPPED set to true,
 		// which affected the row height. So we need to reset it.
 		resetRowHeight();
+	}
+	
+	@Override
+	public void setRowHeight(int row, int rowHeight) {
+		super.setRowHeight(row, rowHeight);
+		
+		// Update the ROW_HEIGHT visual property
+		var tableModel = getBrowserTableModel();
+		var tableView = tableModel.getTableView();
+		var cyRow = tableModel.getCyRow(convertRowIndexToModel(row));
+		var rowView = tableView.getRowView(cyRow);
+
+		if (!rowView.isSet(ROW_HEIGHT) || rowHeight != rowView.getVisualProperty(ROW_HEIGHT)) {
+			rowView.setVisualProperty(ROW_HEIGHT, rowHeight);
+			// If we don't force the event to be fired now, the correct value for this rowView can get out of sync,
+			// which will almost certainly cause an infinite loop!
+			serviceRegistrar.getService(CyEventHelper.class).flushPayloadEvents();
+		}
 	}
 	
 	@Override
@@ -712,14 +731,7 @@ public class BrowserTable extends JTable
 	public void resetRowHeight() {
 		var model = getBrowserTableModel();
 		var tableView = model.getTableView();
-		
-		// Only apply the row height value from the visual property if it has been explicitly set,
-		// because it depends on "Table.font" property set to the current LAF,
-		// which means the default from the BasicTableVisualLexicon could be too small and crop the cell text
-		int h = tableView.isSet(ROW_HEIGHT) ? tableView.getVisualProperty(ROW_HEIGHT) : 0;
-		
-		if (h < 1)
-			h = UIManager.getInt("Table.rowHeight");
+		int h = tableView.getVisualProperty(TABLE_ROW_HEIGHT);
 		
 		if (h > 0) {
 			setRowHeight(h);
