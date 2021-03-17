@@ -245,7 +245,7 @@ public class AppManager implements FrameworkListener {
 		for (App app: installOnRestartApps) {
 			try {
 				app.moveAppFile(this, new File(getInstalledAppsPath()));
-				userLogger.info("Moved app '" + app.getAppName() + "' that was marked for install on restart to the 'installed' directory.");				
+				userLogger.debug("Moved app '" + app.getAppName() + "' that was marked for install on restart to the 'installed' directory.");				
 			} catch (IOException e) {
 				userLogger.error("Cannot move app '" + app.getAppName() + "' that was marked for install on restart to the 'installed' directory:", e);				
 			}
@@ -277,7 +277,7 @@ public class AppManager implements FrameworkListener {
 					app.setStatus(AppStatus.DISABLED);
 				} else {
 					// Delete the copy
-					userLogger.info("Trying to delete the disabled copy of app '" + app.getAppName() + "' in file '" + app.getAppFile().getAbsolutePath() + "' because another copy exists.");				
+					userLogger.debug("Trying to delete the disabled copy of app '" + app.getAppName() + "' in file '" + app.getAppFile().getAbsolutePath() + "' because another copy exists.");				
 					FileUtils.deleteQuietly(app.getAppFile());
 					app.setAppFile(null);
 				}		
@@ -301,7 +301,7 @@ public class AppManager implements FrameworkListener {
 					app.setStatus(AppStatus.UNINSTALLED);
 				} else {
 					// Delete the copy
-					userLogger.info("Trying to delete the uninstalled copy of app '" + app.getAppName() + "' in file '" + app.getAppFile().getAbsolutePath() + "' because another copy exists.");				
+					userLogger.debug("Trying to delete the uninstalled copy of app '" + app.getAppName() + "' in file '" + app.getAppFile().getAbsolutePath() + "' because another copy exists.");				
 					FileUtils.deleteQuietly(app.getAppFile());
 					app.setAppFile(null);
 				}
@@ -346,7 +346,7 @@ public class AppManager implements FrameworkListener {
 			}
 			else {
 				// Delete the copy
-				userLogger.info("Trying to delete the installed copy of app '" + app.getAppName() + "' in file '" + app.getAppFile().getAbsolutePath() + "' because another copy exists.");				
+				userLogger.debug("Trying to delete the installed copy of app '" + app.getAppName() + "' in file '" + app.getAppFile().getAbsolutePath() + "' because another copy exists.");				
 				FileUtils.deleteQuietly(app.getAppFile());
 				app.setAppFile(null);
 			}
@@ -390,7 +390,7 @@ public class AppManager implements FrameworkListener {
 			App app = i.next();
 			try {
 				app.load(this);
-				userLogger.info("Loaded app " + app.getAppName());
+				userLogger.debug("Loaded app " + app.getAppName());
 			} catch (AppLoadingException e) {
 				i.remove();
 				success = false;
@@ -403,7 +403,7 @@ public class AppManager implements FrameworkListener {
 			try {
 				app.start(this);
 				app.setStatus(AppStatus.INSTALLED);
-				userLogger.info("Started app " + app.getAppName());
+				userLogger.debug("Started app " + app.getAppName());
 			} catch (AppStartupException e) {
 				success = false;
 				app.setStatus(AppStatus.FAILED_TO_START);
@@ -459,7 +459,7 @@ public class AppManager implements FrameworkListener {
 						if (oldFile != null && oldFile.exists() && !registeredApp
 								.getAppFile().equals(parsedApp
 										.getAppFile())) {
-							userLogger.info("Trying to delete the installed copy of app '" + registeredApp.getAppName() + "' in file '" + registeredApp.getAppFile().getAbsolutePath() + "' because another copy exists.");				
+							userLogger.debug("Trying to delete the installed copy of app '" + registeredApp.getAppName() + "' in file '" + registeredApp.getAppFile().getAbsolutePath() + "' because another copy exists.");				
 							FileUtils.deleteQuietly(oldFile);
 						}
 						
@@ -499,7 +499,7 @@ public class AppManager implements FrameworkListener {
 						app.load(appManager);
 						app.start(appManager);
 						app.setStatus(AppStatus.INSTALLED);
-						userLogger.info("Started newly discovered app '" + app.getAppName() + "'.");
+						userLogger.debug("Started newly discovered app '" + app.getAppName() + "'.");
 					}
 				}
 				catch (AppLoadingException e) {
@@ -542,7 +542,7 @@ public class AppManager implements FrameworkListener {
 				try {
 					registeredApp.unload(appManager);
 					registeredApp.setStatus(AppStatus.FILE_MOVED);
-					userLogger.info("Unloaded app '" + registeredApp.getAppName() + "', because its file is no longer available.");
+					userLogger.debug("Unloaded app '" + registeredApp.getAppName() + "', because its file is no longer available.");
 				}
 				catch (AppUnloadingException e) {
 					userLogger.warn("Failed to unload app " + registeredApp.getAppName(), e);
@@ -577,7 +577,7 @@ public class AppManager implements FrameworkListener {
 						appToStart.load(appManager);
 						appToStart.start(appManager);
 						appToStart.setStatus(AppStatus.INSTALLED);
-						userLogger.info("Started app " + appToStart.getAppName() + " because a different version has been unloaded.");
+						userLogger.debug("Started app " + appToStart.getAppName() + " because a different version has been unloaded.");
 					}
 					catch (AppLoadingException e) {
 						appToStart.setStatus(AppStatus.FAILED_TO_LOAD);
@@ -1181,31 +1181,31 @@ public class AppManager implements FrameworkListener {
 		File appDirectory = getBaseAppPath();
 		if (!appDirectory.exists()) {
 			created = created && appDirectory.mkdirs();
-			sysLogger.info("Creating " + appDirectory + ". Success? " + created);
+			sysLogger.debug("Creating " + appDirectory + ". Success? " + created);
 		}
 		
 		File installedDirectory = new File(getInstalledAppsPath());
 		if (!installedDirectory.exists()) {
 			created = created && installedDirectory.mkdirs();
-			sysLogger.info("Creating " + installedDirectory + ". Success? " + created);
+			sysLogger.debug("Creating " + installedDirectory + ". Success? " + created);
 		}
 		
 		File disabledDirectory = new File(getDisabledAppsPath());
 		if (!disabledDirectory.exists()) {
 			created = created && disabledDirectory.mkdirs();
-			sysLogger.info("Creating " + disabledDirectory + ". Success? " + created);
+			sysLogger.debug("Creating " + disabledDirectory + ". Success? " + created);
 		}
 		
 		File temporaryInstallDirectory = new File(getTemporaryInstallPath());
 		if (!temporaryInstallDirectory.exists()) {
 			created = created && temporaryInstallDirectory.mkdirs();
-			sysLogger.info("Creating " + temporaryInstallDirectory + ". Success? " + created);
+			sysLogger.debug("Creating " + temporaryInstallDirectory + ". Success? " + created);
 		}
 		
 		File uninstalledDirectory = new File(getUninstalledAppsPath());
 		if (!uninstalledDirectory.exists()) {
 			created = created && uninstalledDirectory.mkdirs();
-			sysLogger.info("Creating " + uninstalledDirectory + ". Success? " + created);
+			sysLogger.debug("Creating " + uninstalledDirectory + ". Success? " + created);
 		}
 		
 		File downloadedDirectory = new File(getDownloadedAppsPath());
@@ -1216,7 +1216,7 @@ public class AppManager implements FrameworkListener {
 		File installRestartDirectory = new File(getInstallOnRestartAppsPath());
 		if (!installRestartDirectory.exists()) {
 			created = created && installRestartDirectory.mkdirs();
-			sysLogger.info("Creating " + installRestartDirectory + ". Success? " + created);
+			sysLogger.debug("Creating " + installRestartDirectory + ". Success? " + created);
 		}
 		
 		if (!created) {
