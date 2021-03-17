@@ -52,6 +52,8 @@ public class TransformerJsonTunable {
 						taskMonitor.showMessage(Level.ERROR, warning.getWarning());
 					}
 				}
+			} else {
+				System.out.println("Transformer cannot be validated: " + transformer.getName());
 			}
 		}
 		return valid;
