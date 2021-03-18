@@ -448,7 +448,7 @@ public abstract class AbstractTableBrowser extends JPanel
 			
 			for (int i = 0; i < sortedColViews.size(); i++) {
 				var colView = sortedColViews.get(i);
-				boolean vis = renderer.getColumnVisible(colView);
+				boolean vis = renderer.isColumnVisible(colView);
 				tcs.addColumnStat(colView.getModel().getName(), i, vis);
 			}
 

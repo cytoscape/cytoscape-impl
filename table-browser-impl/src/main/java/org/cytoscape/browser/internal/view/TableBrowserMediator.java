@@ -128,6 +128,17 @@ public class TableBrowserMediator implements SetCurrentNetworkListener, CytoPane
 				browserTable.setColumnVisible(column.getName(), false);
 		});
 	}
+	
+	public void toggleTextWrap(CyColumn column) {
+		var table = column.getTable();
+		
+		invokeOnEDTAndWait(() -> {
+			var browserTable = getTableRenderer(table);
+			
+			if (browserTable != null)
+				browserTable.setTextWrap(column.getName(), !browserTable.isTextWrap(column.getName()));
+		});
+	}
 
 	private TableRenderer getTableRenderer(CyTable table) {
 		if (nodeTableBrowser.getTableRenderer(table) != null)

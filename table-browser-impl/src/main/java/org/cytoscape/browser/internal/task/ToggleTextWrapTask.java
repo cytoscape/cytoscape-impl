@@ -30,7 +30,7 @@ import org.cytoscape.work.TaskMonitor;
  * #L%
  */
 
-public class HideColumnTask extends AbstractTableColumnTask {
+public class ToggleTextWrapTask extends AbstractTableColumnTask {
 
 	private final TableBrowserMediator mediator;
 	
@@ -39,17 +39,17 @@ public class HideColumnTask extends AbstractTableColumnTask {
 		return "Hide Column";
 	}
 	
-	public HideColumnTask(CyColumn column, TableBrowserMediator mediator) {
+	public ToggleTextWrapTask(CyColumn column, TableBrowserMediator mediator) {
 		super(column);
 		this.mediator = mediator;
 	}
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		tm.setTitle("Hide Column");
-		tm.setStatusMessage("Hiding column '" + column.getName() + "'...");
+		tm.setTitle("Toggle Text Wrap");
+		tm.setStatusMessage("Toggling text wrap of column '" + column.getName() + "'...");
 		tm.setProgress(-1);
 		
-		mediator.hideColumn(column);
+		mediator.toggleTextWrap(column);
 	}
 }

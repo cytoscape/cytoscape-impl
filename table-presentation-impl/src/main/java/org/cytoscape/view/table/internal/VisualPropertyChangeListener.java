@@ -125,8 +125,12 @@ public class VisualPropertyChangeListener implements TableViewChangedListener {
 				}
 			}
 		} else if (vp == CELL_TEXT_WRAPPED) {
-			if (value != Boolean.TRUE)
-				invokeOnEDT(() -> browserTable.resetRowHeight());
+			invokeOnEDT(() -> {
+				if (value == Boolean.TRUE)
+					browserTable.repaint();
+				else
+					browserTable.resetRowHeight();
+			});
 		} else if (vp == COLUMN_GRAVITY) {
 			if (value instanceof Number) {
 				double gravity = ((Number) value).doubleValue();

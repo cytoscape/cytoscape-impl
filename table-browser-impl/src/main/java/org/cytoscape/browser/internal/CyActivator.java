@@ -9,6 +9,7 @@ import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener
 import org.cytoscape.browser.internal.task.ClearAllErrorsTaskFactory;
 import org.cytoscape.browser.internal.task.HideColumnTaskFactory;
 import org.cytoscape.browser.internal.task.SetColumnFormatTaskFactory;
+import org.cytoscape.browser.internal.task.ToggleTextWrapTaskFactory;
 import org.cytoscape.browser.internal.view.DefaultTableBrowser;
 import org.cytoscape.browser.internal.view.GlobalTableBrowser;
 import org.cytoscape.browser.internal.view.TableBrowserMediator;
@@ -96,6 +97,12 @@ public class CyActivator extends AbstractCyActivator {
 			var factory = new HideColumnTaskFactory(mediator);
 			var props = new Properties();
 			props.setProperty(TITLE, "Hide Column");
+			registerService(bc, factory, TableColumnTaskFactory.class, props);
+		}
+		{
+			var factory = new ToggleTextWrapTaskFactory(mediator);
+			var props = new Properties();
+			props.setProperty(TITLE, "Toggle Text Wrap");
 			registerService(bc, factory, TableColumnTaskFactory.class, props);
 		}
 		
