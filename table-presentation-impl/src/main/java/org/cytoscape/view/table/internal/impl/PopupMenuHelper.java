@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
@@ -46,6 +47,7 @@ import org.cytoscape.view.table.internal.util.TableBrowserUtil;
 import org.cytoscape.view.table.internal.util.ValidatedObjectAndEditString;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.Togglable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -217,22 +219,28 @@ public class PopupMenuHelper {
 		if (!tf.isReady() || !enabledFor(tableType, props))
 			return;
 
-		String title = (String) props.get(TITLE);
+		var title = (String) props.get(TITLE);
 		
 		if (title == null)
 			title = "Unidentified Task: " + Integer.toString(tf.hashCode());
 
-		var mi = new JMenuItem(new PopupAction(tf, title));
+		var togglable = tf instanceof Togglable;
+		
+		var action = new PopupAction(tf, title);
+		var mi = togglable ? new JCheckBoxMenuItem(action) : new JMenuItem(action);
 		tracker.addMenuItem(mi, GravityTracker.USE_ALPHABETIC_ORDER);
+		
+		if (togglable)
+			((JCheckBoxMenuItem) mi).setSelected(((Togglable) tf).isOn());
 	}
 
 	private boolean enabledFor(Class<? extends CyIdentifiable> tableType, Map<?, ?> props) {
-		String types = (String) props.get("tableTypes");
+		var types = (String) props.get("tableTypes");
 
 		if (types == null)
 			return true;
 
-		for (String type : types.split(",")) {
+		for (var type : types.split(",")) {
 			type = type.trim();
 
 			if ("all".equals(type))
@@ -328,20 +336,20 @@ public class PopupMenuHelper {
 	/**
 	 * A simple action that executes the specified TaskFactory
 	 */
+	@SuppressWarnings("serial")
 	private class PopupAction extends AbstractAction {
-
-		private static final long serialVersionUID = -2841342029789163004L;
 
 		private final TaskFactory tf;
 
-		PopupAction(final TaskFactory tf, final String menuLabel) {
+		PopupAction(TaskFactory tf, String menuLabel) {
 			super(menuLabel);
 			this.tf = tf;
 		}
 
 		@Override
 		public void actionPerformed(ActionEvent ae) {
-			final TaskManager<?, ?> taskManager = serviceRegistrar.getService(TaskManager.class);
+			var taskManager = serviceRegistrar.getService(TaskManager.class);
+			
 			if (taskManager != null && tf != null)
 				taskManager.execute(tf.createTaskIterator());
 		}

@@ -102,7 +102,7 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			var factory = new ToggleTextWrapTaskFactory(mediator);
 			var props = new Properties();
-			props.setProperty(TITLE, "Toggle Text Wrap");
+			props.setProperty(TITLE, "Wrap Text");
 			registerService(bc, factory, TableColumnTaskFactory.class, props);
 		}
 		

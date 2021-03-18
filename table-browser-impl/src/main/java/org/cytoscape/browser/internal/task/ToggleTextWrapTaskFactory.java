@@ -3,6 +3,7 @@ package org.cytoscape.browser.internal.task;
 import org.cytoscape.browser.internal.view.TableBrowserMediator;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.task.AbstractTableColumnTaskFactory;
+import org.cytoscape.task.TogglableTableColumn;
 import org.cytoscape.work.TaskIterator;
 
 /*
@@ -29,7 +30,7 @@ import org.cytoscape.work.TaskIterator;
  * #L%
  */
 
-public class ToggleTextWrapTaskFactory extends AbstractTableColumnTaskFactory {
+public class ToggleTextWrapTaskFactory extends AbstractTableColumnTaskFactory implements TogglableTableColumn {
 
 	private final TableBrowserMediator mediator;
 
@@ -48,5 +49,10 @@ public class ToggleTextWrapTaskFactory extends AbstractTableColumnTaskFactory {
 	@Override
 	public boolean isReady(CyColumn column) {
 		return column != null && column.getType() == String.class;
+	}
+
+	@Override
+	public boolean isOn(CyColumn column) {
+		return mediator.isTextWrap(column);
 	}
 }

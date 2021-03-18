@@ -1,12 +1,23 @@
 package org.cytoscape.view.table.internal.util;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.task.TableCellTaskFactory;
+import org.cytoscape.task.TableColumnTaskFactory;
+import org.cytoscape.task.TogglableTableColumn;
+import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.Togglable;
+
 /*
  * #%L
  * Cytoscape Table Browser Impl (table-browser-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,46 +35,88 @@ package org.cytoscape.view.table.internal.util;
  * #L%
  */
 
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
-
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.task.TableCellTaskFactory;
-import org.cytoscape.task.TableColumnTaskFactory;
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskIterator;
-
 public class StaticTaskFactoryProvisioner {
 	
-	public TaskFactory createFor(final TableCellTaskFactory factory, final CyColumn column,
-			final Object primaryKeyValue) {
-		final Reference<CyColumn> columnReference = new WeakReference<CyColumn>(column);
-		final Reference<Object> keyReference = new WeakReference<Object>(primaryKeyValue);
+	public TaskFactory createFor(TableCellTaskFactory factory, CyColumn column, Object primaryKeyValue) {
+		var columnReference = new WeakReference<CyColumn>(column);
+		var keyReference = new WeakReference<Object>(primaryKeyValue);
 		
-		return new TaskFactory() {
-			@Override
-			public TaskIterator createTaskIterator() {
-				return factory.createTaskIterator(columnReference.get(), keyReference.get());
-			}
-			@Override
-			public boolean isReady() {
-				return factory.isReady(columnReference.get(), keyReference.get());
-			}
-		};
+		return new TogglableTableCellTaskFactory(factory, columnReference, keyReference);
 	}
 	
-	public TaskFactory createFor(final TableColumnTaskFactory factory, final CyColumn column) {
-		final Reference<CyColumn> columnReference = new WeakReference<CyColumn>(column);
+	public TaskFactory createFor(TableColumnTaskFactory factory, CyColumn column) {
+		var columnReference = new WeakReference<CyColumn>(column);
+
+		return new TogglableTableColumnTaskFactory(factory, columnReference);
+	}
+	
+	private class TogglableTableCellTaskFactory implements TaskFactory, Togglable {
 		
-		return new TaskFactory() {
-			@Override
-			public TaskIterator createTaskIterator() {
-				return factory.createTaskIterator(columnReference.get());
-			}
-			@Override
-			public boolean isReady() {
-				return factory.isReady(columnReference.get());
-			}
-		};
+		private final TableCellTaskFactory delegate;
+		private final Reference<CyColumn> columnReference;
+		private final Reference<Object> keyReference;
+		
+		TogglableTableCellTaskFactory(
+				TableCellTaskFactory delegate,
+				Reference<CyColumn> columnReference,
+				Reference<Object> keyReference
+		) {
+			this.delegate = delegate;
+			this.columnReference = columnReference;
+			this.keyReference = keyReference;
+		}
+
+		@Override
+		public TaskIterator createTaskIterator() {
+			return delegate.createTaskIterator(columnReference.get(), keyReference.get());
+		}
+
+		@Override
+		public boolean isReady() {
+			return delegate.isReady(columnReference.get(), keyReference.get());
+		}
+
+		@Override
+		public boolean isOn() {
+			if (delegate instanceof Togglable)
+				return ((Togglable) delegate).isOn();
+			
+			if (delegate instanceof TogglableTableColumn)
+				return ((TogglableTableColumn) delegate).isOn(columnReference.get());
+			
+			return false;
+		}
+	}
+	
+	private class TogglableTableColumnTaskFactory implements TaskFactory, Togglable {
+		
+		private final TableColumnTaskFactory delegate;
+		private final Reference<CyColumn> columnReference;
+		
+		TogglableTableColumnTaskFactory(TableColumnTaskFactory delegate, Reference<CyColumn> columnReference) {
+			this.delegate = delegate;
+			this.columnReference = columnReference;
+		}
+
+		@Override
+		public TaskIterator createTaskIterator() {
+			return delegate.createTaskIterator(columnReference.get());
+		}
+
+		@Override
+		public boolean isReady() {
+			return delegate.isReady(columnReference.get());
+		}
+
+		@Override
+		public boolean isOn() {
+			if (delegate instanceof Togglable)
+				return ((Togglable) delegate).isOn();
+			
+			if (delegate instanceof TogglableTableColumn)
+				return ((TogglableTableColumn) delegate).isOn(columnReference.get());
+			
+			return false;
+		}
 	}
 }

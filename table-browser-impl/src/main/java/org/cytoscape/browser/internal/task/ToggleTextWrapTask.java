@@ -47,7 +47,10 @@ public class ToggleTextWrapTask extends AbstractTableColumnTask {
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setTitle("Toggle Text Wrap");
-		tm.setStatusMessage("Toggling text wrap of column '" + column.getName() + "'...");
+		tm.setStatusMessage(
+				"Turning " + (mediator.isTextWrap(column) ? "off" : "on") + 
+				" text wrap for column '" + column.getName() + "'..."
+		);
 		tm.setProgress(-1);
 		
 		mediator.toggleTextWrap(column);
