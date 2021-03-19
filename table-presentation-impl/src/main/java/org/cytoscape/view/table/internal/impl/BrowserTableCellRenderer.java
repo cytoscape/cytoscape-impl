@@ -155,7 +155,7 @@ public class BrowserTableCellRenderer extends JPanel implements TableCellRendere
 			if (objEditStr.getErrorText() != null) {
 				text = "#ERR: " + objEditStr.getErrorText();
 			} else if (validatedObj instanceof Boolean) {
-				text = validatedObj == Boolean.TRUE ? IconManager.ICON_CHECK_SQUARE : IconManager.ICON_SQUARE_O;
+				text = Boolean.TRUE.equals(validatedObj) ? IconManager.ICON_CHECK_SQUARE : IconManager.ICON_SQUARE_O;
 			} else if (validatedObj instanceof Double) {
 				String formatStr = null;
 				var format = columnView.getVisualProperty(BasicTableVisualLexicon.COLUMN_FORMAT);

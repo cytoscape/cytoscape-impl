@@ -1,6 +1,6 @@
 package org.cytoscape.browser.internal.view;
 
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_TEXT_WRAPPED;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_TEXT_WRAPPED;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_FORMAT;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_GRAVITY;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_VISIBLE;
@@ -147,13 +147,13 @@ public class TableRenderer implements CyDisposable {
 		var colView = getTableView().getColumnView(name);
 		
 		if (colView != null)
-			colView.setLockedValue(CELL_TEXT_WRAPPED, wrap);
+			colView.setLockedValue(COLUMN_TEXT_WRAPPED, wrap);
 	}
 	
 	public boolean isTextWrap(String name) {
 		var colView = getTableView().getColumnView(name);
 		
-		return colView != null ? colView.getVisualProperty(CELL_TEXT_WRAPPED) : CELL_TEXT_WRAPPED.getDefault();
+		return colView != null ? colView.getVisualProperty(COLUMN_TEXT_WRAPPED) : COLUMN_TEXT_WRAPPED.getDefault();
 	}
 	
 	@Override

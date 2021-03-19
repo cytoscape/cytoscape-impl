@@ -1,7 +1,7 @@
 package org.cytoscape.view.table.internal;
 
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_BACKGROUND_PAINT;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_TEXT_WRAPPED;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_TEXT_WRAPPED;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_FORMAT;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_GRAVITY;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_VISIBLE;
@@ -91,7 +91,7 @@ public class VisualPropertyChangeListener implements TableViewChangedListener {
 				} else if (vp == TABLE_ROW_HEIGHT) {
 					invokeOnEDT(() -> browserTable.resetRowHeight());
 				} else if (vp == TABLE_GRID_VISIBLE) {
-					invokeOnEDT(() -> browserTable.setShowGrid(value == Boolean.TRUE));
+					invokeOnEDT(() -> browserTable.setShowGrid(Boolean.TRUE.equals(value)));
 				} else if (vp == TABLE_ALTERNATE_ROW_COLORS) {
 					invokeOnEDT(() -> browserTable.repaint());
 				}
@@ -106,7 +106,7 @@ public class VisualPropertyChangeListener implements TableViewChangedListener {
 	
 	private void updateColumnVP(CyColumnView colView, VisualProperty<?> vp, Object value) {
 		if (vp == COLUMN_VISIBLE) {
-			boolean visible = !Boolean.FALSE.equals(value);
+			boolean visible = Boolean.TRUE.equals(value);
 			var colModel = (BrowserTableColumnModel) browserTable.getColumnModel();
 			var col = colModel.getTableColumn(colView.getSUID());
 			colModel.setColumnVisible(col, visible);
@@ -125,9 +125,9 @@ public class VisualPropertyChangeListener implements TableViewChangedListener {
 					col.setWidth(width);
 				}
 			}
-		} else if (vp == CELL_TEXT_WRAPPED) {
+		} else if (vp == COLUMN_TEXT_WRAPPED) {
 			invokeOnEDT(() -> {
-				if (value == Boolean.TRUE)
+				if (Boolean.TRUE.equals(value))
 					browserTable.repaint();
 				else
 					browserTable.resetRowHeight();

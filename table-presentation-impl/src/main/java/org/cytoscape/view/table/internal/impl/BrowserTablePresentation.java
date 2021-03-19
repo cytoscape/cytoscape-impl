@@ -4,7 +4,7 @@ import static org.cytoscape.view.presentation.property.table.BasicTableVisualLex
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_FONT_FACE;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_FONT_SIZE;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_TEXT_COLOR;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_TEXT_WRAPPED;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_TEXT_WRAPPED;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_TOOLTIP;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_ALTERNATE_ROW_COLORS;
 import static org.cytoscape.view.table.internal.BrowserTableVisualLexicon.CELL_CUSTOMGRAPHICS;
@@ -36,7 +36,7 @@ public class BrowserTablePresentation {
 	public Color getBackgroundColor(CyRow row, int rowIndex, CyColumnView colView, CyTableView tableView) {
 		var color = UIManager.getColor("Table.background");
 		
-		if (tableView.getVisualProperty(TABLE_ALTERNATE_ROW_COLORS) == Boolean.TRUE) {
+		if (Boolean.TRUE.equals(tableView.getVisualProperty(TABLE_ALTERNATE_ROW_COLORS))) {
 			if (rowIndex % 2 != 0) {
 				color = UIManager.getColor("Table.alternateRowColor");
 				
@@ -138,8 +138,8 @@ public class BrowserTablePresentation {
 	public boolean isTextWrapped(CyRow row, CyColumnView colView) {
 		var b = false;
 		
-		if (colView.isSet(CELL_TEXT_WRAPPED)) {
-			var fn = colView.getCellVisualProperty(CELL_TEXT_WRAPPED);
+		if (colView.isSet(COLUMN_TEXT_WRAPPED)) {
+			var fn = colView.getCellVisualProperty(COLUMN_TEXT_WRAPPED);
 			
 			if (fn != null)
 				b = fn.apply(row);
