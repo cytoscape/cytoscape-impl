@@ -312,7 +312,7 @@ public class PopupMenuHelper {
 						// model.
 						ValidatedObjectAndEditString selected = (ValidatedObjectAndEditString) tableModel
 								.getValueAt(table.convertRowIndexToModel(rowIndex), CyNetwork.SUID);
-						targetRows.add(tableModel.getRow(selected.getValidatedObject()));
+						targetRows.add(tableModel.getCyRow(selected.getValidatedObject()));
 					}
 
 					CyTable cyTable = tableType == CyNode.class ? net.getDefaultNodeTable() : net.getDefaultEdgeTable();

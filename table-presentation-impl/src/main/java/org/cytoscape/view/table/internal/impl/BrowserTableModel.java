@@ -224,6 +224,10 @@ public final class BrowserTableModel extends AbstractTableModel
 		return null;
 	}
 	
+	CyRow getCyRow(Object suid) {
+		return dataTable.getRow(suid);
+	}
+	
 	public int indexOfRow(CyRow row) {
 		try {
 			switch (viewMode) {
@@ -518,10 +522,6 @@ public final class BrowserTableModel extends AbstractTableModel
 			return attrNames.get(index);
 
 		throw new ArrayIndexOutOfBoundsException();
-	}
-
-	CyRow getRow(Object suid) {
-		return dataTable.getRow(suid);
 	}
 
 	@Override

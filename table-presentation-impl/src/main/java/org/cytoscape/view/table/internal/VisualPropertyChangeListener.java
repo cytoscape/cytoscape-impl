@@ -7,6 +7,7 @@ import static org.cytoscape.view.presentation.property.table.BasicTableVisualLex
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_VISIBLE;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_WIDTH;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.ROW_HEIGHT;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.ROW_SELECTED;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_ALTERNATE_ROW_COLORS;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_GRID_VISIBLE;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_ROW_HEIGHT;
@@ -158,6 +159,26 @@ public class VisualPropertyChangeListener implements TableViewChangedListener {
 						// Always check the current row height to avoid an infinite loop!
 						if (idx >= 0 && idx < browserTable.getRowCount() && h != browserTable.getRowHeight(idx))
 							browserTable.setRowHeight(idx, h);
+					}
+				}
+			}
+		} else if (vp == ROW_SELECTED) {
+			if (value instanceof Boolean) {
+				boolean selected = Boolean.TRUE.equals(value);
+				
+				var tableModel = browserTable.getBrowserTableModel();
+				var pkName = tableView.getModel().getPrimaryKey().getName();
+				var pk = rowView.getModel().getRaw(pkName);
+				
+				if (pk != null) {
+					var idx = tableModel.indexOfRow(rowView.getModel());
+					idx = browserTable.convertRowIndexToView(idx);
+					
+					if (idx >= 0 && idx < browserTable.getRowCount() && selected != browserTable.isRowSelected(idx)) {
+						if (selected)
+							browserTable.addRowSelectionInterval(idx, idx);
+						else
+							browserTable.removeRowSelectionInterval(idx, idx);
 					}
 				}
 			}

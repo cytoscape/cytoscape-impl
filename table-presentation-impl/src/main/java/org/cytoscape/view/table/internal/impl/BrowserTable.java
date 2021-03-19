@@ -8,6 +8,7 @@ import static org.cytoscape.view.presentation.property.table.BasicTableVisualLex
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_VISIBLE;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_WIDTH;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.ROW_HEIGHT;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.ROW_SELECTED;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_GRID_VISIBLE;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_ROW_HEIGHT;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.ALL;
@@ -796,8 +797,37 @@ public class BrowserTable extends JTable
 		addMouseListener(this);
 		
 		getSelectionModel().addListSelectionListener(e -> {
-			if (!e.getValueIsAdjusting() && !ignoreRowSelectionEvents)
+			if (!e.getValueIsAdjusting() && !ignoreRowSelectionEvents) {
 				selectFromTable();
+				
+				// Update the SELECTED visual property
+				var tableModel = getBrowserTableModel();
+				
+				if (tableModel != null) {
+					var tableView = tableModel.getTableView();
+					var changed = false;
+					
+					for (int idx = e.getFirstIndex(); idx <= e.getLastIndex(); idx++) {
+						// There can be ArrayIndexOutOfBoundsExceptions here when changing TABLE_VIEW_MODE
+						if (idx >= getRowCount())
+							continue;
+						
+						var cyRow = tableModel.getCyRow(convertRowIndexToModel(idx));
+						var rowView = tableView.getRowView(cyRow);
+						var selected = isRowSelected(idx);
+						
+						if (selected != rowView.getVisualProperty(ROW_SELECTED)) {
+							rowView.setVisualProperty(ROW_SELECTED, selected);
+							changed = true;
+						}
+					}
+					
+					// Flush events here to prevent ROW_SELECTED events from being captured later when
+					// the selection may have been changed again, which could cause infinite loops
+					if (changed)
+						serviceRegistrar.getService(CyEventHelper.class).flushPayloadEvents();
+				}
+			}
 		});
 	}
 	
@@ -1083,7 +1113,7 @@ public class BrowserTable extends JTable
 			// need to convert the index to model
 			var selected = (ValidatedObjectAndEditString) btModel.getValueAt(
 					convertRowIndexToModel(rowsSelected[i]), pKeyName);
-			targetRows.add(btModel.getRow(selected.getValidatedObject()));
+			targetRows.add(btModel.getCyRow(selected.getValidatedObject()));
 		}
 
 		// Clear selection for non-global table
