@@ -11,6 +11,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -121,6 +122,7 @@ public class PreferencesDialog extends JDialog implements ItemListener, ActionLi
 
 	private void initCMB() {
 		String[] keys = propMap.keySet().toArray(new String[propMap.keySet().size()]);
+    Arrays.sort(keys);
 		DefaultComboBoxModel<String> cmbModel = new DefaultComboBoxModel<>(keys);
 
 		this.cmbPropCategories.setModel(cmbModel);
