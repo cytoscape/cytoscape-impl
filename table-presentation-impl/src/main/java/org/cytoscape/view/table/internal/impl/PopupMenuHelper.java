@@ -36,13 +36,13 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.DynamicTaskFactoryProvisioner;
 import org.cytoscape.task.TableCellTaskFactory;
 import org.cytoscape.task.TableColumnTaskFactory;
 import org.cytoscape.util.swing.GravityTracker;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.util.swing.PopupMenuGravityTracker;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.table.internal.util.StaticTaskFactoryProvisioner;
 import org.cytoscape.view.table.internal.util.TableBrowserUtil;
 import org.cytoscape.view.table.internal.util.ValidatedObjectAndEditString;
 import org.cytoscape.work.TaskFactory;
@@ -82,7 +82,6 @@ public class PopupMenuHelper {
 
 	private final Map<TableCellTaskFactory, Map<?, ?>> tableCellFactoryMap;
 	private final Map<TableColumnTaskFactory, Map<?, ?>> tableColumnFactoryMap;
-	private final StaticTaskFactoryProvisioner factoryProvisioner;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	
@@ -93,7 +92,6 @@ public class PopupMenuHelper {
 
 		tableCellFactoryMap = new HashMap<>();
 		tableColumnFactoryMap = new HashMap<>();
-		factoryProvisioner = new StaticTaskFactoryProvisioner();
 	}
 
 	public void createColumnHeaderMenu(CyColumn column, Class<? extends CyIdentifiable> tableType, Component invoker,
@@ -103,6 +101,7 @@ public class PopupMenuHelper {
 
 		var menu = new JPopupMenu();
 		var tracker = new PopupMenuGravityTracker(menu);
+		var factoryProvisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
 
 		for (var entry : tableColumnFactoryMap.entrySet()) {
 			var taskFactory = entry.getKey();
@@ -128,6 +127,7 @@ public class PopupMenuHelper {
 		}
 
 		var tracker = new PopupMenuGravityTracker(menu);
+		var factoryProvisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
 
 		for (var entry : tableCellFactoryMap.entrySet()) {
 			var taskFactory = entry.getKey();
@@ -231,7 +231,7 @@ public class PopupMenuHelper {
 		tracker.addMenuItem(mi, GravityTracker.USE_ALPHABETIC_ORDER);
 		
 		if (togglable)
-			((JCheckBoxMenuItem) mi).setSelected(((Togglable) tf).isOn());
+			((JCheckBoxMenuItem) mi).setSelected(tf.isOn());
 	}
 
 	private boolean enabledFor(Class<? extends CyIdentifiable> tableType, Map<?, ?> props) {
