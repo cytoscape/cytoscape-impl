@@ -1,19 +1,8 @@
 package org.cytoscape.view.table.internal.impl;
 
-import static org.cytoscape.util.swing.LookAndFeelUtil.getSmallFontSize;
-import static org.cytoscape.util.swing.LookAndFeelUtil.isMac;
-import static org.cytoscape.util.swing.LookAndFeelUtil.isWindows;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_EDITABLE;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_GRAVITY;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_VISIBLE;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_WIDTH;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.ROW_HEIGHT;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.ROW_SELECTED;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_GRID_VISIBLE;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_ROW_HEIGHT;
-import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.ALL;
-import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.AUTO;
-import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.SELECTED;
+import static org.cytoscape.util.swing.LookAndFeelUtil.*;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.*;
+import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.*;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -440,7 +429,7 @@ public class BrowserTable extends JTable
 		var rowView = tableView.getRowView(cyRow);
 
 		if (!rowView.isSet(ROW_HEIGHT) || rowHeight != rowView.getVisualProperty(ROW_HEIGHT)) {
-			rowView.setVisualProperty(ROW_HEIGHT, rowHeight);
+			rowView.setLockedValue(ROW_HEIGHT, rowHeight);
 			// If we don't force the event to be fired now, the correct value for this rowView can get out of sync,
 			// which will almost certainly cause an infinite loop!
 			serviceRegistrar.getService(CyEventHelper.class).flushPayloadEvents();
@@ -871,7 +860,7 @@ public class BrowserTable extends JTable
 						var selected = isRowSelected(idx);
 						
 						if (selected != rowView.getVisualProperty(ROW_SELECTED)) {
-							rowView.setVisualProperty(ROW_SELECTED, selected);
+							rowView.setLockedValue(ROW_SELECTED, selected);
 							changed = true;
 						}
 					}

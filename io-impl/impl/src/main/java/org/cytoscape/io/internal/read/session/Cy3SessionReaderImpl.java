@@ -35,6 +35,7 @@ import org.cytoscape.io.internal.util.SUIDUpdater;
 import org.cytoscape.io.internal.util.cytables.model.BypassValue;
 import org.cytoscape.io.internal.util.cytables.model.ColumnView;
 import org.cytoscape.io.internal.util.cytables.model.CyTables;
+import org.cytoscape.io.internal.util.cytables.model.RowView;
 import org.cytoscape.io.internal.util.cytables.model.TableView;
 import org.cytoscape.io.internal.util.cytables.model.VirtualColumn;
 import org.cytoscape.io.internal.util.session.SessionUtil;
@@ -62,6 +63,7 @@ import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.table.CyColumnViewMetadata;
+import org.cytoscape.view.model.table.CyRowViewMetadata;
 import org.cytoscape.view.model.table.CyTableViewMetadata;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.TaskMonitor;
@@ -393,6 +395,9 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			List<TableView> xmlTableViews = xmlTables.getTableViews().getTableView();
 			
 			for(TableView xmlTableView : xmlTableViews) {
+				CyTableMetadata table = lookupTable(xmlTableView);
+				CyColumn keyCol = table.getTable().getPrimaryKey();
+				
 				String rendererId = xmlTableView.getRendererId();
 				String namespace  = xmlTableView.getTableNamespace();
 				
@@ -401,22 +406,85 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 					String styleTitle = xmlColView.getStyleTitle();
 					String colName = xmlColView.getColumnName();
 					
-					Map<String,String> bypassValues = new HashMap<>();
+					Map<String,String> colBypasses = new HashMap<>();
 					for(BypassValue xmlBypass : xmlColView.getBypassValue()) {
-						bypassValues.put(xmlBypass.getName(), xmlBypass.getValue());
+						colBypasses.put(xmlBypass.getName(), xmlBypass.getValue());
 					}
-					columnViews.add(new CyColumnViewMetadata(colName, styleTitle, bypassValues));
+					columnViews.add(new CyColumnViewMetadata(colName, styleTitle, colBypasses));
 				}
 				
-				CyTableViewMetadata tableViewMetadata = new CyTableViewMetadata(-1, namespace, rendererId, columnViews);
+				List<CyRowViewMetadata> rowViews = new ArrayList<>();
+				for(RowView xmlRowView : xmlTableView.getRowView()) {
+					Object keyVal = deserializeKey(xmlRowView.getKey(), keyCol);
+					if(primaryKeyIsSUID(table.getTable())) {
+						keyVal = suidUpdater.getNewSUID((Long)keyVal);
+					}
+					
+					Map<String,String> rowBypasses = new HashMap<>();
+					for(BypassValue xmlBypass : xmlRowView.getBypassValue()) {
+						rowBypasses.put(xmlBypass.getName(), xmlBypass.getValue());
+					}
+					rowViews.add(new CyRowViewMetadata(keyVal, rowBypasses));
+				}
 				
-				CyTableMetadata table = lookupTable(xmlTableView);
+				Map<String,String> tableBypasses = new HashMap<>();
+				for(BypassValue xmlBypass : xmlTableView.getBypassValue()) {
+					tableBypasses.put(xmlBypass.getName(), xmlBypass.getValue());
+				}
+				
+				CyTableViewMetadata tableViewMetadata = new CyTableViewMetadata(-1, namespace, rendererId, tableBypasses, 
+						columnViews, rowViews, keyCol.getType(), keyCol.getListElementType());
 				tableViewMetadata.setUnderlyingTable(table);
 				
 				tableViews.add(tableViewMetadata);
 			}
 		}
 	}
+	
+	private static boolean primaryKeyIsSUID(CyTable table) {
+		CyColumn pk = table.getPrimaryKey();
+		return pk.getName().equals(CyIdentifiable.SUID) && pk.getType().equals(Long.class);
+	}
+	
+	private static Object deserializeKey(String key, CyColumn primaryKeyColumn) {
+		Class<?> type = primaryKeyColumn.getType();
+		
+		if (type.equals(List.class)) {
+			Class<?> listElementType = primaryKeyColumn.getListElementType();
+			List<Object> list = new ArrayList<>();
+			String[] values = key.split("|");
+			for (String item : values) {
+				list.add(deserializeNonListValue(item, listElementType));
+			}
+			if (list.size() == 1 && list.get(0) == null) 
+				return null;
+			return list;
+		} else {
+			return deserializeNonListValue(key, type);
+		}
+	}
+	
+	private static Object deserializeNonListValue(String value, Class<?> type) {
+		if(type.equals(String.class)) {
+			return value;
+		} else if(value.isEmpty()) {
+			return null;
+		} else {
+			try {
+				if (type.equals(Long.class)) {
+					return Long.valueOf(value);
+				} else if (type.equals(Boolean.class)) {
+					return Boolean.valueOf(value);
+				} else if (type.equals(Double.class)) {
+					return Double.valueOf(value);
+				} else if (type.equals(Integer.class)) {
+					return Integer.valueOf(value); 
+				}
+			} catch (Exception e) { }
+		}
+		return null;
+	}
+	
 	
 	private CyTableMetadata lookupTable(TableView xmlTableView) {
 		CyTable table = filenameTableMap.get(xmlTableView.getTable());

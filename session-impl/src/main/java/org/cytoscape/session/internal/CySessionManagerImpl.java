@@ -24,6 +24,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyTableMetadata;
@@ -46,6 +47,7 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.table.CyColumnViewMetadata;
+import org.cytoscape.view.model.table.CyRowViewMetadata;
 import org.cytoscape.view.model.table.CyTableView;
 import org.cytoscape.view.model.table.CyTableViewFactory;
 import org.cytoscape.view.model.table.CyTableViewManager;
@@ -135,22 +137,18 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		TableVisualMappingManager tblVmMgr = serviceRegistrar.getService(TableVisualMappingManager.class);
 		CyTableViewManager tvMgr = serviceRegistrar.getService(CyTableViewManager.class);
 		
-		
 		Set<CyTableView> tableViews = tvMgr.getTableViewSet();
 		Set<CyTableViewMetadata> tableViewMetadatas = new HashSet<>();
-		
 		
 		for(CyTableView tableView : tableViews) {
 			tableViewMetadatas.add(getTableViewMetadata(tableView));
 		}
-		
 
 		Map<String, List<File>> appMap = savingEvent.getAppFileListMap();
 		Set<CyTableMetadata> metadata = createTablesMetadata(networks);
 		Set<VisualStyle> styles = vmMgr.getAllVisualStyles();
 		Set<CyProperty<?>> props = getAllProperties();
 		Set<VisualStyle> tableStyles = tblVmMgr.getAllVisualStyles();
-		
 		
 		// Build the session
 		CySession sess = new CySession.Builder()
@@ -183,24 +181,22 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		String namespace = networkTableManager.getTableNamespace(table);
 		String rendererID = tableView.getRendererId();
 		
+		Map<String,String> tableBypasses = new HashMap<>();
+		for(VisualProperty<?> vp : lexicon.getAllDescendants(BasicTableVisualLexicon.TABLE)) {
+			if(tableView.isDirectlyLocked(vp)) {
+				addBypassValue(tableBypasses, vp, tableView.getVisualProperty(vp));
+			}
+		}
+		
 		List<CyColumnViewMetadata> columnMetadataList = new ArrayList<>();
 		
 		for(View<CyColumn> colView : tableView.getColumnViews()) {
-			Map<String,String> bypassValues = new HashMap<>();
+			Map<String,String> colBypasses = new HashMap<>();
 			
-			for(VisualProperty vp : lexicon.getAllVisualProperties()) {
+			for(VisualProperty<?> vp : lexicon.getAllDescendants(BasicTableVisualLexicon.COLUMN)) {
 				if(colView.isDirectlyLocked(vp)) {
-					Object value = colView.getVisualProperty(vp);
-					
 					// Have to serialize the VP values early in the session manager because they get restored here too :)
-					String valueString = null;
-					try {
-						valueString = vp.toSerializableString(value);
-					} catch(ClassCastException e) { }
-					
-					if(value != null) {
-						bypassValues.put(vp.getIdString(), valueString);
-					}
+					addBypassValue(colBypasses, vp, colView.getVisualProperty(vp));
 				}
 			}
 			
@@ -211,12 +207,44 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 			}
 			
 			var colName = colView.getModel().getName();
-			var colMetadata = new CyColumnViewMetadata(colName, styleName, bypassValues);
+			var colMetadata = new CyColumnViewMetadata(colName, styleName, colBypasses);
 			columnMetadataList.add(colMetadata);
 		}
 		
-		return new CyTableViewMetadata(actualSuid, namespace, rendererID, columnMetadataList);
+		CyColumn keyCol = table.getPrimaryKey();
+		List<CyRowViewMetadata> rowMetadataList = new ArrayList<>();
+		
+		for(View<CyRow> rowView : tableView.getRowViews()) {
+			Map<String,String> rowBypasses = new HashMap<>();
+			
+			for(VisualProperty<?> vp : lexicon.getAllDescendants(BasicTableVisualLexicon.ROW)) {
+				if(rowView.isDirectlyLocked(vp)) {
+					addBypassValue(rowBypasses, vp, rowView.getVisualProperty(vp));
+				}
+			}
+			
+			// MKTODO what if the key is a List ??? Take a look at CSVCyWriter.writeValues()
+			var keyValue = rowView.getModel().get(keyCol.getName(), keyCol.getType());
+			var rowMetadata = new CyRowViewMetadata(keyValue, rowBypasses);
+			rowMetadataList.add(rowMetadata);
+		}
+		
+		return new CyTableViewMetadata(actualSuid, namespace, rendererID, tableBypasses, 
+				columnMetadataList, rowMetadataList, keyCol.getType(), keyCol.getListElementType());
 	}
+	
+	private static void addBypassValue(Map<String,String> bypassValues, VisualProperty vp, Object value) {
+		// Have to serialize the VP values early in the session manager because they get restored here too :)
+		String valueString = null;
+		try {
+			valueString = vp.toSerializableString(value);
+		} catch(ClassCastException e) { }
+		
+		if(value != null) {
+			bypassValues.put(vp.getIdString(), valueString);
+		}
+	}
+	
 	
 	
 	private VisualLexicon getVisualLexicon(CyTableView tableView) {
@@ -530,7 +558,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 					CyTableView tableView = tableViewFactory.createTableView(table);
 					
 					VisualLexicon lexicon = renderer.getRenderingEngineFactory(TableViewRenderer.DEFAULT_CONTEXT).getVisualLexicon();
-					restoreTableViewBypasses(tableView, tableViewMetadata, lexicon);
+					restoreTableViewBypasses(sess, tableView, tableViewMetadata, lexicon);
 					
 					tableViewManager.setTableView(tableView);
 					
@@ -554,7 +582,20 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	}
 	
 
-	private void restoreTableViewBypasses(CyTableView tableView, CyTableViewMetadata tableViewMetadata, VisualLexicon lexicon) {
+	private void restoreTableViewBypasses(CySession sess, CyTableView tableView, CyTableViewMetadata tableViewMetadata, VisualLexicon lexicon) {
+		for(var entry : tableViewMetadata.getBypassValues().entrySet()) {
+			String vpId = entry.getKey();
+			String vpStr = entry.getValue();
+			
+			VisualProperty<?> vp = lexicon.lookup(CyTable.class, vpId);
+			if(vp != null) {
+				Object parsedValue = vp.parseSerializableString(vpStr);
+				if(parsedValue != null) {
+					tableView.setLockedValue(vp, parsedValue);
+				}
+			}
+		}
+		
 		// Restore column view visual property bypass values. Other values come from the style.
 		for(CyColumnViewMetadata colViewMeta : tableViewMetadata.getColumnViews()) {
 			View<CyColumn> colView = tableView.getColumnView(colViewMeta.getName());
@@ -572,7 +613,26 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 				}
 			}
 		}
+		
+		for(CyRowViewMetadata rowViewMeta : tableViewMetadata.getRowViews()) {
+			CyRow row = tableView.getModel().getRow(rowViewMeta.getKeyValue());
+			View<CyRow> rowView = tableView.getRowView(row);
+			
+			for(var entry : rowViewMeta.getBypassValues().entrySet()) {
+				String vpId = entry.getKey();
+				String vpStr = entry.getValue();
+				
+				VisualProperty<?> vp = lexicon.lookup(CyRow.class, vpId);
+				if(vp != null) {
+					Object parsedValue = vp.parseSerializableString(vpStr);
+					if(parsedValue != null) {
+						rowView.setLockedValue(vp, parsedValue);
+					}
+				}
+			}
+		}
 	}
+	
 	
 	private void restoreTables(final CySession sess) {
 		final Set<CyTable> allTables = new HashSet<>();
