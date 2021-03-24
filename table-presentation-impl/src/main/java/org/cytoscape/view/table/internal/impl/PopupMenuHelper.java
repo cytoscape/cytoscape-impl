@@ -1,5 +1,9 @@
 package org.cytoscape.view.table.internal.impl;
 
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.SMALL_ICON_ID;
 import static org.cytoscape.work.ServiceProperties.TITLE;
 
 import java.awt.Component;
@@ -40,6 +44,7 @@ import org.cytoscape.task.DynamicTaskFactoryProvisioner;
 import org.cytoscape.task.TableCellTaskFactory;
 import org.cytoscape.task.TableColumnTaskFactory;
 import org.cytoscape.util.swing.GravityTracker;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.util.swing.PopupMenuGravityTracker;
 import org.cytoscape.view.model.CyNetworkView;
@@ -108,6 +113,8 @@ public class PopupMenuHelper {
 			var provisioner = factoryProvisioner.createFor(taskFactory, column);
 			createMenuItem(provisioner, tracker, entry.getValue(), tableType);
 		}
+		
+		sanitize(menu);
 
 		if (menu.getSubElements().length > 0)
 			menu.show(invoker, x, y);
@@ -204,6 +211,8 @@ public class PopupMenuHelper {
 			});
 			menu.add(mi);
 		}
+		
+		sanitize(menu);
 
 		if (menu.getSubElements().length > 0)
 			menu.show(invoker, x, y);
@@ -219,6 +228,14 @@ public class PopupMenuHelper {
 		if (!tf.isReady() || !enabledFor(tableType, props))
 			return;
 
+		var menuGravity = (String) props.get(MENU_GRAVITY);
+		double gravity = menuGravity != null ? Double.parseDouble(menuGravity) : -1/* Alphabetize by default */;
+		
+		boolean insertSepBefore = getBooleanProperty(props, INSERT_SEPARATOR_BEFORE);
+		
+		if (insertSepBefore)
+			tracker.addMenuSeparator(gravity - .0001);
+		
 		var title = (String) props.get(TITLE);
 		
 		if (title == null)
@@ -228,10 +245,25 @@ public class PopupMenuHelper {
 		
 		var action = new PopupAction(tf, title);
 		var mi = togglable ? new JCheckBoxMenuItem(action) : new JMenuItem(action);
-		tracker.addMenuItem(mi, GravityTracker.USE_ALPHABETIC_ORDER);
+		tracker.addMenuItem(mi, gravity);
+		
+		var iconId = props.get(SMALL_ICON_ID);
+		
+		if (iconId != null && !iconId.toString().trim().isEmpty()) {
+			// Check if the icon is really registered
+			var icon = serviceRegistrar.getService(IconManager.class).getIcon(iconId.toString());
+			
+			if (icon != null)
+				mi.setIcon(icon);
+		}
 		
 		if (togglable)
 			((JCheckBoxMenuItem) mi).setSelected(tf.isOn());
+		
+		boolean insertSepAfter = getBooleanProperty(props, INSERT_SEPARATOR_AFTER);
+		
+		if (insertSepAfter)
+			tracker.addMenuSeparator(gravity + .0001);
 	}
 
 	private boolean enabledFor(Class<? extends CyIdentifiable> tableType, Map<?, ?> props) {
@@ -331,6 +363,41 @@ public class PopupMenuHelper {
 			}
 		};
 		t.start();
+	}
+	
+	private boolean getBooleanProperty(Map<?, ?> props, String property) {
+		var value = (String) props.get(property); // get the property
+
+		if (value == null || value.length() == 0)
+			return false;
+		
+		try {
+			return Boolean.parseBoolean(value);
+		} catch (Exception e) {
+			return false;
+		}
+	}
+	
+	/**
+	 * Hides duplicate separators.
+	 */
+	private void sanitize(JPopupMenu menu) {
+		boolean hasSeparator = false;
+		
+		for (int i = 0; i < menu.getComponentCount(); i++) {
+			var comp = menu.getComponent(i);
+			
+			if (comp instanceof JSeparator) {
+				// Already has one separator? So hide this one.
+				// Also hide if it's the first or last component.
+				if (hasSeparator || i == 0 || i == menu.getComponentCount() - 1)
+					comp.setVisible(false);
+				else
+					hasSeparator = true;
+			} else if (comp.isVisible()) {
+				hasSeparator = false;
+			}
+		}
 	}
 	
 	/**
