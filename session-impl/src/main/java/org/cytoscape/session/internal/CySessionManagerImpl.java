@@ -227,7 +227,8 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 				return re.getVisualLexicon();
 			}
 		}
-		return null;
+		logger.error("VisualLexicon not found for tableView while saving session: " + tableView.getModel().getTitle());
+		return renderingEngineManager.getDefaultTableVisualLexicon();
 	}
 	
 	
