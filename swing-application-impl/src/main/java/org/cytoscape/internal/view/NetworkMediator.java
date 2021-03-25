@@ -15,10 +15,14 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
+import javax.swing.event.PopupMenuListener;
 
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.internal.actions.DestroyNetworksAction;
 import org.cytoscape.internal.model.RootNetworkManager;
+import org.cytoscape.internal.task.DynamicTaskFactory;
+import org.cytoscape.internal.task.DynamicTogglableTaskFactory;
 import org.cytoscape.internal.task.TaskFactoryTunableAction;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
@@ -64,6 +68,7 @@ import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.Togglable;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 /*
@@ -253,17 +258,10 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 	
 	public void addRootNetworkCollectionTaskFactory(RootNetworkCollectionTaskFactory factory, Map<?, ?> props) {
 		invokeOnEDT(() -> {
-			TaskFactory provisioner = new TaskFactory() {
-				@Override
-				public TaskIterator createTaskIterator() {
-					return factory.createTaskIterator(rootNetManager.getSelectedRootNetworks());
-				}
-				
-				@Override
-				public boolean isReady() {
-					return factory.isReady(rootNetManager.getSelectedRootNetworks());
-				}
-			};
+			var provisioner = factory instanceof Togglable ?
+					new DynamicTogglableTaskFactory(factory, rootNetManager) :
+					new DynamicTaskFactory(factory, rootNetManager);
+			
 			provisionerMap.put(factory, provisioner);
 			addFactory(provisioner, props, true);
 		});
@@ -397,6 +395,28 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 		}
 	}
 	
+	/**
+	 * Hides duplicate separators.
+	 */
+	private static void sanitize(JPopupMenu menu) {
+		boolean hasSeparator = false;
+		
+		for (int i = 0; i < menu.getComponentCount(); i++) {
+			var comp = menu.getComponent(i);
+			
+			if (comp instanceof JSeparator) {
+				// Already has one separator? So hide this one.
+				// Also hide if it's the first or last component.
+				if (hasSeparator || i == 0 || i == menu.getComponentCount() - 1)
+					comp.setVisible(false);
+				else
+					hasSeparator = true;
+			} else if (comp.isVisible()) {
+				hasSeparator = false;
+			}
+		}
+	}
+	
 	// // Classes // //
 	
 	/**
@@ -472,6 +492,8 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 				}
 			}
 			
+			sanitize(popup);
+			
 			popup.addPropertyChangeListener("visible", ev -> {
 				boolean visible = Boolean.TRUE.equals(ev.getNewValue());
 				if(!visible) {
@@ -500,6 +522,9 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 					gravityTracker.addMenuSeparator(a.getMenuGravity() + .0001);
 				
 				a.updateEnableState();
+				
+				if (a instanceof PopupMenuListener)
+					popup.addPopupMenuListener((PopupMenuListener) a);
 			}
 		}
 	}

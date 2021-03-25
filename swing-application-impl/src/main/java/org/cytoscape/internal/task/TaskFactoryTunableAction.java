@@ -6,7 +6,9 @@ import static org.cytoscape.work.ServiceProperties.SMALL_ICON_ID;
 import java.awt.event.ActionEvent;
 import java.util.Map;
 
-import javax.swing.Icon;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
@@ -16,6 +18,7 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.Togglable;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +48,7 @@ import org.slf4j.LoggerFactory;
  */
 
 @SuppressWarnings("serial")
-public class TaskFactoryTunableAction extends AbstractCyAction {
+public class TaskFactoryTunableAction extends AbstractCyAction implements PopupMenuListener {
 
 	private final static Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
@@ -61,7 +64,7 @@ public class TaskFactoryTunableAction extends AbstractCyAction {
 		super(props, factory);
 		this.factory = factory;
 		this.serviceRegistrar = serviceRegistrar;
-		setIcons();
+		config();
 	}
 
 	/**
@@ -78,12 +81,39 @@ public class TaskFactoryTunableAction extends AbstractCyAction {
 		);
 		this.factory = factory;
 		this.serviceRegistrar = serviceRegistrar;
-		setIcons();
+		config();
 	}
+	
+	@Override
+	public void actionPerformed(ActionEvent evt) {
+		logger.debug("About to execute task from factory: " + factory.toString());
 
-	private void setIcons() {
-		final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
-		final String largeIconId = configurationProperties.get(LARGE_ICON_ID);
+		// execute the task(s) in a separate thread
+		var taskManager = serviceRegistrar.getService(DialogTaskManager.class);
+		taskManager.execute(factory.createTaskIterator());
+	}
+	
+	@Override
+	public void popupMenuWillBecomeVisible(PopupMenuEvent evt) {
+		if (factory instanceof Togglable)
+			putValue(SELECTED_KEY, factory.isOn());
+	}
+	
+	@Override
+	public void menuSelected(MenuEvent evt) {
+		super.menuSelected(evt);
+		
+		if (factory instanceof Togglable)
+			putValue(SELECTED_KEY, factory.isOn());
+	}
+	
+	private void config() {
+		// Togglable
+		useCheckBoxMenuItem = useToggleButton = (factory instanceof Togglable);
+		
+		// Icons
+		var iconManager = serviceRegistrar.getService(IconManager.class);
+		var largeIconId = configurationProperties.get(LARGE_ICON_ID);
 
 		if (largeIconId != null && !largeIconId.trim().isEmpty()) {
 			// Check if the icon is really registered
@@ -102,14 +132,5 @@ public class TaskFactoryTunableAction extends AbstractCyAction {
 			if (icon != null)
 				putValue(SMALL_ICON, icon);
 		}
-	}
-	
-	@Override
-	public void actionPerformed(ActionEvent evt) {
-		logger.debug("About to execute task from factory: " + factory.toString());
-
-		// execute the task(s) in a separate thread
-		final DialogTaskManager taskManager = serviceRegistrar.getService(DialogTaskManager.class);
-		taskManager.execute(factory.createTaskIterator());
 	}
 }

@@ -16,6 +16,7 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
@@ -37,6 +38,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.Togglable;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -150,6 +152,9 @@ class PopupMenuHelper {
 						logger.error("Could not display context menu.", t);
 					}
 				}
+				
+				sanitize(menu);
+				
 				menu.show(invoker, x, y);
 			}
 		}
@@ -211,6 +216,8 @@ class PopupMenuHelper {
 						logger.error("Could not display context menu.", t);
 					}
 				}
+				
+				sanitize(menu);
 				
 				menu.show(invoker, x, y);
 			}
@@ -287,6 +294,8 @@ class PopupMenuHelper {
 				}
 			}
 			
+			sanitize(menu);
+			
 			// There are more than one menu item, let user make the selection
 			menu.show(invoker,(int)(rawPt.getX()), (int)(rawPt.getY()));		
 		}
@@ -326,18 +335,11 @@ class PopupMenuHelper {
 		String prefAction = (String) (props.get(PREFERRED_ACTION));
 		boolean insertSepBefore = getBooleanProperty(props, INSERT_SEPARATOR_BEFORE);
 		boolean insertSepAfter = getBooleanProperty(props, INSERT_SEPARATOR_AFTER);
-		boolean useCheckBoxMenuItem = getBooleanProperty(props, "useCheckBoxMenuItem");
-		double gravity;
 
 		if ("View".equalsIgnoreCase(pref))
 			return; // TODO Should we show 'View' options here (e.g. zoom in/out, fit selected)?
 		
-		if (menuGravity != null) {
-			gravity = Double.parseDouble(menuGravity);
-		} else  {
-			//gravity = largeValue++;
-			gravity = -1;  // Alphabetize by default
-		}
+		double gravity = menuGravity != null ? Double.parseDouble(menuGravity) : -1; // Alphabetize by default
 
 		if (pref == null) {
 			if (prefAction != null && prefAction.equalsIgnoreCase("OPEN"))
@@ -345,32 +347,7 @@ class PopupMenuHelper {
 			else
 				pref = APPS_MENU;
 		}
-	
-		// otherwise create our own popup menus 
-		final Object targetVP = props.get("targetVP");
-		boolean isSelected = false;
 		
-		if (view != null) {
-			if (targetVP != null && targetVP instanceof String) {
-				// TODO remove this at first opportunity whenever lookup gets refactored.
-				Class<?> clazz = CyNetwork.class;
-
-				if (view.getModel() instanceof CyNode)
-					clazz = CyNode.class;
-				else if (view.getModel() instanceof CyEdge)
-					clazz = CyEdge.class;
-
-				final VisualProperty<?> vp = re.getVisualLexicon().lookup(clazz, targetVP.toString());
-
-				if (vp == null)
-					isSelected = false;
-				else
-					isSelected = view.isValueLocked(vp);
-			} else if (targetVP instanceof VisualProperty) {
-				isSelected = view.isValueLocked((VisualProperty<?>) targetVP);
-			}
-		}
-
 		// no title
 		if (title == null) {
 			int last = pref.lastIndexOf(".");
@@ -383,13 +360,8 @@ class PopupMenuHelper {
 				if (APPS_MENU.equals(title))
 					return;
 
-				final GravityTracker gravityTracker = tracker.getGravityTracker(pref);
-				final JMenuItem item = createMenuItem(tf, title, useCheckBoxMenuItem, toolTip);
-
-				if (useCheckBoxMenuItem) {
-					final JCheckBoxMenuItem checkBox = (JCheckBoxMenuItem) item;
-					checkBox.setSelected(isSelected);
-				}
+				var gravityTracker = tracker.getGravityTracker(pref);
+				var item = createMenuItem(tf, title, toolTip);
 
 				if (insertSepBefore)
 					gravityTracker.addMenuSeparator(gravity - .0001);
@@ -405,9 +377,8 @@ class PopupMenuHelper {
 				if (APPS_MENU.equals(title))
 					return;
 				
-				// popup.add( createMenuItem(tf, title, useCheckBoxMenuItem, toolTip) );
-				final GravityTracker gravityTracker = tracker.getGravityTracker(pref);
-				final JMenuItem item = createMenuItem(tf, title, useCheckBoxMenuItem, toolTip);
+				var gravityTracker = tracker.getGravityTracker(pref);
+				var item = createMenuItem(tf, title, toolTip);
 				gravityTracker.addMenuItem(item, gravity);
 			}
 
@@ -418,7 +389,7 @@ class PopupMenuHelper {
 			if (insertSepBefore)
 				gravityTracker.addMenuSeparator(gravity - .0001);
 
-			gravityTracker.addMenuItem(createMenuItem(tf, title, useCheckBoxMenuItem, toolTip), gravity);
+			gravityTracker.addMenuItem(createMenuItem(tf, title, toolTip), gravity);
 
 			if (insertSepAfter)
 				gravityTracker.addMenuSeparator(gravity + .0001);
@@ -494,14 +465,16 @@ class PopupMenuHelper {
 		tracker.getGravityTracker(EDGE_PREFERENCES_MENU);
 	}
 
-	private JMenuItem createMenuItem(TaskFactory tf, String title, boolean useCheckBoxMenuItem, String toolTipText) {
-		JMenuItem item;
-		PopupAction action = new PopupAction(tf, title);
+	private JMenuItem createMenuItem(TaskFactory tf, String title, String toolTipText) {
+		var action = new PopupAction(tf, title);
+		final JMenuItem item;
 		
-		if (useCheckBoxMenuItem)
+		if (tf instanceof Togglable) {
 			item = new JCheckBoxMenuItem(action);
-		else
+			((JCheckBoxMenuItem) item).setSelected(tf.isOn());
+		} else {
 			item = new JMenuItem(action);
+		}
 
 		boolean ready = tf.isReady();
 		item.setEnabled(ready);
@@ -549,7 +522,41 @@ class PopupMenuHelper {
 			return false;
 		}
 	}
-
+	
+	/**
+	 * Hides duplicate separators and disables empty menus.
+	 */
+	private static void sanitize(JPopupMenu popupMenu) {
+		for (var comp : popupMenu.getComponents()) {
+			if (comp instanceof JMenu) {
+				boolean hasSeparator = false;
+				boolean hasMenuItem = false;
+				
+				var menu = (JMenu) comp;
+				int i = 0;
+				
+				for (var mc : menu.getMenuComponents()) {
+					if (mc instanceof JSeparator) {
+						// Already has one separator? So hide this one.
+						// Also hide if it's the first or last component.
+						if (hasSeparator || i == 0 || i == menu.getItemCount() - 1)
+							mc.setVisible(false);
+						else
+							hasSeparator = true;
+					} else if (mc.isVisible()) {
+						hasSeparator = false;
+						hasMenuItem = true;
+					}
+					
+					i++;
+				}
+				
+				if (!hasMenuItem)
+					comp.setEnabled(false);
+			}
+		}
+	}
+	
 	/**
 	 * A simple action that executes the specified TaskFactory
 	 */
