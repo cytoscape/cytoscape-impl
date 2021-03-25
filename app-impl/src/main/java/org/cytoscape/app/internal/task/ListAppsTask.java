@@ -38,19 +38,12 @@ public class ListAppsTask extends AbstractAppTask implements ObservableTask {
 		return Arrays.asList(List.class, String.class, JSONResult.class);
 	}
 	
-	public void appendJSONField(JSONObject appJSON, final String field, final String value) {
-		
-		try {
-			appJSON.put(field, value);
-		} catch (JSONException e) {
-			try {
-				appJSON.put(field, "#Invalid JSON#");
-			} catch (JSONException e1) {
-				e1.printStackTrace();
-			}
-			e.printStackTrace();
+	public static String jsonQuote(final String input) {
+		if (input == null) {
+			return null;
+		} else {
+			return JSONObject.quote(input);
 		}
-		
 	}
 	
 	@SuppressWarnings({ "unchecked" })
@@ -63,12 +56,11 @@ public class ListAppsTask extends AbstractAppTask implements ObservableTask {
 				int count = statusAppList.size();
 				int index = 0;
 				for (App app: statusAppList) {
-					JSONObject appJSON = new JSONObject();
-					appendJSONField(appJSON, "appName", app.getAppName());
-					appendJSONField(appJSON, "version", app.getVersion());
-					appendJSONField(appJSON, "description", app.getDescription());
-					appendJSONField(appJSON, "status", app.getReadableStatus());
-					stringBuilder.append(appJSON.toString());
+					
+					stringBuilder.append("{\"appName\": "+jsonQuote(app.getAppName())+",");
+					stringBuilder.append("\"version\": "+jsonQuote(app.getVersion())+",");
+					stringBuilder.append("\"description\": "+jsonQuote(app.getDescription())+",");
+					stringBuilder.append("\"status\": "+jsonQuote(app.getReadableStatus())+"}");
 					index++;
 					if (index < count)
 						stringBuilder.append(",");
