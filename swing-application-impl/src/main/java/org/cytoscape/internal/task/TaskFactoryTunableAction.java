@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -117,17 +117,17 @@ public class TaskFactoryTunableAction extends AbstractCyAction implements PopupM
 
 		if (largeIconId != null && !largeIconId.trim().isEmpty()) {
 			// Check if the icon is really registered
-			Icon icon = iconManager.getIcon(largeIconId);
+			var icon = iconManager.getIcon(largeIconId);
 			
 			if (icon != null)
 				putValue(LARGE_ICON_KEY, icon);
 		}
 		
-		final String smallIconId = configurationProperties.get(SMALL_ICON_ID);
+		var smallIconId = configurationProperties.get(SMALL_ICON_ID);
 		
 		if (smallIconId != null && !smallIconId.trim().isEmpty()) {
 			// Check if the icon is really registered
-			Icon icon = iconManager.getIcon(smallIconId);
+			var icon = iconManager.getIcon(smallIconId);
 			
 			if (icon != null)
 				putValue(SMALL_ICON, icon);

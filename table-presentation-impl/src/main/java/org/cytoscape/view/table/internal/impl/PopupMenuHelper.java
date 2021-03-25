@@ -387,7 +387,7 @@ public class PopupMenuHelper {
 	/**
 	 * Hides duplicate separators.
 	 */
-	private void sanitize(JPopupMenu menu) {
+	private static void sanitize(JPopupMenu menu) {
 		boolean hasSeparator = false;
 		
 		for (int i = 0; i < menu.getComponentCount(); i++) {

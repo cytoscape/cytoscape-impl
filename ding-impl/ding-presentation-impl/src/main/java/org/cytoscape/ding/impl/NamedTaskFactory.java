@@ -1,12 +1,14 @@
 package org.cytoscape.ding.impl;
 
+import org.cytoscape.work.TaskFactory;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,10 +26,11 @@ package org.cytoscape.ding.impl;
  * #L%
  */
 
-import org.cytoscape.work.TaskFactory;
-
-// This interface allows us to provide the actual TaskFactory name
-// of TaskFactories without the proper service metadata (e.g. title).
+/**
+ * This interface allows us to provide the actual TaskFactory name of TaskFactories
+ * without the proper service metadata (e.g. title).
+ */
 public interface NamedTaskFactory extends TaskFactory {
+	
 	String getName();
 }

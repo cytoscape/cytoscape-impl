@@ -10,6 +10,8 @@ import java.util.Map;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.internal.model.RootNetworkManager;
 import org.cytoscape.internal.task.CytoPanelTaskFactoryTunableAction;
+import org.cytoscape.internal.task.DynamicTaskFactory;
+import org.cytoscape.internal.task.DynamicTogglableTaskFactory;
 import org.cytoscape.internal.task.TaskFactoryTunableAction;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.DynamicTaskFactoryProvisioner;
@@ -21,7 +23,7 @@ import org.cytoscape.task.RootNetworkCollectionTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.Togglable;
 
 /*
  * #%L
@@ -29,7 +31,7 @@ import org.cytoscape.work.TaskIterator;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -78,7 +80,7 @@ public class CytoscapeMenuPopulator {
 	}
 
 	public void addTaskFactory(TaskFactory factory, Map<String, String> props) {
-		String pref = (String)(props.get("preferredTaskManager"));
+		var pref = (String) props.get("preferredTaskManager");
 		
 		if (pref != null && pref.equals("panel"))
 			addAction(new CytoPanelTaskFactoryTunableAction(factory, null, props, serviceRegistrar), factory, props);
@@ -92,17 +94,10 @@ public class CytoscapeMenuPopulator {
 
 	public void addRootNetworkCollectionTaskFactory(RootNetworkCollectionTaskFactory factory, Map<String, String> props) {
 		invokeOnEDT(() -> {
-			TaskFactory provisioner = new TaskFactory() {
-				@Override
-				public TaskIterator createTaskIterator() {
-					return factory.createTaskIterator(rootNetManager.getSelectedRootNetworks());
-				}
-				
-				@Override
-				public boolean isReady() {
-					return factory.isReady(rootNetManager.getSelectedRootNetworks());
-				}
-			};
+			var provisioner = factory instanceof Togglable ?
+					new DynamicTogglableTaskFactory(factory, rootNetManager) :
+					new DynamicTaskFactory(factory, rootNetManager);
+			
 			provisionerMap.put(factory, provisioner);
 			addFactory(provisioner, props);
 		});
@@ -115,9 +110,8 @@ public class CytoscapeMenuPopulator {
 	}
 	
 	public void addNetworkTaskFactory(NetworkTaskFactory factory, Map<String, String> props) {
-		final DynamicTaskFactoryProvisioner factoryProvisioner =
-				serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
-		final TaskFactory provisioner = factoryProvisioner.createFor(factory);
+		var factoryProvisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
+		var provisioner = factoryProvisioner.createFor(factory);
 		
 		provisionerMap.put(factory, provisioner);
 		addFactory(provisioner, props);
@@ -132,9 +126,8 @@ public class CytoscapeMenuPopulator {
 		if (props.containsKey(IN_MENU_BAR) && !Boolean.parseBoolean(props.get(IN_MENU_BAR).toString()))
 			return;
 		
-		final DynamicTaskFactoryProvisioner factoryProvisioner =
-				serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
-		final TaskFactory provisioner = factoryProvisioner.createFor(factory);
+		var factoryProvisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
+		var provisioner = factoryProvisioner.createFor(factory);
 		
 		provisionerMap.put(factory, provisioner);
 		addFactory(provisioner, props);
@@ -145,9 +138,8 @@ public class CytoscapeMenuPopulator {
 	}
 
 	public void addNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory factory, Map<String, String> props) {
-		final DynamicTaskFactoryProvisioner factoryProvisioner =
-				serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
-		final TaskFactory provisioner = factoryProvisioner.createFor(factory);
+		var factoryProvisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
+		var provisioner = factoryProvisioner.createFor(factory);
 		
 		provisionerMap.put(factory, provisioner);
 		addFactory(provisioner, props);
@@ -158,9 +150,8 @@ public class CytoscapeMenuPopulator {
 	}
 	
 	public void addNetworkCollectionTaskFactory(NetworkCollectionTaskFactory factory, Map<String, String> props) {
-		final DynamicTaskFactoryProvisioner factoryProvisioner =
-				serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
-		final TaskFactory provisioner = factoryProvisioner.createFor(factory);
+		var factoryProvisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
+		var provisioner = factoryProvisioner.createFor(factory);
 		
 		provisionerMap.put(factory, provisioner);
 		addFactory(provisioner, props);
@@ -171,9 +162,8 @@ public class CytoscapeMenuPopulator {
 	}
 	
 	public void addTableTaskFactory(TableTaskFactory factory, Map<String, String> props) {
-		final DynamicTaskFactoryProvisioner factoryProvisioner =
-				serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
-		final TaskFactory provisioner = factoryProvisioner.createFor(factory);
+		var factoryProvisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
+		var provisioner = factoryProvisioner.createFor(factory);
 		
 		provisionerMap.put(factory, provisioner);
 		addFactory(provisioner, props);
@@ -184,7 +174,7 @@ public class CytoscapeMenuPopulator {
 	}
 	
 	private void addFactory(TaskFactory factory, Map<String, String> props) {
-		CyAction action;
+		final CyAction action;
 		
 		if (props.containsKey(ServiceProperties.ENABLE_FOR))
 			action = new TaskFactoryTunableAction(factory, props, serviceRegistrar);
@@ -200,7 +190,8 @@ public class CytoscapeMenuPopulator {
 	}
 
 	private void removeFactory(TaskFactory factory, Map<String, String> props) {
-		final CyAction action = taskMap.remove(factory);
+		var action = taskMap.remove(factory);
+		
 		if (action != null) {
 			if (action.isInMenuBar())
 				app.removeAction(action);

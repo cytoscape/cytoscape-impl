@@ -4,10 +4,8 @@ import static org.cytoscape.internal.view.util.ViewUtil.invokeOnEDT;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -26,7 +24,6 @@ import org.cytoscape.internal.task.DynamicTogglableTaskFactory;
 import org.cytoscape.internal.task.TaskFactoryTunableAction;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.AddedEdgesEvent;
 import org.cytoscape.model.events.AddedEdgesListener;
 import org.cytoscape.model.events.AddedNodesEvent;
@@ -41,7 +38,6 @@ import org.cytoscape.model.events.RemovedEdgesEvent;
 import org.cytoscape.model.events.RemovedEdgesListener;
 import org.cytoscape.model.events.RemovedNodesEvent;
 import org.cytoscape.model.events.RemovedNodesListener;
-import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
@@ -67,7 +63,6 @@ import org.cytoscape.view.model.events.NetworkViewDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.Togglable;
 import org.cytoscape.work.swing.DialogTaskManager;
 
@@ -77,7 +72,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -120,11 +115,11 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 		this.serviceRegistrar = serviceRegistrar;
 		
 		networkMainPanel.addPropertyChangeListener("rootNetworkPanelCreated", evt -> {
-			final RootNetworkPanel p = (RootNetworkPanel) evt.getNewValue();
+			var p = (RootNetworkPanel) evt.getNewValue();
 			addMouseListenersForSelection(p, p.getHeaderPanel(), p.getNetworkCountLabel(), p.getNameLabel(), p);
 		});
 		networkMainPanel.addPropertyChangeListener("subNetworkPanelCreated", evt -> {
-			final SubNetworkPanel p = (SubNetworkPanel) evt.getNewValue();
+			var p = (SubNetworkPanel) evt.getNewValue();
 			addMouseListenersForSelection(p, p.getNameLabel(), p.getViewIconLabel(), p.getViewCountLabel(),
 					p.getNodeCountLabel(), p.getEdgeCountLabel(), p);
 		});
@@ -147,7 +142,7 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 	}
 
 	@Override
-	public void handleEvent(final NetworkAboutToBeDestroyedEvent e) {
+	public void handleEvent(NetworkAboutToBeDestroyedEvent e) {
 		if (e.getNetwork() instanceof CySubNetwork) {
 			CySubNetwork network = (CySubNetwork) e.getNetwork();
 			networkMainPanel.removeNetwork(network);
@@ -161,7 +156,7 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 	}
 
 	@Override
-	public void handleEvent(final NetworkDestroyedEvent e) {
+	public void handleEvent(NetworkDestroyedEvent e) {
 		invokeOnEDT(() -> {
 			networkMainPanel.getRootNetworkListPanel().update();
 			networkMainPanel.updateCollapseExpandButtons();
@@ -169,11 +164,11 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 	}
 
 	@Override
-	public void handleEvent(final NetworkAddedEvent e) {
+	public void handleEvent(NetworkAddedEvent e) {
 		if (loadingSession)
 			return;
 
-		final CyNetwork net = e.getNetwork();
+		var net = e.getNetwork();
 
 		invokeOnEDT(() -> {
 			if (net instanceof CySubNetwork) {
@@ -184,24 +179,24 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 	}
 
 	@Override
-	public void handleEvent(final RowsSetEvent e) {
+	public void handleEvent(RowsSetEvent e) {
 		if (loadingSession || networkMainPanel.getRootNetworkListPanel().isEmpty())
 			return;
 
 		// We only care about network name changes
-		final Collection<RowSetRecord> nameRecords = e.getColumnRecords(CyNetwork.NAME);
+		var nameRecords = e.getColumnRecords(CyNetwork.NAME);
 
 		if (nameRecords == null || nameRecords.isEmpty())
 			return;
 
-		final CyTable tbl = e.getSource();
-		final CyNetworkTableManager netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
-		final CyNetwork net = netTblMgr.getNetworkForTable(tbl);
+		var tbl = e.getSource();
+		var netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
+		var net = netTblMgr.getNetworkForTable(tbl);
 
 		// And if there is no related network, nothing needs to be done
 		if (net != null && tbl.equals(net.getDefaultNetworkTable())) {
 			invokeOnEDT(() -> {
-				final AbstractNetworkPanel<?> item = networkMainPanel.getNetworkItem(net);
+				var item = networkMainPanel.getNetworkItem(net);
 
 				if (item != null)
 					item.update();
@@ -210,35 +205,35 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 	}
 
 	@Override
-	public void handleEvent(final AddedEdgesEvent e) {
+	public void handleEvent(AddedEdgesEvent e) {
 		networkMainPanel.updateNodeEdgeCount();
 	}
 
 	@Override
-	public void handleEvent(final AddedNodesEvent e) {
+	public void handleEvent(AddedNodesEvent e) {
 		networkMainPanel.updateNodeEdgeCount();
 	}
 
 	@Override
-	public void handleEvent(final RemovedNodesEvent e) {
+	public void handleEvent(RemovedNodesEvent e) {
 		networkMainPanel.updateNodeEdgeCount();
 	}
 
 	@Override
-	public void handleEvent(final RemovedEdgesEvent e) {
+	public void handleEvent(RemovedEdgesEvent e) {
 		networkMainPanel.updateNodeEdgeCount();
 	}
 
 	@Override
-	public void handleEvent(final NetworkViewDestroyedEvent e) {
+	public void handleEvent(NetworkViewDestroyedEvent e) {
 		if (loadingSession)
 			return;
 		
 		invokeOnEDT(() -> {
-			final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+			var netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
 			
-			for (SubNetworkPanel snp : networkMainPanel.getAllSubNetworkItems()) {
-				final int count = netViewMgr.getNetworkViews(snp.getModel().getNetwork()).size();
+			for (var snp : networkMainPanel.getAllSubNetworkItems()) {
+				int count = netViewMgr.getNetworkViews(snp.getModel().getNetwork()).size();
 				snp.getModel().setViewCount(count);
 			}
 			
@@ -247,7 +242,7 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 	}
 
 	@Override
-	public void handleEvent(final NetworkViewAddedEvent e) {
+	public void handleEvent(NetworkViewAddedEvent e) {
 		if (loadingSession)
 			return;
 
@@ -275,9 +270,8 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 	
 	public void addNetworkCollectionTaskFactory(NetworkCollectionTaskFactory factory, Map<?, ?> props) {
 		invokeOnEDT(() -> {
-			DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar
-					.getService(DynamicTaskFactoryProvisioner.class);
-			TaskFactory provisioner = factoryProvisioner.createFor(factory);
+			var factoryProvisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
+			var provisioner = factoryProvisioner.createFor(factory);
 			provisionerMap.put(factory, provisioner);
 			addFactory(provisioner, props, false);
 		});
@@ -291,9 +285,8 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 
 	public void addNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory factory, Map<?, ?> props) {
 		invokeOnEDT(() -> {
-			DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar
-					.getService(DynamicTaskFactoryProvisioner.class);
-			TaskFactory provisioner = factoryProvisioner.createFor(factory);
+			var factoryProvisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
+			var provisioner = factoryProvisioner.createFor(factory);
 			provisionerMap.put(factory, provisioner);
 			addFactory(provisioner, props, false);
 		});
@@ -307,9 +300,8 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 
 	public void addNetworkTaskFactory(NetworkTaskFactory factory, Map<?, ?> props) {
 		invokeOnEDT(() -> {
-			DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar
-					.getService(DynamicTaskFactoryProvisioner.class);
-			TaskFactory provisioner = factoryProvisioner.createFor(factory);
+			var factoryProvisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
+			var provisioner = factoryProvisioner.createFor(factory);
 			provisionerMap.put(factory, provisioner);
 			addFactory(provisioner, props, false);
 		});
@@ -323,9 +315,8 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 	
 	public void addNetworkViewTaskFactory(NetworkViewTaskFactory factory, Map<?, ?> props) {
 		invokeOnEDT(() -> {
-			DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar
-					.getService(DynamicTaskFactoryProvisioner.class);
-			TaskFactory provisioner = factoryProvisioner.createFor(factory);
+			var factoryProvisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
+			var provisioner = factoryProvisioner.createFor(factory);
 			provisionerMap.put(factory, provisioner);
 			addFactory(provisioner, props, false);
 		});
@@ -367,9 +358,9 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 			netPopupActionMap.remove(factory);
 	}
 	
-	private void addMouseListenersForSelection(final AbstractNetworkPanel<?> item, final JComponent... components) {
+	private void addMouseListenersForSelection(AbstractNetworkPanel<?> item, JComponent... components) {
 		// This mouse listener listens for mouse pressed events to select the list items
-		final MouseListener selectionListener = new MouseAdapter() {
+		var selectionListener = new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
 				networkMainPanel.onMousePressedItem(e, item);
@@ -377,20 +368,19 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 		};
 		
 		// This mouse listener listens for the right-click events to show the pop-up window
-		final PopupListener popupListener = new PopupListener(item);
+		var popupListener = new PopupListener(item);
 		
-		for (JComponent c : components) {
+		for (var c : components) {
 			c.addMouseListener(selectionListener);
 			c.addMouseListener(popupListener);
 		}
 	}
 	
-	private void updateViewCount(final CyNetworkView view) {
-		final SubNetworkPanel subNetPanel = networkMainPanel.getSubNetworkPanel(view.getModel());
+	private void updateViewCount(CyNetworkView view) {
+		var subNetPanel = networkMainPanel.getSubNetworkPanel(view.getModel());
 
 		if (subNetPanel != null) {
-			final int count = serviceRegistrar.getService(CyNetworkViewManager.class)
-					.getNetworkViews(view.getModel()).size();
+			int count = serviceRegistrar.getService(CyNetworkViewManager.class).getNetworkViews(view.getModel()).size();
 			subNetPanel.getModel().setViewCount(count);
 		}
 	}
@@ -429,7 +419,7 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 
 		final AbstractNetworkPanel<?> item;
 		
-		PopupListener(final AbstractNetworkPanel<?> item) {
+		PopupListener(AbstractNetworkPanel<?> item) {
 			this.item = item;
 		}
 		
@@ -447,41 +437,39 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 		/**
 		 * if the mouse press is of the correct type, this function will maybe display the popup
 		 */
-		private final void maybeShowPopupMenu(final MouseEvent e) {
+		private final void maybeShowPopupMenu(MouseEvent e) {
 			// Ignore if not valid trigger.
 			if (!e.isPopupTrigger())
 				return;
 
 			// If the item is not selected, select it first
-			List<AbstractNetworkPanel<?>> selectedItems = networkMainPanel.getSelectedItems();
+			var selectedItems = networkMainPanel.getSelectedItems();
 			
 			if (!selectedItems.contains(item)) {
 				networkMainPanel.selectAndSetCurrent(item);
 				selectedItems = networkMainPanel.getSelectedItems();
 			}
 			
-			final DialogTaskManager taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
-			final CyNetwork network = item.getModel().getNetwork();
-			final JPopupMenu popup = new JPopupMenu();
+			var taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
+			var network = item.getModel().getNetwork();
+			var popup = new JPopupMenu();
 			
 			if (network instanceof CySubNetwork) {
 				addMenuItems(popup, netPopupActionMap.values());
 			} else {
 				// Basic actions for root-networks
 				{
-					JMenuItem mi = new JMenuItem("Rename Network Collection...");
+					var mi = new JMenuItem("Rename Network Collection...");
 					mi.addActionListener(evt -> {
-						EditNetworkTitleTaskFactory factory = serviceRegistrar
-								.getService(EditNetworkTitleTaskFactory.class);
+						var factory = serviceRegistrar.getService(EditNetworkTitleTaskFactory.class);
 						taskMgr.execute(factory.createTaskIterator(network));
 					});
 					popup.add(mi);
 					mi.setEnabled(selectedItems.size() == 1);
 				}
 				{
-					DestroyNetworksAction action = new DestroyNetworksAction(0.0f, networkMainPanel,
-							serviceRegistrar);
-					JMenuItem mi = new JMenuItem(action);
+					var action = new DestroyNetworksAction(0.0f, networkMainPanel, serviceRegistrar);
+					var mi = new JMenuItem(action);
 					popup.add(mi);
 					action.updateEnableState();
 				}
@@ -496,9 +484,9 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 			
 			popup.addPropertyChangeListener("visible", ev -> {
 				boolean visible = Boolean.TRUE.equals(ev.getNewValue());
-				if(!visible) {
+				
+				if (!visible)
 					popup.setInvoker(null); // avoid memory leak
-				}
 			});
 			popup.show(e.getComponent(), e.getX(), e.getY());
 		}
