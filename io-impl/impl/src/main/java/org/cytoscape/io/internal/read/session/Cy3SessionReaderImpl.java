@@ -413,10 +413,11 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 					columnViews.add(new CyColumnViewMetadata(colName, styleTitle, colBypasses));
 				}
 				
+				final boolean isSuid = primaryKeyIsSUID(table.getTable());
 				List<CyRowViewMetadata> rowViews = new ArrayList<>();
 				for(RowView xmlRowView : xmlTableView.getRowView()) {
 					Object keyVal = deserializeKey(xmlRowView.getKey(), keyCol);
-					if(primaryKeyIsSUID(table.getTable())) {
+					if(isSuid) {
 						keyVal = suidUpdater.getNewSUID((Long)keyVal);
 					}
 					
@@ -446,6 +447,9 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		return pk.getName().equals(CyIdentifiable.SUID) && pk.getType().equals(Long.class);
 	}
 	
+	/**
+	 * See CyTablesXMLWriter.serializeKey(...)
+	 */
 	private static Object deserializeKey(String key, CyColumn primaryKeyColumn) {
 		Class<?> type = primaryKeyColumn.getType();
 		

@@ -201,11 +201,9 @@ public class CyTablesXMLWriter extends AbstractTask implements CyWriter {
 	}
 	
 	
-//	private static boolean primaryKeyIsSUID(CyTable table) {
-//		CyColumn pk = table.getPrimaryKey();
-//		return pk.getName().equals(CyIdentifiable.SUID) && pk.getType().equals(Long.class);
-//	}
-	
+	/**
+	 * See Cy3SessionReaderImpl.deserializeKey(...)
+	 */
 	private static String serializeKey(Object key, Class<?> keyType) {
 		if (keyType.equals(List.class)) {
 			StringBuilder sb = new StringBuilder();
@@ -224,43 +222,4 @@ public class CyTablesXMLWriter extends AbstractTask implements CyWriter {
 		}
 	}
 	
-//	private static Object deserializeKey(String key, CyColumn primaryKeyColumn) {
-//		Class<?> type = primaryKeyColumn.getType();
-//		
-//		if (type.equals(List.class)) {
-//			Class<?> listElementType = primaryKeyColumn.getListElementType();
-//			List<Object> list = new ArrayList<>();
-//			String[] values = key.split("|");
-//			for (String item : values) {
-//				list.add(deserializeNonListValue(item, listElementType));
-//			}
-//			if (list.size() == 1 && list.get(0) == null) 
-//				return null;
-//			return list;
-//		} else {
-//			return deserializeNonListValue(key, type);
-//		}
-//	}
-//	
-//	private static Object deserializeNonListValue(String value, Class<?> type) {
-//		if(type.equals(String.class)) {
-//			return value;
-//		} else if(value.isEmpty()) {
-//			return null;
-//		} else {
-//			try {
-//				if (type.equals(Long.class)) {
-//					return Long.valueOf(value);
-//				} else if (type.equals(Boolean.class)) {
-//					return Boolean.valueOf(value);
-//				} else if (type.equals(Double.class)) {
-//					return Double.valueOf(value);
-//				} else if (type.equals(Integer.class)) {
-//					return Integer.valueOf(value); 
-//				}
-//			} catch (Exception e) { }
-//		}
-//		return null;
-//	}
-
 }
