@@ -8,7 +8,7 @@
 				<xs:element maxOccurs="unbounded" ref="tableColumnStyle" />
 			</xs:sequence>
 			<xs:attribute name="id" use="required" type="xs:NCName" />
-			<xs:attribute name="documentVersion" use="optional" default="3.0" type="xs:normalizedString"/>
+			<xs:attribute name="documentVersion" use="optional" default="3.1" type="xs:normalizedString"/>
 		</xs:complexType>
 	</xs:element>
 	<xs:element name="visualStyle">
