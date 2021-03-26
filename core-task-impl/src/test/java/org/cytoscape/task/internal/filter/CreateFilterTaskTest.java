@@ -217,7 +217,7 @@ public class CreateFilterTaskTest {
 	
 	
 	@Test
-	public void testCreateColumnFilterCommandBad1() {
+	public void testCreateColumnFilterCommandBad1() throws Exception {
 		CreateFilterTask task = new CreateFilterTask(serviceRegistrar, "MyFilter", false);
 		task.jsonTunable.json = "{ \"id\" : \"ColumnFilter\", \"parameters\" : { \"criterion\" : \"1\", \"columnName\" : \"name\", \"predicate\" : \"BLARF\"} }";
 		
@@ -227,7 +227,7 @@ public class CreateFilterTaskTest {
 	}
 	
 	@Test
-	public void testCreateColumnFilterCommandBad2() {
+	public void testCreateColumnFilterCommandBad2() throws Exception {
 		CreateFilterTask task = new CreateFilterTask(serviceRegistrar, "MyFilter", false);
 		task.jsonTunable.json = "{ \"id\" : \"ColumnFilter\", \"parameters\" : { \"criterion\" : \"1\", \"columnName\" : \"name\", \"predicate\" : \"BETWEEN\"} }";
 		
@@ -237,7 +237,7 @@ public class CreateFilterTaskTest {
 	}
 	
 	@Test
-	public void testCreateColumnFilterCommandBad3() {
+	public void testCreateColumnFilterCommandBad3() throws Exception {
 		CreateFilterTask task = new CreateFilterTask(serviceRegistrar, "MyFilter", false);
 		task.jsonTunable.json = "{ \"id\" : \"ColumnFilter\", \"parameters\" : { \"criterion\" : [1,1], \"columnName\" : \"name\", \"predicate\" : \"IS\"} }";
 		
@@ -247,7 +247,7 @@ public class CreateFilterTaskTest {
 	}
 	
 	@Test
-	public void testCreateColumnFilterCommandBad4() {
+	public void testCreateColumnFilterCommandBad4() throws Exception {
 		CreateFilterTask task = new CreateFilterTask(serviceRegistrar, "MyFilter", false);
 		task.jsonTunable.json = "{ \"id\" : \"ColumnFilter\", \"parameters\" : { \"criterion\" : false, \"columnName\" : \"name\", \"predicate\" : \"BETWEEN\"} }";
 		

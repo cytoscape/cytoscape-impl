@@ -53,7 +53,7 @@ public class TransformerJsonTunable {
 					}
 				}
 			} else {
-				System.out.println("Transformer cannot be validated: " + transformer.getName());
+				valid = false;
 			}
 		}
 		return valid;
