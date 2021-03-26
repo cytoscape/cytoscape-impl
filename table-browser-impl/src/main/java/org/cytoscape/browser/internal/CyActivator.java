@@ -1,5 +1,9 @@
 package org.cytoscape.browser.internal;
 
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.SMALL_ICON_ID;
 import static org.cytoscape.work.ServiceProperties.TITLE;
 
 import java.util.Properties;
@@ -25,6 +29,8 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.TableColumnTaskFactory;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.model.events.TableViewAddedListener;
 import org.cytoscape.view.vizmap.events.VisualStyleChangedListener;
 import org.cytoscape.view.vizmap.events.table.ColumnVisualStyleSetListener;
@@ -56,9 +62,13 @@ import org.osgi.framework.BundleContext;
 
 public class CyActivator extends AbstractCyActivator {
 	
+	private static float SMALL_ICON_FONT_SIZE = 14.0f;
+	private static int SMALL_ICON_SIZE = 16;
+	
 	@Override
 	public void start(BundleContext bc) {
 		var serviceRegistrar = getService(bc, CyServiceRegistrar.class);
+		var iconManager = getService(bc, IconManager.class);
 		
 		var nodeTableBrowser = new DefaultTableBrowser("Node Table", CyNode.class, serviceRegistrar);
 		var edgeTableBrowser = new DefaultTableBrowser("Edge Table", CyEdge.class, serviceRegistrar);
@@ -80,12 +90,18 @@ public class CyActivator extends AbstractCyActivator {
 			var factory = new ClearAllErrorsTaskFactory(serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(TITLE, "Clear All Errors");
+			props.setProperty(MENU_GRAVITY, "100.1");
+			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
+			props.setProperty(INSERT_SEPARATOR_AFTER, "true");
 			registerService(bc, factory, TableColumnTaskFactory.class, props);
 		}
 		{
 			var factory = new SetColumnFormatTaskFactory(serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(TITLE, "Format Column...");
+			props.setProperty(MENU_GRAVITY, "2.1");
+			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
+			props.setProperty(INSERT_SEPARATOR_AFTER, "true");
 			registerService(bc, factory, TableColumnTaskFactory.class, props);
 		}
 		
@@ -94,15 +110,25 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, mediator, CytoPanelComponentSelectedListener.class);
 		
 		{
+			var icon = new TextIcon(IconManager.ICON_EYE_SLASH, iconManager.getIconFont(SMALL_ICON_FONT_SIZE), SMALL_ICON_SIZE, SMALL_ICON_SIZE);
+			var iconId = "cy::HIDE_COLUMN_SMALL";
+			iconManager.addIcon(iconId, icon);
+			
 			var factory = new HideColumnTaskFactory(mediator);
 			var props = new Properties();
 			props.setProperty(TITLE, "Hide Column");
+			props.setProperty(MENU_GRAVITY, "1.1");
+			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
+			props.setProperty(SMALL_ICON_ID, iconId);
 			registerService(bc, factory, TableColumnTaskFactory.class, props);
 		}
 		{
 			var factory = new ToggleTextWrapTaskFactory(mediator);
 			var props = new Properties();
 			props.setProperty(TITLE, "Wrap Text");
+			props.setProperty(MENU_GRAVITY, "2.2");
+			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
+			props.setProperty(INSERT_SEPARATOR_AFTER, "true");
 			registerService(bc, factory, TableColumnTaskFactory.class, props);
 		}
 		

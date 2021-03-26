@@ -1,14 +1,38 @@
 package org.cytoscape.ding.impl;
 
-import static org.cytoscape.work.ServiceProperties.*;
+import static org.cytoscape.work.ServiceProperties.APPS_MENU;
+import static org.cytoscape.work.ServiceProperties.EDGE_APPS_MENU;
+import static org.cytoscape.work.ServiceProperties.EDGE_EDIT_MENU;
+import static org.cytoscape.work.ServiceProperties.EDGE_LINKOUTS_MENU;
+import static org.cytoscape.work.ServiceProperties.EDGE_PREFERENCES_MENU;
+import static org.cytoscape.work.ServiceProperties.EDGE_SELECT_MENU;
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.NETWORK_ADD_MENU;
+import static org.cytoscape.work.ServiceProperties.NETWORK_APPS_MENU;
+import static org.cytoscape.work.ServiceProperties.NETWORK_DELETE_MENU;
+import static org.cytoscape.work.ServiceProperties.NETWORK_EDIT_MENU;
+import static org.cytoscape.work.ServiceProperties.NETWORK_GROUP_MENU;
+import static org.cytoscape.work.ServiceProperties.NETWORK_PREFERENCES_MENU;
+import static org.cytoscape.work.ServiceProperties.NETWORK_SELECT_MENU;
+import static org.cytoscape.work.ServiceProperties.NODE_APPS_MENU;
+import static org.cytoscape.work.ServiceProperties.NODE_EDIT_MENU;
+import static org.cytoscape.work.ServiceProperties.NODE_GROUP_MENU;
+import static org.cytoscape.work.ServiceProperties.NODE_LINKOUTS_MENU;
+import static org.cytoscape.work.ServiceProperties.NODE_NESTED_NETWORKS_MENU;
+import static org.cytoscape.work.ServiceProperties.NODE_PREFERENCES_MENU;
+import static org.cytoscape.work.ServiceProperties.NODE_SELECT_MENU;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_ACTION;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+import static org.cytoscape.work.ServiceProperties.TITLE;
+import static org.cytoscape.work.ServiceProperties.TOOLTIP;
 
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import javax.swing.AbstractAction;
@@ -16,27 +40,19 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
-import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
 import org.cytoscape.application.swing.CyMenuItem;
-import org.cytoscape.application.swing.CyNetworkViewContextMenuFactory;
-import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.EdgeViewTaskFactory;
-import org.cytoscape.task.NetworkViewLocationTaskFactory;
-import org.cytoscape.task.NetworkViewTaskFactory;
-import org.cytoscape.task.NodeViewTaskFactory;
-import org.cytoscape.util.swing.GravityTracker;
 import org.cytoscape.util.swing.JMenuTracker;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.Togglable;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +63,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -80,16 +96,14 @@ class PopupMenuHelper {
 	public static final String ACTION_NEW  = "NEW";
 	public static final String ACTION_OPEN = "OPEN";
 	
-	
-	private DRenderingEngine re;
-
 	/** the component we should create the popup menu on */
 	private Component invoker;
 
-	private StaticTaskFactoryProvisioner factoryProvisioner;
+	private final StaticTaskFactoryProvisioner factoryProvisioner;
 
-	private final CyServiceRegistrar serviceRegistrar;
+	private DRenderingEngine re;
 	private final ViewTaskFactoryListener vtfl;
+	private final CyServiceRegistrar serviceRegistrar;
 
 	PopupMenuHelper(DRenderingEngine re, Component inv, CyServiceRegistrar serviceRegistrar) {
 		this.re = re;
@@ -106,14 +120,17 @@ class PopupMenuHelper {
 	 */
 	void createEdgeViewMenu(View<CyEdge> edgeView, int x, int y, String action) {
 		edgeView = re.getViewModelSnapshot().getMutableEdgeView(edgeView.getSUID());
-		if (edgeView != null ) {
-			Collection<EdgeViewTaskFactory> usableTFs = getPreferredActions(vtfl.getEdgeViewTaskFactoryMap(), action);
-			Collection<CyEdgeViewContextMenuFactory> usableCMFs = getPreferredActions(vtfl.getCyEdgeViewContextMenuFactoryMap(), action);
+		
+		if (edgeView != null) {
+			var usableTFs = getPreferredActions(vtfl.getEdgeViewTaskFactoryMap(), action);
+			var usableCMFs = getPreferredActions(vtfl.getCyEdgeViewContextMenuFactoryMap(), action);
+			
 			// remove TaskFactories that can't be executed from double-click menu
 			if (action.equalsIgnoreCase("OPEN")) {
-				Iterator<EdgeViewTaskFactory> i = usableTFs.iterator();
-				while(i.hasNext()) {
-					if(!i.next().isReady(edgeView, re.getViewModel()))
+				var i = usableTFs.iterator();
+				
+				while (i.hasNext()) {
+					if (!i.next().isReady(edgeView, re.getViewModel()))
 						i.remove();
 				}
 			}
@@ -122,12 +139,12 @@ class PopupMenuHelper {
 			int menuItemCount = usableTFs.size()+ usableCMFs.size();
 
 			if (action.equalsIgnoreCase("OPEN") && menuItemCount == 1 && tfCount == 1) {
-				EdgeViewTaskFactory tf = usableTFs.iterator().next();
+				var tf = usableTFs.iterator().next();
 				serviceRegistrar.getService(DialogTaskManager.class).execute(tf.createTaskIterator(edgeView, re.getViewModel()));
 			} else {
-				String edgeLabel = re.getViewModel().getModel().getRow(edgeView.getModel()).get(CyEdge.INTERACTION, String.class);
-				JPopupMenu menu = createMenu(edgeLabel);
-				JMenuTracker tracker = new JMenuTracker(menu);
+				var edgeLabel = re.getViewModel().getModel().getRow(edgeView.getModel()).get(CyEdge.INTERACTION, String.class);
+				var menu = createMenu(edgeLabel);
+				var tracker = new JMenuTracker(menu);
 
 				if (!action.equalsIgnoreCase("OPEN")) {
 					initializeEdgeTracker(tracker);
@@ -135,21 +152,24 @@ class PopupMenuHelper {
 					tracker.getGravityTracker(".").addMenuSeparator(999.99);
 				}
 
-				for (EdgeViewTaskFactory evtf : usableTFs) {
+				for (var evtf : usableTFs) {
 					Object context = null;
-					NamedTaskFactory provisioner = factoryProvisioner.createFor(evtf, edgeView, re.getViewModel());
+					var provisioner = factoryProvisioner.createFor(evtf, edgeView, re.getViewModel());
 					addMenuItem(edgeView, menu, provisioner, context, tracker, vtfl.getEdgeViewTaskFactoryMap().get(evtf));
 				}
 
-				for (CyEdgeViewContextMenuFactory edgeCMF : usableCMFs) {
+				for (var edgeCMF : usableCMFs) {
 					// menu.add(edgeCMF.createMenuItem(m_view, ev).getMenuItem());
 					try {
-						CyMenuItem menuItem = edgeCMF.createMenuItem(re.getViewModel(), edgeView);
+						var menuItem = edgeCMF.createMenuItem(re.getViewModel(), edgeView);
 						addCyMenuItem(edgeView, menu, menuItem, tracker, vtfl.getCyEdgeViewContextMenuFactoryMap().get(edgeCMF));
 					} catch (Throwable t) {
 						logger.error("Could not display context menu.", t);
 					}
 				}
+				
+				sanitize(menu);
+				
 				menu.show(invoker, x, y);
 			}
 		}
@@ -160,21 +180,23 @@ class PopupMenuHelper {
 	 *
 	 * @param action Acceptable values are "NEW", "OPEN", or "EDGE". Case does not matter.
 	 */
-	void createNodeViewMenu(View<CyNode> nodeView, int x, int y , String action) {
+	void createNodeViewMenu(View<CyNode> nodeView, int x, int y, String action) {
 		nodeView = re.getViewModelSnapshot().getMutableNodeView(nodeView.getSUID()); // get the mutable node view
-		if (nodeView != null ) {
-			Collection<NodeViewTaskFactory> usableTFs = getPreferredActions(vtfl.getNodeViewTaskFactoryMap(),action);
-			Collection<CyNodeViewContextMenuFactory> usableCMFs = getPreferredActions(vtfl.getCyNodeViewContextMenuFactoryMap(),action);
-			//If the action is NEW, we should also include the Edge Actions
+		
+		if (nodeView != null) {
+			var usableTFs = getPreferredActions(vtfl.getNodeViewTaskFactoryMap(), action);
+			var usableCMFs = getPreferredActions(vtfl.getCyNodeViewContextMenuFactoryMap(),action);
+			
+			// If the action is NEW, we should also include the Edge Actions
 			if (action.equalsIgnoreCase("NEW")) {
 				usableTFs.addAll(getPreferredActions(vtfl.getNodeViewTaskFactoryMap(),"Edge"));
 				usableCMFs.addAll(getPreferredActions(vtfl.getCyNodeViewContextMenuFactoryMap(),"Edge"));
-			}
-			// remove TaskFactories that can't be executed from double-click menu
-			else if(action.equalsIgnoreCase("OPEN")) {
-				Iterator<NodeViewTaskFactory> i = usableTFs.iterator();
-				while(i.hasNext()) {
-					if(!i.next().isReady(nodeView,re.getViewModel()))
+			} else if(action.equalsIgnoreCase("OPEN")) {
+				// remove TaskFactories that can't be executed from double-click menu
+				var i = usableTFs.iterator();
+				
+				while (i.hasNext()) {
+					if (!i.next().isReady(nodeView, re.getViewModel()))
 						i.remove();
 				}
 			}
@@ -183,12 +205,12 @@ class PopupMenuHelper {
 			int tfCount = usableTFs.size();
 
 			if ((action.equalsIgnoreCase("OPEN") || action.equalsIgnoreCase("Edge")) && menuItemCount == 1 && tfCount == 1) {
-				NodeViewTaskFactory tf = usableTFs.iterator().next();
+				var tf = usableTFs.iterator().next();
 				serviceRegistrar.getService(DialogTaskManager.class).execute(tf.createTaskIterator(nodeView,re.getViewModel()));
 			} else {
-				String nodeLabel = re.getViewModel().getModel().getRow(nodeView.getModel()).get(CyNetwork.NAME, String.class);
-				JPopupMenu menu = createMenu(nodeLabel);
-				JMenuTracker tracker = new JMenuTracker(menu);
+				var nodeLabel = re.getViewModel().getModel().getRow(nodeView.getModel()).get(CyNetwork.NAME, String.class);
+				var menu = createMenu(nodeLabel);
+				var tracker = new JMenuTracker(menu);
 
 				if (!action.equalsIgnoreCase("OPEN")) {
 					initializeNodeTracker(tracker);
@@ -196,21 +218,23 @@ class PopupMenuHelper {
 					tracker.getGravityTracker(".").addMenuSeparator(999.99);
 				}
 
-				for (NodeViewTaskFactory nvtf : usableTFs) {
+				for (var nvtf : usableTFs) {
 					Object context = null;
-					NamedTaskFactory provisioner = factoryProvisioner.createFor(nvtf, nodeView, re.getViewModel());
+					var provisioner = factoryProvisioner.createFor(nvtf, nodeView, re.getViewModel());
 					addMenuItem(nodeView, menu, provisioner, context, tracker, vtfl.getNodeViewTaskFactoryMap().get(nvtf));
 				}
 
-				for (CyNodeViewContextMenuFactory nodeCMF : usableCMFs) {
+				for (var nodeCMF : usableCMFs) {
 					// menu.add(nodeVMF.createMenuItem(m_view,  nv).getMenuItem());
 					try {
-						CyMenuItem menuItem = nodeCMF.createMenuItem(re.getViewModel(), nodeView);
+						var menuItem = nodeCMF.createMenuItem(re.getViewModel(), nodeView);
 						addCyMenuItem(nodeView, menu, menuItem, tracker, vtfl.getCyNodeViewContextMenuFactoryMap().get(nodeCMF));
 					} catch (Throwable t) {
 						logger.error("Could not display context menu.", t);
 					}
 				}
+				
+				sanitize(menu);
 				
 				menu.show(invoker, x, y);
 			}
@@ -223,20 +247,23 @@ class PopupMenuHelper {
 	 * @param action Acceptable values are "NEW" or "OPEN." Case does not matter.
 	 */
 	void createNetworkViewMenu(Point rawPt, Point xformPt, String action) {
-		Collection<NetworkViewTaskFactory> usableTFs = getPreferredActions(vtfl.getEmptySpaceTaskFactoryMap(), action);
-		Collection<NetworkViewLocationTaskFactory> usableTFs2 = getPreferredActions(vtfl.getNetworkViewLocationTaskFactoryMap(), action);
-		Collection<CyNetworkViewContextMenuFactory> usableCMFs = getPreferredActions(vtfl.getCyNetworkViewContextMenuFactoryMap(), action);
+		var usableTFs = getPreferredActions(vtfl.getEmptySpaceTaskFactoryMap(), action);
+		var usableTFs2 = getPreferredActions(vtfl.getNetworkViewLocationTaskFactoryMap(), action);
+		var usableCMFs = getPreferredActions(vtfl.getCyNetworkViewContextMenuFactoryMap(), action);
 		
-		CyNetworkView graphView = re.getViewModel();
+		var graphView = re.getViewModel();
+		
 		// remove TaskFactories that can't be executed from double-click menu
 		if (action.equalsIgnoreCase("OPEN")) {
-			Iterator<NetworkViewTaskFactory> i = usableTFs.iterator();
+			var i = usableTFs.iterator();
+			
 			while (i.hasNext()) {
 				if (!i.next().isReady(graphView))
 					i.remove();
 			}
 			
-			Iterator<NetworkViewLocationTaskFactory> i2 = usableTFs2.iterator();
+			var i2 = usableTFs2.iterator();
+			
 			while (i2.hasNext()) {
 				if (!i2.next().isReady(graphView, rawPt, xformPt))
 					i2.remove();
@@ -248,18 +275,18 @@ class PopupMenuHelper {
 
 		if (action.equalsIgnoreCase("OPEN") && menuItemCount == 1 && tfCount == 1){
 			// Double click on open space and there is only one menu item, execute it
-			final DialogTaskManager taskManager = serviceRegistrar.getService(DialogTaskManager.class);
+			var taskManager = serviceRegistrar.getService(DialogTaskManager.class);
 			
 			if (usableTFs.size() == 1) {
-				NetworkViewTaskFactory tf = usableTFs.iterator().next();
+				var tf = usableTFs.iterator().next();
 				taskManager.execute(tf.createTaskIterator(graphView));
 			} else if (usableTFs2.size() == 1) {
-				NetworkViewLocationTaskFactory tf = usableTFs2.iterator().next();
+				var tf = usableTFs2.iterator().next();
 				taskManager.execute(tf.createTaskIterator(graphView, rawPt, xformPt));
 			}
 		} else {
-			final JPopupMenu menu = createMenu("Double Click Menu: empty");
-			final JMenuTracker tracker = new JMenuTracker(menu);
+			var menu = createMenu("Double Click Menu: empty");
+			var tracker = new JMenuTracker(menu);
 
 			if (!action.equalsIgnoreCase("OPEN")) {
 				initializeNetworkTracker(tracker);
@@ -267,48 +294,49 @@ class PopupMenuHelper {
 				tracker.getGravityTracker(".").addMenuSeparator(999.99);
 			}
 
-			for (NetworkViewTaskFactory nvtf : usableTFs) {
-				NamedTaskFactory provisioner = factoryProvisioner.createFor(nvtf, graphView);
+			for (var nvtf : usableTFs) {
+				var provisioner = factoryProvisioner.createFor(nvtf, graphView);
 				addMenuItem(null, menu, provisioner, null, tracker, vtfl.getEmptySpaceTaskFactoryMap().get(nvtf));
 			}
-			
-			for ( NetworkViewLocationTaskFactory nvltf : usableTFs2 ) {
-				NamedTaskFactory provisioner = factoryProvisioner.createFor(nvltf, graphView, rawPt, xformPt);
-				addMenuItem(null, menu, provisioner, null, tracker, vtfl.getNetworkViewLocationTaskFactoryMap().get( nvltf ) );
+
+			for (var nvltf : usableTFs2) {
+				var provisioner = factoryProvisioner.createFor(nvltf, graphView, rawPt, xformPt);
+				addMenuItem(null, menu, provisioner, null, tracker, vtfl.getNetworkViewLocationTaskFactoryMap().get(nvltf));
 			}
 			
-			for (CyNetworkViewContextMenuFactory netVMF: usableCMFs) {
+			for (var netVMF: usableCMFs) {
 				try {
-					CyMenuItem menuItem = netVMF.createMenuItem(graphView);
+					var menuItem = netVMF.createMenuItem(graphView);
 					addCyMenuItem(graphView, menu, menuItem, tracker, vtfl.getCyNetworkViewContextMenuFactoryMap().get(netVMF));
-				}
-				catch (Throwable t) {
+				} catch (Throwable t) {
 					logger.error("Could not display context menu." , t);
 				}
 			}
 			
+			sanitize(menu);
+			
 			// There are more than one menu item, let user make the selection
-			menu.show(invoker,(int)(rawPt.getX()), (int)(rawPt.getY()));		
+			menu.show(invoker,(int) rawPt.getX(), (int) rawPt.getY());		
 		}
 	}
 
 	private JPopupMenu createMenu(String title) {
-		final JPopupMenu menu = new JPopupMenu(title);
+		var menu = new JPopupMenu(title);
 		menu.addPopupMenuListener(new PopupMenuListener() {
 			@Override
 			public void popupMenuWillBecomeVisible(PopupMenuEvent arg0) {
+				// Ignore...
 			}
-			
 			@Override
 			public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
 				menu.removeAll();
 			}
-			
 			@Override
 			public void popupMenuCanceled(PopupMenuEvent arg0) {
 				menu.removeAll();
 			}
 		});
+		
 		return menu;
 	}
 	
@@ -318,26 +346,19 @@ class PopupMenuHelper {
 	 * in the service properties.
 	 */
 	private void addMenuItem(View<?> view, JPopupMenu popup, NamedTaskFactory tf, Object tunableContext,
-			JMenuTracker tracker, Map props) {
-		String title = (String) (props.get(TITLE));
-		String pref = (String) (props.get(PREFERRED_MENU));
-		String toolTip = (String) (props.get(TOOLTIP));
-		String menuGravity = (String) (props.get(MENU_GRAVITY));
-		String prefAction = (String) (props.get(PREFERRED_ACTION));
+			JMenuTracker tracker, Map<?, ?> props) {
+		var title = (String) props.get(TITLE);
+		var pref = (String) props.get(PREFERRED_MENU);
+		var toolTip = (String) props.get(TOOLTIP);
+		var menuGravity = (String) props.get(MENU_GRAVITY);
+		var prefAction = (String) props.get(PREFERRED_ACTION);
 		boolean insertSepBefore = getBooleanProperty(props, INSERT_SEPARATOR_BEFORE);
 		boolean insertSepAfter = getBooleanProperty(props, INSERT_SEPARATOR_AFTER);
-		boolean useCheckBoxMenuItem = getBooleanProperty(props, "useCheckBoxMenuItem");
-		double gravity;
 
 		if ("View".equalsIgnoreCase(pref))
 			return; // TODO Should we show 'View' options here (e.g. zoom in/out, fit selected)?
 		
-		if (menuGravity != null) {
-			gravity = Double.parseDouble(menuGravity);
-		} else  {
-			//gravity = largeValue++;
-			gravity = -1;  // Alphabetize by default
-		}
+		double gravity = menuGravity != null ? Double.parseDouble(menuGravity) : -1; // Alphabetize by default
 
 		if (pref == null) {
 			if (prefAction != null && prefAction.equalsIgnoreCase("OPEN"))
@@ -345,33 +366,8 @@ class PopupMenuHelper {
 			else
 				pref = APPS_MENU;
 		}
-	
-		// otherwise create our own popup menus 
-		final Object targetVP = props.get("targetVP");
-		boolean isSelected = false;
 		
-		if (view != null) {
-			if (targetVP != null && targetVP instanceof String) {
-				// TODO remove this at first opportunity whenever lookup gets refactored.
-				Class<?> clazz = CyNetwork.class;
-
-				if (view.getModel() instanceof CyNode)
-					clazz = CyNode.class;
-				else if (view.getModel() instanceof CyEdge)
-					clazz = CyEdge.class;
-
-				final VisualProperty<?> vp = re.getVisualLexicon().lookup(clazz, targetVP.toString());
-
-				if (vp == null)
-					isSelected = false;
-				else
-					isSelected = view.isValueLocked(vp);
-			} else if (targetVP instanceof VisualProperty) {
-				isSelected = view.isValueLocked((VisualProperty<?>) targetVP);
-			}
-		}
-
-		// no title
+		// No title
 		if (title == null) {
 			int last = pref.lastIndexOf(".");
 
@@ -383,13 +379,8 @@ class PopupMenuHelper {
 				if (APPS_MENU.equals(title))
 					return;
 
-				final GravityTracker gravityTracker = tracker.getGravityTracker(pref);
-				final JMenuItem item = createMenuItem(tf, title, useCheckBoxMenuItem, toolTip);
-
-				if (useCheckBoxMenuItem) {
-					final JCheckBoxMenuItem checkBox = (JCheckBoxMenuItem) item;
-					checkBox.setSelected(isSelected);
-				}
+				var gravityTracker = tracker.getGravityTracker(pref);
+				var item = createMenuItem(tf, title, toolTip);
 
 				if (insertSepBefore)
 					gravityTracker.addMenuSeparator(gravity - .0001);
@@ -399,26 +390,23 @@ class PopupMenuHelper {
 				if (insertSepAfter)
 					gravityTracker.addMenuSeparator(gravity + .0001);
 			} else {
-				// otherwise just use the preferred menu as the menuitem name
+				// otherwise just use the preferred menu as the menu item name
 				title = pref;
 				
 				if (APPS_MENU.equals(title))
 					return;
 				
-				// popup.add( createMenuItem(tf, title, useCheckBoxMenuItem, toolTip) );
-				final GravityTracker gravityTracker = tracker.getGravityTracker(pref);
-				final JMenuItem item = createMenuItem(tf, title, useCheckBoxMenuItem, toolTip);
+				var gravityTracker = tracker.getGravityTracker(pref);
+				var item = createMenuItem(tf, title, toolTip);
 				gravityTracker.addMenuItem(item, gravity);
 			}
-
-		// title and preferred menu
-		} else {
-			final GravityTracker gravityTracker = tracker.getGravityTracker(pref);
+		} else { // title and preferred menu
+			var gravityTracker = tracker.getGravityTracker(pref);
 			
 			if (insertSepBefore)
 				gravityTracker.addMenuSeparator(gravity - .0001);
 
-			gravityTracker.addMenuItem(createMenuItem(tf, title, useCheckBoxMenuItem, toolTip), gravity);
+			gravityTracker.addMenuItem(createMenuItem(tf, title, toolTip), gravity);
 
 			if (insertSepAfter)
 				gravityTracker.addMenuSeparator(gravity + .0001);
@@ -429,7 +417,7 @@ class PopupMenuHelper {
 	 * This method creates popup menu submenus and menu items based on the
 	 * "preferredMenu" keyword.  
 	 */
-	private void addCyMenuItem(View<?> view, JPopupMenu popup, CyMenuItem menuItem, JMenuTracker tracker, Map props) {
+	private void addCyMenuItem(View<?> view, JPopupMenu popup, CyMenuItem menuItem, JMenuTracker tracker, Map<?, ?> props) {
 		String pref = null;
 		
 		if (props != null)
@@ -440,18 +428,19 @@ class PopupMenuHelper {
 
 		// This is a *very* special case we used to help with Dynamic Linkout
 		if (pref.equalsIgnoreCase(menuItem.getMenuItem().getText()) && menuItem.getMenuItem() instanceof JMenu) {
-			final GravityTracker gravityTracker = tracker.getGravityTracker(pref);
-			JMenu menu = (JMenu)menuItem.getMenuItem();
+			var gravityTracker = tracker.getGravityTracker(pref);
+			var menu = (JMenu) menuItem.getMenuItem();
+			
 			for (int menuIndex = 0; menuIndex < menu.getItemCount(); menuIndex++) {
-				JMenuItem item = menu.getItem(menuIndex);
+				var item = menu.getItem(menuIndex);
 				gravityTracker.addMenuItem(item, -1);
 			}
+			
 			return;
 		}
 
-		final GravityTracker gravityTracker = tracker.getGravityTracker(pref);
+		var gravityTracker = tracker.getGravityTracker(pref);
 		gravityTracker.addMenuItem(menuItem.getMenuItem(), menuItem.getMenuGravity());
-		return;
 	}
 	
 	// We need to "seed" the tracker menu or we wind up with
@@ -494,14 +483,16 @@ class PopupMenuHelper {
 		tracker.getGravityTracker(EDGE_PREFERENCES_MENU);
 	}
 
-	private JMenuItem createMenuItem(TaskFactory tf, String title, boolean useCheckBoxMenuItem, String toolTipText) {
-		JMenuItem item;
-		PopupAction action = new PopupAction(tf, title);
+	private JMenuItem createMenuItem(TaskFactory tf, String title, String toolTipText) {
+		var action = new PopupAction(tf, title);
+		final JMenuItem item;
 		
-		if (useCheckBoxMenuItem)
+		if (tf instanceof Togglable) {
 			item = new JCheckBoxMenuItem(action);
-		else
+			((JCheckBoxMenuItem) item).setSelected(tf.isOn());
+		} else {
 			item = new JMenuItem(action);
+		}
 
 		boolean ready = tf.isReady();
 		item.setEnabled(ready);
@@ -521,10 +512,11 @@ class PopupMenuHelper {
 			return tfs.keySet();
 
 		// otherwise figure out if any TaskFactories match the specified preferred action
-		List<T> usableTFs = new ArrayList<>();
+		var usableTFs = new ArrayList<T>();
 		
-		for (T evtf : tfs.keySet()) {
-			String prefAction = (String) (tfs.get(evtf).get(PREFERRED_ACTION));
+		for (var evtf : tfs.keySet()) {
+			var prefAction = (String) tfs.get(evtf).get(PREFERRED_ACTION);
+			
 			// assume action is NEW if no action specified
 			if (prefAction == null)
 				prefAction = "NEW";
@@ -538,18 +530,53 @@ class PopupMenuHelper {
 	/**
  	 * Get a boolean property
  	 */
-	private boolean getBooleanProperty(Map props, String property) {
-		String value = (String) (props.get(property)); // get the property
+	private boolean getBooleanProperty(Map<?, ?> props, String property) {
+		var value = (String) props.get(property);
 
 		if (value == null || value.length() == 0)
 			return false;
+		
 		try {
 			return Boolean.parseBoolean(value);
 		} catch (Exception e) {
 			return false;
 		}
 	}
-
+	
+	/**
+	 * Hides duplicate separators and disables empty menus.
+	 */
+	private static void sanitize(JPopupMenu popupMenu) {
+		for (var comp : popupMenu.getComponents()) {
+			if (comp instanceof JMenu) {
+				boolean hasSeparator = false;
+				boolean hasMenuItem = false;
+				
+				var menu = (JMenu) comp;
+				int i = 0;
+				
+				for (var mc : menu.getMenuComponents()) {
+					if (mc instanceof JSeparator) {
+						// Already has one separator? So hide this one.
+						// Also hide if it's the first or last component.
+						if (hasSeparator || i == 0 || i == menu.getItemCount() - 1)
+							mc.setVisible(false);
+						else
+							hasSeparator = true;
+					} else if (mc.isVisible()) {
+						hasSeparator = false;
+						hasMenuItem = true;
+					}
+					
+					i++;
+				}
+				
+				if (!hasMenuItem)
+					comp.setEnabled(false);
+			}
+		}
+	}
+	
 	/**
 	 * A simple action that executes the specified TaskFactory
 	 */

@@ -2,14 +2,12 @@ package org.cytoscape.task.internal.select;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
@@ -26,7 +24,7 @@ import org.cytoscape.work.TaskIterator;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -52,16 +50,20 @@ public final class SelectUtils {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
-	public void setSelectedNodes(final CyNetwork network, final Collection<CyNode> nodes, final boolean select) {
+	public void setSelectedNodes(CyNetwork network, Collection<CyNode> nodes, boolean select) {
 		setSelected(network,nodes, select, network.getDefaultNodeTable());
 	}
 
-	public void setSelectedEdges(final CyNetwork network, final Collection<CyEdge> edges, final boolean select) {
+	public void setSelectedEdges(CyNetwork network, Collection<CyEdge> edges, boolean select) {
 		setSelected(network,edges, select, network.getDefaultEdgeTable());
 	}
 
-	private void setSelected(final CyNetwork network, final Collection<? extends CyIdentifiable> objects, 
-	                         final boolean select, final CyTable table) {
+	private void setSelected(
+			CyNetwork network,
+			Collection<? extends CyIdentifiable> objects,
+			boolean select,
+			CyTable table
+	) {
 		// Don't autobox
 		final Boolean value;
 		
@@ -71,15 +73,15 @@ public final class SelectUtils {
 			value = Boolean.FALSE;
 
 		// Disable all events from our table
-		CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		var eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 		eventHelper.silenceEventSource(table);
 
 		// Create the RowSetRecord collection
-		List<RowSetRecord> rowsChanged = new ArrayList<>();
+		var rowsChanged = new ArrayList<RowSetRecord>();
 
 		// The list of objects will be all nodes or all edges
-		for (final CyIdentifiable nodeOrEdge : objects) {
-			CyRow row = nodeOrEdge != null ? table.getRow(nodeOrEdge.getSUID()) : null;
+		for (var nodeOrEdge : objects) {
+			var row = nodeOrEdge != null ? table.getRow(nodeOrEdge.getSUID()) : null;
 
 			if (row != null) {
 				row.set(CyNetwork.SELECTED, value);
@@ -90,23 +92,23 @@ public final class SelectUtils {
 		// Enable all events from our table
 		eventHelper.unsilenceEventSource(table);
 
-		RowsSetEvent event = new RowsSetEvent(table, rowsChanged);
+		var event = new RowsSetEvent(table, rowsChanged);
 		eventHelper.fireEvent(event);
 	}
 	
 	public void setVisible(CyNetworkView networkView, Collection<CyNode> selectedNodes, Collection<CyEdge> selectedEdges) {
-		CyNetwork network = networkView.getModel();
-		HideTaskFactory hideFactory = serviceRegistrar.getService(HideTaskFactory.class);
-		TaskIterator hideTasks = hideFactory.createTaskIterator(networkView, network.getNodeList(), network.getEdgeList());
+		var network = networkView.getModel();
+		var hideFactory = serviceRegistrar.getService(HideTaskFactory.class);
+		var hideTasks = hideFactory.createTaskIterator(networkView, network.getNodeList(), network.getEdgeList());
 		
-		UnHideTaskFactory unhideFactory = serviceRegistrar.getService(UnHideTaskFactory.class);
-		TaskIterator unhideTasks = unhideFactory.createTaskIterator(networkView, selectedNodes, selectedEdges);
+		var unhideFactory = serviceRegistrar.getService(UnHideTaskFactory.class);
+		var unhideTasks = unhideFactory.createTaskIterator(networkView, selectedNodes, selectedEdges);
 		
-		TaskIterator taskIterator = new TaskIterator();
+		var taskIterator = new TaskIterator();
 		taskIterator.append(hideTasks);
 		taskIterator.append(unhideTasks);
 		
-		SynchronousTaskManager<?> taskManager = serviceRegistrar.getService(SynchronousTaskManager.class);
+		var taskManager = serviceRegistrar.getService(SynchronousTaskManager.class);
 		taskManager.execute(taskIterator);
 	}
 }

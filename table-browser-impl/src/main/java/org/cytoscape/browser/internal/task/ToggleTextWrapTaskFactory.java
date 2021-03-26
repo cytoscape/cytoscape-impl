@@ -3,8 +3,8 @@ package org.cytoscape.browser.internal.task;
 import org.cytoscape.browser.internal.view.TableBrowserMediator;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.task.AbstractTableColumnTaskFactory;
-import org.cytoscape.task.TogglableTableColumn;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.Togglable;
 
 /*
  * #%L
@@ -30,7 +30,7 @@ import org.cytoscape.work.TaskIterator;
  * #L%
  */
 
-public class ToggleTextWrapTaskFactory extends AbstractTableColumnTaskFactory implements TogglableTableColumn {
+public class ToggleTextWrapTaskFactory extends AbstractTableColumnTaskFactory implements Togglable {
 
 	private final TableBrowserMediator mediator;
 

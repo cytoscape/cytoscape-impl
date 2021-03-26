@@ -15,7 +15,6 @@ import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.ShowGraphicsDetailsTaskFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 
@@ -25,7 +24,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2020 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -114,17 +113,17 @@ public class GraphicsDetailAction extends AbstractCyAction {
 	@Override
 	public void menuSelected(MenuEvent me) {
 		updateEnableState();
-		CyNetworkView view = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
+		var view = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
 		
 		if (view != null && isEnabled())
-			putValue(SELECTED_KEY, Boolean.TRUE == view.getVisualProperty(DVisualLexicon.NETWORK_FORCE_HIGH_DETAIL));
+			putValue(SELECTED_KEY, Boolean.TRUE.equals(view.getVisualProperty(DVisualLexicon.NETWORK_FORCE_HIGH_DETAIL)));
 		else
 			putValue(SELECTED_KEY, false);
 	}
 	
 	@Override
 	public void updateEnableState() {
-		CyNetworkView view = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
+		var view = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
 		setEnabled(taskFactory.isReady(view));
 	}
 }

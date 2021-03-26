@@ -1,6 +1,5 @@
 package org.cytoscape.equations.internal.functions;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.equations.AbstractFunction;
 import org.cytoscape.equations.ArgDescriptor;
 import org.cytoscape.equations.ArgType;
@@ -36,11 +35,11 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 
 public class Degree extends AbstractFunction {
 	
-	private final CyServiceRegistrar serviceRegistrar;
+	private final CyServiceRegistrar registrar;
 
 	public Degree(final CyServiceRegistrar serviceRegistrar) {
 		super(new ArgDescriptor[] { new ArgDescriptor(ArgType.INT, "node_SUID", "The SUID identifier attribute of a node.") });
-		this.serviceRegistrar = serviceRegistrar;
+		this.registrar = serviceRegistrar;
 	}
 
 	@Override
@@ -61,16 +60,15 @@ public class Degree extends AbstractFunction {
 	@Override
 	public Object evaluateFunction(final Object[] args) {
 		final Long nodeID = FunctionUtil.getArgAsLong(args[0]);
-		final CyNetwork currentNetwork = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 
-		if (currentNetwork == null)
-			return (Long) (-1L);
-
-		final CyNode node = currentNetwork.getNode(nodeID);
-		
-		if (node == null)
+		Long degree = SuidSearchUtil.lookup(registrar, CyNode.class, nodeID, this::degree);
+		if(degree == null) {
 			throw new IllegalArgumentException("\"" + nodeID + "\" is not a valid node identifier.");
-
-		return (Long) (long) currentNetwork.getAdjacentEdgeList(node, CyEdge.Type.ANY).size();
+		}
+		return degree;
+	}
+	
+	private Long degree(CyNetwork net, CyNode node) {
+		return Long.valueOf(net.getAdjacentEdgeList(node, CyEdge.Type.ANY).size());
 	}
 }

@@ -79,7 +79,7 @@ import org.cytoscape.util.swing.OpenBrowser;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -128,7 +128,7 @@ public class NetworkSearchBar extends JPanel {
 	public NetworkSearchBar(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 		
-		final Collator collator = Collator.getInstance();
+		var collator = Collator.getInstance();
 		providers = new TreeSet<>((NetworkSearchTaskFactory o1, NetworkSearchTaskFactory o2) -> {
 			return collator.compare(o1.getName(), o2.getName());
 		});
@@ -304,7 +304,7 @@ public class NetworkSearchBar extends JPanel {
 		providersPopup.add(getProvidersPanel(), BorderLayout.CENTER);
 		
 		providersPopup.addPropertyChangeListener("visible", evt -> {
-			if (evt.getNewValue() == Boolean.FALSE) {
+			if (Boolean.FALSE.equals(evt.getNewValue())) {
 				updateProvidersButton();
 				updateSearchEnabled();
 			}
@@ -335,7 +335,7 @@ public class NetworkSearchBar extends JPanel {
 		
 		getOptionsDialog().update(comp);
 		
-		final Point pt = getOptionsButton().getLocationOnScreen(); 
+		var pt = getOptionsButton().getLocationOnScreen(); 
 		getOptionsDialog().setLocation(pt.x, pt.y + getOptionsButton().getHeight());
 		getOptionsDialog().pack();
 		getOptionsDialog().setVisible(true);

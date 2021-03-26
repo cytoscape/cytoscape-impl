@@ -315,6 +315,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_ACTION, "NEW");
 			props.setProperty(MENU_GRAVITY, "1.6");
 			props.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
+			props.setProperty(INSERT_SEPARATOR_AFTER, "true");
 			props.setProperty(TITLE, "Bounded Text Annotation...");
 			registerService(bc, factory, NetworkViewLocationTaskFactory.class, props);
 		}

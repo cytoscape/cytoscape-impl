@@ -1,21 +1,13 @@
 package org.cytoscape.model.internal;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
-import org.cytoscape.application.CyUserLog;
 import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.IdentDescriptor;
 import org.cytoscape.equations.Interpreter;
-import org.cytoscape.model.internal.tsort.TopoGraphNode;
-import org.cytoscape.model.internal.tsort.TopologicalSort;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /*
  * #%L
@@ -43,8 +35,6 @@ import org.slf4j.LoggerFactory;
 
 class EqnSupport {
 	
-	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
-
 	private EqnSupport() { } // Don't ever create an instance of this class!
 
 	static boolean scalarEquationIsCompatible(final Object equationCandidate, final Class<?> targetType) {
@@ -137,7 +127,6 @@ class EqnSupport {
 					} catch (Exception e) {
 						// Intentionally empty!
 					}
-					logger.warn("Missing value for \"" + attribRef + "\" while evaluating an equation (ID:" + key + ", column name:" + columnName + ")");
 					return null;
 				}
 			}
@@ -151,7 +140,6 @@ class EqnSupport {
 				} catch (Exception e2) {
 					// Intentionally empty!
 				}
-				logger.warn("Bad column reference to \"" + attribRef + "\" while evaluating an equation (ID:" + key + ", column name:" + columnName + ")");
 				return null;
 			}
 		}
@@ -167,194 +155,8 @@ class EqnSupport {
 			} catch (Exception e2) {
 				// Intentionally empty!
 			}
-			logger.warn("Error while evaluating an equation: " + e.getMessage() + " (ID:" + key + ", column name:" + columnName + ")");
 			return null;
 		}
 	}
 
-	/**
-	 *  @return an in-order list of attribute names that will have to be evaluated before "columnName" can be evaluated
-	 */
-	private List<String> topoSortAttribReferences(final Object key, final String columnName,
-						      final CyTableImpl tableImpl)
-	{
-		final Object equationCandidate = tableImpl.getValueOrEquation(key, columnName);
-		if (!(equationCandidate instanceof Equation))
-			return new ArrayList<>();
-
-		final Equation equation = (Equation)equationCandidate;
-		final Set<String> attribReferences = equation.getVariableReferences();
-		if (attribReferences.size() == 0)
-			return new ArrayList<>();
-
-		final Set<String> alreadyProcessed = new TreeSet<>();
-		alreadyProcessed.add(columnName);
-		final List<TopoGraphNode> dependencies = new ArrayList<>();
-		for (final String attribReference : attribReferences)
-                        followReferences(key, attribReference, alreadyProcessed, dependencies,
-					 tableImpl);
-
-
-		final List<TopoGraphNode> topoOrder = TopologicalSort.sort(dependencies);
-		final List<String> retVal = new ArrayList<>();
-		for (final TopoGraphNode node : topoOrder) {
-			final AttribTopoGraphNode attribTopoGraphNode = (AttribTopoGraphNode)node;
-			final String nodeName = attribTopoGraphNode.getNodeName();
-			if (nodeName.equals(columnName))
-				return retVal;
-			else
-				retVal.add(nodeName);
-		}
-
-		// We should never get here because "columnName" should have been found in the for-loop above!
-		throw new IllegalStateException("\"" + columnName
-		                                + "\" was not found in the toplogical order, which should be impossible.");
-	}
-
-	/**
-	 *  Helper function for topoSortAttribReferences() performing a depth-first search of equation evaluation dependencies.
-	 */
-	private static void followReferences(final Object key, final String columnName,
-					     final Collection<String> alreadyProcessed,
-					     final Collection<TopoGraphNode> dependencies,
-					     final CyTableImpl tableImpl)
-	{
-		// Already visited this attribute?
-		if (alreadyProcessed.contains(columnName))
-			return;
-
-		alreadyProcessed.add(columnName);
-		final Object equationCandidate = tableImpl.getValueOrEquation(key, columnName);
-		if (!(equationCandidate instanceof Equation))
-			return;
-
-		final Equation equation = (Equation)equationCandidate;
-		final Set<String> attribReferences = equation.getVariableReferences();
-		for (final String attribReference : attribReferences)
-			followReferences(key, attribReference, alreadyProcessed, dependencies, tableImpl);
-	}
-
-	/**
-	 *  @return "x" truncated using Excel's notion of truncation.
-	 */
-	private static double excelTrunc(final double x) {
-		final boolean isNegative = x < 0.0;
-		return Math.round(x + (isNegative ? +0.5 : -0.5));
-	}
-
-	/**
-	 *  @return "d" converted to an Integer using Excel rules, should the number be outside the
-	 *          range of an int, null will be returned
-	 */
-	private static Integer doubleToInteger(final double d) {
-		if (d > Integer.MAX_VALUE || d < Integer.MIN_VALUE)
-			return null;
-
-		double x = ((Double)d).intValue();
-		if (x != d && x < 0.0)
-			--x;
-
-		return (Integer)(int)x;
-	}
-
-	/**
-	 *  @return "l" converted to an Integer using Excel rules, should the number be outside the
-	 *          range of an int, null will be returned
-	 */
-	private static Integer longToInteger(final long l) {
-		if (l >= Integer.MIN_VALUE && l <= Integer.MAX_VALUE)
-			return (Integer)(int)l;
-
-		return null;
-	}
-
-	/**
-	 *  @return "equationValue" interpreted according to Excel rules as an integer or null if
-	 *          that is not possible
-	 */
-	private static Integer convertEqnRetValToInteger(final String id, final String columnName,
-							 final Object equationValue)
-	{
-		if (equationValue.getClass() == Double.class) {
-			final Integer retVal = doubleToInteger((Double)equationValue);
-			if (retVal == null)
-				logger.warn("Cannot convert a floating point value ("
-					    + equationValue + ") to an integer.  (ID:" + id
-					    + ", column name:" + columnName + ")");
-			return retVal;
-		}
-		else if (equationValue.getClass() == Long.class) {
-			final Integer retVal = longToInteger((Long)equationValue);
-			if (retVal == null)
-				logger.warn("Cannot convert a large integer (long) value ("
-					    + equationValue + ") to an integer. (ID:" + id
-					    + ", column name:" + columnName + ")");
-			return retVal;
-		}
-		else if (equationValue.getClass() == Boolean.class) {
-			final Boolean boolValue = (Boolean)equationValue;
-			return (Integer)(boolValue ? 1 : 0);
-		}
-		else
-			throw new IllegalStateException("we should never get here.");
-	}
-
-	/**
-	 *  @return "equationValue" interpreted according to Excel rules as a double or null if that is not possible
-	 */
-	private static Double convertEqnRetValToDouble(final String id, final String columnName,
-						       final Object equationValue)
-	{
-		if (equationValue.getClass() == Double.class)
-			return (Double)equationValue;
-		else if (equationValue.getClass() == Long.class)
-			return (double)(Long)(equationValue);
-		else if (equationValue.getClass() == Boolean.class) {
-			final Boolean boolValue = (Boolean)equationValue;
-			return boolValue ? 1.0 : 0.0;
-		}
-		else if (equationValue.getClass() == String.class) {
-			final String valueAsString = (String)equationValue;
-			try {
-				return Double.parseDouble(valueAsString);
-			} catch (final NumberFormatException e) {
-				logger.warn("Cannot convert a string (\"" + valueAsString
-				            + "\") to a floating point value. (ID:" + id
-                                            + ", column name:" + columnName + ")");
-				return null;
-			}
-		}
-		else
-			throw new IllegalStateException("we should never get here.");
-	}
-
-	/**
-	 *  @return "equationValue" interpreted according to Excel rules as a boolean
-	 */
-	private static Boolean convertEqnRetValToBoolean(final String id, final String columnName,
-							 final Object equationValue)
-	{
-		if (equationValue.getClass() == Double.class)
-			return (Double)equationValue != 0.0;
-		else if (equationValue.getClass() == Long.class)
-			return (Long)(equationValue) != 0L;
-		else if (equationValue.getClass() == Boolean.class) {
-			return (Boolean)equationValue;
-		}
-		else if (equationValue.getClass() == String.class) {
-			final String stringValue = (String)equationValue;
-			if (stringValue.compareToIgnoreCase("true") == 0)
-				return true;
-			else if (stringValue.compareToIgnoreCase("false") == 0)
-				return false;
-			else {
-				logger.warn("Cannot convert a string (\"" + stringValue
-				            + "\") to a boolean value. (ID:" + id
-                                            + ", column name:" + columnName + ")");
-				return null;
-			}
-		}
-		else
-			throw new IllegalStateException("we should never get here.");
-	}
 }
