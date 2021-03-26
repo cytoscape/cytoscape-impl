@@ -25,6 +25,7 @@ import static org.cytoscape.work.ServiceProperties.NODE_PREFERENCES_MENU;
 import static org.cytoscape.work.ServiceProperties.NODE_SELECT_MENU;
 import static org.cytoscape.work.ServiceProperties.PREFERRED_ACTION;
 import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+import static org.cytoscape.work.ServiceProperties.SMALL_ICON_ID;
 import static org.cytoscape.work.ServiceProperties.TITLE;
 import static org.cytoscape.work.ServiceProperties.TOOLTIP;
 
@@ -36,6 +37,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import javax.swing.AbstractAction;
+import javax.swing.Icon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -49,6 +51,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.JMenuTracker;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskFactory;
@@ -354,6 +357,7 @@ class PopupMenuHelper {
 		var prefAction = (String) props.get(PREFERRED_ACTION);
 		boolean insertSepBefore = getBooleanProperty(props, INSERT_SEPARATOR_BEFORE);
 		boolean insertSepAfter = getBooleanProperty(props, INSERT_SEPARATOR_AFTER);
+		var iconId = (String) props.get(SMALL_ICON_ID);
 
 		if ("View".equalsIgnoreCase(pref))
 			return; // TODO Should we show 'View' options here (e.g. zoom in/out, fit selected)?
@@ -367,8 +371,12 @@ class PopupMenuHelper {
 				pref = APPS_MENU;
 		}
 		
-		// No title
-		if (title == null) {
+		Icon icon = null;
+		
+		if (iconId != null && !iconId.toString().trim().isEmpty())
+			icon = serviceRegistrar.getService(IconManager.class).getIcon(iconId.toString());
+		
+		if (title == null) { // No title
 			int last = pref.lastIndexOf(".");
 
 			// if the preferred menu is delimited
@@ -380,7 +388,7 @@ class PopupMenuHelper {
 					return;
 
 				var gravityTracker = tracker.getGravityTracker(pref);
-				var item = createMenuItem(tf, title, toolTip);
+				var item = createMenuItem(tf, title, toolTip, icon);
 
 				if (insertSepBefore)
 					gravityTracker.addMenuSeparator(gravity - .0001);
@@ -397,16 +405,16 @@ class PopupMenuHelper {
 					return;
 				
 				var gravityTracker = tracker.getGravityTracker(pref);
-				var item = createMenuItem(tf, title, toolTip);
+				var item = createMenuItem(tf, title, toolTip, icon);
 				gravityTracker.addMenuItem(item, gravity);
 			}
-		} else { // title and preferred menu
+		} else { // Title and preferred menu
 			var gravityTracker = tracker.getGravityTracker(pref);
 			
 			if (insertSepBefore)
 				gravityTracker.addMenuSeparator(gravity - .0001);
 
-			gravityTracker.addMenuItem(createMenuItem(tf, title, toolTip), gravity);
+			gravityTracker.addMenuItem(createMenuItem(tf, title, toolTip, icon), gravity);
 
 			if (insertSepAfter)
 				gravityTracker.addMenuSeparator(gravity + .0001);
@@ -483,7 +491,7 @@ class PopupMenuHelper {
 		tracker.getGravityTracker(EDGE_PREFERENCES_MENU);
 	}
 
-	private JMenuItem createMenuItem(TaskFactory tf, String title, String toolTipText) {
+	private JMenuItem createMenuItem(TaskFactory tf, String title, String toolTipText, Icon icon) {
 		var action = new PopupAction(tf, title);
 		final JMenuItem item;
 		
@@ -499,6 +507,7 @@ class PopupMenuHelper {
 		action.setEnabled(ready);
 
 		item.setToolTipText(toolTipText);
+		item.setIcon(icon);
 		
 		return item;
 	}
