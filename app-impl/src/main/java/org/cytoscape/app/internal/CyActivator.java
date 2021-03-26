@@ -523,6 +523,9 @@ public class CyActivator extends AbstractCyActivator {
 			);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
+		
+		final String DESCRIPTION_WARNING = "\nThe `description` field will be null if the App store has not been accessed from Cytoscape.";
+		
 		{
 			ListAppsTaskFactory factory = new ListAppsTaskFactory(appManager, AppStatus.DISABLED);
 			Properties props = new Properties();
@@ -530,7 +533,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "list disabled");
 			props.setProperty(COMMAND_DESCRIPTION, "List the disabled apps");
 			props.setProperty(COMMAND_LONG_DESCRIPTION,
-					"Return a list of the disabled apps in the current installation.");
+					"Return a list of the disabled apps in the current installation." + DESCRIPTION_WARNING);
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, 
 				    "[{ \"appName\": \"appname\","+
@@ -547,7 +550,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "list installed");
 			props.setProperty(COMMAND_DESCRIPTION, "List the installed apps");
 			props.setProperty(COMMAND_LONG_DESCRIPTION,
-					"Return a list of the installed apps in the current installation.");
+					"Return a list of the installed apps in the current installation." + DESCRIPTION_WARNING);
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, 
 				    "[{\"appName\": \"appname\","+
@@ -564,7 +567,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "list uninstalled");
 			props.setProperty(COMMAND_DESCRIPTION, "List the uninstalled apps");
 			props.setProperty(COMMAND_LONG_DESCRIPTION,
-					"Return a list of the uninstalled apps in the current installation.");
+					"Return a list of the uninstalled apps in the current installation." + DESCRIPTION_WARNING);
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, 
 				    "[{ \"appName\": \"appname\","+
