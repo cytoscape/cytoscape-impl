@@ -5,7 +5,7 @@
 		<xs:complexType>
 			<xs:sequence>
 				<xs:element maxOccurs="unbounded" ref="visualStyle" />
-				<xs:element maxOccurs="unbounded" ref="tableStyle" />
+				<xs:element maxOccurs="unbounded" ref="tableColumnStyle" />
 			</xs:sequence>
 			<xs:attribute name="id" use="required" type="xs:NCName" />
 			<xs:attribute name="documentVersion" use="optional" default="3.0" type="xs:normalizedString"/>
@@ -21,7 +21,7 @@
 			<xs:attribute name="name" use="required" type="xs:NCName" />
 		</xs:complexType>
 	</xs:element>
-	<xs:element name="tableStyle">
+	<xs:element name="tableColumnStyle">
 		<xs:complexType>
 			<xs:all>
 				<xs:element ref="cell" minOccurs="1" maxOccurs="1" />

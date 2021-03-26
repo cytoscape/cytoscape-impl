@@ -18,6 +18,7 @@ import org.cytoscape.io.internal.util.vizmap.model.DiscreteMappingEntry;
 import org.cytoscape.io.internal.util.vizmap.model.Edge;
 import org.cytoscape.io.internal.util.vizmap.model.Network;
 import org.cytoscape.io.internal.util.vizmap.model.Node;
+import org.cytoscape.io.internal.util.vizmap.model.TableColumnStyle;
 import org.cytoscape.io.internal.util.vizmap.model.Vizmap;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
@@ -120,8 +121,8 @@ public class VisualStyleSerializer {
 			VisualLexicon lexicon = renderingEngineManager.getDefaultTableVisualLexicon();
 			
 			for (VisualStyle style : tableStyles) {
-				var vsModel = new org.cytoscape.io.internal.util.vizmap.model.TableStyle();
-				vizmap.getTableStyle().add(vsModel);
+				var vsModel = new TableColumnStyle();
+				vizmap.getTableColumnStyle().add(vsModel);
 
 				vsModel.setName(style.getTitle());
 
@@ -193,7 +194,7 @@ public class VisualStyleSerializer {
 		if (vizmap != null) {
 			VisualStyleFactory visualStyleFactory = serviceRegistrar.getService(VisualStyleFactory.class);
 			
-			for(var vsModel : vizmap.getTableStyle()) {
+			for(var vsModel : vizmap.getTableColumnStyle()) {
 				VisualStyle vs = visualStyleFactory.createVisualStyle(vsModel.getName());
 				
 				if (vsModel.getCell() != null) {
@@ -556,8 +557,7 @@ public class VisualStyleSerializer {
 		}
 	}
 	
-	private void createDependencies(final VisualStyle visualStyle,
-			org.cytoscape.io.internal.util.vizmap.model.TableStyle vsModel, VisualLexicon lexicon) {
+	private void createDependencies(final VisualStyle visualStyle, TableColumnStyle vsModel, VisualLexicon lexicon) {
 		// Create serializable Dependency
 		final Set<VisualPropertyDependency<?>> dependencies = visualStyle.getAllVisualPropertyDependencies();
 
@@ -608,7 +608,7 @@ public class VisualStyleSerializer {
 		}
 	}
 	
-	private void restoreDependencies(final VisualStyle visualStyle, org.cytoscape.io.internal.util.vizmap.model.TableStyle vsModel) {
+	private void restoreDependencies(final VisualStyle visualStyle, TableColumnStyle vsModel) {
 		final Cell colSection = vsModel.getCell();
 
 		final Set<Dependency> dependencyStates = new HashSet<>();
