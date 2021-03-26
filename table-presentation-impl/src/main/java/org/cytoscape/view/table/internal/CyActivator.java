@@ -50,14 +50,6 @@ public class CyActivator extends AbstractCyActivator {
 		var popupMenuHelper = new PopupMenuHelper(registrar);
 		registerServiceListener(bc, popupMenuHelper::addTableColumnTaskFactory, popupMenuHelper::removeTableColumnTaskFactory, TableColumnTaskFactory.class);
 		registerServiceListener(bc, popupMenuHelper::addTableCellTaskFactory, popupMenuHelper::removeTableCellTaskFactory, TableCellTaskFactory.class);
-//		{
-//			var factory = new HideColumnTaskFactory(mediator);
-//			var props = new Properties();
-//			props.setProperty(TITLE, "Hide Column");
-//			// Do not register the factory as an OSGI service unless it's necessary.
-//			// We just need to add it to the menu helper for now.
-//			popupMenuHelper.addTableColumnTaskFactory(factory, props);
-//		}
 		
 		var lexicon = new BrowserTableVisualLexicon();
 		

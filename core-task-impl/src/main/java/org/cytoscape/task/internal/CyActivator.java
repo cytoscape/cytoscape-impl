@@ -46,6 +46,7 @@ import static org.cytoscape.work.ServiceProperties.NODE_GROUP_MENU;
 import static org.cytoscape.work.ServiceProperties.NODE_SELECT_MENU;
 import static org.cytoscape.work.ServiceProperties.PREFERRED_ACTION;
 import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+import static org.cytoscape.work.ServiceProperties.SMALL_ICON_ID;
 import static org.cytoscape.work.ServiceProperties.TITLE;
 import static org.cytoscape.work.ServiceProperties.TOOLTIP;
 import static org.cytoscape.work.ServiceProperties.TOOLTIP_IMAGE;
@@ -288,7 +289,7 @@ import org.osgi.framework.BundleContext;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -308,8 +309,11 @@ import org.osgi.framework.BundleContext;
 
 public class CyActivator extends AbstractCyActivator {
 	
-	private static float LARGE_ICON_FONT_SIZE = 32f;
+	private static float LARGE_ICON_FONT_SIZE = 32.0f;
 	private static int LARGE_ICON_SIZE = 32;
+	
+	private static float SMALL_ICON_FONT_SIZE = 14.0f;
+	private static int SMALL_ICON_SIZE = 16;
 	
 	private Font iconFont;
 	
@@ -1785,16 +1789,29 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
+			var icon = new TextIcon(IconManager.ICON_TRASH_O, iconManager.getIconFont(SMALL_ICON_FONT_SIZE), SMALL_ICON_SIZE, SMALL_ICON_SIZE);
+			var iconId = "cy::DELETE_COLUMN_SMALL";
+			iconManager.addIcon(iconId, icon);
+			
 			var factory = new DeleteColumnTaskFactoryImpl(serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(TITLE, "Delete Column");
+			props.setProperty(MENU_GRAVITY, "1.3");
+			props.setProperty(SMALL_ICON_ID, iconId);
+			props.setProperty(INSERT_SEPARATOR_AFTER, "true");
 			registerService(bc, factory, TableColumnTaskFactory.class, props);
 			registerService(bc, factory, DeleteColumnTaskFactory.class, props);
 		}
 		{
+			var icon = new TextIcon(IconManager.ICON_EDIT, iconManager.getIconFont(SMALL_ICON_FONT_SIZE), SMALL_ICON_SIZE, SMALL_ICON_SIZE);
+			var iconId = "cy::RENAME_COLUMN_SMALL";
+			iconManager.addIcon(iconId, icon);
+			
 			var factory = new RenameColumnTaskFactoryImpl(serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(TITLE, "Rename Column...");
+			props.setProperty(MENU_GRAVITY, "1.2");
+			props.setProperty(SMALL_ICON_ID, iconId);
 			props.setProperty(COMMAND, "rename column");
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Rename a column in a table");

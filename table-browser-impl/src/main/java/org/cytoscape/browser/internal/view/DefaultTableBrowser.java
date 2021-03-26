@@ -89,9 +89,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser
 			controls.add(new ViewModeControl(serviceRegistrar));
 		
 		controls.add(new RowHeightControl(serviceRegistrar));
-		
-		if (objType != CyNetwork.class) // The Network table has only one line
-			controls.add(new GeneralOptionsControl(serviceRegistrar));
+		controls.add(new GeneralOptionsControl(objType, serviceRegistrar));
 		
 		getOptionsBar().setFormatControls(controls);
 

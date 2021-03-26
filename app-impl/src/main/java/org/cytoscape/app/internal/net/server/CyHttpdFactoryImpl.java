@@ -283,7 +283,7 @@ class CyHttpdImpl implements CyHttpd
                 executor.execute(connectionHandler);
             }
         
-            logger.info("Server socket stopped");
+            logger.debug("Server socket stopped");
         }
     }
 

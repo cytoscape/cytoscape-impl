@@ -1,8 +1,9 @@
 package org.cytoscape.browser.internal.view.tools;
 
+import static org.cytoscape.util.swing.LookAndFeelUtil.equalizeSize;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isWinLAF;
 import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.ROW_HEIGHT;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_ROW_HEIGHT;
 
 import java.awt.Dimension;
 import java.awt.event.FocusAdapter;
@@ -10,16 +11,16 @@ import java.awt.event.FocusEvent;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
-import javax.swing.JToggleButton;
-import javax.swing.UIManager;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
 
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.ContinuousRange;
 
 /*
@@ -51,9 +52,9 @@ public class RowHeightControl extends AbstractToolBarControl {
 	
 	private static final int MIN_VALUE = 8; // less than this and the table is probably useless
 	
-	private JToggleButton autoButton;
 	private JSlider heightSlider;
 	private JTextField heightText;
+	private JButton resetButton;
 	
 	private int value;
 	
@@ -63,13 +64,13 @@ public class RowHeightControl extends AbstractToolBarControl {
 		super("Row Height", serviceRegistrar);
 		
 		init();
-		updateEnabled();
 	}
 	
 	private void setValue(int value) {
 		if (value != this.value) {
 			this.value = value;
-			apply(ROW_HEIGHT, value);
+			apply(TABLE_ROW_HEIGHT, value); // TODO Apply to RowView
+			// TODO Add listener to VP changes
 		}
 	}
 
@@ -81,25 +82,17 @@ public class RowHeightControl extends AbstractToolBarControl {
 			var tableView = getTableView();
 			
 			if (tableView != null) {
-				var value = tableView.getVisualProperty(ROW_HEIGHT);
+				var value = tableView.getVisualProperty(TABLE_ROW_HEIGHT);
 				value = clamp(value);
 				
 				if (this.value != value) {
 					this.value = value;
 					getHeightSlider().setValue(value);
-					updateEnabled();
 				}
 			}
 		} finally {
 			adjusting = false;
 		}
-		
-		updateEnabled();
-	}
-	
-	protected void updateEnabled() {
-		boolean auto = getAutoButton().isSelected();
-		getHeightText().setEnabled(!auto);
 	}
 	
 	private void init() {
@@ -109,44 +102,42 @@ public class RowHeightControl extends AbstractToolBarControl {
 		layout.setAutoCreateGaps(isWinLAF());
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
-				.addComponent(getAutoButton())
 				.addComponent(getHeightSlider())
 				.addComponent(getHeightText())
+				.addComponent(getResetButton())
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addGap(0, 0, Short.MAX_VALUE)
 				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
-						.addComponent(getAutoButton())
 						.addComponent(getHeightSlider())
 						.addComponent(getHeightText())
+						.addComponent(getResetButton())
 				)
 				.addGap(0, 0, Short.MAX_VALUE)
 		);
 		
-		makeSmall(getAutoButton(), getHeightSlider(), getHeightText());
-		setAquaStyle(getAutoButton());
-		setAquaStyle(getAutoButton(), getHeightSlider(), getHeightText());
+		makeSmall(getHeightSlider(), getHeightText(), getResetButton());
+		setAquaStyle(getHeightSlider(), getHeightText(), getResetButton());
+		equalizeSize(getHeightText(), getResetButton());
 	}
 	
-	private JToggleButton getAutoButton() {
-		if (autoButton == null) {
-			autoButton = new JToggleButton("Auto");
-			autoButton.setSelected(value <= 0);
-			autoButton.addActionListener(evt -> {
-				updateEnabled();
-				setValue(getCurrentValue());
-			});
+	private JButton getResetButton() {
+		if (resetButton == null) {
+			resetButton = new JButton(IconManager.ICON_REFRESH);
+			resetButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(10.0f));
+			resetButton.setToolTipText("Reset");
+			resetButton.addActionListener(evt -> setValue(TABLE_ROW_HEIGHT.getDefault()));
 		}
 		
-		return autoButton;
+		return resetButton;
 	}
 	
 	private JSlider getHeightSlider() {
 		if (heightSlider == null) {
-			var range = (ContinuousRange<Integer>) ROW_HEIGHT.getRange();
+			var range = (ContinuousRange<Integer>) TABLE_ROW_HEIGHT.getRange();
 			var min = Math.max(MIN_VALUE, range.getMin());
 			var max = range.getMax();
-			var def = UIManager.getInt("Table.rowHeight");
+			var def = TABLE_ROW_HEIGHT.getDefault();
 			
 			heightSlider = new JSlider(min, max);
 			heightSlider.setValue(value <= 0 ? def : clamp(value));
@@ -156,9 +147,7 @@ public class RowHeightControl extends AbstractToolBarControl {
 					return;
 				
 				var text = "" + heightSlider.getValue();
-				getAutoButton().setSelected(false);
 				getHeightText().setText(text);
-				updateEnabled();
 				setValue(getCurrentValue());
 			});
 		}
@@ -175,7 +164,7 @@ public class RowHeightControl extends AbstractToolBarControl {
 			heightText.setToolTipText("Enter a number between " + min + " and " + max);
 			heightText.setHorizontalAlignment(JTextField.RIGHT);
 			
-			var d = new Dimension(40, heightText.getPreferredSize().height);
+			var d = new Dimension(32, heightText.getPreferredSize().height);
 			heightText.setPreferredSize(d);
 			heightText.setMaximumSize(d);
 			
@@ -195,21 +184,18 @@ public class RowHeightControl extends AbstractToolBarControl {
 	
 	private void onTextChanged() {
 		int val = getCurrentValue();
+		getHeightText().setText("" + val);
 		getHeightSlider().setValue(clamp(val));
 	}
 	
 	private int getCurrentValue() {
 		int value = this.value;
 		
-		if (getAutoButton().isSelected()) {
-			value = 0;
-		} else {
-			try {
-				value = Integer.parseInt(getHeightText().getText());
-				value = clamp(value); // clamp value
-			} catch (NumberFormatException e) {
-				// Ignore
-			}
+		try {
+			value = Integer.parseInt(getHeightText().getText());
+			value = clamp(value); // clamp value
+		} catch (NumberFormatException e) {
+			// Ignore
 		}
 		
 		return value;

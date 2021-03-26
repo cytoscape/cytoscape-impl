@@ -29,7 +29,7 @@ import org.cytoscape.view.presentation.annotations.TextAnnotation;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2020 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -256,7 +256,7 @@ public class ViewUtils {
 		if (vp != null) {
 			var view = re.getViewModel();
 			
-			if (view.getVisualProperty(vp) != Boolean.TRUE)
+			if (!Boolean.TRUE.equals(view.getVisualProperty(vp)))
 				view.setLockedValue(vp, Boolean.TRUE);
 		}
 		
@@ -287,21 +287,21 @@ public class ViewUtils {
 		re.updateView(UpdateType.JUST_ANNOTATIONS);
 	}
 
-  public static String getFontStyle(int style) {
-    if (style == Font.PLAIN)
-      return "plain";
-    if (style == Font.BOLD)
-      return "bold";
-    if (style == Font.ITALIC)
-      return "italic";
-    if (style == (Font.ITALIC|Font.BOLD))
-      return "bolditalic";
-    return "";
-  }
-	
+	public static String getFontStyle(int style) {
+		if (style == Font.PLAIN)
+			return "plain";
+		if (style == Font.BOLD)
+			return "bold";
+		if (style == Font.ITALIC)
+			return "italic";
+		if (style == (Font.ITALIC | Font.BOLD))
+			return "bolditalic";
+		return "";
+	}
+
 	public static void styleWindowStateButton(AbstractButton btn) {
 		final int size = 16;
-		
+
 		btn.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
 		btn.setMinimumSize(new Dimension(size, size));
 		btn.setPreferredSize(new Dimension(size, size));

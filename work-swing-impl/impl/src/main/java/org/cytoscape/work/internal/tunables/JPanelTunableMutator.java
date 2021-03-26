@@ -502,11 +502,8 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	 *
 	 * @return a container for <code>GUITunableHandler</code>' panels
 	 */
-	private TitledPanel createTitledPanel(final String title, final Boolean vertical, final Boolean displayed) {
-		final TitledPanel panel = new TitledPanel(
-				(displayed == null || displayed) ? title : null,
-				vertical == Boolean.TRUE
-		);
+	private TitledPanel createTitledPanel(String title, Boolean vertical, Boolean displayed) {
+		var panel = new TitledPanel((displayed == null || displayed) ? title : null, Boolean.TRUE.equals(vertical));
 
 		return panel;
 	}
@@ -518,7 +515,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	 *
 	 * @return success(true) or failure(false) for the validation
 	 */
-	private boolean validateTunableInput(final Object objectWithTunables) {
+	private boolean validateTunableInput(Object objectWithTunables) {
 		if (!(objectWithTunables instanceof TunableValidator))
 			return true;
 

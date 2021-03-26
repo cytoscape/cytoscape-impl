@@ -1,7 +1,5 @@
 package org.cytoscape.view.table.internal.impl;
 
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.ROW_HEIGHT;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -157,7 +155,7 @@ public class BrowserTableCellRenderer extends JPanel implements TableCellRendere
 			if (objEditStr.getErrorText() != null) {
 				text = "#ERR: " + objEditStr.getErrorText();
 			} else if (validatedObj instanceof Boolean) {
-				text = validatedObj == Boolean.TRUE ? IconManager.ICON_CHECK_SQUARE : IconManager.ICON_SQUARE_O;
+				text = Boolean.TRUE.equals(validatedObj) ? IconManager.ICON_CHECK_SQUARE : IconManager.ICON_SQUARE_O;
 			} else if (validatedObj instanceof Double) {
 				String formatStr = null;
 				var format = columnView.getVisualProperty(BasicTableVisualLexicon.COLUMN_FORMAT);
@@ -232,7 +230,7 @@ public class BrowserTableCellRenderer extends JPanel implements TableCellRendere
 			var h = textComp.getPreferredSize().height + vpad;
 			
 			// Careful here! We don't want to cause an infinite loop.
-			if (h != table.getRowHeight(rowIndex) && h > tableView.getVisualProperty(ROW_HEIGHT))
+			if (h != table.getRowHeight(rowIndex) && h >= browserTable.getRowHeight())
 				table.setRowHeight(rowIndex, h);
 		}
 		

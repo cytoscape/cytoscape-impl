@@ -26,7 +26,7 @@ import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2020 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -183,7 +183,7 @@ public class VisualStylePanel {
 			popup.setBorder(BorderFactory.createEmptyBorder());
 			
 			popup.addPropertyChangeListener("visible", evt -> {
-				if (evt.getNewValue() == Boolean.FALSE)
+				if (Boolean.FALSE.equals(evt.getNewValue()))
 					onPopupDisposed();
 			});
 			

@@ -62,23 +62,27 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 	private static final String LANDSCAPE = "Landscape";
 	
 	enum PreDefinedPageSize {
-		CUSTOM(PageSize.LETTER, "Custom"),
-		LETTER(PageSize.LETTER, "Letter"),
-		LEGAL(PageSize.LEGAL, "Legal"),
-		TABLOID(PageSize.TABLOID, "Tabloid"),
-		A0(PageSize.A0, "A0"),
-		A1(PageSize.A1, "A1"),
-		A2(PageSize.A2, "A2"),
-		A3(PageSize.A3, "A3"),
-		A4(PageSize.A4, "A4"),
-		A5(PageSize.A5, "A5");
+		AUTO("Auto"),
+		CUSTOM("Custom"),
+		LETTER("Letter", PageSize.LETTER),
+		LEGAL("Legal", PageSize.LEGAL),
+		TABLOID("Tabloid", PageSize.TABLOID),
+		A0("A0", PageSize.A0),
+		A1("A1", PageSize.A1),
+		A2("A2", PageSize.A2),
+		A3("A3", PageSize.A3),
+		A4("A4", PageSize.A4),
+		A5("A5", PageSize.A5);
 		
 		final Rectangle size;
 		final String label;
 		
-		PreDefinedPageSize(Rectangle size, String label) {
+		PreDefinedPageSize(String label, Rectangle size) {
 			this.size = size;
 			this.label = label;
+		}
+		PreDefinedPageSize(String label) {
+			this(label, null);
 		}
 		
 		static PreDefinedPageSize fromLabel(String label) {
@@ -204,13 +208,17 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 	
 	
 	private float getPageSizeInches(boolean width) {
-		if(CUSTOM.label.equals(pageSize.getSelectedValue())) {
+		PreDefinedPageSize pageSize = PreDefinedPageSize.fromLabel(this.pageSize.getSelectedValue());
+		
+		if(pageSize == AUTO) {
+			float inches = (width ? networkWidth.floatValue() : networkHeight.floatValue()) / UNITS_PER_INCH;
+			return new BigDecimal(inches).setScale(1, RoundingMode.HALF_UP).floatValue();
+		} else if(pageSize == CUSTOM) {
 			return width ? customWidthInches : customHeightInches;
 		} else {
 			if(LANDSCAPE.equals(orientation.getSelectedValue()))
 				width = !width;
-			PreDefinedPageSize ps = PreDefinedPageSize.fromLabel(pageSize.getSelectedValue());
-			float inches = (width ? ps.size.getWidth() : ps.size.getHeight()) / UNITS_PER_INCH;
+			float inches = (width ? pageSize.size.getWidth() : pageSize.size.getHeight()) / UNITS_PER_INCH;
 			return new BigDecimal(inches).setScale(1, RoundingMode.HALF_UP).floatValue();
 		}
 	}
@@ -221,8 +229,8 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 		return "Export Network";
 	}
 	
-	private final Double width;
-	private final Double height;
+	private final Double networkWidth;
+	private final Double networkHeight;
 	private final RenderingEngine<?> engine;
 	
 	private final OutputStream stream;
@@ -237,15 +245,30 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 		this.stream = stream;
 		
 		pageSize = new ListSingleSelection<>(
-				CUSTOM.label, LETTER.label, LEGAL.label, TABLOID.label, 
+				AUTO.label, CUSTOM.label, LETTER.label, LEGAL.label, TABLOID.label, 
 				A0.label, A1.label, A2.label, A3.label, A4.label, A5.label
 		);
 		pageSize.setSelectedValue(LETTER.label);
 
-		width  = engine.getViewModel().getVisualProperty(BasicVisualLexicon.NETWORK_WIDTH);
-		height = engine.getViewModel().getVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT);
+		networkWidth  = engine.getViewModel().getVisualProperty(BasicVisualLexicon.NETWORK_WIDTH);
+		networkHeight = engine.getViewModel().getVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT);
 
 		logger.debug("PDFWriter created.");
+	}
+	
+	
+	private Rectangle computePageDimensions() {
+		PreDefinedPageSize pageSize = PreDefinedPageSize.fromLabel(this.pageSize.getSelectedValue());
+		String orientation = this.orientation.getSelectedValue();
+		
+		if(pageSize == AUTO)
+			return new Rectangle(networkWidth.floatValue(), networkHeight.floatValue());
+		else if(pageSize == CUSTOM)
+			return new Rectangle(customWidthInches * UNITS_PER_INCH, customHeightInches * UNITS_PER_INCH);
+		else if(LANDSCAPE.equals(orientation))
+			return new Rectangle(pageSize.size.getHeight(), pageSize.size.getWidth());
+		else
+			return pageSize.size;
 	}
 	
 
@@ -260,16 +283,7 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 
 		logger.debug("PDF Rendering start");
 		
-		PreDefinedPageSize pageSize = PreDefinedPageSize.fromLabel(this.pageSize.getSelectedValue());
-		
-		final Rectangle dimensions;
-		if(pageSize == CUSTOM)
-			dimensions = new Rectangle(customWidthInches * UNITS_PER_INCH, customHeightInches * UNITS_PER_INCH);
-		else if (PORTRAIT.equals(orientation.getSelectedValue()))
-			dimensions = pageSize.size;
-		else
-			dimensions = new Rectangle(pageSize.size.getHeight(), pageSize.size.getWidth());
-		
+		final Rectangle dimensions = computePageDimensions();
 		final Document document = new Document(dimensions);
 		
 		logger.debug("Document created: " + document);
@@ -306,7 +320,7 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 		
 		logger.debug("##### G2D created: " + g);
 		
-		double imageScale = Math.min(dimensions.getWidth() / width, dimensions.getHeight() / height);
+		double imageScale = Math.min(dimensions.getWidth() / networkWidth, dimensions.getHeight() / networkHeight);
 		g.scale(imageScale, imageScale);
 
 		logger.debug("##### Start Rendering Phase 2: " + engine.toString());

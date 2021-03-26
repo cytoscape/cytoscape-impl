@@ -110,10 +110,10 @@ public final class BrowserTableModel extends AbstractTableModel
 		var rows = dataTable.getAllRows();
 		this.rowIndexToPrimaryKey = new Object[rows.size()]; 
 		this.maxRowIndex = 0;
-		var primaryKey = dataTable.getPrimaryKey().getName();
+		var pkName = dataTable.getPrimaryKey().getName();
 		
 		for (CyRow row : rows)
-			rowIndexToPrimaryKey[maxRowIndex++] = row.getRaw(primaryKey);
+			rowIndexToPrimaryKey[maxRowIndex++] = row.getRaw(pkName);
 	}
 
 	private List<String> getAttributeNames(CyTable table) {
@@ -205,17 +205,14 @@ public final class BrowserTableModel extends AbstractTableModel
 		try {
 			switch (viewMode) {
 				case SELECTED:
-					if (selectedRows == null)
-						selectedRows = new ArrayList<>(dataTable.getMatchingRows(CyNetwork.SELECTED, true));
-					return rowIndex < selectedRows.size() ? selectedRows.get(rowIndex) : null;
+					return rowIndex < getSelectedRows().size() ? getSelectedRows().get(rowIndex) : null;
 				case ALL:
 					return dataTable.getRow(rowIndexToPrimaryKey[rowIndex]);
 				case AUTO:
-					if (selectedRows == null)
-						selectedRows = new ArrayList<>(dataTable.getMatchingRows(CyNetwork.SELECTED, true));
+					var selRows = getSelectedRows();
 					
-					if (!selectedRows.isEmpty())
-						return rowIndex < selectedRows.size() ? selectedRows.get(rowIndex) : null;
+					if (!selRows.isEmpty())
+						return rowIndex < selRows.size() ? selRows.get(rowIndex) : null;
 					else
 						return dataTable.getRow(rowIndexToPrimaryKey[rowIndex]);
 			}
@@ -225,6 +222,60 @@ public final class BrowserTableModel extends AbstractTableModel
 		}
 		
 		return null;
+	}
+	
+	CyRow getCyRow(Object suid) {
+		return dataTable.getRow(suid);
+	}
+	
+	public int indexOfRow(CyRow row) {
+		try {
+			switch (viewMode) {
+				case SELECTED:
+					return indexOfRowFromSelected(row);
+				case ALL:
+					return indexOfRowFromAll(row);
+				case AUTO:
+					if (!getSelectedRows().isEmpty())
+						return indexOfRowFromSelected(row);
+					else
+						return indexOfRowFromAll(row);
+			}
+		} catch (IndexOutOfBoundsException e) {
+			e.printStackTrace();
+		}
+		
+		return -1;
+	}
+	
+	private int indexOfRowFromAll(CyRow row) {
+		var pkName = dataTable.getPrimaryKey().getName();
+		var pk = row.getRaw(pkName);
+		
+		for (int i = 0; i < rowIndexToPrimaryKey.length; i++) {
+			if (pk.equals(rowIndexToPrimaryKey[i]))
+				return i;
+		}
+		
+		return -1;
+	}
+	
+	private int indexOfRowFromSelected(CyRow row) {
+		var selRows = getSelectedRows();
+		
+		for (int i = 0; i < selRows.size(); i++) {
+			if (row.equals(selRows.get(i)))
+				return i;
+		}
+		
+		return -1;
+	}
+	
+	private List<CyRow> getSelectedRows() {
+		if (selectedRows == null)
+			selectedRows = new ArrayList<>(dataTable.getMatchingRows(CyNetwork.SELECTED, true));
+		
+		return selectedRows;
 	}
 
 	private ValidatedObjectAndEditString getValidatedObjectAndEditString(CyRow row, String columnName) {
@@ -362,12 +413,13 @@ public final class BrowserTableModel extends AbstractTableModel
 	@Override
 	public void handleEvent(RowsCreatedEvent e) {
 		lock.writeLock().lock();
+		
 		try {
-			if(!e.getSource().equals(this.dataTable))
+			if (!e.getSource().equals(this.dataTable))
 				return;
-	
+
 			selectedRows = null;
-	
+
 			// add new rows to rowIndexToPrimaryKey array
 			var newRowIndex = new Object[rowIndexToPrimaryKey.length + e.getPayloadCollection().size()];
 			System.arraycopy(rowIndexToPrimaryKey, 0, newRowIndex, 0, rowIndexToPrimaryKey.length);
@@ -394,12 +446,12 @@ public final class BrowserTableModel extends AbstractTableModel
 
 			var rows = dataTable.getAllRows();
 
-			var primaryKey = dataTable.getPrimaryKey().getName();
+			var pkName = dataTable.getPrimaryKey().getName();
 
 			rowIndexToPrimaryKey = new Object[rows.size()];
 
 			for (var row : rows)
-				rowIndexToPrimaryKey[index++] = row.getRaw(primaryKey);
+				rowIndexToPrimaryKey[index++] = row.getRaw(pkName);
 
 			maxRowIndex = index;
 			selectedRows = null;
@@ -470,10 +522,6 @@ public final class BrowserTableModel extends AbstractTableModel
 			return attrNames.get(index);
 
 		throw new ArrayIndexOutOfBoundsException();
-	}
-
-	CyRow getRow(Object suid) {
-		return dataTable.getRow(suid);
 	}
 
 	@Override

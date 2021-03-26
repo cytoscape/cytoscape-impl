@@ -1076,7 +1076,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			btn.setBorder(btn.isEnabled() ? borderEnabled : borderDisabled);
 			
 			btn.addPropertyChangeListener("enabled", evt -> {
-				btn.setBorder(evt.getNewValue() == Boolean.TRUE ? borderEnabled : borderDisabled);
+				btn.setBorder(Boolean.TRUE.equals(evt.getNewValue()) ? borderEnabled : borderDisabled);
 			});
 		}
 

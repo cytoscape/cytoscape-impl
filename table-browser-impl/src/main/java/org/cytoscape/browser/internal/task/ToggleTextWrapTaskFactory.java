@@ -2,9 +2,9 @@ package org.cytoscape.browser.internal.task;
 
 import org.cytoscape.browser.internal.view.TableBrowserMediator;
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.task.AbstractTableColumnTask;
-import org.cytoscape.work.ProvidesTitle;
-import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.task.AbstractTableColumnTaskFactory;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.Togglable;
 
 /*
  * #%L
@@ -30,26 +30,29 @@ import org.cytoscape.work.TaskMonitor;
  * #L%
  */
 
-public class HideColumnTask extends AbstractTableColumnTask {
+public class ToggleTextWrapTaskFactory extends AbstractTableColumnTaskFactory implements Togglable {
 
 	private final TableBrowserMediator mediator;
-	
-	@ProvidesTitle
-	public String getTitle() {
-		return "Hide Column";
-	}
-	
-	public HideColumnTask(CyColumn column, TableBrowserMediator mediator) {
-		super(column);
+
+	public ToggleTextWrapTaskFactory(TableBrowserMediator mediator) {
 		this.mediator = mediator;
 	}
 
 	@Override
-	public void run(TaskMonitor tm) throws Exception {
-		tm.setTitle("Hide Column");
-		tm.setStatusMessage("Hiding column '" + column.getName() + "'...");
-		tm.setProgress(-1);
-		
-		mediator.hideColumn(column);
+	public TaskIterator createTaskIterator(CyColumn column) {
+		if (column == null)
+			throw new IllegalStateException("'column' must not be null.");
+
+		return new TaskIterator(new ToggleTextWrapTask(column, mediator));
+	}
+
+	@Override
+	public boolean isReady(CyColumn column) {
+		return column != null && column.getType() == String.class;
+	}
+
+	@Override
+	public boolean isOn(CyColumn column) {
+		return mediator.isTextWrap(column);
 	}
 }

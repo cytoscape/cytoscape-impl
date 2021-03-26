@@ -665,7 +665,7 @@ public class EquationParserImpl implements EquationParser {
 
 			final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 			eventHelper.addEventPayload(this, function, EquationFunctionAddedEvent.class);
-			logger.info("New Function Registered: " + function.getName());
+			logger.debug("New Function Registered: " + function.getName());
 		}
 	}
 	

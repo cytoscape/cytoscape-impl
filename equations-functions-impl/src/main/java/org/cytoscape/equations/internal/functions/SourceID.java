@@ -1,12 +1,10 @@
 package org.cytoscape.equations.internal.functions;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.equations.AbstractFunction;
 import org.cytoscape.equations.ArgDescriptor;
 import org.cytoscape.equations.ArgType;
 import org.cytoscape.equations.FunctionUtil;
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
 /*
@@ -35,11 +33,11 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 
 public class SourceID extends AbstractFunction {
 
-	private final CyServiceRegistrar serviceRegistrar;
+	private final CyServiceRegistrar registrar;
 
 	public SourceID(final CyServiceRegistrar serviceRegistrar) {
 		super(new ArgDescriptor[] { new ArgDescriptor(ArgType.INT, "edge_SUID", "The SUID identifier attribute of an edge.") });
-		this.serviceRegistrar = serviceRegistrar;
+		this.registrar = serviceRegistrar;
 	}
 
 	@Override
@@ -60,16 +58,11 @@ public class SourceID extends AbstractFunction {
 	@Override
 	public Object evaluateFunction(final Object[] args) {
 		final Long edgeID = FunctionUtil.getArgAsLong(args[0]);
-		final CyNetwork currentNetwork = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
-
-		if (currentNetwork == null)
-			return (Long) (-1L);
-
-		final CyEdge edge = currentNetwork.getEdge(edgeID);
 		
-		if (edge == null)
+		Long sourceId = SuidSearchUtil.lookup(registrar, CyEdge.class, edgeID, (net, edge) -> edge.getSource().getSUID());
+		if(sourceId == null) {
 			throw new IllegalArgumentException("\"" + edgeID + "\" is not a valid edge identifier.");
-
-		return edge.getSource().getSUID();
+		}
+		return sourceId;
 	}
 }
