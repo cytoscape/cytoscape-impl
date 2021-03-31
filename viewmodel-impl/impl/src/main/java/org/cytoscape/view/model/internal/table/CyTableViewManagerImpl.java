@@ -117,7 +117,7 @@ public class CyTableViewManagerImpl implements CyTableViewManager, TableAboutToB
 				double grav = COLUMN_GRAVITY.getDefault();
 				for(var colView : view.getColumnViews()) {
 					if(colView != null && colView != suidCol && colView != selectedCol) {
-						colView.setVisualProperty(COLUMN_GRAVITY, grav);
+						colView.setLockedValue(COLUMN_GRAVITY, grav);
 						grav += 1.0;
 					}
 				}
