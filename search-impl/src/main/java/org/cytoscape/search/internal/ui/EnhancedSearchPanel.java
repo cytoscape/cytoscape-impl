@@ -183,7 +183,6 @@ public class EnhancedSearchPanel extends JPanel {
 		layout.setAutoCreateGaps(true);
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
-				.addGap(10, 20, Short.MAX_VALUE)
 				.addComponent(tfSearchText, 120, 240, 300)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
