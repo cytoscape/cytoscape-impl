@@ -96,7 +96,7 @@ public abstract class AbstractToolBarControl extends JPanel {
 		var view = getTableView();
 		
 		if (view != null)
-			view.setVisualProperty(vp, value);
+			view.setLockedValue(vp, value);
 	}
 	
 	protected JLabel getTitleLabel() {

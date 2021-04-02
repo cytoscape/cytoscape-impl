@@ -684,8 +684,6 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 					final StringBuilder errorMsg = new StringBuilder();
 					newValue = evalEquation(equation, key, columnName, errorMsg);
 					lastInternalError = errorMsg.toString();
-					if (newValue == null)
-						logger.warn("attempted premature evaluation evaluation for " + equation);
 				} else {
 					// TODO this is an implicit addRow - not sure if we want to refactor this or not
 					newRawValue = newValue = columnType.cast(value);

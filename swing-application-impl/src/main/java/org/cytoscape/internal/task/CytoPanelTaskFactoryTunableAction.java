@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2010 - 2019 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -57,66 +57,19 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 public class CytoPanelTaskFactoryTunableAction extends AbstractCyAction {
 	
-	/**
-	 *  A listener that upon receiving the button-click event validates the tunables and then
-	 *  creates and executes a task.
-	 */
-	private static class ExecuteButtonListener implements ActionListener {
-		
-		private final TaskFactory factory;
-		private final Object context;
-		private CyServiceRegistrar serviceRegistrar;
-
-		ExecuteButtonListener(final TaskFactory factory, Object context, final CyServiceRegistrar serviceRegistrar) {
-			this.factory = factory;
-			this.context = context;
-			this.serviceRegistrar = serviceRegistrar;
-		}
-
-		@Override
-		public void actionPerformed(final ActionEvent event) {
-			// Perform input validation?
-			if (context instanceof TunableValidator) {
-				final Appendable errMsg = new StringBuilder();
-				try {
-					final ValidationState validationState =
-						((TunableValidator)context).getValidationState(errMsg);
-					if (validationState == ValidationState.INVALID) {
-						JOptionPane.showMessageDialog(new JFrame(), errMsg.toString(),
-									      "Input Validation Problem",
-									      JOptionPane.ERROR_MESSAGE);
-						return;
-					} else if (validationState == ValidationState.REQUEST_CONFIRMATION) {
-						if (JOptionPane.showConfirmDialog(new JFrame(), errMsg.toString(),
-										  "Request Confirmation",
-										  JOptionPane.YES_NO_OPTION)
-						    == JOptionPane.NO_OPTION)
-							return;
-					}
-				} catch (final Exception e) {
-					e.printStackTrace();
-					return;
-				}
-			}
-
-			final PanelTaskManager taskManager = serviceRegistrar.getService(PanelTaskManager.class);
-			taskManager.execute(factory.createTaskIterator());
-		}
-	}
-
-
-	final private TaskFactory factory;
-	final private Object context;
-	final private Map<String, String> serviceProps;
-	final private CytoPanelName cytoPanelName;
-	final private CyServiceRegistrar serviceRegistrar;
-	final private static Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
+	private final TaskFactory factory;
+	private final Object context;
+	private final Map<String, String> serviceProps;
+	private final CytoPanelName cytoPanelName;
+	private final CyServiceRegistrar serviceRegistrar;
+	
+	private final static Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	public CytoPanelTaskFactoryTunableAction(
-			final TaskFactory factory,
-			final Object context,
-	        final Map<String, String> serviceProps,
-			final CyServiceRegistrar serviceRegistrar
+			TaskFactory factory,
+			Object context,
+	        Map<String, String> serviceProps,
+			CyServiceRegistrar serviceRegistrar
 	) {
 		super(serviceProps, serviceRegistrar.getService(CyApplicationManager.class),
 				serviceRegistrar.getService(CyNetworkViewManager.class));
@@ -129,17 +82,20 @@ public class CytoPanelTaskFactoryTunableAction extends AbstractCyAction {
 	}
 
 	private CytoPanelName getCytoPanelName() {
-		CytoPanelName n;
+		CytoPanelName n = null;
+		
 		try {
-			Object name = serviceProps.get("preferredCytoPanel");
-			if ( name != null )
+			var name = serviceProps.get("preferredCytoPanel");
+			
+			if (name != null)
 				n = CytoPanelName.valueOf(name.toString());
-			else 
+			else
 				n = CytoPanelName.WEST;
 		} catch (Exception e) {
 			logger.warn("couldn't find 'preferredCytoPanel' property",e);
 			n = CytoPanelName.WEST;
 		}
+		
 		return n;
 	}
 
@@ -147,16 +103,15 @@ public class CytoPanelTaskFactoryTunableAction extends AbstractCyAction {
 	 *  Creates a new CytoPanel component and adds it to a CytoPanel.
 	 */
 	@Override
-	public void actionPerformed(final ActionEvent a) {
-		final PanelTaskManager taskManager = serviceRegistrar.getService(PanelTaskManager.class);
-		final JPanel innerPanel = taskManager.getConfiguration(factory, context);
-		
+	public void actionPerformed(ActionEvent a) {
+		var taskManager = serviceRegistrar.getService(PanelTaskManager.class);
+		var innerPanel = taskManager.getConfiguration(factory, context);
+
 		if (innerPanel == null)
 			return;
 
-		CytoPanelComponentImp imp = new CytoPanelComponentImp(innerPanel,
-		                                                      getCytoPanelComponentTitle());
-		serviceRegistrar.registerService(imp,CytoPanelComponent.class,new Properties());
+		var imp = new CytoPanelComponentImp(innerPanel, getCytoPanelComponentTitle());
+		serviceRegistrar.registerService(imp, CytoPanelComponent.class, new Properties());
 	}
 
 	/**
@@ -167,12 +122,13 @@ public class CytoPanelTaskFactoryTunableAction extends AbstractCyAction {
 	 */
 	private String getCytoPanelComponentTitle() {
 		try {
-			final String cytoPanelComponentTitle = (String)serviceProps.get("cytoPanelComponentTitle");
+			var cytoPanelComponentTitle = (String) serviceProps.get("cytoPanelComponentTitle");
 			if (cytoPanelComponentTitle != null)
 				return cytoPanelComponentTitle;
 
 			// Try to create a panel component title from the menu item:
-			final String menuTitle = (String)serviceProps.get("title");
+			var menuTitle = (String) serviceProps.get("title");
+
 			if (menuTitle != null) {
 				if (menuTitle.endsWith("..."))
 					return menuTitle.substring(0, menuTitle.length() - 3);
@@ -200,30 +156,88 @@ public class CytoPanelTaskFactoryTunableAction extends AbstractCyAction {
 		}
 		
 		@Override
-		public String getTitle() { return title; }
-		
+		public String getTitle() {
+			return title;
+		}
+
 		@Override
-		public CytoPanelName getCytoPanelName() { return cytoPanelName; }
-		
+		public CytoPanelName getCytoPanelName() {
+			return cytoPanelName;
+		}
+
 		@Override
-		public Icon getIcon() { return null; }
-		
+		public Icon getIcon() {
+			return null;
+		}
+
 		@Override
-		public Component getComponent() { return comp; }
+		public Component getComponent() {
+			return comp;
+		}
 		
-		private Component createComponent() { 
-			final JPanel outerPanel = new JPanel();
+		private Component createComponent() {
+			var outerPanel = new JPanel();
 			outerPanel.add(innerPanel);
 
-			final JButton executeButton = new JButton("Execute");
+			var executeButton = new JButton("Execute");
 			executeButton.addActionListener(new ExecuteButtonListener(factory, context, serviceRegistrar));
 			outerPanel.add(executeButton);
-	
-			final JButton closeButton = new JButton("Close");
+
+			var closeButton = new JButton("Close");
 			closeButton.addActionListener(evt -> serviceRegistrar.unregisterService(this, CytoPanelComponent.class));
 			outerPanel.add(closeButton);
-		
+
 			return outerPanel;
+		}
+	}
+	
+	/**
+	 *  A listener that upon receiving the button-click event validates the tunables and then
+	 *  creates and executes a task.
+	 */
+	private static class ExecuteButtonListener implements ActionListener {
+		
+		private final TaskFactory factory;
+		private final Object context;
+		private CyServiceRegistrar serviceRegistrar;
+
+		ExecuteButtonListener(TaskFactory factory, Object context, CyServiceRegistrar serviceRegistrar) {
+			this.factory = factory;
+			this.context = context;
+			this.serviceRegistrar = serviceRegistrar;
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent event) {
+			// Perform input validation?
+			if (context instanceof TunableValidator) {
+				var errMsg = new StringBuilder();
+				
+				try {
+					var validationState = ((TunableValidator) context).getValidationState(errMsg);
+					
+					if (validationState == ValidationState.INVALID) {
+						JOptionPane.showMessageDialog(
+								new JFrame(),
+								errMsg.toString(),
+								"Input Validation Problem",
+								JOptionPane.ERROR_MESSAGE
+						);
+						
+						return;
+					} else if (validationState == ValidationState.REQUEST_CONFIRMATION) {
+						if (JOptionPane.showConfirmDialog(new JFrame(), errMsg.toString(), "Request Confirmation",
+								JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION)
+							return;
+					}
+				} catch (final Exception e) {
+					e.printStackTrace();
+					return;
+				}
+			}
+
+			var taskManager = serviceRegistrar.getService(PanelTaskManager.class);
+			taskManager.execute(factory.createTaskIterator());
 		}
 	}
 }

@@ -18,6 +18,7 @@ import javax.swing.JSeparator;
 import javax.swing.JToolBar;
 
 import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.internal.view.util.CyToolBar;
 
 /*
  * #%L
@@ -25,7 +26,7 @@ import org.cytoscape.application.swing.CyAction;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2020 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -101,6 +102,7 @@ public class CytoscapeMenus {
 		toolBar.addSeparator(9.0f);
 		toolBar.addSeparator(10.0f);
 		toolBar.addSeparator(11.0f);
+		toolBar.addSpacer(100000000000000.0f);
 	}
 
 	public JMenu getJMenu(String s) {
@@ -140,7 +142,7 @@ public class CytoscapeMenus {
 						buttonsAfterSeparator = 0;
 					}
 
-					var newBtn = CytoscapeToolBar.createToolBarButton(action);
+					var newBtn = CyToolBar.createToolBarButton(action, toolBar.getIconWidth(), toolBar.getIconHeight());
 					viewToolBar.add(newBtn);
 					buttonsAfterSeparator++;
 				}

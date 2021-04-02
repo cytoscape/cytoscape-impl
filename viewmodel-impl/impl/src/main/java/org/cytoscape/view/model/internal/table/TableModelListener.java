@@ -59,7 +59,7 @@ public class TableModelListener implements ColumnCreatedListener, ColumnDeletedL
 				if(!colViews.isEmpty()) {
 					var lastGrav = colViews.get(colViews.size()-1).getVisualProperty(BasicTableVisualLexicon.COLUMN_GRAVITY);
 					if(lastGrav != null) {
-						view.setVisualProperty(BasicTableVisualLexicon.COLUMN_GRAVITY, lastGrav + 1.0, false);
+						view.setLockedValue(BasicTableVisualLexicon.COLUMN_GRAVITY, lastGrav + 1.0);
 					}
 				}
 			}

@@ -1,7 +1,5 @@
 package org.cytoscape.ding;
 
-import java.awt.Color;
-import java.awt.Paint;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -23,7 +21,6 @@ import org.cytoscape.ding.impl.strokes.SeparateArrowStroke;
 import org.cytoscape.ding.impl.strokes.SineWaveStroke;
 import org.cytoscape.ding.impl.strokes.VerticalSlashStroke;
 import org.cytoscape.ding.impl.strokes.ZigzagStroke;
-import org.cytoscape.ding.impl.visualproperty.ObjectPositionVisualProperty;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -38,7 +35,7 @@ import org.cytoscape.view.presentation.property.DefaultVisualizableVisualPropert
 import org.cytoscape.view.presentation.property.DoubleVisualProperty;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.NullVisualProperty;
-import org.cytoscape.view.presentation.property.PaintVisualProperty;
+import org.cytoscape.view.presentation.property.ObjectPositionVisualProperty;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.presentation.property.values.ObjectPosition;
@@ -101,13 +98,6 @@ public class DVisualLexicon extends BasicVisualLexicon {
 			Boolean.FALSE, "NETWORK_NODE_LABEL_SELECTION", "Network Node Label Selection",
 			CyNetwork.class);
 	
-	public static final VisualProperty<ObjectPosition> NODE_LABEL_POSITION = new ObjectPositionVisualProperty(
-			ObjectPosition.DEFAULT_POSITION, "NODE_LABEL_POSITION",
-			"Node Label Position", CyNode.class);
-
-	public static final VisualProperty<Double> NODE_LABEL_ROTATION = new DoubleVisualProperty(
-			0.0, ANGLE_DOUBLE_RANGE, "NODE_LABEL_ROTATION", "Node Label Rotation", CyNode.class);
-
 	// Range object for custom graphics.
 	private static final CustomGraphicsRange CG_RANGE = CustomGraphicsRange.getInstance();
 
@@ -238,38 +228,12 @@ public class DVisualLexicon extends BasicVisualLexicon {
 	 	new NodeShapeVisualProperty(NodeShapeVisualProperty.ROUND_RECTANGLE, "COMPOUND_NODE_SHAPE", "Shape (Compound Node)", CyNode.class);
 	public static final VisualProperty<Double> COMPOUND_NODE_PADDING = 
 		new DoubleVisualProperty(10.0, ARBITRARY_DOUBLE_RANGE, "COMPOUND_NODE_PADDING", "Padding (Compound Node)", CyNode.class);
-	// TODO: transarency?
+	// TODO: transparency?
 
 	// Edge VPs
-	public static final VisualProperty<Paint> EDGE_SOURCE_ARROW_SELECTED_PAINT = new PaintVisualProperty(
-			Color.YELLOW, BasicVisualLexicon.PAINT_RANGE,
-			"EDGE_SOURCE_ARROW_SELECTED_PAINT",
-			"Edge Source Arrow Selected Paint", CyEdge.class);
-	public static final VisualProperty<Paint> EDGE_TARGET_ARROW_SELECTED_PAINT = new PaintVisualProperty(
-			Color.YELLOW, BasicVisualLexicon.PAINT_RANGE,
-			"EDGE_TARGET_ARROW_SELECTED_PAINT",
-			"Edge Target Arrow Selected Paint", CyEdge.class);
-	public static final VisualProperty<Paint> EDGE_SOURCE_ARROW_UNSELECTED_PAINT = new PaintVisualProperty(
-			Color.BLACK, BasicVisualLexicon.PAINT_RANGE,
-			"EDGE_SOURCE_ARROW_UNSELECTED_PAINT",
-			"Edge Source Arrow Unselected Paint", CyEdge.class);
-	public static final VisualProperty<Paint> EDGE_TARGET_ARROW_UNSELECTED_PAINT = new PaintVisualProperty(
-			Color.BLACK, BasicVisualLexicon.PAINT_RANGE,
-			"EDGE_TARGET_ARROW_UNSELECTED_PAINT",
-			"Edge Target Arrow Unselected Paint", CyEdge.class);
-	
-	
 	public static final VisualProperty<Boolean> EDGE_CURVED = new BooleanVisualProperty(true, "EDGE_CURVED",
 			"Edge Curved", CyEdge.class);
 
-	public static final VisualProperty<Double> EDGE_LABEL_ROTATION = new DoubleVisualProperty(
-			0.0, ANGLE_DOUBLE_RANGE, "EDGE_LABEL_ROTATION", "Edge Label Rotation", CyEdge.class);
-	
-
-	// TODO: Implement if possible (in rendering engine)
-//	public static final VisualProperty<ObjectPosition> EDGE_LABEL_POSITION = new ObjectPositionVisualProperty(
-//			ObjectPosition.DEFAULT_POSITION, "EDGE_LABEL_POSITION",
-//			"Edge Label Position", CyEdge.class);
 
 	// Ding-local line types
 	private static final DLineType ZIGZAG = new DLineType("Zigzag", "ZIGZAG",
@@ -401,8 +365,6 @@ public class DVisualLexicon extends BasicVisualLexicon {
 		addVisualProperty(NETWORK_ANNOTATION_SELECTION, NETWORK);
 		addVisualProperty(NETWORK_NODE_LABEL_SELECTION, NETWORK);
 
-		addVisualProperty(NODE_LABEL_POSITION, NODE);
-		addVisualProperty(NODE_LABEL_ROTATION, NODE);
 		addVisualProperty(COMPOUND_NODE_SHAPE, NODE);
 		addVisualProperty(COMPOUND_NODE_PADDING, NODE);
 		// addVisualProperty(COMPOUND_NODE_TRANSPARENCY, NODE);
@@ -450,25 +412,13 @@ public class DVisualLexicon extends BasicVisualLexicon {
 		addVisualProperty(NODE_CUSTOMGRAPHICS_POSITION_8, NODE_CUSTOMPAINT_8);
 		addVisualProperty(NODE_CUSTOMGRAPHICS_POSITION_9, NODE_CUSTOMPAINT_9);
 		
-		addVisualProperty(EDGE_SOURCE_ARROW_SELECTED_PAINT, EDGE_SELECTED_PAINT);
-		addVisualProperty(EDGE_TARGET_ARROW_SELECTED_PAINT, EDGE_SELECTED_PAINT);
-		addVisualProperty(EDGE_SOURCE_ARROW_UNSELECTED_PAINT, EDGE_UNSELECTED_PAINT);
-		addVisualProperty(EDGE_TARGET_ARROW_UNSELECTED_PAINT, EDGE_UNSELECTED_PAINT);
-		
 		// Define edge end related VP
 		addVisualProperty(EDGE_CURVED, EDGE);
 
-		//addVisualProperty(EDGE_LABEL_POSITION, EDGE);
-		addVisualProperty(EDGE_LABEL_ROTATION, EDGE);
-		
 		createLookupMap();
 	}
 
 	private void createLookupMap() {
-		// XGMML:
-		addIdentifierMapping(CyEdge.class, "sourceArrowColor", EDGE_SOURCE_ARROW_UNSELECTED_PAINT);
-		addIdentifierMapping(CyEdge.class, "targetArrowColor", EDGE_TARGET_ARROW_UNSELECTED_PAINT);
-
 		// 2.x VizMap Properties:
 		addIdentifierMapping(CyNode.class, "nodeCustomGraphics1", NODE_CUSTOMGRAPHICS_1);
 		addIdentifierMapping(CyNode.class, "nodeCustomGraphics2", NODE_CUSTOMGRAPHICS_2);
@@ -490,14 +440,7 @@ public class DVisualLexicon extends BasicVisualLexicon {
 		addIdentifierMapping(CyNode.class, "nodeCustomGraphicsPosition8", NODE_CUSTOMGRAPHICS_POSITION_8);
 		addIdentifierMapping(CyNode.class, "nodeCustomGraphicsPosition9", NODE_CUSTOMGRAPHICS_POSITION_9);
 		
-		addIdentifierMapping(CyNode.class, "nodeLabelPosition", NODE_LABEL_POSITION);
-
-		addIdentifierMapping(CyNode.class, "nodeLabelRotation", NODE_LABEL_ROTATION);
-
-		addIdentifierMapping(CyEdge.class, "edgeSourceArrowColor", EDGE_SOURCE_ARROW_UNSELECTED_PAINT);
-		addIdentifierMapping(CyEdge.class, "edgeTargetArrowColor", EDGE_TARGET_ARROW_UNSELECTED_PAINT);
 		addIdentifierMapping(CyEdge.class, "edgeCurved", EDGE_CURVED);
-		addIdentifierMapping(CyEdge.class, "edgeLabelRotation", EDGE_LABEL_ROTATION);
 	}
 
 	static Set<VisualProperty<ObjectPosition>> getGraphicsPositionVP() {

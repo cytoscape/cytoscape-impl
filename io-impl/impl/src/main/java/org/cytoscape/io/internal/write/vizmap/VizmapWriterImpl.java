@@ -42,7 +42,7 @@ import org.cytoscape.work.TaskMonitor;
 
 public class VizmapWriterImpl extends AbstractTask implements CyWriter {
 
-	private static final String VIZMAP_VERSION = "3.0";
+	private static final String VIZMAP_VERSION = "3.1";
 	
 	private final OutputStream outputStream;
 	private final VisualStyleSerializer visualStyleSerializer;

@@ -173,6 +173,9 @@ public class CytoscapeMenuPopulator {
 		removeFactory(provisionerMap.get(factory), props);
 	}
 	
+	/**
+	 * Wraps the task factory in a {@link TaskFactoryTunableAction}.
+	 */
 	private void addFactory(TaskFactory factory, Map<String, String> props) {
 		final CyAction action;
 		

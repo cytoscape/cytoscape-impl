@@ -36,7 +36,9 @@
   <xs:element name="tableView">
     <xs:complexType>
       <xs:sequence>
+      	<xs:element maxOccurs="unbounded" ref="bypassValue"/>
         <xs:element maxOccurs="unbounded" ref="columnView"/>
+        <xs:element maxOccurs="unbounded" ref="rowView"/>
       </xs:sequence>
       <xs:attribute name="table" use="required" type="xs:string"/>
       <xs:attribute name="rendererId" use="required" type="xs:string"/>
@@ -50,6 +52,14 @@
       </xs:sequence>
       <xs:attribute name="columnName" use="required" type="xs:string"/>
       <xs:attribute name="styleTitle" use="optional" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="rowView">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="bypassValue"/>
+      </xs:sequence>
+      <xs:attribute name="key" use="required" type="xs:string"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="bypassValue">
