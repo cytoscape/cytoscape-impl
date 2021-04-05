@@ -102,10 +102,21 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	protected static int DEF_SNAPSHOT_SIZE = 400;
 	
 	public enum UpdateType {
-		ALL_FAST, // Render a fast frame only
-		ALL_FULL, // Render a fast frame, then start rendering a full frame async
+		ALL_FAST,         // Render a fast frame only
+		ALL_FULL,         // Render a fast frame, then start rendering a full frame async
 		JUST_ANNOTATIONS, // Just render annotations fast
-		JUST_EDGES // for animated edges
+		JUST_EDGES,       // for animated edges
+		JUST_SELECTION;   // Just re-render selected nodes/edges
+		
+		public boolean renderEdges() {
+			return this == ALL_FAST || this == ALL_FULL || this == JUST_EDGES || this == JUST_SELECTION;
+		}
+		public boolean renderNodes() {
+			return this == ALL_FAST || this == ALL_FULL || this == JUST_SELECTION;
+		}
+		public boolean renderAnnotations() {
+			return this == ALL_FAST || this == ALL_FULL || this == JUST_ANNOTATIONS;
+		}
 	}
 	
 	private final CyServiceRegistrar serviceRegistrar;
@@ -266,28 +277,24 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 	
 	/**
-	 * TEMPORARY
-	 * 
 	 * This is being called by a Swing Timer, so this method is being run on the EDT.
 	 * Painting is also done on the EDT. This is how we make sure that viewModelSnapshot does not
 	 * change while a frame is being rendered.
 	 * 
 	 * Also the EDT will coalesce paint events, so if the timer runs faster than the frame rate the
 	 * EDT will take care of that.
-	 * 
-	 * MKTODO Move drawing off the EDT.
-	 * If we move drawing off the EDT then we need another solution for ensuring that viewModelSnapshot
-	 * does not get re-assigned while a frame is being drawn.
 	 */
 	private void checkModelIsDirty() {
-		boolean updateModel = viewModel.dirty(true);
-		boolean updateView = updateModel || contentChanged;
-		
-		if(updateModel) {
+		boolean dirty = viewModel.dirty(true);
+		if(dirty) {
 			updateModel();
 		}
-		if(updateView) {
-			updateView(UpdateType.ALL_FULL);
+		if(dirty || contentChanged) {
+			if(viewModelSnapshot.isSelectionIncreased()) {
+				updateView(UpdateType.JUST_SELECTION);
+			} else {
+				updateView(UpdateType.ALL_FULL);
+			}
 		}
 		contentChanged = false;
 	}

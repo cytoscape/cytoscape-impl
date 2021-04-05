@@ -1,8 +1,6 @@
 package org.cytoscape.ding.impl.canvas;
 
 import static org.cytoscape.ding.impl.DRenderingEngine.UpdateType.ALL_FULL;
-import static org.cytoscape.ding.impl.DRenderingEngine.UpdateType.JUST_ANNOTATIONS;
-import static org.cytoscape.ding.impl.DRenderingEngine.UpdateType.JUST_EDGES;
 import static org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID.BACKGROUND;
 import static org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID.FOREGROUND;
 
@@ -46,6 +44,7 @@ public class CompositeImageCanvas {
 	private final double[] weights;
 	
 	private final Executor executor;
+	
 	
 	public CompositeImageCanvas(DRenderingEngine re, GraphLOD lod, int w, int h) {
 		this.re = re;
@@ -138,9 +137,9 @@ public class CompositeImageCanvas {
 		return bgColor;
 	}
 	
-	public RenderDetailFlags getRenderDetailFlags() {
+	protected RenderDetailFlags getRenderDetailFlags(UpdateType updateType) {
 		var snapshot = re.getViewModelSnapshot();
-		return RenderDetailFlags.create(snapshot, transform, lod);
+		return RenderDetailFlags.create(snapshot, transform, lod, updateType);
 	}
 	
 	
@@ -211,7 +210,7 @@ public class CompositeImageCanvas {
 	 */
 	public ImageFuture paint(ProgressMonitor pm, PaintParameters params) {
 		var pm2 = ProgressMonitor.notNull(pm);
-		var flags = getRenderDetailFlags();
+		var flags = getRenderDetailFlags(params.update);
 		var future = CompletableFuture.supplyAsync(() -> paintImpl(pm2, flags, params), executor);
 		return new ImageFuture(future, flags, pm2);
 	}
@@ -222,61 +221,63 @@ public class CompositeImageCanvas {
 	
 	
 	private Image paintImpl(ProgressMonitor pm, RenderDetailFlags flags, PaintParameters params) {
-		var subPms = pm.split(weights);
+		var pms = pm.split(weights);
 		pm.start("Frame"); // debug message
 		
 		Image composite = image.getImage();
 		fill(composite, bgColor);
 		
 		// Annotation background layer
-		if(params.update == JUST_EDGES) {
-			Image image = bgAnnotationCanvas.getCurrent(subPms[0]).getImage();
+		if(params.update.renderAnnotations()) {
+			Image image = bgAnnotationCanvas.paintAndGet(pms[0], flags).getImage();
 			overlayImage(composite, image);
 		} else {
-			Image image = bgAnnotationCanvas.paintAndGet(subPms[0], flags).getImage();
+			Image image = bgAnnotationCanvas.getCurrent(pms[0]).getImage();
 			overlayImage(composite, image);
 		}
 		
 		// Edge layer
-		if(params.update == JUST_ANNOTATIONS) {
-			Image image = edgeCanvas.getCurrent(subPms[1]).getImage();
-			overlayImage(composite, image);
-		} else if(params.isPan) {
-			Image image = params.slowCanvas.getEdgeCanvas().getGraphicsProvier().getImage();
-			overlayImage(composite, image, params.panDx, params.panDy);
-			subPms[1].addProgress(1.0);
+		if(params.update.renderEdges()) {
+			if(params.isPan) {
+				// edge buffer pan optimization
+				Image image = params.slowCanvas.getEdgeCanvas().getGraphicsProvier().getImage();
+				overlayImage(composite, image, params.panDx, params.panDy);
+				pms[1].addProgress(1.0);
+			} else {
+				Image image = edgeCanvas.paintAndGet(pms[1], flags).getImage();
+				overlayImage(composite, image);
+			}
 		} else {
-			Image image = edgeCanvas.paintAndGet(subPms[1], flags).getImage();
+			Image image = edgeCanvas.getCurrent(pms[1]).getImage();
 			overlayImage(composite, image);
 		}
 		
 		// Node layer
-		if(params.update == JUST_ANNOTATIONS) {
-			Image image = nodeCanvas.getCurrent(subPms[2]).getImage();
+		if(params.update.renderNodes()) {
+			Image image = nodeCanvas.paintAndGet(pms[2], flags).getImage();
 			overlayImage(composite, image);
 		} else {
-			Image image = nodeCanvas.paintAndGet(subPms[2], flags).getImage();
+			Image image = nodeCanvas.getCurrent(pms[2]).getImage();
 			overlayImage(composite, image);
 		}
 		
 		// Annotation foreground layer
-		if(params.update == JUST_EDGES) {
-			Image image = fgAnnotationCanvas.getCurrent(subPms[3]).getImage();
+		if(params.update.renderAnnotations()) {
+			Image image = fgAnnotationCanvas.paintAndGet(pms[3], flags).getImage();
 			overlayImage(composite, image);
 		} else {
-			Image image = fgAnnotationCanvas.paintAndGet(subPms[3], flags).getImage();
+			Image image = fgAnnotationCanvas.getCurrent(pms[3]).getImage();
 			overlayImage(composite, image);
 		}
 		
 		// Annotation selection layer
-		if(params.update == JUST_EDGES) {
-			Image image = annotationSelectionCanvas.getCurrent(subPms[4]).getImage();
+		if(params.update.renderAnnotations()) {
+			Image image = annotationSelectionCanvas.paintAndGet(pms[4], flags).getImage();
 			overlayImage(composite, image);
 		} else {
-			Image image = annotationSelectionCanvas.paintAndGet(subPms[4], flags).getImage();
+			Image image = annotationSelectionCanvas.getCurrent(pms[4]).getImage();
 			overlayImage(composite, image);
 		}
-		
 		
 		params.done();
 		if(pm instanceof DebugRootProgressMonitor) // MKTODO hackey
@@ -298,35 +299,5 @@ public class CompositeImageCanvas {
 			g.fillRect(0, 0, t.getPixelWidth(), t.getPixelHeight());
 		}
 	}
-	
-//	/**
-//	 * Starts painting using a thread pool provided by the given ExecutorService. 
-//	 * Each layer of the canvas is painted concurrently.
-//	 * Returns an ImageFuture that represents the result of the painting.
-//	 * To get the Image buffer from the ImageFuture call future.join().
-//	 * 
-//	 * NOTE: Not currently being used. Need to revisit locks and other concurrency controls
-//	 * if we want to render in parallel. It doesn't work properly at the moment and
-//	 * results in flicker and strange behaviour.
-//	 */
-//	private ImageFuture startPaintingConcurrent(ProgressMonitor pm, ExecutorService executor) {
-//		pm = ProgressMonitor.notNull(pm);
-//		var flags = getRenderDetailFlags();
-//		var subPms = pm.split(weights);
-//		
-//		pm.start();
-//		
-//		var f = CompletableFuture.completedFuture(image.getImage());
-//		for(int i = 0; i < canvasList.size(); i++) {
-//			var canvas = canvasList.get(i);
-//			var subPm = subPms.get(i);
-//			var cf = CompletableFuture.supplyAsync(() -> canvas.paintAndGet(subPm, flags).getImage(), executor);
-//			f = f.thenCombineAsync(cf, this::overlayImage, executor);
-//		}
-//		f.thenRun(pm::done);
-//		
-//		return new ImageFuture(f, flags, pm);
-//	}
-	
 
 }

@@ -32,7 +32,6 @@ public abstract class CyViewBase<M> implements View<M> {
 	public void setDirty() { 
 	}
 	
-	
 	@Override
 	public Long getSUID() {
 		return suid;
@@ -45,10 +44,6 @@ public abstract class CyViewBase<M> implements View<M> {
 	
 	@Override
 	public <T, V extends T> void setVisualProperty(VisualProperty<? extends T> vp, V value) {
-		setVisualProperty(vp, value, true);
-	}
-	
-	public <T, V extends T> void setVisualProperty(VisualProperty<? extends T> vp, V value, boolean fireEvent) {
 		ViewLock lock = getLock();
 		synchronized (lock) {
 			boolean changed = getVPStore().setVisualProperty(suid, vp, value);
@@ -56,13 +51,11 @@ public abstract class CyViewBase<M> implements View<M> {
 				if(lock.isUpdateDirty()) {
 					setDirty();
 				}
-				if(fireEvent) {
-					boolean locked = getVPStore().isValueLocked(suid, vp);
-					if(!locked) {
-						// If the value is overridden by a lock then the value returned 
-						// by getVisualProperty() won't visibly change by setting the VP here.
-						fireViewChangedEvent(vp, value, false);
-					}
+				boolean locked = getVPStore().isValueLocked(suid, vp);
+				if(!locked) {
+					// If the value is overridden by a lock then the value returned 
+					// by getVisualProperty() won't visibly change by setting the VP here.
+					fireViewChangedEvent(vp, value, false);
 				}
 			}
 		}

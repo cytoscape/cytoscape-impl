@@ -1,5 +1,9 @@
 package org.cytoscape.view.model.internal.network;
 
+import static org.cytoscape.view.model.internal.network.CyNetworkViewImpl.SelectionDirtyState.OTHER_VALUES_CHAGED;
+import static org.cytoscape.view.model.internal.network.CyNetworkViewImpl.SelectionDirtyState.SELECTION_INCREASED;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SELECTED;
+
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
@@ -11,15 +15,15 @@ import org.cytoscape.view.model.internal.base.ViewLock;
 
 public class CyEdgeViewImpl extends CyViewBase<CyEdge> {
 
-	private final CyNetworkViewImpl parent;
+	private final CyNetworkViewImpl netView;
 	
 	private final long sourceSuid;
 	private final long targetSuid;
 	private final boolean isDirected;
 	
-	public CyEdgeViewImpl(CyNetworkViewImpl parent, CyEdge model, long sourceSuid, long targetSuid) {
+	public CyEdgeViewImpl(CyNetworkViewImpl netView, CyEdge model, long sourceSuid, long targetSuid) {
 		super(model);
-		this.parent = parent;
+		this.netView = netView;
 		this.sourceSuid = sourceSuid;
 		this.targetSuid = targetSuid;
 		this.isDirected = model.isDirected();
@@ -27,7 +31,7 @@ public class CyEdgeViewImpl extends CyViewBase<CyEdge> {
 	
 	@Override
 	public void setDirty() {
-		parent.setDirty();
+		netView.setDirty();
 	}
 	
 	public long getSourceSuid() {
@@ -44,23 +48,30 @@ public class CyEdgeViewImpl extends CyViewBase<CyEdge> {
 
 	@Override
 	public VPStore getVPStore() {
-		return parent.edgeVPs;
+		return netView.edgeVPs;
 	}
 
 	@Override
 	public ViewLock getLock() {
-		return parent.edgeLock;
+		return netView.edgeLock;
 	}
 
 	@Override
 	public VisualLexicon getVisualLexicon() {
-		return parent.getVisualLexicon();
+		return netView.getVisualLexicon();
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void fireViewChangedEvent(VisualProperty<?> vp, Object value, boolean lockedValue) {
+		// These events only fire when the VP value actually changed, so its a good place to check for changes to selection.
+		if(vp == EDGE_SELECTED && netView.isBVL() && Boolean.TRUE.equals(value)) {
+			netView.updateSelectionDirtyState(SELECTION_INCREASED);
+		} else {
+			netView.updateSelectionDirtyState(OTHER_VALUES_CHAGED);
+		}
+		
 		var record = new ViewChangeRecord<>(this, vp, value, lockedValue);
-		parent.getEventHelper().addEventPayload(parent, record, ViewChangedEvent.class);
+		netView.getEventHelper().addEventPayload(netView, record, ViewChangedEvent.class);
 	}
 }

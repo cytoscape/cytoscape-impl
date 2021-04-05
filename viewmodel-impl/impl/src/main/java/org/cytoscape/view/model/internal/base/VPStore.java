@@ -119,6 +119,7 @@ public class VPStore {
 	}
 	
 	
+	@SuppressWarnings("unchecked")
 	public <T> T getVisualProperty(Long suid, VisualProperty<T> vp) {
 		Object value = getDirectLocksMap(suid).getOrElse(vp, null);
 		if(value != null)
@@ -194,6 +195,7 @@ public class VPStore {
 		}
 	}
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void updateTrackedVP(Long suid, VisualProperty<?> vp) {
 		Collection<Object> keys = config.getTrackingKeys(vp);
 		if(keys.isEmpty())
@@ -203,9 +205,7 @@ public class VPStore {
 		var value = getVisualProperty(suid, vp);
 		for(var key : keys) {
 			Set<Long> suids = tracked.getOrElse(key, HashSet.empty());
-			@SuppressWarnings("rawtypes")
 			Predicate predicate = config.getPredicate(key);
-			@SuppressWarnings("unchecked")
 			boolean track = predicate != null && predicate.test(value);
 			if(track) {
 				tracked = tracked.put(key, suids.add(suid));

@@ -3,6 +3,7 @@ package org.cytoscape.graph.render.stateful;
 import java.awt.geom.Rectangle2D;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
 import org.cytoscape.ding.impl.canvas.NetworkTransform;
 import org.cytoscape.graph.render.stateful.GraphLOD.RenderEdges;
 import org.cytoscape.util.intr.LongHash;
@@ -18,19 +19,19 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 public class RenderDetailFlags {
 	
 	// Level of detail
-	public final static int LOD_HIGH_DETAIL     = 0x001;
-	public final static int LOD_NODE_BORDERS    = 0x002;
-	public final static int LOD_NODE_LABELS     = 0x004;
-	public final static int LOD_EDGE_ARROWS     = 0x008;
-	public final static int LOD_DASHED_EDGES    = 0x010;
-	public final static int LOD_EDGE_ANCHORS    = 0x020;
-	public final static int LOD_EDGE_LABELS     = 0x040;
-	public final static int LOD_TEXT_AS_SHAPE   = 0x080;
-	public final static int LOD_CUSTOM_GRAPHICS = 0x100;
-	
+	public final static int LOD_HIGH_DETAIL     = 1 << 1;
+	public final static int LOD_NODE_BORDERS    = 1 << 2;
+	public final static int LOD_NODE_LABELS     = 1 << 3;
+	public final static int LOD_EDGE_ARROWS     = 1 << 4;
+	public final static int LOD_DASHED_EDGES    = 1 << 5;
+	public final static int LOD_EDGE_ANCHORS    = 1 << 6;
+	public final static int LOD_EDGE_LABELS     = 1 << 7;
+	public final static int LOD_TEXT_AS_SHAPE   = 1 << 8;
+	public final static int LOD_CUSTOM_GRAPHICS = 1 << 9;
 	// Optimizations
-	public final static int OPT_EDGE_BUFF_PAN   = 0x200;
-	public final static int OPT_LABEL_CACHE     = 0x400;
+	public final static int OPT_EDGE_BUFF_PAN   = 1 << 10;
+	public final static int OPT_LABEL_CACHE     = 1 << 11;
+	public final static int OPT_SELECTED_ONLY   = 1 << 12;
 
 	
 	private final int lodBits;
@@ -82,7 +83,7 @@ public class RenderDetailFlags {
 	}
 	
 	
-	public static RenderDetailFlags create(CyNetworkViewSnapshot netView, NetworkTransform transform, GraphLOD lod) {
+	public static RenderDetailFlags create(CyNetworkViewSnapshot netView, NetworkTransform transform, GraphLOD lod, UpdateType updateType) {
 		Rectangle2D.Float area = transform.getNetworkVisibleAreaNodeCoords();
 		SpacialIndex2DEnumerator<Long> nodeHits = netView.getSpacialIndex2D().queryOverlap(area.x, area.y, area.x + area.width, area.y + area.height);
 		
@@ -99,7 +100,7 @@ public class RenderDetailFlags {
 		else // visible nodes
 			renderEdgeCount = estimateEdgeCount(totalNodeCount, visibleNodeCount, totalEdgeCount);
 		
-		int lodBits = lodToBits(visibleNodeCount, renderEdgeCount, lod);
+		int lodBits = lodToBits(visibleNodeCount, renderEdgeCount, lod, updateType);
 		return new RenderDetailFlags(lodBits, renderEdges, visibleNodeCount, renderEdgeCount);
 	}
 	
@@ -144,7 +145,7 @@ public class RenderDetailFlags {
 	}
 	
 	
-	private static int lodToBits(int renderNodeCount, int renderEdgeCount, GraphLOD lod) {
+	private static int lodToBits(int renderNodeCount, int renderEdgeCount, GraphLOD lod, UpdateType updateType) {
 		int lodbits = 0;
 		
 		// detail bits
@@ -173,6 +174,8 @@ public class RenderDetailFlags {
 			lodbits |= OPT_EDGE_BUFF_PAN;
 		if (lod.labelCache())
 			lodbits |= OPT_LABEL_CACHE;
+		if (updateType == UpdateType.JUST_SELECTION)
+			lodbits |= OPT_SELECTED_ONLY;
 		
 		return lodbits;
 	}

@@ -69,6 +69,7 @@ public class MainRenderComponent extends RenderComponent {
 			case ALL_FULL: return DebugFrameType.MAIN_SLOW;
 			case JUST_ANNOTATIONS: return DebugFrameType.MAIN_ANNOTAITONS;
 			case JUST_EDGES: return DebugFrameType.MAIN_EDGES;
+			case JUST_SELECTION: return DebugFrameType.MAIN_SELECTION;
 			default: return null;
 		}
 	}

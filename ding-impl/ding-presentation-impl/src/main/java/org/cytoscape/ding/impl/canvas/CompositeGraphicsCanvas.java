@@ -26,7 +26,7 @@ public class CompositeGraphicsCanvas {
 	public static void paint(Graphics2D graphics, Color bgPaint, GraphLOD lod, NetworkTransform transform, DRenderingEngine re) {
 		var g = new SimpleGraphicsProvider(transform, graphics);
 		var snapshot = re.getViewModelSnapshot();
-		var flags = RenderDetailFlags.create(snapshot, transform, lod);
+		var flags = RenderDetailFlags.create(snapshot, transform, lod, null);
 		var pm = new NoOutputProgressMonitor();
 		
 		var canvasList = Arrays.asList(
@@ -46,7 +46,7 @@ public class CompositeGraphicsCanvas {
 			CyNetworkViewSnapshot snapshot, Collection<Annotation> annotations) {
 		
 		var g = new SimpleGraphicsProvider(transform, graphics);
-		var flags = RenderDetailFlags.create(snapshot, transform, lod);
+		var flags = RenderDetailFlags.create(snapshot, transform, lod, null);
 		var pm = new NoOutputProgressMonitor();
 		
 		List<Annotation> foreground = new ArrayList<>();

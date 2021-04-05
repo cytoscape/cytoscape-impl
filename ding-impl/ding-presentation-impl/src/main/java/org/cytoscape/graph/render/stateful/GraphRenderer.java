@@ -395,6 +395,9 @@ public final class GraphRenderer {
 		Rectangle2D.Float area = grafx.getTransform().getNetworkVisibleAreaNodeCoords();
 		NodeSpacialIndex2DEnumerator nodeHits = netView.getSpacialIndex2D().queryOverlapNodes(area.x, area.y, area.x + area.width, area.y + area.height);
 		
+		if(flags.has(OPT_SELECTED_ONLY))
+			System.out.println("Paint only selected nodes");
+		
 		if (flags.not(LOD_HIGH_DETAIL)) { // Low detail.
 			
 			ProgressMonitor[] subPms = pm.split(1,0); // no labels at all, still need labelPm for debug panel

@@ -1,5 +1,9 @@
 package org.cytoscape.view.model.internal.network;
 
+import static org.cytoscape.view.model.internal.network.CyNetworkViewImpl.SelectionDirtyState.OTHER_VALUES_CHAGED;
+import static org.cytoscape.view.model.internal.network.CyNetworkViewImpl.SelectionDirtyState.SELECTION_INCREASED;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SELECTED;
+
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
@@ -11,38 +15,45 @@ import org.cytoscape.view.model.internal.base.ViewLock;
 
 public class CyNodeViewImpl extends CyViewBase<CyNode> {
 
-	private final CyNetworkViewImpl parent;
+	private final CyNetworkViewImpl netView;
 	
-	public CyNodeViewImpl(CyNetworkViewImpl parent, CyNode model) {
+	public CyNodeViewImpl(CyNetworkViewImpl netView, CyNode model) {
 		super(model);
-		this.parent = parent;
+		this.netView = netView;
 	}
 
 	@Override
 	public void setDirty() {
-		parent.setDirty();
+		netView.setDirty();
 	}
 	
 	@Override
 	public VPStore getVPStore() {
-		return parent.nodeVPs;
+		return netView.nodeVPs;
 	}
 
 	@Override
 	public ViewLock getLock() {
-		return parent.nodeLock;
+		return netView.nodeLock;
 	}
 
 	@Override
 	public VisualLexicon getVisualLexicon() {
-		return parent.getVisualLexicon();
+		return netView.getVisualLexicon();
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void fireViewChangedEvent(VisualProperty<?> vp, Object value, boolean lockedValue) {
+		// These events only fire when the VP value actually changed, so its a good place to check for changes to selection.
+		if(vp == NODE_SELECTED && netView.isBVL() && Boolean.TRUE.equals(value)) {
+			netView.updateSelectionDirtyState(SELECTION_INCREASED);
+		} else {
+			netView.updateSelectionDirtyState(OTHER_VALUES_CHAGED);
+		}
+		
 		var record = new ViewChangeRecord<>(this, vp, value, lockedValue);
-		parent.getEventHelper().addEventPayload(parent, record, ViewChangedEvent.class);
+		netView.getEventHelper().addEventPayload(netView, record, ViewChangedEvent.class);
 	}
 	
 }

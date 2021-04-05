@@ -86,6 +86,7 @@ public class BirdsEyeViewRenderComponent extends RenderComponent {
 		switch(type) {
 			case ALL_FAST: return DebugFrameType.BEV_FAST;
 			case ALL_FULL: return DebugFrameType.BEV_SLOW;
+			case JUST_SELECTION : return DebugFrameType.BEV_SELECTION;
 			default: return null;
 		}
 	}
