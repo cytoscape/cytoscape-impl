@@ -2,9 +2,11 @@ package org.cytoscape.internal.view.util;
 
 import static org.cytoscape.util.swing.IconManager.ICON_ANGLE_DOUBLE_DOWN;
 import static org.cytoscape.util.swing.IconManager.ICON_ANGLE_DOUBLE_RIGHT;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isWinLAF;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
 
+import java.awt.BasicStroke;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -47,7 +49,6 @@ import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.CyToolTip;
 import org.cytoscape.util.swing.IconManager;
-import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.TextIcon;
 
 /*
@@ -257,9 +258,6 @@ public class CyToolBar extends JToolBar {
 	 * gravity property.
 	 */
 	public AbstractButton addAction(CyAction action) {
-		if (!action.isInToolBar()) 
-			return null;
-	
 		// At present we allow an Action to be in this tool bar only once.
 		if (actionMap.containsKey(action))
 			return null;
@@ -685,6 +683,8 @@ public class CyToolBar extends JToolBar {
 		final AbstractButton button;
 		
 		if (action.useToggleButton()) {
+			var selectedStroke = new BasicStroke(1.0f);
+			
 			button = new JToggleButton(action) {
 				@Override
 				public JToolTip createToolTip() {
@@ -694,12 +694,22 @@ public class CyToolBar extends JToolBar {
 				public void paint(Graphics g) {
 					if (isSelected()) {
 						var g2 = (Graphics2D) g.create();
+						// Fill
 						g2.setColor(UIManager.getColor("CyToggleButton[Selected].background"));
 						g2.fillRect(
 								BUTTON_BORDER_SIZE,
 								BUTTON_BORDER_SIZE,
 								getWidth() - 2 * BUTTON_BORDER_SIZE,
 								getHeight() - 2 * BUTTON_BORDER_SIZE
+						);
+						// Border
+						g2.setStroke(selectedStroke);
+						g2.setColor(UIManager.getColor("CyToggleButton[Selected].borderColor"));
+						g2.drawRect(
+							BUTTON_BORDER_SIZE,
+							BUTTON_BORDER_SIZE,
+							getWidth() - 2 * BUTTON_BORDER_SIZE,
+							getHeight() - 2 * BUTTON_BORDER_SIZE
 						);
 						g2.dispose();
 					}
@@ -718,9 +728,10 @@ public class CyToolBar extends JToolBar {
 		button.setText(action.getName());
 		button.setBorder(BorderFactory.createEmptyBorder(BUTTON_BORDER_SIZE, BUTTON_BORDER_SIZE, BUTTON_BORDER_SIZE,
 				BUTTON_BORDER_SIZE));
-		button.setRolloverEnabled(LookAndFeelUtil.isWinLAF());
+		button.setRolloverEnabled(isWinLAF());
 		button.setFocusable(false);
 		button.setFocusPainted(false);
+		button.setContentAreaFilled(false);
 		button.setHideActionText(true);
 		
 		var dim = new Dimension(iconWidth + 2 * BUTTON_BORDER_SIZE, iconHeight + 2 * BUTTON_BORDER_SIZE);
