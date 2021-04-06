@@ -101,23 +101,23 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private static final Logger logger = LoggerFactory.getLogger(DRenderingEngine.class);
 	protected static int DEF_SNAPSHOT_SIZE = 400;
 	
+	
+	/**
+	 * The UpdateType can effect rendering in many ways:
+	 *  - which canvases are redrawn
+	 *  - which RenderDetailFlags bits are set
+	 *  - if a fast and/or slow frame is rendered
+	 *  - which specific/nodes edges to redraw
+	 *  - etc...
+	 */
 	public enum UpdateType {
-		ALL_FAST,         // Render a fast frame only
-		ALL_FULL,         // Render a fast frame, then start rendering a full frame async
-		JUST_ANNOTATIONS, // Just render annotations fast
-		JUST_EDGES,       // for animated edges
-		JUST_SELECTION;   // Just re-render selected nodes/edges
-		
-		public boolean renderEdges() {
-			return this == ALL_FAST || this == ALL_FULL || this == JUST_EDGES || this == JUST_SELECTION;
-		}
-		public boolean renderNodes() {
-			return this == ALL_FAST || this == ALL_FULL || this == JUST_SELECTION;
-		}
-		public boolean renderAnnotations() {
-			return this == ALL_FAST || this == ALL_FULL || this == JUST_ANNOTATIONS;
-		}
+		ALL_FAST,                   // Render a fast frame only, used internally for panning etc
+		ALL_FULL,                   // Render a fast frame, then start rendering a full frame asynchronously
+		ALL_FULL_OR_JUST_SELECTION, // Maybe re-render just selected nodes/edges depending on LOD
+		JUST_ANNOTATIONS,           // Just re-render annotations fast
+		JUST_EDGES;                 // For animated edges
 	}
+	
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	private final CyEventHelper eventHelper;
@@ -291,7 +291,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		}
 		if(dirty || contentChanged) {
 			if(viewModelSnapshot.isSelectionIncreased()) {
-				updateView(UpdateType.JUST_SELECTION);
+				updateView(UpdateType.ALL_FULL_OR_JUST_SELECTION);
 			} else {
 				updateView(UpdateType.ALL_FULL);
 			}

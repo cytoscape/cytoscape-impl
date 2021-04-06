@@ -58,7 +58,7 @@ public class NetworkImageBuffer implements ImageGraphicsProvider {
 		return g;
 	}
 	
-	private void clear(Graphics2D g) {
+	public void clear(Graphics2D g) {
 		g.setBackground(TRANSPARENT_COLOR);
 		g.clearRect(0, 0, image.getWidth(null), image.getHeight(null));
 	}

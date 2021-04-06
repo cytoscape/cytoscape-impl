@@ -66,10 +66,9 @@ public class MainRenderComponent extends RenderComponent {
 	DebugFrameType getDebugFrameType(UpdateType type) {
 		switch(type) {
 			case ALL_FAST: return DebugFrameType.MAIN_FAST;
-			case ALL_FULL: return DebugFrameType.MAIN_SLOW;
+			case ALL_FULL: case ALL_FULL_OR_JUST_SELECTION: return DebugFrameType.MAIN_SLOW;
 			case JUST_ANNOTATIONS: return DebugFrameType.MAIN_ANNOTAITONS;
 			case JUST_EDGES: return DebugFrameType.MAIN_EDGES;
-			case JUST_SELECTION: return DebugFrameType.MAIN_SELECTION;
 			default: return null;
 		}
 	}

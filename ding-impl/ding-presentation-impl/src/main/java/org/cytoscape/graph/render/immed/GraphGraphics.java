@@ -219,14 +219,14 @@ public final class GraphGraphics {
 
 		m_g2d = graphicsProvider.getGraphics();
 
-		setGraphicsFlags(m_g2d);
+		setRenderingHints(m_g2d);
 
 		m_g2d.transform(getTransform().getPaintAffineTransform());
 		m_currNativeXform.setTransform(m_g2d.getTransform()); // save the current transform
 	}
 
 	
-	public static void setGraphicsFlags(Graphics2D g) {
+	public static void setRenderingHints(Graphics2D g) {
 		// Antialiasing is ON
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		

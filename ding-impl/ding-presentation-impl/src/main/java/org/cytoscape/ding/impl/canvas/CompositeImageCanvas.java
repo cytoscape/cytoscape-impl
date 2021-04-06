@@ -1,6 +1,6 @@
 package org.cytoscape.ding.impl.canvas;
 
-import static org.cytoscape.ding.impl.DRenderingEngine.UpdateType.ALL_FULL;
+import static org.cytoscape.ding.impl.DRenderingEngine.UpdateType.*;
 import static org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID.BACKGROUND;
 import static org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID.FOREGROUND;
 
@@ -220,15 +220,33 @@ public class CompositeImageCanvas {
 	}
 	
 	
+	// Methods to determine which canvases are rendered.
+	private static boolean renderAll(UpdateType ut) {
+		return ut == ALL_FAST || ut == ALL_FULL || ut == ALL_FULL_OR_JUST_SELECTION;
+	}
+	private static boolean renderNodeCanvas(UpdateType ut) {
+		return renderAll(ut);
+	}
+	private static boolean renderEdgeCanvas(UpdateType ut) {
+		return renderAll(ut) || ut == JUST_EDGES;
+	}
+	private static  boolean renderAnnotationCanvas(UpdateType ut) {
+		return renderAll(ut) || ut == JUST_ANNOTATIONS;
+	}
+	
+	
 	private Image paintImpl(ProgressMonitor pm, RenderDetailFlags flags, PaintParameters params) {
 		var pms = pm.split(weights);
 		pm.start("Frame"); // debug message
 		
+		// Render layers from bottom to top
+		
+		// Background color
 		Image composite = image.getImage();
 		fill(composite, bgColor);
 		
 		// Annotation background layer
-		if(params.update.renderAnnotations()) {
+		if(renderAnnotationCanvas(params.update)) {
 			Image image = bgAnnotationCanvas.paintAndGet(pms[0], flags).getImage();
 			overlayImage(composite, image);
 		} else {
@@ -237,7 +255,7 @@ public class CompositeImageCanvas {
 		}
 		
 		// Edge layer
-		if(params.update.renderEdges()) {
+		if(renderEdgeCanvas(params.update)) {
 			if(params.isPan) {
 				// edge buffer pan optimization
 				Image image = params.slowCanvas.getEdgeCanvas().getGraphicsProvier().getImage();
@@ -253,7 +271,7 @@ public class CompositeImageCanvas {
 		}
 		
 		// Node layer
-		if(params.update.renderNodes()) {
+		if(renderNodeCanvas(params.update)) {
 			Image image = nodeCanvas.paintAndGet(pms[2], flags).getImage();
 			overlayImage(composite, image);
 		} else {
@@ -262,7 +280,7 @@ public class CompositeImageCanvas {
 		}
 		
 		// Annotation foreground layer
-		if(params.update.renderAnnotations()) {
+		if(renderAnnotationCanvas(params.update)) {
 			Image image = fgAnnotationCanvas.paintAndGet(pms[3], flags).getImage();
 			overlayImage(composite, image);
 		} else {
@@ -271,13 +289,14 @@ public class CompositeImageCanvas {
 		}
 		
 		// Annotation selection layer
-		if(params.update.renderAnnotations()) {
+		if(renderAnnotationCanvas(params.update)) {
 			Image image = annotationSelectionCanvas.paintAndGet(pms[4], flags).getImage();
 			overlayImage(composite, image);
 		} else {
 			Image image = annotationSelectionCanvas.getCurrent(pms[4]).getImage();
 			overlayImage(composite, image);
 		}
+		
 		
 		params.done();
 		if(pm instanceof DebugRootProgressMonitor) // MKTODO hackey
@@ -287,6 +306,7 @@ public class CompositeImageCanvas {
 		
 		return composite;
 	}
+	
 	
 	private void fill(Image image, Color color) {
 		NetworkTransform t = getTransform();

@@ -149,7 +149,9 @@ public class RenderDetailFlags {
 		int lodbits = 0;
 		
 		// detail bits
-		if (lod.detail(renderNodeCount, renderEdgeCount)) {
+		final boolean highDetail = lod.detail(renderNodeCount, renderEdgeCount);
+		
+		if (highDetail) {
 			lodbits |= LOD_HIGH_DETAIL;
 			if (lod.nodeBorders(renderNodeCount, renderEdgeCount))
 				lodbits |= LOD_NODE_BORDERS;
@@ -174,7 +176,7 @@ public class RenderDetailFlags {
 			lodbits |= OPT_EDGE_BUFF_PAN;
 		if (lod.labelCache())
 			lodbits |= OPT_LABEL_CACHE;
-		if (updateType == UpdateType.JUST_SELECTION)
+		if (updateType == UpdateType.ALL_FULL_OR_JUST_SELECTION && !highDetail)
 			lodbits |= OPT_SELECTED_ONLY;
 		
 		return lodbits;
