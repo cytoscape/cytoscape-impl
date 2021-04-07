@@ -1,13 +1,16 @@
 package org.cytoscape.internal.view;
 
-import javax.swing.SwingUtilities;
+import static org.cytoscape.internal.view.util.ViewUtil.invokeOnEDT;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
-import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.application.events.SetCurrentTableEvent;
+import org.cytoscape.application.events.SetCurrentTableListener;
+import org.cytoscape.event.DebounceTimer;
+import org.cytoscape.internal.view.util.CyToolBar;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
@@ -39,7 +42,7 @@ import org.cytoscape.view.model.events.UpdateNetworkPresentationListener;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -63,65 +66,32 @@ import org.cytoscape.view.model.events.UpdateNetworkPresentationListener;
  * selected, but since toolbars are always visible, we need to listen for the
  * actual events. This is less than ideal.
  */
-public class ToolBarEnableUpdater implements NetworkAddedListener, NetworkDestroyedListener, NetworkViewAddedListener,
-		NetworkViewDestroyedListener, SetCurrentNetworkListener, SetCurrentNetworkViewListener, RowsSetListener,
-		SessionAboutToBeLoadedListener, SessionLoadedListener, SessionAboutToBeSavedListener, SessionSavedListener,
-		SessionSaveCancelledListener, UpdateNetworkPresentationListener {
+public class ToolBarEnableUpdater implements SessionAboutToBeLoadedListener, SessionLoadedListener,
+		SessionAboutToBeSavedListener, SessionSavedListener, SessionSaveCancelledListener, NetworkAddedListener,
+		NetworkDestroyedListener, NetworkViewAddedListener, NetworkViewDestroyedListener, SetCurrentNetworkListener,
+		SetCurrentNetworkViewListener, SetCurrentTableListener, RowsSetListener, UpdateNetworkPresentationListener {
 
-	private final CytoscapeToolBar toolbar;
+	private final DebounceTimer debounceTimer = new DebounceTimer(100);
+	
+	private boolean loadingSession;
+	
+	private final CyToolBar toolbar;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public ToolBarEnableUpdater(final CytoscapeToolBar toolbar, final CyServiceRegistrar serviceRegistrar) {
+	public ToolBarEnableUpdater(CyToolBar toolbar, CyServiceRegistrar serviceRegistrar) {
 		this.toolbar = toolbar;
 		this.serviceRegistrar = serviceRegistrar;
-	}
-
-	@Override
-	public void handleEvent(SetCurrentNetworkEvent e) {
-		updateToolbar();
-	}
-
-	@Override
-	public void handleEvent(SetCurrentNetworkViewEvent e) {
-		updateToolbar();
-	}
-
-	@Override
-	public void handleEvent(NetworkAddedEvent e) {
-		updateToolbar();
-	}
-
-	@Override
-	public void handleEvent(NetworkViewAddedEvent e) {
-		updateToolbar();
-	}
-
-	@Override
-	public void handleEvent(NetworkDestroyedEvent e) {
-		updateToolbar();
-	}
-
-	@Override
-	public void handleEvent(NetworkViewDestroyedEvent e) {
-		updateToolbar();
-	}
-
-	/**
-	 * This is mainly for listening to node/edge selection events.
-	 */
-	@Override
-	public void handleEvent(RowsSetEvent e) {
-		if (e.containsColumn(CyNetwork.SELECTED))
-			updateToolbar();
 	}
 	
 	@Override
 	public void handleEvent(SessionAboutToBeLoadedEvent e) {
 		updateToolbar();
+		loadingSession = true;
 	}
 	
 	@Override
 	public void handleEvent(SessionLoadedEvent e) {
+		loadingSession = false;
 		updateToolbar();
 	}
 	
@@ -141,16 +111,69 @@ public class ToolBarEnableUpdater implements NetworkAddedListener, NetworkDestro
 	}
 
 	@Override
+	public void handleEvent(SetCurrentNetworkEvent e) {
+		if (!loadingSession)
+			updateToolbar();
+	}
+
+	@Override
+	public void handleEvent(SetCurrentNetworkViewEvent e) {
+		if (!loadingSession)
+			updateToolbar();
+	}
+
+	@Override
+	public void handleEvent(NetworkAddedEvent e) {
+		if (!loadingSession)
+			updateToolbar();
+	}
+
+	@Override
+	public void handleEvent(NetworkViewAddedEvent e) {
+		if (!loadingSession)
+			updateToolbar();
+	}
+
+	@Override
+	public void handleEvent(NetworkDestroyedEvent e) {
+		if (!loadingSession)
+			updateToolbar();
+	}
+
+	@Override
+	public void handleEvent(NetworkViewDestroyedEvent e) {
+		if (!loadingSession)
+			updateToolbar();
+	}
+	
+	@Override
+	public void handleEvent(SetCurrentTableEvent e) {
+		if (!loadingSession)
+			updateToolbar();
+	}
+
+	/**
+	 * This is mainly for listening to node/edge selection events.
+	 */
+	@Override
+	public void handleEvent(RowsSetEvent e) {
+		if (!loadingSession && e.containsColumn(CyNetwork.SELECTED))
+			updateToolbar();
+	}
+	
+	@Override
 	public void handleEvent(UpdateNetworkPresentationEvent e) {
-		if (e.getSource().equals(serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView()))
+		if (!loadingSession && e.getSource()
+				.equals(serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView()))
 			updateToolbar();
 	}
 
 	private void updateToolbar() {
-		// TODO Timer/coalesce
-		SwingUtilities.invokeLater(() -> {
-			for (final CyAction action : toolbar.getAllToolBarActions())
-				action.updateEnableState();
+		debounceTimer.debounce(() -> {
+			invokeOnEDT(() -> {
+				for (var action : toolbar.getAllToolBarActions())
+					action.updateEnableState();
+			});
 		});
 	}
 }
