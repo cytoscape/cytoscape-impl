@@ -123,6 +123,8 @@ public class FrameListTablePanel extends JPanel {
 				return time + " (annotations)";
 			else if(type == DebugFrameType.MAIN_EDGES)
 				return time + " (edges)";
+			else if(type == DebugFrameType.MAIN_SELECTED)
+				return time + " (selected)";
 			else if(cancelled)
 				return time + " (cancelled)";
 			else

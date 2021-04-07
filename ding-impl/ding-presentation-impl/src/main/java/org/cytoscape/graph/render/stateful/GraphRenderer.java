@@ -2,6 +2,8 @@ package org.cytoscape.graph.render.stateful;
 
 import static org.cytoscape.graph.render.stateful.RenderDetailFlags.*;
 
+import java.awt.Color;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -111,6 +113,9 @@ public final class GraphRenderer {
 			ProgressMonitor shapePm = subPms[0];
 			ProgressMonitor labelPm = subPms[1];
 			
+			final boolean selectedOnly = flags.has(RenderDetailFlags.OPT_SELECTED_ONLY);
+			int rendererdEdgeCount = 0;
+			
 			shapePm.start("Line");
 			DiscreteProgressMonitor shapeDpm = shapePm.toDiscrete(edgeHits.size());
 			
@@ -121,19 +126,27 @@ public final class GraphRenderer {
 				
 				View<CyEdge> edge = edgeHits.nextEdgeWithNodeExtents(floatBuff1, floatBuff2, null);
 				
-				if(edgeDetails.isVisible(edge)) {
-					float sourceNodeX = (floatBuff1[0] + floatBuff1[2]) / 2;
-					float sourceNodeY = (floatBuff1[1] + floatBuff1[3]) / 2;
-					float targetNodeX = (floatBuff2[0] + floatBuff2[2]) / 2;
-					float targetNodeY = (floatBuff2[1] + floatBuff2[3]) / 2;
-					
-					grafx.drawEdgeLow(
-							sourceNodeX, sourceNodeY, 
-							targetNodeX, targetNodeY, 
-							edgeDetails.getColorLowDetail(netView, edge));
-					
+				if(!selectedOnly || edgeDetails.isSelected(edge)) {
+					if(edgeDetails.isVisible(edge)) {
+						float sourceNodeX = (floatBuff1[0] + floatBuff1[2]) / 2;
+						float sourceNodeY = (floatBuff1[1] + floatBuff1[3]) / 2;
+						float targetNodeX = (floatBuff2[0] + floatBuff2[2]) / 2;
+						float targetNodeY = (floatBuff2[1] + floatBuff2[3]) / 2;
+						
+						grafx.drawEdgeLow(
+								sourceNodeX, sourceNodeY, 
+								targetNodeX, targetNodeY, 
+								edgeDetails.getColorLowDetail(netView, edge));
+						
+						rendererdEdgeCount++;
+						
+					}
 				}
 				shapeDpm.increment();
+			}
+			
+			if(selectedOnly) {
+				System.out.println("Rendered " + rendererdEdgeCount + " of " + edgeHits.size() + " edges.");
 			}
 			
 			shapePm.done();
@@ -148,6 +161,7 @@ public final class GraphRenderer {
 			DiscreteProgressMonitor labelDpm = labelPm.toDiscrete(edgeHits.size());
 			
 			byte[] haystackDataBuff = new byte[16];
+			@SuppressWarnings("unchecked")
 			View<CyNode>[] nodeBuff = new View[2];
 			
 			while (edgeHits.hasNext()) {
@@ -383,7 +397,7 @@ public final class GraphRenderer {
 
 	
 	public static void renderNodes(ProgressMonitor pm, GraphGraphics grafx, CyNetworkViewSnapshot netView,
-			RenderDetailFlags flags, NodeDetails nodeDetails, EdgeDetails edgeDetails, Set<VisualPropertyDependency<?>> dependencies, 
+			RenderDetailFlags flags, NodeDetails nodeDetails, Set<VisualPropertyDependency<?>> dependencies, 
 			LabelInfoProvider labelInfoProvider) {
 		
 		// Render nodes and labels.  A label is not necessarily on top of every
@@ -395,17 +409,19 @@ public final class GraphRenderer {
 		Rectangle2D.Float area = grafx.getTransform().getNetworkVisibleAreaNodeCoords();
 		NodeSpacialIndex2DEnumerator nodeHits = netView.getSpacialIndex2D().queryOverlapNodes(area.x, area.y, area.x + area.width, area.y + area.height);
 		
-		if(flags.has(OPT_SELECTED_ONLY))
-			System.out.println("Paint only selected nodes");
-		
 		if (flags.not(LOD_HIGH_DETAIL)) { // Low detail.
 			
 			ProgressMonitor[] subPms = pm.split(1,0); // no labels at all, still need labelPm for debug panel
 			ProgressMonitor shapePm = subPms[0];
 			ProgressMonitor labelPm = subPms[1];
 			
+			final boolean selectedOnly = flags.has(RenderDetailFlags.OPT_SELECTED_ONLY);
+			int rendererdNodeCount = 0;
+			
 			shapePm.start("Shape");
 			final int nodeHitCount = nodeHits.size();
+			
+			
 			DiscreteProgressMonitor shapeDpm = shapePm.toDiscrete(nodeHitCount);
 
 			for (int i = 0; i < nodeHitCount; i++) {
@@ -413,12 +429,19 @@ public final class GraphRenderer {
 					return;
 				
 				View<CyNode> node = nodeHits.nextNodeExtents(floatBuff1);
-
-				if ((floatBuff1[0] != floatBuff1[2]) && (floatBuff1[1] != floatBuff1[3]))
-					grafx.drawNodeLow(floatBuff1[0], floatBuff1[1], floatBuff1[2],
-					                  floatBuff1[3], nodeDetails.getColorLowDetail(netView, node));
 				
+				if(!selectedOnly || nodeDetails.isSelected(node)) {
+					if ((floatBuff1[0] != floatBuff1[2]) && (floatBuff1[1] != floatBuff1[3])) {
+						Color color = nodeDetails.getColorLowDetail(netView, node);
+						grafx.drawNodeLow(floatBuff1[0], floatBuff1[1], floatBuff1[2], floatBuff1[3], color);
+						rendererdNodeCount++;
+					}
+				}
 				shapeDpm.increment();
+			}
+			
+			if(selectedOnly) {
+				System.out.println("Rendered " + rendererdNodeCount + " of " + nodeHitCount + " nodes.");
 			}
 			
 			shapePm.done();
@@ -436,11 +459,11 @@ public final class GraphRenderer {
 				if(pm.isCancelled())
 					return;
 				
-				View<CyNode> cyNode = nodeHits.nextNodeExtents(floatBuff1);
-
+				View<CyNode> node = nodeHits.nextNodeExtents(floatBuff1);
+				
 				shapePm.start("Shape");
 				
-				renderNodeHigh(netView, grafx, cyNode, floatBuff1, doubleBuff1, doubleBuff2, nodeDetails, flags, dependencies);
+				renderNodeHigh(netView, grafx, node, floatBuff1, doubleBuff1, doubleBuff2, nodeDetails, flags, dependencies);
 
 				shapeDpm.increment();
 				shapePm.done();
@@ -449,18 +472,18 @@ public final class GraphRenderer {
 				
 				// Take care of label rendering.
 				if (flags.has(LOD_NODE_LABELS)) { // Potential label rendering.
-					final String text = nodeDetails.getLabelText(cyNode);
+					final String text = nodeDetails.getLabelText(node);
 					
 					if(text != null && !text.isEmpty()) {
-						final Font font = nodeDetails.getLabelFont(cyNode);
-						final Paint paint = nodeDetails.getLabelPaint(cyNode);
-						final Position textAnchor = nodeDetails.getLabelTextAnchor(cyNode);
-						final Position nodeAnchor = nodeDetails.getLabelNodeAnchor(cyNode);
-						final float offsetVectorX = nodeDetails.getLabelOffsetVectorX(cyNode);
-						final float offsetVectorY = nodeDetails.getLabelOffsetVectorY(cyNode);
-						final double theta = nodeDetails.getLabelRotation(cyNode)*.01745329252;
-						final double nodeLabelWidth = nodeDetails.getLabelWidth(cyNode);
-						final Justification justify = text.indexOf('\n') >= 0 ? nodeDetails.getLabelJustify(cyNode) : Justification.JUSTIFY_CENTER;
+						final Font font = nodeDetails.getLabelFont(node);
+						final Paint paint = nodeDetails.getLabelPaint(node);
+						final Position textAnchor = nodeDetails.getLabelTextAnchor(node);
+						final Position nodeAnchor = nodeDetails.getLabelNodeAnchor(node);
+						final float offsetVectorX = nodeDetails.getLabelOffsetVectorX(node);
+						final float offsetVectorY = nodeDetails.getLabelOffsetVectorY(node);
+						final double theta = nodeDetails.getLabelRotation(node)*.01745329252;
+						final double nodeLabelWidth = nodeDetails.getLabelWidth(node);
+						final Justification justify = text.indexOf('\n') >= 0 ? nodeDetails.getLabelJustify(node) : Justification.JUSTIFY_CENTER;
 						
 						doubleBuff1[0] = floatBuff1[0];
 						doubleBuff1[1] = floatBuff1[1];

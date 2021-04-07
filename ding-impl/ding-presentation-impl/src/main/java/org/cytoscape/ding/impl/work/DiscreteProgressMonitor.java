@@ -22,6 +22,10 @@ public class DiscreteProgressMonitor {
 		addWork(1);
 	}
 	
+	public int getCurrentWork() {
+		return currentWork;
+	}
+	
 	public void workFinished() {
 		if(totalWork > 0)
 			wrapped.addProgress((double)(totalWork - currentWork) / (double)totalWork);

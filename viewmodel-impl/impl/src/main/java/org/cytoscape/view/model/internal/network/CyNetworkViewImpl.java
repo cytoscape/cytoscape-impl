@@ -44,14 +44,6 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		NODE_X_LOCATION, NODE_Y_LOCATION, NODE_HEIGHT, NODE_WIDTH, NODE_VISIBLE
 	);
 	
-	/**
-	 * This is for optimizing the re-drawing of selected nodes/edges only.
-	 */
-	public static enum SelectionDirtyState {
-		CLEAR,                // selection state has been reset to clear 
-		SELECTION_INCREASED,  // the only changes since last clear is that some nodes/edges have had selected set to true
-		OTHER_VALUES_CHAGED   // some node/edge had selected set to false, or some other VP changed, or network topology changed, need to do a full re-render 
-	}
 	
 	private final CyEventHelper eventHelper;
 	private final String rendererId;
@@ -61,7 +53,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	private CopyOnWriteArrayList<CyNetworkViewListener> listeners = new CopyOnWriteArrayList<>();
 	
 	private boolean dirty = true; // set to true initially so that the first frame is rendered
-	private SelectionDirtyState selectionState = SelectionDirtyState.CLEAR; 
+	private SelectionUpdateState selectionState = new SelectionUpdateState();
 	
 	// View object is stored twice, using both the view suid and model suid as keys.
 	private Map<Long,CyNodeViewImpl> dataSuidToNode = HashMap.empty();
@@ -109,9 +101,6 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		synchronized (nodeLock) {
 			synchronized (edgeLock) {
 				synchronized (netLock) {
-					final var selectionState = this.selectionState;
-					this.selectionState = SelectionDirtyState.CLEAR;
-					
 					return new CyNetworkViewSnapshotImpl(
 						this, 
 						rendererId, 
@@ -123,8 +112,8 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 						nodeVPs.createSnapshot(),
 						edgeVPs.createSnapshot(),
 						netVPs.createSnapshot(),
-						visualLexicon,
-						selectionState
+						selectionState.snapshotAndReset(),
+						visualLexicon
 					);
 				}
 			}
@@ -160,14 +149,15 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	
 	private void internalSetDirty() {
 		setDirty();
-		updateSelectionDirtyState(SelectionDirtyState.OTHER_VALUES_CHAGED);
+		invalidateSelection();
 	}
 	
-	void updateSelectionDirtyState(SelectionDirtyState state) {
-		// state can only increase, or be reset to clear
-		if(this.selectionState.ordinal() < state.ordinal()) {
-			this.selectionState = state;
-		}
+	void addSelection(int nodes, int edges) {
+		this.selectionState.update(SelectionUpdateState.State.SELECTION_INCREASED, nodes, edges);
+	}
+	
+	void invalidateSelection() {
+		this.selectionState.update(SelectionUpdateState.State.OTHER_VALUES_CHAGED);
 	}
 	
 	public CyEventHelper getEventHelper() {

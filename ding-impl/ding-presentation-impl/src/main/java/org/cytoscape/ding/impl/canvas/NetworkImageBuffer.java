@@ -51,10 +51,11 @@ public class NetworkImageBuffer implements ImageGraphicsProvider {
 	 * been applied yet. To draw in node coordinates make sure to call
 	 * g.setTransform(networkImageBuffer.getAffineTransform()).
 	 */
-	public Graphics2D getGraphics() {
+	public Graphics2D getGraphics(boolean clear) {
 		image = getImage();
 		var g = (Graphics2D) image.getGraphics();
-		clear(g);
+		if(clear)
+			clear(g);
 		return g;
 	}
 	

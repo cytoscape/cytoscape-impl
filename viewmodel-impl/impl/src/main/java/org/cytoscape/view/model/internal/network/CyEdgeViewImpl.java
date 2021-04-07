@@ -1,7 +1,5 @@
 package org.cytoscape.view.model.internal.network;
 
-import static org.cytoscape.view.model.internal.network.CyNetworkViewImpl.SelectionDirtyState.OTHER_VALUES_CHAGED;
-import static org.cytoscape.view.model.internal.network.CyNetworkViewImpl.SelectionDirtyState.SELECTION_INCREASED;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SELECTED;
 
 import org.cytoscape.model.CyEdge;
@@ -66,9 +64,9 @@ public class CyEdgeViewImpl extends CyViewBase<CyEdge> {
 	protected void fireViewChangedEvent(VisualProperty<?> vp, Object value, boolean lockedValue) {
 		// These events only fire when the VP value actually changed, so its a good place to check for changes to selection.
 		if(vp == EDGE_SELECTED && netView.isBVL() && Boolean.TRUE.equals(value)) {
-			netView.updateSelectionDirtyState(SELECTION_INCREASED);
+			netView.addSelection(0, 1);
 		} else {
-			netView.updateSelectionDirtyState(OTHER_VALUES_CHAGED);
+			netView.invalidateSelection();
 		}
 		
 		var record = new ViewChangeRecord<>(this, vp, value, lockedValue);

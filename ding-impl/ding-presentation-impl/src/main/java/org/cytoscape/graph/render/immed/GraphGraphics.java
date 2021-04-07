@@ -206,8 +206,13 @@ public final class GraphGraphics {
 	public NetworkTransform getTransform() {
 		return graphicsProvider.getTransform();
 	}
-
+	
+	
 	public final void update(RenderDetailFlags flags) {
+		this.update(flags, true);
+	}
+
+	public final void update(RenderDetailFlags flags, boolean clear) {
 		this.renderDetailFlags = flags;
 		if (m_gMinimal != null) {
 			m_gMinimal.dispose();
@@ -217,9 +222,11 @@ public final class GraphGraphics {
 			m_g2d.dispose();
 		}
 
-		m_g2d = graphicsProvider.getGraphics();
+		m_g2d = graphicsProvider.getGraphics(clear);
+		m_gMinimal = graphicsProvider.getGraphics(clear);
 
 		setRenderingHints(m_g2d);
+		setRenderingHintsMinimal(m_gMinimal);
 
 		m_g2d.transform(getTransform().getPaintAffineTransform());
 		m_currNativeXform.setTransform(m_g2d.getTransform()); // save the current transform
@@ -229,27 +236,30 @@ public final class GraphGraphics {
 	public static void setRenderingHints(Graphics2D g) {
 		// Antialiasing is ON
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		
 		// Rendering quality is HIGH.
 		g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-		
 		// High quality alpha blending is ON.
 		g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
-		
 		// High quality color rendering is ON.
 		g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
 		g.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE);
 		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-		
 		// Text antialiasing is ON.
 		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 		g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
 		g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
-		
 		g.setStroke(new BasicStroke(0.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 10.0f));
 	}
 	
-
+	private static void setRenderingHintsMinimal(Graphics2D g) {
+		g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
+		g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
+		g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+	}
+	
+	
 	/**
 	 * This is the method that will render a node very quickly. The node shape
 	 * used by this method is SHAPE_RECTANGLE. Translucent colors are not
@@ -287,10 +297,6 @@ public final class GraphGraphics {
 			}
 		}
 
-		if (m_gMinimal == null) {
-			makeMinimalGraphics();
-		}
-
 		// I'm transforming points manually because the resulting underlying
 		// graphics pipeline used is much faster.
 		m_ptsBuff[0] = xMin;
@@ -311,17 +317,6 @@ public final class GraphGraphics {
 		                                Math.max(1, yOne - yNot)); // be problem.
 	}
 
-	/**
-	 * Sets m_gMinimal.
-	 */
-	private final void makeMinimalGraphics() {
-		m_gMinimal = graphicsProvider.getGraphics();
-		m_gMinimal.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
-		m_gMinimal.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
-		m_gMinimal.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
-		m_gMinimal.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-		m_gMinimal.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-	}
 
 	/**
 	 * Draws a node with medium to high detail, depending on parameters
@@ -735,10 +730,6 @@ public final class GraphGraphics {
 		// rendering logic.
 		if ((x0 == x1) && (y0 == y1)) {
 			return;
-		}
-
-		if (m_gMinimal == null) {
-			makeMinimalGraphics();
 		}
 
 		// I'm transforming points manually because the resulting underlying
@@ -1568,9 +1559,6 @@ public final class GraphGraphics {
 	 * between frames no matter what scaling factor is specified in clear().
 	 */
 	public final FontRenderContext getFontRenderContextLow() {
-		if (m_gMinimal == null) {
-			makeMinimalGraphics();
-		}
 		return m_gMinimal.getFontRenderContext();
 	}
 

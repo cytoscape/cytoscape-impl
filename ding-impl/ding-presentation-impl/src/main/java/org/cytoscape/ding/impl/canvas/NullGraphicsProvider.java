@@ -8,7 +8,7 @@ public class NullGraphicsProvider implements ImageGraphicsProvider {
 	public static final NullGraphicsProvider INSTANCE = new NullGraphicsProvider();
 	
 	@Override
-	public Graphics2D getGraphics() {
+	public Graphics2D getGraphics(boolean clear) {
 		return null;
 	}
 

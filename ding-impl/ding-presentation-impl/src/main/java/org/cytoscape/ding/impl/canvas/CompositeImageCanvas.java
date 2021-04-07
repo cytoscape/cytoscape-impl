@@ -137,9 +137,9 @@ public class CompositeImageCanvas {
 		return bgColor;
 	}
 	
-	protected RenderDetailFlags getRenderDetailFlags(UpdateType updateType) {
+	protected RenderDetailFlags getRenderDetailFlags() {
 		var snapshot = re.getViewModelSnapshot();
-		return RenderDetailFlags.create(snapshot, transform, lod, updateType);
+		return RenderDetailFlags.create(snapshot, transform, lod);
 	}
 	
 	
@@ -210,7 +210,7 @@ public class CompositeImageCanvas {
 	 */
 	public ImageFuture paint(ProgressMonitor pm, PaintParameters params) {
 		var pm2 = ProgressMonitor.notNull(pm);
-		var flags = getRenderDetailFlags(params.update);
+		var flags = getRenderDetailFlags();
 		var future = CompletableFuture.supplyAsync(() -> paintImpl(pm2, flags, params), executor);
 		return new ImageFuture(future, flags, pm2);
 	}
@@ -221,17 +221,17 @@ public class CompositeImageCanvas {
 	
 	
 	// Methods to determine which canvases are rendered.
-	private static boolean renderAll(UpdateType ut) {
-		return ut == ALL_FAST || ut == ALL_FULL || ut == ALL_FULL_OR_JUST_SELECTION;
+	private static boolean renderAllCanvases(UpdateType ut) {
+		return ut == ALL_FAST || ut == ALL_FULL;
 	}
 	private static boolean renderNodeCanvas(UpdateType ut) {
-		return renderAll(ut);
+		return renderAllCanvases(ut);
 	}
 	private static boolean renderEdgeCanvas(UpdateType ut) {
-		return renderAll(ut) || ut == JUST_EDGES;
+		return renderAllCanvases(ut) || ut == JUST_EDGES;
 	}
 	private static  boolean renderAnnotationCanvas(UpdateType ut) {
-		return renderAll(ut) || ut == JUST_ANNOTATIONS;
+		return renderAllCanvases(ut) || ut == JUST_ANNOTATIONS;
 	}
 	
 	

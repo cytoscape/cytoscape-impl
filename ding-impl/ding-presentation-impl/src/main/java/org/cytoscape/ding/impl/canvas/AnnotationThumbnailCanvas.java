@@ -49,7 +49,7 @@ public class AnnotationThumbnailCanvas<GP extends GraphicsProvider> extends Ding
 
 	@Override
 	public void paint(ProgressMonitor pm, RenderDetailFlags flags) {
-		Graphics2D g = graphicsProvider.getGraphics();
+		Graphics2D g = graphicsProvider.getGraphics(true);
 		if(g == null)
 			return;
 		

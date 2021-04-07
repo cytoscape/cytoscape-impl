@@ -13,7 +13,7 @@ public class SimpleGraphicsProvider implements GraphicsProvider {
 	}
 	
 	@Override
-	public Graphics2D getGraphics() {
+	public Graphics2D getGraphics(boolean clear) {
 		return (Graphics2D) graphics.create();
 	}
 

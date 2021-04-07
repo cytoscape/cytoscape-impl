@@ -203,7 +203,7 @@ public abstract class RenderComponent extends JComponent {
 	}
 	
 	private PaintParameters getFastCanvasPaintParams() {
-		RenderDetailFlags flags = fastCanvas.getRenderDetailFlags(updateType);
+		RenderDetailFlags flags = fastCanvas.getRenderDetailFlags();
 		
 		if(flags.has(RenderDetailFlags.OPT_EDGE_BUFF_PAN)) { // enable edge buffer panning optimization
 			if(flags.renderEdges() != RenderEdges.NONE) {
@@ -310,7 +310,7 @@ public abstract class RenderComponent extends JComponent {
 			future = fastFuture;
 
 			// start a slow frame if necessary
-			if(updateType == UpdateType.ALL_FULL && !sameDetail()) { 
+			if((updateType == UpdateType.ALL_FULL) && !sameDetail()) { 
 				var slowPm = debugPm(updateType, getSlowProgressMonitor());
 				slowFuture = slowCanvas.paint(slowPm);
 				slowFuture.thenRun(() -> {
@@ -348,7 +348,7 @@ public abstract class RenderComponent extends JComponent {
 	}
 	
 	private boolean sameDetail() {
-		return fastFuture.getLastRenderDetail().equals(slowCanvas.getRenderDetailFlags(updateType));
+		return fastFuture.getLastRenderDetail().equals(slowCanvas.getRenderDetailFlags());
 	}
 	
 	public void dispose() {

@@ -6,7 +6,8 @@ public enum DebugFrameType {
 	MAIN_SLOW,
 	MAIN_ANNOTAITONS,
 	MAIN_EDGES,
+	MAIN_SELECTED,
 	BEV_FAST,
-	BEV_SLOW,
+	BEV_SLOW, 
 	
 }

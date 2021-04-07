@@ -7,11 +7,11 @@ public interface GraphicsProvider {
 
 	NetworkTransform getTransform();
 	
-	Graphics2D getGraphics();
+	Graphics2D getGraphics(boolean clear);
 	
 	default void fill(Color color) {
 		NetworkTransform t = getTransform();
-		Graphics2D g = getGraphics();
+		Graphics2D g = getGraphics(false);
 		if(g != null) {
 			if(color == null) {
 				color = new Color(0,0,0,0); // transparent

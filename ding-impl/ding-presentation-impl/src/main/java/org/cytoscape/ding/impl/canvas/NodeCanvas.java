@@ -64,13 +64,21 @@ public class NodeCanvas<GP extends GraphicsProvider> extends DingCanvas<GP> {
 
 	@Override
 	public void paint(ProgressMonitor pm, RenderDetailFlags flags) {
+		if(flags.has(RenderDetailFlags.OPT_SELECTED_ONLY)) {
+			System.out.println("Rendering selected nodes only");
+		}
+		
 		var dependencies = getVPDeps();
 		var snapshot = re.getViewModelSnapshot();
-		var edgeDetails = re.getEdgeDetails();
+		
+		System.out.println(System.identityHashCode(snapshot));
+		
 		var nodeDetails = re.getNodeDetails();
 		var labelProvider = flags.has(RenderDetailFlags.OPT_LABEL_CACHE) ? re.getLabelCache() : LabelInfoProvider.INSTANCE;
 		
-		graphGraphics.update(flags);
-		GraphRenderer.renderNodes(pm, graphGraphics, snapshot, flags, nodeDetails, edgeDetails, dependencies, labelProvider);
+		boolean clear = flags.not(RenderDetailFlags.OPT_SELECTED_ONLY);
+		graphGraphics.update(flags, clear);
+		
+		GraphRenderer.renderNodes(pm, graphGraphics, snapshot, flags, nodeDetails, dependencies, labelProvider);
 	}
 }

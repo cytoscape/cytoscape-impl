@@ -111,11 +111,11 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	 *  - etc...
 	 */
 	public enum UpdateType {
-		ALL_FAST,                   // Render a fast frame only, used internally for panning etc
-		ALL_FULL,                   // Render a fast frame, then start rendering a full frame asynchronously
-		ALL_FULL_OR_JUST_SELECTION, // Maybe re-render just selected nodes/edges depending on LOD
-		JUST_ANNOTATIONS,           // Just re-render annotations fast
-		JUST_EDGES;                 // For animated edges
+		ALL_FAST,            // Render a fast frame, used internally for panning etc
+		ALL_FULL,            // Render a fast frame, then if needed start rendering a full frame asynchronously
+//		JUST_SELECTION_FULL, // Render a fast frame that redraws just selected nodes/edges
+		JUST_ANNOTATIONS,    // Render a fast frame that redraws just annotations
+		JUST_EDGES;          // Render a fast frame that redraws just edges, used for animated edges
 	}
 	
 	
@@ -290,11 +290,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			updateModel();
 		}
 		if(dirty || contentChanged) {
-			if(viewModelSnapshot.isSelectionIncreased()) {
-				updateView(UpdateType.ALL_FULL_OR_JUST_SELECTION);
-			} else {
-				updateView(UpdateType.ALL_FULL);
-			}
+			updateView(UpdateType.ALL_FULL);
 		}
 		contentChanged = false;
 	}
@@ -756,7 +752,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			NetworkImageBuffer buffer = new NetworkImageBuffer(transform);
 			Color bgColor = transparentBackground ? null : getBackgroundColor();
 			
-			CompositeGraphicsCanvas.paint(buffer.getGraphics(), bgColor, dingGraphLOD, transform, this);
+			CompositeGraphicsCanvas.paint(buffer.getGraphics(true), bgColor, dingGraphLOD, transform, this);
 			
 			return buffer.getImage();
 		});

@@ -202,6 +202,7 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 		}
 	}
 	
+	
 	/**
 	 * Determines whether or not to render a graph at full detail. By default
 	 * this method returns true if and only if the sum of rendered nodes and

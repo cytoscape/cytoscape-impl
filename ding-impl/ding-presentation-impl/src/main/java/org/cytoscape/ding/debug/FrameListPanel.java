@@ -98,6 +98,7 @@ public class FrameListPanel extends BasicCollapsiblePanel {
 		switch(type) {
 			case MAIN_ANNOTAITONS:
 			case MAIN_EDGES:
+			case MAIN_SELECTED:
 			case MAIN_FAST: return fastPanel;
 			case MAIN_SLOW: return slowPanel;
 			case BEV_FAST:  return fastBirdPanel;

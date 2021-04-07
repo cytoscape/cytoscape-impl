@@ -30,7 +30,9 @@ public class EdgeCanvas<GP extends GraphicsProvider> extends DingCanvas<GP> {
 		var nodeDetails = re.getNodeDetails();
 		var labelProvider = flags.has(RenderDetailFlags.OPT_LABEL_CACHE) ? re.getLabelCache() : LabelInfoProvider.INSTANCE;
 		
-		graphGraphics.update(flags);
+		boolean clear = flags.not(RenderDetailFlags.OPT_SELECTED_ONLY);
+		graphGraphics.update(flags, clear);
+		
 		GraphRenderer.renderEdges(pm, graphGraphics, netViewSnapshot, flags, nodeDetails, edgeDetails, labelProvider);
 	}
 	

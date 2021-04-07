@@ -27,7 +27,7 @@ public class AnnotationSelectionCanvas<GP extends GraphicsProvider> extends Ding
 		if(!show)
 			return;
 		
-		Graphics2D g = graphicsProvider.getGraphics();
+		Graphics2D g = graphicsProvider.getGraphics(true);
 		if(g == null)
 			return;
 		
