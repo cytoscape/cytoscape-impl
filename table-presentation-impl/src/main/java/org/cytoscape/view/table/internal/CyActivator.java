@@ -1,5 +1,13 @@
 package org.cytoscape.view.table.internal;
 
+import static org.cytoscape.work.ServiceProperties.INSERT_TOOLBAR_SEPARATOR_AFTER;
+import static org.cytoscape.work.ServiceProperties.INSERT_TOOLBAR_SEPARATOR_BEFORE;
+import static org.cytoscape.work.ServiceProperties.IN_TABLE_TOOL_BAR;
+import static org.cytoscape.work.ServiceProperties.LARGE_ICON_ID;
+import static org.cytoscape.work.ServiceProperties.TOOLTIP;
+import static org.cytoscape.work.ServiceProperties.TOOL_BAR_GRAVITY;
+
+import java.awt.Font;
 import java.util.Properties;
 
 import org.cytoscape.application.TableViewRenderer;
@@ -8,6 +16,8 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.TableCellTaskFactory;
 import org.cytoscape.task.TableColumnTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.model.table.CyTableViewFactory;
 import org.cytoscape.view.model.table.CyTableViewFactoryProvider;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
@@ -46,6 +56,7 @@ public class CyActivator extends AbstractCyActivator {
 	@Override
 	public void start(BundleContext bc) {
 		var registrar = getService(bc, CyServiceRegistrar.class);
+		var iconManager = getService(bc, IconManager.class);
 		
 		var popupMenuHelper = new PopupMenuHelper(registrar);
 		registerServiceListener(bc, popupMenuHelper::addTableColumnTaskFactory, popupMenuHelper::removeTableColumnTaskFactory, TableColumnTaskFactory.class);
@@ -71,11 +82,31 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			var factory = new EquationEditorDialogFactory(registrar);
 			registerService(bc, factory, EquationEditorDialogFactory.class);
+		}
+		{
+			Font iconFont = null;
 			
-			var editorTaskFactory = new EquationEditorTaskFactory(registrar);
+			try {
+				iconFont = Font.createFont(Font.TRUETYPE_FONT, getClass().getResourceAsStream("/fonts/jsMath-cmti10.ttf"));
+				iconFont = iconFont.deriveFont(18.0f);
+			} catch (Exception e) {
+				throw new RuntimeException("Error loading font", e);
+			}
+			
+			var icon = new TextIcon("f(x)", iconFont, 32, 31);
+			var iconId = "cy::FN_BUILDER";
+			iconManager.addIcon(iconId, icon);
+			
+			var factory = new EquationEditorTaskFactory(registrar);
 			var props = new Properties();
 			props.setProperty("task", "equationEditor");
-			registerService(bc, editorTaskFactory, TableTaskFactory.class, props);
+			props.setProperty(LARGE_ICON_ID, iconId);
+			props.setProperty(TOOLTIP, "Function Builder...");
+			props.setProperty(IN_TABLE_TOOL_BAR, "true");
+			props.setProperty(TOOL_BAR_GRAVITY, "0.005");
+			props.setProperty(INSERT_TOOLBAR_SEPARATOR_BEFORE, "true");
+			props.setProperty(INSERT_TOOLBAR_SEPARATOR_AFTER, "true");
+			registerService(bc, factory, TableTaskFactory.class, props);
 		}
 	}
 }

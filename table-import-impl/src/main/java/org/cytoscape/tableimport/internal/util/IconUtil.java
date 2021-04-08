@@ -114,6 +114,10 @@ public abstract class IconUtil {
 	public static final String SELECTION_MODE_EDGES = "8";
 	public static final String SELECTION_MODE_NODES = "9";
 	
+	// Generic Import/Export
+	public static final String FILE_EXPORT = "+";
+	public static final String FILE_IMPORT = ",";
+	
 	// Layers/Colors used to build a TextIcon
 	// HELP
 	public static final String[] LAYERED_HELP = new String[] { HELP_1, HELP_2 };

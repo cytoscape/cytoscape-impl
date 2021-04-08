@@ -11,6 +11,8 @@ import static org.cytoscape.work.ServiceProperties.COMMAND_LONG_DESCRIPTION;
 import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
 import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
+import static org.cytoscape.work.ServiceProperties.INSERT_TOOLBAR_SEPARATOR_BEFORE;
+import static org.cytoscape.work.ServiceProperties.IN_TABLE_TOOL_BAR;
 import static org.cytoscape.work.ServiceProperties.IN_TOOL_BAR;
 import static org.cytoscape.work.ServiceProperties.LARGE_ICON_ID;
 import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
@@ -39,6 +41,7 @@ import org.cytoscape.tableimport.internal.task.LoadTableURLTaskFactoryImpl;
 import org.cytoscape.tableimport.internal.task.TableImportContext;
 import org.cytoscape.tableimport.internal.tunable.AttributeMappingParametersHandlerFactory;
 import org.cytoscape.tableimport.internal.tunable.NetworkTableMappingParametersHandlerFactory;
+import org.cytoscape.tableimport.internal.util.IconUtil;
 import org.cytoscape.tableimport.internal.util.ImportType;
 import org.cytoscape.task.edit.ImportDataTableTaskFactory;
 import org.cytoscape.task.read.LoadTableFileTaskFactory;
@@ -258,20 +261,21 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			LoadTableFileTaskFactoryImpl factory = new LoadTableFileTaskFactoryImpl(tableImportContext, serviceRegistrar);
+			// Import -- Main Menu, Main Toolbar and Command
+			var factory = new LoadTableFileTaskFactoryImpl(tableImportContext, serviceRegistrar);
 			
-			TextIcon icon = new TextIcon(LAYERED_IMPORT_TABLE, iconFont, COLORS_3, LARGE_ICON_SIZE, LARGE_ICON_SIZE, 1);
-			String iconId = "cy::IMPORT_TABLE";
+			var icon = new TextIcon(LAYERED_IMPORT_TABLE, iconFont, COLORS_3, LARGE_ICON_SIZE, LARGE_ICON_SIZE, 1);
+			var iconId = "cy::IMPORT_FILE_TABLE";
 			iconManager.addIcon(iconId, icon);
 			
-			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, "File.Import[23.0]");		//.Import.Table[23.0]
-			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
-			props.setProperty(MENU_GRAVITY, "5.1");
-			props.setProperty(TOOL_BAR_GRAVITY, "2.1");
+			var props = new Properties();
+			props.setProperty(PREFERRED_MENU, "File.Import[23.0]");
 			props.setProperty(TITLE, "Table from File...");
+			props.setProperty(MENU_GRAVITY, "5.1");
+			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
 			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(IN_TOOL_BAR, "true");
+			props.setProperty(TOOL_BAR_GRAVITY, "2.1");
 			props.setProperty(TOOLTIP, "Import Table from File");
 			props.setProperty(TOOLTIP_LONG_DESCRIPTION, "Reads a table from the file system and adds it to the current session.");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Reads a table from the file system.  Requires a string containing the absolute path of the file. Returns the SUID of the table created.");
@@ -282,9 +286,25 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, CytoPanelComponentSelectedListener.class);
 		}
 		{
-			LoadTableURLTaskFactoryImpl factory = new LoadTableURLTaskFactoryImpl(tableImportContext, serviceRegistrar);
-			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, "File.Import[23.0]");			//.Table[23.0]
+			// Import -- Table Toolbar
+			var factory = new LoadTableFileTaskFactoryImpl(tableImportContext, serviceRegistrar);
+			
+			var icon = new TextIcon(IconUtil.FILE_IMPORT, iconFont.deriveFont(22.0f), 32, 31);
+			var iconId = "cy::IMPORT_TABLE";
+			iconManager.addIcon(iconId, icon);
+			
+			var props = new Properties();
+			props.setProperty(IN_TABLE_TOOL_BAR, "true");
+			props.setProperty(TOOL_BAR_GRAVITY, "0.006");
+			props.setProperty(LARGE_ICON_ID, iconId);
+			props.setProperty(TOOLTIP, "Import Table from File...");
+			props.setProperty(INSERT_TOOLBAR_SEPARATOR_BEFORE, "true");
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+		{
+			var factory = new LoadTableURLTaskFactoryImpl(tableImportContext, serviceRegistrar);
+			var props = new Properties();
+			props.setProperty(PREFERRED_MENU, "File.Import[23.0]");
 			props.setProperty(MENU_GRAVITY, "6.0");
 			props.setProperty(TITLE, "Table from URL...");
 			props.setProperty(TOOLTIP, "Import Table From URL");

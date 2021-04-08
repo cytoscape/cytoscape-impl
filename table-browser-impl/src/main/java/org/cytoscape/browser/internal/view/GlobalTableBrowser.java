@@ -70,15 +70,6 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 	}
 	
 	@Override
-	protected TableBrowserToolBar getToolBar() {
-		if (toolBar == null) {
-			toolBar = new TableBrowserToolBar(serviceRegistrar, getTableChooser(), null);
-		}
-		
-		return toolBar;
-	}
-
-	@Override
 	protected boolean containsTable(CyTable table) {
 		return ((GlobalTableComboBoxModel) getTableChooser().getModel()).contains(table);
 	}
@@ -115,7 +106,6 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 			if (tableManager.getGlobalTables().contains(newTable)) {
 				var comboBoxModel = (GlobalTableComboBoxModel) getTableChooser().getModel();
 				comboBoxModel.addAndSetSelectedItem(newTable);
-				getToolBar().updateEnableState(getTableChooser());
 			}
 			
 			if (getTableChooser().getItemCount() == 1) {
@@ -134,7 +124,6 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 			invokeOnEDT(() -> {
 				var comboBoxModel = (GlobalTableComboBoxModel) getTableChooser().getModel();
 				comboBoxModel.removeItem(cyTable);
-				getToolBar().updateEnableState(getTableChooser());
 				
 				if (comboBoxModel.getSize() == 0) {
 					// The last table is deleted, refresh the browser table (this is a special case)
@@ -172,7 +161,8 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 		serviceRegistrar.getService(CyApplicationManager.class).setCurrentTable(currentTable);
 	}
 	
-	private GlobalTableChooser getTableChooser() {
+	@Override
+	protected GlobalTableChooser getTableChooser() {
 		if (tableChooser == null) {
 			tableChooser = new GlobalTableChooser();
 			tableChooser.addActionListener(e -> setCurrentTable());
@@ -182,7 +172,6 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 			tableChooser.setPreferredSize(d);
 			tableChooser.setSize(d);
 			tableChooser.setToolTipText("\"Tables\" are data tables not associated with specific networks.");
-			tableChooser.setEnabled(false);
 		}
 		
 		return tableChooser;

@@ -1,4 +1,4 @@
-package org.cytoscape.internal.view.util;
+package org.cytoscape.browser.internal.util;
 
 import static org.cytoscape.util.swing.IconManager.ICON_ANGLE_DOUBLE_DOWN;
 import static org.cytoscape.util.swing.IconManager.ICON_ANGLE_DOUBLE_RIGHT;
@@ -53,7 +53,7 @@ import org.cytoscape.util.swing.TextIcon;
 
 /*
  * #%L
- * Cytoscape Swing Application Impl (swing-application-impl)
+ * Cytoscape Table Browser Impl (table-browser-impl)
  * $Id:$
  * $HeadURL:$
  * %%

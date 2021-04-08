@@ -1,23 +1,38 @@
 package org.cytoscape.browser.internal;
 
+import static org.cytoscape.browser.internal.view.AbstractTableBrowser.ICON_FONT_SIZE;
+import static org.cytoscape.browser.internal.view.AbstractTableBrowser.ICON_HEIGHT;
+import static org.cytoscape.browser.internal.view.AbstractTableBrowser.ICON_WIDTH;
+import static org.cytoscape.util.swing.IconManager.ICON_COG;
+import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
+import static org.cytoscape.work.ServiceProperties.IN_TABLE_TOOL_BAR;
 import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
 import static org.cytoscape.work.ServiceProperties.SMALL_ICON_ID;
 import static org.cytoscape.work.ServiceProperties.TITLE;
 
+import java.util.Arrays;
 import java.util.Properties;
 
 import org.cytoscape.application.events.SetCurrentNetworkListener;
+import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
+import org.cytoscape.browser.internal.action.CreateColumnAction;
+import org.cytoscape.browser.internal.action.DeleteColumnsAction;
+import org.cytoscape.browser.internal.action.DeleteTableAction;
+import org.cytoscape.browser.internal.action.ShowColumnsAction;
+import org.cytoscape.browser.internal.action.TableOptionsAction;
 import org.cytoscape.browser.internal.task.ClearAllErrorsTaskFactory;
 import org.cytoscape.browser.internal.task.HideColumnTaskFactory;
 import org.cytoscape.browser.internal.task.SetColumnFormatTaskFactory;
 import org.cytoscape.browser.internal.task.ToggleTextWrapTaskFactory;
+import org.cytoscape.browser.internal.util.IconUtil;
 import org.cytoscape.browser.internal.view.DefaultTableBrowser;
 import org.cytoscape.browser.internal.view.GlobalTableBrowser;
 import org.cytoscape.browser.internal.view.TableBrowserMediator;
 import org.cytoscape.browser.internal.view.TableBrowserStyleMediator;
+import org.cytoscape.browser.internal.view.ToolBarEnableUpdater;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -29,11 +44,13 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.TableColumnTaskFactory;
+import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.model.events.TableViewAddedListener;
 import org.cytoscape.view.vizmap.events.VisualStyleChangedListener;
 import org.cytoscape.view.vizmap.events.table.ColumnVisualStyleSetListener;
+import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
 
 /*
@@ -61,6 +78,8 @@ import org.osgi.framework.BundleContext;
  */
 
 public class CyActivator extends AbstractCyActivator {
+	
+	private static final String TABLE_TOOLBAR_FILTER = "(" + IN_TABLE_TOOL_BAR + "=true)";
 	
 	private static float SMALL_ICON_FONT_SIZE = 14.0f;
 	private static int SMALL_ICON_SIZE = 16;
@@ -109,6 +128,17 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, mediator, SetCurrentNetworkListener.class);
 		registerService(bc, mediator, CytoPanelComponentSelectedListener.class);
 		
+		var toolBarEnableUpdater = new ToolBarEnableUpdater(
+				Arrays.asList(
+						nodeTableBrowser.getToolBar(),
+						edgeTableBrowser.getToolBar(),
+						networkTableBrowser.getToolBar(),
+						globalTableBrowser.getToolBar()
+				),
+				serviceRegistrar
+		);
+		registerAllServices(bc, toolBarEnableUpdater);
+		
 		{
 			var icon = new TextIcon(IconManager.ICON_EYE_SLASH, iconManager.getIconFont(SMALL_ICON_FONT_SIZE), SMALL_ICON_SIZE, SMALL_ICON_SIZE);
 			var iconId = "cy::HIDE_COLUMN_SMALL";
@@ -135,5 +165,46 @@ public class CyActivator extends AbstractCyActivator {
 		var styleMediator = new TableBrowserStyleMediator(serviceRegistrar);
 		registerService(bc, styleMediator, VisualStyleChangedListener.class);
 		registerService(bc, styleMediator, ColumnVisualStyleSetListener.class);
+		
+		registerServiceListener(bc, mediator::addAction, mediator::removeAction, CyAction.class);
+		registerServiceListener(bc, mediator::addTaskFactory, mediator::removeTaskFactory, TaskFactory.class, TABLE_TOOLBAR_FILTER);
+		registerServiceListener(bc, mediator::addTableTaskFactory, mediator::removeTableTaskFactory, TableTaskFactory.class, TABLE_TOOLBAR_FILTER);
+		
+		// Toolbar actions and task factories
+		{
+			var iconFont = iconManager.getIconFont(ICON_FONT_SIZE * 4 / 5);
+			var icon = new TextIcon(ICON_COG, iconFont, ICON_WIDTH, ICON_HEIGHT);
+
+			var action = new TableOptionsAction(icon, 0.001f, mediator);
+			registerService(bc, action, CyAction.class);
+		}
+		{
+			var iconFont = iconManager.getIconFont(IconUtil.CY_FONT_NAME, ICON_FONT_SIZE);
+			var icon = new TextIcon(IconUtil.COLUMN_SHOW, iconFont, ICON_WIDTH, ICON_HEIGHT);
+
+			var action = new ShowColumnsAction(icon, 0.002f, mediator, serviceRegistrar);
+			registerService(bc, action, CyAction.class);
+		}
+		{
+			var iconFont = iconManager.getIconFont(IconUtil.CY_FONT_NAME, ICON_FONT_SIZE);
+			var icon = new TextIcon(IconUtil.COLUMN_ADD, iconFont, ICON_WIDTH, ICON_HEIGHT);
+			
+			var action = new CreateColumnAction(icon, 0.003f, mediator, serviceRegistrar);
+			registerService(bc, action, CyAction.class);
+		}
+		{
+			var iconFont = iconManager.getIconFont(IconUtil.CY_FONT_NAME, ICON_FONT_SIZE);
+			var icon = new TextIcon(IconUtil.COLUMN_REMOVE, iconFont, ICON_WIDTH, ICON_HEIGHT);
+			
+			var action = new DeleteColumnsAction(icon, 0.004f, mediator);
+			registerService(bc, action, CyAction.class);
+		}
+		{
+			var iconFont = iconManager.getIconFont(ICON_FONT_SIZE);
+			var icon = new TextIcon(ICON_TRASH_O, iconFont, ICON_WIDTH, ICON_HEIGHT);
+			
+			var action = new DeleteTableAction(icon, Integer.MAX_VALUE, mediator, serviceRegistrar);
+			registerService(bc, action, CyAction.class);
+		}
 	}
 }

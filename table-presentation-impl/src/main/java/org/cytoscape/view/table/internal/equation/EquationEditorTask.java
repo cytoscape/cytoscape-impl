@@ -29,6 +29,10 @@ public class EquationEditorTask extends AbstractTask {
 	
 	public boolean isReady() {
 		var browserTable = getBrowserTable(table);
+		
+		if (browserTable == null)
+			return false;
+		
 		var browserTableModel = browserTable.getBrowserTableModel();
 		final int row = browserTable.getSelectedRow();
 		final int column = browserTable.getSelectedColumn();
