@@ -8,8 +8,7 @@ import org.cytoscape.work.TaskIterator;
 public class EquationEditorTaskFactory implements TableTaskFactory {
 
 	private final CyServiceRegistrar registrar;
-	
-	
+
 	public EquationEditorTaskFactory(CyServiceRegistrar registrar) {
 		this.registrar = registrar;
 	}
@@ -24,6 +23,4 @@ public class EquationEditorTaskFactory implements TableTaskFactory {
 		var t = new EquationEditorTask(registrar, table);
 		return t.isReady();
 	}
-
-	
 }

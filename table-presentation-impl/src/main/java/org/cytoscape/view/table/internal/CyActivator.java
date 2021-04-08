@@ -29,7 +29,7 @@ import org.osgi.framework.BundleContext;
 
 /*
  * #%L
- * Cytoscape Table Browser Impl (table-browser-impl)
+ * Cytoscape Table Presentation Impl (table-browser-impl)
  * $Id:$
  * $HeadURL:$
  * %%
@@ -71,7 +71,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, renderer, TableViewRenderer.class);
 		registerService(bc, tableViewFactory, CyTableViewFactory.class); // register the default CyTableViewFactory
 		
-		{	// Need to register the RenderingEngineFactory itself because the RenderingEngineManager is listening for this service.
+		{
+			// Need to register the RenderingEngineFactory itself because the RenderingEngineManager is listening for this service.
 			var factory = renderer.getRenderingEngineFactory(TableViewRenderer.DEFAULT_CONTEXT);
 			var props = new Properties();
 			props.setProperty(ServiceProperties.ID, TableViewRendererImpl.ID);

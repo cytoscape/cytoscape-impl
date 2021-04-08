@@ -59,7 +59,6 @@ public class VisualStylePanel {
 		styleSelector = new VisualStyleSelector(2, 0, servicesUtil);
 	}
 	
-	
 	public JComponent getComponent() {
 		return getStylesPnl();
 	}
@@ -124,6 +123,7 @@ public class VisualStylePanel {
 		if (optionsBtn == null) {
 			optionsBtn = new OptionsButton(servicesUtil);
 		}
+		
 		return optionsBtn;
 	}
 

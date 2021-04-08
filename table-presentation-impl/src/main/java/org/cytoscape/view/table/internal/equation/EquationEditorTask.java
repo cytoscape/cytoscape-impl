@@ -20,13 +20,11 @@ public class EquationEditorTask extends AbstractTask {
 	private final CyServiceRegistrar registrar;
 	private final CyTable table;
 	
-	
 	public EquationEditorTask(CyServiceRegistrar registrar, CyTable table) {
 		this.registrar = registrar;
 		this.table = table;
 	}
 
-	
 	public boolean isReady() {
 		var browserTable = getBrowserTable(table);
 		
@@ -34,20 +32,22 @@ public class EquationEditorTask extends AbstractTask {
 			return false;
 		
 		var browserTableModel = browserTable.getBrowserTableModel();
-		final int row = browserTable.getSelectedRow();
-		final int column = browserTable.getSelectedColumn();
-		return row >=0 && column >= 0 && browserTableModel.isCellEditable(row, column);
+		int row = browserTable.getSelectedRow();
+		int column = browserTable.getSelectedColumn();
+
+		return row >= 0 && column >= 0 && browserTableModel.isCellEditable(row, column);
 	}
-	
-	
+
 	@Override
 	public void run(TaskMonitor tm) {
 		var browserTable = getBrowserTable(table);
-		if(browserTable == null)
-			return;
 		
+		if (browserTable == null)
+			return;
+
 		// Do not allow opening of the formula builder dialog while a cell is being edited!
 		var browserTableModel = browserTable.getBrowserTableModel();
+		
 		if (browserTableModel == null || browserTable.getCellEditor() != null)
 			return;
 
@@ -56,47 +56,50 @@ public class EquationEditorTask extends AbstractTask {
 		int colIndex = -1;
 
 		// Map the screen index of column to internal index of the table model
-		if(cellRow >= 0 && cellCol >= 0) {
-			String colName = browserTable.getColumnName(cellCol);
+		if (cellRow >= 0 && cellCol >= 0) {
+			var colName = browserTable.getColumnName(cellCol);
 			colIndex = browserTableModel.mapColumnNameToColumnIndex(colName);
 		}
-		
+
 		if (cellRow == -1 || cellCol == -1 || !browserTableModel.isCellEditable(cellRow, colIndex)) {
 			var rootFrame = registrar.getService(CySwingApplication.class).getJFrame();
-			JOptionPane.showMessageDialog(rootFrame, 
+			JOptionPane.showMessageDialog(
+					rootFrame, 
 					"Can't enter a formula w/o a selected cell.",
 					"Information", 
-					JOptionPane.INFORMATION_MESSAGE);
+					JOptionPane.INFORMATION_MESSAGE
+			);
 			return;
 		}
 		
 		var mediator = registrar.getService(EquationEditorDialogFactory.class);
+		
 		SwingUtilities.invokeLater(() -> {
 			mediator.openEquationEditorDialog(browserTable);
 		});
 	}
 	
-	
 	public BrowserTable getBrowserTable(CyTable table) {
 		var tableViewManager = registrar.getService(CyTableViewManager.class);
-		CyTableView view = tableViewManager.getTableView(table);
-		
+		var view = tableViewManager.getTableView(table);
 		var re = getRenderingEngine(view);
-		if(re == null)
-			return null;
 		
+		if (re == null)
+			return null;
+
 		return re.getBrowserTable();
 	}
 	
-
 	private TableRenderingEngineImpl getRenderingEngine(CyTableView view) {
 		var renderingEngineManager = registrar.getService(RenderingEngineManager.class);
 		var renderingEngines = renderingEngineManager.getRenderingEngines(view);
-		for(var re : renderingEngines) {
-			if(TableViewRendererImpl.ID.equals(re.getRendererId())) {
+		
+		for (var re : renderingEngines) {
+			if (TableViewRendererImpl.ID.equals(re.getRendererId())) {
 				return (TableRenderingEngineImpl) re;
 			}
 		}
+		
 		return null;
 	}
 }
