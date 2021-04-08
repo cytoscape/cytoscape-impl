@@ -1,17 +1,6 @@
 package org.cytoscape.view.table.internal;
 
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_BACKGROUND_PAINT;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_TEXT_WRAPPED;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_FORMAT;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_GRAVITY;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_VISIBLE;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_WIDTH;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.ROW_HEIGHT;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.ROW_SELECTED;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_ALTERNATE_ROW_COLORS;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_GRID_VISIBLE;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_ROW_HEIGHT;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_VIEW_MODE;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.*;
 import static org.cytoscape.view.table.internal.util.ViewUtil.invokeOnEDT;
 
 import java.util.HashSet;
@@ -137,7 +126,9 @@ public class VisualPropertyChangeListener implements TableViewChangedListener {
 				double gravity = ((Number) value).doubleValue();
 				var colModel = (BrowserTableColumnModel) browserTable.getColumnModel();
 				var column = colModel.getTableColumn(colView.getSUID());
-				colModel.setColumnGravity(column, gravity);
+				if(column != null) {
+					colModel.setColumnGravity(column, gravity);
+				}
 			}
 		}
 	}
