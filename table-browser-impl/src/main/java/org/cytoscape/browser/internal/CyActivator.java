@@ -7,7 +7,10 @@ import static org.cytoscape.util.swing.IconManager.ICON_COG;
 import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
+import static org.cytoscape.work.ServiceProperties.IN_EDGE_TABLE_TOOL_BAR;
+import static org.cytoscape.work.ServiceProperties.IN_NETWORK_TABLE_TOOL_BAR;
 import static org.cytoscape.work.ServiceProperties.IN_NODE_TABLE_TOOL_BAR;
+import static org.cytoscape.work.ServiceProperties.IN_UNASSIGNED_TABLE_TOOL_BAR;
 import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
 import static org.cytoscape.work.ServiceProperties.SMALL_ICON_ID;
 import static org.cytoscape.work.ServiceProperties.TITLE;
@@ -80,7 +83,11 @@ import org.osgi.framework.BundleContext;
 
 public class CyActivator extends AbstractCyActivator {
 	
-	private static final String TABLE_TOOLBAR_FILTER = "(" + IN_NODE_TABLE_TOOL_BAR + "=true)";
+	private static final String TOOLBAR_FILTER =
+			"(|(" + IN_NODE_TABLE_TOOL_BAR + "=true)"
+			+ "(" + IN_EDGE_TABLE_TOOL_BAR + "=true)"
+			+ "(" + IN_NETWORK_TABLE_TOOL_BAR + "=true)"
+			+ "(" + IN_UNASSIGNED_TABLE_TOOL_BAR + "=true))";
 	
 	private static float SMALL_ICON_FONT_SIZE = 14.0f;
 	private static int SMALL_ICON_SIZE = 16;
@@ -168,8 +175,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, styleMediator, ColumnVisualStyleSetListener.class);
 		
 		registerServiceListener(bc, mediator::addAction, mediator::removeAction, CyAction.class);
-		registerServiceListener(bc, mediator::addTaskFactory, mediator::removeTaskFactory, TaskFactory.class, TABLE_TOOLBAR_FILTER);
-		registerServiceListener(bc, mediator::addTableTaskFactory, mediator::removeTableTaskFactory, TableTaskFactory.class, TABLE_TOOLBAR_FILTER);
+		registerServiceListener(bc, mediator::addTaskFactory, mediator::removeTaskFactory, TaskFactory.class, TOOLBAR_FILTER);
+		registerServiceListener(bc, mediator::addTableTaskFactory, mediator::removeTableTaskFactory, TableTaskFactory.class, TOOLBAR_FILTER);
 		registerServiceListener(bc, mediator::addTableToolBarComponent, mediator::removeTableToolBarComponent, TableToolBarComponent.class);
 		
 		// Toolbar actions and task factories
