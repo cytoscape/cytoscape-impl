@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.Properties;
 
 import org.cytoscape.application.events.SetCurrentNetworkListener;
+import org.cytoscape.application.events.SetCurrentTableListener;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.TableToolBarComponent;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
@@ -134,6 +135,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		var mediator = new TableBrowserMediator(nodeTableBrowser, edgeTableBrowser, networkTableBrowser, globalTableBrowser, serviceRegistrar);
 		registerService(bc, mediator, SetCurrentNetworkListener.class);
+		registerService(bc, mediator, SetCurrentTableListener.class);
 		registerService(bc, mediator, CytoPanelComponentSelectedListener.class);
 		
 		var toolBarEnableUpdater = new ToolBarEnableUpdater(

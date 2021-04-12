@@ -104,8 +104,8 @@ import org.slf4j.LoggerFactory;
  * Base class for all Table Browsers.
  */
 @SuppressWarnings("serial")
-public abstract class AbstractTableBrowser extends JPanel implements CytoPanelComponent2, TableViewAddedListener,
-		SessionLoadedListener, SessionAboutToBeSavedListener {
+public abstract class AbstractTableBrowser extends JPanel implements CytoPanelComponent2, SessionLoadedListener,
+		SessionAboutToBeSavedListener, TableViewAddedListener {
 
 	private final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
@@ -316,6 +316,9 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 	private void updateTableChooser() {
 		var minToShow = getObjectType() == null ? 1 : 2;
 		getTableChooser().setVisible(getTableChooser().getItemCount() >= minToShow);
+		
+		if (currentTable != null && !currentTable.equals(getTableChooser().getSelectedItem()))
+			getTableChooser().setSelectedItem(currentTable);
 	}
 	
 	private void showDropPanel() {
@@ -366,7 +369,7 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		return dropPanel;
 	}
 	
-	void showSelectedTable() {
+	protected void showSelectedTable() {
 		var renderer = getCurrentRenderer();
 		
 		if (renderer != null) {

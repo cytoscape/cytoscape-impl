@@ -12,6 +12,8 @@ import javax.swing.JToolBar;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
+import org.cytoscape.application.events.SetCurrentTableEvent;
+import org.cytoscape.application.events.SetCurrentTableListener;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelName;
@@ -57,7 +59,8 @@ import org.cytoscape.work.Togglable;
  * #L%
  */
 
-public class TableBrowserMediator implements SetCurrentNetworkListener, CytoPanelComponentSelectedListener {
+public class TableBrowserMediator
+		implements SetCurrentNetworkListener, SetCurrentTableListener, CytoPanelComponentSelectedListener {
 
 	private final HashMap<Class<? extends CyIdentifiable>, AbstractTableBrowser> tableBrowsers = new HashMap<>();
 	
@@ -97,6 +100,23 @@ public class TableBrowserMediator implements SetCurrentNetworkListener, CytoPane
 			// Update the CyApplicationManager
 			if (table == null || table.isPublic())
 				serviceRegistrar.getService(CyApplicationManager.class).setCurrentTable(table);
+		});
+	}
+	
+	@Override
+	public void handleEvent(SetCurrentTableEvent evt) {
+		var table = evt.getTable();
+		
+		if (table == null)
+			return;
+		
+		invokeOnEDT(() -> {
+			for (var tb : tableBrowsers.values()) {
+				if (tb.containsTable(table)) {
+					tb.setCurrentTable(table);
+					break;
+				}
+			}
 		});
 	}
 	
