@@ -137,9 +137,9 @@ public class CompositeImageCanvas {
 		return bgColor;
 	}
 	
-	protected RenderDetailFlags getRenderDetailFlags() {
+	protected RenderDetailFlags getRenderDetailFlags(UpdateType updateType) {
 		var snapshot = re.getViewModelSnapshot();
-		return RenderDetailFlags.create(snapshot, transform, lod);
+		return RenderDetailFlags.create(snapshot, transform, lod, updateType);
 	}
 	
 	
@@ -210,7 +210,7 @@ public class CompositeImageCanvas {
 	 */
 	public ImageFuture paint(ProgressMonitor pm, PaintParameters params) {
 		var pm2 = ProgressMonitor.notNull(pm);
-		var flags = getRenderDetailFlags();
+		var flags = getRenderDetailFlags(params.update);
 		var future = CompletableFuture.supplyAsync(() -> paintImpl(pm2, flags, params), executor);
 		return new ImageFuture(future, flags, pm2);
 	}
@@ -222,7 +222,7 @@ public class CompositeImageCanvas {
 	
 	// Methods to determine which canvases are rendered.
 	private static boolean renderAllCanvases(UpdateType ut) {
-		return ut == ALL_FAST || ut == ALL_FULL;
+		return ut == ALL_FAST || ut == ALL_FULL || ut == ALL_FULL_DIRTY;
 	}
 	private static boolean renderNodeCanvas(UpdateType ut) {
 		return renderAllCanvases(ut);

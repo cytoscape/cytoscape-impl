@@ -113,7 +113,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	public enum UpdateType {
 		ALL_FAST,            // Render a fast frame, used internally for panning etc
 		ALL_FULL,            // Render a fast frame, then if needed start rendering a full frame asynchronously
-//		JUST_SELECTION_FULL, // Render a fast frame that redraws just selected nodes/edges
+		ALL_FULL_DIRTY,      // Like ALL_FULL but only happens when the model is dirty (used for certain optimizations)
 		JUST_ANNOTATIONS,    // Render a fast frame that redraws just annotations
 		JUST_EDGES;          // Render a fast frame that redraws just edges, used for animated edges
 	}
@@ -285,11 +285,12 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	 * EDT will take care of that.
 	 */
 	private void checkModelIsDirty() {
-		boolean dirty = viewModel.dirty(true);
-		if(dirty) {
+		boolean modelDirty = viewModel.dirty(true);
+		if(modelDirty) {
 			updateModel();
-		}
-		if(dirty || contentChanged) {
+			updateView(UpdateType.ALL_FULL_DIRTY);
+		} else if(contentChanged) { 
+			// ding internal state changed, no need to update model, usually caused by pan or zoom
 			updateView(UpdateType.ALL_FULL);
 		}
 		contentChanged = false;

@@ -12,15 +12,14 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.SnapshotEdgeInfo;
 import org.cytoscape.view.model.SnapshotNodeInfo;
-import org.cytoscape.view.model.SnapshotSelectionInfo;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.internal.base.VPStore;
 import org.cytoscape.view.model.internal.network.CyEdgeViewImpl;
 import org.cytoscape.view.model.internal.network.CyNetworkViewImpl;
+import org.cytoscape.view.model.internal.network.CyNetworkViewImpl.SelectionUpdateState;
 import org.cytoscape.view.model.internal.network.CyNodeViewImpl;
-import org.cytoscape.view.model.internal.network.SelectionUpdateState;
 import org.cytoscape.view.model.internal.network.VPEdgeStore;
 import org.cytoscape.view.model.internal.network.VPNetworkStore;
 import org.cytoscape.view.model.internal.network.VPNodeStore;
@@ -52,13 +51,14 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	
 	private final NetworkSpacialIndex2D spacialIndex;
 	private final boolean isBVL;
-	private final SelectionUpdateState selectionState;
 	
 	// Store of immutable node/edge objects
 	// MKTODO these objects probably won't change much between snapshots, they don't actually store the VPs,
 	// come up with a strategy to reuse them between snapshots.
 	private final java.util.Map<Long,CyNodeViewSnapshotImpl> snapshotNodeViews = new ConcurrentHashMap<>();
 	private final java.util.Map<Long,CyEdgeViewSnapshotImpl> snapshotEdgeViews = new ConcurrentHashMap<>();
+	
+	private final boolean isSelectionIncreased;
 	
 	
 	public CyNetworkViewSnapshotImpl(
@@ -86,7 +86,7 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 		this.nodeVPs = nodeVPs;
 		this.edgeVPs = edgeVPs;
 		this.netVPs = netVPs;
-		this.selectionState = selectionState;
+		this.isSelectionIncreased = selectionState == SelectionUpdateState.SELECTION_INCREASED;
 		this.isBVL = lexicon instanceof BasicVisualLexicon;
 		
 		this.spacialIndex = new SimpleSpacialIndex2DSnapshotImpl(this);
@@ -98,10 +98,10 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	}
 	
 	@Override
-	public SnapshotSelectionInfo getSelectionInfo() {
-		return selectionState;
+	public boolean isSelectionStrictlyIncreased() {
+		return isSelectionIncreased;
 	}
-	
+
 	private boolean isNodeVisible(Long nodeSuid) {
 		if(!isBVL)
 			return true;

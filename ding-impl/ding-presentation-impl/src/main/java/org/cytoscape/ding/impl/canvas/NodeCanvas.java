@@ -71,8 +71,6 @@ public class NodeCanvas<GP extends GraphicsProvider> extends DingCanvas<GP> {
 		var dependencies = getVPDeps();
 		var snapshot = re.getViewModelSnapshot();
 		
-		System.out.println(System.identityHashCode(snapshot));
-		
 		var nodeDetails = re.getNodeDetails();
 		var labelProvider = flags.has(RenderDetailFlags.OPT_LABEL_CACHE) ? re.getLabelCache() : LabelInfoProvider.INSTANCE;
 		

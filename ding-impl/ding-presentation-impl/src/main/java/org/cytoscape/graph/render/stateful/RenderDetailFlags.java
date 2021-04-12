@@ -3,12 +3,12 @@ package org.cytoscape.graph.render.stateful;
 import java.awt.geom.Rectangle2D;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
 import org.cytoscape.ding.impl.canvas.NetworkTransform;
 import org.cytoscape.graph.render.stateful.GraphLOD.RenderEdges;
 import org.cytoscape.util.intr.LongHash;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.SnapshotEdgeInfo;
-import org.cytoscape.view.model.SnapshotSelectionInfo;
 import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
@@ -83,7 +83,7 @@ public class RenderDetailFlags {
 	}
 	
 	
-	public static RenderDetailFlags create(CyNetworkViewSnapshot netView, NetworkTransform transform, GraphLOD lod) {
+	public static RenderDetailFlags create(CyNetworkViewSnapshot netView, NetworkTransform transform, GraphLOD lod, UpdateType updateType) {
 		Rectangle2D.Float area = transform.getNetworkVisibleAreaNodeCoords();
 		SpacialIndex2DEnumerator<Long> nodeHits = netView.getSpacialIndex2D().queryOverlap(area.x, area.y, area.x + area.width, area.y + area.height);
 		
@@ -100,7 +100,7 @@ public class RenderDetailFlags {
 		else // visible nodes
 			renderEdgeCount = estimateEdgeCount(totalNodeCount, visibleNodeCount, totalEdgeCount);
 		
-		int lodBits = lodToBits(netView, visibleNodeCount, renderEdgeCount, lod);
+		int lodBits = lodToBits(netView, visibleNodeCount, renderEdgeCount, lod, updateType);
 		return new RenderDetailFlags(lodBits, renderEdges, visibleNodeCount, renderEdgeCount);
 	}
 	
@@ -145,7 +145,7 @@ public class RenderDetailFlags {
 	}
 	
 	
-	private static int lodToBits(CyNetworkViewSnapshot netView, int renderNodeCount, int renderEdgeCount, GraphLOD lod) {
+	private static int lodToBits(CyNetworkViewSnapshot netView, int renderNodeCount, int renderEdgeCount, GraphLOD lod, UpdateType updateType) {
 		int lodbits = 0;
 		
 		// detail bits
@@ -176,16 +176,15 @@ public class RenderDetailFlags {
 			lodbits |= OPT_EDGE_BUFF_PAN;
 		if (lod.labelCache())
 			lodbits |= OPT_LABEL_CACHE;
-		if (selectedOnly(netView.getSelectionInfo())) {
+		if (!highDetail && selectedOnly(netView, updateType)) {
 			lodbits |= OPT_SELECTED_ONLY;
 		}
 		
 		return lodbits;
 	}
 
-	private static boolean selectedOnly(SnapshotSelectionInfo selectionInfo) {
-		return selectionInfo.isSelectionIncreased() 
-				&& selectionInfo.getSelectedEdges() + selectionInfo.getSelectedNodes() <= 4000;
+	private static boolean selectedOnly(CyNetworkViewSnapshot netView, UpdateType updateType) {
+		return netView.isSelectionStrictlyIncreased() && updateType == UpdateType.ALL_FULL_DIRTY; // This is why we need ALL_FULL_DIRTY
 	}
 	
 	
