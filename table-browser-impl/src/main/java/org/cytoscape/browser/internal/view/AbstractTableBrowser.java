@@ -45,9 +45,9 @@ import javax.swing.event.ListDataListener;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.TableViewRenderer;
-import org.cytoscape.application.swing.AbstractToolBarComponent;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.application.swing.TableToolBarComponent;
 import org.cytoscape.browser.internal.io.TableColumnStat;
 import org.cytoscape.browser.internal.io.TableColumnStatFileIO;
 import org.cytoscape.browser.internal.util.CyToolBar;
@@ -254,7 +254,7 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		getToolBar().addSpacer(Integer.MAX_VALUE - 10);
 		
 		if (getTableChooser() != null) {
-			var toolbarComp = new AbstractToolBarComponent() {
+			var toolbarComp = new TableToolBarComponent() {
 				@Override
 				public Component getComponent() {
 					return getTableChooser();
@@ -262,6 +262,14 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 				@Override
 				public float getToolBarGravity() {
 					return Float.MAX_VALUE;
+				}
+				@Override
+				public Class<? extends CyIdentifiable> getTableType() {
+					return objType;
+				}
+				@Override
+				public boolean isApplicable(CyTable table) {
+					return true;
 				}
 			};
 			

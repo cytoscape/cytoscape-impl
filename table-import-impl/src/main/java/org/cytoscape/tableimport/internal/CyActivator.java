@@ -12,8 +12,11 @@ import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
 import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
 import static org.cytoscape.work.ServiceProperties.INSERT_TOOLBAR_SEPARATOR_BEFORE;
-import static org.cytoscape.work.ServiceProperties.IN_TABLE_TOOL_BAR;
+import static org.cytoscape.work.ServiceProperties.IN_EDGE_TABLE_TOOL_BAR;
+import static org.cytoscape.work.ServiceProperties.IN_NETWORK_TABLE_TOOL_BAR;
+import static org.cytoscape.work.ServiceProperties.IN_NODE_TABLE_TOOL_BAR;
 import static org.cytoscape.work.ServiceProperties.IN_TOOL_BAR;
+import static org.cytoscape.work.ServiceProperties.IN_UNASSIGNED_TABLE_TOOL_BAR;
 import static org.cytoscape.work.ServiceProperties.LARGE_ICON_ID;
 import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
 import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
@@ -282,7 +285,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, CytoPanelComponentSelectedListener.class);
 		}
 		{
-			// Import -- Table Toolbar
+			// Import -- Table Toolbars
 			var factory = new LoadTableFileTaskFactoryImpl(tableImportContext, serviceRegistrar);
 			
 			var icon = new TextIcon(IconUtil.FILE_IMPORT, iconFont.deriveFont(22.0f), 32, 31);
@@ -290,7 +293,10 @@ public class CyActivator extends AbstractCyActivator {
 			iconManager.addIcon(iconId, icon);
 			
 			var props = new Properties();
-			props.setProperty(IN_TABLE_TOOL_BAR, "true");
+			props.setProperty(IN_NODE_TABLE_TOOL_BAR, "true");
+			props.setProperty(IN_EDGE_TABLE_TOOL_BAR, "true");
+			props.setProperty(IN_NETWORK_TABLE_TOOL_BAR, "true");
+			props.setProperty(IN_UNASSIGNED_TABLE_TOOL_BAR, "true");
 			props.setProperty(TOOL_BAR_GRAVITY, "0.006");
 			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(TOOLTIP, "Import Table from File...");

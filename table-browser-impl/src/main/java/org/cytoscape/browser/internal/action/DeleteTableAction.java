@@ -55,7 +55,10 @@ public class DeleteTableAction extends AbstractCyAction {
 		this.serviceRegistrar = serviceRegistrar;
 		putValue(SHORT_DESCRIPTION, TITLE);
 		putValue(LARGE_ICON_KEY, icon);
-		setIsInTableToolBar(true);
+		setIsInNodeTableToolBar(true);
+		setIsInEdgeTableToolBar(true);
+		setIsInNetworkTableToolBar(true);
+		setIsInUnassignedTableToolBar(true);
 		setToolbarGravity(toolbarGravity);
 		insertSeparatorBefore = true;
 	}

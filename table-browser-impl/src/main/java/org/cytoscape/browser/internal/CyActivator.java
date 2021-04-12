@@ -7,7 +7,7 @@ import static org.cytoscape.util.swing.IconManager.ICON_COG;
 import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
-import static org.cytoscape.work.ServiceProperties.IN_TABLE_TOOL_BAR;
+import static org.cytoscape.work.ServiceProperties.IN_NODE_TABLE_TOOL_BAR;
 import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
 import static org.cytoscape.work.ServiceProperties.SMALL_ICON_ID;
 import static org.cytoscape.work.ServiceProperties.TITLE;
@@ -17,6 +17,7 @@ import java.util.Properties;
 
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.application.swing.TableToolBarComponent;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
 import org.cytoscape.browser.internal.action.CreateColumnAction;
 import org.cytoscape.browser.internal.action.DeleteColumnsAction;
@@ -79,7 +80,7 @@ import org.osgi.framework.BundleContext;
 
 public class CyActivator extends AbstractCyActivator {
 	
-	private static final String TABLE_TOOLBAR_FILTER = "(" + IN_TABLE_TOOL_BAR + "=true)";
+	private static final String TABLE_TOOLBAR_FILTER = "(" + IN_NODE_TABLE_TOOL_BAR + "=true)";
 	
 	private static float SMALL_ICON_FONT_SIZE = 14.0f;
 	private static int SMALL_ICON_SIZE = 16;
@@ -169,6 +170,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, mediator::addAction, mediator::removeAction, CyAction.class);
 		registerServiceListener(bc, mediator::addTaskFactory, mediator::removeTaskFactory, TaskFactory.class, TABLE_TOOLBAR_FILTER);
 		registerServiceListener(bc, mediator::addTableTaskFactory, mediator::removeTableTaskFactory, TableTaskFactory.class, TABLE_TOOLBAR_FILTER);
+		registerServiceListener(bc, mediator::addTableToolBarComponent, mediator::removeTableToolBarComponent, TableToolBarComponent.class);
 		
 		// Toolbar actions and task factories
 		{

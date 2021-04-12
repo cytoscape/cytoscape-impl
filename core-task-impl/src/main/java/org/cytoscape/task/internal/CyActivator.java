@@ -35,10 +35,13 @@ import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
 import static org.cytoscape.work.ServiceProperties.INSERT_TOOLBAR_SEPARATOR_AFTER;
 import static org.cytoscape.work.ServiceProperties.IN_CONTEXT_MENU;
+import static org.cytoscape.work.ServiceProperties.IN_EDGE_TABLE_TOOL_BAR;
 import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
 import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
-import static org.cytoscape.work.ServiceProperties.IN_TABLE_TOOL_BAR;
+import static org.cytoscape.work.ServiceProperties.IN_NETWORK_TABLE_TOOL_BAR;
+import static org.cytoscape.work.ServiceProperties.IN_NODE_TABLE_TOOL_BAR;
 import static org.cytoscape.work.ServiceProperties.IN_TOOL_BAR;
+import static org.cytoscape.work.ServiceProperties.IN_UNASSIGNED_TABLE_TOOL_BAR;
 import static org.cytoscape.work.ServiceProperties.LARGE_ICON_ID;
 import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
 import static org.cytoscape.work.ServiceProperties.NETWORK_GROUP_MENU;
@@ -1686,7 +1689,10 @@ public class CyActivator extends AbstractCyActivator {
 			
 			var props = new Properties();
 			props.setProperty(ENABLE_FOR, "table");
-			props.setProperty(IN_TABLE_TOOL_BAR, "true");
+			props.setProperty(IN_NODE_TABLE_TOOL_BAR, "true");
+			props.setProperty(IN_EDGE_TABLE_TOOL_BAR, "true");
+			props.setProperty(IN_NETWORK_TABLE_TOOL_BAR, "true");
+			props.setProperty(IN_UNASSIGNED_TABLE_TOOL_BAR, "true");
 			props.setProperty(TOOL_BAR_GRAVITY, "0.007");
 			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(TOOLTIP, "Export Table to File...");

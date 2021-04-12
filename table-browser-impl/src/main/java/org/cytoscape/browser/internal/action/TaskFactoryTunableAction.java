@@ -107,6 +107,10 @@ public class TaskFactoryTunableAction extends AbstractCyAction implements PopupM
 			putValue(SELECTED_KEY, factory.isOn());
 	}
 	
+	public TaskFactory getTaskFactory() {
+		return factory;
+	}
+	
 	private void config() {
 		// Togglable
 		useCheckBoxMenuItem = useToggleButton = (factory instanceof Togglable);

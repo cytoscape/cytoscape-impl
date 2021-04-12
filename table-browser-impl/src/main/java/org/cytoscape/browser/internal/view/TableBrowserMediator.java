@@ -15,10 +15,12 @@ import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.application.swing.ToolBarComponent;
+import org.cytoscape.application.swing.TableToolBarComponent;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
 import org.cytoscape.browser.internal.action.TaskFactoryTunableAction;
+import org.cytoscape.browser.internal.task.DynamicTableTaskFactory;
+import org.cytoscape.browser.internal.task.DynamicTogglableTableTaskFactory;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -26,10 +28,10 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.DynamicTaskFactoryProvisioner;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.Togglable;
 
 /*
  * #%L
@@ -186,25 +188,34 @@ public class TableBrowserMediator implements SetCurrentNetworkListener, CytoPane
 	
 	public void addAction(CyAction action, Map<String, String> props) {
 		invokeOnEDT(() -> {
-			if (action.isInTableToolBar()) {
-				for (var tb : tableBrowsers.values())
-					tb.getToolBar().addAction(action);
-			}
+			if (action.isInNodeTableToolBar())
+				tableBrowsers.get(CyNode.class).getToolBar().addAction(action);
+			if (action.isInEdgeTableToolBar())
+				tableBrowsers.get(CyEdge.class).getToolBar().addAction(action);
+			if (action.isInNetworkTableToolBar())
+				tableBrowsers.get(CyNetwork.class).getToolBar().addAction(action);
+			if (action.isInUnassignedTableToolBar())
+				tableBrowsers.get(null).getToolBar().addAction(action);
 		});
 	}
 	
 	public void removeAction(CyAction action, Map<String, String> props) {
 		invokeOnEDT(() -> {
-			if (action.isInTableToolBar()) {
-				for (var tb : tableBrowsers.values())
-					tb.getToolBar().removeAction(action);
-			}
+			if (action.isInNodeTableToolBar())
+				tableBrowsers.get(CyNode.class).getToolBar().removeAction(action);
+			if (action.isInEdgeTableToolBar())
+				tableBrowsers.get(CyEdge.class).getToolBar().removeAction(action);
+			if (action.isInNetworkTableToolBar())
+				tableBrowsers.get(CyNetwork.class).getToolBar().removeAction(action);
+			if (action.isInUnassignedTableToolBar())
+				tableBrowsers.get(null).getToolBar().removeAction(action);
 		});
 	}
 	
 	public void addTableTaskFactory(TableTaskFactory factory, Map<String, String> props) {
-		var factoryProvisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
-		var provisioner = factoryProvisioner.createFor(factory);
+		var provisioner = factory instanceof Togglable ?
+				new DynamicTogglableTableTaskFactory(factory, serviceRegistrar) :
+				new DynamicTableTaskFactory(factory, serviceRegistrar);
 		
 		provisionerMap.put(factory, provisioner);
 		addTaskFactory(provisioner, props);
@@ -236,17 +247,19 @@ public class TableBrowserMediator implements SetCurrentNetworkListener, CytoPane
 			removeAction(action, props);
 	}
 	
-	public void addToolBarComponent(ToolBarComponent tp, Map<?, ?> props) {
+	public void addTableToolBarComponent(TableToolBarComponent tbc, Map<String, String> props) {
 		invokeOnEDTAndWait(() -> {
-			for (var tb : tableBrowsers.values())
-				tb.getToolBar().addToolBarComponent(tp, props);
+			var tableBrowser = tableBrowsers.get(tbc.getTableType());
+			
+			if (tableBrowser != null)
+				tableBrowser.getToolBar().addToolBarComponent(tbc, props);
 		});
 	}
 
-	public void removeToolBarComponent(ToolBarComponent tp, Map<?, ?> props) {
+	public void removeTableToolBarComponent(TableToolBarComponent tbc, Map<String, String> props) {
 		invokeOnEDTAndWait(() -> {
 			for (var tb : tableBrowsers.values())
-				tb.getToolBar().removeToolBarComponent(tp);
+				tb.getToolBar().removeToolBarComponent(tbc);
 		});
 	}
 	

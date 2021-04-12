@@ -13,6 +13,8 @@ import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.events.SetCurrentTableEvent;
 import org.cytoscape.application.events.SetCurrentTableListener;
+import org.cytoscape.browser.internal.action.TaskFactoryTunableAction;
+import org.cytoscape.browser.internal.task.DynamicTableTaskFactory;
 import org.cytoscape.browser.internal.util.CyToolBar;
 import org.cytoscape.event.DebounceTimer;
 import org.cytoscape.model.events.ColumnCreatedEvent;
@@ -236,8 +238,20 @@ public class ToolBarEnableUpdater implements SessionAboutToBeLoadedListener, Ses
 		debounceTimer.debounce(() -> {
 			invokeOnEDT(() -> {
 				for (var tb : toolbars) {
-					for (var action : tb.getAllToolBarActions())
+					for (var action : tb.getAllToolBarActions()) {
+						// This should enable or disable the toolbar button
 						action.updateEnableState();
+						
+						// Check whether we should also show or hide the component, based on the current CyTable
+						if (action instanceof TaskFactoryTunableAction) {
+							var tf = ((TaskFactoryTunableAction) action).getTaskFactory();
+							
+							if (tf instanceof DynamicTableTaskFactory) {
+								var applicable = ((DynamicTableTaskFactory) tf).isApplicable();
+								tb.getComponent(action).setVisible(applicable);
+							}
+						}
+					}
 				}
 			});
 		});
