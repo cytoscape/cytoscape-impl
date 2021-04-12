@@ -27,6 +27,7 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.colorchooser.AbstractColorChooserPanel;
 
+import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.color.Palette;
 import org.cytoscape.util.color.PaletteProvider;
 import org.cytoscape.util.color.PaletteProviderManager;
@@ -352,6 +353,7 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
     this.show( ); 
     final boolean status = this.okWasPressed;
     this.setModal( false );
+    this.dispose();
     return status;
   }
 
@@ -429,11 +431,16 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 	}
 
 	private ColorPaletteProviderPanel[] getPanels(List<PaletteProvider> providers, int size) {
-		ColorPaletteProviderPanel[] panels = new ColorPaletteProviderPanel[providers.size()];
-		int i = 0;
+		List<ColorPaletteProviderPanel> panels = new ArrayList<ColorPaletteProviderPanel>();
 		for (PaletteProvider provider: providers) {
-			panels[i++] = new ColorPaletteProviderPanel(provider, paletteType, size, paletteOnly);
+      if (paletteType.equals(BrewerType.ANY)) {
+        for (PaletteType t: provider.getPaletteTypes()) {
+			    panels.add(new ColorPaletteProviderPanel(provider, t, size, paletteOnly));
+        }
+      } else {
+			  panels.add(new ColorPaletteProviderPanel(provider, paletteType, size, paletteOnly));
+      }
 		}
-		return panels;
+		return panels.toArray(new ColorPaletteProviderPanel[1]);
 	}
 }

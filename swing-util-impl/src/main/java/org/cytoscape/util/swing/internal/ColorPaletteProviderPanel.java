@@ -66,6 +66,7 @@ import javax.swing.colorchooser.AbstractColorChooserPanel;
 import javax.swing.colorchooser.ColorSelectionModel;
 import javax.swing.event.ChangeEvent;
 
+import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.color.Palette;
 import org.cytoscape.util.color.PaletteProvider;
 import org.cytoscape.util.color.PaletteType;
@@ -180,7 +181,7 @@ public class ColorPaletteProviderPanel extends ColorBlindAwareColorChooserPanel
 		}
 	}
 
-	public String getDisplayName() {return provider.getProviderName();}
+	public String getDisplayName() {return provider.getProviderName()+" "+getTypeName();}
 
 	@Override
 	public void setSelectedPalette(String palette) {
@@ -216,5 +217,16 @@ public class ColorPaletteProviderPanel extends ColorBlindAwareColorChooserPanel
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+  private String getTypeName() {
+    if (paletteType.equals(BrewerType.DIVERGING)) {
+      return "Diverging";
+    } else if (paletteType.equals(BrewerType.SEQUENTIAL)) {
+      return "Sequential";
+    } else if (paletteType.equals(BrewerType.QUALITATIVE)) {
+      return "Qualitative";
+    }
+    return "";
+  }
 	
 }
