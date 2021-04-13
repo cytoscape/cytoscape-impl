@@ -131,7 +131,7 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 	protected final String tabTitle;
 	protected CyTable currentTable;
 	
-	private final Map<CyTable,TableRenderer> tableRenderers;
+	private final Map<CyTable, TableRenderer> tableRenderers;
 	
 	protected final String appFileName;
 	protected Class<? extends CyIdentifiable> currentTableType;
@@ -222,6 +222,24 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		synchronized (lock) {
 			return tableRenderers.isEmpty();
 		}
+	}
+	
+	public TableRenderer getTableRenderer(CyTable table) {
+		if (table == null)
+			return null;
+		
+		synchronized (lock) {
+			var renderer = tableRenderers.get(table);
+			
+			if (renderer == null)
+				 createDefaultTableView(table);
+			
+			return tableRenderers.get(table);
+		}
+	}
+	
+	public TableRenderer getCurrentRenderer() {
+		return getTableRenderer(currentTable);
 	}
 	
 	/**
@@ -408,31 +426,15 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		update();
 	}
 
-	protected TableRenderer getCurrentRenderer() {
-		var renderer = getTableRenderer(currentTable);
-		
-		if (renderer == null && currentTable != null)
-			 createDefaultTableView();
-		
-		synchronized (lock) {
-			if (currentTable != null)
-				renderer = tableRenderers.get(currentTable);
-		}
-		
-		update();
-		
-		return renderer;
-	}
-
-	private void createDefaultTableView() {
+	private void createDefaultTableView(CyTable table) {
 		var tableViewManager = serviceRegistrar.getService(CyTableViewManager.class);
 		
 		// If no table view exists yet then automatically create one using the default renderer.
-		var tableView = tableViewManager.getTableView(currentTable);
+		var tableView = tableViewManager.getTableView(table);
 		
 		if (tableView == null) {
 			var tableViewFactory = serviceRegistrar.getService(CyTableViewFactory.class);
-			tableView = tableViewFactory.createTableView(currentTable);
+			tableView = tableViewFactory.createTableView(table);
 			
 			// this will fire the event that runs the below handler
 			tableViewManager.setTableView(tableView);
@@ -525,12 +527,6 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		}
 		
 		TableColumnStatFileIO.write(tableColumnStatList, e, appFileName);
-	}
-	
-	public TableRenderer getTableRenderer(CyTable table) {
-		synchronized (lock) {
-			return tableRenderers.get(table);
-		}
 	}
 	
 	protected Map<CyTable,TableRenderer> getTableRenderersMap() {
