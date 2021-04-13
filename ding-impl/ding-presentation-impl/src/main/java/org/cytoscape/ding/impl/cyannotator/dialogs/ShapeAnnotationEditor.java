@@ -34,7 +34,9 @@ import org.cytoscape.ding.impl.cyannotator.annotations.GraphicsUtilities;
 import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.utils.ShapeIcon;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.swing.ColorButton;
+import org.cytoscape.util.swing.CyColorPaletteChooser;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation.ShapeType;
@@ -325,7 +327,7 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 	
 	private ColorButton getFillColorButton() {
 		if (fillColorButton == null) {
-			fillColorButton = new ColorButton(Color.GRAY);
+			fillColorButton = new ColorButton(serviceRegistrar, null, BrewerType.ANY, Color.GRAY, false);
 			fillColorButton.setToolTipText("Select fill color...");
 			fillColorButton.addPropertyChangeListener("color", evt -> apply());
 		}
@@ -335,7 +337,7 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 	
 	private ColorButton getBorderColorButton() {
 		if (borderColorButton == null) {
-			borderColorButton = new ColorButton(Color.BLACK);
+			borderColorButton = new ColorButton(serviceRegistrar, null, BrewerType.ANY, Color.GRAY, false);
 			borderColorButton.setToolTipText("Select border color...");
 			borderColorButton.addPropertyChangeListener("color", evt -> apply());
 		}

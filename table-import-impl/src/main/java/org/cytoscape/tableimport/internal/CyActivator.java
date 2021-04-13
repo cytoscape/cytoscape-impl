@@ -11,7 +11,12 @@ import static org.cytoscape.work.ServiceProperties.COMMAND_LONG_DESCRIPTION;
 import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
 import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
+import static org.cytoscape.work.ServiceProperties.INSERT_TOOLBAR_SEPARATOR_BEFORE;
+import static org.cytoscape.work.ServiceProperties.IN_EDGE_TABLE_TOOL_BAR;
+import static org.cytoscape.work.ServiceProperties.IN_NETWORK_TABLE_TOOL_BAR;
+import static org.cytoscape.work.ServiceProperties.IN_NODE_TABLE_TOOL_BAR;
 import static org.cytoscape.work.ServiceProperties.IN_TOOL_BAR;
+import static org.cytoscape.work.ServiceProperties.IN_UNASSIGNED_TABLE_TOOL_BAR;
 import static org.cytoscape.work.ServiceProperties.LARGE_ICON_ID;
 import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
 import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
@@ -39,6 +44,7 @@ import org.cytoscape.tableimport.internal.task.LoadTableURLTaskFactoryImpl;
 import org.cytoscape.tableimport.internal.task.TableImportContext;
 import org.cytoscape.tableimport.internal.tunable.AttributeMappingParametersHandlerFactory;
 import org.cytoscape.tableimport.internal.tunable.NetworkTableMappingParametersHandlerFactory;
+import org.cytoscape.tableimport.internal.util.IconUtil;
 import org.cytoscape.tableimport.internal.util.ImportType;
 import org.cytoscape.task.edit.ImportDataTableTaskFactory;
 import org.cytoscape.task.read.LoadTableFileTaskFactory;
@@ -55,7 +61,7 @@ import org.osgi.framework.BundleContext;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -82,33 +88,32 @@ public class CyActivator extends AbstractCyActivator {
 	
     @Override
     public void start(BundleContext bc) {
-        final CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
-        final StreamUtil streamUtil = getService(bc, StreamUtil.class);
-        final IconManager iconManager = getService(bc, IconManager.class);
+        var serviceRegistrar = getService(bc, CyServiceRegistrar.class);
+        var streamUtil = getService(bc, StreamUtil.class);
+        var iconManager = getService(bc, IconManager.class);
 
         iconFont = iconManager.getIconFont("cytoscape-3", LARGE_ICON_FONT_SIZE);
         
-        final TableImportContext tableImportContext = new TableImportContext();
+        var tableImportContext = new TableImportContext();
         
 		{
 			// ".xls"
-			WildCardCyFileFilter filter = new WildCardCyFileFilter(
+			var filter = new WildCardCyFileFilter(
 					new String[] { "xls", "xlsx" },
 					new String[] { "application/excel" },
 					"Excel",
 					TABLE,
 					streamUtil
 			);
-			ImportAttributeTableReaderFactory factory =
-					new ImportAttributeTableReaderFactory(filter, tableImportContext, serviceRegistrar);
-			Properties props = new Properties();
+			var factory = new ImportAttributeTableReaderFactory(filter, tableImportContext, serviceRegistrar);
+			var props = new Properties();
 			props.setProperty("readerDescription", "Attribute Table file reader");
 			props.setProperty("readerId", "attributeTableReader");
 			registerService(bc, factory, InputStreamTaskFactory.class, props);
 		}
 		{
 			// ".txt"
-			WildCardCyFileFilter filter = new WildCardCyFileFilter(
+			var filter = new WildCardCyFileFilter(
 					new String[] { "csv", "tsv", "txt", "tab", "net", "" },
 					new String[] { "text/csv", "text/tab-separated-values", "text/plain", "" },
 					"Comma or Tab Separated Value",
@@ -119,33 +124,32 @@ public class CyActivator extends AbstractCyActivator {
 					"pdf", "jpg", "jpeg", "gif", "png", "svg", "tiff", "ttf", "mp3", "mp4", "mpg", "mpeg",
 					"exe", "dmg", "iso", "cys");
 
-			ImportAttributeTableReaderFactory factory =
-					new ImportAttributeTableReaderFactory(filter, tableImportContext, serviceRegistrar);
-			Properties props = new Properties();
+			var factory = new ImportAttributeTableReaderFactory(filter, tableImportContext, serviceRegistrar);
+			var props = new Properties();
 			props.setProperty("readerDescription", "Attribute Table file reader");
 			props.setProperty("readerId", "attributeTableReader_txt");
 			registerService(bc, factory, InputStreamTaskFactory.class, props);
 		}
 		{
-//			BasicCyFileFilter filter = new BasicCyFileFilter(
+//			var filter = new BasicCyFileFilter(
 //					new String[] { "obo" },
 //					new String[] { "text/obo" },
 //					"OBO",
 //					NETWORK,
 //					streamUtil
 //			);
-//			OBONetworkReaderFactory factory = new OBONetworkReaderFactory(filter, serviceRegistrar);
-//			Properties props = new Properties();
+//			var factory = new OBONetworkReaderFactory(filter, serviceRegistrar);
+//			var props = new Properties();
 //			props.setProperty("readerDescription", "Open Biomedical Ontology (OBO) file reader");
 //			props.setProperty("readerId", "oboReader");
 //			registerService(bc, factory, InputStreamTaskFactory.class, props);
 //
-//			ImportOntologyAndAnnotationAction action = new ImportOntologyAndAnnotationAction(factory, serviceRegistrar);
+//			var action = new ImportOntologyAndAnnotationAction(factory, serviceRegistrar);
 //			registerService(bc, action, CyAction.class);
 		}
 		{
 			// "txt"
-			WildCardCyFileFilter filter = new WildCardCyFileFilter(
+			var filter = new WildCardCyFileFilter(
 					new String[] { "csv", "tsv", "txt", "" },
 					new String[] { "text/csv", "text/tab-separated-values", "text/plain", "" },
 					"Comma or Tab Separated Value", NETWORK,
@@ -155,40 +159,38 @@ public class CyActivator extends AbstractCyActivator {
 					"pdf", "jpg", "jpeg", "gif", "png", "svg", "tiff", "ttf", "mp3", "mp4", "mpg", "mpeg",
 					"exe", "dmg", "iso", "cys");
 
-			ImportNetworkTableReaderFactory factory = new ImportNetworkTableReaderFactory(filter, serviceRegistrar);
-			Properties props = new Properties();
+			var factory = new ImportNetworkTableReaderFactory(filter, serviceRegistrar);
+			var props = new Properties();
 			props.setProperty("readerDescription", "Network Table file reader");
 			props.setProperty("readerId", "networkTableReader_txt");
 			registerService(bc, factory, InputStreamTaskFactory.class, props);
 		}
 		{
 			// ".xls"
-			WildCardCyFileFilter filter = new WildCardCyFileFilter(
+			var filter = new WildCardCyFileFilter(
 					new String[] { "xls", "xlsx" },
 					new String[] { "application/excel" },
 					"Excel",
 					NETWORK,
 					streamUtil
 			);
-			ImportNetworkTableReaderFactory factory = new ImportNetworkTableReaderFactory(filter, serviceRegistrar);
-			Properties props = new Properties();
+			var factory = new ImportNetworkTableReaderFactory(filter, serviceRegistrar);
+			var props = new Properties();
 			props.setProperty("readerDescription", "Network Table file reader");
 			props.setProperty("readerId", "networkTableReader_xls");
 			registerService(bc, factory, InputStreamTaskFactory.class, props);
 		}
 		{
-			AttributeMappingParametersHandlerFactory factory =
-					new AttributeMappingParametersHandlerFactory(ImportType.TABLE_IMPORT, tableImportContext, serviceRegistrar);
+			var factory = new AttributeMappingParametersHandlerFactory(ImportType.TABLE_IMPORT, tableImportContext, serviceRegistrar);
 			registerService(bc, factory, GUITunableHandlerFactory.class);
 		}
 		{
-			NetworkTableMappingParametersHandlerFactory factory = 
-					new NetworkTableMappingParametersHandlerFactory(ImportType.NETWORK_IMPORT, tableImportContext, serviceRegistrar);
+			var factory = new NetworkTableMappingParametersHandlerFactory(ImportType.NETWORK_IMPORT, tableImportContext, serviceRegistrar);
 			registerService(bc, factory, GUITunableHandlerFactory.class);
 		}
 		{
-			TaskFactory factory = new ImportNoGuiTableReaderFactory(false, tableImportContext, serviceRegistrar);
-			Properties props = new Properties();
+			var factory = new ImportNoGuiTableReaderFactory(false, tableImportContext, serviceRegistrar);
+			var props = new Properties();
 			props.setProperty(COMMAND, "import file");
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Import a table from a file");
@@ -199,8 +201,8 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			TaskFactory importURLTableFactory = new ImportNoGuiTableReaderFactory(true, tableImportContext, serviceRegistrar);
-			Properties props = new Properties();
+			var importURLTableFactory = new ImportNoGuiTableReaderFactory(true, tableImportContext, serviceRegistrar);
+			var props = new Properties();
 			props.setProperty(COMMAND, "import url");
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Import a table from a URL");
@@ -211,8 +213,8 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, importURLTableFactory, TaskFactory.class, props);
 		}
 //		{
-//			TaskFactory mapColumnTaskFactory = new ImportNoGuiTableReaderFactory(true, serviceRegistrar);
-//			Properties props = new Properties();
+//			var mapColumnTaskFactory = new ImportNoGuiTableReaderFactory(true, serviceRegistrar);
+//			var props = new Properties();
 //			props.setProperty(COMMAND, "map column");
 //			props.setProperty(COMMAND_NAMESPACE, "table");
 //			props.setProperty(COMMAND_DESCRIPTION, "Map column content from one namespace to another");
@@ -222,8 +224,8 @@ public class CyActivator extends AbstractCyActivator {
 //			registerService(bc, mapColumnTaskFactory, MapColumnTaskFactory.class, props);
 //		}
 		{
-			TaskFactory factory = new ImportNoGuiNetworkReaderFactory(false, tableImportContext, serviceRegistrar);
-			Properties props = new Properties();
+			var factory = new ImportNoGuiNetworkReaderFactory(false, tableImportContext, serviceRegistrar);
+			var props = new Properties();
 			props.setProperty(COMMAND, "import file");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Import a network from a file");
@@ -240,8 +242,8 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			TaskFactory factory = new ImportNoGuiNetworkReaderFactory(true, tableImportContext, serviceRegistrar);
-			Properties props = new Properties();
+			var factory = new ImportNoGuiNetworkReaderFactory(true, tableImportContext, serviceRegistrar);
+			var props = new Properties();
 			props.setProperty(COMMAND, "import url");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Import a network from a URL");
@@ -258,20 +260,21 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			LoadTableFileTaskFactoryImpl factory = new LoadTableFileTaskFactoryImpl(tableImportContext, serviceRegistrar);
+			// Import -- Main Menu, Main Toolbar and Command
+			var factory = new LoadTableFileTaskFactoryImpl(tableImportContext, serviceRegistrar);
 			
-			TextIcon icon = new TextIcon(LAYERED_IMPORT_TABLE, iconFont, COLORS_3, LARGE_ICON_SIZE, LARGE_ICON_SIZE, 1);
-			String iconId = "cy::IMPORT_TABLE";
+			var icon = new TextIcon(LAYERED_IMPORT_TABLE, iconFont, COLORS_3, LARGE_ICON_SIZE, LARGE_ICON_SIZE, 1);
+			var iconId = "cy::IMPORT_FILE_TABLE";
 			iconManager.addIcon(iconId, icon);
 			
-			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, "File.Import[23.0]");		//.Import.Table[23.0]
-			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
-			props.setProperty(MENU_GRAVITY, "5.1");
-			props.setProperty(TOOL_BAR_GRAVITY, "2.1");
+			var props = new Properties();
+			props.setProperty(PREFERRED_MENU, "File.Import[23.0]");
 			props.setProperty(TITLE, "Table from File...");
+			props.setProperty(MENU_GRAVITY, "5.1");
+			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
 			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(IN_TOOL_BAR, "true");
+			props.setProperty(TOOL_BAR_GRAVITY, "2.1");
 			props.setProperty(TOOLTIP, "Import Table from File");
 			props.setProperty(TOOLTIP_LONG_DESCRIPTION, "Reads a table from the file system and adds it to the current session.");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Reads a table from the file system.  Requires a string containing the absolute path of the file. Returns the SUID of the table created.");
@@ -282,9 +285,28 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, CytoPanelComponentSelectedListener.class);
 		}
 		{
-			LoadTableURLTaskFactoryImpl factory = new LoadTableURLTaskFactoryImpl(tableImportContext, serviceRegistrar);
-			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, "File.Import[23.0]");			//.Table[23.0]
+			// Import -- Table Toolbars
+			var factory = new LoadTableFileTaskFactoryImpl(tableImportContext, serviceRegistrar);
+			
+			var icon = new TextIcon(IconUtil.FILE_IMPORT, iconFont.deriveFont(22.0f), 32, 31);
+			var iconId = "cy::IMPORT_TABLE";
+			iconManager.addIcon(iconId, icon);
+			
+			var props = new Properties();
+			props.setProperty(IN_NODE_TABLE_TOOL_BAR, "true");
+			props.setProperty(IN_EDGE_TABLE_TOOL_BAR, "true");
+			props.setProperty(IN_NETWORK_TABLE_TOOL_BAR, "true");
+			props.setProperty(IN_UNASSIGNED_TABLE_TOOL_BAR, "true");
+			props.setProperty(TOOL_BAR_GRAVITY, "0.006");
+			props.setProperty(LARGE_ICON_ID, iconId);
+			props.setProperty(TOOLTIP, "Import Table from File...");
+			props.setProperty(INSERT_TOOLBAR_SEPARATOR_BEFORE, "true");
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+		{
+			var factory = new LoadTableURLTaskFactoryImpl(tableImportContext, serviceRegistrar);
+			var props = new Properties();
+			props.setProperty(PREFERRED_MENU, "File.Import[23.0]");
 			props.setProperty(MENU_GRAVITY, "6.0");
 			props.setProperty(TITLE, "Table from URL...");
 			props.setProperty(TOOLTIP, "Import Table From URL");
@@ -295,7 +317,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, LoadTableURLTaskFactory.class, props);
 		}
 		{
-			ImportTableDataTaskFactoryImpl factory = new ImportTableDataTaskFactoryImpl(tableImportContext, serviceRegistrar);
+			var factory = new ImportTableDataTaskFactoryImpl(tableImportContext, serviceRegistrar);
 			registerService(bc, factory, ImportDataTableTaskFactory.class);
 		}
     }

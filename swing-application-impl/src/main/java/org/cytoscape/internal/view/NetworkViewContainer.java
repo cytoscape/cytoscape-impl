@@ -15,28 +15,21 @@ import static org.cytoscape.util.swing.IconManager.ICON_EYE_SLASH;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.KeyboardFocusManager;
 import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.net.URL;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.ParallelGroup;
-import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.ImageIcon;
-import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -46,6 +39,7 @@ import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
+import javax.swing.JToolBar;
 import javax.swing.JToolTip;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
@@ -64,8 +58,6 @@ import org.cytoscape.util.swing.CyToolTip;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewSnapshot;
-import org.cytoscape.view.model.Range;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
@@ -144,12 +136,12 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	private final CyServiceRegistrar serviceRegistrar;
 
 	public NetworkViewContainer(
-			final CyNetworkView networkView,
-			final boolean current,
-			final RenderingEngineFactory<CyNetwork> engineFactory,
-			final RenderingEngineFactory<CyNetwork> thumbnailFactory, 
-			final GridViewToggleModel gridViewToggleModel,
-			final CyServiceRegistrar serviceRegistrar
+			CyNetworkView networkView,
+			boolean current,
+			RenderingEngineFactory<CyNetwork> engineFactory,
+			RenderingEngineFactory<CyNetwork> thumbnailFactory, 
+			GridViewToggleModel gridViewToggleModel,
+			CyServiceRegistrar serviceRegistrar
 	) {
 		this.networkView = networkView;
 		this.lexicon = engineFactory.getVisualLexicon();
@@ -208,9 +200,9 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		return current;
 	}
 	
-	public void setCurrent(final boolean newValue) {
+	public void setCurrent(boolean newValue) {
 		if (current != newValue) {
-			final boolean oldValue = current;
+			boolean oldValue = current;
 			current = newValue;
 			
 			updateCurrentLabel();
@@ -240,7 +232,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		getInfoPanel().setVisible(!isComparing());
 		getCurrentLabel().setVisible(isComparing());
 		
-		final CyNetworkView view = getNetworkView();
+		var view = getNetworkView();
 		getViewTitleLabel().setText(view != null ? ViewUtil.getTitle(view) : "");
 		getViewTitleLabel().setToolTipText(view != null ? ViewUtil.getTitle(view) : null);
 		
@@ -275,40 +267,42 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	
 	private void updateSelectionModePanel() {
 		selectionModeButtons.forEach(btn -> {
-			final boolean selected = networkView.getVisualProperty(btn.getVisualProperty());
+			boolean selected = networkView.getVisualProperty(btn.getVisualProperty());
 			btn.setSelected(selected);
 		});
 	}
 	
 	protected void updateSelectionInfo() {
-		final CyNetworkView view = getNetworkView();
+		var view = getNetworkView();
 		
 		if (getInfoPanel().isVisible() && !Util.isDisposed(view)) {
-			final int sn = view.getModel().getDefaultNodeTable().countMatchingRows(CyNetwork.SELECTED, Boolean.TRUE);
-			final int se = view.getModel().getDefaultEdgeTable().countMatchingRows(CyNetwork.SELECTED, Boolean.TRUE);
+			int sn = view.getModel().getDefaultNodeTable().countMatchingRows(CyNetwork.SELECTED, Boolean.TRUE);
+			int se = view.getModel().getDefaultEdgeTable().countMatchingRows(CyNetwork.SELECTED, Boolean.TRUE);
 			getNodeSelectionLabel().setText("" + sn);
 			getEdgeSelectionLabel().setText("" + se);
 			
-			final String sTooltip = createInfoToolTipText(sn, se, "selected");
+			var sTooltip = createInfoToolTipText(sn, se, "selected");
 			getSelectionIconLabel().setToolTipText(sTooltip);
 			getNodeSelectionLabel().setToolTipText(sTooltip);
 		}
 	}
 
 	protected void updateHiddenInfo() {
-		final CyNetworkView view = getNetworkView();
+		var view = getNetworkView();
 		// MKTODO This is kind of a hack, these keys are defined in DingNetworkViewFactory, 
 		// I don't want to make them API (in CyNetworkViewConfig) so I just hard-code them here.
-		final String HIDDEN_NODES = "HIDDEN_NODES";
-		final String HIDDEN_EDGES = "HIDDEN_EDGES";
+		var HIDDEN_NODES = "HIDDEN_NODES";
+		var HIDDEN_EDGES = "HIDDEN_EDGES";
 		
 		if (getInfoPanel().isVisible() && !Util.isDisposed(view)) {
 			
 			final int hn;
 			final int he;
-			if(view.supportsSnapshots()) {
-				CyNetworkViewSnapshot snapshot = view.createSnapshot();
-				if(snapshot.isTrackedNodeKey(HIDDEN_NODES) && snapshot.isTrackedEdgeKey(HIDDEN_EDGES)) {
+			
+			if (view.supportsSnapshots()) {
+				var snapshot = view.createSnapshot();
+				
+				if (snapshot.isTrackedNodeKey(HIDDEN_NODES) && snapshot.isTrackedEdgeKey(HIDDEN_EDGES)) {
 					// fast
 					hn = snapshot.getTrackedNodeCount(HIDDEN_NODES);
 					he = snapshot.getTrackedEdgeCount(HIDDEN_EDGES);
@@ -326,7 +320,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			getNodeHiddenLabel().setText("" + hn);
 			getEdgeHiddenLabel().setText("" + he);
 			
-			final String hTooltip = createInfoToolTipText(hn, he, "hidden");
+			var hTooltip = createInfoToolTipText(hn, he, "hidden");
 			getHiddenIconLabel().setToolTipText(hTooltip);
 			getNodeHiddenLabel().setToolTipText(hTooltip);
 		}
@@ -338,14 +332,14 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	}
 	
 	private void updateBirdsEyeButton() {
-		final boolean bevVisible = getBirdsEyeViewPanel().isVisible();
+		boolean bevVisible = getBirdsEyeViewPanel().isVisible();
 		getBirdsEyeViewButton().setToolTipText((bevVisible ? "Hide" : "Show") + " Navigator (N)");
 		ViewUtil.updateToolBarStyle(getBirdsEyeViewButton());
 	}
 	
 	private void updateBirdsEyeViewPanel() {
-		final int cw = getVisualizationContainer().getWidth();
-		final int ch = getVisualizationContainer().getHeight();
+		int cw = getVisualizationContainer().getWidth();
+		int ch = getVisualizationContainer().getHeight();
 		
 		if (cw > 0 && ch > 0) {
 			int w = Math.min(200, cw);
@@ -383,7 +377,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		
 		createSelectionModeButtons();
 		
-		final JPanel glassPane = new JPanel(null);
+		var glassPane = new JPanel(null);
 		getRootPane().setGlassPane(glassPane);
 		glassPane.setOpaque(false);
 		glassPane.setVisible(true);
@@ -408,16 +402,16 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	
 	@SuppressWarnings("unchecked")
 	private void createSelectionModeButtons() {
-		for (SelectionMode mode : SelectionMode.values()) {
-			final VisualProperty<?> vp = lexicon.lookup(CyNetwork.class, mode.getPropertyId());
+		for (var mode : SelectionMode.values()) {
+			var vp = lexicon.lookup(CyNetwork.class, mode.getPropertyId());
 			
 			if (vp != null && lexicon.isSupported(vp)) {
-				Range<?> range = vp.getRange();
+				var range = vp.getRange();
 				
 				if (range != null && range.getType() != Boolean.class)
 					continue;
 				
-				final SelectionModeButton btn = new SelectionModeButton((VisualProperty<Boolean>) vp, mode);
+				var btn = new SelectionModeButton((VisualProperty<Boolean>) vp, mode);
 				selectionModeButtons.add(btn);
 				
 				btn.addActionListener(evt -> networkView.setLockedValue(vp, btn.isSelected()));
@@ -450,7 +444,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			toolBar = new JPanel();
 			toolBar.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
 			
-			final GroupLayout layout = new GroupLayout(toolBar);
+			var layout = new GroupLayout(toolBar);
 			toolBar.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
 			layout.setAutoCreateGaps(false);
@@ -613,13 +607,13 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 				selectionModePanel.setPreferredSize(new Dimension());
 				selectionModePanel.setVisible(false);
 			} else {
-				final GroupLayout layout = new GroupLayout(selectionModePanel);
+				var layout = new GroupLayout(selectionModePanel);
 				selectionModePanel.setLayout(layout);
 				layout.setAutoCreateContainerGaps(false);
 				layout.setAutoCreateGaps(false);
 				
-				final SequentialGroup hGroup = layout.createSequentialGroup();
-				final ParallelGroup vGroup = layout.createParallelGroup(CENTER, false);
+				var hGroup = layout.createSequentialGroup();
+				var vGroup = layout.createParallelGroup(CENTER, false);
 				layout.setHorizontalGroup(hGroup);
 				layout.setVerticalGroup(vGroup);
 			
@@ -640,13 +634,13 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			if (LookAndFeelUtil.isAquaLAF())
 				infoPanel.setOpaque(false);
 			
-			final JSeparator sep = ViewUtil.createToolBarSeparator();
+			var sep = ViewUtil.createToolBarSeparator();
 			
 			LookAndFeelUtil.equalizeSize(getSelectionIconLabel(), getHiddenIconLabel());
 			final int lw = 50; // Preferred label width
 			final int gap = 4;
 			
-			final GroupLayout layout = new GroupLayout(infoPanel);
+			var layout = new GroupLayout(infoPanel);
 			infoPanel.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
 			layout.setAutoCreateGaps(false);
@@ -818,7 +812,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		return networkView.toString();
 	}
 	
-	private static String createInfoToolTipText(final int nodes, final int edges, final String adjective) {
+	private static String createInfoToolTipText(int nodes, int edges, String adjective) {
 		String tooltip = "<html>";
 		
 		if (nodes > 0 || edges > 0) {
@@ -841,12 +835,12 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	 * Clear duplicate separators.
 	 */
 	public void sanitizeToolBar() {
-		final JPanel toolBar = getToolBar();
+		var toolBar = getToolBar();
 		boolean hasSeparator = false;
 		int visibleCount = 0;
 		
 		for (int i = 0; i < toolBar.getComponentCount(); i++) {
-			Component comp = toolBar.getComponent(i);
+			var comp = toolBar.getComponent(i);
 			
 			if (comp instanceof JSeparator) {
 				// Already has one separator? So hide this one.
@@ -866,17 +860,17 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		}
 	}
 	
-	private void setKeyBindings(final JComponent comp) {
-		final ActionMap actionMap = comp.getActionMap();
-		final InputMap inputMap = comp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+	private void setKeyBindings(JComponent comp) {
+		var actionMap = comp.getActionMap();
+		var inputMap = comp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
 
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_N, 0), KeyAction.VK_N);
 		actionMap.put(KeyAction.VK_N, new KeyAction(KeyAction.VK_N));
 	}
 	
 	private void removeKeyBindings(final JComponent comp) {
-		final ActionMap actionMap = comp.getActionMap();
-		final InputMap inputMap = comp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+		var actionMap = comp.getActionMap();
+		var inputMap = comp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
 		
 		inputMap.remove(KeyStroke.getKeyStroke(KeyEvent.VK_N, 0));
 		actionMap.remove(KeyAction.VK_N);
@@ -886,19 +880,19 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 
 		final static String VK_N = "VK_N";
 		
-		KeyAction(final String actionCommand) {
+		KeyAction(String actionCommand) {
 			putValue(ACTION_COMMAND_KEY, actionCommand);
 		}
 
 		@Override
-		public void actionPerformed(final ActionEvent e) {
-			final Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+		public void actionPerformed(ActionEvent e) {
+			var focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
 			
 			if (focusOwner instanceof JTextComponent || focusOwner instanceof JTable ||
 					!NetworkViewContainer.this.getContentPane().isVisible())
 				return; // We don't want to steal the key event from these components
 			
-			final String cmd = e.getActionCommand();
+			var cmd = e.getActionCommand();
 			
 			if (cmd.equals(VK_N)) {
 				// Toggle Navigator (bird's eye view) visibility state
@@ -912,7 +906,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			boolean updated = false;
-			final Container c = getVisualizationContainer().getContentPane();
+			var c = getVisualizationContainer().getContentPane();
 			
 			if (c.getWidth() > 0) {
 				networkView.setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH, (double) c.getWidth());
@@ -950,8 +944,8 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 
 			@Override
 			public void layoutContainer(Container parent) {
-				final int w = contentPane != null ? contentPane.getWidth() : 0;
-				final int h = contentPane != null ? contentPane.getHeight() : 0;
+				int w = contentPane != null ? contentPane.getWidth() : 0;
+				int h = contentPane != null ? contentPane.getHeight() : 0;
 				
 				super.layoutContainer(parent);
 
@@ -978,11 +972,11 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			this.mode = mode;
 			
 			// Icons
-			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
-			final Font iconFont = iconManager.getIconFont(IconUtil.CY_FONT_NAME, 20.0f);
+			var iconManager = serviceRegistrar.getService(IconManager.class);
+			var iconFont = iconManager.getIconFont(IconUtil.CY_FONT_NAME, 20.0f);
 			
 			// Tool Tip
-			final URL tipImgUrl = mode.getToolTipImage() == null ? null :
+			var tipImgUrl = mode.getToolTipImage() == null ? null :
 				Util.getURL(getClass().getResource(mode.getToolTipImage()).toString());
 			tipIcon = tipImgUrl == null ? null : new ImageIcon(tipImgUrl);
 			
@@ -1011,8 +1005,8 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			setText(mode.getIconText());
 			setToolTipText(mode.getText());
 			
-			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
-			final Font font = iconManager.getIconFont(IconUtil.CY_FONT_NAME, 20.0f);
+			var iconManager = serviceRegistrar.getService(IconManager.class);
+			var font = iconManager.getIconFont(IconUtil.CY_FONT_NAME, 20.0f);
 			styleToolBarButton(this, font);
 			
 			update();

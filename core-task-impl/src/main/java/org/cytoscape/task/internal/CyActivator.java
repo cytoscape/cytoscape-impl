@@ -33,10 +33,15 @@ import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
 import static org.cytoscape.work.ServiceProperties.ID;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
+import static org.cytoscape.work.ServiceProperties.INSERT_TOOLBAR_SEPARATOR_AFTER;
 import static org.cytoscape.work.ServiceProperties.IN_CONTEXT_MENU;
+import static org.cytoscape.work.ServiceProperties.IN_EDGE_TABLE_TOOL_BAR;
 import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
 import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
+import static org.cytoscape.work.ServiceProperties.IN_NETWORK_TABLE_TOOL_BAR;
+import static org.cytoscape.work.ServiceProperties.IN_NODE_TABLE_TOOL_BAR;
 import static org.cytoscape.work.ServiceProperties.IN_TOOL_BAR;
+import static org.cytoscape.work.ServiceProperties.IN_UNASSIGNED_TABLE_TOOL_BAR;
 import static org.cytoscape.work.ServiceProperties.LARGE_ICON_ID;
 import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
 import static org.cytoscape.work.ServiceProperties.NETWORK_GROUP_MENU;
@@ -234,6 +239,7 @@ import org.cytoscape.task.internal.table.SetTableTitleTaskFactory;
 import org.cytoscape.task.internal.table.SetValuesTaskFactory;
 import org.cytoscape.task.internal.title.EditNetworkTitleTaskFactoryImpl;
 import org.cytoscape.task.internal.utils.CoreImplDocumentationConstants;
+import org.cytoscape.task.internal.utils.IconUtil;
 import org.cytoscape.task.internal.view.CreateNetworkViewTaskFactoryImpl;
 import org.cytoscape.task.internal.view.DestroyNetworkViewTaskFactoryImpl;
 import org.cytoscape.task.internal.view.GetCurrentNetworkViewTaskFactory;
@@ -1676,6 +1682,22 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			var factory = new ExportTableTaskFactoryImpl(serviceRegistrar);
+			
+			var icon = new TextIcon(IconUtil.FILE_EXPORT, iconFont.deriveFont(22.0f), 32, 31);
+			var iconId = "cy::EXPORT_TABLE";
+			iconManager.addIcon(iconId, icon);
+			
+			var props = new Properties();
+			props.setProperty(ENABLE_FOR, "table");
+			props.setProperty(IN_NODE_TABLE_TOOL_BAR, "true");
+			props.setProperty(IN_EDGE_TABLE_TOOL_BAR, "true");
+			props.setProperty(IN_NETWORK_TABLE_TOOL_BAR, "true");
+			props.setProperty(IN_UNASSIGNED_TABLE_TOOL_BAR, "true");
+			props.setProperty(TOOL_BAR_GRAVITY, "0.007");
+			props.setProperty(LARGE_ICON_ID, iconId);
+			props.setProperty(TOOLTIP, "Export Table to File...");
+			props.setProperty(INSERT_TOOLBAR_SEPARATOR_AFTER, "true");
+			registerService(bc, factory, TableTaskFactory.class, props);
 			registerService(bc, factory, ExportTableTaskFactory.class);
 		}
 		{

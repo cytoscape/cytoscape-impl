@@ -58,7 +58,7 @@ public class ViridisPaletteProvider implements PaletteProvider {
 	}
 
 	public List<String> listPaletteNames(PaletteType type, boolean colorBlindSafe) {
-		if (type != BrewerType.SEQUENTIAL)
+		if ((type != BrewerType.SEQUENTIAL) && (type != BrewerType.ANY))
 			return null;
 
 		return new ArrayList<>(paletteMap.keySet());
@@ -66,7 +66,7 @@ public class ViridisPaletteProvider implements PaletteProvider {
 
 	@SuppressWarnings("unchecked")
 	public List<Object> listPaletteIdentifiers(PaletteType type, boolean colorBlindSafe) {
-		if (type != BrewerType.SEQUENTIAL)
+		if ((type != BrewerType.SEQUENTIAL) && (type != BrewerType.ANY))
 			return null;
 
 		return new ArrayList<>(paletteMap.values());

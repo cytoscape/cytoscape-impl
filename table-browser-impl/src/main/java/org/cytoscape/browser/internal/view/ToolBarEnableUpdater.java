@@ -1,6 +1,10 @@
-package org.cytoscape.internal.view;
+package org.cytoscape.browser.internal.view;
 
-import static org.cytoscape.internal.view.util.ViewUtil.invokeOnEDT;
+import static org.cytoscape.browser.internal.util.ViewUtil.invokeOnEDT;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
@@ -9,15 +13,30 @@ import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.events.SetCurrentTableEvent;
 import org.cytoscape.application.events.SetCurrentTableListener;
+import org.cytoscape.browser.internal.action.TaskFactoryTunableAction;
+import org.cytoscape.browser.internal.task.DynamicTableTaskFactory;
+import org.cytoscape.browser.internal.util.CyToolBar;
 import org.cytoscape.event.DebounceTimer;
-import org.cytoscape.internal.view.util.CyToolBar;
-import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.events.ColumnCreatedEvent;
+import org.cytoscape.model.events.ColumnCreatedListener;
+import org.cytoscape.model.events.ColumnDeletedEvent;
+import org.cytoscape.model.events.ColumnDeletedListener;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
 import org.cytoscape.model.events.NetworkDestroyedEvent;
 import org.cytoscape.model.events.NetworkDestroyedListener;
+import org.cytoscape.model.events.RowsCreatedEvent;
+import org.cytoscape.model.events.RowsCreatedListener;
+import org.cytoscape.model.events.RowsDeletedEvent;
+import org.cytoscape.model.events.RowsDeletedListener;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
+import org.cytoscape.model.events.TableAddedEvent;
+import org.cytoscape.model.events.TableAddedListener;
+import org.cytoscape.model.events.TableDeletedEvent;
+import org.cytoscape.model.events.TableDeletedListener;
+import org.cytoscape.model.events.TablePrivacyChangedEvent;
+import org.cytoscape.model.events.TablePrivacyChangedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
 import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
@@ -33,12 +52,12 @@ import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.view.model.events.NetworkViewDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
-import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
-import org.cytoscape.view.model.events.UpdateNetworkPresentationListener;
+import org.cytoscape.view.model.events.TableViewChangedEvent;
+import org.cytoscape.view.model.events.TableViewChangedListener;
 
 /*
  * #%L
- * Cytoscape Swing Application Impl (swing-application-impl)
+ * Cytoscape Table Browser Impl (table-browser-impl)
  * $Id:$
  * $HeadURL:$
  * %%
@@ -69,17 +88,19 @@ import org.cytoscape.view.model.events.UpdateNetworkPresentationListener;
 public class ToolBarEnableUpdater implements SessionAboutToBeLoadedListener, SessionLoadedListener,
 		SessionAboutToBeSavedListener, SessionSavedListener, SessionSaveCancelledListener, NetworkAddedListener,
 		NetworkDestroyedListener, NetworkViewAddedListener, NetworkViewDestroyedListener, SetCurrentNetworkListener,
-		SetCurrentNetworkViewListener, SetCurrentTableListener, RowsSetListener, UpdateNetworkPresentationListener {
+		SetCurrentNetworkViewListener, SetCurrentTableListener, TableAddedListener, TableDeletedListener,
+		TablePrivacyChangedListener, ColumnCreatedListener, ColumnDeletedListener, RowsCreatedListener,
+		RowsDeletedListener, RowsSetListener, TableViewChangedListener {
 
 	private final DebounceTimer debounceTimer = new DebounceTimer(100);
 	
 	private boolean loadingSession;
 	
-	private final CyToolBar toolbar;
+	private final Set<CyToolBar> toolbars = new HashSet<>();
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public ToolBarEnableUpdater(CyToolBar toolbar, CyServiceRegistrar serviceRegistrar) {
-		this.toolbar = toolbar;
+	public ToolBarEnableUpdater(Collection<CyToolBar> toolbars, CyServiceRegistrar serviceRegistrar) {
+		this.toolbars.addAll(toolbars);
 		this.serviceRegistrar = serviceRegistrar;
 	}
 	
@@ -151,28 +172,87 @@ public class ToolBarEnableUpdater implements SessionAboutToBeLoadedListener, Ses
 		if (!loadingSession)
 			updateToolbar();
 	}
-
-	/**
-	 * This is mainly for listening to node/edge selection events.
-	 */
+	
 	@Override
-	public void handleEvent(RowsSetEvent e) {
-		if (!loadingSession && e.containsColumn(CyNetwork.SELECTED))
+	public void handleEvent(ColumnDeletedEvent e) {
+		if (!loadingSession && e.getSource()
+				.equals(serviceRegistrar.getService(CyApplicationManager.class).getCurrentTable()))
+			updateToolbar();
+	}
+
+	@Override
+	public void handleEvent(ColumnCreatedEvent e) {
+		if (!loadingSession && e.getSource()
+				.equals(serviceRegistrar.getService(CyApplicationManager.class).getCurrentTable()))
+			updateToolbar();
+	}
+
+	@Override
+	public void handleEvent(TableAddedEvent e) {
+		if (!loadingSession && e.getTable()
+				.equals(serviceRegistrar.getService(CyApplicationManager.class).getCurrentTable()))
+			updateToolbar();
+	}
+
+	@Override
+	public void handleEvent(TableDeletedEvent e) {
+		if (!loadingSession)
 			updateToolbar();
 	}
 	
 	@Override
-	public void handleEvent(UpdateNetworkPresentationEvent e) {
+	public void handleEvent(TablePrivacyChangedEvent e) {
 		if (!loadingSession && e.getSource()
-				.equals(serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView()))
+				.equals(serviceRegistrar.getService(CyApplicationManager.class).getCurrentTable()))
+			updateToolbar();
+	}
+	
+	@Override
+	public void handleEvent(RowsCreatedEvent e) {
+		if (!loadingSession && e.getSource()
+				.equals(serviceRegistrar.getService(CyApplicationManager.class).getCurrentTable()))
+			updateToolbar();
+	}
+
+	@Override
+	public void handleEvent(RowsDeletedEvent e) {
+		if (!loadingSession && e.getSource()
+				.equals(serviceRegistrar.getService(CyApplicationManager.class).getCurrentTable()))
+			updateToolbar();
+	}
+
+	@Override
+	public void handleEvent(RowsSetEvent e) {
+		if (!loadingSession)
+			updateToolbar();
+	}
+	
+	@Override
+	public void handleEvent(TableViewChangedEvent<?> e) {
+		if (!loadingSession && e.getSource().getModel()
+				.equals(serviceRegistrar.getService(CyApplicationManager.class).getCurrentTable()))
 			updateToolbar();
 	}
 
 	private void updateToolbar() {
 		debounceTimer.debounce(() -> {
 			invokeOnEDT(() -> {
-				for (var action : toolbar.getAllToolBarActions())
-					action.updateEnableState();
+				for (var tb : toolbars) {
+					for (var action : tb.getAllToolBarActions()) {
+						// This should enable or disable the toolbar button
+						action.updateEnableState();
+						
+						// Check whether we should also show or hide the component, based on the current CyTable
+						if (action instanceof TaskFactoryTunableAction) {
+							var tf = ((TaskFactoryTunableAction) action).getTaskFactory();
+							
+							if (tf instanceof DynamicTableTaskFactory) {
+								var applicable = ((DynamicTableTaskFactory) tf).isApplicable();
+								tb.getComponent(action).setVisible(applicable);
+							}
+						}
+					}
+				}
 			});
 		});
 	}

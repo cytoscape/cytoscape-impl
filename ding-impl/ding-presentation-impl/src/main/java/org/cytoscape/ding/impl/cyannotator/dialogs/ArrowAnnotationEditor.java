@@ -31,7 +31,9 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl.ArrowType;
 import org.cytoscape.ding.impl.cyannotator.annotations.GraphicsUtilities;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.swing.ColorButton;
+import org.cytoscape.util.swing.CyColorPaletteChooser;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation.AnchorType;
@@ -235,7 +237,7 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 	
 	private ColorButton getLineColorButton() {
 		if (lineColorButton == null) {
-			lineColorButton = new ColorButton(Color.BLACK);
+			lineColorButton = new ColorButton(serviceRegistrar, null, BrewerType.ANY, Color.BLACK, false);
 			lineColorButton.setToolTipText("Select line color...");
 			lineColorButton.addPropertyChangeListener("color", evt -> apply());
 		}

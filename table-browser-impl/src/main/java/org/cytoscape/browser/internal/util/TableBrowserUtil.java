@@ -1,12 +1,25 @@
 package org.cytoscape.browser.internal.util;
 
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
+
 /*
  * #%L
  * Cytoscape Table Browser Impl (table-browser-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,17 +36,6 @@ package org.cytoscape.browser.internal.util;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyTable;
 
 public final class TableBrowserUtil {
 
@@ -128,6 +130,13 @@ public final class TableBrowserUtil {
 
 		return retValue;
 	}
+	
+	public static boolean isShowPrivateTables(CyServiceRegistrar serviceRegistrar) {
+		var cyProp = serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+		var props = cyProp != null ? (Properties) cyProp.getProperties() : null;
+		
+		return props != null && "true".equalsIgnoreCase(props.getProperty("showPrivateTables"));
+	}
 
 	static enum ListParserState {
 		OPENING_BRACE_EXPECTED, COMMA_OR_CLOSING_BRACE_EXPECTED,
@@ -206,9 +215,7 @@ public final class TableBrowserUtil {
 		}
 	}
 
-	private static Object getListItem(final StringReader reader, final Class<?> listElementType,
-			final StringBuilder errorMessage)
-	{
+	private static Object getListItem(StringReader reader, Class<?> listElementType, StringBuilder errorMessage) {
 		if (listElementType == Double.class)
 			return getDouble(reader, errorMessage);
 		else if (listElementType == String.class)
@@ -262,7 +269,6 @@ public final class TableBrowserUtil {
 			throw new IllegalStateException("unknown list element type: "
 					+ listElementType.getName() + ".");
 	}
-
 
 	private static Double getDouble(final StringReader reader, final StringBuilder errorMessage) {
 		try {
@@ -414,8 +420,7 @@ public final class TableBrowserUtil {
 		}
 	}
 
-	private static void grabAsciiLetters(final StringReader reader, final StringBuilder builder)
-	{
+	private static void grabAsciiLetters(final StringReader reader, final StringBuilder builder) {
 		try {
 			for (;;) {
 				reader.mark(0);
@@ -434,5 +439,4 @@ public final class TableBrowserUtil {
 			throw new IllegalStateException("This should *never* happen.");
 		}
 	}
-	
 }

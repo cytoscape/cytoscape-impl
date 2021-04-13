@@ -10,6 +10,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -323,11 +324,13 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 
 	@Override
 	public void setCurrentTable(CyTable table) {
-		final List<CyEvent<?>> eventsToFire = new ArrayList<>(1);
+		var eventsToFire = new ArrayList<CyEvent<?>>(1);
 		
 		synchronized (lock) {
-			currentTable = table;
-			eventsToFire.add(new SetCurrentTableEvent(this, currentTable));
+			if (!Objects.equals(currentTable, table)) {
+				currentTable = table;
+				eventsToFire.add(new SetCurrentTableEvent(this, currentTable));
+			}
 		}
 		
 		fireEvents(eventsToFire);

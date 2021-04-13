@@ -1,6 +1,14 @@
 package org.cytoscape.view.vizmap.gui.internal.view;
 
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.*;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_NETWORK_VIEW_CHANGED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_TABLE_CHANGED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_TABLE_VISUAL_STYLE_CHANGED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_VISUAL_STYLE_CHANGED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_ADDED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_NAME_CHANGED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_REMOVED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_SET_CHANGED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_UPDATED;
 import static org.cytoscape.view.vizmap.gui.internal.view.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.view.vizmap.gui.internal.view.util.ViewUtil.invokeOnEDTAndWait;
 
@@ -937,9 +945,9 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	
 	private boolean shouldRebuildTableVisualPropertySheets(VisualStyle vs) {
 		var col = vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().getSelectedItem();
-		VisualStyle curStyle = vmProxy.getVisualStyle(col);
-		boolean rebuild = vs == null ? curStyle != null : !vs.equals(curStyle);
-		return rebuild;
+		var curStyle = vmProxy.getVisualStyle(col);
+		
+		return vs != null && !vs.equals(curStyle);
 	}
 	
 	
