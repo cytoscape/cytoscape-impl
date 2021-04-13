@@ -16,19 +16,24 @@ import org.cytoscape.application.events.SetCurrentTableEvent;
 import org.cytoscape.application.events.SetCurrentTableListener;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.application.swing.CytoPanel;
+import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.TableToolBarComponent;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
 import org.cytoscape.browser.internal.action.TaskFactoryTunableAction;
 import org.cytoscape.browser.internal.task.DynamicTableTaskFactory;
 import org.cytoscape.browser.internal.task.DynamicTogglableTableTaskFactory;
+import org.cytoscape.browser.internal.util.TableBrowserUtil;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.events.TableAddedEvent;
+import org.cytoscape.model.events.TableAddedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.work.ServiceProperties;
@@ -59,8 +64,8 @@ import org.cytoscape.work.Togglable;
  * #L%
  */
 
-public class TableBrowserMediator
-		implements SetCurrentNetworkListener, SetCurrentTableListener, CytoPanelComponentSelectedListener {
+public class TableBrowserMediator implements SetCurrentNetworkListener, SetCurrentTableListener, TableAddedListener,
+		CytoPanelComponentSelectedListener {
 
 	private final HashMap<Class<? extends CyIdentifiable>, AbstractTableBrowser> tableBrowsers = new HashMap<>();
 	
@@ -114,18 +119,53 @@ public class TableBrowserMediator
 			for (var tb : tableBrowsers.values()) {
 				if (tb.containsTable(table)) {
 					tb.setCurrentTable(table);
+					selectTableBrowser(tb);
+					
 					break;
 				}
 			}
 		});
 	}
+
+	/**
+	 * Switch to new table when it is registered to the table manager.
+	 */
+	@Override
+	public void handleEvent(TableAddedEvent e) {
+		var table = e.getTable();
+
+		if (table.isPublic() || TableBrowserUtil.isShowPrivateTables(serviceRegistrar)) {
+			var netTableManager = serviceRegistrar.getService(CyNetworkTableManager.class);
+			var type = netTableManager.getTableType(table);
+			var tb = tableBrowsers.get(type);
+			
+			if (tb != null) {
+				invokeOnEDT(() -> {
+					tb.addTable(table);
+					tb.selectTable(table);
+					
+					// Show the Unassigned Tables panel
+					if (tb.getObjectType() == null && tb.getTableChooser().getItemCount() == 1) {
+						serviceRegistrar.registerService(tb, CytoPanelComponent.class);
+						
+						var appManager = serviceRegistrar.getService(CyApplicationManager.class);
+						
+						if (table.equals(appManager.getCurrentTable()))
+							selectTableBrowser(tb);
+					}
+				});
+			}
+		}
+	}
 	
 	@Override
 	public void handleEvent(CytoPanelComponentSelectedEvent evt) {
 		var cytoPanel = evt.getCytoPanel();
+		var name = cytoPanel.getCytoPanelName();
 		int idx = evt.getSelectedIndex();
+		int count = cytoPanel.getCytoPanelComponentCount();
 		
-		if (cytoPanel.getCytoPanelName() != CytoPanelName.SOUTH || idx < 0 || idx >= cytoPanel.getCytoPanelComponentCount())
+		if (name != AbstractTableBrowser.CYTO_PANEL_NAME || idx < 0 || idx >= count)
 			return;
 		
 		var comp = cytoPanel.getComponentAt(idx);
@@ -140,7 +180,7 @@ public class TableBrowserMediator
 	}
 	
 	public CyTable getCurrentTable() {
-		var cytoPanel = serviceRegistrar.getService(CySwingApplication.class).getCytoPanel(CytoPanelName.SOUTH);
+		var cytoPanel = getTableCytoPanel();
 		var comp = cytoPanel.getSelectedComponent();
 		CyTable table = null;
 		
@@ -153,7 +193,7 @@ public class TableBrowserMediator
 		
 		return table;
 	}
-	
+
 	public TableRenderer getCurrentTableRenderer() {
 		var table = getCurrentTable();
 		
@@ -167,6 +207,18 @@ public class TableBrowserMediator
 		}
 		
 		return null;
+	}
+	
+	private void selectTableBrowser(AbstractTableBrowser tableBrowser) {
+		var cytoPanel = getTableCytoPanel();
+		var idx = cytoPanel.indexOfComponent(tableBrowser.getComponent());
+		
+		if (idx >= 0 && idx < cytoPanel.getCytoPanelComponentCount() && idx != cytoPanel.getSelectedIndex())
+			cytoPanel.setSelectedIndex(idx);
+	}
+	
+	public CytoPanel getTableCytoPanel() {
+		return serviceRegistrar.getService(CySwingApplication.class).getCytoPanel(AbstractTableBrowser.CYTO_PANEL_NAME);
 	}
 	
 	public void hideColumn(CyColumn column) {

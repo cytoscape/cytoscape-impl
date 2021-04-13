@@ -110,7 +110,6 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, globalTableBrowser, SessionLoadedListener.class);
 		registerService(bc, globalTableBrowser, SessionAboutToBeSavedListener.class);
 		registerService(bc, globalTableBrowser, TableAboutToBeDeletedListener.class);
-		registerService(bc, globalTableBrowser, TableAddedListener.class);
 		registerService(bc, globalTableBrowser, TablePrivacyChangedListener.class);
 		registerService(bc, globalTableBrowser, TableViewAddedListener.class);
 
@@ -136,6 +135,7 @@ public class CyActivator extends AbstractCyActivator {
 		var mediator = new TableBrowserMediator(nodeTableBrowser, edgeTableBrowser, networkTableBrowser, globalTableBrowser, serviceRegistrar);
 		registerService(bc, mediator, SetCurrentNetworkListener.class);
 		registerService(bc, mediator, SetCurrentTableListener.class);
+		registerService(bc, mediator, TableAddedListener.class);
 		registerService(bc, mediator, CytoPanelComponentSelectedListener.class);
 		
 		var toolBarEnableUpdater = new ToolBarEnableUpdater(

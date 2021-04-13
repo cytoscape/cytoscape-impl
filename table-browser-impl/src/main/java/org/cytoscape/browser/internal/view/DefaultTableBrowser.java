@@ -1,6 +1,5 @@
 package org.cytoscape.browser.internal.view;
 
-import static org.cytoscape.browser.internal.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.browser.internal.util.ViewUtil.invokeOnEDTAndWait;
 
 import java.awt.Dimension;
@@ -18,6 +17,7 @@ import javax.swing.event.ListDataListener;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.browser.internal.util.IconUtil;
+import org.cytoscape.browser.internal.util.TableBrowserUtil;
 import org.cytoscape.browser.internal.view.tools.AbstractToolBarControl;
 import org.cytoscape.browser.internal.view.tools.GeneralOptionsControl;
 import org.cytoscape.browser.internal.view.tools.RowHeightControl;
@@ -31,8 +31,6 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
 import org.cytoscape.model.events.TableAboutToBeDeletedListener;
-import org.cytoscape.model.events.TableAddedEvent;
-import org.cytoscape.model.events.TableAddedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
@@ -64,8 +62,7 @@ import org.cytoscape.view.presentation.property.table.TableModeVisualProperty;
  */
 
 @SuppressWarnings("serial")
-public class DefaultTableBrowser extends AbstractTableBrowser
-		implements TableAddedListener, TableAboutToBeDeletedListener {
+public class DefaultTableBrowser extends AbstractTableBrowser implements TableAboutToBeDeletedListener {
 
 	private JPopupMenu displayMode;
 	private JComboBox<CyTable> tableChooser;
@@ -92,11 +89,6 @@ public class DefaultTableBrowser extends AbstractTableBrowser
 		createPopupMenu();
 	}
 	
-	@Override
-	protected boolean containsTable(CyTable table) {
-		return ((DefaultComboBoxModel<CyTable>) getTableChooser().getModel()).getIndexOf(table) >= 0;
-	}
-
 	@Override
 	public String getIdentifier() {
 		return "org.cytoscape." + objType.getSimpleName().replace("Cy", "") + "Tables";
@@ -190,25 +182,6 @@ public class DefaultTableBrowser extends AbstractTableBrowser
 	}
 
 	@Override
-	public void handleEvent(TableAddedEvent e) {
-		var newTable = e.getTable();
-
-		if (newTable.isPublic() || showPrivateTables()) {
-			var applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
-			var netTableManager = serviceRegistrar.getService(CyNetworkTableManager.class);
-			
-			var curNet = applicationManager.getCurrentNetwork();
-			
-			if (curNet != null && netTableManager.getTables(curNet, objType).containsValue(newTable)) {
-				invokeOnEDT(() -> {
-					if (((DefaultComboBoxModel<CyTable>)getTableChooser().getModel()).getIndexOf(newTable) < 0)
-						getTableChooser().addItem(newTable);
-				});
-			}
-		}
-	}
-	
-	@Override
 	public void handleEvent(TableAboutToBeDeletedEvent e) {
 		var cyTable = e.getTable();
 		var model = (DefaultComboBoxModel<CyTable>) getTableChooser().getModel();
@@ -300,7 +273,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser
 		var netTableManager = serviceRegistrar.getService(CyNetworkTableManager.class);
 		var map = netTableManager.getTables(network, objType);
 		
-		if (showPrivateTables()) {
+		if (TableBrowserUtil.isShowPrivateTables(serviceRegistrar)) {
 			tables.addAll(map.values());
 		} else {
 			for (var tbl : map.values()) {

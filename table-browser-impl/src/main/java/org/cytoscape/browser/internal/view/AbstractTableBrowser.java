@@ -22,11 +22,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
@@ -55,7 +55,6 @@ import org.cytoscape.browser.internal.util.ViewUtil;
 import org.cytoscape.browser.internal.view.tools.AbstractToolBarControl;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
@@ -109,6 +108,8 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 
 	private final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
+	public static final CytoPanelName CYTO_PANEL_NAME = CytoPanelName.SOUTH;
+	
 	public static final int ICON_WIDTH = 32;
 	public static final int ICON_HEIGHT = 31;
 	public static final float ICON_FONT_SIZE = 22.0f;
@@ -157,7 +158,22 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		init();
 	}
 	
-	protected abstract boolean containsTable(CyTable table);
+	public boolean addTable(CyTable table) {
+		if (!containsTable(table)) {
+			((DefaultComboBoxModel<CyTable>) getTableChooser().getModel()).addElement(table);
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public void selectTable(CyTable table) {
+		getTableChooser().setSelectedItem(table);
+	}
+	
+	public boolean containsTable(CyTable table) {
+		return ((DefaultComboBoxModel<CyTable>) getTableChooser().getModel()).getIndexOf(table) >= 0;
+	}
 	
 	@Override
 	public Component getComponent() {
@@ -166,7 +182,7 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 
 	@Override
 	public CytoPanelName getCytoPanelName() {
-		return CytoPanelName.SOUTH;
+		return CYTO_PANEL_NAME;
 	}
 
 	@Override
@@ -318,7 +334,7 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		getTableChooser().setVisible(getTableChooser().getItemCount() >= minToShow);
 		
 		if (currentTable != null && !currentTable.equals(getTableChooser().getSelectedItem()))
-			getTableChooser().setSelectedItem(currentTable);
+			selectTable(currentTable);
 	}
 	
 	private void showDropPanel() {
@@ -418,8 +434,8 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 	}
 	
 	@Override
-	public void handleEvent(TableViewAddedEvent event) {
-		var tableView = event.getTableView();
+	public void handleEvent(TableViewAddedEvent e) {
+		var tableView = e.getTableView();
 		
 		if (!containsTable(tableView.getModel()))
 			return;
@@ -503,13 +519,6 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		}
 		
 		TableColumnStatFileIO.write(tableColumnStatList, e, appFileName);
-	}
-	
-	@SuppressWarnings("unchecked")
-	protected boolean showPrivateTables() {
-		CyProperty<Properties> cyProp = serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
-		
-		return cyProp != null && "true".equalsIgnoreCase(cyProp.getProperties().getProperty("showPrivateTables"));
 	}
 	
 	public TableRenderer getTableRenderer(CyTable table) {
