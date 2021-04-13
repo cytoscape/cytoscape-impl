@@ -158,23 +158,6 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		init();
 	}
 	
-	public boolean addTable(CyTable table) {
-		if (!containsTable(table)) {
-			((DefaultComboBoxModel<CyTable>) getTableChooser().getModel()).addElement(table);
-			return true;
-		}
-		
-		return false;
-	}
-	
-	public void selectTable(CyTable table) {
-		getTableChooser().setSelectedItem(table);
-	}
-	
-	public boolean containsTable(CyTable table) {
-		return ((DefaultComboBoxModel<CyTable>) getTableChooser().getModel()).getIndexOf(table) >= 0;
-	}
-	
 	@Override
 	public Component getComponent() {
 		return this;
@@ -215,10 +198,39 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		update();
 	}
 	
+	public boolean addTable(CyTable table) {
+		if (!containsTable(table)) {
+			((DefaultComboBoxModel<CyTable>) getTableChooser().getModel()).addElement(table);
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public void selectTable(CyTable table) {
+		getTableChooser().setSelectedItem(table);
+	}
+	
+	public boolean containsTable(CyTable table) {
+		return ((DefaultComboBoxModel<CyTable>) getTableChooser().getModel()).getIndexOf(table) >= 0;
+	}
+	
+	/**
+	 * @return true if it contains no tables
+	 */
+	public boolean isEmpty() {
+		synchronized (lock) {
+			return tableRenderers.isEmpty();
+		}
+	}
+	
 	/**
 	 * Delete the given table from the JTable
 	 */
 	public void removeTable(CyTable cyTable) {
+		var chooserModel = (DefaultComboBoxModel<CyTable>) getTableChooser().getModel();
+		chooserModel.removeElement(cyTable);
+		
 		TableRenderer renderer = null;
 		
 		synchronized (lock) {
@@ -235,7 +247,10 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 			currentTableType = null;
 		}
 		
-		update();
+		if (isEmpty())
+			showSelectedTable();
+		else
+			update();
 	}
 	
 	private void init() {
@@ -308,15 +323,6 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		});
 		
 		update();
-	}
-	
-	/**
-	 * @return true if it contains no tables
-	 */
-	protected boolean isEmpty() {
-		synchronized (lock) {
-			return tableRenderers.isEmpty();
-		}
 	}
 	
 	protected void update() {

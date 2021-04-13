@@ -19,8 +19,6 @@ import org.cytoscape.browser.internal.util.TableBrowserUtil;
 import org.cytoscape.browser.internal.view.tools.GeneralOptionsControl;
 import org.cytoscape.browser.internal.view.tools.RowHeightControl;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
-import org.cytoscape.model.events.TableAboutToBeDeletedListener;
 import org.cytoscape.model.events.TablePrivacyChangedEvent;
 import org.cytoscape.model.events.TablePrivacyChangedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -50,8 +48,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
  */
 
 @SuppressWarnings("serial")
-public class GlobalTableBrowser extends AbstractTableBrowser
-		implements TableAboutToBeDeletedListener, TablePrivacyChangedListener {
+public class GlobalTableBrowser extends AbstractTableBrowser implements TablePrivacyChangedListener {
 
 	private GlobalTableChooser tableChooser;
 
@@ -84,33 +81,13 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 	}
 
 	@Override
-	public void handleEvent(TableAboutToBeDeletedEvent e) {
-		var cyTable = e.getTable();
-		
-		if (cyTable.isPublic() || TableBrowserUtil.isShowPrivateTables(serviceRegistrar)) {
-			invokeOnEDT(() -> {
-				var comboBoxModel = (GlobalTableComboBoxModel) getTableChooser().getModel();
-				comboBoxModel.removeItem(cyTable);
-				
-				if (comboBoxModel.getSize() == 0) {
-					// The last table is deleted, refresh the browser table (this is a special case)
-					removeTable(cyTable);
-					serviceRegistrar.unregisterService(GlobalTableBrowser.this, CytoPanelComponent.class);
-					serviceRegistrar.getService(CyApplicationManager.class).setCurrentTable(null);
-					showSelectedTable();
-				}
-			});
-		}
-	}
-
-	@Override
 	public void handleEvent(TablePrivacyChangedEvent e) {
 		var table = e.getSource();
 		var comboBoxModel = (GlobalTableComboBoxModel) getTableChooser().getModel();
 		boolean showPrivateTables = TableBrowserUtil.isShowPrivateTables(serviceRegistrar);
 		
 		if (!table.isPublic() && !showPrivateTables){
-			comboBoxModel.removeItem(table);
+			comboBoxModel.removeElement(table);
 
 			if (comboBoxModel.getSize() == 0) {
 				invokeOnEDT(() -> {
@@ -122,7 +99,10 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 				});
 			}
 		} else if (table.isPublic() || showPrivateTables) {
-			comboBoxModel.addAndSetSelectedItem(table);
+			invokeOnEDT(() -> {
+				comboBoxModel.addElement(table);
+				comboBoxModel.setSelectedItem(table);
+			});
 		}
 		
 		serviceRegistrar.getService(CyApplicationManager.class).setCurrentTable(currentTable);
@@ -204,24 +184,16 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 			}
 		}
 		
-		void addAndSetSelectedItem(CyTable table) {
-			addElement(table);
-
-			// This is necessary to avoid deadlock!
-			invokeOnEDT(() -> {
-				setSelectedItem(table);
-			});
-		}
-
-		void removeItem(CyTable deletedTable) {
-			if (tables.contains(deletedTable)) {
-				tables.remove(deletedTable);
+		@Override
+		public void removeElement(Object table) {
+			if (tables.contains(table)) {
+				tables.remove(table);
 				
-				if (tables.size() > 0) {
+				if (tables.isEmpty()) {
+					setSelectedItem(null);
+				} else {
 					Collections.sort(tables, tableComparator);
 					setSelectedItem(tables.get(0));
-				} else {
-					setSelectedItem(null);
 				}
 			}
 		}

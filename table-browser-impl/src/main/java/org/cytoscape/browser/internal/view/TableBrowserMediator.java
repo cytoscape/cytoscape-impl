@@ -32,6 +32,8 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
+import org.cytoscape.model.events.TableAboutToBeDeletedListener;
 import org.cytoscape.model.events.TableAddedEvent;
 import org.cytoscape.model.events.TableAddedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -65,7 +67,7 @@ import org.cytoscape.work.Togglable;
  */
 
 public class TableBrowserMediator implements SetCurrentNetworkListener, SetCurrentTableListener, TableAddedListener,
-		CytoPanelComponentSelectedListener {
+		TableAboutToBeDeletedListener, CytoPanelComponentSelectedListener {
 
 	private final HashMap<Class<? extends CyIdentifiable>, AbstractTableBrowser> tableBrowsers = new HashMap<>();
 	
@@ -115,16 +117,17 @@ public class TableBrowserMediator implements SetCurrentNetworkListener, SetCurre
 		if (table == null)
 			return;
 		
-		invokeOnEDT(() -> {
-			for (var tb : tableBrowsers.values()) {
+		var type = getTableType(table);
+		var tb = tableBrowsers.get(type);
+		
+		if (tb != null) {
+			invokeOnEDT(() -> {
 				if (tb.containsTable(table)) {
 					tb.setCurrentTable(table);
 					selectTableBrowser(tb);
-					
-					break;
 				}
-			}
-		});
+			});
+		}
 	}
 
 	/**
@@ -135,8 +138,7 @@ public class TableBrowserMediator implements SetCurrentNetworkListener, SetCurre
 		var table = e.getTable();
 
 		if (table.isPublic() || TableBrowserUtil.isShowPrivateTables(serviceRegistrar)) {
-			var netTableManager = serviceRegistrar.getService(CyNetworkTableManager.class);
-			var type = netTableManager.getTableType(table);
+			var type = getTableType(table);
 			var tb = tableBrowsers.get(type);
 			
 			if (tb != null) {
@@ -155,6 +157,33 @@ public class TableBrowserMediator implements SetCurrentNetworkListener, SetCurre
 					}
 				});
 			}
+		}
+	}
+
+	@Override
+	public void handleEvent(TableAboutToBeDeletedEvent e) {
+		var table = e.getTable();
+		
+		if (table.isPublic() || TableBrowserUtil.isShowPrivateTables(serviceRegistrar)) {
+			// We need this to happen synchronously or we get royally messed up by the new table selection!
+			invokeOnEDTAndWait(() -> {
+				// We can't use getTableType() here because the table might have been removed from the
+				// CyNetworkTableManager, so we just find the table browser that has it
+				for (var tb : tableBrowsers.values()) {
+					if (tb.containsTable(table)) {
+						tb.removeTable(table);
+						
+						if (tb.isEmpty()) {
+							// The last table is deleted, hide the table browser
+							serviceRegistrar.unregisterService(tb, CytoPanelComponent.class);
+							// Make sure the application manager is sync'd with our current table
+							serviceRegistrar.getService(CyApplicationManager.class).setCurrentTable(getCurrentTable());
+						}
+						
+						break;
+					}
+				}
+			});
 		}
 	}
 	
@@ -344,5 +373,15 @@ public class TableBrowserMediator implements SetCurrentNetworkListener, SetCurre
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Don't use this method if the table has been (or is being) deleted,
+	 * because this can return false <code>null</code> types.
+	 */
+	private Class<? extends CyIdentifiable> getTableType(CyTable table) {
+		var netTableManager = serviceRegistrar.getService(CyNetworkTableManager.class);
+		
+		return netTableManager.getTableType(table);
 	}
 }

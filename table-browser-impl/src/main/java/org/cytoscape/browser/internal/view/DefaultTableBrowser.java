@@ -1,7 +1,5 @@
 package org.cytoscape.browser.internal.view;
 
-import static org.cytoscape.browser.internal.util.ViewUtil.invokeOnEDTAndWait;
-
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -29,8 +27,6 @@ import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
-import org.cytoscape.model.events.TableAboutToBeDeletedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
@@ -62,7 +58,7 @@ import org.cytoscape.view.presentation.property.table.TableModeVisualProperty;
  */
 
 @SuppressWarnings("serial")
-public class DefaultTableBrowser extends AbstractTableBrowser implements TableAboutToBeDeletedListener {
+public class DefaultTableBrowser extends AbstractTableBrowser {
 
 	private JPopupMenu displayMode;
 	private JComboBox<CyTable> tableChooser;
@@ -181,18 +177,6 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements TableAb
 		}
 	}
 
-	@Override
-	public void handleEvent(TableAboutToBeDeletedEvent e) {
-		var cyTable = e.getTable();
-		var model = (DefaultComboBoxModel<CyTable>) getTableChooser().getModel();
-		
-		if (model.getIndexOf(cyTable) >= 0) {
-			model.removeElement(cyTable);
-			// We need this to happen synchronously or we get royally messed up by the new table selection
-			invokeOnEDTAndWait(() -> removeTable(cyTable));
-		}
-	}
-	
 	public void update(CyNetwork network) {
 		if (network != null) {
 			if (objType == CyNode.class)
