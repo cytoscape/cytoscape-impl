@@ -5,15 +5,20 @@ import static org.cytoscape.browser.internal.view.AbstractTableBrowser.ICON_HEIG
 import static org.cytoscape.browser.internal.view.AbstractTableBrowser.ICON_WIDTH;
 import static org.cytoscape.util.swing.IconManager.ICON_COG;
 import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
+import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
+import static org.cytoscape.work.ServiceProperties.INSERT_TOOLBAR_SEPARATOR_BEFORE;
 import static org.cytoscape.work.ServiceProperties.IN_EDGE_TABLE_TOOL_BAR;
 import static org.cytoscape.work.ServiceProperties.IN_NETWORK_TABLE_TOOL_BAR;
 import static org.cytoscape.work.ServiceProperties.IN_NODE_TABLE_TOOL_BAR;
 import static org.cytoscape.work.ServiceProperties.IN_UNASSIGNED_TABLE_TOOL_BAR;
+import static org.cytoscape.work.ServiceProperties.LARGE_ICON_ID;
 import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
 import static org.cytoscape.work.ServiceProperties.SMALL_ICON_ID;
 import static org.cytoscape.work.ServiceProperties.TITLE;
+import static org.cytoscape.work.ServiceProperties.TOOLTIP;
+import static org.cytoscape.work.ServiceProperties.TOOL_BAR_GRAVITY;
 
 import java.util.Arrays;
 import java.util.Properties;
@@ -25,10 +30,10 @@ import org.cytoscape.application.swing.TableToolBarComponent;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
 import org.cytoscape.browser.internal.action.CreateColumnAction;
 import org.cytoscape.browser.internal.action.DeleteColumnsAction;
-import org.cytoscape.browser.internal.action.DeleteTableAction;
 import org.cytoscape.browser.internal.action.ShowColumnsAction;
 import org.cytoscape.browser.internal.action.TableOptionsAction;
 import org.cytoscape.browser.internal.task.ClearAllErrorsTaskFactory;
+import org.cytoscape.browser.internal.task.DeleteTableTaskFactoryImpl;
 import org.cytoscape.browser.internal.task.HideColumnTaskFactory;
 import org.cytoscape.browser.internal.task.SetColumnFormatTaskFactory;
 import org.cytoscape.browser.internal.task.ToggleTextWrapTaskFactory;
@@ -150,8 +155,9 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, toolBarEnableUpdater);
 		
 		{
-			var icon = new TextIcon(IconManager.ICON_EYE_SLASH, iconManager.getIconFont(SMALL_ICON_FONT_SIZE), SMALL_ICON_SIZE, SMALL_ICON_SIZE);
-			var iconId = "cy::HIDE_COLUMN_SMALL";
+			var iconFont = iconManager.getIconFont(SMALL_ICON_FONT_SIZE);
+			var icon = new TextIcon(IconManager.ICON_EYE_SLASH, iconFont, SMALL_ICON_SIZE, SMALL_ICON_SIZE);
+			var iconId = "cy::Table::HIDE_COLUMN_SMALL";
 			iconManager.addIcon(iconId, icon);
 			
 			var factory = new HideColumnTaskFactory(mediator);
@@ -213,9 +219,22 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			var iconFont = iconManager.getIconFont(ICON_FONT_SIZE);
 			var icon = new TextIcon(ICON_TRASH_O, iconFont, ICON_WIDTH, ICON_HEIGHT);
+			var iconId = "cy::Table::DELETE_TABLE";
+			iconManager.addIcon(iconId, icon);
 			
-			var action = new DeleteTableAction(icon, Integer.MAX_VALUE, mediator, serviceRegistrar);
-			registerService(bc, action, CyAction.class);
+			var props = new Properties();
+			props.setProperty(ENABLE_FOR, "table");
+			props.setProperty(TOOLTIP, "Delete Table...");
+			props.setProperty(LARGE_ICON_ID, iconId);
+			props.setProperty(TOOL_BAR_GRAVITY, "" + Integer.MAX_VALUE);
+			props.setProperty(IN_NODE_TABLE_TOOL_BAR, "true");
+			props.setProperty(IN_EDGE_TABLE_TOOL_BAR, "true");
+			props.setProperty(IN_NETWORK_TABLE_TOOL_BAR, "true");
+			props.setProperty(IN_UNASSIGNED_TABLE_TOOL_BAR, "true");
+			props.setProperty(INSERT_TOOLBAR_SEPARATOR_BEFORE, "true");
+			
+			var factory = new DeleteTableTaskFactoryImpl(serviceRegistrar);
+			registerService(bc, factory, TableTaskFactory.class, props);
 		}
 	}
 }
