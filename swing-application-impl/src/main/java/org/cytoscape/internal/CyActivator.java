@@ -21,6 +21,7 @@ import static org.cytoscape.work.ServiceProperties.COMMAND_EXAMPLE_JSON;
 import static org.cytoscape.work.ServiceProperties.COMMAND_LONG_DESCRIPTION;
 import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
 import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
+import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
 import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
 import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
 import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
@@ -135,7 +136,6 @@ import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
-import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.GUITunableHandlerFactory;
 import org.cytoscape.work.swing.SimpleGUITunableHandlerFactory;
@@ -172,7 +172,7 @@ public class CyActivator extends AbstractCyActivator {
 	
 	private static int LARGE_ICON_SIZE = 32;
 	
-	private static final String CONTEXT_MENU_FILTER = "(" + ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU + "=true)";
+	private static final String CONTEXT_MENU_FILTER = "(" + IN_NETWORK_PANEL_CONTEXT_MENU + "=true)";
 	
 	private static final String HELP_MENU = "Help";
 	private static final String ARRANGE_VIEWS_MENU = "View.Arrange Detached Views[8]";
@@ -352,7 +352,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			Properties props = new Properties();
-			props.setProperty(ServiceProperties.ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
+			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			props.setProperty(ACCELERATOR, "cmd g");
 			props.setProperty(PREFERRED_MENU, ARRANGE_VIEWS_MENU);
 			props.setProperty(TITLE, "Grid");
@@ -361,7 +361,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			Properties props = new Properties();
-			props.setProperty(ServiceProperties.ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
+			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			props.setProperty(PREFERRED_MENU, ARRANGE_VIEWS_MENU);
 			props.setProperty(TITLE, "Cascade");
 			props.setProperty(MENU_GRAVITY, "2.0");
@@ -369,7 +369,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			Properties props = new Properties();
-			props.setProperty(ServiceProperties.ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
+			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			props.setProperty(PREFERRED_MENU, ARRANGE_VIEWS_MENU);
 			props.setProperty(TITLE, "Vertical Stack");
 			props.setProperty(MENU_GRAVITY, "3.0");
@@ -377,7 +377,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			Properties props = new Properties();
-			props.setProperty(ServiceProperties.ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
+			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			props.setProperty(PREFERRED_MENU, ARRANGE_VIEWS_MENU);
 			props.setProperty(TITLE, "Side by Side");
 			props.setProperty(MENU_GRAVITY, "4.0");

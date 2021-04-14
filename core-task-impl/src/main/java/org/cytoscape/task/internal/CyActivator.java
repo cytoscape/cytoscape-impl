@@ -1684,7 +1684,7 @@ public class CyActivator extends AbstractCyActivator {
 			var factory = new ExportTableTaskFactoryImpl(serviceRegistrar);
 			
 			var icon = new TextIcon(IconUtil.FILE_EXPORT, iconFont.deriveFont(22.0f), 32, 31);
-			var iconId = "cy::EXPORT_TABLE";
+			var iconId = "cy::Table:EXPORT_TABLE";
 			iconManager.addIcon(iconId, icon);
 			
 			var props = new Properties();
@@ -1739,7 +1739,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, MapTableToNetworkTablesTaskFactory.class);
 		}
 		{
-			var factory = new DeleteTableTaskFactoryImpl(tableManager);
+			var factory = new DeleteTableTaskFactoryImpl(serviceRegistrar);
 			registerService(bc, factory, TableTaskFactory.class);
 			registerService(bc, factory, DeleteTableTaskFactory.class);
 		}
