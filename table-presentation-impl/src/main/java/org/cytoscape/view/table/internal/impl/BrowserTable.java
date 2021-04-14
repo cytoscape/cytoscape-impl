@@ -1,8 +1,20 @@
 package org.cytoscape.view.table.internal.impl;
 
-import static org.cytoscape.util.swing.LookAndFeelUtil.*;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.*;
-import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.*;
+import static org.cytoscape.util.swing.LookAndFeelUtil.getSmallFontSize;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isMac;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isWindows;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_EDITABLE;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_GRAVITY;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_SELECTED;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_VISIBLE;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_WIDTH;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.ROW_HEIGHT;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.ROW_SELECTED;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_GRID_VISIBLE;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_ROW_HEIGHT;
+import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.ALL;
+import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.AUTO;
+import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.SELECTED;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -54,6 +66,7 @@ import javax.swing.event.TableColumnModelEvent;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -132,6 +145,7 @@ public class BrowserTable extends JTable
 	
 	private boolean columnWidthChanged;
 	
+	private boolean ignoreColumnSelectionEvents;
 	private boolean ignoreRowSelectionEvents;
 	private boolean ignoreRowSetEvents;
 
@@ -187,6 +201,17 @@ public class BrowserTable extends JTable
 		}
 		
 		columnModel.reorderColumnsToRespectGravity();
+	}
+	
+	@Override
+	public void setColumnModel(TableColumnModel columnModel) {
+		super.setColumnModel(columnModel);
+		
+		// Update the COLUMN_SELECTED Visual Property
+		columnModel.getSelectionModel().addListSelectionListener(e -> {
+			if (!e.getValueIsAdjusting() && !ignoreColumnSelectionEvents)
+				setColumnSelectedVP(e.getFirstIndex(), e.getLastIndex());
+		});
 	}
 	
 	@Override
@@ -403,6 +428,9 @@ public class BrowserTable extends JTable
 
 		if (oldWidth == null || newWidth != oldWidth)
 			columnView.setVisualProperty(COLUMN_WIDTH, newWidth);
+		
+		if (getSelectedRowCount() > 0)
+			setSelectedColumn(colIdx);
 	}
 	
 	@Override
@@ -412,6 +440,9 @@ public class BrowserTable extends JTable
 		// The removed (or hidden) column might have COLUMN_TEXT_WRAPPED set to true,
 		// which affected the row height. So we need to reset it.
 		resetRowHeight();
+		
+		if (getColumnCount() > 0 && getSelectedRowCount() > 0)
+			setSelectedColumn(Math.min(e.getFromIndex(), getColumnCount() - 1));
 	}
 	
 	@Override
@@ -788,7 +819,31 @@ public class BrowserTable extends JTable
 		setKeyStroke();
 		setTransferHandler(new BrowserTableTransferHandler());
 		
-		var header = getTableHeader();
+		var header = new JTableHeader() {
+			@Override
+			public void setDraggedColumn(TableColumn column) {
+				// When a column is dragged, that column is usually selected, but the selection listener
+				// we added to the column model does not receive a notification for that,
+				// so we need to update the column selection (visual property) ourselves right after the dragging ends.
+				ignoreColumnSelectionEvents = true;
+				
+				if (getSelectedRowCount() > 0) {
+					boolean finished = draggedColumn != null && column == null;
+					var colId = draggedColumn != null ? draggedColumn.getIdentifier() : null;
+					
+					super.setDraggedColumn(column);
+					
+					if (finished) {
+						var idx = getColumnModel().getColumnIndex(colId);
+						
+						if (idx >= 0)
+							setSelectedColumn(idx);
+					}
+				} else {
+					ignoreColumnSelectionEvents = false;
+				}
+			}
+		};
 		header.setOpaque(false);
 //		header.setDefaultRenderer(new BrowserTableHeaderRenderer(serviceRegistrar.getService(IconManager.class)));
 		header.getColumnModel().setColumnSelectionAllowed(true);
@@ -834,16 +889,17 @@ public class BrowserTable extends JTable
 				}
 			}
 		});
+		setTableHeader(header);
 		
 		setSelectionModel(new BrowserTableListSelectionModel());
 		setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		addMouseListener(this);
 		
+		// Update the ROW_SELECTED Visual Property
 		getSelectionModel().addListSelectionListener(e -> {
 			if (!e.getValueIsAdjusting() && !ignoreRowSelectionEvents) {
 				selectFromTable();
 				
-				// Update the SELECTED visual property
 				var tableModel = getBrowserTableModel();
 				
 				if (tableModel != null) {
@@ -872,6 +928,51 @@ public class BrowserTable extends JTable
 				}
 			}
 		});
+	}
+	
+	private void setSelectedColumn(int idx) {
+		ignoreColumnSelectionEvents = true;
+		
+		try {
+			getColumnModel().getSelectionModel().clearSelection();
+			addColumnSelectionInterval(idx, idx);
+		} finally {
+			ignoreColumnSelectionEvents = false;
+		}
+		
+		// Update the COLUMN_SELECTED visual property for all columns
+		setColumnSelectedVP(0, getColumnCount() - 1);
+	}
+	
+	private void setColumnSelectedVP(int firstIndex, int lastIndex) {
+		if (lastIndex < firstIndex)
+			throw new IllegalArgumentException("'lastIndex' must not be greater than 'firstIndex'.");
+		
+		var tableModel = getBrowserTableModel();
+		
+		if (tableModel != null) {
+			var tableView = tableModel.getTableView();
+			var changed = false;
+			
+			for (int idx = firstIndex; idx <= lastIndex; idx++) {
+				if (idx >= getColumnCount())
+					continue;
+				
+				var cyColumn = tableModel.getColumn(convertColumnIndexToModel(idx));
+				var columnView = tableView.getColumnView(cyColumn);
+				var selected = isColumnSelected(idx);
+				
+				if (selected != columnView.getVisualProperty(COLUMN_SELECTED)) {
+					columnView.setLockedValue(COLUMN_SELECTED, selected);
+					changed = true;
+				}
+			}
+			
+			// Flush events here to prevent COLUMN_SELECTED events from being captured later when
+			// the selection may have been changed again, which could cause infinite loops
+			if (changed)
+				serviceRegistrar.getService(CyEventHelper.class).flushPayloadEvents();
+		}
 	}
 	
 	private void setKeyStroke() {
@@ -998,7 +1099,7 @@ public class BrowserTable extends JTable
 		} else {
 			// Row is already selected: Just guarantee the last clicked cell is highlighted properly
 			((BrowserTableListSelectionModel) selectionModel).setLastSelectedRow(row);
-			this.setColumnSelectionInterval(column, column);
+			setColumnSelectionInterval(column, column);
 			
 			var tableModel = (BrowserTableModel) this.getModel();
 			tableModel.fireTableRowsUpdated(selectedRows[0], selectedRows[selectedRows.length-1]);
