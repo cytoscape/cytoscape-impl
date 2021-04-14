@@ -34,11 +34,19 @@ public class DynamicTableTaskFactory implements TaskFactory {
 		return factory.isReady(getCurrentTable());
 	}
 	
+	public boolean isReady(CyTable table) {
+		return factory.isReady(table);
+	}
+	
 	/**
 	 * Just calls {@link TableTaskFactory#isApplicable(CyTable)} on the wrapped factory and pass the current table.
 	 */
 	public boolean isApplicable() {
 		return factory.isApplicable(getCurrentTable());
+	}
+	
+	public boolean isApplicable(CyTable table) {
+		return factory.isApplicable(table);
 	}
 	
 	protected CyTable getCurrentTable() {

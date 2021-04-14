@@ -117,7 +117,7 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 	private static final Dimension PANEL_SIZE = new Dimension(550, 400);
 	
 	protected JPanel header;
-	protected CyToolBar toolBar;
+	protected TableToolBar toolBar;
 	protected OptionsBar optionsBar;
 	
 	private JPanel dropPanel;
@@ -313,7 +313,7 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 				}
 				@Override
 				public float getToolBarGravity() {
-					return Float.MAX_VALUE;
+					return Integer.MAX_VALUE;
 				}
 				@Override
 				public Class<? extends CyIdentifiable> getTableType() {
@@ -551,9 +551,9 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		return header;
 	}
 	
-	public CyToolBar getToolBar() {
+	public TableToolBar getToolBar() {
 		if (toolBar == null) {
-			toolBar = new CyToolBar(tabTitle + " Tools", JToolBar.HORIZONTAL, ICON_WIDTH, ICON_HEIGHT, serviceRegistrar);
+			toolBar = new TableToolBar(objType, serviceRegistrar);
 			toolBar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground")));
 		}
 		
@@ -571,6 +571,24 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 	}
 	
 	protected abstract JComboBox<CyTable> getTableChooser();
+	
+	public class TableToolBar extends CyToolBar {
+
+		private final Class<? extends CyIdentifiable> objType;
+		
+		public TableToolBar(Class<? extends CyIdentifiable> objType, CyServiceRegistrar serviceRegistrar) {
+			super(tabTitle + " Tools", JToolBar.HORIZONTAL, ICON_WIDTH, ICON_HEIGHT, serviceRegistrar);
+			this.objType = objType;
+		}
+		
+		public Class<? extends CyIdentifiable> getObjectType() {
+			return objType;
+		}
+		
+		public CyTable getCurrentTable() {
+			return currentTable;
+		}
+	}
 	
 	class OptionsBar extends JPanel {
 		

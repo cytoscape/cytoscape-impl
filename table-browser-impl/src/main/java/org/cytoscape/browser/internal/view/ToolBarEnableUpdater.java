@@ -15,8 +15,9 @@ import org.cytoscape.application.events.SetCurrentTableEvent;
 import org.cytoscape.application.events.SetCurrentTableListener;
 import org.cytoscape.browser.internal.action.TaskFactoryTunableAction;
 import org.cytoscape.browser.internal.task.DynamicTableTaskFactory;
-import org.cytoscape.browser.internal.util.CyToolBar;
+import org.cytoscape.browser.internal.view.AbstractTableBrowser.TableToolBar;
 import org.cytoscape.event.DebounceTimer;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.ColumnCreatedEvent;
 import org.cytoscape.model.events.ColumnCreatedListener;
 import org.cytoscape.model.events.ColumnDeletedEvent;
@@ -96,10 +97,10 @@ public class ToolBarEnableUpdater implements SessionAboutToBeLoadedListener, Ses
 	
 	private boolean loadingSession;
 	
-	private final Set<CyToolBar> toolbars = new HashSet<>();
+	private final Set<TableToolBar> toolbars = new HashSet<>();
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public ToolBarEnableUpdater(Collection<CyToolBar> toolbars, CyServiceRegistrar serviceRegistrar) {
+	public ToolBarEnableUpdater(Collection<TableToolBar> toolbars, CyServiceRegistrar serviceRegistrar) {
 		this.toolbars.addAll(toolbars);
 		this.serviceRegistrar = serviceRegistrar;
 	}
@@ -175,22 +176,19 @@ public class ToolBarEnableUpdater implements SessionAboutToBeLoadedListener, Ses
 	
 	@Override
 	public void handleEvent(ColumnDeletedEvent e) {
-		if (!loadingSession && e.getSource()
-				.equals(serviceRegistrar.getService(CyApplicationManager.class).getCurrentTable()))
+		if (!loadingSession && e.getSource().equals(getCurrentTable()))
 			updateToolbar();
 	}
 
 	@Override
 	public void handleEvent(ColumnCreatedEvent e) {
-		if (!loadingSession && e.getSource()
-				.equals(serviceRegistrar.getService(CyApplicationManager.class).getCurrentTable()))
+		if (!loadingSession && e.getSource().equals(getCurrentTable()))
 			updateToolbar();
 	}
 
 	@Override
 	public void handleEvent(TableAddedEvent e) {
-		if (!loadingSession && e.getTable()
-				.equals(serviceRegistrar.getService(CyApplicationManager.class).getCurrentTable()))
+		if (!loadingSession && e.getTable().equals(getCurrentTable()))
 			updateToolbar();
 	}
 
@@ -202,35 +200,31 @@ public class ToolBarEnableUpdater implements SessionAboutToBeLoadedListener, Ses
 	
 	@Override
 	public void handleEvent(TablePrivacyChangedEvent e) {
-		if (!loadingSession && e.getSource()
-				.equals(serviceRegistrar.getService(CyApplicationManager.class).getCurrentTable()))
+		if (!loadingSession && e.getSource().equals(getCurrentTable()))
 			updateToolbar();
 	}
-	
+
 	@Override
 	public void handleEvent(RowsCreatedEvent e) {
-		if (!loadingSession && e.getSource()
-				.equals(serviceRegistrar.getService(CyApplicationManager.class).getCurrentTable()))
+		if (!loadingSession && e.getSource().equals(getCurrentTable()))
 			updateToolbar();
 	}
 
 	@Override
 	public void handleEvent(RowsDeletedEvent e) {
-		if (!loadingSession && e.getSource()
-				.equals(serviceRegistrar.getService(CyApplicationManager.class).getCurrentTable()))
+		if (!loadingSession && e.getSource().equals(getCurrentTable()))
 			updateToolbar();
 	}
 
 	@Override
 	public void handleEvent(RowsSetEvent e) {
-		if (!loadingSession)
+		if (!loadingSession && e.getSource().equals(getCurrentTable()))
 			updateToolbar();
 	}
-	
+
 	@Override
 	public void handleEvent(TableViewChangedEvent<?> e) {
-		if (!loadingSession && e.getSource().getModel()
-				.equals(serviceRegistrar.getService(CyApplicationManager.class).getCurrentTable()))
+		if (!loadingSession && e.getSource().getModel().equals(getCurrentTable()))
 			updateToolbar();
 	}
 
@@ -238,22 +232,36 @@ public class ToolBarEnableUpdater implements SessionAboutToBeLoadedListener, Ses
 		debounceTimer.debounce(() -> {
 			invokeOnEDT(() -> {
 				for (var tb : toolbars) {
+					if (!tb.isShowing())
+						continue;
+					
+					var table = tb.getCurrentTable();
+					
 					for (var action : tb.getAllToolBarActions()) {
-						// This should enable or disable the toolbar button
-						action.updateEnableState();
-						
 						// Check whether we should also show or hide the component, based on the current CyTable
 						if (action instanceof TaskFactoryTunableAction) {
 							var tf = ((TaskFactoryTunableAction) action).getTaskFactory();
 							
 							if (tf instanceof DynamicTableTaskFactory) {
-								var applicable = ((DynamicTableTaskFactory) tf).isApplicable();
-								tb.getComponent(action).setVisible(applicable);
+								var comp = tb.getComponent(action);
+								
+								var ready = ((DynamicTableTaskFactory) tf).isReady(table);
+								comp.setEnabled(ready);
+								
+								var applicable = ((DynamicTableTaskFactory) tf).isApplicable(table);
+								comp.setVisible(applicable);
 							}
+						} else {
+							// This should enable or disable the toolbar button
+							action.updateEnableState();
 						}
 					}
 				}
 			});
 		});
+	}
+	
+	private CyTable getCurrentTable() {
+		return serviceRegistrar.getService(CyApplicationManager.class).getCurrentTable();
 	}
 }
