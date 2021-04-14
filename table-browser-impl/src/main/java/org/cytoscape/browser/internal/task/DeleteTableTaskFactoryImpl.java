@@ -1,5 +1,6 @@
 package org.cytoscape.browser.internal.task;
 
+import org.cytoscape.browser.internal.view.TableBrowserMediator;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTable.Mutability;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -38,9 +39,11 @@ import org.cytoscape.work.TaskIterator;
  */
 public final class DeleteTableTaskFactoryImpl extends AbstractTableTaskFactory {
 
+	private final TableBrowserMediator mediator;
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	public DeleteTableTaskFactoryImpl(CyServiceRegistrar serviceRegistrar) {
+	public DeleteTableTaskFactoryImpl(TableBrowserMediator mediator, CyServiceRegistrar serviceRegistrar) {
+		this.mediator = mediator;
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
@@ -59,6 +62,16 @@ public final class DeleteTableTaskFactoryImpl extends AbstractTableTaskFactory {
 	
 	@Override
 	public boolean isApplicable(CyTable table) {
-		return isReady(table);
+		if (table == null)
+			return false;
+		
+		var type = mediator.getTableType(table);
+		
+		if (type == null)
+			return true; // Always show this for Unassigned Tables
+		
+		var count = mediator.getTableCount(type);
+		
+		return count > 1; // Do not show this when Node/Edge/Network Tables UI has only one table (the default one)
 	}
 }

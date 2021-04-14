@@ -233,7 +233,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(IN_UNASSIGNED_TABLE_TOOL_BAR, "true");
 			props.setProperty(INSERT_TOOLBAR_SEPARATOR_BEFORE, "true");
 			
-			var factory = new DeleteTableTaskFactoryImpl(serviceRegistrar);
+			var factory = new DeleteTableTaskFactoryImpl(mediator, serviceRegistrar);
 			registerService(bc, factory, TableTaskFactory.class, props);
 		}
 	}

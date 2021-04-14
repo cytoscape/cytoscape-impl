@@ -238,7 +238,7 @@ public class TableBrowserMediator implements SetCurrentNetworkListener, SetCurre
 		return null;
 	}
 	
-	private void selectTableBrowser(AbstractTableBrowser tableBrowser) {
+	public void selectTableBrowser(AbstractTableBrowser tableBrowser) {
 		var cytoPanel = getTableCytoPanel();
 		var idx = cytoPanel.indexOfComponent(tableBrowser.getComponent());
 		
@@ -285,6 +285,22 @@ public class TableBrowserMediator implements SetCurrentNetworkListener, SetCurre
 				break;
 			}
 		}
+	}
+	
+	/**
+	 * Don't use this method if the table has been (or is being) deleted,
+	 * because this can return false <code>null</code> types.
+	 */
+	public Class<? extends CyIdentifiable> getTableType(CyTable table) {
+		var netTableManager = serviceRegistrar.getService(CyNetworkTableManager.class);
+		
+		return netTableManager.getTableType(table);
+	}
+	
+	public int getTableCount(Class<? extends CyIdentifiable> type) {
+		var tb = tableBrowsers.get(type);
+		
+		return tb != null ? tb.getTableCount() : 0;
 	}
 	
 	public void addAction(CyAction action, Map<String, String> props) {
@@ -373,15 +389,5 @@ public class TableBrowserMediator implements SetCurrentNetworkListener, SetCurre
 		}
 		
 		return null;
-	}
-	
-	/**
-	 * Don't use this method if the table has been (or is being) deleted,
-	 * because this can return false <code>null</code> types.
-	 */
-	private Class<? extends CyIdentifiable> getTableType(CyTable table) {
-		var netTableManager = serviceRegistrar.getService(CyNetworkTableManager.class);
-		
-		return netTableManager.getTableType(table);
 	}
 }

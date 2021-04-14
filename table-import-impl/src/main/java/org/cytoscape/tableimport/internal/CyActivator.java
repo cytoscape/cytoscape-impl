@@ -289,7 +289,7 @@ public class CyActivator extends AbstractCyActivator {
 			var factory = new LoadTableFileTaskFactoryImpl(tableImportContext, serviceRegistrar);
 			
 			var icon = new TextIcon(IconUtil.FILE_IMPORT, iconFont.deriveFont(22.0f), 32, 31);
-			var iconId = "cy::IMPORT_TABLE";
+			var iconId = "cy::Table::IMPORT_TABLE";
 			iconManager.addIcon(iconId, icon);
 			
 			var props = new Properties();

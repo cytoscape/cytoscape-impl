@@ -114,7 +114,6 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 	public static final int ICON_HEIGHT = 31;
 	public static final float ICON_FONT_SIZE = 22.0f;
 	
-	static final int SELECTOR_WIDTH = 400;
 	private static final Dimension PANEL_SIZE = new Dimension(550, 400);
 	
 	protected JPanel header;
@@ -209,6 +208,10 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 	
 	public void selectTable(CyTable table) {
 		getTableChooser().setSelectedItem(table);
+	}
+	
+	public int getTableCount() {
+		return getTableChooser().getItemCount();
 	}
 	
 	public boolean containsTable(CyTable table) {
