@@ -113,12 +113,8 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TablePri
 		if (tableChooser == null) {
 			tableChooser = new GlobalTableChooser();
 			tableChooser.addActionListener(e -> setCurrentTable());
-			var d = new Dimension(SELECTOR_WIDTH, tableChooser.getPreferredSize().height);
-			tableChooser.setMaximumSize(d);
-			tableChooser.setMinimumSize(d);
-			tableChooser.setPreferredSize(d);
-			tableChooser.setSize(d);
-			tableChooser.setToolTipText("\"Tables\" are data tables not associated with specific networks.");
+			tableChooser.setMaximumSize(new Dimension(600, tableChooser.getPreferredSize().height));
+			tableChooser.setToolTipText("Data tables not associated with specific networks");
 		}
 		
 		return tableChooser;

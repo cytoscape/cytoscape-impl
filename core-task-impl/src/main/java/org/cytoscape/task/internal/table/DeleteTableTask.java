@@ -1,12 +1,18 @@
 package org.cytoscape.task.internal.table;
 
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractTableTask;
+import org.cytoscape.work.TaskMonitor;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2010 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,24 +30,20 @@ package org.cytoscape.task.internal.table;
  * #L%
  */
 
+public final class DeleteTableTask extends AbstractTableTask {
 
-import org.cytoscape.model.CyTable;
-import org.cytoscape.task.AbstractTableTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.model.CyTableManager;
-
-
-final class DeleteTableTask extends AbstractTableTask {
-
-	protected CyTableManager tableManager;
+	private final CyServiceRegistrar serviceRegistrar;
 	
-	DeleteTableTask(CyTableManager tableManager, CyTable table) {
+	public DeleteTableTask(CyTable table, CyServiceRegistrar serviceRegistrar) {
 		super(table);
-		this.tableManager = tableManager;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
-	public void run(final TaskMonitor taskMonitor) throws Exception {
-		tableManager.deleteTable(table.getSUID());
+	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Delete Table");
+		tm.setStatusMessage("Deleting table " + table + "...");
+		
+		serviceRegistrar.getService(CyTableManager.class).deleteTable(table.getSUID());
 	}
 }

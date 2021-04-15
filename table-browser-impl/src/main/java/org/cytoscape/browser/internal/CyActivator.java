@@ -8,7 +8,6 @@ import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
 import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
-import static org.cytoscape.work.ServiceProperties.INSERT_TOOLBAR_SEPARATOR_BEFORE;
 import static org.cytoscape.work.ServiceProperties.IN_EDGE_TABLE_TOOL_BAR;
 import static org.cytoscape.work.ServiceProperties.IN_NETWORK_TABLE_TOOL_BAR;
 import static org.cytoscape.work.ServiceProperties.IN_NODE_TABLE_TOOL_BAR;
@@ -226,14 +225,13 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(ENABLE_FOR, "table");
 			props.setProperty(TOOLTIP, "Delete Table...");
 			props.setProperty(LARGE_ICON_ID, iconId);
-			props.setProperty(TOOL_BAR_GRAVITY, "" + Integer.MAX_VALUE);
+			props.setProperty(TOOL_BAR_GRAVITY, "" + Float.MAX_VALUE);
 			props.setProperty(IN_NODE_TABLE_TOOL_BAR, "true");
 			props.setProperty(IN_EDGE_TABLE_TOOL_BAR, "true");
 			props.setProperty(IN_NETWORK_TABLE_TOOL_BAR, "true");
 			props.setProperty(IN_UNASSIGNED_TABLE_TOOL_BAR, "true");
-			props.setProperty(INSERT_TOOLBAR_SEPARATOR_BEFORE, "true");
 			
-			var factory = new DeleteTableTaskFactoryImpl(serviceRegistrar);
+			var factory = new DeleteTableTaskFactoryImpl(mediator, serviceRegistrar);
 			registerService(bc, factory, TableTaskFactory.class, props);
 		}
 	}

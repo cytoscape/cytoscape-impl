@@ -25,22 +25,10 @@ public class EquationEditorTask extends AbstractTask {
 		this.table = table;
 	}
 
-	public boolean isReady() {
-		var browserTable = getBrowserTable(table);
-		
-		if (browserTable == null)
-			return false;
-		
-		var browserTableModel = browserTable.getBrowserTableModel();
-		int row = browserTable.getSelectedRow();
-		int column = browserTable.getSelectedColumn();
-
-		return row >= 0 && column >= 0 && browserTableModel.isCellEditable(row, column);
-	}
-
 	@Override
 	public void run(TaskMonitor tm) {
-		var browserTable = getBrowserTable(table);
+		tm.setTitle("Open Equation Editor");
+		var browserTable = getBrowserTable(table, registrar);
 		
 		if (browserTable == null)
 			return;
@@ -79,10 +67,10 @@ public class EquationEditorTask extends AbstractTask {
 		});
 	}
 	
-	public BrowserTable getBrowserTable(CyTable table) {
+	public static BrowserTable getBrowserTable(CyTable table, CyServiceRegistrar registrar) {
 		var tableViewManager = registrar.getService(CyTableViewManager.class);
 		var view = tableViewManager.getTableView(table);
-		var re = getRenderingEngine(view);
+		var re = getRenderingEngine(view, registrar);
 		
 		if (re == null)
 			return null;
@@ -90,14 +78,13 @@ public class EquationEditorTask extends AbstractTask {
 		return re.getBrowserTable();
 	}
 	
-	private TableRenderingEngineImpl getRenderingEngine(CyTableView view) {
+	private static TableRenderingEngineImpl getRenderingEngine(CyTableView view, CyServiceRegistrar registrar) {
 		var renderingEngineManager = registrar.getService(RenderingEngineManager.class);
 		var renderingEngines = renderingEngineManager.getRenderingEngines(view);
 		
 		for (var re : renderingEngines) {
-			if (TableViewRendererImpl.ID.equals(re.getRendererId())) {
+			if (TableViewRendererImpl.ID.equals(re.getRendererId()))
 				return (TableRenderingEngineImpl) re;
-			}
 		}
 		
 		return null;

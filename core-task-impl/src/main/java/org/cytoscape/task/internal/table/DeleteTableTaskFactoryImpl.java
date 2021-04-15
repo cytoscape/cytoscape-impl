@@ -1,12 +1,19 @@
 package org.cytoscape.task.internal.table;
 
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTable.Mutability;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractTableTaskFactory;
+import org.cytoscape.task.destroy.DeleteTableTaskFactory;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2010 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,26 +31,29 @@ package org.cytoscape.task.internal.table;
  * #L%
  */
 
+public final class DeleteTableTaskFactoryImpl extends AbstractTableTaskFactory implements DeleteTableTaskFactory {
 
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.task.AbstractTableTaskFactory;
-import org.cytoscape.task.destroy.DeleteTableTaskFactory;
-import org.cytoscape.work.TaskIterator;
-
-
-public final class DeleteTableTaskFactoryImpl extends AbstractTableTaskFactory implements DeleteTableTaskFactory{
+	private final CyServiceRegistrar serviceRegistrar;
 	
-	protected CyTableManager tableManager;
-	
-	public DeleteTableTaskFactoryImpl(CyTableManager tableManager){
-		this.tableManager = tableManager;
+	public DeleteTableTaskFactoryImpl(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(CyTable table) {
 		if (table == null)
-			throw new IllegalStateException("you forgot to set the CyTable on this task factory.");
-		return new TaskIterator(new DeleteTableTask(tableManager, table));
+			throw new IllegalStateException("You forgot to set the CyTable on this task factory.");
+		
+		return new TaskIterator(new DeleteTableTask(table, serviceRegistrar));
+	}
+	
+	@Override
+	public boolean isReady(CyTable table) {
+		return table != null && table.getMutability() == Mutability.MUTABLE;
+	}
+	
+	@Override
+	public boolean isApplicable(CyTable table) {
+		return isReady(table);
 	}
 }

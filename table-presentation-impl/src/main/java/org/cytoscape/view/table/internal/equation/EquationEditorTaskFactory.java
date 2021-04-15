@@ -20,7 +20,14 @@ public class EquationEditorTaskFactory implements TableTaskFactory {
 
 	@Override
 	public boolean isReady(CyTable table) {
-		var t = new EquationEditorTask(registrar, table);
-		return t.isReady();
+		var browserTable = EquationEditorTask.getBrowserTable(table, registrar);
+		
+		if (browserTable == null)
+			return false;
+		
+		int row = browserTable.getSelectedRow();
+		int column = browserTable.getSelectedColumn();
+
+		return row >= 0 && column >= 0 && browserTable.isCellEditable(row, column);
 	}
 }

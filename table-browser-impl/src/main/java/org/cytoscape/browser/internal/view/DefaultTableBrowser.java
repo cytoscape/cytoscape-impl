@@ -216,14 +216,9 @@ public class DefaultTableBrowser extends AbstractTableBrowser {
 		if (tableChooser == null) {
 			tableChooser = new JComboBox<>(new DefaultComboBoxModel<CyTable>());
 			tableChooser.setRenderer(new TableChooserCellRenderer());
+			tableChooser.setMaximumSize(new Dimension(600, tableChooser.getPreferredSize().height));
+			tableChooser.setVisible(false); // Table selector is invisible unless it has more than one item
 			tableChooser.addActionListener(e -> setCurrentTable());
-			var d = new Dimension(SELECTOR_WIDTH, tableChooser.getPreferredSize().height);
-			tableChooser.setMaximumSize(d);
-			tableChooser.setMinimumSize(d);
-			tableChooser.setPreferredSize(d);
-			tableChooser.setSize(d);
-			// Table selector is invisible unless it has more than one item
-			tableChooser.setVisible(false);
 			tableChooser.getModel().addListDataListener(new ListDataListener() {
 				@Override
 				public void intervalRemoved(ListDataEvent e) {

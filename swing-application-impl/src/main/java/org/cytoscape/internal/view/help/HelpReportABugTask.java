@@ -1,5 +1,9 @@
 package org.cytoscape.internal.view.help;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.OpenBrowser;
@@ -51,6 +55,13 @@ public class HelpReportABugTask extends AbstractTask {
 		final OpenBrowser openBrowser = serviceRegistrar.getService(OpenBrowser.class);
 		final CyVersion cyVersion = serviceRegistrar.getService(CyVersion.class);
 
-		openBrowser.openURL(BUG_REPORT_URL + "?cyversion=" + cyVersion.getVersion() + "&os=" + os_str);
+		String javaVersion;
+		try {
+			javaVersion = URLEncoder.encode(System.getProperty("java.version"), StandardCharsets.UTF_8.toString());
+		} catch (UnsupportedEncodingException e) {
+			javaVersion = "unknown";
+		}
+		
+		openBrowser.openURL(BUG_REPORT_URL + "?cyversion=" + cyVersion.getVersion() + "&os=" + os_str + "&javaversion=" + javaVersion);
 	}
 }
