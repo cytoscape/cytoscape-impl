@@ -825,22 +825,16 @@ public class BrowserTable extends JTable
 				// When a column is dragged, that column is usually selected, but the selection listener
 				// we added to the column model does not receive a notification for that,
 				// so we need to update the column selection (visual property) ourselves right after the dragging ends.
-				ignoreColumnSelectionEvents = true;
+				boolean finished = draggedColumn != null && column == null;
+				var colId = draggedColumn != null ? draggedColumn.getIdentifier() : null;
 				
-				if (getSelectedRowCount() > 0) {
-					boolean finished = draggedColumn != null && column == null;
-					var colId = draggedColumn != null ? draggedColumn.getIdentifier() : null;
+				super.setDraggedColumn(column);
 					
-					super.setDraggedColumn(column);
+				if (finished && getSelectedRowCount() > 0) {
+					var idx = getColumnModel().getColumnIndex(colId);
 					
-					if (finished) {
-						var idx = getColumnModel().getColumnIndex(colId);
-						
-						if (idx >= 0)
-							setSelectedColumn(idx);
-					}
-				} else {
-					ignoreColumnSelectionEvents = false;
+					if (idx >= 0)
+						setSelectedColumn(idx);
 				}
 			}
 		};
