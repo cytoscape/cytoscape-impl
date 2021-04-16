@@ -1,18 +1,16 @@
-package org.cytoscape.task.internal.table;
+package org.cytoscape.browser.internal.task;
 
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.AbstractTableTask;
-import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.task.TableTaskFactory;
+import org.cytoscape.work.Togglable;
 
 /*
  * #%L
- * Cytoscape Core Task Impl (core-task-impl)
+ * Cytoscape Table Browser Impl (table-browser-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2010 - 2021 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -30,20 +28,14 @@ import org.cytoscape.work.TaskMonitor;
  * #L%
  */
 
-public final class DeleteTableTask extends AbstractTableTask {
+public class DynamicTogglableTableTaskFactory extends DynamicTableTaskFactory implements Togglable {
 
-	private final CyServiceRegistrar serviceRegistrar;
-	
-	public DeleteTableTask(CyTable table, CyServiceRegistrar serviceRegistrar) {
-		super(table);
-		this.serviceRegistrar = serviceRegistrar;
+	public DynamicTogglableTableTaskFactory(TableTaskFactory factory, CyServiceRegistrar serviceRegistrar) {
+		super(factory, serviceRegistrar);
 	}
 
 	@Override
-	public void run(TaskMonitor tm) throws Exception {
-		tm.setTitle("Delete Table");
-		tm.setStatusMessage("Deleting table " + table + "...");
-		
-		serviceRegistrar.getService(CyTableManager.class).deleteTable(table.getSUID());
+	public boolean isOn() {
+		return factory.isOn(getCurrentTable());
 	}
 }

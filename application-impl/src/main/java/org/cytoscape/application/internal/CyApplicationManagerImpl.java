@@ -10,6 +10,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -27,7 +28,6 @@ import org.cytoscape.event.CyEvent;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -67,7 +67,7 @@ import org.slf4j.LoggerFactory;
  */
 
 /**
- * An implementation of CyApplicationManager.
+ * The implementation of the CyApplicationManager service.
  */
 public class CyApplicationManagerImpl implements CyApplicationManager,
                                                  NetworkAboutToBeDestroyedListener,
@@ -99,32 +99,30 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	}
 
 	@Override
-	public void handleEvent(final NetworkAboutToBeDestroyedEvent event) {
-		final CyNetwork toBeDestroyed = event.getNetwork();
-		final List<CyEvent<?>> eventsToFire = new ArrayList<>();
+	public void handleEvent(NetworkAboutToBeDestroyedEvent event) {
+		var toBeDestroyed = event.getNetwork();
+		var eventsToFire = new ArrayList<CyEvent<?>>();
 		
 		synchronized (lock) {
 			logger.debug("NetworkAboutToBeDestroyedEvent: " + toBeDestroyed + ". Current: " + currentNetwork);
 			
-			if (toBeDestroyed.equals(currentNetwork)) {
+			if (toBeDestroyed.equals(currentNetwork))
 				internalSetCurrentNetwork(null, eventsToFire);
-			}
 		}
 
 		fireEvents(eventsToFire);
 	}
 
 	@Override
-	public void handleEvent(final NetworkViewAboutToBeDestroyedEvent event) {
-		final CyNetworkView toBeDestroyed = event.getNetworkView();
-		final List<CyEvent<?>> eventsToFire = new ArrayList<>();
+	public void handleEvent(NetworkViewAboutToBeDestroyedEvent event) {
+		var toBeDestroyed = event.getNetworkView();
+		var eventsToFire = new ArrayList<CyEvent<?>>();
 		
 		synchronized (lock) {
 			logger.debug("NetworkViewAboutToBeDestroyedEvent: " + toBeDestroyed + ". Current: " + currentNetworkView);
 			
-			if (toBeDestroyed.equals(currentNetworkView)) {
+			if (toBeDestroyed.equals(currentNetworkView))
 				internalSetCurrentNetworkView(null, eventsToFire);
-			}
 			
 			// TODO: Do we need to fire an event?  Most listeners that care
 			// would just listen for NetworkViewAboutToBeDestroyedEvent.
@@ -136,7 +134,7 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 
 	@Override
 	public void handleEvent(RenderingEngineAboutToBeRemovedEvent event) {
-		final RenderingEngine<?> renderingEngine = event.getRenderingEngine();
+		var renderingEngine = event.getRenderingEngine();
 		
 		synchronized (lock) {
 			if (renderingEngine == currentNetworkRenderingEngine)
@@ -152,8 +150,8 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	}
 
 	@Override
-	public void setCurrentNetwork(final CyNetwork network) {
-		final List<CyEvent<?>> eventsToFire = new ArrayList<>();
+	public void setCurrentNetwork(CyNetwork network) {
+		var eventsToFire = new ArrayList<CyEvent<?>>();
 		
 		synchronized (lock) {
 			internalSetCurrentNetwork(network, eventsToFire);
@@ -163,12 +161,12 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	}
 
 	private void internalSetCurrentNetwork(CyNetwork network, List<CyEvent<?>> eventsToFire) {
-		final CyNetworkManager networkManager = serviceRegistrar.getService(CyNetworkManager.class);
+		var networkManager = serviceRegistrar.getService(CyNetworkManager.class);
 		
 		if (network != null && !networkManager.networkExists(network.getSUID()))
 			throw new IllegalArgumentException("Network is not registered in this ApplicationManager: " + network);
 
-		boolean changed = (network == null && currentNetwork != null) || (network != null && !network.equals(currentNetwork));
+		var changed = !Objects.equals(network, currentNetwork);
 		
 		if (changed) {
 			currentNetwork = network;
@@ -191,8 +189,8 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	}
 
 	@Override
-	public void setCurrentNetworkView(final CyNetworkView view) {
-		final List<CyEvent<?>> eventsToFire = new ArrayList<>();
+	public void setCurrentNetworkView(CyNetworkView view) {
+		var eventsToFire = new ArrayList<CyEvent<?>>();
 
 		synchronized (lock) {
 			internalSetCurrentNetworkView(view, eventsToFire);
@@ -201,14 +199,13 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 		fireEvents(eventsToFire);
 	}
 
-	private void internalSetCurrentNetworkView(final CyNetworkView view, List<CyEvent<?>> eventsToFire) {
-		final CyNetworkManager networkManager = serviceRegistrar.getService(CyNetworkManager.class);
+	private void internalSetCurrentNetworkView(CyNetworkView view, List<CyEvent<?>> eventsToFire) {
+		var networkManager = serviceRegistrar.getService(CyNetworkManager.class);
 		
 		if (view != null && !networkManager.networkExists(view.getModel().getSUID()))
 			throw new IllegalArgumentException("network is not recognized by this ApplicationManager");
 
-		boolean changed = (view == null && currentNetworkView != null) || 
-				          (view != null && !view.equals(currentNetworkView));
+		var changed = !Objects.equals(view, currentNetworkView);
 
 		if (changed) {
 			currentNetworkView = view;
@@ -224,8 +221,8 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	}
 
 	@Override
-	public void setSelectedNetworkViews(final List<CyNetworkView> networkViews) {
-		final List<CyEvent<?>> eventsToFire = new ArrayList<>();
+	public void setSelectedNetworkViews(List<CyNetworkView> networkViews) {
+		var eventsToFire = new ArrayList<CyEvent<?>>();
 
 		synchronized (lock) {
 			internalSetSelectedNetworkViews(networkViews, eventsToFire);
@@ -245,12 +242,12 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	
 	@Override
 	public List<CyNetwork> getSelectedNetworks() {
-		final CyNetworkManager networkManager = serviceRegistrar.getService(CyNetworkManager.class);
-		final Set<CyNetwork> allNetworks = networkManager.getNetworkSet();
-		final List<CyNetwork> selectedNetworks = new ArrayList<>();
+		var networkManager = serviceRegistrar.getService(CyNetworkManager.class);
+		var allNetworks = networkManager.getNetworkSet();
+		var selectedNetworks = new ArrayList<CyNetwork>();
 		
-		for (final CyNetwork n : allNetworks) {
-			final CyRow row = n.getRow(n);
+		for (var n : allNetworks) {
+			var row = n.getRow(n);
 			
 			if (row.get(CyNetwork.SELECTED, Boolean.class, false))
 				selectedNetworks.add(n);
@@ -260,8 +257,8 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	}
 
 	@Override
-	public void setSelectedNetworks(final List<CyNetwork> networks) {
-		final List<CyEvent<?>> eventsToFire = new ArrayList<>();
+	public void setSelectedNetworks(List<CyNetwork> networks) {
+		var eventsToFire = new ArrayList<CyEvent<?>>();
 		
 		synchronized (lock) {
 			internalSetSelectedNetworks(networks, eventsToFire);
@@ -288,12 +285,11 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 
 	@Override
 	public void setCurrentRenderingEngine(RenderingEngine<CyNetwork> engine) {
-		boolean changed;
+		boolean changed = false;
+		
 		synchronized (lock) {
-			changed = (engine == null && currentNetworkRenderingEngine != null)
-					  || (engine != null && !engine.equals(currentNetworkRenderingEngine));
-			
-			this.currentNetworkRenderingEngine = engine;
+			changed = Objects.equals(engine, currentNetworkRenderingEngine);
+			currentNetworkRenderingEngine = engine;
 		}
 		
 		if (changed)
@@ -301,14 +297,14 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	}
 	
 	@Override
-	public TableViewRenderer getTableViewRenderer(final String rendererId) {
+	public TableViewRenderer getTableViewRenderer(String rendererId) {
 		synchronized (lock) {
 			return tableRenderers.get(rendererId);
 		}
 	}
 
 	@Override
-	public NetworkViewRenderer getNetworkViewRenderer(final String rendererId) {
+	public NetworkViewRenderer getNetworkViewRenderer(String rendererId) {
 		synchronized (lock) {
 			return networkRenderers.get(rendererId);
 		}
@@ -323,25 +319,27 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 
 	@Override
 	public void setCurrentTable(CyTable table) {
-		final List<CyEvent<?>> eventsToFire = new ArrayList<>(1);
+		var eventsToFire = new ArrayList<CyEvent<?>>(1);
 		
 		synchronized (lock) {
-			currentTable = table;
-			eventsToFire.add(new SetCurrentTableEvent(this, currentTable));
+			if (!Objects.equals(currentTable, table)) {
+				currentTable = table;
+				eventsToFire.add(new SetCurrentTableEvent(this, currentTable));
+			}
 		}
 		
 		fireEvents(eventsToFire);
 	}
 	
-	private Set<CyNetwork> selectNetworks(final Collection<CyNetwork> networks) {
-		final CyNetworkManager networkManager = serviceRegistrar.getService(CyNetworkManager.class);
+	private Set<CyNetwork> selectNetworks(Collection<CyNetwork> networks) {
+		var networkManager = serviceRegistrar.getService(CyNetworkManager.class);
 		
-		final Set<CyNetwork> selectedNetworks = new HashSet<>();
-		final Set<CyNetwork> allNetworks = networkManager.getNetworkSet();
+		var selectedNetworks = new HashSet<CyNetwork>();
+		var allNetworks = networkManager.getNetworkSet();
 		
-		for (final CyNetwork n : allNetworks) {
-			final boolean selected = networks != null && networks.contains(n);
-			final CyRow row = n.getRow(n);
+		for (var n : allNetworks) {
+			boolean selected = networks != null && networks.contains(n);
+			var row = n.getRow(n);
 			row.set(CyNetwork.SELECTED, selected);
 			
 			if (selected)
@@ -441,12 +439,13 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	public TableViewRenderer getDefaultTableViewRenderer() {
 		synchronized (lock) {
 			if (defaultTableRenderer == null) {
-				if (tableRenderers.isEmpty()) {
+				if (tableRenderers.isEmpty())
 					return null;
-				}
+				
 				// Since renderers is a LinkedHashSet, the iterator gives back entries in insertion order.
 				defaultTableRenderer = tableRenderers.entrySet().iterator().next().getValue();
 			}
+			
 			return defaultTableRenderer;
 		}
 	}
@@ -467,10 +466,9 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	
 	@Override
 	public File getCurrentDirectory() {
-		final Properties props = (Properties) serviceRegistrar
-				.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)").getProperties();
-		String lastDir = props.getProperty(LAST_DIRECTORY);
-		File dir = (lastDir != null) ? new File(lastDir) : null;
+		var props = getCy3Properties();
+		var lastDir = props.getProperty(LAST_DIRECTORY);
+		var dir = (lastDir != null) ? new File(lastDir) : null;
 		
 		if (dir == null || !dir.exists() || !dir.isDirectory()) {
 			dir = new File(System.getProperty("user.dir"));
@@ -487,17 +485,21 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 		if (dir == null || !dir.exists() || !dir.isDirectory())
 			return false;
 		
-		final Properties props = (Properties) serviceRegistrar
-				.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)").getProperties();
+		var props = getCy3Properties();
 		props.setProperty(LAST_DIRECTORY, dir.getAbsolutePath());
 		
 		return true;
 	}
-	
-	private void fireEvents(final List<CyEvent<?>> eventsToFire) {
-		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+
+	private Properties getCy3Properties() {
+		return (Properties) serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)")
+				.getProperties();
+	}
+
+	private void fireEvents(List<CyEvent<?>> eventsToFire) {
+		var eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 		
-		for (CyEvent<?> event : eventsToFire)
+		for (var event : eventsToFire)
 			eventHelper.fireEvent(event);
 	}
 }

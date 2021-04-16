@@ -30,7 +30,9 @@ import javax.swing.event.DocumentListener;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.TextAnnotationImpl;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.swing.ColorButton;
+import org.cytoscape.util.swing.CyColorPaletteChooser;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
@@ -336,7 +338,7 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 	
 	private ColorButton getTextColorButton() {
 		if (textColorButton == null) {
-			textColorButton = new ColorButton(Color.BLACK);
+			textColorButton = new ColorButton(serviceRegistrar, null, BrewerType.ANY, Color.BLACK, false);
 			textColorButton.setToolTipText("Select text color...");
 			textColorButton.addPropertyChangeListener("color", evt -> apply());
 		}

@@ -20,7 +20,9 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.swing.ColorButton;
+import org.cytoscape.util.swing.CyColorPaletteChooser;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.ImageAnnotation;
@@ -225,7 +227,7 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 	
 	private ColorButton getBorderColorButton() {
 		if (borderColorButton == null) {
-			borderColorButton = new ColorButton(Color.BLACK);
+			borderColorButton = new ColorButton(serviceRegistrar, null, BrewerType.ANY, Color.BLACK, false);
 			borderColorButton.setToolTipText("Select border color...");
 			borderColorButton.addPropertyChangeListener("color", evt -> apply());
 		}

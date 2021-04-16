@@ -1,8 +1,5 @@
 package org.cytoscape.browser.internal.view;
 
-import static org.cytoscape.browser.internal.util.ViewUtil.invokeOnEDT;
-import static org.cytoscape.browser.internal.util.ViewUtil.invokeOnEDTAndWait;
-
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -18,6 +15,7 @@ import javax.swing.event.ListDataListener;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.browser.internal.util.IconUtil;
+import org.cytoscape.browser.internal.util.TableBrowserUtil;
 import org.cytoscape.browser.internal.view.tools.AbstractToolBarControl;
 import org.cytoscape.browser.internal.view.tools.GeneralOptionsControl;
 import org.cytoscape.browser.internal.view.tools.RowHeightControl;
@@ -29,14 +27,6 @@ import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.events.ColumnCreatedEvent;
-import org.cytoscape.model.events.ColumnCreatedListener;
-import org.cytoscape.model.events.ColumnDeletedEvent;
-import org.cytoscape.model.events.ColumnDeletedListener;
-import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
-import org.cytoscape.model.events.TableAboutToBeDeletedListener;
-import org.cytoscape.model.events.TableAddedEvent;
-import org.cytoscape.model.events.TableAddedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
@@ -68,8 +58,7 @@ import org.cytoscape.view.presentation.property.table.TableModeVisualProperty;
  */
 
 @SuppressWarnings("serial")
-public class DefaultTableBrowser extends AbstractTableBrowser
-		implements TableAddedListener, TableAboutToBeDeletedListener, ColumnCreatedListener, ColumnDeletedListener {
+public class DefaultTableBrowser extends AbstractTableBrowser {
 
 	private JPopupMenu displayMode;
 	private JComboBox<CyTable> tableChooser;
@@ -96,20 +85,6 @@ public class DefaultTableBrowser extends AbstractTableBrowser
 		createPopupMenu();
 	}
 	
-	@Override
-	protected TableBrowserToolBar getToolBar() {
-		if (toolBar == null) {
-			toolBar = new TableBrowserToolBar(serviceRegistrar, getTableChooser(), objType);
-		}
-		
-		return toolBar;
-	}
-	
-	@Override
-	protected boolean containsTable(CyTable table) {
-		return ((DefaultComboBoxModel<CyTable>) getTableChooser().getModel()).getIndexOf(table) >= 0;
-	}
-
 	@Override
 	public String getIdentifier() {
 		return "org.cytoscape." + objType.getSimpleName().replace("Cy", "") + "Tables";
@@ -202,55 +177,6 @@ public class DefaultTableBrowser extends AbstractTableBrowser
 		}
 	}
 
-	@Override
-	public void handleEvent(TableAddedEvent e) {
-		var newTable = e.getTable();
-
-		if (newTable.isPublic() || showPrivateTables()) {
-			var applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
-			var netTableManager = serviceRegistrar.getService(CyNetworkTableManager.class);
-			
-			var curNet = applicationManager.getCurrentNetwork();
-			
-			if (curNet != null && netTableManager.getTables(curNet, objType).containsValue(newTable)) {
-				invokeOnEDT(() -> {
-					if (((DefaultComboBoxModel<CyTable>)getTableChooser().getModel()).getIndexOf(newTable) < 0) {
-						getTableChooser().addItem(newTable);
-						getToolBar().updateEnableState(getTableChooser());
-					}
-				});
-			}
-		}
-	}
-	
-	@Override
-	public void handleEvent(TableAboutToBeDeletedEvent e) {
-		var cyTable = e.getTable();
-		
-		var model = (DefaultComboBoxModel<CyTable>)getTableChooser().getModel();
-		
-		if (model.getIndexOf(cyTable) >= 0) {
-			model.removeElement(cyTable);
-			// We need this to happen synchronously or we get royally messed up by the new table selection
-			invokeOnEDTAndWait(() -> {
-				getToolBar().updateEnableState(getTableChooser());
-				removeTable(cyTable);
-			});
-		}
-	}
-	
-	@Override
-	public void handleEvent(ColumnDeletedEvent e) {
-		if (e.getSource() == currentTable)
-			getToolBar().updateEnableState();
-	}
-
-	@Override
-	public void handleEvent(ColumnCreatedEvent e) {
-		if (e.getSource() == currentTable)
-			getToolBar().updateEnableState();
-	}
-	
 	public void update(CyNetwork network) {
 		if (network != null) {
 			if (objType == CyNode.class)
@@ -276,7 +202,6 @@ public class DefaultTableBrowser extends AbstractTableBrowser
 				for (var tbl : tables)
 					getTableChooser().addItem(tbl);
 				
-				getToolBar().updateEnableState(getTableChooser());
 				getTableChooser().setSelectedItem(currentTable);
 			}
 		} finally {
@@ -286,18 +211,14 @@ public class DefaultTableBrowser extends AbstractTableBrowser
 		showSelectedTable();
 	}
 	
-	private JComboBox<CyTable> getTableChooser() {
+	@Override
+	protected JComboBox<CyTable> getTableChooser() {
 		if (tableChooser == null) {
 			tableChooser = new JComboBox<>(new DefaultComboBoxModel<CyTable>());
 			tableChooser.setRenderer(new TableChooserCellRenderer());
+			tableChooser.setMaximumSize(new Dimension(600, tableChooser.getPreferredSize().height));
+			tableChooser.setVisible(false); // Table selector is invisible unless it has more than one item
 			tableChooser.addActionListener(e -> setCurrentTable());
-			var d = new Dimension(SELECTOR_WIDTH, tableChooser.getPreferredSize().height);
-			tableChooser.setMaximumSize(d);
-			tableChooser.setMinimumSize(d);
-			tableChooser.setPreferredSize(d);
-			tableChooser.setSize(d);
-			// Table selector is invisible unless it has more than one item
-			tableChooser.setVisible(false);
 			tableChooser.getModel().addListDataListener(new ListDataListener() {
 				@Override
 				public void intervalRemoved(ListDataEvent e) {
@@ -331,7 +252,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser
 		var netTableManager = serviceRegistrar.getService(CyNetworkTableManager.class);
 		var map = netTableManager.getTables(network, objType);
 		
-		if (showPrivateTables()) {
+		if (TableBrowserUtil.isShowPrivateTables(serviceRegistrar)) {
 			tables.addAll(map.values());
 		} else {
 			for (var tbl : map.values()) {

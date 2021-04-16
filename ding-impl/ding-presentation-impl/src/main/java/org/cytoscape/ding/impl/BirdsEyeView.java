@@ -76,11 +76,13 @@ public final class BirdsEyeView implements RenderingEngine<CyNetwork>, ContentCh
 	@Override
 	public void contentChanged() {
 		renderComponent.updateView(UpdateType.ALL_FAST);
-		contentChangedTimer.debounce(() -> {
-			fitCanvasToNetwork();
-			renderComponent.setBackgroundPaint(re.getBackgroundColor());
-			renderComponent.updateView(UpdateType.ALL_FULL);
-		});
+		if(!contentChangedTimer.isShutdown()) {
+			contentChangedTimer.debounce(() -> {
+				fitCanvasToNetwork();
+				renderComponent.setBackgroundPaint(re.getBackgroundColor());
+				renderComponent.updateView(UpdateType.ALL_FULL);
+			});
+		}
 	}	
 	
 	public JComponent getComponent() {

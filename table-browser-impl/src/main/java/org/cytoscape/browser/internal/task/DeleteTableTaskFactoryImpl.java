@@ -1,5 +1,6 @@
-package org.cytoscape.task.internal.table;
+package org.cytoscape.browser.internal.task;
 
+import org.cytoscape.browser.internal.view.TableBrowserMediator;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTable.Mutability;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -9,11 +10,11 @@ import org.cytoscape.work.TaskIterator;
 
 /*
  * #%L
- * Cytoscape Core Task Impl (core-task-impl)
+ * Cytoscape Table Browser Impl (table-browser-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2010 - 2021 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -31,18 +32,25 @@ import org.cytoscape.work.TaskIterator;
  * #L%
  */
 
-public final class DeleteTableTaskFactoryImpl extends AbstractTableTaskFactory implements DeleteTableTaskFactory {
+/**
+ * We don't reuse the {@link DeleteTableTaskFactory} service here, because our {@link DeleteTableTask} needs
+ * a <code>confirm</code> tunable, which we don't want to add to the original service and risk breaking existing apps
+ * that use it.
+ */
+public final class DeleteTableTaskFactoryImpl extends AbstractTableTaskFactory {
 
+	private final TableBrowserMediator mediator;
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	public DeleteTableTaskFactoryImpl(CyServiceRegistrar serviceRegistrar) {
+	public DeleteTableTaskFactoryImpl(TableBrowserMediator mediator, CyServiceRegistrar serviceRegistrar) {
+		this.mediator = mediator;
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(CyTable table) {
 		if (table == null)
-			throw new IllegalStateException("You forgot to set the CyTable on this task factory.");
+			throw new IllegalStateException("'table' must not be null.");
 		
 		return new TaskIterator(new DeleteTableTask(table, serviceRegistrar));
 	}
@@ -54,6 +62,16 @@ public final class DeleteTableTaskFactoryImpl extends AbstractTableTaskFactory i
 	
 	@Override
 	public boolean isApplicable(CyTable table) {
-		return isReady(table);
+		if (table == null)
+			return false;
+		
+		var type = mediator.getTableType(table);
+		
+		if (type == null)
+			return true; // Always show this for Unassigned Tables
+		
+		var count = mediator.getTableCount(type);
+		
+		return count > 1; // Do not show this when Node/Edge/Network Tables UI has only one table (the default one)
 	}
 }

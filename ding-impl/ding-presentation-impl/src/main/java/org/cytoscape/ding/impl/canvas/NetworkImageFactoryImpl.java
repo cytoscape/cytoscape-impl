@@ -5,6 +5,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 import org.cytoscape.ding.PrintLOD;
@@ -23,6 +24,9 @@ public class NetworkImageFactoryImpl implements NetworkImageFactory {
 		if(!rendererId.equals(DingRenderer.ID)) {
 			throw new IllegalArgumentException("networkView was not created by the ding network view factory, got: " + rendererId);
 		}
+		
+		if(properties == null)
+			properties = Collections.emptyMap();
 		
 		// Get configuration properties
 		int width  = (int) properties.getOrDefault(WIDTH,  100);
@@ -52,8 +56,6 @@ public class NetworkImageFactoryImpl implements NetworkImageFactory {
 	
 	
 	private static NetworkTransform createTransformFromVPs(CyNetworkViewSnapshot snapshot, int width, int height) {
-		NetworkTransform transform = new NetworkTransform(width, height);
-		
 		Double scaleFactor = snapshot.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
 		Double centerX = snapshot.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION);
 		Double centerY = snapshot.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION);
@@ -66,9 +68,9 @@ public class NetworkImageFactoryImpl implements NetworkImageFactory {
 		if(centerY == null)
 			centerY = 0.0;
 		
+		NetworkTransform transform = new NetworkTransform(width, height);
 		transform.setScaleFactor(scaleFactor);
 		transform.setCenter(centerX, centerY);
-			
 		return transform;
 	}
 	
@@ -86,10 +88,7 @@ public class NetworkImageFactoryImpl implements NetworkImageFactory {
 		
 		transform.setCenter(centerX, centerY);
 		transform.setScaleFactor(scaleFactor);
-		
 		return transform;
 	}
-
-
 
 }

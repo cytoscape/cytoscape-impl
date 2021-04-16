@@ -17,38 +17,44 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JToolBar;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.TableViewRenderer;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.application.swing.TableToolBarComponent;
 import org.cytoscape.browser.internal.io.TableColumnStat;
 import org.cytoscape.browser.internal.io.TableColumnStatFileIO;
+import org.cytoscape.browser.internal.util.CyToolBar;
 import org.cytoscape.browser.internal.util.ViewUtil;
 import org.cytoscape.browser.internal.view.tools.AbstractToolBarControl;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
@@ -97,16 +103,23 @@ import org.slf4j.LoggerFactory;
  * Base class for all Table Browsers.
  */
 @SuppressWarnings("serial")
-public abstract class AbstractTableBrowser extends JPanel
-		implements CytoPanelComponent2, TableViewAddedListener, SessionLoadedListener, SessionAboutToBeSavedListener {
+public abstract class AbstractTableBrowser extends JPanel implements CytoPanelComponent2, SessionLoadedListener,
+		SessionAboutToBeSavedListener, TableViewAddedListener {
 
 	private final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
-	static final int SELECTOR_WIDTH = 400;
+	public static final CytoPanelName CYTO_PANEL_NAME = CytoPanelName.SOUTH;
+	
+	public static final int ICON_WIDTH = 32;
+	public static final int ICON_HEIGHT = 31;
+	public static final float ICON_FONT_SIZE = 22.0f;
+	
 	private static final Dimension PANEL_SIZE = new Dimension(550, 400);
 	
-	protected TableBrowserToolBar toolBar;
+	protected JPanel header;
+	protected TableToolBar toolBar;
 	protected OptionsBar optionsBar;
+	
 	private JPanel dropPanel;
 	
 	private final JPanel mainPane = new JPanel();
@@ -114,10 +127,10 @@ public abstract class AbstractTableBrowser extends JPanel
 	private final JLabel dropIconLabel = new JLabel();
 	private final JLabel dropLabel = new JLabel("Drag table files here");
 
-	private final String tabTitle;
+	protected final String tabTitle;
 	protected CyTable currentTable;
 	
-	private final Map<CyTable,TableRenderer> tableRenderers;
+	private final Map<CyTable, TableRenderer> tableRenderers;
 	
 	protected final String appFileName;
 	protected Class<? extends CyIdentifiable> currentTableType;
@@ -141,45 +154,8 @@ public abstract class AbstractTableBrowser extends JPanel
 		appFileName  = tabTitle.replaceAll(" ", "").concat(".props");
 		tableRenderers = new HashMap<>();
 		
-		setLayout(new BorderLayout());
-		setPreferredSize(PANEL_SIZE);
-		setSize(PANEL_SIZE);
-		
-		mainPane.setLayout(new BorderLayout());
-		
-		getToolBar().setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground")));
-		getOptionsBar().setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground")));
-		
-		var layout = new GroupLayout(this);
-		setLayout(layout);
-		layout.setAutoCreateContainerGaps(false);
-		layout.setAutoCreateGaps(false);
-		
-		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
-				.addComponent(getToolBar(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(getOptionsBar(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(mainPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-		);
-		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addComponent(getToolBar(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				.addComponent(getOptionsBar(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				.addComponent(mainPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-		);
-		
-		getToolBar().getFormatButton().addActionListener(evt -> {
-			getOptionsBar().setVisible(getToolBar().getFormatButton().isSelected());
-		});
-		
-		showDropPanel();
-		
-		var dropListener = new BrowserDropListener();
-		setTransferHandler(dropListener);
-		new DropTarget(this, dropListener);
-		
-		update();
+		init();
 	}
-	
-	protected abstract boolean containsTable(CyTable table);
 	
 	@Override
 	public Component getComponent() {
@@ -188,7 +164,7 @@ public abstract class AbstractTableBrowser extends JPanel
 
 	@Override
 	public CytoPanelName getCytoPanelName() {
-		return CytoPanelName.SOUTH;
+		return CYTO_PANEL_NAME;
 	}
 
 	@Override
@@ -205,6 +181,13 @@ public abstract class AbstractTableBrowser extends JPanel
 		return icon;
 	}
 	
+	/**
+	 * @return {@link CyNode.class}, {@link CyEdge.class}, {@link CyNetwork.class} or <code>null</code> ("Global" table).
+	 */
+	public Class<? extends CyIdentifiable> getObjectType() {
+		return objType;
+	}
+	
 	public CyTable getCurrentTable() {
 		return currentTable;
 	}
@@ -214,10 +197,61 @@ public abstract class AbstractTableBrowser extends JPanel
 		update();
 	}
 	
+	public boolean addTable(CyTable table) {
+		if (!containsTable(table)) {
+			((DefaultComboBoxModel<CyTable>) getTableChooser().getModel()).addElement(table);
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public void selectTable(CyTable table) {
+		getTableChooser().setSelectedItem(table);
+	}
+	
+	public int getTableCount() {
+		return getTableChooser().getItemCount();
+	}
+	
+	public boolean containsTable(CyTable table) {
+		return ((DefaultComboBoxModel<CyTable>) getTableChooser().getModel()).getIndexOf(table) >= 0;
+	}
+	
+	/**
+	 * @return true if it contains no tables
+	 */
+	public boolean isEmpty() {
+		synchronized (lock) {
+			return tableRenderers.isEmpty();
+		}
+	}
+	
+	public TableRenderer getTableRenderer(CyTable table) {
+		if (table == null)
+			return null;
+		
+		synchronized (lock) {
+			var renderer = tableRenderers.get(table);
+			
+			if (renderer == null)
+				 createDefaultTableView(table);
+			
+			return tableRenderers.get(table);
+		}
+	}
+	
+	public TableRenderer getCurrentRenderer() {
+		return getTableRenderer(currentTable);
+	}
+	
 	/**
 	 * Delete the given table from the JTable
 	 */
 	public void removeTable(CyTable cyTable) {
+		var chooserModel = (DefaultComboBoxModel<CyTable>) getTableChooser().getModel();
+		chooserModel.removeElement(cyTable);
+		
 		TableRenderer renderer = null;
 		
 		synchronized (lock) {
@@ -234,16 +268,82 @@ public abstract class AbstractTableBrowser extends JPanel
 			currentTableType = null;
 		}
 		
-		update();
+		if (isEmpty())
+			showSelectedTable();
+		else
+			update();
 	}
 	
-	/**
-	 * @return true if it contains no tables
-	 */
-	protected boolean isEmpty() {
-		synchronized (lock) {
-			return tableRenderers.isEmpty();
+	private void init() {
+		setPreferredSize(PANEL_SIZE);
+		setSize(PANEL_SIZE);
+		
+		// Layouts
+		mainPane.setLayout(new BorderLayout());
+		
+		var layout = new GroupLayout(this);
+		setLayout(layout);
+		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(false);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+				.addComponent(getHeader(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(mainPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(getHeader(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(mainPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+		
+		// Drag and Drop
+		showDropPanel();
+		
+		var dropListener = new BrowserDropListener();
+		setTransferHandler(dropListener);
+		new DropTarget(this, dropListener);
+		
+		// Toolbar
+		getToolBar().addSpacer(Integer.MAX_VALUE - 10);
+		
+		if (getTableChooser() != null) {
+			var toolbarComp = new TableToolBarComponent() {
+				@Override
+				public Component getComponent() {
+					return getTableChooser();
+				}
+				@Override
+				public float getToolBarGravity() {
+					return Integer.MAX_VALUE;
+				}
+				@Override
+				public Class<? extends CyIdentifiable> getTableType() {
+					return objType;
+				}
+				@Override
+				public boolean isApplicable(CyTable table) {
+					return true;
+				}
+			};
+			
+			getToolBar().addToolBarComponent(toolbarComp, Collections.emptyMap());
 		}
+		
+		getTableChooser().getModel().addListDataListener(new ListDataListener() {
+			@Override
+			public void intervalRemoved(ListDataEvent e) {
+				updateTableChooser();
+			}
+			@Override
+			public void intervalAdded(ListDataEvent e) {
+				updateTableChooser();
+			}
+			@Override
+			public void contentsChanged(ListDataEvent e) {
+				// Ignore...
+			}
+		});
+		
+		update();
 	}
 	
 	protected void update() {
@@ -252,8 +352,16 @@ public abstract class AbstractTableBrowser extends JPanel
 	}
 
 	private void updateToolBar() {
-		getToolBar().setVisible(currentTable != null);
-		getOptionsBar().setVisible(currentTable != null && getToolBar().getFormatButton().isSelected());
+		updateTableChooser();
+		getHeader().setVisible(currentTable != null);
+	}
+	
+	private void updateTableChooser() {
+		var minToShow = getObjectType() == null ? 1 : 2;
+		getTableChooser().setVisible(getTableChooser().getItemCount() >= minToShow);
+		
+		if (currentTable != null && !currentTable.equals(getTableChooser().getSelectedItem()))
+			selectTable(currentTable);
 	}
 	
 	private void showDropPanel() {
@@ -304,12 +412,12 @@ public abstract class AbstractTableBrowser extends JPanel
 		return dropPanel;
 	}
 	
-	void showSelectedTable() {
-		var tableRenderer = getCurrentRenderer();
+	protected void showSelectedTable() {
+		var renderer = getCurrentRenderer();
 		
-		if (tableRenderer != null) {
+		if (renderer != null) {
 			mainPane.removeAll();
-			mainPane.add(tableRenderer.getComponent(), BorderLayout.CENTER);
+			mainPane.add(renderer.getComponent(), BorderLayout.CENTER);
 			mainPane.revalidate();
 			mainPane.validate();
 			mainPane.repaint();
@@ -319,36 +427,17 @@ public abstract class AbstractTableBrowser extends JPanel
 		}
 
 		update();
-		getToolBar().setTableRenderer(tableRenderer);
 	}
 
-	protected TableRenderer getCurrentRenderer() {
-		TableRenderer renderer = null;
-		
-		synchronized (lock) {
-			renderer = tableRenderers.get(currentTable);
-		}
-		
-		if (renderer == null && currentTable != null)
-			 createDefaultTableView();
-		
-		synchronized (lock) {
-			renderer = tableRenderers.get(currentTable);
-		}
-		
-		update();
-		return renderer;
-	}
-
-	private void createDefaultTableView() {
+	private void createDefaultTableView(CyTable table) {
 		var tableViewManager = serviceRegistrar.getService(CyTableViewManager.class);
 		
 		// If no table view exists yet then automatically create one using the default renderer.
-		var tableView = tableViewManager.getTableView(currentTable);
+		var tableView = tableViewManager.getTableView(table);
 		
 		if (tableView == null) {
 			var tableViewFactory = serviceRegistrar.getService(CyTableViewFactory.class);
-			tableView = tableViewFactory.createTableView(currentTable);
+			tableView = tableViewFactory.createTableView(table);
 			
 			// this will fire the event that runs the below handler
 			tableViewManager.setTableView(tableView);
@@ -356,8 +445,8 @@ public abstract class AbstractTableBrowser extends JPanel
 	}
 	
 	@Override
-	public void handleEvent(TableViewAddedEvent event) {
-		var tableView = event.getTableView();
+	public void handleEvent(TableViewAddedEvent e) {
+		var tableView = e.getTableView();
 		
 		if (!containsTable(tableView.getModel()))
 			return;
@@ -390,21 +479,6 @@ public abstract class AbstractTableBrowser extends JPanel
 		}
 		
 		showSelectedTable();
-	}
-	
-	public TableRenderer getTableRenderer(CyTable table) {
-		synchronized (lock) {
-			return tableRenderers.get(table);
-		}
-	}
-	
-	protected Map<CyTable,TableRenderer> getTableRenderersMap() {
-		return new HashMap<>(tableRenderers);
-	}
-
-	@Override
-	public String toString() {
-		return "AbstractTableBrowser [tabTitle=" + tabTitle + ", currentTable=" + currentTable + "]";
 	}
 	
 	// We have to keep this for backwards compatibility
@@ -458,21 +532,62 @@ public abstract class AbstractTableBrowser extends JPanel
 		TableColumnStatFileIO.write(tableColumnStatList, e, appFileName);
 	}
 	
-	@SuppressWarnings("unchecked")
-	protected boolean showPrivateTables() {
-		CyProperty<Properties> cyProp = serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
-		return cyProp != null && "true".equalsIgnoreCase(cyProp.getProperties().getProperty("showPrivateTables"));
+	protected Map<CyTable,TableRenderer> getTableRenderersMap() {
+		return new HashMap<>(tableRenderers);
+	}
+
+	@Override
+	public String toString() {
+		return "AbstractTableBrowser [tabTitle=" + tabTitle + ", currentTable=" + currentTable + "]";
 	}
 	
-	protected abstract TableBrowserToolBar getToolBar();
+	protected JPanel getHeader() {
+		if (header == null) {
+			header = new JPanel(new BorderLayout());
+			header.add(getToolBar(), BorderLayout.NORTH);
+			header.add(getOptionsBar(), BorderLayout.SOUTH);
+		}
+		
+		return header;
+	}
+	
+	public TableToolBar getToolBar() {
+		if (toolBar == null) {
+			toolBar = new TableToolBar(objType, serviceRegistrar);
+			toolBar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground")));
+		}
+		
+		return toolBar;
+	}
 	
 	protected OptionsBar getOptionsBar() {
 		if (optionsBar == null) {
 			optionsBar = new OptionsBar();
+			optionsBar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground")));
 			optionsBar.setVisible(false);
 		}
 		
 		return optionsBar;
+	}
+	
+	protected abstract JComboBox<CyTable> getTableChooser();
+	
+	public class TableToolBar extends CyToolBar {
+
+		private final Class<? extends CyIdentifiable> objType;
+		
+		public TableToolBar(Class<? extends CyIdentifiable> objType, CyServiceRegistrar serviceRegistrar) {
+			super(tabTitle + " Tools", JToolBar.HORIZONTAL, ICON_WIDTH, ICON_HEIGHT, serviceRegistrar);
+			this.objType = objType;
+		}
+		
+		public Class<? extends CyIdentifiable> getObjectType() {
+			return objType;
+		}
+		
+		public CyTable getCurrentTable() {
+			return currentTable;
+		}
 	}
 	
 	class OptionsBar extends JPanel {

@@ -1,12 +1,37 @@
 package org.cytoscape.browser.internal.view;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+
+import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.text.Collator;
+import java.util.Comparator;
+import java.util.Locale;
+import java.util.TreeSet;
+
+import javax.swing.AbstractAction;
+import javax.swing.DefaultListModel;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.WindowConstants;
+
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.util.swing.LookAndFeelUtil;
+
 /*
  * #%L
  * Cytoscape Table Browser Impl (table-browser-impl)
  * $Id$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,39 +49,8 @@ package org.cytoscape.browser.internal.view;
  * #L%
  */
 
-
-import static javax.swing.GroupLayout.DEFAULT_SIZE;
-
-import java.awt.Frame;
-import java.awt.event.ActionEvent;
-import java.text.Collator;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
-import java.util.TreeSet;
-
-import javax.swing.AbstractAction;
-import javax.swing.DefaultListModel;
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.WindowConstants;
-
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.util.swing.LookAndFeelUtil;
-
-
+@SuppressWarnings("serial")
 public class DeletionDialog extends JDialog {
-	
-	private static final long serialVersionUID = -3913969667219654220L;
 	
 	private JList<String> columnList;
 	private JButton cancelButton;
@@ -65,7 +59,7 @@ public class DeletionDialog extends JDialog {
 	
 	private final CyTable table;
 
-	protected DeletionDialog(final Frame parent, final CyTable table) {
+	public DeletionDialog(Frame parent, CyTable table) {
 		super(parent, "Delete Columns", ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -74,26 +68,25 @@ public class DeletionDialog extends JDialog {
 		initComponents();
 	}
 
-	@SuppressWarnings("serial")
 	private void initComponents() {
-		final JLabel deleteLabel = new JLabel("Select columns to be deleted:");
+		var deleteLabel = new JLabel("Select columns to be deleted:");
 		
-		final Collator collator = Collator.getInstance(Locale.getDefault());
-		final TreeSet<CyColumn> deletableColumns = new TreeSet<>(new Comparator<CyColumn>() {
+		var collator = Collator.getInstance(Locale.getDefault());
+		var deletableColumns = new TreeSet<>(new Comparator<CyColumn>() {
 			@Override
 			public int compare(CyColumn c1, CyColumn c2) {
 				return collator.compare(c1.getName(), c2.getName());
 			}
 		});
 		
-		for (CyColumn col : table.getColumns()) {
+		for (var col : table.getColumns()) {
 			if (!col.isImmutable())
 				deletableColumns.add(col);
 		}
 		
-		final DefaultListModel<String> listModel = new DefaultListModel<>();
+		var listModel = new DefaultListModel<String>();
 		
-		for (CyColumn col : deletableColumns)
+		for (var col : deletableColumns)
 			listModel.addElement(col.getName());
 		
 		columnList = new JList<>(listModel);
@@ -114,20 +107,17 @@ public class DeletionDialog extends JDialog {
 			}
 		});
 
-		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(deleteButton, cancelButton);
+		var buttonPanel = LookAndFeelUtil.createOkCancelPanel(deleteButton, cancelButton);
 		
-		columnList.addListSelectionListener(new ListSelectionListener() {
-			@Override
-			public void valueChanged(ListSelectionEvent e) {
-				if (!e.getValueIsAdjusting()) {
-					final int[] selectedIndices = columnList.getSelectedIndices();
-					deleteButton.getAction().setEnabled(selectedIndices != null && selectedIndices.length > 0);
-				}
+		columnList.addListSelectionListener(e -> {
+			if (!e.getValueIsAdjusting()) {
+				var selectedIndices = columnList.getSelectedIndices();
+				deleteButton.getAction().setEnabled(selectedIndices != null && selectedIndices.length > 0);
 			}
 		});
 		
-		final JPanel contentPane = new JPanel();
-		final GroupLayout layout = new GroupLayout(contentPane);
+		var contentPane = new JPanel();
+		var layout = new GroupLayout(contentPane);
 		contentPane.setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(true);
@@ -152,9 +142,9 @@ public class DeletionDialog extends JDialog {
 	}
 
 	private void deleteButtonActionPerformed(ActionEvent e) {
-		final List<String> selected = columnList.getSelectedValuesList();
+		var selected = columnList.getSelectedValuesList();
 		
-		for (String name : selected)
+		for (var name : selected)
 			table.deleteColumn(name);
 		
 		dispose();

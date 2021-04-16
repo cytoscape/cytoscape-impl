@@ -41,12 +41,10 @@ import java.util.concurrent.TimeUnit;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
-import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -274,7 +272,7 @@ public class NetworkSearchBar extends JPanel {
 		if (queryComp == null)
 			queryComp = getSearchTextField();
 		
-		final GroupLayout layout = new GroupLayout(getContentPane());
+		var layout = new GroupLayout(getContentPane());
 		getContentPane().setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(false);
@@ -353,7 +351,7 @@ public class NetworkSearchBar extends JPanel {
 				BorderFactory.createEmptyBorder(2, 1, 2, 1)
 		));
 		
-		final GroupLayout layout = new GroupLayout(this);
+		var layout = new GroupLayout(this);
 		setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(false);
@@ -416,9 +414,9 @@ public class NetworkSearchBar extends JPanel {
 	
 	JTextField getSearchTextField() {
 		if (searchTextField == null) {
-			final Color msgColor = UIManager.getColor("Label.disabledForeground");
-			final int vgap = 1;
-			final int hgap = 5;
+			var msgColor = UIManager.getColor("Label.disabledForeground");
+			int vgap = 1;
+			int hgap = 5;
 			
 			searchTextField = new JTextField() {
 				@Override
@@ -513,7 +511,7 @@ public class NetworkSearchBar extends JPanel {
 		else
 			btn.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
 		
-		Dimension d = new Dimension(width, Math.max(width, getSearchTextField().getPreferredSize().height));
+		var d = new Dimension(width, Math.max(width, getSearchTextField().getPreferredSize().height));
 		btn.setMinimumSize(d);
 		btn.setPreferredSize(d);
 	}
@@ -716,8 +714,8 @@ public class NetworkSearchBar extends JPanel {
 		}
 		
 		private void setKeyBindings(JComponent comp) {
-			final ActionMap actionMap = comp.getActionMap();
-			final InputMap inputMap = comp.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+			var actionMap = comp.getActionMap();
+			var inputMap = comp.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
 			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), KeyAction.VK_ENTER);
 			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), KeyAction.VK_SPACE);
@@ -734,13 +732,13 @@ public class NetworkSearchBar extends JPanel {
 			final static String VK_SPACE = "VK_SPACE";
 			final static String VK_TAB = "VK_TAB";
 			
-			KeyAction(final String actionCommand) {
+			KeyAction(String actionCommand) {
 				putValue(ACTION_COMMAND_KEY, actionCommand);
 			}
 
 			@Override
-			public void actionPerformed(final ActionEvent e) {
-				final String cmd = e.getActionCommand();
+			public void actionPerformed(ActionEvent e) {
+				var cmd = e.getActionCommand();
 				
 				if (cmd.equals(VK_ENTER) || cmd.equals(VK_SPACE) || cmd.equals(VK_TAB))
 					disposeProvidersPopup(true);
@@ -796,8 +794,8 @@ public class NetworkSearchBar extends JPanel {
 		}
 		
 		private void setKeyBindings(JComponent comp) {
-			final ActionMap actionMap = comp.getActionMap();
-			final InputMap inputMap = comp.getInputMap(WHEN_IN_FOCUSED_WINDOW);
+			var actionMap = comp.getActionMap();
+			var inputMap = comp.getInputMap(WHEN_IN_FOCUSED_WINDOW);
 
 			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), KeyAction.VK_ESCAPE);
 			actionMap.put(KeyAction.VK_ESCAPE, new KeyAction(KeyAction.VK_ESCAPE));
@@ -807,13 +805,13 @@ public class NetworkSearchBar extends JPanel {
 
 			final static String VK_ESCAPE = "VK_ESCAPE";
 			
-			KeyAction(final String actionCommand) {
+			KeyAction(String actionCommand) {
 				putValue(ACTION_COMMAND_KEY, actionCommand);
 			}
 
 			@Override
-			public void actionPerformed(final ActionEvent e) {
-				final String cmd = e.getActionCommand();
+			public void actionPerformed(ActionEvent e) {
+				var cmd = e.getActionCommand();
 				
 				if (cmd.equals(VK_ESCAPE)) {
 					disposeOptionsDialog();
@@ -837,12 +835,12 @@ public class NetworkSearchBar extends JPanel {
 		}
 	    
 	    @Override
-	    public void mouseEntered(final MouseEvent e) {
+	    public void mouseEntered(MouseEvent e) {
 	        ToolTipManager.sharedInstance().setDismissDelay(dismissDelayMinutes);
 	    }
 	 
 	    @Override
-	    public void mouseExited(final MouseEvent e) {
+	    public void mouseExited(MouseEvent e) {
 	        ToolTipManager.sharedInstance().setDismissDelay(defaultDismissTimeout);
 	    }
 	}

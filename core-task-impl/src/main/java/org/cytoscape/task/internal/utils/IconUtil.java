@@ -8,7 +8,7 @@ import java.awt.Color;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -113,6 +113,10 @@ public abstract class IconUtil {
 	public static final String SELECTION_MODE_ANNOTATIONS = "7";
 	public static final String SELECTION_MODE_EDGES = "8";
 	public static final String SELECTION_MODE_NODES = "9";
+	
+	// Generic Import/Export
+	public static final String FILE_EXPORT = "+";
+	public static final String FILE_IMPORT = ",";
 	
 	// Layers/Colors used to build a TextIcon
 	// HELP

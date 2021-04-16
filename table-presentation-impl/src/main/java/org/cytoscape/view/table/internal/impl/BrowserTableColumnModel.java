@@ -62,7 +62,7 @@ public class BrowserTableColumnModel extends DefaultTableColumnModel {
 				return col;
 			}
 		}
-		throw new IllegalArgumentException("CyColumnView suid not found: " + suid);
+		return null;
 	}
 	
 	private int getSetVisibleIndex(TableColumn col) {
