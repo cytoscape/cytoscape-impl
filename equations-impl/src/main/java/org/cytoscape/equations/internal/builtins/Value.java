@@ -1,5 +1,7 @@
 package org.cytoscape.equations.internal.builtins;
 
+import java.util.List;
+
 /*
  * #%L
  * Cytoscape Equations Impl (equations-impl)
@@ -56,12 +58,15 @@ public class Value extends AbstractFunction {
 	 *  @throws IllegalArgumentException thrown if any of the arguments is not of type Double
 	 */
 	public Object evaluateFunction(final Object[] args) throws IllegalArgumentException, ArithmeticException {
-		if (args[0].getClass() == Double.class)
-			return (Double)args[0];
-		if (args[0].getClass() == Long.class)
-			return (double)(Long)args[0];
-		if (args[0].getClass() == Boolean.class)
-			return Double.valueOf((Boolean)args[0] ? 1.0 : 0.0);
+		if(args[0] instanceof Number) {
+			return ((Number)args[0]).doubleValue();
+		}
+ 	 	if(args[0] instanceof Boolean) {
+ 	 		return (Boolean)args[0] ? 1.0 : 0.0;
+ 	 	}
+		if(args[0] instanceof List) {
+			throw new IllegalArgumentException("List argument to VALUE() cannot be converted to a number.");
+		}
 
 		try {
 			return Double.parseDouble((String)args[0]);

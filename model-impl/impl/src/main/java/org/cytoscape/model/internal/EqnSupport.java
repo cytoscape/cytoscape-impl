@@ -1,6 +1,7 @@
 package org.cytoscape.model.internal;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -62,6 +63,10 @@ class EqnSupport {
 	static Object convertEqnResultToColumnType(final Class<?> columnType, final Object result) {
 		final Class<?> resultType = result.getClass();
 		if (resultType == columnType)
+			return result;
+		
+		// the equation bundle subclasses ArrayList for its List return values
+		if (columnType == List.class && List.class.isAssignableFrom(resultType))
 			return result;
 
 		if (columnType == String.class)
