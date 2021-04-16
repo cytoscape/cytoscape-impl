@@ -51,6 +51,8 @@ import org.slf4j.LoggerFactory;
  */
 public class OpenSessionCommandTask extends AbstractOpenSessionTask {
 
+	public static final String TEMP_FILE_EXT = ".tmpCYS";
+	
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	@ProvidesTitle
@@ -108,7 +110,7 @@ public class OpenSessionCommandTask extends AbstractOpenSessionTask {
 					FileOutputStream tmpStream = null;
 					
 					try (var channel = Channels.newChannel(new URL(url).openStream())) {
-						tmpFile = File.createTempFile(url, ".cys");
+						tmpFile = File.createTempFile(url, TEMP_FILE_EXT);
 						tmpFile.deleteOnExit();
 						
 						tmpStream = new FileOutputStream(tmpFile);
@@ -152,18 +154,6 @@ public class OpenSessionCommandTask extends AbstractOpenSessionTask {
 			} catch (Exception e) {
 				disposeCancelledSession(e, sessionManager);
 				throw e;
-			} finally {
-				// Delete the tmp file now, otherwise the user could inadvertently save the session
-				// to the temp directory later -- we don't want to pass the filename to the CySessionManager!
-				if (tmpFile != null) {
-					try {
-						tmpFile.delete();
-					} catch (Exception e) {
-						logger.error("Cannot delete temp cys file.", e);
-					}
-					
-					tmpFile = file = null;
-				}
 			}
 			
 			if (cancelled)
@@ -173,6 +163,18 @@ public class OpenSessionCommandTask extends AbstractOpenSessionTask {
 		} finally {
 			// plug big memory leak
 			reader = null;
+			
+			// Delete the tmp file now, otherwise the user could inadvertently save the session
+			// to the temp directory later
+			if (tmpFile != null) {
+				try {
+					tmpFile.delete();
+				} catch (Exception e) {
+					logger.error("Cannot delete temp cys file.", e);
+				}
+				
+				tmpFile = file = null;
+			}
 		}
 	}
 		
