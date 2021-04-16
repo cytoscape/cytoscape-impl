@@ -672,12 +672,16 @@ public class CytoscapeDesktop extends JFrame
 	@Override
 	public void handleEvent(SessionLoadedEvent e) {
 		// Update window title
-		String sessionName = e.getLoadedFileName();
+		var sessionName = e.getLoadedFileName();
 		
-		if (sessionName == null)
+		// If null, just show that this is a new session. 
+		// If this is a temporary file (probably downloaded from a URL), do the same -- first, we don't want to show
+		// the ugly temporary filename (e.g. test.cys8464608368634937349.tmpCYS) and second, Cytoscape should
+		// force the user to save the session as a new file, anyway ("save-as" task).
+		if (sessionName == null || sessionName.endsWith(".tmpCYS"))
 			sessionName = NEW_SESSION_NAME;
 		
-		final String title = TITLE_PREFIX_STRING + sessionName;
+		var title = TITLE_PREFIX_STRING + sessionName;
 		
 		invokeOnEDT(() -> {
 			setTitle(title);

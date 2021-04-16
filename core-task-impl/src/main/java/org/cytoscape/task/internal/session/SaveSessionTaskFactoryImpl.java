@@ -44,10 +44,12 @@ public class SaveSessionTaskFactoryImpl extends AbstractTaskFactory implements S
 	public TaskIterator createTaskIterator() {
 		// Check whether the session file name is set and the file exists
 		var fileName = serviceRegistrar.getService(CySessionManager.class).getCurrentSessionFileName();
+		var isTemp = fileName != null && fileName.endsWith(OpenSessionCommandTask.TEMP_FILE_EXT);
 		var file = fileName != null && !fileName.isBlank() ? new File(fileName) : null;
 		
-		// If there is no file name, use Save As task.  Otherwise, overwrite the current session.
-		if (file != null && file.exists())
+		// If there is no file and this is not a temp file (e.g. from downloaded sessions), use Save As task.
+		// Otherwise, overwrite the current session.
+		if (file != null && (file.exists() || !isTemp))
 			return new TaskIterator(new SaveSessionTask(serviceRegistrar));
 		else
 			return new TaskIterator(new SaveSessionAsTask(serviceRegistrar));

@@ -123,7 +123,7 @@ A two-element array of numbers, example: [1, 5]
 
 **edgeType**
 
-ANY, UNDIRECTED, INCOMING, OUTGOING, DIRECTED
+ANY, INCOMING, OUTGOING
 
 
 Topology Filter

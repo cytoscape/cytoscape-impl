@@ -1,11 +1,14 @@
 package org.cytoscape.filter.internal.filters.degree;
 
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.cytoscape.filter.internal.predicates.NumericPredicateDelegate;
 import org.cytoscape.filter.internal.predicates.PredicateDelegates;
-import org.cytoscape.filter.model.AbstractTransformer;
+import org.cytoscape.filter.model.AbstractValidatableTransformer;
 import org.cytoscape.filter.model.Filter;
+import org.cytoscape.filter.model.ValidationWarning;
 import org.cytoscape.filter.predicates.Predicate;
 import org.cytoscape.filter.transformers.Transformers;
 import org.cytoscape.model.CyEdge;
@@ -14,7 +17,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.work.Tunable;
 
-public class DegreeFilter extends AbstractTransformer<CyNetwork, CyIdentifiable> implements Filter<CyNetwork, CyIdentifiable> {
+public class DegreeFilter extends AbstractValidatableTransformer<CyNetwork, CyIdentifiable> implements Filter<CyNetwork, CyIdentifiable> {
 	private NumericPredicateDelegate delegate;
 	private Predicate predicate;
 	
@@ -109,5 +112,18 @@ public class DegreeFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 	@Override
 	public Class<CyIdentifiable> getElementType() {
 		return CyIdentifiable.class;
+	}
+	
+	@Override
+	public List<ValidationWarning> validateCreation() {
+		List<ValidationWarning> output = new LinkedList<ValidationWarning>();
+		if (edgeType != CyEdge.Type.ANY 
+			&& edgeType != CyEdge.Type.OUTGOING 
+			&& edgeType != CyEdge.Type.INCOMING
+		) {
+			output.add(new ValidationWarning("Invalid edge type: " + edgeType+ ". Must be one of [DIRECTED, OUTGOING, INCOMING]"));
+		}
+			
+		return output;
 	}
 }

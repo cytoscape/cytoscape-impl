@@ -2,12 +2,15 @@ package org.cytoscape.task.internal.filter;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -32,6 +35,8 @@ import org.cytoscape.filter.internal.work.TransformerManagerImpl;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.NamedTransformer;
 import org.cytoscape.filter.model.Transformer;
+import org.cytoscape.filter.model.ValidatableTransformer;
+import org.cytoscape.filter.model.ValidationWarning;
 import org.cytoscape.filter.predicates.Predicate;
 import org.cytoscape.io.internal.read.transformer.CyTransformerReaderImpl;
 import org.cytoscape.io.internal.write.transformer.CyTransformerWriterImpl;
@@ -46,8 +51,11 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskMonitor.Level;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import com.google.gson.Gson;
 
@@ -102,6 +110,14 @@ public class CreateFilterTaskTest {
 	
 	private static void runTask(Task task) {
 		TaskMonitor tm = mock(TaskMonitor.class);
+		doAnswer(new Answer<Void>() {
+			public Void answer(InvocationOnMock invocation) {
+				System.err.println("FAIL");
+				return null;
+			}
+		}).when(tm).showMessage(any(Level.class),any(String.class));
+		
+		
 		try {
 			task.run(tm);
 		} catch (Exception e) {
@@ -217,42 +233,50 @@ public class CreateFilterTaskTest {
 	
 	
 	@Test
-	public void testCreateColumnFilterCommandBad1() {
+	public void testCreateColumnFilterCommandBad1() throws Exception {
 		CreateFilterTask task = new CreateFilterTask(serviceRegistrar, "MyFilter", false);
 		task.jsonTunable.json = "{ \"id\" : \"ColumnFilter\", \"parameters\" : { \"criterion\" : \"1\", \"columnName\" : \"name\", \"predicate\" : \"BLARF\"} }";
 		
 		TaskMonitor tm = mock(TaskMonitor.class);
-		task.run(tm);
+		assertThrows(Exception.class, () -> {
+			task.run(tm);
+		});
 		verify(tm, atLeastOnce()).showMessage(eq(Level.ERROR), any());
 	}
 	
 	@Test
-	public void testCreateColumnFilterCommandBad2() {
+	public void testCreateColumnFilterCommandBad2() throws Exception {
 		CreateFilterTask task = new CreateFilterTask(serviceRegistrar, "MyFilter", false);
 		task.jsonTunable.json = "{ \"id\" : \"ColumnFilter\", \"parameters\" : { \"criterion\" : \"1\", \"columnName\" : \"name\", \"predicate\" : \"BETWEEN\"} }";
 		
 		TaskMonitor tm = mock(TaskMonitor.class);
-		task.run(tm);
+		assertThrows(Exception.class, () -> {
+			task.run(tm);
+		});
 		verify(tm, atLeastOnce()).showMessage(eq(Level.ERROR), any());
 	}
 	
 	@Test
-	public void testCreateColumnFilterCommandBad3() {
+	public void testCreateColumnFilterCommandBad3() throws Exception {
 		CreateFilterTask task = new CreateFilterTask(serviceRegistrar, "MyFilter", false);
 		task.jsonTunable.json = "{ \"id\" : \"ColumnFilter\", \"parameters\" : { \"criterion\" : [1,1], \"columnName\" : \"name\", \"predicate\" : \"IS\"} }";
 		
 		TaskMonitor tm = mock(TaskMonitor.class);
-		task.run(tm);
+		assertThrows(Exception.class, () -> {
+			task.run(tm);
+		});
 		verify(tm, atLeastOnce()).showMessage(eq(Level.ERROR), any());
 	}
 	
 	@Test
-	public void testCreateColumnFilterCommandBad4() {
+	public void testCreateColumnFilterCommandBad4() throws Exception {
 		CreateFilterTask task = new CreateFilterTask(serviceRegistrar, "MyFilter", false);
 		task.jsonTunable.json = "{ \"id\" : \"ColumnFilter\", \"parameters\" : { \"criterion\" : false, \"columnName\" : \"name\", \"predicate\" : \"BETWEEN\"} }";
 		
 		TaskMonitor tm = mock(TaskMonitor.class);
-		task.run(tm);
+		assertThrows(Exception.class, () -> {
+			task.run(tm);
+		});
 		verify(tm, atLeastOnce()).showMessage(eq(Level.ERROR), any());
 	}
 
@@ -316,4 +340,35 @@ public class CreateFilterTaskTest {
 		assertEquals("name", columnFilter.getColumnName());
 	}
 	
+	@Test
+	public void testValidateFilterTunableFailure() {
+		
+		TaskMonitor tm = mock(TaskMonitor.class);
+		NamedTransformer transformer = mock(NamedTransformer.class);
+		
+		ValidatableTransformer validatableTransformer = mock(ValidatableTransformer.class);
+		when(validatableTransformer.validateCreation()).thenReturn(List.of(new ValidationWarning("alwaysfail")));
+		
+		when(transformer.getTransformers()).thenReturn(List.of(validatableTransformer));
+		
+		boolean valid = TransformerJsonTunable.validate(transformer, tm);
+		
+		assertFalse(valid);
+	}
+	
+	@Test
+	public void testValidateFilterTunableSuccess() {
+		
+		TaskMonitor tm = mock(TaskMonitor.class);
+		NamedTransformer transformer = mock(NamedTransformer.class);
+		
+		ValidatableTransformer validatableTransformer = mock(ValidatableTransformer.class);
+		when(validatableTransformer.validateCreation()).thenReturn(List.of());
+		
+		when(transformer.getTransformers()).thenReturn(List.of(validatableTransformer));
+		
+		boolean valid = TransformerJsonTunable.validate(transformer, tm);
+		
+		assertTrue(valid);
+	}
 }
