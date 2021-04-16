@@ -117,7 +117,7 @@ public class DegreeFilter extends AbstractValidatableTransformer<CyNetwork, CyId
 	@Override
 	public List<ValidationWarning> validateCreation() {
 		List<ValidationWarning> output = new LinkedList<ValidationWarning>();
-		if (edgeType != CyEdge.Type.DIRECTED 
+		if (edgeType != CyEdge.Type.ANY 
 			&& edgeType != CyEdge.Type.OUTGOING 
 			&& edgeType != CyEdge.Type.INCOMING
 		) {
