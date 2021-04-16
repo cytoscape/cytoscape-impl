@@ -53,7 +53,7 @@ public class TransformerJsonTunable {
 					}
 				}
 			} else {
-				valid = false;
+				
 			}
 		}
 		return valid;

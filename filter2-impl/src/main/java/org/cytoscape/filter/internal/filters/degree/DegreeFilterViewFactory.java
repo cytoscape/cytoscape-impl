@@ -6,6 +6,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.JComboBox;
@@ -24,10 +25,12 @@ import org.cytoscape.filter.internal.view.Matcher;
 import org.cytoscape.filter.internal.view.ViewUtil;
 import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
 import org.cytoscape.filter.model.Transformer;
+import org.cytoscape.filter.model.ValidationWarning;
 import org.cytoscape.filter.predicates.Predicate;
 import org.cytoscape.filter.transformers.Transformers;
 import org.cytoscape.filter.view.InteractivityChangedListener;
 import org.cytoscape.filter.view.TransformerViewFactory;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyEdge.Type;
 
 public class DegreeFilterViewFactory implements TransformerViewFactory {
