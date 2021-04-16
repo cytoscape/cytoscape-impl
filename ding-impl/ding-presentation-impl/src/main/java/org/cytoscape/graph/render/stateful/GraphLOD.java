@@ -237,14 +237,21 @@ public interface GraphLOD {
 	/**
 	 * Returns true if the edge buffer panning optimization should be turned on.
 	 */
-	default boolean edgeBufferPan() {
+	default boolean isEdgeBufferPanEnabled() {
 		return false;
 	}
 
 	/**
 	 * Returns true if the label buffer cache optimization should be turned on.
 	 */
-	default boolean labelCache() {
+	default boolean isLabelCacheEnabled() {
+		return false;
+	}
+	
+	/**
+	 * Returns true if the render only selected nodes/edges optimization should be turned on.
+	 */
+	default boolean isRenderSelectedEnabled() {
 		return false;
 	}
 	

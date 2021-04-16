@@ -5,10 +5,14 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.GroupLayout.ParallelGroup;
+import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -39,14 +43,7 @@ public class SettingsPanel extends BasicCollapsiblePanel  {
 	
 	private final DebounceTimer debounceTimer = new DebounceTimer();
 	
-	private PropEditor prop1;
-	private PropEditor prop2;
-	private PropEditor prop3;
-	private PropEditor prop4;
-	private PropEditor prop5;
-	private PropEditor prop6;
-	private PropEditor prop7;
-	private PropEditor prop8;
+	private List<PropEditor> props;
 	private JButton cacheStatsButton;
 	
 	
@@ -58,18 +55,22 @@ public class SettingsPanel extends BasicCollapsiblePanel  {
 		createContents();
 	}
 	
+	
 	private void createContents() {
-		prop1 = new NumberPropEditor("render.coarseDetailThreshold", "coarseDetailThreshold");
-		prop2 = new NumberPropEditor("render.nodeBorderThreshold", "nodeBorderThreshold");
-		prop3 = new NumberPropEditor("render.nodeLabelThreshold", "nodeLabelThreshold");
-		prop4 = new NumberPropEditor("render.edgeArrowThreshold", "edgeArrowThreshold");
-		prop5 = new NumberPropEditor("render.edgeLabelThreshold", "edgeLabelThreshold");
-		prop6 = new BooleanPropEditor("render.edgeBufferPan", "edgeBufferPan");
-		prop7 = new BooleanPropEditor("render.labelCache", "labelCache");
-		prop8 = new BooleanPropEditor("render.hidpi", "hidpi");
+		props = Arrays.asList(
+			new NumberPropEditor("render.coarseDetailThreshold", "coarseDetailThreshold"),
+			new NumberPropEditor("render.nodeBorderThreshold", "nodeBorderThreshold"),
+			new NumberPropEditor("render.nodeLabelThreshold", "nodeLabelThreshold"),
+			new NumberPropEditor("render.edgeArrowThreshold", "edgeArrowThreshold"),
+			new NumberPropEditor("render.edgeLabelThreshold", "edgeLabelThreshold"),
+			new BooleanPropEditor("render.edgeBufferPan", "edgeBufferPan"),
+			new BooleanPropEditor("render.labelCache", "labelCache"),
+			new BooleanPropEditor("render.selectedOnly", "selectedOnly"),
+			new BooleanPropEditor("render.hidpi", "hidpi")
+		);
+		
 		cacheStatsButton = new JButton("show stats");
 		cacheStatsButton.addActionListener(e-> showCacheStats());
-		
 		LookAndFeelUtil.makeSmall(cacheStatsButton);
 		
 		JPanel panel = new JPanel();
@@ -79,82 +80,36 @@ public class SettingsPanel extends BasicCollapsiblePanel  {
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(true);
 		
+		ParallelGroup horizontalLabelGroup = layout.createParallelGroup();
+		ParallelGroup horizontalEditorGroup = layout.createParallelGroup();
+		SequentialGroup verticalGroup = layout.createSequentialGroup();
+		
+		for(PropEditor prop : props) {
+			horizontalLabelGroup.addComponent(prop.getLabel());
+			horizontalEditorGroup.addComponent(prop.getEditor());
+			verticalGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE)
+				.addComponent(prop.getLabel())
+				.addComponent(prop.getEditor(), PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
+			);
+		}
+		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
-			.addGroup(layout.createParallelGroup()
-				.addComponent(prop1.getLabel())
-				.addComponent(prop2.getLabel())
-				.addComponent(prop3.getLabel())
-				.addComponent(prop4.getLabel())
-				.addComponent(prop5.getLabel())
-				.addComponent(prop6.getLabel())
-				.addComponent(prop7.getLabel())
-				.addComponent(prop8.getLabel())
-			)
-			.addGroup(layout.createParallelGroup()
-				.addComponent(prop1.getEditor())
-				.addComponent(prop2.getEditor())
-				.addComponent(prop3.getEditor())
-				.addComponent(prop4.getEditor())
-				.addComponent(prop5.getEditor())
-				.addComponent(prop6.getEditor())
-				.addComponent(prop7.getEditor())
-				.addComponent(prop8.getEditor())
-			)
-			.addGroup(layout.createParallelGroup()
-				.addComponent(cacheStatsButton)
-			)
+			.addGroup(horizontalLabelGroup)
+			.addGroup(horizontalEditorGroup)
+			.addGroup(layout.createParallelGroup().addComponent(cacheStatsButton))
 		);
 		
-		layout.setVerticalGroup(layout.createSequentialGroup()
-			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-				.addComponent(prop1.getLabel())
-				.addComponent(prop1.getEditor(), PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
-			)
-			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-				.addComponent(prop2.getLabel())
-				.addComponent(prop2.getEditor(), PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
-			)
-			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-				.addComponent(prop3.getLabel())
-				.addComponent(prop3.getEditor(), PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
-			)
-			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-				.addComponent(prop4.getLabel())
-				.addComponent(prop4.getEditor(), PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
-			)
-			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-				.addComponent(prop5.getLabel())
-				.addComponent(prop5.getEditor(), PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
-			)
-			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-				.addComponent(prop6.getLabel())
-				.addComponent(prop6.getEditor(), PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
-			)
-			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-				.addComponent(prop7.getLabel())
-				.addComponent(prop7.getEditor(), PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
-				.addComponent(cacheStatsButton)
-			)
-			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-				.addComponent(prop8.getLabel())
-				.addComponent(prop8.getEditor(), PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
-			)
-		);
+		layout.setVerticalGroup(verticalGroup);
+		verticalGroup.addComponent(cacheStatsButton);
 		
 		JPanel content = getContentPane();
 		content.setLayout(new BorderLayout());
 		content.add(BorderLayout.WEST, panel);
 	}
 	
+	
 	public void update() {
-		prop1.update();
-		prop2.update();
-		prop3.update();
-		prop4.update();
-		prop5.update();
-		prop6.update();
-		prop7.update();
-		prop8.update();
+		props.forEach(PropEditor::update);
 	}
 	
 	

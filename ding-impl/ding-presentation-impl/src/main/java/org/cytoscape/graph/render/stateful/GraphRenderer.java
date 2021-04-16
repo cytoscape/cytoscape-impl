@@ -114,7 +114,6 @@ public final class GraphRenderer {
 			ProgressMonitor labelPm = subPms[1];
 			
 			final boolean selectedOnly = flags.has(RenderDetailFlags.OPT_SELECTED_ONLY);
-			int rendererdEdgeCount = 0;
 			
 			shapePm.start("Line");
 			DiscreteProgressMonitor shapeDpm = shapePm.toDiscrete(edgeHits.size());
@@ -137,16 +136,9 @@ public final class GraphRenderer {
 								sourceNodeX, sourceNodeY, 
 								targetNodeX, targetNodeY, 
 								edgeDetails.getColorLowDetail(netView, edge));
-						
-						rendererdEdgeCount++;
-						
 					}
 				}
 				shapeDpm.increment();
-			}
-			
-			if(selectedOnly) {
-				System.out.println("Rendered " + rendererdEdgeCount + " of " + edgeHits.size() + " edges.");
 			}
 			
 			shapePm.done();
@@ -416,7 +408,6 @@ public final class GraphRenderer {
 			ProgressMonitor labelPm = subPms[1];
 			
 			final boolean selectedOnly = flags.has(RenderDetailFlags.OPT_SELECTED_ONLY);
-			int rendererdNodeCount = 0;
 			
 			shapePm.start("Shape");
 			final int nodeHitCount = nodeHits.size();
@@ -434,14 +425,9 @@ public final class GraphRenderer {
 					if ((floatBuff1[0] != floatBuff1[2]) && (floatBuff1[1] != floatBuff1[3])) {
 						Color color = nodeDetails.getColorLowDetail(netView, node);
 						grafx.drawNodeLow(floatBuff1[0], floatBuff1[1], floatBuff1[2], floatBuff1[3], color);
-						rendererdNodeCount++;
 					}
 				}
 				shapeDpm.increment();
-			}
-			
-			if(selectedOnly) {
-				System.out.println("Rendered " + rendererdNodeCount + " of " + nodeHitCount + " nodes.");
 			}
 			
 			shapePm.done();

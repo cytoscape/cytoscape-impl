@@ -172,18 +172,18 @@ public class RenderDetailFlags {
 		}
 		
 		// optimization bits
-		if (lod.edgeBufferPan())
+		if (lod.isEdgeBufferPanEnabled())
 			lodbits |= OPT_EDGE_BUFF_PAN;
-		if (lod.labelCache())
+		if (lod.isLabelCacheEnabled())
 			lodbits |= OPT_LABEL_CACHE;
-		if (!highDetail && selectedOnly(netView, updateType)) {
+		if (lod.isRenderSelectedEnabled() && !highDetail && snapshotIsSelectedOnly(netView, updateType)) {
 			lodbits |= OPT_SELECTED_ONLY;
 		}
 		
 		return lodbits;
 	}
 
-	private static boolean selectedOnly(CyNetworkViewSnapshot netView, UpdateType updateType) {
+	private static boolean snapshotIsSelectedOnly(CyNetworkViewSnapshot netView, UpdateType updateType) {
 		return netView.isSelectionStrictlyIncreased() && updateType == UpdateType.ALL_FULL_DIRTY; // This is why we need ALL_FULL_DIRTY
 	}
 	

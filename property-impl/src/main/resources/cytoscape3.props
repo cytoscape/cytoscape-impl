@@ -9,6 +9,7 @@ render.edgeArrowThreshold=600
 render.edgeLabelThreshold=200
 render.edgeBufferPan=true
 render.labelCache=true
+render.selectedOnly=true
 render.hidpi=true
 layout.default=force-directed
 maximizeViewOnCreate=false

@@ -51,6 +51,7 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 	
 	protected boolean edgeBufferPan;
 	protected boolean labelCache;
+	protected boolean selectedOnly;
 	protected boolean hidpi;
 
 	private final Properties props;
@@ -74,6 +75,7 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 		edgeLabelThreshold = parseInt(props.getProperty("render.edgeLabelThreshold"), 200);
 		edgeBufferPan = Boolean.valueOf(props.getProperty("render.edgeBufferPan"));
 		labelCache = Boolean.valueOf(props.getProperty("render.labelCache"));
+		selectedOnly = Boolean.valueOf(props.getProperty("render.selectedOnly"));
 		hidpi = Boolean.valueOf(props.getProperty("render.hidpi"));
 	}
 
@@ -134,12 +136,20 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 				return DingGraphLOD.this.getNestedNetworkImageScaleFactor();
 			}
 			@Override
-			public boolean edgeBufferPan() {
-				return DingGraphLOD.this.edgeBufferPan();
+			public boolean isEdgeBufferPanEnabled() {
+				return DingGraphLOD.this.isEdgeBufferPanEnabled();
 			}
 			@Override
-			public boolean labelCache() {
-				return DingGraphLOD.this.labelCache();
+			public boolean isLabelCacheEnabled() {
+				return DingGraphLOD.this.isLabelCacheEnabled();
+			}
+			@Override
+			public boolean isRenderSelectedEnabled() {
+				return DingGraphLOD.this.isRenderSelectedEnabled();
+			}
+			@Override
+			public boolean isHidpiEnabled() {
+				return DingGraphLOD.this.isHidpiEnabled();
 			}
 		};
 	}
@@ -421,13 +431,18 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 
 	
 	@Override
-	public boolean edgeBufferPan() {
+	public boolean isEdgeBufferPanEnabled() {
 		return edgeBufferPan;
 	}
 	
 	@Override
-	public boolean labelCache() {
+	public boolean isLabelCacheEnabled() {
 		return labelCache;
+	}
+	
+	@Override
+	public boolean isRenderSelectedEnabled() {
+		return selectedOnly;
 	}
 	
 	@Override

@@ -28,7 +28,7 @@ public class EdgeThumbnailCanvas<GP extends GraphicsProvider> extends DingCanvas
 		var graphics = new GraphGraphics(graphicsProvider);
 		var edgeDetails = new DEdgeDetails(null);
 		var nodeDetails = new DNodeDetails(null, null);
-		var labelInfoCache = LabelInfoProvider.INSTANCE;
+		var labelInfoCache = LabelInfoProvider.NO_CACHE;
 		
 		GraphRenderer.renderEdges(pm, graphics, snapshot, flags, nodeDetails, edgeDetails, labelInfoCache);
 	}

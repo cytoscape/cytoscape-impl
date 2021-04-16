@@ -1,9 +1,6 @@
 package org.cytoscape.ding.impl;
 
-import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_EDGE_ANCHORS;
-import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_EDGE_ARROWS;
-import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_HIGH_DETAIL;
-import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_NODE_LABELS;
+import static org.cytoscape.graph.render.stateful.RenderDetailFlags.*;
 
 import java.awt.Font;
 import java.awt.Point;
@@ -151,7 +148,7 @@ public class NetworkPicker {
 		
 		SpacialIndex2DEnumerator<Long> under = snapshot.getSpacialIndex2D().queryOverlap(xMin, yMin, xMax, yMax);
 		
-		LabelInfoProvider labelProvider = re.getGraphLOD().labelCache() ? re.getLabelCache() : LabelInfoProvider.INSTANCE;
+		LabelInfoProvider labelProvider = re.getGraphLOD().isLabelCacheEnabled() ? re.getLabelCache() : LabelInfoProvider.NO_CACHE;
 		FontRenderContext frc = new FontRenderContext(null,true,true); // MKTODO
 		
 		float[] extentsBuff = new float[4];
