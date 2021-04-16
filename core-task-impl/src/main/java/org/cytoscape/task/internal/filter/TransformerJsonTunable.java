@@ -52,6 +52,8 @@ public class TransformerJsonTunable {
 						taskMonitor.showMessage(Level.ERROR, warning.getWarning());
 					}
 				}
+			} else {
+				
 			}
 		}
 		return valid;
