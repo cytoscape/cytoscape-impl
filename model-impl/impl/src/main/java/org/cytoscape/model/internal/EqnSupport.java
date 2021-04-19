@@ -89,8 +89,8 @@ class EqnSupport {
 		if (columnType == Boolean.class && resultType == Double.class)
 			return (Double)result == 0.0 ? Boolean.FALSE : Boolean.TRUE;
 
-		throw new IllegalArgumentException("unexpected equation result type " + resultType
-						   + " for a column of type " + columnType + ".");
+		throw new IllegalArgumentException("unexpected equation result type " + resultType.getSimpleName()
+						   + " for a column of type " + columnType.getSimpleName() + ".");
 	}
 
 	static Object evalEquation(final Equation equation, final Object key,

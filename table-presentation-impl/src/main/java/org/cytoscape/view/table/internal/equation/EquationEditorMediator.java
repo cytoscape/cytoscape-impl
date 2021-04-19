@@ -1,8 +1,6 @@
 package org.cytoscape.view.table.internal.equation;
 
-import static java.util.Comparator.comparing;
-import static java.util.Comparator.naturalOrder;
-import static java.util.Comparator.nullsFirst;
+import static java.util.Comparator.*;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -305,11 +303,15 @@ public class EquationEditorMediator {
 			
 			// We really need a better way to detect if an Equation evaluation results in an error.
 			// Note, this is NOT thread safe.
-			Object x = row.get(col.getName(), col.getType());
+			Object x = null;
+			try {
+				x = row.get(col.getName(), col.getType());
+			} catch(Exception e) {
+				errors.add(e.getMessage());
+			}
 			if(x == null) {
 				String error = row.getTable().getLastInternalError();
-				if(error != null) {
-					// There 
+				if(error != null && !error.isBlank()) {
 					numErrors++;
 					errors.add(error);
 				}

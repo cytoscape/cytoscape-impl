@@ -952,8 +952,13 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			if (vl instanceof Equation) {
 				final StringBuilder errorMsg = new StringBuilder();
 				final Object result = evalEquation((Equation)vl, key, columnName, errorMsg);
-				lastInternalError = errorMsg.toString();
-				return (List)result;
+				if(result == null || result instanceof List) {
+					lastInternalError = errorMsg.toString();
+					return (List)result;
+				} else {
+					lastInternalError = "Invalid type for List column";
+					return null;
+				}
 			} else
 				return (List)vl;
 		}
