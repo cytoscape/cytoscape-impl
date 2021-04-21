@@ -196,8 +196,8 @@ public class BrowserTable extends JTable
 			
 			var view = tableView.getColumnView(CyNetwork.SELECTED);
 			
-			if (view != null && !tableView.isSet(COLUMN_EDITABLE))
-				view.setVisualProperty(COLUMN_EDITABLE, false);
+			if (view != null && !view.isSet(COLUMN_EDITABLE))
+				view.setLockedValue(COLUMN_EDITABLE, false);
 		}
 		
 		columnModel.reorderColumnsToRespectGravity();
