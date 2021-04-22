@@ -737,7 +737,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			
 			if (vpSheetItem.getModel().isVisualMappingAllowed()) {
 				vpSheetItem.getPropSheetPnl().getTable().addMouseListener(cmMouseListener);
-				vpSheetItem.getRemoveMappingBtn().addActionListener(evt -> removeVisualMapping(vpSheetItem));
+				vpSheetItem.getRemoveMappingBtn().addActionListener(evt -> {
+					curVpSheetItem = vpSheetItem;
+					removeVisualMapping(vpSheetItem);
+				});
 				vpSheetItem.getPropSheetTbl().addPropertyChangeListener("editingVizMapperProperty", evt -> {
 					curVpSheetItem = vpSheetItem; // Save the current editor (the one the user is interacting with)
 					curVizMapperProperty = (VizMapperProperty<?, ?, ?>) evt.getNewValue();
