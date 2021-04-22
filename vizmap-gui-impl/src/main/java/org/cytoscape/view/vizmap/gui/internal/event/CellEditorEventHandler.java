@@ -1,29 +1,5 @@
 package org.cytoscape.view.vizmap.gui.internal.event;
 
-/*
- * #%L
- * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.beans.PropertyChangeEvent;
 import java.util.Comparator;
 import java.util.List;
@@ -47,7 +23,6 @@ import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSet;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
-import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheetItem;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapPropertyBuilder;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMediator;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.AttributeComboBoxPropertyEditor;
@@ -59,6 +34,30 @@ import org.cytoscape.work.undo.UndoSupport;
 
 import com.l2fprod.common.propertysheet.PropertySheetPanel;
 import com.l2fprod.common.propertysheet.PropertySheetTableModel;
+
+/*
+ * #%L
+ * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 // TODO: Should be refactored for readability!!
 /**
@@ -101,9 +100,9 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 	 */
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public void processEvent(final PropertyChangeEvent e) {
-		final Object newVal = e.getNewValue();
-		final Object oldVal = e.getOldValue();
+	public void processEvent(PropertyChangeEvent e) {
+		var newVal = e.getNewValue();
+		var oldVal = e.getOldValue();
 
 		// Same value. No change required.
 		if (Objects.equals(newVal, oldVal))
@@ -111,23 +110,25 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		
 		var currentTableService = servicesUtil.get(CurrentTableService.class);
 
-		final VisualPropertySheetItem<?> vpSheetItem = currentTableService.getCurrentVisualPropertySheetItem();
-		final PropertySheetPanel propSheetPnl = vpSheetItem != null ? vpSheetItem.getPropSheetPnl() : null;
+		var vpSheetItem = currentTableService.getCurrentVisualPropertySheetItem();
+		var propSheetPnl = vpSheetItem != null ? vpSheetItem.getPropSheetPnl() : null;
+		
 		if (propSheetPnl == null)
 			return;
 		
-		final VizMapperProperty<?, ?, ?> prop = currentTableService.getCurrentVizMapperProperty();
+		var prop = currentTableService.getCurrentVizMapperProperty();
+		
 		if (prop == null)
 			return;
 		
-		final VisualProperty<?> vp = vpSheetItem.getModel().getVisualProperty();
-		final VisualMappingFunction mapping = vpSheetItem.getModel().getVisualMappingFunction();
+		var vp = vpSheetItem.getModel().getVisualProperty();
+		var mapping = vpSheetItem.getModel().getVisualMappingFunction();
 		
 		if (prop.getCellType() == CellType.DISCRETE && mapping instanceof DiscreteMapping) {
 			// Discrete mapping value changed:
 			// -------------------------------
 			// Create new map entry and register it.
-			final DiscreteMapping<Object, Object> discMap = (DiscreteMapping<Object, Object>) mapping;
+			var discMap = (DiscreteMapping<Object, Object>) mapping;
 			setDiscreteMappingEntry(prop.getKey(), oldVal, newVal, discMap);
 		} else {
 			VisualMappingFunction newMapping = mapping;
@@ -174,7 +175,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 				undo.postEdit(new AbstractCyEdit(undoName) {
 					@Override
 					public void undo() {
-						vpSheetItem.getModel().setVisualMappingFunction(mapping);
+						vpSheetItem.getModel().setVisualMappingFunction((VisualMappingFunction) mapping);
 					}
 					@Override
 					public void redo() {

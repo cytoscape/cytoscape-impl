@@ -102,7 +102,7 @@ import org.osgi.framework.BundleContext;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -124,97 +124,97 @@ public class CyActivator extends AbstractCyActivator {
 	
 	@Override
 	public void start(BundleContext bc) {
-		final CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
+		var serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 		
-		StreamUtilImpl streamUtil = new StreamUtilImpl(serviceRegistrar);
-		BasicCyFileFilter expressionFilter = new BasicCyFileFilter(new String[]{"pvals"}, new String[]{"text/plain"},"Cytoscape Expression Matrix", DataCategory.TABLE, streamUtil);
+		var streamUtil = new StreamUtilImpl(serviceRegistrar);
+		var expressionFilter = new BasicCyFileFilter(new String[]{"pvals"}, new String[]{"text/plain"},"Cytoscape Expression Matrix", DataCategory.TABLE, streamUtil);
 		
 		// Always register CYS filters from higher to lower version!
 		var cys3Filter = new SessionFileFilter(new String[]{"cys","tmpCYS"}, new String[]{"application/zip"}, "Cytoscape 3 Session", DataCategory.SESSION, "3.0.0", streamUtil);
 		var cys2Filter = new SessionFileFilter(new String[]{"cys","tmpCYS"}, new String[]{"application/zip"}, "Cytoscape 2 Session", DataCategory.SESSION, "2.0.0", streamUtil);
 		
-		BasicCyFileFilter pngFilter = new BasicCyFileFilter(new String[]{"png"}, new String[]{"image/png"}, "PNG", DataCategory.IMAGE, streamUtil);
-		BasicCyFileFilter jpegFilter = new BasicCyFileFilter(new String[]{"jpg","jpeg"}, new String[]{"image/jpeg"}, "JPEG", DataCategory.IMAGE, streamUtil);
-		BasicCyFileFilter pdfFilter = new BasicCyFileFilter(new String[]{"pdf"}, new String[]{"image/pdf"}, "PDF", DataCategory.IMAGE, streamUtil);
-		BasicCyFileFilter psFilter = new BasicCyFileFilter(new String[]{"ps"}, new String[]{"image/ps"}, "PostScript", DataCategory.IMAGE, streamUtil);
-		BasicCyFileFilter svgFilter = new BasicCyFileFilter(new String[]{"svg"}, new String[]{"image/svg"}, "SVG", DataCategory.IMAGE, streamUtil);
-		BasicCyFileFilter attrsFilter = new BasicCyFileFilter(new String[]{"attrs"}, new String[]{"text/plain"}, "Text", DataCategory.TABLE, streamUtil);
-		BasicCyFileFilter sifFilter = new BasicCyFileFilter(new String[]{"sif"}, new String[]{"text/sif"}, "SIF", DataCategory.NETWORK, streamUtil);
-		BasicCyFileFilter nnfFilter = new BasicCyFileFilter(new String[]{"nnf"}, new String[]{"text/nnf"}, "NNF", DataCategory.NETWORK, streamUtil);
-		BasicCyFileFilter csvFilter = new BasicCyFileFilter(new String[]{"csv"}, new String[]{"text/plain"}, "CSV", DataCategory.TABLE, streamUtil);
-		BasicCyFileFilter sessionTableFilter = new BasicCyFileFilter(new String[]{"cytable"}, new String[]{"text/plain"}, "Session Table", DataCategory.TABLE, streamUtil);
-		GenericXGMMLFileFilter xgmmlFilter = new GenericXGMMLFileFilter(new String[]{"xgmml","xml"}, new String[]{"text/xgmml","text/xgmml+xml"}, "XGMML",DataCategory.NETWORK, streamUtil);
-		GenericXGMMLFileFilter xgmmlNoViewFilter = new GenericXGMMLFileFilter(new String[]{"xgmml","xml"}, new String[]{"text/xgmml","text/xgmml+xml"}, "XGMML without style data",DataCategory.NETWORK, streamUtil);
-		SessionXGMMLFileFilter sessXgmmlFileFilter = new SessionXGMMLFileFilter(new String[]{"xgmml"}, new String[]{"text/xgmml","text/xgmml+xml"}, "Cy3 Session XGMML", DataCategory.NETWORK, streamUtil);
-		SessionXGMMLNetworkFileFilter sessXgmmlNetFileFilter = new SessionXGMMLNetworkFileFilter(new String[]{"xgmml"}, new String[]{"text/xgmml","text/xgmml+xml"}, "CYS Network XGMML", DataCategory.NETWORK, streamUtil);
-		SessionXGMMLNetworkViewFileFilter sessXgmmlViewFileFilter = new SessionXGMMLNetworkViewFileFilter(new String[]{"xgmml"}, new String[]{"text/xgmml","text/xgmml+xml"}, "CYS View XGMML",DataCategory.NETWORK, streamUtil);
-		GMLFileFilter gmlFilter = new GMLFileFilter(new String[]{"gml"}, new String[]{"text/gml"}, "GML", DataCategory.NETWORK, streamUtil);
-		CysessionFileFilter cysessionFilter = new CysessionFileFilter(new String[]{"xml"}, new String[]{}, "Cysession XML", DataCategory.PROPERTIES, streamUtil);
-		BookmarkFileFilter bookmarksFilter = new BookmarkFileFilter(new String[]{"xml"}, new String[]{}, "Bookmark XML", DataCategory.PROPERTIES, streamUtil);
-		PropertiesFileFilter propertiesFilter = new PropertiesFileFilter(new String[]{"props","properties"}, new String[]{}, "Java Properties", DataCategory.PROPERTIES, streamUtil);
-		VizmapXMLFileFilter vizmapXMLFilter = new VizmapXMLFileFilter(new String[]{"xml"}, new String[]{}, "Style XML", DataCategory.VIZMAP, streamUtil);
-		VizmapPropertiesFileFilter vizmapPropertiesFilter = new VizmapPropertiesFileFilter(new String[]{"props","properties"}, new String[]{}, "Vizmap Java Properties", DataCategory.VIZMAP, streamUtil);
+		var pngFilter = new BasicCyFileFilter(new String[]{"png"}, new String[]{"image/png"}, "PNG", DataCategory.IMAGE, streamUtil);
+		var jpegFilter = new BasicCyFileFilter(new String[]{"jpg","jpeg"}, new String[]{"image/jpeg"}, "JPEG", DataCategory.IMAGE, streamUtil);
+		var pdfFilter = new BasicCyFileFilter(new String[]{"pdf"}, new String[]{"image/pdf"}, "PDF", DataCategory.IMAGE, streamUtil);
+		var psFilter = new BasicCyFileFilter(new String[]{"ps"}, new String[]{"image/ps"}, "PostScript", DataCategory.IMAGE, streamUtil);
+		var svgFilter = new BasicCyFileFilter(new String[]{"svg"}, new String[]{"image/svg"}, "SVG", DataCategory.IMAGE, streamUtil);
+		var attrsFilter = new BasicCyFileFilter(new String[]{"attrs"}, new String[]{"text/plain"}, "Text", DataCategory.TABLE, streamUtil);
+		var sifFilter = new BasicCyFileFilter(new String[]{"sif"}, new String[]{"text/sif"}, "SIF", DataCategory.NETWORK, streamUtil);
+		var nnfFilter = new BasicCyFileFilter(new String[]{"nnf"}, new String[]{"text/nnf"}, "NNF", DataCategory.NETWORK, streamUtil);
+		var csvFilter = new BasicCyFileFilter(new String[]{"csv"}, new String[]{"text/plain"}, "CSV", DataCategory.TABLE, streamUtil);
+		var sessionTableFilter = new BasicCyFileFilter(new String[]{"cytable"}, new String[]{"text/plain"}, "Session Table", DataCategory.TABLE, streamUtil);
+		var xgmmlFilter = new GenericXGMMLFileFilter(new String[]{"xgmml","xml"}, new String[]{"text/xgmml","text/xgmml+xml"}, "XGMML",DataCategory.NETWORK, streamUtil);
+		var xgmmlNoViewFilter = new GenericXGMMLFileFilter(new String[]{"xgmml","xml"}, new String[]{"text/xgmml","text/xgmml+xml"}, "XGMML without style data",DataCategory.NETWORK, streamUtil);
+		var sessXgmmlFileFilter = new SessionXGMMLFileFilter(new String[]{"xgmml"}, new String[]{"text/xgmml","text/xgmml+xml"}, "Cy3 Session XGMML", DataCategory.NETWORK, streamUtil);
+		var sessXgmmlNetFileFilter = new SessionXGMMLNetworkFileFilter(new String[]{"xgmml"}, new String[]{"text/xgmml","text/xgmml+xml"}, "CYS Network XGMML", DataCategory.NETWORK, streamUtil);
+		var sessXgmmlViewFileFilter = new SessionXGMMLNetworkViewFileFilter(new String[]{"xgmml"}, new String[]{"text/xgmml","text/xgmml+xml"}, "CYS View XGMML",DataCategory.NETWORK, streamUtil);
+		var gmlFilter = new GMLFileFilter(new String[]{"gml"}, new String[]{"text/gml"}, "GML", DataCategory.NETWORK, streamUtil);
+		var cysessionFilter = new CysessionFileFilter(new String[]{"xml"}, new String[]{}, "Cysession XML", DataCategory.PROPERTIES, streamUtil);
+		var bookmarksFilter = new BookmarkFileFilter(new String[]{"xml"}, new String[]{}, "Bookmark XML", DataCategory.PROPERTIES, streamUtil);
+		var propertiesFilter = new PropertiesFileFilter(new String[]{"props","properties"}, new String[]{}, "Java Properties", DataCategory.PROPERTIES, streamUtil);
+		var vizmapXMLFilter = new VizmapXMLFileFilter(new String[]{"xml"}, new String[]{}, "Style XML", DataCategory.VIZMAP, streamUtil);
+		var vizmapPropertiesFilter = new VizmapPropertiesFileFilter(new String[]{"props","properties"}, new String[]{}, "Vizmap Java Properties", DataCategory.VIZMAP, streamUtil);
 
-		CyNetworkReaderManagerImpl networkReaderManager = new CyNetworkReaderManagerImpl(streamUtil);
-		CyTableReaderManagerImpl tableReaderManager = new CyTableReaderManagerImpl(streamUtil);
-		CySessionReaderManagerImpl sessionReaderManager = new CySessionReaderManagerImpl(streamUtil);
-		VizmapReaderManagerImpl vizmapReaderManager = new VizmapReaderManagerImpl(streamUtil);
-		CyPropertyReaderManagerImpl propertyReaderManager = new CyPropertyReaderManagerImpl(streamUtil);
-		PresentationWriterManagerImpl viewWriterManager = new PresentationWriterManagerImpl(serviceRegistrar);
-		CyNetworkViewWriterManagerImpl networkViewWriterManager = new CyNetworkViewWriterManagerImpl();
-		SessionWriterManagerImpl sessionWriterManager = new SessionWriterManagerImpl();
-		PropertyWriterManagerImpl propertyWriterManager = new PropertyWriterManagerImpl();
-		CyTableWriterManagerImpl tableWriterManager = new CyTableWriterManagerImpl();
-		VizmapWriterManagerImpl vizmapWriterManager = new VizmapWriterManagerImpl();
+		var networkReaderManager = new CyNetworkReaderManagerImpl(streamUtil);
+		var tableReaderManager = new CyTableReaderManagerImpl(streamUtil);
+		var sessionReaderManager = new CySessionReaderManagerImpl(streamUtil);
+		var vizmapReaderManager = new VizmapReaderManagerImpl(streamUtil);
+		var propertyReaderManager = new CyPropertyReaderManagerImpl(streamUtil);
+		var viewWriterManager = new PresentationWriterManagerImpl(serviceRegistrar);
+		var networkViewWriterManager = new CyNetworkViewWriterManagerImpl();
+		var sessionWriterManager = new SessionWriterManagerImpl();
+		var propertyWriterManager = new PropertyWriterManagerImpl();
+		var tableWriterManager = new CyTableWriterManagerImpl();
+		var vizmapWriterManager = new VizmapWriterManagerImpl();
 
-		CalculatorConverterFactory calculatorConverterFactory = new CalculatorConverterFactory();
-		ExpressionReaderFactory expressionReaderFactory = new ExpressionReaderFactory(expressionFilter, serviceRegistrar);
-		CyAttributesReaderFactory attrsDataReaderFactory = new CyAttributesReaderFactory(attrsFilter, serviceRegistrar);
-		SIFNetworkReaderFactory sifNetworkViewReaderFactory = new SIFNetworkReaderFactory(sifFilter, serviceRegistrar);
-		NNFNetworkReaderFactory nnfNetworkViewReaderFactory = new NNFNetworkReaderFactory(nnfFilter, serviceRegistrar);
-		UnrecognizedVisualPropertyManager unrecognizedVisualPropertyManager = new UnrecognizedVisualPropertyManager(serviceRegistrar);
-		GMLNetworkReaderFactory gmlNetworkViewReaderFactory = new GMLNetworkReaderFactory(gmlFilter, unrecognizedVisualPropertyManager, serviceRegistrar);
+		var calculatorConverterFactory = new CalculatorConverterFactory();
+		var expressionReaderFactory = new ExpressionReaderFactory(expressionFilter, serviceRegistrar);
+		var attrsDataReaderFactory = new CyAttributesReaderFactory(attrsFilter, serviceRegistrar);
+		var sifNetworkViewReaderFactory = new SIFNetworkReaderFactory(sifFilter, serviceRegistrar);
+		var nnfNetworkViewReaderFactory = new NNFNetworkReaderFactory(nnfFilter, serviceRegistrar);
+		var unrecognizedVisualPropertyManager = new UnrecognizedVisualPropertyManager(serviceRegistrar);
+		var gmlNetworkViewReaderFactory = new GMLNetworkReaderFactory(gmlFilter, unrecognizedVisualPropertyManager, serviceRegistrar);
 		
-		ReadCache readCache = new ReadCache(serviceRegistrar);
-		GroupUtil groupUtil = new GroupUtil(serviceRegistrar);
-		SUIDUpdater suidUpdater = new SUIDUpdater();
-		ReadDataManager readDataManager = new ReadDataManager(readCache, suidUpdater, groupUtil, serviceRegistrar);
+		var readCache = new ReadCache(serviceRegistrar);
+		var groupUtil = new GroupUtil(serviceRegistrar);
+		var suidUpdater = new SUIDUpdater();
+		var readDataManager = new ReadDataManager(readCache, suidUpdater, groupUtil, serviceRegistrar);
 		
-		HandlerFactory handlerFactory = new HandlerFactory(readDataManager);
-		XGMMLParser xgmmlParser = new XGMMLParser(handlerFactory,readDataManager);
-		GenericXGMMLReaderFactory xgmmlReaderFactory = new GenericXGMMLReaderFactory(xgmmlFilter, readDataManager, xgmmlParser, unrecognizedVisualPropertyManager, serviceRegistrar);
-		SessionXGMMLNetworkReaderFactory sessXgmmlNetReaderFactory = new SessionXGMMLNetworkReaderFactory(sessXgmmlNetFileFilter, readDataManager, xgmmlParser, unrecognizedVisualPropertyManager, serviceRegistrar);
-		SessionXGMMLNetworkViewReaderFactory sessXgmmlViewReaderFactory = new SessionXGMMLNetworkViewReaderFactory(sessXgmmlViewFileFilter, readDataManager, xgmmlParser, unrecognizedVisualPropertyManager, serviceRegistrar);
-		CSVCyReaderFactory sessionTableReaderFactory = new CSVCyReaderFactory(sessionTableFilter, true, true, serviceRegistrar);
-		Cy3SessionReaderFactoryImpl cy3SessionReaderFactory = new Cy3SessionReaderFactoryImpl(cys3Filter, readCache, groupUtil, suidUpdater, networkReaderManager, propertyReaderManager, vizmapReaderManager, sessionTableReaderFactory, serviceRegistrar);
-		Cy2SessionReaderFactoryImpl cy2SessionReaderFactory = new Cy2SessionReaderFactoryImpl(cys2Filter, readCache, groupUtil, networkReaderManager, propertyReaderManager, vizmapReaderManager, serviceRegistrar);
-		CysessionReaderFactory cysessionReaderFactory = new CysessionReaderFactory(cysessionFilter);
-		BookmarkReaderFactory bookmarkReaderFactory = new BookmarkReaderFactory(bookmarksFilter);
-		PropertiesReaderFactory propertiesReaderFactory = new PropertiesReaderFactory(propertiesFilter);
-		VisualStyleSerializer visualStyleSerializer = new VisualStyleSerializer(calculatorConverterFactory, serviceRegistrar);
-		VizmapXMLReaderFactory vizmapXMLReaderFactory = new VizmapXMLReaderFactory(vizmapXMLFilter,visualStyleSerializer);
-		VizmapPropertiesReaderFactory vizmapPropertiesReaderFactory = new VizmapPropertiesReaderFactory(vizmapPropertiesFilter, visualStyleSerializer);
-		BitmapWriterFactory pngWriterFactory = new BitmapWriterFactory(pngFilter);
-		BitmapWriterFactory jpegWriterFactory = new BitmapWriterFactory(jpegFilter);
-		PDFWriterFactory pdfWriterFactory = new PDFWriterFactory(pdfFilter);
-		PSWriterFactory psWriterFactory = new PSWriterFactory(psFilter);
-		SVGWriterFactory svgWriterFactory = new SVGWriterFactory(svgFilter);
-		SifNetworkWriterFactory sifNetworkViewWriterFactory = new SifNetworkWriterFactory(sifFilter);
-		NnfNetworkWriterFactory nnfNetworkViewWriterFactory = new NnfNetworkWriterFactory(nnfFilter, serviceRegistrar);
-		GenericXGMMLWriterFactory xgmmlWriterFactory = new GenericXGMMLWriterFactory(xgmmlFilter, unrecognizedVisualPropertyManager, groupUtil, serviceRegistrar);
-		GenericXGMMLWriterNoViewFactory xgmmlWriterNoViewFactory = new GenericXGMMLWriterNoViewFactory(xgmmlNoViewFilter, unrecognizedVisualPropertyManager, groupUtil, serviceRegistrar);
-		SessionXGMMLWriterFactory sessionXgmmlWriterFactory = new SessionXGMMLWriterFactory(sessXgmmlFileFilter, unrecognizedVisualPropertyManager, serviceRegistrar);
-		CysessionWriterFactoryImpl cysessionWriterFactory = new CysessionWriterFactoryImpl(cysessionFilter);
-		BookmarksWriterFactoryImpl bookmarksWriterFactory = new BookmarksWriterFactoryImpl(bookmarksFilter);
-		PropertiesWriterFactoryImpl propertiesWriterFactory = new PropertiesWriterFactoryImpl(propertiesFilter);
-		CSVTableWriterFactory csvTableWriterFactory = new CSVTableWriterFactory(csvFilter, false, false, false, true);
-		CSVTableWriterFactory sessionTableWriterFactory = new CSVTableWriterFactory(sessionTableFilter, true, true, true, false);
-		VizmapWriterFactoryImpl vizmapWriterFactory = new VizmapWriterFactoryImpl(vizmapXMLFilter, visualStyleSerializer);
-		SessionWriterFactoryImpl sessionWriterFactory = new SessionWriterFactoryImpl(cys3Filter, bookmarksFilter, propertiesFilter, sessionTableFilter, vizmapXMLFilter, sessionXgmmlWriterFactory, propertyWriterManager, tableWriterManager, vizmapWriterManager, groupUtil, serviceRegistrar);
-		RecentlyOpenedTrackerImpl recentlyOpenedTracker = new RecentlyOpenedTrackerImpl(serviceRegistrar);
+		var handlerFactory = new HandlerFactory(readDataManager);
+		var xgmmlParser = new XGMMLParser(handlerFactory,readDataManager);
+		var xgmmlReaderFactory = new GenericXGMMLReaderFactory(xgmmlFilter, readDataManager, xgmmlParser, unrecognizedVisualPropertyManager, serviceRegistrar);
+		var sessXgmmlNetReaderFactory = new SessionXGMMLNetworkReaderFactory(sessXgmmlNetFileFilter, readDataManager, xgmmlParser, unrecognizedVisualPropertyManager, serviceRegistrar);
+		var sessXgmmlViewReaderFactory = new SessionXGMMLNetworkViewReaderFactory(sessXgmmlViewFileFilter, readDataManager, xgmmlParser, unrecognizedVisualPropertyManager, serviceRegistrar);
+		var sessionTableReaderFactory = new CSVCyReaderFactory(sessionTableFilter, true, true, serviceRegistrar);
+		var cy3SessionReaderFactory = new Cy3SessionReaderFactoryImpl(cys3Filter, readCache, groupUtil, suidUpdater, networkReaderManager, propertyReaderManager, vizmapReaderManager, sessionTableReaderFactory, serviceRegistrar);
+		var cy2SessionReaderFactory = new Cy2SessionReaderFactoryImpl(cys2Filter, readCache, groupUtil, networkReaderManager, propertyReaderManager, vizmapReaderManager, serviceRegistrar);
+		var cysessionReaderFactory = new CysessionReaderFactory(cysessionFilter);
+		var bookmarkReaderFactory = new BookmarkReaderFactory(bookmarksFilter);
+		var propertiesReaderFactory = new PropertiesReaderFactory(propertiesFilter);
+		var visualStyleSerializer = new VisualStyleSerializer(calculatorConverterFactory, serviceRegistrar);
+		var vizmapXMLReaderFactory = new VizmapXMLReaderFactory(vizmapXMLFilter,visualStyleSerializer);
+		var vizmapPropertiesReaderFactory = new VizmapPropertiesReaderFactory(vizmapPropertiesFilter, visualStyleSerializer);
+		var pngWriterFactory = new BitmapWriterFactory(pngFilter);
+		var jpegWriterFactory = new BitmapWriterFactory(jpegFilter);
+		var pdfWriterFactory = new PDFWriterFactory(pdfFilter);
+		var psWriterFactory = new PSWriterFactory(psFilter);
+		var svgWriterFactory = new SVGWriterFactory(svgFilter);
+		var sifNetworkViewWriterFactory = new SifNetworkWriterFactory(sifFilter);
+		var nnfNetworkViewWriterFactory = new NnfNetworkWriterFactory(nnfFilter, serviceRegistrar);
+		var xgmmlWriterFactory = new GenericXGMMLWriterFactory(xgmmlFilter, unrecognizedVisualPropertyManager, groupUtil, serviceRegistrar);
+		var xgmmlWriterNoViewFactory = new GenericXGMMLWriterNoViewFactory(xgmmlNoViewFilter, unrecognizedVisualPropertyManager, groupUtil, serviceRegistrar);
+		var sessionXgmmlWriterFactory = new SessionXGMMLWriterFactory(sessXgmmlFileFilter, unrecognizedVisualPropertyManager, serviceRegistrar);
+		var cysessionWriterFactory = new CysessionWriterFactoryImpl(cysessionFilter);
+		var bookmarksWriterFactory = new BookmarksWriterFactoryImpl(bookmarksFilter);
+		var propertiesWriterFactory = new PropertiesWriterFactoryImpl(propertiesFilter);
+		var csvTableWriterFactory = new CSVTableWriterFactory(csvFilter, false, false, false, true);
+		var sessionTableWriterFactory = new CSVTableWriterFactory(sessionTableFilter, true, true, true, false);
+		var vizmapWriterFactory = new VizmapWriterFactoryImpl(vizmapXMLFilter, visualStyleSerializer);
+		var sessionWriterFactory = new SessionWriterFactoryImpl(cys3Filter, bookmarksFilter, propertiesFilter, sessionTableFilter, vizmapXMLFilter, sessionXgmmlWriterFactory, propertyWriterManager, tableWriterManager, vizmapWriterManager, groupUtil, serviceRegistrar);
+		var recentlyOpenedTracker = new RecentlyOpenedTrackerImpl(serviceRegistrar);
 		
-		CyTransformerReaderImpl transformerReader = new CyTransformerReaderImpl();
-		CyTransformerWriterImpl transformerWriter = new CyTransformerWriterImpl();
+		var transformerReader = new CyTransformerReaderImpl();
+		var transformerWriter = new CyTransformerWriterImpl();
 		registerService(bc, transformerReader, CyTransformerReader.class);
 		registerService(bc, transformerWriter, CyTransformerWriter.class);
 		registerServiceListener(bc, transformerReader::registerTransformerManager, transformerReader::unregisterTransformerManager, TransformerManager.class);

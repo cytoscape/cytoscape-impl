@@ -132,7 +132,7 @@ import org.jdesktop.swingx.border.DropShadowBorder;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -271,9 +271,9 @@ public class CytoscapeDesktop extends JFrame
 	private final CyServiceRegistrar serviceRegistrar;
 
 	public CytoscapeDesktop(
-			final CytoscapeMenus cyMenus,
-			final NetworkViewMediator netViewMediator,
-			final CyServiceRegistrar serviceRegistrar
+			CytoscapeMenus cyMenus,
+			NetworkViewMediator netViewMediator,
+			CyServiceRegistrar serviceRegistrar
 	) {
 		super(TITLE_PREFIX_STRING + NEW_SESSION_NAME);
 
@@ -281,7 +281,7 @@ public class CytoscapeDesktop extends JFrame
 		this.netViewMediator = netViewMediator;
 		this.serviceRegistrar = serviceRegistrar;
 		
-		final DialogTaskManager taskManager = serviceRegistrar.getService(DialogTaskManager.class);
+		var taskManager = serviceRegistrar.getService(DialogTaskManager.class);
 		taskManager.setExecutionContext(this);
 
 		setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource(SMALL_ICON)));
@@ -310,13 +310,13 @@ public class CytoscapeDesktop extends JFrame
 			@Override
 			public void windowActivated(WindowEvent e) {
 				// This is necessary because the same menu bar can be used by other frames
-				final JMenuBar menuBar = cyMenus.getJMenuBar();
-				final Window window = SwingUtilities.getWindowAncestor(menuBar);
+				var menuBar = cyMenus.getJMenuBar();
+				var window = SwingUtilities.getWindowAncestor(menuBar);
 				
 				if (!CytoscapeDesktop.this.equals(window)) {
 					if (window instanceof JFrame && !isScreenMenuBar()) {
 						// Do this first, or the user could see the menu disappearing from the out-of-focus windows
-						final JMenuBar dummyMenuBar = cyMenus.createDummyMenuBar();
+						var dummyMenuBar = cyMenus.createDummyMenuBar();
 						((JFrame) window).setJMenuBar(dummyMenuBar);
 						dummyMenuBar.updateUI();
 						window.repaint();
@@ -333,7 +333,7 @@ public class CytoscapeDesktop extends JFrame
 			}
 			@Override
 			public void windowClosing(WindowEvent we) {
-				final CyShutdown cyShutdown = serviceRegistrar.getService(CyShutdown.class);
+				var cyShutdown = serviceRegistrar.getService(CyShutdown.class);
 				cyShutdown.exit(0);
 			}
 		});
@@ -354,7 +354,7 @@ public class CytoscapeDesktop extends JFrame
 					resizeEventTimer.debounce(() -> {
 						invokeOnEDT(() -> {
 							// Update the sidebars
-							for (CytoPanelImpl cp : getAllCytoPanels()) {
+							for (var cp : getAllCytoPanels()) {
 								SideBar.TrimStack ts = getTrimStackOf(cp);
 								
 								if (ts != null && cp.getStateInternal() != HIDE)
@@ -368,7 +368,7 @@ public class CytoscapeDesktop extends JFrame
 		setContentPane(getMainPanel());
 		
 		// Prepare to show the desktop...
-		for (CytoPanelImpl cp : getAllCytoPanels()) {
+		for (var cp : getAllCytoPanels()) {
 			handleStateInternalChanged(cp, cp.getStateInternal());
 			addListeners(cp);
 		}
@@ -692,7 +692,7 @@ public class CytoscapeDesktop extends JFrame
 	@Override
 	public void handleEvent(SessionSavedEvent e) {
 		// Update window title
-		final String sessionName = e.getSavedFileName();
+		var sessionName = e.getSavedFileName();
 		invokeOnEDT(() -> setTitle(TITLE_PREFIX_STRING + sessionName));
 	}
 	

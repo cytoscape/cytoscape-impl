@@ -43,7 +43,6 @@ public class CurrentTableService {
 		this.vmProxy = vmProxy;
 	}
 
-	
 	public RenderingEngine<?> getRenderingEngine(VisualProperty<?> vp) {
 		Class<?> type = vp.getTargetDataType();
 		if(type == CyColumn.class || type == CyTable.class)
@@ -51,7 +50,6 @@ public class CurrentTableService {
 		else
 			return vmProxy.getCurrentRenderingEngine();
 	}
-	
 	
 	public VisualLexicon getCurrentVisualLexicon(VisualProperty<?> vp) {
 		Class<?> type = vp.getTargetDataType();
@@ -109,5 +107,4 @@ public class CurrentTableService {
 	public CyColumn getCurrentColumn() {
 		return vizMapperMediator.getCurrentColumn();
 	}
-	
 }

@@ -732,7 +732,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			}
 			
 			// Right-click
-			final ContextMenuMouseListener cmMouseListener = new ContextMenuMouseListener(vpSheet, vpSheetItem);
+			var cmMouseListener = new ContextMenuMouseListener(vpSheet, vpSheetItem);
 			vpSheetItem.addMouseListener(cmMouseListener);
 			
 			if (vpSheetItem.getModel().isVisualMappingAllowed()) {
@@ -745,14 +745,12 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 					curVpSheetItem = vpSheetItem; // Save the current editor (the one the user is interacting with)
 					curVizMapperProperty = (VizMapperProperty<?, ?, ?>) evt.getNewValue();
 					
-					final VizMapperProperty<String, VisualMappingFunctionFactory, VisualMappingFunction<?, ?>> mappingTypeProperty = 
-							vizMapPropertyBuilder.getMappingTypeProperty(vpSheetItem.getPropSheetPnl());
-					final VisualMappingFunctionFactory factory = (VisualMappingFunctionFactory) mappingTypeProperty.getValue();
+					var mappingTypeProperty = vizMapPropertyBuilder.getMappingTypeProperty(vpSheetItem.getPropSheetPnl());
+					var factory = (VisualMappingFunctionFactory) mappingTypeProperty.getValue();
 					attrProxy.setCurrentMappingType(factory != null ? factory.getMappingFunctionType() : null);
-					
-					final VizMapperProperty<VisualProperty<?>, String, VisualMappingFunctionFactory> columnProp = 
-							vizMapPropertyBuilder.getColumnProperty(vpSheetItem.getPropSheetPnl());
-					final Object columnValue = columnProp.getValue();
+
+					var columnProp = vizMapPropertyBuilder.getColumnProperty(vpSheetItem.getPropSheetPnl());
+					var columnValue = columnProp.getValue();
 					mappingFactoryProxy.setCurrentColumnName(columnValue != null ? columnValue.toString() : null);
 					mappingFactoryProxy.setCurrentTargetDataType(vpSheet.getModel().getTargetDataType());
 				});
@@ -776,8 +774,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		});
 	}
 
-	protected void removeVisualMapping(final VisualPropertySheetItem<?> vpSheetItem) {
-		final VisualMappingFunction<?, ?> vm = vpSheetItem.getModel().getVisualMappingFunction();
+	protected void removeVisualMapping(VisualPropertySheetItem<?> vpSheetItem) {
+		var vm = vpSheetItem.getModel().getVisualMappingFunction();
 		
 		if (vm != null)
 			sendNotification(NotificationNames.REMOVE_VISUAL_MAPPINGS, Collections.singleton(vm));

@@ -831,7 +831,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			
 			addFocusListener(new FocusAdapter() {
 				@Override
-				public void focusLost(final FocusEvent e) {
+				public void focusLost(FocusEvent e) {
 					if (!isEditing() && editingVizMapperProperty != null)
 						firePropertyChange("editingVizMapperProperty", editingVizMapperProperty, 
 								editingVizMapperProperty = null);
@@ -840,9 +840,9 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		}
 		
 		@Override
-		public Component prepareEditor(final TableCellEditor editor, final  int row, final int column) {
-			final Item selectedItem = (Item) getValueAt(row, 0);
-			final VizMapperProperty<?, ?, ?> prop = (VizMapperProperty<?, ?, ?>) selectedItem.getProperty();	
+		public Component prepareEditor(TableCellEditor editor, int row, int column) {
+			var selectedItem = (Item) getValueAt(row, 0);
+			var prop = (VizMapperProperty<?, ?, ?>) selectedItem.getProperty();	
 			
 			if (prop != editingVizMapperProperty)
 				firePropertyChange("editingVizMapperProperty", editingVizMapperProperty, editingVizMapperProperty = prop);
@@ -851,7 +851,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		}
 		
 		@Override
-		public boolean isCellEditable(final int row, final int column) {
+		public boolean isCellEditable(int row, int column) {
 			return isRowSelected(row) && super.isCellEditable(row, column);
 		}
 		

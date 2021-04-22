@@ -19,20 +19,20 @@ public class RemoveVisualMappingsCommand extends SimpleCommand {
 
 	private final ServicesUtil servicesUtil;
 	
-	public RemoveVisualMappingsCommand(final ServicesUtil servicesUtil) {
+	public RemoveVisualMappingsCommand(ServicesUtil servicesUtil) {
 		this.servicesUtil = servicesUtil;
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public void execute(final INotification notification) {
-		final Set<VisualMappingFunction<?, ?>> set = (Set<VisualMappingFunction<?, ?>>) notification.getBody();
+	public void execute(INotification notification) {
+		var set = (Set<VisualMappingFunction<?, ?>>) notification.getBody();
 		
 		var currentService = servicesUtil.get(CurrentTableService.class);
-		VisualStyle style = currentService.getCurrentVisualStyle();
+		var style = currentService.getCurrentVisualStyle();
 		
-		final TaskIterator iterator = new TaskIterator(new RemoveVisualMappingsTask(set, style, servicesUtil));
-		final DialogTaskManager taskManager = servicesUtil.get(DialogTaskManager.class);
+		var iterator = new TaskIterator(new RemoveVisualMappingsTask(set, style, servicesUtil));
+		var taskManager = servicesUtil.get(DialogTaskManager.class);
 		taskManager.execute(iterator);
 	}
 }
