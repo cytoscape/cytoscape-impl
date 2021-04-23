@@ -22,14 +22,17 @@ public class EquationEditorDialogFactory {
 		int cellRow = browserTable.getSelectedRow();
 		int cellCol = browserTable.getSelectedColumn();
 		
-		String colName = browserTable.getColumnName(cellCol);
-		CyRow row = browserTable.getBrowserTableModel().getCyRow(cellRow);
+		try {
+			String colName = browserTable.getColumnName(cellCol);
+			CyRow row = browserTable.getBrowserTableModel().getCyRow(cellRow);
+			
+			Object obj = row.getRaw(colName);
+			if(obj instanceof Equation) {
+				Equation equation = (Equation) obj;
+				return equation.toString().trim().substring(1); // remove '='
+			}
+		} catch(Exception e) { }
 		
-		Object obj = row.getRaw(colName);
-		if(obj instanceof Equation) {
-			Equation equation = (Equation) obj;
-			return equation.toString().trim().substring(1); // remove '='
-		}
 		return null;
 	}
 }

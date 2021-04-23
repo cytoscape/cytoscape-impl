@@ -65,6 +65,7 @@ import org.cytoscape.equations.internal.builtins.SList;
 import org.cytoscape.equations.internal.builtins.Sign;
 import org.cytoscape.equations.internal.builtins.Sin;
 import org.cytoscape.equations.internal.builtins.Sinh;
+import org.cytoscape.equations.internal.builtins.Split;
 import org.cytoscape.equations.internal.builtins.Sqrt;
 import org.cytoscape.equations.internal.builtins.StDev;
 import org.cytoscape.equations.internal.builtins.Substitute;
@@ -644,6 +645,7 @@ public class EquationParserImpl implements EquationParser {
 		registerFunctionInternal(new Sin());
 		registerFunctionInternal(new Sinh());
 		registerFunctionInternal(new SList());
+		registerFunctionInternal(new Split());
 		registerFunctionInternal(new StDev());
 		registerFunctionInternal(new Sqrt());
 		registerFunctionInternal(new Substitute());

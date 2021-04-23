@@ -38,7 +38,7 @@ public class Nth extends AbstractFunction {
 	public Nth() {
 		super(new ArgDescriptor[] {
 				new ArgDescriptor(ArgType.STRICT_ANY_LIST, "list", "A list of objects."),
-				new ArgDescriptor(ArgType.INT, "index", "An index into the list."),
+				new ArgDescriptor(ArgType.INT, "index", "An index into the list. The index of the first element is 1."),
 			});
 	}
 
