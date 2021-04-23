@@ -3,13 +3,17 @@ package org.cytoscape.view.table.internal.equation;
 import static java.util.Comparator.*;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -96,7 +100,7 @@ public class EquationEditorMediator {
 		dialog.setModal(true);
 		dialog.getContentPane().setLayout(new BorderLayout());
 		dialog.getContentPane().add(builderPanel, BorderLayout.CENTER);
-		dialog.setPreferredSize(new Dimension(550, 500)); 
+		dialog.setPreferredSize(new Dimension(600, 600)); 
 		dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		dialog.pack();
 		dialog.setLocationRelativeTo(parent);
@@ -137,7 +141,7 @@ public class EquationEditorMediator {
 	
 	
 	private void initializeTutorialList() {
-		builderPanel.getTutorialPanel().setElements(TutorialItems.getTutorialItems());
+		builderPanel.getTutorialPanel().addElements(TutorialItems.getTutorialItems());
 		
 		JList<String> list = builderPanel.getTutorialPanel().getList();
 		list.addListSelectionListener(e -> {
@@ -152,28 +156,99 @@ public class EquationEditorMediator {
 	}
 	
 	
+	@SuppressWarnings("serial")
 	private void initializeFunctionList() {
+		
+		
 		EquationParser equationParser = registrar.getService(EquationParser.class);
 		
-		SortedMap<String,Function> functions = new TreeMap<>();
-		equationParser.getRegisteredFunctions().forEach(f -> functions.put(f.getName(), f));
+		SortedMap<String,SortedMap<String,Function>> categories = new TreeMap<>();
 		
-		builderPanel.getFunctionPanel().setElements(functions.keySet());
+		for(Function f : equationParser.getRegisteredFunctions()) {
+			String category = f.getCategoryName();
+			if(category == null)
+				category = "Other";
+			
+			Map<String,Function> functions = categories.computeIfAbsent(category, k -> new TreeMap<>());
+			functions.put(f.getName(), f);
+		}
 		
-		JList<String> list = builderPanel.getFunctionPanel().getList();
+		ItemListPanel<FunctionInfo> functionPanel = builderPanel.getFunctionPanel();
+		
+		List<String> topCategories = Arrays.asList("Numeric", "Text", "List", "Logic", "Network");
+		
+		// First put the top categories at the top
+		for(String categoryName : topCategories) {
+			var functions = categories.remove(categoryName);
+			if(functions != null) {
+				functionPanel.addElement(FunctionInfo.category(categoryName));
+				
+				for(var functionEntry : functions.entrySet()) {
+					Function f = functionEntry.getValue();
+					functionPanel.addElement(FunctionInfo.function(f));
+				}
+			}
+		}
+		
+		// Now add the rest
+		for(var categoryEntry : categories.entrySet()) {
+			String categoryName = categoryEntry.getKey();
+			var functions = categoryEntry.getValue();
+			
+			functionPanel.addElement(FunctionInfo.category(categoryName));
+			
+			for(var functionEntry : functions.entrySet()) {
+				Function f = functionEntry.getValue();
+				functionPanel.addElement(FunctionInfo.function(f));
+			}
+		}
+		
+		JList<FunctionInfo> list = functionPanel.getList();
+		
+		list.setCellRenderer(new DefaultListCellRenderer() {
+			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				
+				FunctionInfo functionInfo = (FunctionInfo) value;
+				
+				if(functionInfo.isCategoryHeader()) {
+					Font font = getFont();
+					Font bold = font.deriveFont(Font.BOLD);
+					setFont(bold);
+					setText(functionInfo.getName());
+					setBackground(slightlyDarker(getBackground()));
+				} else {
+					setText("  " + functionInfo.getName());
+				}
+				return this;
+			};
+		});
+		
 		list.addListSelectionListener(e -> {
-			String name = list.getSelectedValue();
-			if(name != null) {
+			FunctionInfo functionInfo = list.getSelectedValue();
+			if(functionInfo != null) {
 				builderPanel.getAttributePanel().clearSelection();
 				builderPanel.getTutorialPanel().clearSelection();
-				Function f = functions.get(name);
-				String docs = TutorialItems.getFunctionDocs(f);
-				builderPanel.getInfoPanel().setText(docs);
+				if(functionInfo.isCategoryHeader()) {
+					builderPanel.getInfoPanel().setText("");
+				} else {
+					Function f = functionInfo.getFunction();
+					String docs = TutorialItems.getFunctionDocs(f);
+					builderPanel.getInfoPanel().setText(docs);
+				}
 			}
 		});
 	}
-	
-	
+
+	private static Color slightlyDarker(Color color) {
+		double f = 0.9;
+		return new Color(
+			Math.max((int) (color.getRed()   * f), 0), 
+			Math.max((int) (color.getGreen() * f), 0),
+			Math.max((int) (color.getBlue()  * f), 0)
+		);
+	}
+
 	@SuppressWarnings("serial")
 	private void initializeAttributeList() {
 		builderPanel.getAttributePanel().getList().setCellRenderer(new DefaultListCellRenderer() {
@@ -197,7 +272,7 @@ public class EquationEditorMediator {
 				.thenComparing(CyColumn::getNamespace, nullsFirst(naturalOrder()))
 				.thenComparing(CyColumn::getNameOnly, naturalOrder()));
 		
-		builderPanel.getAttributePanel().setElements(columns);
+		builderPanel.getAttributePanel().addElements(columns);
 		
 		JList<CyColumn> list = builderPanel.getAttributePanel().getList();
 		list.addListSelectionListener(e -> {
@@ -218,9 +293,9 @@ public class EquationEditorMediator {
 		if(offset < 0)
 			return;
 		
-		String function = builderPanel.getFunctionPanel().getSelectedValue();
-		if(function != null) {
-			syntaxPanel.insertText(offset, function + "(", ")");
+		FunctionInfo function = builderPanel.getFunctionPanel().getSelectedValue();
+		if(function != null && !function.isCategoryHeader()) {
+			syntaxPanel.insertText(offset, function.getName() + "(", ")");
 			return;
 		}
 		

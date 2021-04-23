@@ -46,6 +46,11 @@ public class InDegree extends AbstractFunction {
 	public String getName() {
 		return "INDEGREE";
 	}
+	
+	@Override
+	public String getCategoryName() {
+		return "Network";
+	}
 
 	@Override
 	public String getFunctionSummary() {

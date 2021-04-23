@@ -21,7 +21,7 @@ public class EquationEditorPanel extends JPanel {
 	
 	private SyntaxAreaPanel syntaxPanel;
 	private ItemListPanel<String> tutorialPanel;
-	private ItemListPanel<String> functionPanel;
+	private ItemListPanel<FunctionInfo> functionPanel;
 	private ItemListPanel<CyColumn> attributePanel;
 	private InfoPanel infoPanel;
 	
@@ -85,7 +85,7 @@ public class EquationEditorPanel extends JPanel {
 		return tutorialPanel;
 	}
 	
-	public ItemListPanel<String> getFunctionPanel() {
+	public ItemListPanel<FunctionInfo> getFunctionPanel() {
 		if(functionPanel == null) {
 			functionPanel = new ItemListPanel<>("Functions");
 		}

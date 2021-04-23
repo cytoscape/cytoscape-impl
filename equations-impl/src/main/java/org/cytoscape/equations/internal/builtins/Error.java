@@ -40,6 +40,7 @@ public class Error extends AbstractFunction {
 	 *  @return the name by which you must call the function when used in an attribute equation.
 	 */
 	public String getName() { return "ERROR"; }
+	
 
 	/**
 	 *  Used to provide help for users.

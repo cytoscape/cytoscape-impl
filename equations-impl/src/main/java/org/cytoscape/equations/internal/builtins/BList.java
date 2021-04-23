@@ -30,6 +30,7 @@ import org.cytoscape.equations.ArgDescriptor;
 import org.cytoscape.equations.ArgType;
 import org.cytoscape.equations.FunctionUtil;
 import org.cytoscape.equations.internal.BooleanList;
+import org.cytoscape.equations.internal.Categories;
 
 
 public class BList extends AbstractFunction {
@@ -44,6 +45,9 @@ public class BList extends AbstractFunction {
 	 *  @return the name by which you must call the function when used in an attribute equation.
 	 */
 	public String getName() { return "BLIST"; }
+	
+	@Override
+	public String getCategoryName() { return Categories.LIST; }
 
 	/**
 	 *  Used to provide help for users.

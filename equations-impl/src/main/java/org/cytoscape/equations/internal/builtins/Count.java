@@ -30,6 +30,7 @@ import java.util.List;
 import org.cytoscape.equations.AbstractFunction;
 import org.cytoscape.equations.ArgDescriptor;
 import org.cytoscape.equations.ArgType;
+import org.cytoscape.equations.internal.Categories;
 
 
 public class Count extends AbstractFunction {
@@ -44,6 +45,9 @@ public class Count extends AbstractFunction {
 	 *  @return the name by which you must call the function when used in an attribute equation.
 	 */
 	public String getName() { return "COUNT"; }
+	
+	@Override
+	public String getCategoryName() { return Categories.LIST; }
 
 	/**
 	 *  Used to provide help for users.

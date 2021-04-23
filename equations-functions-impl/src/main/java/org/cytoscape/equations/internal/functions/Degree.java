@@ -46,6 +46,11 @@ public class Degree extends AbstractFunction {
 	public String getName() {
 		return "DEGREE";
 	}
+	
+	@Override
+	public String getCategoryName() {
+		return "Network";
+	}
 
 	@Override
 	public String getFunctionSummary() {

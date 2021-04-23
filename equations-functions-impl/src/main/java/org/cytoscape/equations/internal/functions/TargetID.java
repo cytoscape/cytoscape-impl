@@ -46,6 +46,11 @@ public class TargetID extends AbstractFunction {
 	}
 
 	@Override
+	public String getCategoryName() {
+		return "Network";
+	}
+	
+	@Override
 	public String getFunctionSummary() {
 		return "Returns the SUID of the edge's target node.";
 	}

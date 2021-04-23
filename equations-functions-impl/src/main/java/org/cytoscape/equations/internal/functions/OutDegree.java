@@ -48,6 +48,11 @@ public class OutDegree extends AbstractFunction {
 	}
 
 	@Override
+	public String getCategoryName() {
+		return "Network";
+	}
+	
+	@Override
 	public String getFunctionSummary() {
 		return "Returns the outdegree of a node. The outdegree is the number of outgoing edges connected to the node.";
 	}

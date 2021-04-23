@@ -44,6 +44,11 @@ public class IsDirected extends AbstractFunction {
 	public String getName() {
 		return "ISDIRECTED";
 	}
+	
+	@Override
+	public String getCategoryName() {
+		return "Network";
+	}
 
 	@Override
 	public String getFunctionSummary() {

@@ -29,6 +29,7 @@ import org.cytoscape.equations.AbstractFunction;
 import org.cytoscape.equations.ArgDescriptor;
 import org.cytoscape.equations.ArgType;
 import org.cytoscape.equations.FunctionUtil;
+import org.cytoscape.equations.internal.Categories;
 import org.cytoscape.equations.internal.StringList;
 
 
@@ -44,6 +45,9 @@ public class SList extends AbstractFunction {
 	 *  @return the name by which you must call the function when used in an attribute equation.
 	 */
 	public String getName() { return "SLIST"; }
+	
+	@Override
+	public String getCategoryName() { return Categories.LIST; }
 
 	/**
 	 *  Used to provide help for users.

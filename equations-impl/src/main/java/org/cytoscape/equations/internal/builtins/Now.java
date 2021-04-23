@@ -31,6 +31,7 @@ import java.util.Date;
 
 import org.cytoscape.equations.AbstractFunction;
 import org.cytoscape.equations.ArgDescriptor;
+import org.cytoscape.equations.internal.Categories;
 
 
 public class Now extends AbstractFunction {
@@ -43,6 +44,9 @@ public class Now extends AbstractFunction {
 	 *  @return the name by which you must call the function when used in an attribute equation.
 	 */
 	public String getName() { return "NOW"; }
+	
+	@Override
+	public String getCategoryName() { return Categories.TIME; }
 
 	/**
 	 *  Used to provide help for users.

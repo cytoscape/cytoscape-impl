@@ -43,9 +43,14 @@ public class ItemListPanel<T> extends JPanel {
 				.addComponent(getScrollPane()));
 	}
 	
-	public void setElements(Collection<T> items) {
+	public void addElements(Collection<T> items) {
 		var model = (DefaultListModel<T>)getList().getModel();
 		model.addAll(items);
+	}
+	
+	public void addElement(T element) {
+		var model = (DefaultListModel<T>)getList().getModel();
+		model.addElement(element);
 	}
 	
 	public void clearSelection() {
