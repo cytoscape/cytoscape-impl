@@ -11,10 +11,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -130,7 +128,8 @@ public class EquationEditorMediator {
 		builderPanel.getCloseButton().addActionListener(e -> dialog.dispose());
 		
 		SyntaxAreaPanel syntaxPanel = builderPanel.getSyntaxPanel();
-		syntaxPanel.getApplyButton().addActionListener(e -> handleApply());
+		syntaxPanel.getApplyButton().addActionListener(e -> handleApply(true));
+		syntaxPanel.getEvalButton().addActionListener(e -> handleApply(false));
 		
 		builderPanel.getInfoPanel().getTextArea().addHyperlinkListener(e -> {
 			if(e.getEventType() == EventType.ACTIVATED) {
@@ -326,11 +325,11 @@ public class EquationEditorMediator {
 		return equation;
 	}
 	
-	private void handleApply() {
+	private void handleApply(boolean insert) {
 		Equation equation = compileEquation(column);
 		if(equation != null) {
 			Collection<CyRow> rows = getRowsForApply();
-			applyToRows(equation, column, rows);
+			applyToRows(equation, column, rows, insert);
 		}
 		
 	}
@@ -369,35 +368,10 @@ public class EquationEditorMediator {
 		return Collections.emptyList();
 	}
 	
-	private void applyToRows(Equation equation, CyColumn col, Collection<CyRow> rows) {
-		Set<String> errors = new HashSet<>();
-		int numErrors = 0;
-		
-		for(CyRow row : rows) {
-			row.set(col.getName(), equation);
-			
-			// We really need a better way to detect if an Equation evaluation results in an error.
-			// Note, this is NOT thread safe.
-			Object x = null;
-			try {
-				x = row.get(col.getName(), col.getType());
-			} catch(Exception e) {
-				errors.add(e.getMessage());
-			}
-			if(x == null) {
-				String error = row.getTable().getLastInternalError();
-				if(error != null && !error.isBlank()) {
-					numErrors++;
-					errors.add(error);
-				}
-			}
-		}
-		
-		if(errors.isEmpty()) {
-			builderPanel.getSyntaxPanel().showEvalSuccess(rows.size());
-		} else {
-			builderPanel.getSyntaxPanel().showEvalError(rows.size(), numErrors, errors);
-		}
+	
+	private void applyToRows(Equation equation, CyColumn col, Collection<CyRow> rows, boolean insert) {
+		var worker = new ApplyWorker(registrar, builderPanel, equation, col, rows, insert);
+		worker.execute();
 	}
-
+		
 }
