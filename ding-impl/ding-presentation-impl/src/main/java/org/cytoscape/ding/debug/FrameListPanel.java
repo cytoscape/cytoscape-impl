@@ -95,6 +95,7 @@ public class FrameListPanel extends BasicCollapsiblePanel {
 	
 	
 	private FrameListTablePanel getPanel(DebugFrameType type) {
+    if (type == null) return null;
 		switch(type) {
 			case MAIN_ANNOTAITONS:
 			case MAIN_EDGES:
@@ -110,7 +111,8 @@ public class FrameListPanel extends BasicCollapsiblePanel {
 	
 	public void addFrame(DebugRootFrameInfo frame) {
 		ViewUtil.invokeOnEDT(() -> {
-			getPanel(frame.getType()).addFrame(frame);
+      if (frame.getType() != null)
+			  getPanel(frame.getType()).addFrame(frame);
 		});
 	}
 
