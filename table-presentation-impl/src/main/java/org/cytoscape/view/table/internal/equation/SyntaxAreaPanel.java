@@ -48,6 +48,7 @@ public class SyntaxAreaPanel extends JPanel {
 	private JLabel applyLabel;
 	private JComboBox<ApplyScope> applyScopeCombo; 
 	private JButton applyButton;
+	private JButton evalButton;
 	private JLabel resultLabel;
 	
 	
@@ -70,6 +71,7 @@ public class SyntaxAreaPanel extends JPanel {
 				.addComponent(getApplyLabel())
 				.addComponent(getApplyScopeCombo())
 				.addComponent(getApplyButton())
+				.addComponent(getEvalButton())
 				.addComponent(getResultLabel())
 			)
 		);
@@ -81,6 +83,7 @@ public class SyntaxAreaPanel extends JPanel {
 				.addComponent(getApplyLabel())
 				.addComponent(getApplyScopeCombo(), 0, 150, 150)
 				.addComponent(getApplyButton())
+				.addComponent(getEvalButton())
 				.addComponent(getResultLabel())
 			)
 		);
@@ -293,14 +296,26 @@ public class SyntaxAreaPanel extends JPanel {
 	
 	public JButton getApplyButton() {
 		if(applyButton == null) {
-			applyButton = new JButton("Apply");
+			applyButton = new JButton("Insert Formula");
+			applyButton.setToolTipText("Insert the formula into the selected cells. The formula will be re-evaluated as needed.");
 			LookAndFeelUtil.makeSmall(applyButton);
 		}
 		return applyButton;
 	}
 	
+	public JButton getEvalButton() {
+		if(evalButton == null) {
+			evalButton = new JButton("Evaluate and Insert Result");
+			evalButton.setToolTipText("Evaluate the formula now and insert the result into the selected cells.");
+			LookAndFeelUtil.makeSmall(evalButton);
+		}
+		return evalButton;
+	}
+	
 	private void updateApplyButtonEnablement() {
-		getApplyButton().setEnabled(!getText().isBlank());
+		boolean enabled = !getText().isBlank();
+		getApplyButton().setEnabled(enabled);
+		getEvalButton().setEnabled(enabled);
 	}
 	
 	private JButton createIconButton(String icon, String tooltip) {
