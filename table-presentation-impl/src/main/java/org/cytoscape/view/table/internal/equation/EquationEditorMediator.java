@@ -7,6 +7,9 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -16,10 +19,12 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import javax.swing.AbstractAction;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JList;
+import javax.swing.JPopupMenu;
 import javax.swing.WindowConstants;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
@@ -155,10 +160,13 @@ public class EquationEditorMediator {
 	}
 	
 	
-	@SuppressWarnings("serial")
 	private void initializeFunctionList() {
-		
-		
+		initializeFunctionListContents();
+		initializeFunctionListComponents();
+	}
+	
+	
+	private void initializeFunctionListContents() {
 		EquationParser equationParser = registrar.getService(EquationParser.class);
 		
 		SortedMap<String,SortedMap<String,Function>> categories = new TreeMap<>();
@@ -201,7 +209,12 @@ public class EquationEditorMediator {
 				functionPanel.addElement(FunctionInfo.function(f));
 			}
 		}
-		
+	}
+	
+	
+	@SuppressWarnings("serial")
+	private void initializeFunctionListComponents() {
+		ItemListPanel<FunctionInfo> functionPanel = builderPanel.getFunctionPanel();
 		JList<FunctionInfo> list = functionPanel.getList();
 		
 		list.setCellRenderer(new DefaultListCellRenderer() {
@@ -209,7 +222,6 @@ public class EquationEditorMediator {
 				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 				
 				FunctionInfo functionInfo = (FunctionInfo) value;
-				
 				if(functionInfo.isCategoryHeader()) {
 					Font font = getFont();
 					Font bold = font.deriveFont(Font.BOLD);
@@ -222,6 +234,8 @@ public class EquationEditorMediator {
 				return this;
 			};
 		});
+		
+		list.addMouseListener(new ListInsertListener());
 		
 		list.addListSelectionListener(e -> {
 			FunctionInfo functionInfo = list.getSelectedValue();
@@ -238,6 +252,7 @@ public class EquationEditorMediator {
 			}
 		});
 	}
+	
 
 	private static Color slightlyDarker(Color color) {
 		double f = 0.9;
@@ -274,6 +289,8 @@ public class EquationEditorMediator {
 		builderPanel.getAttributePanel().addElements(columns);
 		
 		JList<CyColumn> list = builderPanel.getAttributePanel().getList();
+		list.addMouseListener(new ListInsertListener());
+		
 		list.addListSelectionListener(e -> {
 			CyColumn col = list.getSelectedValue();
 			if(col != null) {
@@ -372,6 +389,35 @@ public class EquationEditorMediator {
 	private void applyToRows(Equation equation, CyColumn col, Collection<CyRow> rows, boolean insert) {
 		var worker = new ApplyWorker(registrar, builderPanel, equation, col, rows, insert);
 		worker.execute();
+	}
+	
+	
+	private class ListInsertListener extends MouseAdapter {
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			if(e.getClickCount() == 2) {
+				handleInsert();
+			}
+		}
+		@SuppressWarnings({ "rawtypes", "serial" })
+		@Override
+		public void mousePressed(MouseEvent e) {
+			JList list = (JList) e.getSource();
+			if(e.isPopupTrigger()) {
+				int index = list.locationToIndex(e.getPoint());
+				if(index != -1 && list.getCellBounds(index, index).contains(e.getPoint())) {
+					list.setSelectedIndex(index);
+					
+					JPopupMenu menu = new JPopupMenu();
+					menu.add(new AbstractAction("Insert") {
+						@Override public void actionPerformed(ActionEvent e) {
+							handleInsert();
+						}
+					});
+					menu.show(list, e.getX(), e.getY());
+				}
+			}
+		}
 	}
 		
 }
