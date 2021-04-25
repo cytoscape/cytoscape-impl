@@ -11,8 +11,13 @@ import java.util.Set;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroup;
+import org.cytoscape.group.events.GroupAboutToBeDestroyedEvent;
+import org.cytoscape.group.events.GroupAboutToBeDestroyedListener;
+import org.cytoscape.group.events.GroupAboutToBeRemovedEvent;
+import org.cytoscape.group.events.GroupAboutToBeRemovedListener;
 import org.cytoscape.group.internal.CyGroupManagerImpl;
 import org.cytoscape.group.internal.data.CyGroupSettingsImpl;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
@@ -52,7 +57,8 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 /**
  * Handle the view portion of group collapse/expand
  */
-public class NodeChangeListener implements ViewChangedListener, SessionLoadedListener {
+public class NodeChangeListener implements ViewChangedListener, GroupAboutToBeDestroyedListener,
+                                           GroupAboutToBeRemovedListener, SessionLoadedListener {
 	
 	private final CyGroupManagerImpl cyGroupManager;
 	private final CyGroupSettingsImpl cyGroupSettings;
@@ -78,6 +84,36 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 		node2GroupMap = new HashMap<>();
 	}
 
+	public void handleEvent(GroupAboutToBeDestroyedEvent e) {
+    // System.out.println("GroupAboutToBeDestroyed");
+    CyGroup source = e.getGroup();
+    CyNetworkView removeView = null;
+    List<CyNetworkView> viewsToRemove = new ArrayList<>();
+    for (CyNetworkView view: groupMap.keySet()) {
+      if (groupMap.get(view).contains(source.getGroupNode())) {
+        viewsToRemove.add(view);
+      }
+    }
+        
+    for (CyNetworkView view: viewsToRemove)
+      removeGroup(source, view);
+  }
+
+	public void handleEvent(GroupAboutToBeRemovedEvent e) {
+    // System.out.println("GroupAboutToBeRemoved");
+    CyGroup source = e.getSource();
+    CyNetwork net = e.getNetwork();
+    CyNetworkView removeView = null;
+    for (CyNetworkView view: groupMap.keySet()) {
+      if (view.getModel().equals(net)) {
+        removeView = view;
+        break;
+      }
+    }
+    if (removeView != null)
+      removeGroup(source, removeView);
+  }
+ 
 	public void handleEvent(ViewChangedEvent<?> e) {
 		if (ignoreChanges) {
 			// System.out.println("Ignoring changes");
@@ -156,6 +192,7 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 	}
 
 	public void removeGroup(CyGroup group, CyNetworkView networkView) {
+    // System.out.println("Removing group "+group+" from "+networkView);
 		if (groupMap.containsKey(networkView)) {
 			Set<CyNode> groups = groupMap.get(networkView);
 			groups.remove(group.getGroupNode());
@@ -189,6 +226,8 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 		CyGroup group = cyGroupManager.getGroup(nodeView.getModel(), networkView.getModel());
 		if (group == null) return;
 
+		final CyEventHelper cyEventHelper = cyGroupManager.getService(CyEventHelper.class);
+
 		// System.out.println("Updating group "+group+" location");
 		Dimension lastPosition = ViewUtils.getLocation(networkView.getModel(), group);
 		double xOffset = lastPosition.getWidth() - groupX;
@@ -198,6 +237,7 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 		List<View<CyNode>> groupNodeList = new ArrayList<>();
 
 		boolean lastIgnoreChanges = ignoreChanges;
+    // System.out.println("Ignoring changes -- was "+lastIgnoreChanges);
 		ignoreChanges = true;
 		// OK, move all of our nodes
 		for (CyNode node: group.getNodeList()) {
@@ -215,8 +255,8 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 				groupNodeList.add(nv);
 		}
 		
-		final CyEventHelper cyEventHelper = cyGroupManager.getService(CyEventHelper.class);
-		cyEventHelper.flushPayloadEvents();
+		// final CyEventHelper cyEventHelper = cyGroupManager.getService(CyEventHelper.class);
+		// cyEventHelper.flushPayloadEvents();
 
 		ViewUtils.updateGroupLocation(networkView.getModel(), group, groupX, groupY);
 		if (groupNodeList.size() > 0) {
@@ -225,6 +265,7 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 			}
 		}
 		
+    // System.out.println("Setting ignoreChanges to "+lastIgnoreChanges);
 		ignoreChanges = lastIgnoreChanges;
 		cyEventHelper.flushPayloadEvents();
 	}
@@ -252,6 +293,7 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 			cyStyleManager = cyGroupManager.getService(VisualMappingManager.class);
 
 		boolean lastIgnoreChanges = ignoreChanges;
+    // System.out.println("Ignoring changes -- was "+lastIgnoreChanges);
 		ignoreChanges = true;
 		ViewUtils.styleCompoundNode(group, networkView, cyGroupManager, cyStyleManager, 
 		                            cyGroupSettings.getGroupViewType(group));
@@ -269,10 +311,12 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 				updateNodeLocation(networkView, nv);
 				// ViewUtils.styleCompoundNode(g, networkView, cyGroupManager, cyStyleManager, 
 	 	   //                             cyGroupSettings.getGroupViewType(group));
-				cyEventHelper.flushPayloadEvents();
+				// cyEventHelper.flushPayloadEvents();
 			}
 		}
+    // System.out.println("Setting ignoreChanges to "+lastIgnoreChanges);
 		ignoreChanges = lastIgnoreChanges;
+    cyEventHelper.flushPayloadEvents();
 	}
 
 	private CyGroup getGroupForNode(CyNode node, CyNetworkView networkView) {

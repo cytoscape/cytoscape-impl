@@ -1,5 +1,6 @@
 package org.cytoscape.group.internal.view;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -182,6 +183,8 @@ public class ViewUtils {
 				groupView.setLockedValue(BasicVisualLexicon.NODE_SHAPE,
 				                         NodeShapeVisualProperty.RECTANGLE);
 				groupView.setLockedValue(BasicVisualLexicon.NODE_BORDER_WIDTH, 1.0);
+        // Set the selection paint with an alpha value?
+				groupView.setLockedValue(BasicVisualLexicon.NODE_SELECTED_PAINT, new Color(255,255,0,100));
 			}
 	
 			groupView.setLockedValue(BasicVisualLexicon.NODE_Z_LOCATION, z);

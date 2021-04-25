@@ -20,6 +20,7 @@ import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.group.CyGroupSettingsManager;
 import org.cytoscape.group.data.CyGroupAggregationManager;
 import org.cytoscape.group.events.GroupAboutToBeDestroyedListener;
+import org.cytoscape.group.events.GroupAboutToBeRemovedListener;
 import org.cytoscape.group.events.GroupAboutToCollapseListener;
 import org.cytoscape.group.events.GroupAddedListener;
 import org.cytoscape.group.events.GroupCollapsedListener;
@@ -129,6 +130,8 @@ public class CyActivator extends AbstractCyActivator {
 		// Set up listener for node movement
 		NodeChangeListener nodeChangeListener = new NodeChangeListener(cyGroupManager, cyGroupSettings);
 		registerService(bc, nodeChangeListener, ViewChangedListener.class, new Properties());
+		registerService(bc, nodeChangeListener, GroupAboutToBeRemovedListener.class, new Properties());
+		registerService(bc, nodeChangeListener, GroupAboutToBeDestroyedListener.class, new Properties());
 
 		settingsProps = new Properties();
 		settingsProps.setProperty(ID, "groupViewCollapseFactory");
