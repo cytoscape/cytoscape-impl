@@ -492,7 +492,7 @@ public class CyActivator extends AbstractCyActivator {
 					"Executes the current preferred layout. "
 					+ "Default is ```grid```.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");;
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		// ---------- COMMANDS ----------
@@ -583,12 +583,9 @@ public class CyActivator extends AbstractCyActivator {
 			var factory = new ExportNetworkImageTaskFactoryImpl(serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(PREFERRED_MENU, "File.Export[24.8]");
-//			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			props.setProperty(MENU_GRAVITY, "3");
 			props.setProperty(TITLE, "Network to Image...");
-			// props.setProperty(TOOL_BAR_GRAVITY, "3.2");
-			// props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(IN_CONTEXT_MENU, "false");
 			props.setProperty(TOOLTIP, "Export Network Image to File");
 
@@ -620,7 +617,6 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			props.setProperty(MENU_GRAVITY, "4");
 			props.setProperty(TITLE, "Network to Web Page...");
-//			props.setProperty(INSERT_SEPARATOR_AFTER, "true");
 			registerAllServices(bc, factory, props);
 			registerServiceListener(bc, factory::registerFactory, factory::unregisterFactory, CySessionWriterFactory.class);
 		}
@@ -861,7 +857,6 @@ public class CyActivator extends AbstractCyActivator {
 
 			var props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_SELECTED_NODES_OR_EDGES);
-//			props.setProperty(PREFERRED_MENU, "Select");
 			props.setProperty(PREFERRED_MENU, "Select.Nodes.First Neighbors of Selected Nodes");
 			props.setProperty(MENU_GRAVITY, "6");
 			props.setProperty(TOOL_BAR_GRAVITY, "9.15");
@@ -1029,7 +1024,7 @@ public class CyActivator extends AbstractCyActivator {
 			var props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			props.setProperty(PREFERRED_MENU, "Select");
-			props.setProperty(MENU_GRAVITY, "4.1");
+			props.setProperty(MENU_GRAVITY, "4.10");
 			props.setProperty(TOOL_BAR_GRAVITY, "9.6");
 			props.setProperty(TITLE, factory.getDescription());
 			props.setProperty(LARGE_ICON_ID, iconId);

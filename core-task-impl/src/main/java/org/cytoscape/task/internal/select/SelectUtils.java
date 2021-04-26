@@ -52,11 +52,12 @@ public final class SelectUtils {
 	}
 
 	public void setSelectedNodes(CyNetwork network, Collection<CyNode> nodes, boolean select) {
-		setSelected(network,nodes, select, network.getDefaultNodeTable());
+		setSelected(network, nodes, select, network.getDefaultNodeTable());
 	}
 
 	public void setSelectedEdges(CyNetwork network, Collection<CyEdge> edges, boolean select) {
-		setSelected(network,edges, select, network.getDefaultEdgeTable());
+		setSelected(network, edges, select, network.getDefaultEdgeTable());
+	}
 	
 	public void setSelectedAnnotations(Collection<Annotation> annotations, boolean select) {
 		for (var a : annotations) {
