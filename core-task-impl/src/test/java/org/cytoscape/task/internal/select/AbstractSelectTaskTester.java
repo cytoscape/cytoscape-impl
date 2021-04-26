@@ -1,13 +1,11 @@
 package org.cytoscape.task.internal.select;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
@@ -19,6 +17,8 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 
@@ -28,7 +28,7 @@ import org.cytoscape.work.undo.UndoSupport;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2010 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -52,6 +52,7 @@ public class AbstractSelectTaskTester {
     protected CyNetworkViewManager networkViewManager;
     protected UndoSupport undoSupport;
     protected CyApplicationManager applicationManager;
+    protected AnnotationManager annotationManager;
     protected CyServiceRegistrar serviceRegistrar;
     
 	TaskMonitor tm;
@@ -66,17 +67,23 @@ public class AbstractSelectTaskTester {
 	CyNode e3;
 	CyRow r4;
 	CyNode e4;
+	Annotation a1;
+	Annotation a2;
+	Annotation a3;
+	Annotation a4;
 
 	public void setUp() throws Exception {
 		eventHelper = mock(CyEventHelper.class);
 		undoSupport = mock(UndoSupport.class);
 		applicationManager = mock(CyApplicationManager.class);
 		networkViewManager = mock(CyNetworkViewManager.class);
+		annotationManager = mock(AnnotationManager.class);
 		serviceRegistrar = mock(CyServiceRegistrar.class);
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
 		when(serviceRegistrar.getService(CyNetworkViewManager.class)).thenReturn(networkViewManager);
 		when(serviceRegistrar.getService(UndoSupport.class)).thenReturn(undoSupport);
 		when(serviceRegistrar.getService(CyApplicationManager.class)).thenReturn(applicationManager);
+		when(serviceRegistrar.getService(AnnotationManager.class)).thenReturn(annotationManager);
 		
 		nodeTable = mock(CyTable.class);
 		edgeTable = mock(CyTable.class);
@@ -84,10 +91,10 @@ public class AbstractSelectTaskTester {
 		when(net.getDefaultNodeTable()).thenReturn(nodeTable);
 		when(net.getDefaultEdgeTable()).thenReturn(edgeTable);
 
-		CyNetworkView view = mock(CyNetworkView.class);
+		var view = mock(CyNetworkView.class);
 		when(view.getModel()).thenReturn(net);
 
-		Collection<CyNetworkView> views = new HashSet<>();
+		var views = new HashSet<CyNetworkView>();
 		views.add(view);
 		when(networkViewManager.getNetworkViews(any(CyNetwork.class))).thenReturn(views);
 
@@ -111,7 +118,7 @@ public class AbstractSelectTaskTester {
 		when(net.getEdge(2L)).thenReturn(e2);
 		when(edgeTable.getRow(2L)).thenReturn(r2);
 
-		List<CyEdge> el = new ArrayList<>();
+		var el = new ArrayList<CyEdge>();
 		el.add(e1);
 		el.add(e2);
 		when(net.getEdgeList()).thenReturn(el);
@@ -134,9 +141,29 @@ public class AbstractSelectTaskTester {
 		when(net.getNode(4L)).thenReturn(e4);
 		when(nodeTable.getRow(4L)).thenReturn(r4);
 
-		List<CyNode> nl = new ArrayList<>();
+		var nl = new ArrayList<CyNode>();
 		nl.add(e3);
 		nl.add(e4);
 		when(net.getNodeList()).thenReturn(nl);
+		
+		// Annotations
+		a1 = mock(Annotation.class);
+		a2 = mock(Annotation.class);
+		a3 = mock(Annotation.class);
+		when(a3.isSelected()).thenReturn(true);
+		a4 = mock(Annotation.class);
+		when(a4.isSelected()).thenReturn(true);
+		
+		var al1 = new ArrayList<Annotation>(); // all annotations
+		al1.add(a1);
+		al1.add(a2);
+		al1.add(a3);
+		al1.add(a4);
+		when(annotationManager.getAnnotations(view)).thenReturn(al1);
+		
+		var al2 = new ArrayList<Annotation>(); // selected annotations
+		al2.add(a3);
+		al2.add(a4);
+		when(annotationManager.getSelectedAnnotations(view)).thenReturn(al2);
 	}
 }
