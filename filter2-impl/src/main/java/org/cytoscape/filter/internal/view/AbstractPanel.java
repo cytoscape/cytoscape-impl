@@ -141,7 +141,7 @@ public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPa
 			applyButton.doClick();
 		});
 		filterButton.addActionListener(e -> {
-			controller.setApplyAction(ApplyAction.FILTER);
+			controller.setApplyAction(ApplyAction.SHOW);
 			applyButton.doClick();
 		});
 		

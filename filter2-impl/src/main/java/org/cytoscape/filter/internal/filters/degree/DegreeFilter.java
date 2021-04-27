@@ -1,6 +1,5 @@
 package org.cytoscape.filter.internal.filters.degree;
 
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -86,9 +85,14 @@ public class DegreeFilter extends AbstractValidatableTransformer<CyNetwork, CyId
 	}
 
 	@Override
+	public boolean appliesTo(CyNetwork context, CyIdentifiable element) {
+		return element instanceof CyNode;
+	}
+	
+	@Override
 	@SuppressWarnings("unused")
 	public boolean accepts(CyNetwork context, CyIdentifiable element) {
-		if (!(element instanceof CyNode)) {
+		if (!appliesTo(context, element)) {
 			return false;
 		}
 		

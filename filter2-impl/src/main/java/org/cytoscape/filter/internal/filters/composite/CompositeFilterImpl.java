@@ -127,8 +127,7 @@ public class CompositeFilterImpl<C, E> extends AbstractTransformer<C, E> impleme
 		for (Filter<C,E> filter : filters) {
 			boolean result = filter.accepts(context, element);
 			if (result != (type == CompositeFilter.Type.ALL)) {
-				// Short-circuit
-				return result;
+				return result; // Short-circuit
 			}
 		}
 		return type == CompositeFilter.Type.ALL;
@@ -142,12 +141,26 @@ public class CompositeFilterImpl<C, E> extends AbstractTransformer<C, E> impleme
 		for(Filter<?,?> filter : filters) {
 			boolean result = filter.isAlwaysFalse();
 			if (result == (type == CompositeFilter.Type.ALL)) {
-				// Short-circuit
-				return result;
+				return result; // Short-circuit
 			}
 		}
 		return type != CompositeFilter.Type.ALL;
 	}
+	
+	@Override
+	public boolean appliesTo(C context, E element) {
+		if(filters.isEmpty()) 
+			return false;
+		
+		for (Filter<C,E> filter : filters) {
+			boolean applies = filter.appliesTo(context, element);
+			if (applies) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	
 	@Override
 	public Class<C> getContextType() {

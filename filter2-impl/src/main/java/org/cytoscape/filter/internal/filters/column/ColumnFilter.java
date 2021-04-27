@@ -292,6 +292,14 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 		return columnName == null || rawCriterion == null || predicate == null;
 	}
 	
+	@Override
+	public boolean appliesTo(CyNetwork context, CyIdentifiable element) {
+		Class<?> tableType = getTableType();
+		if(tableType == null)
+			return true;
+		return(tableType.isAssignableFrom(element.getClass()));
+	}
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean accepts(CyNetwork context, CyIdentifiable element) {

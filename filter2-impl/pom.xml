@@ -57,10 +57,6 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>swing-util-api</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>core-task-api</artifactId>
-		</dependency>
 
 		<dependency>
 			<groupId>junit</groupId>

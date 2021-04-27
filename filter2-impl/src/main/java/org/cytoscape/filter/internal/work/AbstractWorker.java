@@ -39,7 +39,7 @@ public abstract class AbstractWorker<V extends AbstractPanel<?,?>, C extends Abs
 	
 	
 	public static enum ApplyAction {
-		SELECT, FILTER
+		SELECT, SHOW
 	}
 	
 	protected LazyWorkQueue queue;

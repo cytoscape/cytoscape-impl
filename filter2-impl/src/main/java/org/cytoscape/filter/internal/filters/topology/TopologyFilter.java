@@ -91,10 +91,15 @@ public class TopologyFilter extends AbstractMemoizableTransformer<CyNetwork,CyId
 	protected CompositeFilter<CyNetwork, CyIdentifiable> getCompositeFilter() {
 		return neighbourFilter;
 	}
+	
+	@Override
+	public boolean appliesTo(CyNetwork context, CyIdentifiable element) {
+		return element instanceof CyNode;
+	}
 
 	@Override
 	public boolean accepts(CyNetwork network, CyIdentifiable element) {
-		if (!(element instanceof CyNode) || distance == null || threshold == null) {
+		if (!appliesTo(network, element) || distance == null || threshold == null) {
 			return false;
 		}
 		

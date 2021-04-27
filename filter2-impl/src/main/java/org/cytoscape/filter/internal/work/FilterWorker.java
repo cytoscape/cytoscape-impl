@@ -1,5 +1,8 @@
 package org.cytoscape.filter.internal.work;
 
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_VISIBLE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_VISIBLE;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,11 +18,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.hide.HideTaskFactory;
-import org.cytoscape.task.hide.UnHideTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.SynchronousTaskManager;
-import org.cytoscape.work.TaskIterator;
 
 /*
  * #%L
@@ -105,23 +104,37 @@ public class FilterWorker extends AbstractWorker<FilterPanel, FilterPanelControl
 				// as we go that can cause excessive RowsSetEvents to be fired.
 				
 				for (CyNode node : nodeList) {
-					if (monitor.isCancelled()) {
+					if (monitor.isCancelled())
 						return;
+					
+					boolean accepted;
+					if(applyAction == ApplyAction.SHOW) {
+						accepted = !filter.appliesTo(network, node) || filter.accepts(network, node); 
+					} else {
+						accepted = filter.accepts(network, node);
 					}
-					boolean accepted = filter.accepts(network, node);
+					
 					if (accepted) {
 						selectedNodes.add(node);
 						nodeCount++;
 					} else {
 						unselectedNodes.add(node);
 					}
+					
 					monitor.setProgress(++counter / total);
 				}
+				
 				for (CyEdge edge : edgeList) {
-					if (monitor.isCancelled()) {
+					if (monitor.isCancelled())
 						return;
+					
+					boolean accepted;
+					if(applyAction == ApplyAction.SHOW) {
+						accepted = !filter.appliesTo(network, edge) || filter.accepts(network, edge); 
+					} else {
+						accepted = filter.accepts(network, edge);
 					}
-					boolean accepted = filter.accepts(network, edge);
+					
 					if (accepted) {
 						selectedEdges.add(edge);
 						edgeCount++;
@@ -132,8 +145,8 @@ public class FilterWorker extends AbstractWorker<FilterPanel, FilterPanelControl
 				}
 				
 				// now do the selection
-				if(applyAction == ApplyAction.FILTER) {
-					filter(networkView, selectedNodes, unselectedNodes, selectedEdges, unselectedEdges);
+				if(applyAction == ApplyAction.SHOW) {
+					show(networkView, selectedNodes, unselectedNodes, selectedEdges, unselectedEdges);
 				} else {
 					select(network, selectedNodes, unselectedNodes, selectedEdges, unselectedEdges);
 				}
@@ -161,19 +174,19 @@ public class FilterWorker extends AbstractWorker<FilterPanel, FilterPanelControl
 	}
 	
 	
-	private void filter(CyNetworkView networkView, List<CyNode> selectedNodes, List<CyNode> unselectedNodes, List<CyEdge> selectedEdges, List<CyEdge> unselectedEdges) {
-		HideTaskFactory hideFactory = serviceRegistrar.getService(HideTaskFactory.class);
-		TaskIterator hideTasks = hideFactory.createTaskIterator(networkView, unselectedNodes, unselectedEdges);
-		
-		UnHideTaskFactory unhideFactory = serviceRegistrar.getService(UnHideTaskFactory.class);
-		TaskIterator unhideTasks = unhideFactory.createTaskIterator(networkView, selectedNodes, selectedEdges);
-		
-		TaskIterator taskIterator = new TaskIterator();
-		taskIterator.append(hideTasks);
-		taskIterator.append(unhideTasks);
-		
-		SynchronousTaskManager<?> taskManager = serviceRegistrar.getService(SynchronousTaskManager.class);
-		taskManager.execute(taskIterator);
+	private void show(CyNetworkView networkView, List<CyNode> selectedNodes, List<CyNode> unselectedNodes, List<CyEdge> selectedEdges, List<CyEdge> unselectedEdges) {
+		for(CyNode node : selectedNodes) {
+			networkView.getNodeView(node).clearValueLock(NODE_VISIBLE);
+		}
+		for(CyNode node : unselectedNodes) {
+			networkView.getNodeView(node).setLockedValue(NODE_VISIBLE, false);
+		}
+		for(CyEdge edge : selectedEdges) {
+			networkView.getEdgeView(edge).clearValueLock(EDGE_VISIBLE);
+		}
+		for(CyEdge edge : unselectedEdges) {
+			networkView.getEdgeView(edge).setLockedValue(EDGE_VISIBLE, false);
+		}
 	}
 	
 	
