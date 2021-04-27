@@ -15,6 +15,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.hide.HideTaskFactory;
 import org.cytoscape.task.hide.UnHideTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 
@@ -51,11 +52,18 @@ public final class SelectUtils {
 	}
 
 	public void setSelectedNodes(CyNetwork network, Collection<CyNode> nodes, boolean select) {
-		setSelected(network,nodes, select, network.getDefaultNodeTable());
+		setSelected(network, nodes, select, network.getDefaultNodeTable());
 	}
 
 	public void setSelectedEdges(CyNetwork network, Collection<CyEdge> edges, boolean select) {
-		setSelected(network,edges, select, network.getDefaultEdgeTable());
+		setSelected(network, edges, select, network.getDefaultEdgeTable());
+	}
+	
+	public void setSelectedAnnotations(Collection<Annotation> annotations, boolean select) {
+		for (var a : annotations) {
+			if (a.isSelected() != select)
+				a.setSelected(select);
+		}
 	}
 
 	private void setSelected(

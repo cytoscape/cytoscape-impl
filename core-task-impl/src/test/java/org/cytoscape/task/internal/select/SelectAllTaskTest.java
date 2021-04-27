@@ -5,11 +5,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.HashSet;
-import java.util.Set;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.work.Task;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -19,7 +17,7 @@ import org.junit.Test;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2010 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -46,18 +44,18 @@ public class SelectAllTaskTest extends AbstractSelectTaskTester {
 
 	@Test
 	public void testRun() throws Exception {
-		Set<CyRow> deselectedNodes = new HashSet<>();
+		var deselectedNodes = new HashSet<CyRow>();
 		deselectedNodes.add(r3);
 		deselectedNodes.add(r4);
 		when(nodeTable.getMatchingRows(CyNetwork.SELECTED, false)).thenReturn(deselectedNodes);
 		
-		Set<CyRow> deselectedEdges = new HashSet<CyRow>();
+		var deselectedEdges = new HashSet<CyRow>();
 		deselectedEdges.add(r1);
 		deselectedEdges.add(r2);
 		when(edgeTable.getMatchingRows(CyNetwork.SELECTED, false)).thenReturn(deselectedEdges);
 		
 		// run the task
-		Task t = new SelectAllTask(net, serviceRegistrar);
+		var t = new SelectAllTask(net, serviceRegistrar);
 		t.run(tm);
 
 		// check that the expected rows were set
@@ -65,5 +63,9 @@ public class SelectAllTaskTest extends AbstractSelectTaskTester {
 		verify(r2, times(1)).set("selected", true);
 		verify(r3, times(1)).set("selected", true);
 		verify(r4, times(1)).set("selected", true);
+		
+		// check annotations have been selected
+		verify(a1, times(1)).setSelected(true);
+		verify(a2, times(1)).setSelected(true);
 	}
 }

@@ -46,7 +46,7 @@ public class NewNetworkSelectedNodesOnlyTask extends AbstractNetworkFromSelectio
 	 * Returns the selected nodes.
 	 */
 	@Override
-	Set<CyNode> getNodes(final CyNetwork net) {
+	Set<CyNode> getNodes(CyNetwork net) {
 		if (nodes == null)
 			nodes = new HashSet<>(CyTableUtil.getNodesInState(parentNetwork, CyNetwork.SELECTED, true));
 

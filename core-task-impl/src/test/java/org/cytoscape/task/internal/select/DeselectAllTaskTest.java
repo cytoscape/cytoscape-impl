@@ -5,10 +5,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.HashSet;
-import java.util.Set;
 
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.work.Task;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -18,7 +16,7 @@ import org.junit.Test;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2010 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -45,18 +43,18 @@ public class DeselectAllTaskTest extends AbstractSelectTaskTester {
 
 	@Test
 	public void testRun() throws Exception {
-		Set<Long> selectedEdges = new HashSet<>();
+		var selectedEdges = new HashSet<Long>();
 		selectedEdges.add(r1.get(CyNetwork.SUID, Long.class));
 		selectedEdges.add(r2.get(CyNetwork.SUID, Long.class));
 		when(edgeTable.getMatchingKeys(CyNetwork.SELECTED, true, Long.class)).thenReturn(selectedEdges);
 		
-		Set<Long> selectedNodes = new HashSet<>();
+		var selectedNodes = new HashSet<Long>();
 		selectedNodes.add(r3.get(CyNetwork.SUID, Long.class));
 		selectedNodes.add(r4.get(CyNetwork.SUID, Long.class));
 		when(nodeTable.getMatchingKeys(CyNetwork.SELECTED, true, Long.class)).thenReturn(selectedNodes);
 		
 		// run the task
-		Task t = new DeselectAllTask(net, serviceRegistrar);
+		var t = new DeselectAllTask(net, serviceRegistrar);
 		t.run(tm);
 
 		// check that the expected rows were set
@@ -64,5 +62,9 @@ public class DeselectAllTaskTest extends AbstractSelectTaskTester {
 		verify(r2, times(1)).set("selected", false);
 		verify(r3, times(1)).set("selected", false);
 		verify(r4, times(1)).set("selected", false);
+		
+		// check annotations have been deselected
+		verify(a3, times(1)).setSelected(false);
+		verify(a4, times(1)).setSelected(false);
 	}
 }

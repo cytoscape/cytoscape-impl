@@ -852,7 +852,7 @@ public class CyActivator extends AbstractCyActivator {
 		var selectNodeLabelsAction = new SelectModeAction(SelectModeAction.NODE_LABELS, 0.85f, serviceRegistrar);
 		registerAllServices(bc, selectNodeLabelsAction);
 		
-		SelectModeAction selectAllAction = new SelectModeAction(SelectModeAction.ALL, 0.9f, serviceRegistrar);
+		var selectAllAction = new SelectModeAction(SelectModeAction.ALL, 0.9f, serviceRegistrar);
 		registerAllServices(bc, selectAllAction);
 		
 		{
