@@ -607,12 +607,14 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 
 	private class DoubleClickListener extends MouseAdapter {
 		
+		private boolean doublePressed = false;
+		
 		@Override
 		public void mouseClicked(MouseEvent e) {
-			if (isDoubleLeftClick(e)) {
+			if(isDoubleLeftClick(e)) {
 				var picker = re.getPicker();
 				
-				if (annotationSelectionEnabled()) {
+				if(annotationSelectionEnabled()) {
 					var annotation = picker.getAnnotationAt(e.getPoint());
 					
 					if (annotation != null) {
@@ -626,6 +628,31 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				e.consume();
 			}
 		}
+		
+		// Guard against double-click-then-drag, don't let the event continue down the chain
+		@Override
+		public void mousePressed(MouseEvent e) {
+			if(isDoubleLeftClick(e)) {
+				e.consume();
+				doublePressed = true;
+			}
+		}
+		
+		@Override
+		public void mouseDragged(MouseEvent e) {
+			if(doublePressed) {
+				e.consume();
+			}
+		}
+		
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			if(doublePressed) {
+				e.consume();
+			}
+			doublePressed = false;
+		}
+		
 		
 		private void showContextMenu(Point p) {
 			NetworkPicker picker = re.getPicker();
@@ -807,7 +834,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		private ViewChangeEdit moveNodesEdit;
 		
 		private Set<DLabelSelection> selectedLabels = null;
-    private DLabelSelection selectedLabel = null;
+		private DLabelSelection selectedLabel = null;
 		
 		private final Cursor rotateCursor = createRotateCursor();
 
