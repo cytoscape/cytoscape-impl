@@ -325,11 +325,14 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	
 	@Override
 	public void paint(Graphics g, boolean showSelection) {
-		if (text == null || textColor == null || font == null) 
+		if (text == null || textColor == null || font == null)
 			return;
 
-		super.paint(g, showSelection);
+		if (font.getSize2D() <= 0.0) // trying to render 0 sized fonts when exporting PDF causes an exception
+			return;
 		
+		super.paint(g, showSelection);
+
 		var g2 = (Graphics2D) g.create();
 
 		g2.setPaint(textColor);
@@ -337,21 +340,21 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 
 		// Handle opacity
 		int alpha = textColor.getAlpha();
-		float opacity = (float)alpha/(float)255;
+		float opacity = (float) alpha / (float) 255;
 		var originalComposite = g2.getComposite();
 		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
 
-		float ascent = font.getLineMetrics(text , new FontRenderContext(null, true, true)).getAscent();
-    var currentTransform = g2.getTransform();
-    if (rotation != 0) {
-      g2.rotate(Math.toRadians(rotation), (int) (getX() + getWidth()/2), (int) (getY() + getHeight()/2));
-		  g2.setClip(getBounds());
-		  g2.drawString(text, (float)getX(), (float)getY()+ascent);
-      g2.setTransform(currentTransform);
-    } else {
-		  g2.setClip(getBounds());
-	  	g2.drawString(text, (float)getX(), (float)getY()+ascent);
-    }
+		float ascent = font.getLineMetrics(text, new FontRenderContext(null, true, true)).getAscent();
+		var currentTransform = g2.getTransform();
+		if (rotation != 0) {
+			g2.rotate(Math.toRadians(rotation), (int) (getX() + getWidth() / 2), (int) (getY() + getHeight() / 2));
+			g2.setClip(getBounds());
+			g2.drawString(text, (float) getX(), (float) getY() + ascent);
+			g2.setTransform(currentTransform);
+		} else {
+			g2.setClip(getBounds());
+			g2.drawString(text, (float) getX(), (float) getY() + ascent);
+		}
 
 		g2.setComposite(originalComposite);
 		g2.dispose();
