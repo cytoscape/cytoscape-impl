@@ -1,13 +1,7 @@
 package org.cytoscape.view.vizmap.gui.internal;
 
 import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_NETWORK_AND_VIEW;
-import static org.cytoscape.work.ServiceProperties.EDGE_EDIT_MENU;
-import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
-import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
-import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
-import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
-import static org.cytoscape.work.ServiceProperties.TITLE;
+import static org.cytoscape.work.ServiceProperties.*;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -48,6 +42,8 @@ import org.cytoscape.view.vizmap.gui.internal.task.CreateNewVisualStyleTask;
 import org.cytoscape.view.vizmap.gui.internal.task.CreateNewVisualStyleTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.MakeVisualStylesDefaultTask;
 import org.cytoscape.view.vizmap.gui.internal.task.MakeVisualStylesDefaultTaskFactory;
+import org.cytoscape.view.vizmap.gui.internal.task.RefreshStyleTask;
+import org.cytoscape.view.vizmap.gui.internal.task.RefreshStyleTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.RemoveVisualMappingsTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.RemoveVisualStylesTask;
 import org.cytoscape.view.vizmap.gui.internal.task.RemoveVisualStylesTaskFactory;
@@ -208,6 +204,15 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(ServicePropertiesUtil.TITLE, CopyVisualStyleTask.TITLE + "...");
 			props.setProperty(ServicePropertiesUtil.MENU_ID, ServicePropertiesUtil.MAIN_MENU);
 			props.setProperty(ServicePropertiesUtil.GRAVITY, "2.0");
+			registerAllServices(bc, factory, props);
+		}
+		{
+			var factory = new RefreshStyleTaskFactory(servicesUtil);
+			var props = new Properties();
+			props.setProperty(ServicePropertiesUtil.SERVICE_TYPE, "vizmapUI");
+			props.setProperty(ServicePropertiesUtil.TITLE, RefreshStyleTask.TITLE);
+			props.setProperty(ServicePropertiesUtil.MENU_ID, ServicePropertiesUtil.MAIN_MENU);
+			props.setProperty(ServicePropertiesUtil.GRAVITY, "2.5");
 			registerAllServices(bc, factory, props);
 		}
 		{
