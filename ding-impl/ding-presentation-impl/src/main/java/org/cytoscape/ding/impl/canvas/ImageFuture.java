@@ -41,6 +41,10 @@ public class ImageFuture {
 		return progressMonitor.isCancelled();
 	}
 	
+	public boolean isCompletedExceptionally() {
+		return future.isCompletedExceptionally();
+	}
+	
 	public Image join() {
 		return future.join();
 	}
