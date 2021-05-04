@@ -1240,6 +1240,9 @@ public class BrowserTable extends JTable
 		var table = btModel.getDataTable();
 		var pKey = table.getPrimaryKey();
 		var pKeyName = pKey.getName();
+		
+		if (pKey.getType() != Long.class || table.getColumn(CyNetwork.SELECTED) == null)
+			return; // This is not a standard Node or Edge table!
 
 		var rowsSelected = getSelectedRows();
 		
