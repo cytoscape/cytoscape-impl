@@ -3,6 +3,7 @@ package org.cytoscape.filter.internal.filters.degree;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.cytoscape.filter.internal.ApplyCheck;
 import org.cytoscape.filter.internal.predicates.NumericPredicateDelegate;
 import org.cytoscape.filter.internal.predicates.PredicateDelegates;
 import org.cytoscape.filter.model.AbstractValidatableTransformer;
@@ -16,7 +17,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.work.Tunable;
 
-public class DegreeFilter extends AbstractValidatableTransformer<CyNetwork, CyIdentifiable> implements Filter<CyNetwork, CyIdentifiable> {
+public class DegreeFilter extends AbstractValidatableTransformer<CyNetwork, CyIdentifiable> implements Filter<CyNetwork, CyIdentifiable>, ApplyCheck<CyNetwork,CyIdentifiable> {
 	private NumericPredicateDelegate delegate;
 	private Predicate predicate;
 	

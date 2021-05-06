@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.filter.internal.ApplyCheck;
 import org.cytoscape.filter.internal.MemoizableTransformer;
 import org.cytoscape.filter.internal.view.FilterPanel;
 import org.cytoscape.filter.internal.view.FilterPanelController;
@@ -109,7 +110,7 @@ public class FilterWorker extends AbstractWorker<FilterPanel, FilterPanelControl
 					
 					boolean accepted;
 					if(applyAction == ApplyAction.SHOW) {
-						accepted = !filter.appliesTo(network, node) || filter.accepts(network, node); 
+						accepted = !appliesTo(filter, network, node) || filter.accepts(network, node); 
 					} else {
 						accepted = filter.accepts(network, node);
 					}
@@ -130,7 +131,7 @@ public class FilterWorker extends AbstractWorker<FilterPanel, FilterPanelControl
 					
 					boolean accepted;
 					if(applyAction == ApplyAction.SHOW) {
-						accepted = !filter.appliesTo(network, edge) || filter.accepts(network, edge); 
+						accepted = !appliesTo(filter, network, edge) || filter.accepts(network, edge); 
 					} else {
 						accepted = filter.accepts(network, edge);
 					}
@@ -173,6 +174,12 @@ public class FilterWorker extends AbstractWorker<FilterPanel, FilterPanelControl
 		}
 	}
 	
+	private static boolean appliesTo(Filter<CyNetwork,CyIdentifiable> filter, CyNetwork network, CyIdentifiable element) {
+		if(filter instanceof ApplyCheck)
+			return ((ApplyCheck<CyNetwork,CyIdentifiable>)filter).appliesTo(network, element);
+		else
+			return true;
+	}
 	
 	private void show(CyNetworkView networkView, List<CyNode> selectedNodes, List<CyNode> unselectedNodes, List<CyEdge> selectedEdges, List<CyEdge> unselectedEdges) {
 		for(CyNode node : selectedNodes) {

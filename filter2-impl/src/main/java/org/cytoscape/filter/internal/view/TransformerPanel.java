@@ -58,7 +58,7 @@ public class TransformerPanel extends AbstractPanel<TransformerElement, Transfor
 
 		worker.setView(this);
 		
-		final JPanel applyPanel = createApplyPanel();
+		final JPanel applyPanel = createApplyPanel(false);
 		final Component editPanel = createEditPanel();
 		final JLabel startWithLabel = new JLabel("Start with:");
 		startWithComboBox = new JComboBox<>(controller.getStartWithComboBoxModel());

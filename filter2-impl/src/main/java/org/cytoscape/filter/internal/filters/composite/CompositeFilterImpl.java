@@ -3,13 +3,14 @@ package org.cytoscape.filter.internal.filters.composite;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cytoscape.filter.internal.ApplyCheck;
 import org.cytoscape.filter.internal.MemoizableTransformer;
 import org.cytoscape.filter.model.AbstractTransformer;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.Filter;
 import org.cytoscape.work.Tunable;
 
-public class CompositeFilterImpl<C, E> extends AbstractTransformer<C, E> implements CompositeFilter<C, E>, MemoizableTransformer {
+public class CompositeFilterImpl<C, E> extends AbstractTransformer<C, E> implements CompositeFilter<C, E>, MemoizableTransformer, ApplyCheck<C,E> {
 	static final String ID = "org.cytoscape.CompositeFilter";
 	public static final Type DEFAULT_TYPE = Type.ALL;
 	
@@ -153,7 +154,12 @@ public class CompositeFilterImpl<C, E> extends AbstractTransformer<C, E> impleme
 			return false;
 		
 		for (Filter<C,E> filter : filters) {
-			boolean applies = filter.appliesTo(context, element);
+			boolean applies;
+			if(filter instanceof ApplyCheck)
+				applies = ((ApplyCheck<C,E>)filter).appliesTo(context, element);
+			else
+				applies = true;
+			
 			if (applies) {
 				return true;
 			}

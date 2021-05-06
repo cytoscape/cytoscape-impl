@@ -1,8 +1,5 @@
 package org.cytoscape.filter.internal.work;
 
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_VISIBLE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_VISIBLE;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -90,7 +87,7 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 		
 		Sink sink;
 		if(applyAction == ApplyAction.SHOW) {
-			sink = new ShowSink(networkView);
+			sink = new FilterSink(networkView);
 		} else {
 			sink = new SelectSink(network);
 		}
@@ -139,7 +136,7 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 		if (selected.getFilter() == null) {
 			return new SelectionSource(monitor);
 		} else {
-			return new FilterSource(selected.getFilter(), applyAction, monitor);
+			return new FilterSource(selected.getFilter(), monitor);
 		}
 	}
 	
@@ -206,14 +203,12 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 	}
 	
 	private static class FilterSource extends AbstractSource {
-		private final ApplyAction applyAction;
-		private final CompositeFilter<CyNetwork, CyIdentifiable> filter;
-		private final ProgressMonitor monitor;
+		private CompositeFilter<CyNetwork, CyIdentifiable> filter;
+		private ProgressMonitor monitor;
 
-		FilterSource(CompositeFilter<CyNetwork, CyIdentifiable> filter, ApplyAction applyAction, ProgressMonitor monitor) {
+		FilterSource(CompositeFilter<CyNetwork, CyIdentifiable> filter, ProgressMonitor monitor) {
 			this.filter = filter;
 			this.monitor = monitor;
-			this.applyAction = applyAction;
 		}
 		
 		@Override
@@ -232,35 +227,21 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 			try {
 				// Clear selection state while collecting elements
 				for (CyNode node : context.getNodeList()) {
-					
-					boolean accepted;
-					if(applyAction == ApplyAction.SHOW) {
-						accepted = !filter.appliesTo(context, node) || filter.accepts(context, node); 
-					} else {
-						CyRow row = context.getRow(node);
-						if (row.get(CyNetwork.SELECTED, Boolean.class)) {
-							row.set(CyNetwork.SELECTED, false);
-						}
-						accepted = filter.accepts(context, node);
+					CyRow row = context.getRow(node);
+					if (row.get(CyNetwork.SELECTED, Boolean.class)) {
+						row.set(CyNetwork.SELECTED, false);
 					}
-					if (accepted) {
+					if (filter.accepts(context, node)) {
 						elements.add(node);
 					}
 					discreteMonitor.addWork(1);
 				}
 				for (CyEdge edge : context.getEdgeList()) {
-					
-					boolean accepted;
-					if(applyAction == ApplyAction.SHOW) {
-						accepted = !filter.appliesTo(context, edge) || filter.accepts(context, edge); 
-					} else {
-						CyRow row = context.getRow(edge);
-						if (row.get(CyNetwork.SELECTED, Boolean.class)) {
-							row.set(CyNetwork.SELECTED, false);
-						}
-						accepted = filter.accepts(context, edge);
+					CyRow row = context.getRow(edge);
+					if (row.get(CyNetwork.SELECTED, Boolean.class)) {
+						row.set(CyNetwork.SELECTED, false);
 					}
-					if (accepted) {
+					if (filter.accepts(context, edge)) {
 						elements.add(edge);
 					}
 					discreteMonitor.addWork(1);
@@ -322,14 +303,14 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 	}
 	
 	
-	class ShowSink extends Sink {
+	class FilterSink extends Sink {
 
 		private final CyNetworkView networkView;
 		private List<CyNode> selectedNodes = new ArrayList<>();
 		private List<CyEdge> selectedEdges = new ArrayList<>();
 		
 		
-		ShowSink(CyNetworkView networkView) {
+		FilterSink(CyNetworkView networkView) {
 			super(networkView.getModel());
 			this.networkView = networkView;
 		}
@@ -347,19 +328,6 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 		@Override
 		public void done() {
 			if(networkView != null) {
-				for(CyNode node : selectedNodes) {
-					networkView.getNodeView(node).clearValueLock(NODE_VISIBLE);
-				}
-				for(CyNode node : unselectedNodes) {
-					networkView.getNodeView(node).setLockedValue(NODE_VISIBLE, false);
-				}
-				for(CyEdge edge : selectedEdges) {
-					networkView.getEdgeView(edge).clearValueLock(EDGE_VISIBLE);
-				}
-				for(CyEdge edge : unselectedEdges) {
-					networkView.getEdgeView(edge).setLockedValue(EDGE_VISIBLE, false);
-				}
-				
 				HideTaskFactory hideFactory = serviceRegistrar.getService(HideTaskFactory.class);
 				TaskIterator hideTasks = hideFactory.createTaskIterator(networkView, network.getNodeList(), network.getEdgeList());
 				

@@ -5,6 +5,7 @@ import static org.cytoscape.filter.model.ValidationWarning.warn;
 import java.util.Collections;
 import java.util.List;
 
+import org.cytoscape.filter.internal.ApplyCheck;
 import org.cytoscape.filter.internal.predicates.NumericPredicateDelegate;
 import org.cytoscape.filter.internal.predicates.PredicateDelegates;
 import org.cytoscape.filter.internal.predicates.StringPredicateDelegate;
@@ -28,7 +29,7 @@ import org.cytoscape.work.util.ListSingleSelection;
 
 public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable> 
 	implements 	Filter<CyNetwork, CyIdentifiable>, 
-				ValidatableTransformer<CyNetwork, CyIdentifiable> {
+				ValidatableTransformer<CyNetwork, CyIdentifiable>, ApplyCheck<CyNetwork,CyIdentifiable> {
 	
 	public static final String NODES = "nodes";
 	public static final String EDGES = "edges";

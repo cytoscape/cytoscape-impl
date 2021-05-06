@@ -66,7 +66,7 @@ public class FilterPanel extends AbstractPanel<FilterElement, FilterPanelControl
 		applyAutomaticallyCheckBox.setToolTipText("<html>Apply the filter automatically when the filter definition changes.<br>(Turned off by default for networks that are very large.)</html>");
 		LookAndFeelUtil.makeSmall(applyAutomaticallyCheckBox);
 		
-		final JPanel applyPanel = createApplyPanel();
+		final JPanel applyPanel = createApplyPanel(true);
 		final Component editPanel = createEditPanel();
 		
 		final GroupLayout layout = new GroupLayout(this);
