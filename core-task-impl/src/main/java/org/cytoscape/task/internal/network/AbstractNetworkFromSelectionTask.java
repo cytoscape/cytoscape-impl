@@ -1,15 +1,12 @@
 package org.cytoscape.task.internal.network;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
@@ -18,7 +15,6 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.VirtualColumnInfo;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -36,7 +32,7 @@ import org.cytoscape.work.TaskMonitor;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -97,7 +93,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 			return;
 		}
 		
-		final Collection<CyNetworkView> views = viewManager.getNetworkViews(parentNetwork);		
+		var views = viewManager.getNetworkViews(parentNetwork);		
 		CyNetworkView sourceView = null;
 		
 		if (views.size() != 0)
@@ -106,10 +102,10 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		tm.setProgress(0.1);
 
 		// Get the selected nodes
-		final Set<CyNode> nodes = getNodes(parentNetwork);
+		var nodes = getNodes(parentNetwork);
 		tm.setProgress(0.2);
 
-		if (nodes.size() <= 0) // return;
+		if (nodes.isEmpty()) // return;
 			throw new IllegalArgumentException("No nodes are selected.");
 
 		// create subnetwork and add selected nodes and appropriate edges
@@ -122,21 +118,21 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 
 		tm.setProgress(0.3);
 		
-		for (final CyNode node : nodes){
+		for (var node : nodes){
 			newNet.addNode(node);
 			cloneRow(parentNetwork.getRow(node), newNet.getRow(node));
 			//Set rows and edges to not selected state to avoid conflicts with table browser
 			newNet.getRow(node).set(CyNetwork.SELECTED, false);
 			
 			if (groupManager.isGroup(node, parentNetwork)) {
-				CyGroup group = groupManager.getGroup(node, parentNetwork);
+				var group = groupManager.getGroup(node, parentNetwork);
 				GroupUtils.addGroupToNetwork(group, parentNetwork, newNet);
 			}
 		}
 
 		tm.setProgress(0.4);
 		
-		for (final CyEdge edge : getEdges(parentNetwork)){
+		for (var edge : getEdges(parentNetwork)){
 			newNet.addEdge(edge);
 			cloneRow(parentNetwork.getRow(edge), newNet.getRow(edge));
 			//Set rows and edges to not selected state to avoid conflicts with table browser
@@ -152,17 +148,17 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		tm.setProgress(0.6);
 
 		// create the view in a separate task
-		final Set<CyNetwork> networks = new HashSet<>();
+		var networks = new HashSet<CyNetwork>();
 		networks.add(newNet);
 		
 		// Pick a CyNetworkViewFactory that is appropriate for the sourceView
-		CyNetworkViewFactory sourceViewFactory = viewFactory;
+		var sourceViewFactory = viewFactory;
 		
 		if (sourceView != null) {
-			NetworkViewRenderer networkViewRenderer = applicationManager.getNetworkViewRenderer(sourceView.getRendererId());
-			if (networkViewRenderer != null) {
+			var networkViewRenderer = applicationManager.getNetworkViewRenderer(sourceView.getRendererId());
+			
+			if (networkViewRenderer != null)
 				sourceViewFactory = networkViewRenderer.getNetworkViewFactory();
-			}
 		}
 		
 		var createViewTask = new CreateNetworkViewTask(networks, sourceViewFactory, netManager, null,
@@ -175,7 +171,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 			public void run(final TaskMonitor tm) throws Exception {
 				// Select the new view
 				tm.setProgress(0.0);
-				final List<CyNetworkView> createdViews = (List<CyNetworkView>) createViewTask.getResults(List.class);
+				List<CyNetworkView> createdViews = (List<CyNetworkView>) createViewTask.getResults(List.class);
 				
 				if (!createdViews.isEmpty()) {
 					CyNetworkView nv = createdViews.get(createdViews.size() - 1);
@@ -196,14 +192,15 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 	}
 
 	private void addColumns(CyTable parentTable, CyTable subTable) {
-		List<CyColumn> colsToAdd = new ArrayList<>();
+		var colsToAdd = new ArrayList<CyColumn>();
 
-		for (CyColumn col:  parentTable.getColumns())
+		for (var col :  parentTable.getColumns())
 			if (subTable.getColumn(col.getName()) == null)
 				colsToAdd.add( col );
 
-		for (CyColumn col:  colsToAdd) {
-			VirtualColumnInfo colInfo = col.getVirtualColumnInfo();
+		for (var col :  colsToAdd) {
+			var colInfo = col.getVirtualColumnInfo();
+			
 			if (colInfo.isVirtual())
 				addVirtualColumn(col, subTable);
 			else
@@ -212,8 +209,8 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 	}
 
 	private void addVirtualColumn (CyColumn col, CyTable subTable){
-		VirtualColumnInfo colInfo = col.getVirtualColumnInfo();
-		CyColumn checkCol= subTable.getColumn(col.getName());
+		var colInfo = col.getVirtualColumnInfo();
+		var checkCol = subTable.getColumn(col.getName());
 		
 		if (checkCol == null)
 			subTable.addVirtualColumn(col.getName(), colInfo.getSourceColumn(), colInfo.getSourceTable(), 
@@ -234,8 +231,8 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 			subTable.createColumn(col.getName(), col.getType(), false);	
 	}
 
-	private void cloneRow(final CyRow from, final CyRow to) {
-		for (final CyColumn column : from.getTable().getColumns()){
+	private void cloneRow(CyRow from, CyRow to) {
+		for (var column : from.getTable().getColumns()){
 			if (!column.getVirtualColumnInfo().isVirtual())
 				to.set(column.getName(), from.getRaw(column.getName()));
 		}

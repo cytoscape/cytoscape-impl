@@ -63,6 +63,8 @@ public class DefaultTableBrowser extends AbstractTableBrowser {
 	private JPopupMenu displayMode;
 	private JComboBox<CyTable> tableChooser;
 	
+	private ViewModeControl viewModeControl;
+	
 	private boolean ignoreSetCurrentTable = true;
 	
 	public DefaultTableBrowser(
@@ -75,7 +77,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser {
 		var controls = new ArrayList<AbstractToolBarControl>();
 		
 		if (objType != CyNetwork.class)
-			controls.add(new ViewModeControl(serviceRegistrar));
+			controls.add(viewModeControl = new ViewModeControl(serviceRegistrar));
 		
 		controls.add(new RowHeightControl(serviceRegistrar));
 		controls.add(new GeneralOptionsControl(objType, serviceRegistrar));
@@ -166,6 +168,12 @@ public class DefaultTableBrowser extends AbstractTableBrowser {
 			
 			showSelectedTable();
 			
+			// View Mode can only work if the current table's PK is a Long, which means it may be the node or edge
+			// SUID, required for the synchronization with node/edge selection.
+			if (viewModeControl != null && table != null)
+				viewModeControl.setVisible(table.getPrimaryKey().getType() == Long.class);
+			
+			// Make sure the Application Manager has our current table
 			var applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
 			
 			if (table != null && !table.equals(applicationManager.getCurrentTable())) {

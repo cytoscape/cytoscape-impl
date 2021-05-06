@@ -293,7 +293,9 @@ public abstract class RenderComponent extends JComponent {
 		} else {
 			if(slowFuture != null) {
 				slowFuture.cancel();
-				slowFuture.join(); // make sure its cancelled
+				if(!slowFuture.isCompletedExceptionally()) {
+					slowFuture.join(); // make sure its cancelled
+				}
 				slowFuture = null;
 			}
 			

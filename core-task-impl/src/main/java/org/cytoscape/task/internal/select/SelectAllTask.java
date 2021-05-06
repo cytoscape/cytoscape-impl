@@ -2,7 +2,8 @@ package org.cytoscape.task.internal.select;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.task.internal.select.SelectionEdit.SelectionFilter;
+import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 
@@ -12,7 +13,7 @@ import org.cytoscape.work.undo.UndoSupport;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -38,25 +39,29 @@ public class SelectAllTask extends AbstractSelectTask {
 
 	@Override
 	public void run(TaskMonitor tm) {
-		tm.setTitle("Select All Nodes and Edges");
+		tm.setTitle("Select All");
 		tm.setProgress(0.0);
 
-		CyNetworkView view = getNetworkView(network);
+		var view = getNetworkView(network);
 
 		serviceRegistrar.getService(UndoSupport.class).postEdit(
-				new SelectionEdit("Select All Nodes and Edges", network, view,
-						SelectionEdit.SelectionFilter.NODES_AND_EDGES, serviceRegistrar));
+				new SelectionEdit("Select All", network, view, SelectionFilter.NODES_AND_EDGES, serviceRegistrar));
 
-		tm.setStatusMessage("Selecting Edges...");
+		tm.setStatusMessage("Selecting all edges...");
 		tm.setProgress(0.2);
 		selectUtils.setSelectedEdges(network, network.getEdgeList(), true);
 
-		tm.setStatusMessage("Selecting Nodes...");
+		tm.setStatusMessage("Selecting all nodes...");
 		tm.setProgress(0.5);
 		selectUtils.setSelectedNodes(network, network.getNodeList(), true);
-
-		tm.setStatusMessage("Updating View...");
-		tm.setProgress(0.8);
+		
+		tm.setStatusMessage("Selecting all annotations...");
+		tm.setProgress(0.7);
+		var annotations = serviceRegistrar.getService(AnnotationManager.class).getAnnotations(view);
+		selectUtils.setSelectedAnnotations(annotations, true);
+		
+		tm.setStatusMessage("Updating view...");
+		tm.setProgress(0.9);
 		updateView();
 
 		tm.setProgress(1.0);

@@ -121,7 +121,11 @@ public class CyNetworkTableManagerImpl implements CyNetworkTableManager {
 			}
 	
 			if (namespace.equals(CyNetwork.DEFAULT_ATTRS) && reference.get(CyNetwork.DEFAULT_ATTRS) != null)
-				throw new IllegalArgumentException("cannot overwrite default tables");
+				throw new IllegalArgumentException("Cannot overwrite the DEFAULT table");
+			if (namespace.equals(CyNetwork.LOCAL_ATTRS) && reference.get(CyNetwork.LOCAL_ATTRS) != null)
+				throw new IllegalArgumentException("Cannot overwrite the LOCAL table");
+			if (namespace.equals(CyNetwork.HIDDEN_ATTRS) && reference.get(CyNetwork.HIDDEN_ATTRS) != null)
+				throw new IllegalArgumentException("Cannot overwrite the HIDDEN table");
 			
 			reference.put(namespace, table);
 		}
