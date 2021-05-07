@@ -5,9 +5,7 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -418,16 +416,6 @@ public class NetworkViewImplTest {
 		
 		ExecutorService executor = Executors.newCachedThreadPool();
 		
-		Callable<Integer> iterateRunnable = () -> {
-			int count = 0;
-			var iterable = netView.getEdgeViewsIterable();
-			for(var element : iterable) {
-				doSomething(element);
-				count++;
-			}
-			return count;
-		};
-		
 		Runnable mutateRunnable = () -> {
 			for(int i = 0; i < 1000; i++) {
 				CyNode n1 = network.addNode();
@@ -438,9 +426,19 @@ public class NetworkViewImplTest {
 				netView.addEdge(edge);
 			}
 		};
-
-		var mutateFuture  = executor.submit(mutateRunnable);
+		
+		var edgeViewsIterable = netView.getEdgeViewsIterable();
+		Callable<Integer> iterateRunnable = () -> {
+			int count = 0;
+			for(var element : edgeViewsIterable) {
+				doSomething(element);
+				count++;
+			}
+			return count;
+		};
+		
 		var iterateFuture = executor.submit(iterateRunnable);
+		var mutateFuture  = executor.submit(mutateRunnable);
 		
 		mutateFuture.get();
 		int count = iterateFuture.get();
