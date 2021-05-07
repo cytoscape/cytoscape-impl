@@ -121,6 +121,70 @@ public class NetworkPicker {
 	}
 	
 	/**
+	 * Returns the bounds of a node's label in node coordinates.
+	 */
+	public void getLabelBounds(View<CyNode> nodeView, LabelInfoProvider labelProvider, double[] buff) {
+		FontRenderContext frc = new FontRenderContext(null,true,true); // MKTODO
+		// compute the actual size of label text rectangle
+		String labelText = nodeDetails.getLabelText(nodeView);
+		
+		Font font = nodeDetails.getLabelFont(nodeView);
+		double labelWidth = nodeDetails.getLabelWidth(nodeView);
+		
+		LabelInfo mlCreator = labelProvider.getLabelInfo(labelText, font, labelWidth, frc);
+		
+		double h = mlCreator.getTotalHeight();  // actual label text box height
+		double w = mlCreator.getMaxLineWidth();  // actual label text box width. 
+		
+		// compute the actual position of the label text box.
+		double x = nodeDetails.getXPosition(nodeView); 
+		double y = nodeDetails.getYPosition(nodeView); 
+		double nodeWidth = nodeDetails.getWidth(nodeView);
+		double nodeHeight = nodeDetails.getHeight(nodeView);
+		
+		final Position textAnchor = nodeDetails.getLabelTextAnchor(nodeView);
+		final Position nodeAnchor = nodeDetails.getLabelNodeAnchor(nodeView);
+		final float offsetVectorX = nodeDetails.getLabelOffsetVectorX(nodeView);
+		final float offsetVectorY = nodeDetails.getLabelOffsetVectorY(nodeView);
+
+		final double[] doubleBuff1 = new double[4];
+		final double[] doubleBuff2 = new double[2];
+		
+		doubleBuff1[0] = x - nodeWidth/2;
+		doubleBuff1[1] = y - nodeHeight/2;
+		doubleBuff1[2] = x + nodeWidth/2;
+		doubleBuff1[3] = y + nodeHeight/2;
+		
+		GraphRenderer.lemma_computeAnchor(nodeAnchor, doubleBuff1, doubleBuff2);
+
+		final double nodeAnchorPointX = doubleBuff2[0];
+		final double nodeAnchorPointY = doubleBuff2[1];
+		
+		doubleBuff1[0] = -0.5d * w;
+		doubleBuff1[1] = -0.5d * h;
+		doubleBuff1[2] = 0.5d * w;
+		doubleBuff1[3] = 0.5d * h;
+		GraphRenderer.lemma_computeAnchor(textAnchor, doubleBuff1, doubleBuff2);
+
+		final double textXCenter = nodeAnchorPointX - doubleBuff2[0] + offsetVectorX;
+		final double textYCenter = nodeAnchorPointY - doubleBuff2[1] + offsetVectorY;			
+				
+		double xMin = textXCenter - (w/2);
+		double yMin = textYCenter - (h/2);
+		double xMax = textXCenter + (w/2);
+		double yMax = textYCenter + (h/2); 
+		
+		buff[0] = xMin;
+		buff[1] = yMin;
+		buff[2] = xMax;
+		buff[3] = yMax;
+		if(buff.length > 5) {
+			buff[4] = w;
+			buff[5] = h;
+		}
+	}
+	
+	/**
 	 * 
 	 * @param snapshot
 	 * @param pt   point where the mouse was clicked.
@@ -149,64 +213,23 @@ public class NetworkPicker {
 		SpacialIndex2DEnumerator<Long> under = snapshot.getSpacialIndex2D().queryOverlap(xMin, yMin, xMax, yMax);
 		
 		LabelInfoProvider labelProvider = re.getGraphLOD().isLabelCacheEnabled() ? re.getLabelCache() : LabelInfoProvider.NO_CACHE;
-		FontRenderContext frc = new FontRenderContext(null,true,true); // MKTODO
 		
-		float[] extentsBuff = new float[4];
-
+		double[] buff = new double[6];
+		
 		while (under.hasNext()) {
-			final Long suid = under.nextExtents(extentsBuff);
+			final Long suid = under.next();
 			View<CyNode> nodeView = snapshot.getNodeView(suid.longValue());
-		
-			// compute the actual size of label text rectangle
-			String labelText = nodeDetails.getLabelText(nodeView);
 			
-			Font font = nodeDetails.getLabelFont(nodeView);
-			double labelWidth = nodeDetails.getLabelWidth(nodeView);
+			getLabelBounds(nodeView, labelProvider, buff);
 			
-			LabelInfo mlCreator = labelProvider.getLabelInfo(labelText, font, labelWidth, frc);
+			double aMin = buff[0];
+			double bMin = buff[1];
+			double aMax = buff[2];
+			double bMax = buff[3];
+			double w = buff[4];
+			double h = buff[5];
 			
-			double h = mlCreator.getTotalHeight();  // actual label text box height
-			double w = mlCreator.getMaxLineWidth();  // actual label text box width. 
-			
-			// compute the actual position of the label text box.
-			double x = nodeDetails.getXPosition(nodeView); 
-			double y = nodeDetails.getYPosition(nodeView); 
-			double nodeWidth = nodeDetails.getWidth(nodeView);
-			double nodeHeight = nodeDetails.getHeight(nodeView);
-			
-			final Position textAnchor = nodeDetails.getLabelTextAnchor(nodeView);
-			final Position nodeAnchor = nodeDetails.getLabelNodeAnchor(nodeView);
-			final float offsetVectorX = nodeDetails.getLabelOffsetVectorX(nodeView);
-			final float offsetVectorY = nodeDetails.getLabelOffsetVectorY(nodeView);
-
-			final double[] doubleBuff1 = new double[4];
-			final double[] doubleBuff2 = new double[2];
-			
-			doubleBuff1[0] = x - nodeWidth/2;
-			doubleBuff1[1] = y - nodeHeight/2;
-			doubleBuff1[2] = x + nodeWidth/2;
-			doubleBuff1[3] = y + nodeHeight/2;
-			
-			GraphRenderer.lemma_computeAnchor(nodeAnchor, doubleBuff1, doubleBuff2);
-
-			final double nodeAnchorPointX = doubleBuff2[0];
-			final double nodeAnchorPointY = doubleBuff2[1];
-			
-			doubleBuff1[0] = -0.5d * w;
-			doubleBuff1[1] = -0.5d * h;
-			doubleBuff1[2] = 0.5d * w;
-			doubleBuff1[3] = 0.5d * h;
-			GraphRenderer.lemma_computeAnchor(textAnchor, doubleBuff1, doubleBuff2);
-
-			final double textXCenter = nodeAnchorPointX - doubleBuff2[0] + offsetVectorX;
-			final double textYCenter = nodeAnchorPointY - doubleBuff2[1] + offsetVectorY;			
-					
-			double aMin = textXCenter - (w/2);
-			double aMax = textXCenter + (w/2);
-			double bMin = textYCenter - (h/2);
-			double bMax = textYCenter + (h/2); 
-			
-			if( xP > aMin && xP < aMax && yP > bMin && yP <bMax ) {
+			if(xP > aMin && xP < aMax && yP > bMin && yP < bMax) {
 				locn[0] = aMin;
 				locn[1] = bMin;
 				re.getTransform().xformNodeToImageCoords (locn);

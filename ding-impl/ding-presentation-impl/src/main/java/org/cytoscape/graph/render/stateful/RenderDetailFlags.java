@@ -66,6 +66,25 @@ public class RenderDetailFlags {
 		return (lodBits & flag) != 0;
 	}
 	
+	public boolean and(int ... flags) {
+		for(int flag : flags) {
+			if(not(flag)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	public boolean or(int ... flags) {
+		for(int flag : flags) {
+			if(has(flag)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	
 	public boolean treatNodeShapesAsRectangle() {
 		return not(RenderDetailFlags.LOD_HIGH_DETAIL);
 	}
@@ -86,8 +105,17 @@ public class RenderDetailFlags {
 	public static RenderDetailFlags create(CyNetworkViewSnapshot netView, NetworkTransform transform, GraphLOD lod, UpdateType updateType) {
 		Rectangle2D.Float area = transform.getNetworkVisibleAreaNodeCoords();
 		SpacialIndex2DEnumerator<Long> nodeHits = netView.getSpacialIndex2D().queryOverlap(area.x, area.y, area.x + area.width, area.y + area.height);
-		
 		final int visibleNodeCount = nodeHits.size();
+		return create(netView, visibleNodeCount, lod, updateType);
+	}
+	
+	
+	public static RenderDetailFlags create(CyNetworkViewSnapshot netView, int visibleNodeCount, GraphLOD lod) {
+		return create(netView, visibleNodeCount, lod, UpdateType.ALL_FULL);
+	}
+	
+	
+	private static RenderDetailFlags create(CyNetworkViewSnapshot netView, int visibleNodeCount, GraphLOD lod, UpdateType updateType) {
 		final int totalNodeCount = netView.getNodeCount();
 		final int totalEdgeCount = netView.getEdgeCount();
 		final RenderEdges renderEdges = lod.renderEdges(visibleNodeCount, totalNodeCount, totalEdgeCount);
@@ -108,10 +136,10 @@ public class RenderDetailFlags {
 	private static int estimateEdgeCount(int totalNodeCount, int visibleNodeCount, int totalEdgeCount) {
 		if(visibleNodeCount <= 0) {
 			return 0;
-		} else {
-			// Use a simple heuristic, if half the nodes are visible then assume half the edges are visible
-			int value = 2 * (int)(totalEdgeCount * ((double)visibleNodeCount / (double)totalNodeCount));
-			return value;
+		} else  {
+			// Use a simple heuristic
+			int estimate = 2 * (int)(totalEdgeCount * ((double)visibleNodeCount / (double)totalNodeCount));
+			return Math.min(totalEdgeCount, estimate);
 		}
 	}
 	
