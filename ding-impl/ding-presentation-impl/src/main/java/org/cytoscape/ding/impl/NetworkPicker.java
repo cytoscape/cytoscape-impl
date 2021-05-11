@@ -120,9 +120,8 @@ public class NetworkPicker {
 	 */
 	public Shape getLabelShape(View<CyNode> node, LabelInfoProvider labelProvider) {
 		String text = nodeDetails.getLabelText(node);
-		if(text == null || text.isBlank()) {
+		if(text == null || text.isBlank())
 			return null;
-		}
 	
 		final double[] doubleBuff1 = new double[4];
 		final double[] doubleBuff2 = new double[2];
@@ -165,11 +164,11 @@ public class NetworkPicker {
 		double w = labelInfo.getMaxLineWidth();  // actual label text box width. 
 		
 		double xMin = textXCenter - (w/2);
-//		double yMin = textYCenter - (h/2);
+		double yMin = textYCenter - (h/2);
 //		double xMax = textXCenter + (w/2);
-		double yMax = textYCenter + (h/2); 
+//		double yMax = textYCenter + (h/2); 
 		
-		var rect = new Rectangle2D.Double(xMin, yMax, w, h);
+		var rect = new Rectangle2D.Double(xMin, yMin, w, h);
 		if(degrees == 0.0) {
 			return rect;
 		}
@@ -191,7 +190,7 @@ public class NetworkPicker {
 	}
 	
 	
-	public List<View<CyNode>> getNodeLabelsAt(Point2D mousePoint) {
+	public List<LabelSelection> getNodeLabelsAt(Point2D mousePoint) {
 		if(!renderDetailFlags.has(LOD_NODE_LABELS))
 			return null;
 		
@@ -203,20 +202,21 @@ public class NetworkPicker {
 		
 		LabelInfoProvider labelProvider = re.getGraphLOD().isLabelCacheEnabled() ? re.getLabelCache() : LabelInfoProvider.NO_CACHE;
 		
-		List<View<CyNode>> selection = null;
+		List<LabelSelection> selection = null;
 		
 		while(nodeHits.hasNext()) {
 			Long suid = nodeHits.next();
-			View<CyNode> nodeView = snapshot.getNodeView(suid);
+			View<CyNode> node = snapshot.getNodeView(suid);
 			
-			var shape = getLabelShape(nodeView, labelProvider);
+			var shape = getLabelShape(node, labelProvider);
 			
 			if(shape.contains(point)) {
 				if(selection == null)
 					selection = new ArrayList<>();
-				selection.add(nodeView);
+				selection.add(new LabelSelection(node, shape));
 			}
-		} 
+		}
+		
 		return selection;
 	}
 	

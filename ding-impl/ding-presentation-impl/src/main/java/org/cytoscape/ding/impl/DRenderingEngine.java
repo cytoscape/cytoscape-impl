@@ -201,7 +201,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		registrar.registerService(cyAnnotator, SessionAboutToBeSavedListener.class);
 		registrar.registerService(cyAnnotator, CustomGraphicsLibraryUpdatedListener.class);
 		
-		labelSelectionManager = new LabelSelectionManager();
+		labelSelectionManager = new LabelSelectionManager(this);
 		
 		renderComponent = new MainRenderComponent(this, dingGraphLOD);
 		picker = new NetworkPicker(this, null);

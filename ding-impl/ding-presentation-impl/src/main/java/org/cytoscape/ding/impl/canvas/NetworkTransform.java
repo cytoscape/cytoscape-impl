@@ -197,6 +197,10 @@ public class NetworkTransform {
 		return paintXform;
 	}
 	
+	public AffineTransform getWindowAffineTransform() {
+		return windowXform;
+		
+	}
 	public final void xformImageToNodeCoords(double[] coords) {
 		try {
 			windowXform.inverseTransform(coords, 0, coords, 0, 1);

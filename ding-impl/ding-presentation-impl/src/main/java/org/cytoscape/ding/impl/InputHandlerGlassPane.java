@@ -855,13 +855,14 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		private boolean mousePressedCheckHit(MouseEvent e) {
 			NetworkPicker picker = re.getPicker();
 
-//			if (labelSelectionEnabled()) { // if label drag feature is enabled
+			if (labelSelectionEnabled()) { // if label drag feature is enabled
 //				// TODO the RenderDetailFlags must also indicate that node labels were renderered.
-//				
-//				List<View<CyNode>> nodeLabels = picker.getNodeLabelsAt(e.getPoint());
-//				if(nodeLabels != null) {
-//					
-//				}
+				
+				List<LabelSelection> nodeLabels = picker.getNodeLabelsAt(e.getPoint());
+				if(nodeLabels != null) {
+					re.getLabelSelectionManager().addAll(nodeLabels);
+					return true;
+				}
 //				
 //				
 //				LabelSelection label = picker.getNodeLabelAt(e.getPoint());
@@ -892,7 +893,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 //					repaint();
 //					return true;
 //				}
-//			}
+			}
 			
 			if(annotationSelectionEnabled()) {
 				var annotationSelection = cyAnnotator.getAnnotationSelection();
@@ -1734,6 +1735,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			if(rows.isEmpty())
 				return false;
 			batchDeselectRows(table, rows);
+			re.getLabelSelectionManager().clear();
 			return true;
 		}
 		return false;
@@ -1798,7 +1800,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		if(!(nodesDeselected || edgesDeselected) && annotDeselected) {
 			re.updateView(UpdateType.JUST_ANNOTATIONS);
 		}
-//	  get(SelectionClickAndDragListener.class).resetLabelSelection();
 	}
 
   private Cursor createRotateCursor() {

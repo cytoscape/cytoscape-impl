@@ -62,8 +62,9 @@ public class CompositeImageCanvas {
 		// In reverse order because that's the order they are painted.
 		weights = new double[] {1, 20, 3, 1, 0}; // MKTODO not very elegant
 		
-		re.getCyAnnotator().addPropertyChangeListener(e -> updateAnnotationCanvasBuffers());
-		updateAnnotationCanvasBuffers();
+		re.getCyAnnotator().addPropertyChangeListener(e -> updateAnnotationAndSelectionCanvasBuffers());
+		re.getLabelSelectionManager().addPropertyChangeListener(e -> updateAnnotationAndSelectionCanvasBuffers());
+		updateAnnotationAndSelectionCanvasBuffers();
 		
 		this.executor = re.getSingleThreadExecutorService();
 	}
@@ -84,12 +85,13 @@ public class CompositeImageCanvas {
 		bgAnnotationCanvas.setShowSelection(show);
 	}
 	
-	private void updateAnnotationCanvasBuffers() {
+	private void updateAnnotationAndSelectionCanvasBuffers() {
 		// This is a memory optimization, don't allocate buffers for the annotation canvases if there are no annotations to render.
 		var cyAnnotator = re.getCyAnnotator();
 		boolean hasFG = cyAnnotator.hasAnnotations(CanvasID.FOREGROUND);
 		boolean hasBG = cyAnnotator.hasAnnotations(CanvasID.BACKGROUND);
-		boolean hasAnn = hasFG || hasBG;
+		boolean hasLabelSel = !re.getLabelSelectionManager().isEmpty();
+		boolean hasSel = hasFG || hasBG || hasLabelSel;
 		
 		if(hasFG && fgAnnotationCanvas.getGraphicsProvier() instanceof NullGraphicsProvider) {
 			fgAnnotationCanvas.setGraphicsProvider(newBuffer(transform));
@@ -105,10 +107,10 @@ public class CompositeImageCanvas {
 			bgAnnotationCanvas.setGraphicsProvider(NullGraphicsProvider.INSTANCE);
 		}
 		
-		if(hasAnn && selectionCanvas.getGraphicsProvier() instanceof NullGraphicsProvider) {
+		if(hasSel && selectionCanvas.getGraphicsProvier() instanceof NullGraphicsProvider) {
 			selectionCanvas.setGraphicsProvider(newBuffer(transform));
 		}
-		if(!hasAnn && !(selectionCanvas.getGraphicsProvier() instanceof NullGraphicsProvider)) {
+		if(!hasSel && !(selectionCanvas.getGraphicsProvier() instanceof NullGraphicsProvider)) {
 			selectionCanvas.setGraphicsProvider(NullGraphicsProvider.INSTANCE);
 		}
 	}
