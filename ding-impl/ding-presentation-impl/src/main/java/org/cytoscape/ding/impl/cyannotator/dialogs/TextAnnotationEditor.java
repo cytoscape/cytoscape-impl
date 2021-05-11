@@ -119,7 +119,7 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 
 				if (annotation.getFont() != null) {
 					for (int i = 0; i < total; i++) {
-						if (annotation.getFont().getFamily().equals(model.getElementAt(i).getFamily())) {
+						if (annotation.getFont().getFontName().equals(model.getElementAt(i).getFontName())) {
 							getFontFamilyCombo().setSelectedItem(FONTS[i]);
 							
 							break;
@@ -323,13 +323,13 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 					super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 					
 					setFont(((Font) value).deriveFont(getSmallFontSize()));
-					setText(((Font) value).getFamily());
-					setToolTipText(((Font) value).getFamily());
+					setText(((Font) value).getFontName());
+					setToolTipText(((Font) value).getFontName());
 					
 					return this;
 				}
 			});
-			fontFamilyCombo.setSelectedItem(UIManager.getFont("Label.font").getFamily());
+			fontFamilyCombo.setSelectedItem(UIManager.getFont("Label.font").getFontName());
 			fontFamilyCombo.addActionListener(evt -> apply());
 		}
 
