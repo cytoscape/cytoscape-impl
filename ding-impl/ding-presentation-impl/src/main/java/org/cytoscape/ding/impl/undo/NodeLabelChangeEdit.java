@@ -1,18 +1,17 @@
 package org.cytoscape.ding.impl.undo;
 
 import org.cytoscape.ding.DVisualLexicon;
+import org.cytoscape.ding.impl.InputHandlerGlassPane;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.work.undo.AbstractCyEdit;
-import org.cytoscape.work.undo.UndoSupport;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.values.ObjectPosition;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
-
-import org.cytoscape.ding.impl.InputHandlerGlassPane;
+import org.cytoscape.work.undo.AbstractCyEdit;
+import org.cytoscape.work.undo.UndoSupport;
 
 
 /**
@@ -82,7 +81,7 @@ public class NodeLabelChangeEdit extends AbstractCyEdit {
 			else
 				node.clearValueLock(DVisualLexicon.NODE_LABEL_ROTATION);
 			
-      listener.resetLabelSelection();
+//      listener.resetLabelSelection();
 			updateView();
 		}		
 	}

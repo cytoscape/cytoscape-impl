@@ -5,7 +5,9 @@ import static org.cytoscape.graph.render.stateful.RenderDetailFlags.*;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.font.FontRenderContext;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
@@ -18,7 +20,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
@@ -41,7 +42,6 @@ import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.EdgeStacking;
 import org.cytoscape.view.presentation.property.values.Handle;
-import org.cytoscape.view.presentation.property.values.ObjectPosition;
 import org.cytoscape.view.presentation.property.values.Position;
 
 
@@ -114,138 +114,112 @@ public class NetworkPicker {
 		return suid == null ? null : re.getViewModelSnapshot().getMutableNodeView(suid);
 	}
 
-	public DLabelSelection getNodeLabelAt(Point2D pt) {
-		if(!renderDetailFlags.has(LOD_NODE_LABELS))
-			return null;
-		return  selectLabel(re.getViewModelSnapshot(), pt);
-	}
 	
 	/**
-	 * Returns the bounds of a node's label in node coordinates.
+	 * Returns a rectangular shape that contains the label, the shape may be rotated.
 	 */
-	public void getLabelBounds(View<CyNode> nodeView, LabelInfoProvider labelProvider, double[] buff) {
-		FontRenderContext frc = new FontRenderContext(null,true,true); // MKTODO
-		// compute the actual size of label text rectangle
-		String labelText = nodeDetails.getLabelText(nodeView);
-		
-		Font font = nodeDetails.getLabelFont(nodeView);
-		double labelWidth = nodeDetails.getLabelWidth(nodeView);
-		
-		LabelInfo mlCreator = labelProvider.getLabelInfo(labelText, font, labelWidth, frc);
-		
-		double h = mlCreator.getTotalHeight();  // actual label text box height
-		double w = mlCreator.getMaxLineWidth();  // actual label text box width. 
-		
-		// compute the actual position of the label text box.
-		double x = nodeDetails.getXPosition(nodeView); 
-		double y = nodeDetails.getYPosition(nodeView); 
-		double nodeWidth = nodeDetails.getWidth(nodeView);
-		double nodeHeight = nodeDetails.getHeight(nodeView);
-		
-		final Position textAnchor = nodeDetails.getLabelTextAnchor(nodeView);
-		final Position nodeAnchor = nodeDetails.getLabelNodeAnchor(nodeView);
-		final float offsetVectorX = nodeDetails.getLabelOffsetVectorX(nodeView);
-		final float offsetVectorY = nodeDetails.getLabelOffsetVectorY(nodeView);
-
+	public Shape getLabelShape(View<CyNode> node, LabelInfoProvider labelProvider) {
+		String text = nodeDetails.getLabelText(node);
+		if(text == null || text.isBlank()) {
+			return null;
+		}
+	
 		final double[] doubleBuff1 = new double[4];
 		final double[] doubleBuff2 = new double[2];
+		
+		final Font font = nodeDetails.getLabelFont(node);
+		final Position textAnchor = nodeDetails.getLabelTextAnchor(node);
+		final Position nodeAnchor = nodeDetails.getLabelNodeAnchor(node);
+		final float offsetVectorX = nodeDetails.getLabelOffsetVectorX(node);
+		final float offsetVectorY = nodeDetails.getLabelOffsetVectorY(node);
+		final double degrees = nodeDetails.getLabelRotation(node);
+		final double nodeLabelWidth = nodeDetails.getLabelWidth(node);
+		
+		double x = nodeDetails.getXPosition(node); 
+		double y = nodeDetails.getYPosition(node); 
+		double nodeWidth = nodeDetails.getWidth(node);
+		double nodeHeight = nodeDetails.getHeight(node);
 		
 		doubleBuff1[0] = x - nodeWidth/2;
 		doubleBuff1[1] = y - nodeHeight/2;
 		doubleBuff1[2] = x + nodeWidth/2;
 		doubleBuff1[3] = y + nodeHeight/2;
-		
-		GraphRenderer.lemma_computeAnchor(nodeAnchor, doubleBuff1, doubleBuff2);
+		GraphRenderer.computeAnchor(nodeAnchor, doubleBuff1, doubleBuff2);
 
-		final double nodeAnchorPointX = doubleBuff2[0];
-		final double nodeAnchorPointY = doubleBuff2[1];
+		double nodeAnchorPointX = doubleBuff2[0];
+		double nodeAnchorPointY = doubleBuff2[1];
 		
-		doubleBuff1[0] = -0.5d * w;
-		doubleBuff1[1] = -0.5d * h;
-		doubleBuff1[2] = 0.5d * w;
-		doubleBuff1[3] = 0.5d * h;
-		GraphRenderer.lemma_computeAnchor(textAnchor, doubleBuff1, doubleBuff2);
+		var frc = new FontRenderContext(null, false, false);
+		LabelInfo labelInfo = labelProvider.getLabelInfo(text, font, nodeLabelWidth, frc);
+
+		doubleBuff1[0] = -0.5d * labelInfo.getMaxLineWidth();
+		doubleBuff1[1] = -0.5d * labelInfo.getTotalHeight();
+		doubleBuff1[2] =  0.5d * labelInfo.getMaxLineWidth();
+		doubleBuff1[3] =  0.5d * labelInfo.getTotalHeight();
+		GraphRenderer.computeAnchor(textAnchor, doubleBuff1, doubleBuff2);
 
 		final double textXCenter = nodeAnchorPointX - doubleBuff2[0] + offsetVectorX;
-		final double textYCenter = nodeAnchorPointY - doubleBuff2[1] + offsetVectorY;			
-				
+		final double textYCenter = nodeAnchorPointY - doubleBuff2[1] + offsetVectorY;
+		
+		double h = labelInfo.getTotalHeight();  // actual label text box height
+		double w = labelInfo.getMaxLineWidth();  // actual label text box width. 
+		
 		double xMin = textXCenter - (w/2);
-		double yMin = textYCenter - (h/2);
-		double xMax = textXCenter + (w/2);
+//		double yMin = textYCenter - (h/2);
+//		double xMax = textXCenter + (w/2);
 		double yMax = textYCenter + (h/2); 
 		
-		buff[0] = xMin;
-		buff[1] = yMin;
-		buff[2] = xMax;
-		buff[3] = yMax;
-		if(buff.length > 5) {
-			buff[4] = w;
-			buff[5] = h;
+		var rect = new Rectangle2D.Double(xMin, yMax, w, h);
+		if(degrees == 0.0) {
+			return rect;
 		}
+		
+		// Handle rotated labels
+		var rotateTransform = AffineTransform.getRotateInstance(degrees*.01745329252, nodeAnchorPointX+offsetVectorX, nodeAnchorPointY+offsetVectorY);
+		var rotatedShape = rotateTransform.createTransformedShape(rect);
+		return rotatedShape;
 	}
 	
+	
 	/**
-	 * 
-	 * @param snapshot
-	 * @param pt   point where the mouse was clicked.
-	 * @return a DLabelSelection object if there is a node label under the specified point. null if no labels are found at this point.
+	 * Returns a minimum bounding box for the given node's label. The bounding box is always parallel to the x/y axis.
 	 */
-	private DLabelSelection selectLabel(CyNetworkViewSnapshot snapshot, Point2D pt) {
-		double[] locn = {pt.getX(), pt.getY()};
-		re.getTransform().xformImageToNodeCoords(locn);
-		double xP = locn[0];
-		double yP = locn[1];	
+	public Rectangle2D getLabelBoundingBox(View<CyNode> node, LabelInfoProvider labelProvider) {
+		var shape = getLabelShape(node, labelProvider);
+		var bounds = shape.getBounds2D();
+		return bounds;
+	}
+	
+	
+	public List<View<CyNode>> getNodeLabelsAt(Point2D mousePoint) {
+		if(!renderDetailFlags.has(LOD_NODE_LABELS))
+			return null;
 		
-		Rectangle networkPaneBound = re.getComponentBounds();
+		Point2D point = re.getTransform().getNodeCoordinates(mousePoint);
+		CyNetworkViewSnapshot snapshot = re.getViewModelSnapshot();
 		
-		double[] ptBuff = {0d, 0d};
-		re.getTransform().xformImageToNodeCoords(ptBuff);
-		final float xMin = (float) ptBuff[0];
-		final float yMin = (float) ptBuff[1];
-		ptBuff[0] =  networkPaneBound.width;
-		ptBuff[1] =  networkPaneBound.height;
-		re.getTransform().xformImageToNodeCoords(ptBuff);
-		final float xMax = (float) ptBuff[0];
-		final float yMax = (float) ptBuff[1];
-				
-		DLabelSelection selection = null;
-		
-		SpacialIndex2DEnumerator<Long> under = snapshot.getSpacialIndex2D().queryOverlap(xMin, yMin, xMax, yMax);
+		Rectangle2D.Float area = re.getTransform().getNetworkVisibleAreaNodeCoords();
+		SpacialIndex2DEnumerator<Long> nodeHits = snapshot.getSpacialIndex2D().queryOverlap(area.x, area.y, area.x + area.width, area.y + area.height);
 		
 		LabelInfoProvider labelProvider = re.getGraphLOD().isLabelCacheEnabled() ? re.getLabelCache() : LabelInfoProvider.NO_CACHE;
 		
-		double[] buff = new double[6];
+		List<View<CyNode>> selection = null;
 		
-		while (under.hasNext()) {
-			final Long suid = under.next();
-			View<CyNode> nodeView = snapshot.getNodeView(suid.longValue());
+		while(nodeHits.hasNext()) {
+			Long suid = nodeHits.next();
+			View<CyNode> nodeView = snapshot.getNodeView(suid);
 			
-			getLabelBounds(nodeView, labelProvider, buff);
+			var shape = getLabelShape(nodeView, labelProvider);
 			
-			double aMin = buff[0];
-			double bMin = buff[1];
-			double aMax = buff[2];
-			double bMax = buff[3];
-			double w = buff[4];
-			double h = buff[5];
-			
-			if(xP > aMin && xP < aMax && yP > bMin && yP < bMax) {
-				locn[0] = aMin;
-				locn[1] = bMin;
-				re.getTransform().xformNodeToImageCoords (locn);
-				double scaleFactor =  re.getTransform().getScaleFactor();
-				
-				Rectangle r = new Rectangle ((int)locn[0],(int)locn[1], (int)(w*scaleFactor), (int)(h*scaleFactor));
-				
-				ObjectPosition pos = nodeView.isSet(DVisualLexicon.NODE_LABEL_POSITION) ?
-						 nodeView.getVisualProperty(DVisualLexicon.NODE_LABEL_POSITION) : null;
-
-				selection = (new DLabelSelection ( nodeView, r, pos, nodeDetails.getLabelRotation(nodeView), nodeDetails.isSelected(nodeView)));
+			if(shape.contains(point)) {
+				if(selection == null)
+					selection = new ArrayList<>();
+				selection.add(nodeView);
 			}
 		} 
-				
 		return selection;
-	} 
+	}
+	
 	
 	public View<CyEdge> getEdgeAt(Point2D pt) {
 		List<Long> edges = getEdgesIntersecting((int)pt.getX(), (int)pt.getY(), (int)pt.getX(), (int)pt.getY());

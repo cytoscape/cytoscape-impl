@@ -369,7 +369,7 @@ public final class GraphRenderer {
 							doubleBuff1[1] = -0.5d * labelInfo.getTotalHeight(); 
 							doubleBuff1[2] =  0.5d * labelInfo.getMaxLineWidth(); 
 							doubleBuff1[3] =  0.5d * labelInfo.getTotalHeight(); 
-							lemma_computeAnchor(textAnchor, doubleBuff1, doubleBuff2);
+							computeAnchor(textAnchor, doubleBuff1, doubleBuff2);
 
 							final double textXCenter = edgeAnchorPointX - doubleBuff2[0] + offsetVectorX;
 							final double textYCenter = edgeAnchorPointY - doubleBuff2[1] + offsetVectorY;
@@ -475,7 +475,7 @@ public final class GraphRenderer {
 						doubleBuff1[1] = floatBuff1[1];
 						doubleBuff1[2] = floatBuff1[2];
 						doubleBuff1[3] = floatBuff1[3];
-						lemma_computeAnchor(nodeAnchor, doubleBuff1, doubleBuff2);
+						computeAnchor(nodeAnchor, doubleBuff1, doubleBuff2);
 
 						final double nodeAnchorPointX = doubleBuff2[0];
 						final double nodeAnchorPointY = doubleBuff2[1];
@@ -486,7 +486,7 @@ public final class GraphRenderer {
 						doubleBuff1[1] = -0.5d * labelInfo.getTotalHeight();
 						doubleBuff1[2] =  0.5d * labelInfo.getMaxLineWidth();
 						doubleBuff1[3] =  0.5d * labelInfo.getTotalHeight();
-						lemma_computeAnchor(textAnchor, doubleBuff1, doubleBuff2);
+						computeAnchor(textAnchor, doubleBuff1, doubleBuff2);
 
 						final double textXCenter = nodeAnchorPointX - doubleBuff2[0] + offsetVectorX;
 						final double textYCenter = nodeAnchorPointY - doubleBuff2[1] + offsetVectorY;
@@ -535,69 +535,50 @@ public final class GraphRenderer {
 	/**
 	 * 
 	 * @param anchor
-	 * @param input4x An array of 4 elements:  x0,y0,x1, y1 of a rectangle
-	 * @param rtrn2x  An array of 2 element. x and y coordinates of the center of the object.
+	 * @param input4x An array of 4 elements: x0,y0,x1, y1 of a rectangle
+	 * @param rtrn2x  An array of 2 element. x and y coordinates of the center of
+	 *                the object.
 	 */
-	public final static void lemma_computeAnchor(final Position anchor, final double[] input4x,
-	                                              final double[] rtrn2x) {
+	public final static void computeAnchor(final Position anchor, final double[] input4x, final double[] rtrn2x) {
 		switch (anchor) {
-			case CENTER:
-				rtrn2x[0] = (input4x[0] + input4x[2]) / 2.0d;
-				rtrn2x[1] = (input4x[1] + input4x[3]) / 2.0d;
-
-				break;
-
-			case SOUTH:
-				rtrn2x[0] = (input4x[0] + input4x[2]) / 2.0d;
-				rtrn2x[1] = input4x[3];
-
-				break;
-
-			case SOUTH_EAST:
-				rtrn2x[0] = input4x[2];
-				rtrn2x[1] = input4x[3];
-
-				break;
-
-			case EAST:
-				rtrn2x[0] = input4x[2];
-				rtrn2x[1] = (input4x[1] + input4x[3]) / 2.0d;
-
-				break;
-
-			case NORTH_EAST:
-				rtrn2x[0] = input4x[2];
-				rtrn2x[1] = input4x[1];
-
-				break;
-
-			case NORTH:
-				rtrn2x[0] = (input4x[0] + input4x[2]) / 2.0d;
-				rtrn2x[1] = input4x[1];
-
-				break;
-
-			case NORTH_WEST:
-				rtrn2x[0] = input4x[0];
-				rtrn2x[1] = input4x[1];
-
-				break;
-
-			case WEST:
-				rtrn2x[0] = input4x[0];
-				rtrn2x[1] = (input4x[1] + input4x[3]) / 2.0d;
-
-				break;
-
-			case SOUTH_WEST:
-				rtrn2x[0] = input4x[0];
-				rtrn2x[1] = input4x[3];
-
-				break;
-
-			default:
-				throw new IllegalStateException("encoutered an invalid ANCHOR_* constant: "
-				                                + anchor);
+		case CENTER:
+			rtrn2x[0] = (input4x[0] + input4x[2]) / 2.0d;
+			rtrn2x[1] = (input4x[1] + input4x[3]) / 2.0d;
+			break;
+		case SOUTH:
+			rtrn2x[0] = (input4x[0] + input4x[2]) / 2.0d;
+			rtrn2x[1] = input4x[3];
+			break;
+		case SOUTH_EAST:
+			rtrn2x[0] = input4x[2];
+			rtrn2x[1] = input4x[3];
+			break;
+		case EAST:
+			rtrn2x[0] = input4x[2];
+			rtrn2x[1] = (input4x[1] + input4x[3]) / 2.0d;
+			break;
+		case NORTH_EAST:
+			rtrn2x[0] = input4x[2];
+			rtrn2x[1] = input4x[1];
+			break;
+		case NORTH:
+			rtrn2x[0] = (input4x[0] + input4x[2]) / 2.0d;
+			rtrn2x[1] = input4x[1];
+			break;
+		case NORTH_WEST:
+			rtrn2x[0] = input4x[0];
+			rtrn2x[1] = input4x[1];
+			break;
+		case WEST:
+			rtrn2x[0] = input4x[0];
+			rtrn2x[1] = (input4x[1] + input4x[3]) / 2.0d;
+			break;
+		case SOUTH_WEST:
+			rtrn2x[0] = input4x[0];
+			rtrn2x[1] = input4x[3];
+			break;
+		default:
+			throw new IllegalStateException("encoutered an invalid ANCHOR_* constant: " + anchor);
 		}
 	}
 
@@ -964,7 +945,7 @@ public final class GraphRenderer {
 				doubleBuff1[1] = floatBuff1[1];
 				doubleBuff1[2] = floatBuff1[2];
 				doubleBuff1[3] = floatBuff1[3];
-				lemma_computeAnchor(Position.CENTER, doubleBuff1, doubleBuff2);
+				computeAnchor(Position.CENTER, doubleBuff1, doubleBuff2);
 				grafx.drawCustomGraphicImage(nestedNetworkPaint.getAnchorRect(), (float)doubleBuff2[0],  (float)doubleBuff2[1], nestedNetworkPaint); 
 			}
 
@@ -991,7 +972,7 @@ public final class GraphRenderer {
 							doubleBuff1[1] = floatBuff1[1];
 							doubleBuff1[2] = floatBuff1[2];
 							doubleBuff1[3] = floatBuff1[3];
-							lemma_computeAnchor(Position.CENTER, doubleBuff1, doubleBuff2);
+							computeAnchor(Position.CENTER, doubleBuff1, doubleBuff2);
 							
 							float xOffset = (float) (doubleBuff2[0] + offsetVectorX);
 							float yOffset = (float) (doubleBuff2[1] + offsetVectorY);

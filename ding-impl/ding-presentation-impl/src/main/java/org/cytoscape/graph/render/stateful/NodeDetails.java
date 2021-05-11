@@ -189,7 +189,7 @@ public interface NodeDetails {
 	 * if labelCount(node) returns a value greater than zero. It is an error to
 	 * return null if this method is called by the rendering engine.
 	 */
-	default Double getLabelRotation(View<CyNode> node) { return 0d; }
+	default double getLabelRotation(View<CyNode> node) { return 0d; }
 
 
 	/**

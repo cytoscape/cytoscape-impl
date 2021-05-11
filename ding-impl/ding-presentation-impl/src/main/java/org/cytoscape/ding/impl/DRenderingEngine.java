@@ -148,6 +148,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 	private final Properties props;
 	private final CyAnnotator cyAnnotator;
+	private final LabelSelectionManager labelSelectionManager;
 	
 	//Flag that indicates that the content has changed and the graph needs to be redrawn.
 	private volatile boolean contentChanged = true;
@@ -199,6 +200,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		cyAnnotator = new CyAnnotator(this, annMgr, registrar);
 		registrar.registerService(cyAnnotator, SessionAboutToBeSavedListener.class);
 		registrar.registerService(cyAnnotator, CustomGraphicsLibraryUpdatedListener.class);
+		
+		labelSelectionManager = new LabelSelectionManager();
 		
 		renderComponent = new MainRenderComponent(this, dingGraphLOD);
 		picker = new NetworkPicker(this, null);
@@ -346,6 +349,10 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		boolean annotationSelection = viewModelSnapshot.getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION);
 		if(!annotationSelection)
 			cyAnnotator.getAnnotationSelection().clear();
+		
+		boolean labelSelection = viewModelSnapshot.getVisualProperty(DVisualLexicon.NETWORK_NODE_LABEL_SELECTION);
+		if(!labelSelection)
+			labelSelectionManager.clear();
 		
 		setContentChanged(true);
 	}
@@ -542,24 +549,21 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			if(flags.and(LOD_HIGH_DETAIL, LOD_NODE_LABELS, OPT_LABEL_CACHE)) {
 				LabelInfoProvider labelCache = getLabelCache();
 				NetworkPicker picker = getPicker();
-				double[] labelBounds = new double[4];
 				
 				Iterable<View<CyNode>> nodeIterable = justSelectedNodes ? selectedNodes : netViewSnapshot.getNodeViewsIterable();
 				
 				for(View<CyNode> node : nodeIterable) {
-					picker.getLabelBounds(node, labelCache, labelBounds);
-					
-					double xMin = labelBounds[0], yMin = labelBounds[1];
-					double xMax = labelBounds[2], yMax = labelBounds[3];
-					
-					if(xMin < extents[0])
-						extents[0] = xMin;
-					if(yMin < extents[1])
-						extents[1] = yMin;
-					if(xMax > extents[2])
-						extents[2] = xMax;
-					if(yMax > extents[3])
-						extents[3] = yMax;
+					var bounds = picker.getLabelBoundingBox(node, labelCache);
+					if(bounds != null) {
+						if(bounds.getMinX() < extents[0])
+							extents[0] = bounds.getMinX();
+						if(bounds.getMinY() < extents[1])
+							extents[1] = bounds.getMinY();
+						if(bounds.getMaxX() > extents[2])
+							extents[2] = bounds.getMaxX();
+						if(bounds.getMaxY() > extents[3])
+							extents[3] = bounds.getMaxY();
+					}
 				}
 			}
 			
@@ -843,6 +847,10 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 	public CyAnnotator getCyAnnotator() {
 		return cyAnnotator;
+	}
+	
+	public LabelSelectionManager getLabelSelectionManager() {
+		return labelSelectionManager;
 	}
 	
 	public CyServiceRegistrar getServiceRegistrar() {

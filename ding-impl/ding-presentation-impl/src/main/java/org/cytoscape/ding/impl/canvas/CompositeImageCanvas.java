@@ -29,7 +29,7 @@ public class CompositeImageCanvas {
 	private final DRenderingEngine re;
 	
 	// Canvas layers from top to bottom
-	private final AnnotationSelectionCanvas<ImageGraphicsProvider> annotationSelectionCanvas;
+	private final SelectionCanvas<ImageGraphicsProvider> selectionCanvas;
 	private final AnnotationCanvas<ImageGraphicsProvider> fgAnnotationCanvas;
 	private final NodeCanvas<ImageGraphicsProvider> nodeCanvas;
 	private final EdgeCanvas<ImageGraphicsProvider> edgeCanvas;
@@ -52,7 +52,7 @@ public class CompositeImageCanvas {
 		this.transform = new NetworkTransform(w, h);
 		this.image = newBuffer(transform);
 		
-		annotationSelectionCanvas = new AnnotationSelectionCanvas<>(NullGraphicsProvider.INSTANCE, re);
+		selectionCanvas = new SelectionCanvas<>(NullGraphicsProvider.INSTANCE, re);
 		fgAnnotationCanvas = new AnnotationCanvas<>(NullGraphicsProvider.INSTANCE, re, FOREGROUND);
 		nodeCanvas = new NodeCanvas<>(newBuffer(transform), re);
 		edgeCanvas = new EdgeCanvas<>(newBuffer(transform), re);
@@ -79,7 +79,7 @@ public class CompositeImageCanvas {
 	
 	// Kind of hackey, we don't want the annotation selection to show up in the brids-eye-view
 	public void showAnnotationSelection(boolean show) {
-		annotationSelectionCanvas.show(show);
+		selectionCanvas.show(show);
 		fgAnnotationCanvas.setShowSelection(show);
 		bgAnnotationCanvas.setShowSelection(show);
 	}
@@ -105,16 +105,16 @@ public class CompositeImageCanvas {
 			bgAnnotationCanvas.setGraphicsProvider(NullGraphicsProvider.INSTANCE);
 		}
 		
-		if(hasAnn && annotationSelectionCanvas.getGraphicsProvier() instanceof NullGraphicsProvider) {
-			annotationSelectionCanvas.setGraphicsProvider(newBuffer(transform));
+		if(hasAnn && selectionCanvas.getGraphicsProvier() instanceof NullGraphicsProvider) {
+			selectionCanvas.setGraphicsProvider(newBuffer(transform));
 		}
-		if(!hasAnn && !(annotationSelectionCanvas.getGraphicsProvier() instanceof NullGraphicsProvider)) {
-			annotationSelectionCanvas.setGraphicsProvider(NullGraphicsProvider.INSTANCE);
+		if(!hasAnn && !(selectionCanvas.getGraphicsProvier() instanceof NullGraphicsProvider)) {
+			selectionCanvas.setGraphicsProvider(NullGraphicsProvider.INSTANCE);
 		}
 	}
 	
 	public void dispose() {
-		annotationSelectionCanvas.dispose();
+		selectionCanvas.dispose();
 		fgAnnotationCanvas.dispose();
 		nodeCanvas.dispose();
 		edgeCanvas.dispose();
@@ -290,10 +290,10 @@ public class CompositeImageCanvas {
 		
 		// Annotation selection layer
 		if(renderAnnotationCanvas(params.update)) {
-			Image image = annotationSelectionCanvas.paintAndGet(pms[4], flags).getImage();
+			Image image = selectionCanvas.paintAndGet(pms[4], flags).getImage();
 			overlayImage(composite, image);
 		} else {
-			Image image = annotationSelectionCanvas.getCurrent(pms[4]).getImage();
+			Image image = selectionCanvas.getCurrent(pms[4]).getImage();
 			overlayImage(composite, image);
 		}
 		

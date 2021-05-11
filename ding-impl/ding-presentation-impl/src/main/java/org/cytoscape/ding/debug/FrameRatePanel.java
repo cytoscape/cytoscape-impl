@@ -18,7 +18,7 @@ import javax.swing.Timer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
-import org.cytoscape.ding.impl.canvas.AnnotationSelectionCanvas;
+import org.cytoscape.ding.impl.canvas.SelectionCanvas;
 import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
@@ -168,7 +168,7 @@ public class FrameRatePanel extends BasicCollapsiblePanel {
 	private int flattenAndExtract(int i, int depth, long frameTot, Object[][] data, DebugFrameInfo parent, DebugFrameInfo frame) {
 		data[i] = getDataForRow(parent, frame, depth, frameTot);
 		for(DebugFrameInfo child : frame.getSubFrames()) {
-			if(!AnnotationSelectionCanvas.DEBUG_NAME.equals(child.getTask())) {
+			if(!SelectionCanvas.DEBUG_NAME.equals(child.getTask())) {
 				i = flattenAndExtract(++i, depth+1, frameTot, data, frame, child);
 			}
 		}
