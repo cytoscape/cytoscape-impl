@@ -12,6 +12,7 @@ import static org.cytoscape.view.presentation.property.table.BasicTableVisualLex
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.ROW_SELECTED;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_GRID_VISIBLE;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_ROW_HEIGHT;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_VIEW_MODE;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.ALL;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.AUTO;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.SELECTED;
@@ -88,6 +89,7 @@ import org.cytoscape.view.model.events.AboutToRemoveColumnViewEvent;
 import org.cytoscape.view.model.events.AboutToRemoveColumnViewListener;
 import org.cytoscape.view.model.events.AddedColumnViewEvent;
 import org.cytoscape.view.model.events.AddedColumnViewListener;
+import org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode;
 import org.cytoscape.view.table.internal.util.TableBrowserUtil;
 import org.cytoscape.view.table.internal.util.ValidatedObjectAndEditString;
 import org.slf4j.Logger;
@@ -198,6 +200,10 @@ public class BrowserTable extends JTable
 			
 			if (view != null && !view.isSet(COLUMN_EDITABLE))
 				view.setLockedValue(COLUMN_EDITABLE, false);
+			
+			var viewMode = ViewMode.fromVisualPropertyValue(tableView.getVisualProperty(TABLE_VIEW_MODE));
+			model.setViewMode(viewMode);
+			model.updateViewMode();
 		}
 		
 		columnModel.reorderColumnsToRespectGravity();
