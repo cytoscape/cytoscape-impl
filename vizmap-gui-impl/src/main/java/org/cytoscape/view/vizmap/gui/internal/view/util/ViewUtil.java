@@ -6,6 +6,9 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GraphicsEnvironment;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
@@ -53,6 +56,8 @@ import org.slf4j.Logger;
 public final class ViewUtil {
 
 	public static final String TEXT_EDITOR_LABEL = "Enter a new text value:";
+	
+	private static Set<Font> fonts;
 
 	/**
 	 * Utility method that invokes the code in Runnable.run on the AWT Event Dispatch Thread.
@@ -204,6 +209,21 @@ public final class ViewUtil {
 			btn.setForeground(UIManager.getColor("ToggleButton.disabledForeground"));
 			btn.setBackground(UIManager.getColor("CyToggleButton.unselectedBackground"));
 		}
+	}
+	
+	public static Set<Font> getAvailableFonts() {
+		if (fonts == null) {
+			fonts = new LinkedHashSet<>();
+			
+			var sysFonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts();
+
+			if (sysFonts != null) {
+				for (var f : sysFonts)
+					fonts.add(f);
+			}
+		}
+		
+		return new LinkedHashSet<>(fonts);
 	}
 	
 	private ViewUtil() {
