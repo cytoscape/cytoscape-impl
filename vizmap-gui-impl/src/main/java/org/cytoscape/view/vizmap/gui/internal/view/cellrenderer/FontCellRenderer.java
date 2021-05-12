@@ -36,7 +36,7 @@ import com.l2fprod.common.swing.renderer.DefaultCellRenderer;
 @SuppressWarnings("serial")
 public class FontCellRenderer extends DefaultCellRenderer {
 
-	private static final float FONT_SIZE = 14.0f;
+	private static final float FONT_SIZE = 12.0f;
 
 	public FontCellRenderer() {
 		setOpaque(true);
