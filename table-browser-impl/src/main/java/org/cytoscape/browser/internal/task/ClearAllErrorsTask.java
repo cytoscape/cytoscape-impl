@@ -8,7 +8,6 @@ import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractTableColumnTask;
 import org.cytoscape.work.TaskMonitor;
@@ -52,9 +51,12 @@ public class ClearAllErrorsTask extends AbstractTableColumnTask {
 
 	@Override
 	public void run(TaskMonitor tm) {
-		final CyTable table = column.getTable();
-		final EquationCompiler compiler = serviceRegistrar.getService(EquationCompiler.class);
-		final List<ErrorEquation> errorEquations = new ArrayList<>();
+		tm.setTitle("Clear Equation Errors");
+		tm.setStatusMessage("Clearing equation errors from column '" + column.getName() + "'...");
+		
+		var table = column.getTable();
+		var compiler = serviceRegistrar.getService(EquationCompiler.class);
+		var errorEquations = new ArrayList<ErrorEquation>();
 				
 		for (var row : table.getAllRows()) {
 			if (cancelled)
