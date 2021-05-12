@@ -311,7 +311,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	  if(this.borderOpacity == 0 && this.fillOpacity == 0) // not here as an optimization, avoids invisible artifacts when exporting PDF
 		  return;
 
-      GraphicsUtilities.drawShape(g, getX(), getY(), getWidth() - 1, getHeight() - 1, getRotation(), this, false);
+      GraphicsUtilities.drawShape(g, getX(), getY(), getWidth(), getHeight(), getRotation(), this, false);
   }
 
   private ShapeType getShapeFromString(String shapeName) {
