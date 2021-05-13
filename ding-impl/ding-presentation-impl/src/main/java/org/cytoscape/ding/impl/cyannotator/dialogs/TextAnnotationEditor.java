@@ -400,7 +400,7 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 			fontStyle = Font.ITALIC + Font.BOLD;
 
 		var font = (Font) getFontFamilyCombo().getSelectedItem();
-		var size = (Integer) getFontSizeCombo().getSelectedItem();
+		var size = (Integer) getFontSizeCombo().getEditor().getItem();
 		
 		return font.deriveFont(fontStyle, size.floatValue());
 	}
