@@ -189,16 +189,10 @@ public final class BrowserTableModel extends AbstractTableModel
 		return getValidatedObjectAndEditString(row, columnName);
 	}
 
-	public CyColumn getColumn(int columnIndex)  {
+	public CyColumn getCyColumn(int columnIndex)  {
 		var columnName = columnIndex >= 0 && columnIndex < getColumnCount() ? getColumnName(columnIndex) : null;
 		
 		return columnName != null ? dataTable.getColumn(columnName) : null;
-	}
-
-	CyColumn getColumnByModelIndex(int modelIndex)  {
-		var columnName = getColumnName(modelIndex);
-
-		return dataTable.getColumn(columnName);
 	}
 
 	public CyRow getCyRow(int rowIndex) {
@@ -596,13 +590,13 @@ public final class BrowserTableModel extends AbstractTableModel
 
 	@Override
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
-		var column = getColumnByModelIndex(columnIndex);
+		var column = getCyColumn(columnIndex);
 		
 		return column == null ? false : !column.isPrimaryKey();
 	}
 
 	public boolean isPrimaryKey(int columnIndex) {
-		var column = columnIndex >= 0 && columnIndex < getColumnCount() ? getColumnByModelIndex(columnIndex) : null;
+		var column = columnIndex >= 0 && columnIndex < getColumnCount() ? getCyColumn(columnIndex) : null;
 		
 		return column == null ? false : column.isPrimaryKey();
 	}

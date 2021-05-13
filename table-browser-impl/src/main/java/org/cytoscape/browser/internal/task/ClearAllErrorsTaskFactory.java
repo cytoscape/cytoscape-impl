@@ -1,6 +1,12 @@
 package org.cytoscape.browser.internal.task;
 
 import org.cytoscape.browser.internal.util.TableBrowserUtil;
+import org.cytoscape.equations.Equation;
+import org.cytoscape.equations.EquationCompiler;
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractTableColumnTaskFactory;
+import org.cytoscape.work.TaskIterator;
 
 /*
  * #%L
@@ -26,16 +32,6 @@ import org.cytoscape.browser.internal.util.TableBrowserUtil;
  * #L%
  */
 
-import org.cytoscape.equations.Equation;
-import org.cytoscape.equations.EquationCompiler;
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.AbstractTableColumnTaskFactory;
-import org.cytoscape.work.TaskIterator;
-
-
 public final class ClearAllErrorsTaskFactory extends AbstractTableColumnTaskFactory {
 	
 	private final CyServiceRegistrar serviceRegistrar;
@@ -48,20 +44,22 @@ public final class ClearAllErrorsTaskFactory extends AbstractTableColumnTaskFact
 	public TaskIterator createTaskIterator(CyColumn column) {
 		if (column == null)
 			throw new IllegalStateException("you forgot to set the CyColumn on this task factory.");
+		
 		return new TaskIterator(new ClearAllErrorsTask(column, serviceRegistrar));
 	}
 
 	@Override
 	public boolean isReady(CyColumn column) {
-		CyTable table = column.getTable();
-		EquationCompiler compiler = serviceRegistrar.getService(EquationCompiler.class);
+		var table = column.getTable();
+		var compiler = serviceRegistrar.getService(EquationCompiler.class);
 				
-		for (CyRow row : table.getAllRows()) {
-			Object raw = row.getRaw(column.getName());
+		for (var row : table.getAllRows()) {
+			var raw = row.getRaw(column.getName());
 			
 			if (raw instanceof Equation) {
-				Equation eq = (Equation) raw;
+				var eq = (Equation) raw;
 				boolean success = compiler.compile(eq.toString(), TableBrowserUtil.getAttNameToTypeMap(table, null));
+				
 				//TODO: success is incorrectly set to yes on broken equations [=ABS(String)]
 				if (!success || row.get(column.getName(), column.getType()) == null)
 					return true;

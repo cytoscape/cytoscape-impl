@@ -12,6 +12,7 @@ import static org.cytoscape.view.presentation.property.table.BasicTableVisualLex
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.ROW_SELECTED;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_GRID_VISIBLE;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_ROW_HEIGHT;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_VIEW_MODE;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.ALL;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.AUTO;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.SELECTED;
@@ -24,7 +25,6 @@ import java.awt.Graphics;
 import java.awt.KeyboardFocusManager;
 import java.awt.Toolkit;
 import java.awt.Window;
-import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
@@ -88,6 +88,7 @@ import org.cytoscape.view.model.events.AboutToRemoveColumnViewEvent;
 import org.cytoscape.view.model.events.AboutToRemoveColumnViewListener;
 import org.cytoscape.view.model.events.AddedColumnViewEvent;
 import org.cytoscape.view.model.events.AddedColumnViewListener;
+import org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode;
 import org.cytoscape.view.table.internal.util.TableBrowserUtil;
 import org.cytoscape.view.table.internal.util.ValidatedObjectAndEditString;
 import org.slf4j.Logger;
@@ -129,7 +130,6 @@ public class BrowserTable extends JTable
 
 	private static final Font BORDER_FONT = UIManager.getFont("Label.font").deriveFont(getSmallFontSize());
 	
-	private Clipboard systemClipboard;
 	private CellEditorRemover editorRemover;
 	private final TableCellRenderer cellRenderer;
 	private final HashMap<String, Integer> columnWidthMap = new HashMap<>();
@@ -198,6 +198,10 @@ public class BrowserTable extends JTable
 			
 			if (view != null && !view.isSet(COLUMN_EDITABLE))
 				view.setLockedValue(COLUMN_EDITABLE, false);
+			
+			var viewMode = ViewMode.fromVisualPropertyValue(tableView.getVisualProperty(TABLE_VIEW_MODE));
+			model.setViewMode(viewMode);
+			model.updateViewMode();
 		}
 		
 		columnModel.reorderColumnsToRespectGravity();
@@ -483,7 +487,7 @@ public class BrowserTable extends JTable
 			return;
 		
 		var columnType = modelColumn >= 0 && modelColumn < tableModel.getColumnCount()
-				? tableModel.getColumn(modelColumn).getType()
+				? tableModel.getCyColumn(modelColumn).getType()
 				: null;
 
 		if (columnType == List.class) {
@@ -756,7 +760,7 @@ public class BrowserTable extends JTable
 		var dataTable = tableModel.getDataTable();
 
 		if (e.getSource() != dataTable)
-			return;		
+			return;
 
 		if (tableModel.getViewMode() == SELECTED || tableModel.getViewMode() == AUTO) {
 			tableModel.clearSelectedRows();
@@ -952,7 +956,7 @@ public class BrowserTable extends JTable
 				if (idx >= getColumnCount())
 					continue;
 				
-				var cyColumn = tableModel.getColumn(convertColumnIndexToModel(idx));
+				var cyColumn = tableModel.getCyColumn(convertColumnIndexToModel(idx));
 				var columnView = tableView.getColumnView(cyColumn);
 				var selected = isColumnSelected(idx);
 				
@@ -973,8 +977,7 @@ public class BrowserTable extends JTable
 		int modifiers = isMac() ? ActionEvent.META_MASK : ActionEvent.CTRL_MASK;
 		var copy = KeyStroke.getKeyStroke(KeyEvent.VK_C, modifiers, false);
 		// Identifying the copy KeyStroke user can modify this to copy on some other Key combination.
-		this.registerKeyboardAction(this, "Copy", copy, JComponent.WHEN_FOCUSED);
-		systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+		registerKeyboardAction(this, "Copy", copy, JComponent.WHEN_FOCUSED);
 	}
 	
 	private void showCellMenu(Class<?> type, List<?> listItems, String borderTitle, MouseEvent e) {
@@ -1003,16 +1006,16 @@ public class BrowserTable extends JTable
 					builder.append(oneEntry.toString() + CELL_BREAK);
 
 				var selection = new StringSelection(builder.toString());
-				systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-				systemClipboard.setContents(selection, selection);
+				var clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+				clipboard.setContents(selection, selection);
 			});
 			curItem.add(copyAll);
 
 			var copy = new JMenuItem("Copy this entry");
 			copy.addActionListener(evt -> {
 				var selection = new StringSelection(item.toString());
-				systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-				systemClipboard.setContents(selection, selection);
+				var clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+				clipboard.setContents(selection, selection);
 			});
 
 			curItem.add(copy);
@@ -1042,7 +1045,7 @@ public class BrowserTable extends JTable
 			var networkTableManager = serviceRegistrar.getService(CyNetworkTableManager.class);
 			var tableType = networkTableManager.getTableType(tableModel.getDataTable());
 			
-			var cyColumn = tableModel.getColumn(convertColumnIndexToModel(column));
+			var cyColumn = tableModel.getCyColumn(convertColumnIndexToModel(column));
 			popupMenuHelper.createColumnHeaderMenu(cyColumn, tableType, BrowserTable.this, e.getX(), e.getY());
 		}
 	}
@@ -1068,7 +1071,7 @@ public class BrowserTable extends JTable
 			if (modelColumn >= tableModel.getColumnCount() || modelRow >= tableModel.getRowCount())
 				return;
 			
-			var cyColumn = tableModel.getColumn(modelColumn);
+			var cyColumn = tableModel.getCyColumn(modelColumn);
 			var primaryKeyValue = ((ValidatedObjectAndEditString) tableModel.getValueAt(modelRow,
 					tableModel.getDataTable().getPrimaryKey().getName())).getValidatedObject();
 			
@@ -1142,8 +1145,8 @@ public class BrowserTable extends JTable
 		}
 		
 		var selection = new StringSelection(sbf.toString());
-		systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-		systemClipboard.setContents(selection, selection);
+		var clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+		clipboard.setContents(selection, selection);
 
 		return sbf.toString();
 	}
@@ -1227,7 +1230,7 @@ public class BrowserTable extends JTable
 	}
 
 	private void selectFromTable() {
-		var model = this.getModel();
+		var model = getModel();
 		
 		if (model instanceof BrowserTableModel == false)
 			return;
@@ -1265,7 +1268,7 @@ public class BrowserTable extends JTable
 		var tableManager = serviceRegistrar.getService(CyTableManager.class);
 		
 		if (tableManager.getGlobalTables().contains(table) == false) {
-			var allRows = btModel.getDataTable().getAllRows();
+			var allRows = table.getAllRows();
 			
 			try {
 				ignoreRowSetEvents = true;

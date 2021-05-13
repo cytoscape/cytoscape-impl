@@ -1,5 +1,7 @@
 package org.cytoscape.ding.impl;
 
+import static org.cytoscape.graph.render.stateful.RenderDetailFlags.*;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -451,17 +453,61 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 	@Override
 	public void handleFitContent() {
+		if(!renderComponent.isInitialized()) {
+			renderComponent.setInitializedCallback(() -> {
+				renderComponent.setInitializedCallback(null);
+				handleFitContent();
+			});
+			return;
+		}
+		
+		handleFit(false);
+	}
+	
+	@Override
+	public void handleFitSelected() {
+		if(!renderComponent.isInitialized()) {
+			renderComponent.setInitializedCallback(() -> {
+				renderComponent.setInitializedCallback(null);
+				handleFitSelected();
+			});
+			return;
+		}
+		
+		handleFit(true);
+	}
+	
+	private void computeNodeBounds(CyNetworkViewSnapshot netViewSnapshot, Collection<View<CyNode>> nodes, double[] buff) {
+		SpacialIndex2D<Long> spacial = netViewSnapshot.getSpacialIndex2D();
+		
+		float[] extents = new float[4];
+
+		float xMin = Float.POSITIVE_INFINITY, yMin = Float.POSITIVE_INFINITY;
+		float xMax = Float.NEGATIVE_INFINITY, yMax = Float.NEGATIVE_INFINITY;
+
+		for(View<CyNode> nodeView : nodes) {
+			spacial.get(nodeView.getSUID(), extents);
+			if (extents[SpacialIndex2D.X_MIN] < xMin) {
+				xMin = extents[SpacialIndex2D.X_MIN];
+			}
+			if (extents[SpacialIndex2D.X_MAX] > xMax) {
+				xMax = extents[SpacialIndex2D.X_MAX];
+			}
+			yMin = Math.min(yMin, extents[SpacialIndex2D.Y_MIN]);
+			yMax = Math.max(yMax, extents[SpacialIndex2D.Y_MAX]);
+		}
+		
+		buff[0] = xMin;
+		buff[1] = yMin;
+		buff[2] = xMax;
+		buff[3] = yMax;
+	}
+	
+	
+	private void handleFit(boolean justSelectedNodes) {
 		eventHelper.flushPayloadEvents();
 
 		synchronized (dingLock) {
-			if(!renderComponent.isInitialized()) {
-				renderComponent.setInitializedCallback(() -> {
-					renderComponent.setInitializedCallback(null);
-					handleFitContent();
-				});
-				return;
-			}
-			
 			// make sure we use the latest snapshot, don't wait for timer to check dirty flag
 			CyNetworkViewSnapshot netViewSnapshot = getViewModel().createSnapshot();
 			if(netViewSnapshot.getNodeCount() == 0)
@@ -472,9 +518,51 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 				return;
 			
 			double[] extents = new double[4];
-			netViewSnapshot.getSpacialIndex2D().getMBR(extents); // extents of the network
-			cyAnnotator.adjustBoundsToIncludeAnnotations(extents); // extents of the annotation canvases
-
+			
+			SpacialIndex2D<Long> spacial = netViewSnapshot.getSpacialIndex2D();
+			
+			// Get the bounds of the nodes
+			Collection<View<CyNode>> selectedNodes = null;
+			if(justSelectedNodes) {
+				selectedNodes = netViewSnapshot.getTrackedNodes(DingNetworkViewFactory.SELECTED_NODES);
+				if(selectedNodes.isEmpty())
+					return;
+				computeNodeBounds(netViewSnapshot, selectedNodes, extents);
+			} else {
+				spacial.getMBR(extents); // Minimum Bounding Rectangle: extents of the entire network
+			}
+			
+			// Expand the area to include annotations
+			cyAnnotator.adjustBoundsToIncludeAnnotations(extents);
+			
+			// Expand the area to include node labels, but only if node labels are visible and label caching is enabled.
+			int visibleNodes = justSelectedNodes ? selectedNodes.size() : netViewSnapshot.getNodeCount();
+			RenderDetailFlags flags = RenderDetailFlags.create(netViewSnapshot, visibleNodes, getGraphLOD());
+			
+			if(flags.and(LOD_HIGH_DETAIL, LOD_NODE_LABELS, OPT_LABEL_CACHE)) {
+				LabelInfoProvider labelCache = getLabelCache();
+				NetworkPicker picker = getPicker();
+				double[] labelBounds = new double[4];
+				
+				Iterable<View<CyNode>> nodeIterable = justSelectedNodes ? selectedNodes : netViewSnapshot.getNodeViewsIterable();
+				
+				for(View<CyNode> node : nodeIterable) {
+					picker.getLabelBounds(node, labelCache, labelBounds);
+					
+					double xMin = labelBounds[0], yMin = labelBounds[1];
+					double xMax = labelBounds[2], yMax = labelBounds[3];
+					
+					if(xMin < extents[0])
+						extents[0] = xMin;
+					if(yMin < extents[1])
+						extents[1] = yMin;
+					if(xMax > extents[2])
+						extents[2] = xMax;
+					if(yMax > extents[3])
+						extents[3] = yMax;
+				}
+			}
+			
 			netViewSnapshot.getMutableNetworkView().batch(netView -> {
 				if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION))
 					netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, (extents[0] + extents[2]) / 2.0d);
@@ -492,6 +580,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			});
 		}
 	}
+	
 	
 	@Override
 	public void handleUpdateView() {
@@ -577,90 +666,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			}, false); // don't set the dirty flag
 		}
 	}
-	
-	
-	@Override
-	public void handleFitSelected() {
-		eventHelper.flushPayloadEvents();
-		// Its not common for fitSelected() to be called immediately after creating a network 
-		// like it is for fitContent(), so we won't worry about setting an initialized callback.
-		
-		// make sure we use the latest snapshot, don't wait for timer to check dirty flag
-		CyNetworkViewSnapshot netViewSnapshot = getViewModel().createSnapshot();
-		
-		SpacialIndex2D<Long> spacial = netViewSnapshot.getSpacialIndex2D();
-		Collection<View<CyNode>> selectedElms = netViewSnapshot.getTrackedNodes(DingNetworkViewFactory.SELECTED_NODES);
-		if(selectedElms.isEmpty())
-			return;
-		
-		float[] extents = new float[4];
-
-		float xMin = Float.POSITIVE_INFINITY, yMin = Float.POSITIVE_INFINITY;
-		float xMax = Float.NEGATIVE_INFINITY, yMax = Float.NEGATIVE_INFINITY;
-
-		View<CyNode> leftMost = null;
-		View<CyNode> rightMost = null;
-
-		for(View<CyNode> nodeView : selectedElms) {
-			spacial.get(nodeView.getSUID(), extents);
-			if (extents[SpacialIndex2D.X_MIN] < xMin) {
-				xMin = extents[SpacialIndex2D.X_MIN];
-				leftMost = nodeView;
-			}
-
-			if (extents[SpacialIndex2D.X_MAX] > xMax) {
-				xMax = extents[SpacialIndex2D.X_MAX];
-				rightMost = nodeView;
-			}
-
-			yMin = Math.min(yMin, extents[SpacialIndex2D.Y_MIN]);
-			yMax = Math.max(yMax, extents[SpacialIndex2D.Y_MAX]);
-		}
-
-		float xMinF = xMin - (getLabelWidth(leftMost) / 2);
-		float xMaxF = xMax + (getLabelWidth(rightMost) / 2);
-		float yMaxF = yMax;
-		float yMinF = yMin;
-
-		NetworkTransform transform = renderComponent.getTransform();
-		
-		netViewSnapshot.getMutableNetworkView().batch(netView -> {
-			if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)) {
-				double zoom = Math.min(((double) transform.getWidth()) / (((double) xMaxF) - ((double) xMinF)),
-						((double) transform.getHeight()) / (((double) yMaxF) - ((double) yMinF)));
-				zoom = checkZoom(zoom, transform.getScaleFactor());
-				
-				// Update view model.  Zoom Level should be modified.
-				netView.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, zoom);
-			}
-			
-			if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION)) {
-				double xCenter = (((double) xMinF) + ((double) xMaxF)) / 2.0d;
-				netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, xCenter);
-			}
-			
-			if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)) {
-				double yCenter = (((double) yMinF) + ((double) yMaxF)) / 2.0d;
-				netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, yCenter);
-			}
-		});
-	}
-
-	
-	private int getLabelWidth(View<CyNode> nodeView) {
-		var fontMetrics = renderComponent.getFontMetrics();
-		if (nodeView == null || fontMetrics == null)
-			return 0;
-
-		String s = nodeDetails.getLabelText(nodeView);
-		if (s == null)
-			return 0;
-
-		char[] lab = s.toCharArray();
-		return fontMetrics.charsWidth(lab, 0, lab.length);
-	}
-
-
 
 	
 	// File > Print

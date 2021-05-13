@@ -1,5 +1,14 @@
 package org.cytoscape.view.vizmap.gui.internal.view.cellrenderer;
 
+import java.awt.Component;
+import java.awt.Font;
+
+import javax.swing.JList;
+import javax.swing.JTable;
+import javax.swing.UIManager;
+
+import com.l2fprod.common.swing.renderer.DefaultCellRenderer;
+
 /*
  * #%L
  * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
@@ -24,34 +33,22 @@ package org.cytoscape.view.vizmap.gui.internal.view.cellrenderer;
  * #L%
  */
 
-import java.awt.Component;
-import java.awt.Font;
-
-import javax.swing.JList;
-import javax.swing.JTable;
-import javax.swing.UIManager;
-
-import com.l2fprod.common.swing.renderer.DefaultCellRenderer;
-
+@SuppressWarnings("serial")
 public class FontCellRenderer extends DefaultCellRenderer {
 
-	private static final long serialVersionUID = -667720462619223580L;
-	
-	private static final float FONT_SIZE = 14.0f;
+	private static final float FONT_SIZE = 12.0f;
 
 	public FontCellRenderer() {
 		setOpaque(true);
 	}
 	
 	@Override
-	public Component getListCellRendererComponent(final JList list,
-												  final Object value,
-												  final int index,
-												  final boolean isSelected,
-												  final boolean cellHasFocus) {
+	@SuppressWarnings("rawtypes")
+	public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
+			boolean cellHasFocus) {
 		setBackground(isSelected ?
 				UIManager.getColor("Table.selectionBackground") : UIManager.getColor("Table.background"));
-		final String label = convertToString(value);
+		var label = convertToString(value);
 		setText(label);
 		setToolTipText(label);
 		
@@ -62,12 +59,8 @@ public class FontCellRenderer extends DefaultCellRenderer {
 	}
 	
 	@Override
-	public Component getTableCellRendererComponent(final JTable table,
-												   final Object value,
-												   final boolean isSelected,
-												   final boolean hasFocus,
-												   final int row,
-												   final int column) {
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+			int row, int column) {
 		setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
 		setForeground(isSelected ? table.getSelectionForeground() : table.getForeground());
 		
@@ -80,12 +73,12 @@ public class FontCellRenderer extends DefaultCellRenderer {
 	}
 	
 	@Override
-	protected String convertToString(final Object value) {
+	protected String convertToString(Object value) {
 		if (value == null)
 			return null;
 
 		if (value instanceof Font) {
-			final Font font = (Font) value;
+			var font = (Font) value;
 			return font.getFontName();
 		} else {
 			return "-- Unknown Font --";

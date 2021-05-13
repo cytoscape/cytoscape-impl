@@ -90,7 +90,7 @@ public class EquationEditorMediator {
 		
 		BrowserTableModel tableModel = browserTable.getBrowserTableModel();
 		int cellCol = browserTable.convertColumnIndexToModel(browserTable.getSelectedColumn());
-		CyColumn column =  tableModel.getColumn(cellCol);
+		CyColumn column =  tableModel.getCyColumn(cellCol);
 		
 		var builderPanel = new EquationEditorPanel(registrar, browserTable);
 		

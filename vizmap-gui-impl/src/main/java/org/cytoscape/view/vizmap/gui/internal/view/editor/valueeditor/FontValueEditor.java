@@ -2,12 +2,10 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor;
 
 import java.awt.Component;
 import java.awt.Font;
-import java.awt.GraphicsEnvironment;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.cytoscape.view.vizmap.gui.internal.view.util.ViewUtil;
 
 /*
  * #%L
@@ -35,19 +33,8 @@ import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 
 public class FontValueEditor extends DiscreteValueEditor<Font> {
 
-	private static final Set<Font> FONTS = new HashSet<>();
-	
-	static {
-		var sysFonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts();
-
-		if (sysFonts != null) {
-			for (var f : sysFonts)
-				FONTS.add(f);
-		}
-	}
-	
 	public FontValueEditor(ServicesUtil servicesUtil) {
-		super(Font.class, FONTS, servicesUtil);
+		super(Font.class, ViewUtil.getAvailableFonts(), servicesUtil);
 	}
 	
 	@Override
@@ -57,7 +44,6 @@ public class FontValueEditor extends DiscreteValueEditor<Font> {
 			initialValue = (S) new SimpleEqualsFont(initialValue);
 			
 		var newValue = super.showEditor(parent, initialValue, vp);
-		
 		
 		return newValue instanceof SimpleEqualsFont ? ((SimpleEqualsFont) newValue).font : newValue;
 	}

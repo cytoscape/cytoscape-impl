@@ -1,13 +1,11 @@
 package org.cytoscape.session.internal;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
@@ -43,20 +41,17 @@ import org.cytoscape.session.events.SessionSavedEvent;
 import org.cytoscape.session.events.SessionSavedListener;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.table.CyColumnViewMetadata;
 import org.cytoscape.view.model.table.CyRowViewMetadata;
 import org.cytoscape.view.model.table.CyTableView;
-import org.cytoscape.view.model.table.CyTableViewFactory;
 import org.cytoscape.view.model.table.CyTableViewManager;
 import org.cytoscape.view.model.table.CyTableViewMetadata;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
 import org.cytoscape.view.vizmap.TableVisualMappingManager;
-import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -93,6 +88,9 @@ import org.slf4j.LoggerFactory;
  */
 public class CySessionManagerImpl implements CySessionManager, SessionSavedListener {
 
+	@SuppressWarnings("unchecked")
+	private static Class<? extends CyIdentifiable>[] TYPES = new Class[] { CyNetwork.class, CyNode.class, CyEdge.class };
+	
 	private String currentFileName;
 	private final Map<String, CyProperty<?>> sessionProperties;
 	private CyProperty<Bookmarks> bookmarks;
@@ -103,7 +101,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
-	public CySessionManagerImpl(final CyServiceRegistrar serviceRegistrar) {
+	public CySessionManagerImpl(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 		this.sessionProperties = new HashMap<>();
 	}
@@ -112,46 +110,46 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	public CySession getCurrentSession() {
 		// Apps who want to save anything to a session will have to listen for this event
 		// and will then be responsible for adding files through SessionAboutToBeSavedEvent.addAppFiles(..)
-		SessionAboutToBeSavedEvent savingEvent = new SessionAboutToBeSavedEvent(this);
-		CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		var savingEvent = new SessionAboutToBeSavedEvent(this);
+		var eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 		eventHelper.fireEvent(savingEvent);
 
-		Set<CyNetwork> networks = getSerializableNetworks();
+		var networks = getSerializableNetworks();
 		
-		CyNetworkViewManager nvMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
-		Set<CyNetworkView> netViews = nvMgr.getNetworkViewSet();
+		var nvMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+		var netViews = nvMgr.getNetworkViewSet();
 
 		// Visual Styles Map
-		Map<CyNetworkView, String> stylesMap = new HashMap<>();
-		VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
+		var stylesMap = new HashMap<CyNetworkView, String>();
+		var vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
 
 		if (netViews != null) {
-			for (CyNetworkView nv : netViews) {
-				VisualStyle style = vmMgr.getVisualStyle(nv);
+			for (var nv : netViews) {
+				var style = vmMgr.getVisualStyle(nv);
+				
 				if (style != null)
 					stylesMap.put(nv, style.getTitle());
 			}
 		}
 		
 		// Table styles
-		TableVisualMappingManager tblVmMgr = serviceRegistrar.getService(TableVisualMappingManager.class);
-		CyTableViewManager tvMgr = serviceRegistrar.getService(CyTableViewManager.class);
+		var tblVmMgr = serviceRegistrar.getService(TableVisualMappingManager.class);
+		var tvMgr = serviceRegistrar.getService(CyTableViewManager.class);
 		
-		Set<CyTableView> tableViews = tvMgr.getTableViewSet();
-		Set<CyTableViewMetadata> tableViewMetadatas = new HashSet<>();
+		var tableViews = tvMgr.getTableViewSet();
+		var tableViewMetadatas = new HashSet<CyTableViewMetadata>();
 		
-		for(CyTableView tableView : tableViews) {
+		for (var tableView : tableViews)
 			tableViewMetadatas.add(getTableViewMetadata(tableView));
-		}
 
-		Map<String, List<File>> appMap = savingEvent.getAppFileListMap();
-		Set<CyTableMetadata> metadata = createTablesMetadata(networks);
-		Set<VisualStyle> styles = vmMgr.getAllVisualStyles();
-		Set<CyProperty<?>> props = getAllProperties();
-		Set<VisualStyle> tableStyles = tblVmMgr.getAllVisualStyles();
+		var appMap = savingEvent.getAppFileListMap();
+		var metadata = createTablesMetadata(networks);
+		var styles = vmMgr.getAllVisualStyles();
+		var props = getAllProperties();
+		var tableStyles = tblVmMgr.getAllVisualStyles();
 		
 		// Build the session
-		CySession sess = new CySession.Builder()
+		var sess = new CySession.Builder()
 				.properties(props)
 				.appFileListMap(appMap)
 				.tables(metadata)
@@ -166,61 +164,59 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		return sess;
 	}
 	
-
 	private CyTableViewMetadata getTableViewMetadata(CyTableView tableView) {
 		var networkTableManager = serviceRegistrar.getService(CyNetworkTableManager.class);
 		var tableMappingManager = serviceRegistrar.getService(TableVisualMappingManager.class);
 		
-		VisualLexicon lexicon = getVisualLexicon(tableView);
-		CyTable table = tableView.getModel();
+		var lexicon = getVisualLexicon(tableView);
+		var table = tableView.getModel();
 		
 		// The table browser is passed facade tables not the actual tables, so we need to dig down and get the real SUID.
 		// MKTODO Should probably add an interface CyTableFacade and use instanceof to test for it.
-		Long actualSuid = table.getPrimaryKey().getTable().getSUID();
+		var actualSuid = table.getPrimaryKey().getTable().getSUID();
 		
-		String namespace = networkTableManager.getTableNamespace(table);
-		String rendererID = tableView.getRendererId();
+		var namespace = networkTableManager.getTableNamespace(table);
+		var rendererID = tableView.getRendererId();
 		
-		Map<String,String> tableBypasses = new HashMap<>();
-		for(VisualProperty<?> vp : lexicon.getAllDescendants(BasicTableVisualLexicon.TABLE)) {
-			if(tableView.isDirectlyLocked(vp)) {
+		var tableBypasses = new HashMap<String, String>();
+		
+		for (var vp : lexicon.getAllDescendants(BasicTableVisualLexicon.TABLE)) {
+			if (tableView.isDirectlyLocked(vp))
 				addBypassValue(tableBypasses, vp, tableView.getVisualProperty(vp));
-			}
 		}
 		
-		List<CyColumnViewMetadata> columnMetadataList = new ArrayList<>();
+		var columnMetadataList = new ArrayList<CyColumnViewMetadata>();
 		
-		for(View<CyColumn> colView : tableView.getColumnViews()) {
-			Map<String,String> colBypasses = new HashMap<>();
+		for (var colView : tableView.getColumnViews()) {
+			var colBypasses = new HashMap<String, String>();
 			
-			for(VisualProperty<?> vp : lexicon.getAllDescendants(BasicTableVisualLexicon.COLUMN)) {
-				if(colView.isDirectlyLocked(vp)) {
+			for (var vp : lexicon.getAllDescendants(BasicTableVisualLexicon.COLUMN)) {
+				if (colView.isDirectlyLocked(vp)) {
 					// Have to serialize the VP values early in the session manager because they get restored here too :)
 					addBypassValue(colBypasses, vp, colView.getVisualProperty(vp));
 				}
 			}
 			
+			var style = tableMappingManager.getVisualStyle(colView);
 			String styleName = null;
-			VisualStyle style = tableMappingManager.getVisualStyle(colView);
-			if(style != null) {
+			
+			if (style != null)
 				styleName = style.getTitle();
-			}
 			
 			var colName = colView.getModel().getName();
 			var colMetadata = new CyColumnViewMetadata(colName, styleName, colBypasses);
 			columnMetadataList.add(colMetadata);
 		}
 		
-		CyColumn keyCol = table.getPrimaryKey();
-		List<CyRowViewMetadata> rowMetadataList = new ArrayList<>();
+		var keyCol = table.getPrimaryKey();
+		var rowMetadataList = new ArrayList<CyRowViewMetadata>();
 		
-		for(View<CyRow> rowView : tableView.getRowViews()) {
-			Map<String,String> rowBypasses = new HashMap<>();
+		for (var rowView : tableView.getRowViews()) {
+			var rowBypasses = new HashMap<String, String>();
 			
-			for(VisualProperty<?> vp : lexicon.getAllDescendants(BasicTableVisualLexicon.ROW)) {
-				if(rowView.isDirectlyLocked(vp)) {
+			for (var vp : lexicon.getAllDescendants(BasicTableVisualLexicon.ROW)) {
+				if (rowView.isDirectlyLocked(vp))
 					addBypassValue(rowBypasses, vp, rowView.getVisualProperty(vp));
-				}
 			}
 			
 			// MKTODO what if the key is a List ??? Take a look at CSVCyWriter.writeValues()
@@ -233,43 +229,41 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 				columnMetadataList, rowMetadataList, keyCol.getType(), keyCol.getListElementType());
 	}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private static void addBypassValue(Map<String,String> bypassValues, VisualProperty vp, Object value) {
 		// Have to serialize the VP values early in the session manager because they get restored here too :)
 		String valueString = null;
+		
 		try {
 			valueString = vp.toSerializableString(value);
-		} catch(ClassCastException e) { }
-		
-		if(value != null) {
-			bypassValues.put(vp.getIdString(), valueString);
+		} catch (ClassCastException e) {
+			// Ignore...
 		}
+		
+		if (value != null)
+			bypassValues.put(vp.getIdString(), valueString);
 	}
-	
-	
 	
 	private VisualLexicon getVisualLexicon(CyTableView tableView) {
 		var renderingEngineManager = serviceRegistrar.getService(RenderingEngineManager.class);
 		var renderingEngines = renderingEngineManager.getRenderingEngines(tableView);
-		for(var re : renderingEngines) {
-			if(Objects.equals(tableView.getRendererId(), re.getRendererId())) {
+		
+		for (var re : renderingEngines) {
+			if (Objects.equals(tableView.getRendererId(), re.getRendererId()))
 				return re.getVisualLexicon();
-			}
 		}
+		
 		logger.error("VisualLexicon not found for tableView while saving session: " + tableView.getModel().getTitle());
 		return renderingEngineManager.getDefaultTableVisualLexicon();
 	}
 	
-	
-	@SuppressWarnings("unchecked")
-	private static Class<? extends CyIdentifiable>[] TYPES = new Class[] { CyNetwork.class, CyNode.class, CyEdge.class };
-	
 	private Set<CyNetwork> getSerializableNetworks() {
-		final Set<CyNetwork> serializableNetworks = new HashSet<>();
+		var serializableNetworks = new HashSet<CyNetwork>();
 		
-		final CyNetworkTableManager netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
-		final Set<CyNetwork> allNetworks = netTblMgr.getNetworkSet();
+		var netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
+		var allNetworks = netTblMgr.getNetworkSet();
 		
-		for (final CyNetwork net : allNetworks) {
+		for (var net : allNetworks) {
 			if (net.getSavePolicy() == SavePolicy.SESSION_FILE)
 				serializableNetworks.add(net);
 		}
@@ -277,8 +271,8 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		return serializableNetworks;
 	}
 	
-	private Set<CyTableMetadata> createTablesMetadata(final Set<CyNetwork> networks) {
-		final Set<CyTableMetadata> result = new HashSet<>();
+	private Set<CyTableMetadata> createTablesMetadata(Set<CyNetwork> networks) {
+		var result = new HashSet<CyTableMetadata>();
 		
 		result.addAll(createNetworkTablesMetadata(networks));
 		result.addAll(createGlobalTablesMetadata(serviceRegistrar.getService(CyTableManager.class).getGlobalTables()));
@@ -286,21 +280,21 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		return result;
 	}
 
-	private Set<CyTableMetadata> createNetworkTablesMetadata(final Set<CyNetwork> networks) {
-		final Set<CyTableMetadata> result = new HashSet<>();
-		final CyNetworkTableManager netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
+	private Set<CyTableMetadata> createNetworkTablesMetadata(Set<CyNetwork> networks) {
+		var result = new HashSet<CyTableMetadata>();
+		var netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
 		
 		// Create the metadata object for each network table
-		for (final CyNetwork network : networks) {
-			for (final Class<? extends CyIdentifiable> type : TYPES) {
-				final Map<String, CyTable> tableMap = netTblMgr.getTables(network, type);
+		for (var network : networks) {
+			for (var type : TYPES) {
+				var tableMap = netTblMgr.getTables(network, type);
 				
-				for (final Entry<String, CyTable> entry : tableMap.entrySet()) {
-					final CyTable tbl = entry.getValue();
+				for (var entry : tableMap.entrySet()) {
+					var tbl = entry.getValue();
 					
 					if (tbl.getSavePolicy() == SavePolicy.SESSION_FILE) {
-						final String namespace = entry.getKey();
-						final CyTableMetadata metadata = new CyTableMetadataImpl.CyTableMetadataBuilder()
+						var namespace = entry.getKey();
+						var metadata = new CyTableMetadataImpl.CyTableMetadataBuilder()
 								.setCyTable(tbl).setNamespace(namespace).setType(type).setNetwork(network)
 								.build();
 						
@@ -313,10 +307,10 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		return result;
 	}
 	
-	private Collection<? extends CyTableMetadata> createGlobalTablesMetadata(final Set<CyTable> tables) {
-		final Set<CyTableMetadata> result = new HashSet<CyTableMetadata>();
+	private Collection<? extends CyTableMetadata> createGlobalTablesMetadata(Set<CyTable> tables) {
+		var result = new HashSet<CyTableMetadata>();
 		
-		for (final CyTable tbl : tables) {
+		for (var tbl : tables) {
 			if (tbl.getSavePolicy() == SavePolicy.SESSION_FILE)
 				result.add(new CyTableMetadataImpl.CyTableMetadataBuilder().setCyTable(tbl));
 		}
@@ -325,7 +319,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	}
 
 	@Override
-	public void setCurrentSession(CySession sess, final String fileName) {
+	public void setCurrentSession(CySession sess, String fileName) {
 		// DO NOT save a reference to the sess parameter
 		// the session is a large object and that would cause a memory leak
 		
@@ -336,21 +330,20 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		if (sess == null) {
 			logger.debug("Creating empty session...");
 			
-			final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
-			final Set<VisualStyle> styles = vmMgr.getAllVisualStyles();
-			final Set<CyProperty<?>> props = getAllProperties();
+			var vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
+			var styles = vmMgr.getAllVisualStyles();
+			var props = getAllProperties();
 
 			sess = new CySession.Builder().properties(props).visualStyles(styles).build();
 		} else {
 			logger.debug("Restoring the session...");
 
 			// Save the selected networks first, so the selection state can be restored later.
-			final List<CyNetwork> selectedNetworks = new ArrayList<>();
-			final Set<CyNetwork> networks = sess.getNetworks();
+			var selectedNetworks = new ArrayList<CyNetwork>();
+			var networks = sess.getNetworks();
 
-			for (CyNetwork n : networks) {
-				final Boolean selected = n.getDefaultNetworkTable().getRow(n.getSUID())
-						.get(CyNetwork.SELECTED, Boolean.class);
+			for (var n : networks) {
+				var selected = n.getDefaultNetworkTable().getRow(n.getSUID()).get(CyNetwork.SELECTED, Boolean.class);
 				
 				if (Boolean.TRUE.equals(selected))
 					selectedNetworks.add(n);
@@ -370,7 +363,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		currentFileName = fileName;
 		disposed = false;
 
-		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		var eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 		eventHelper.fireEvent(new SessionLoadedEvent(this, sess, getCurrentSessionFileName()));
 	}
 
@@ -389,8 +382,8 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	}
 
 	@SuppressWarnings("unchecked")
-	public void addCyProperty(final CyProperty<?> newCyProperty, final Map<String, String> properties) {
-		CyProperty.SavePolicy sp = newCyProperty.getSavePolicy();
+	public void addCyProperty(CyProperty<?> newCyProperty, Map<String, String> properties) {
+		var sp = newCyProperty.getSavePolicy();
 
 		synchronized (lock ) {
 			if (sp == CyProperty.SavePolicy.SESSION_FILE || sp == CyProperty.SavePolicy.SESSION_FILE_AND_CONFIG_DIR) {
@@ -402,8 +395,8 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		}
 	}
 
-	public void removeCyProperty(final CyProperty<?> oldCyProperty, final Map<String, String> properties) {
-		CyProperty.SavePolicy sp = oldCyProperty.getSavePolicy();
+	public void removeCyProperty(CyProperty<?> oldCyProperty, Map<String, String> properties) {
+		var sp = oldCyProperty.getSavePolicy();
 
 		synchronized (lock) {
 			if (sp == CyProperty.SavePolicy.SESSION_FILE || sp == CyProperty.SavePolicy.SESSION_FILE_AND_CONFIG_DIR) {
@@ -428,19 +421,19 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		return set;
 	}
 
-	private void restoreProperties(final CySession sess) {
-		for (CyProperty<?> cyProps : sess.getProperties()) {
-			final CyProperty<?> oldCyProps = sessionProperties.get(cyProps.getName());
+	private void restoreProperties(CySession sess) {
+		for (var cyProps : sess.getProperties()) {
+			var oldCyProps = sessionProperties.get(cyProps.getName());
 			
 			// Do we already have a CyProperty with the same name and SESSION_FILE_AND_CONFIG_DIR policy?
 			if (oldCyProps != null && oldCyProps.getSavePolicy() == CyProperty.SavePolicy.SESSION_FILE_AND_CONFIG_DIR) {
 				if (oldCyProps.getPropertyType() == Properties.class && cyProps.getPropertyType() == Properties.class) {
 					// Simply overwrite the existing properties with the new ones from the session...
-					final Properties oldProps = (Properties) oldCyProps.getProperties();
-					final Properties newProps = (Properties) cyProps.getProperties();
+					var oldProps = (Properties) oldCyProps.getProperties();
+					var newProps = (Properties) cyProps.getProperties();
 					
-					for (final String key : newProps.stringPropertyNames()) {
-						final String newValue = newProps.getProperty(key);
+					for (var key : newProps.stringPropertyNames()) {
+						var newValue = newProps.getProperty(key);
 						oldProps.setProperty(key, newValue);
 					}
 					
@@ -458,45 +451,44 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 				}
 			}
 			
-			final Properties serviceProps = new Properties();
+			var serviceProps = new Properties();
 			serviceProps.setProperty("cyPropertyName", cyProps.getName());
 			serviceRegistrar.registerAllServices(cyProps, serviceProps);
 		}
 	}
 	
-	private void restoreNetworks(final CySession sess) {
+	private void restoreNetworks(CySession sess) {
 		logger.debug("Restoring networks...");
-		Set<CyNetwork> networks = sess.getNetworks();
-		final CyNetworkManager netMgr = serviceRegistrar.getService(CyNetworkManager.class);
+		var networks = sess.getNetworks();
+		var netMgr = serviceRegistrar.getService(CyNetworkManager.class);
 
-		for (CyNetwork n : networks) {
+		for (var n : networks) {
 			netMgr.addNetwork(n, false);
 		}
 	}
 	
-	private void restoreNetworkViews(final CySession sess, List<CyNetwork> selectedNetworks) {
+	private void restoreNetworkViews(CySession sess, List<CyNetwork> selectedNetworks) {
 		logger.debug("Restoring network views...");
-		Set<CyNetworkView> netViews = sess.getNetworkViews();
-		List<CyNetworkView> selectedViews = new ArrayList<>();
+		var netViews = sess.getNetworkViews();
+		var selectedViews = new ArrayList<CyNetworkView>();
 		
-		for (CyNetworkView nv : netViews) {
-			CyNetwork network = nv.getModel();
+		for (var nv : netViews) {
+			var network = nv.getModel();
 			
-			if (selectedNetworks.contains(network)) {
+			if (selectedNetworks.contains(network))
 				selectedViews.add(nv);
-			}
 		}
 		
-		Map<CyNetworkView, Map<VisualProperty<?>, Object>> viewVPMap = new HashMap<>();
+		var viewVPMap = new HashMap<CyNetworkView, Map<VisualProperty<?>, Object>>();
 		
 		if (netViews != null) {
-			final CyNetworkViewManager nvMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+			var nvMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
 			
-			for (CyNetworkView nv : netViews) {
+			for (var nv : netViews) {
 				if (nv != null) {
 					// Save the original values of these visual properties,
 					// because we will have to set them again after the views are rendered
-					Map<VisualProperty<?>, Object> vpMap = new HashMap<>();
+					var vpMap = new HashMap<VisualProperty<?>, Object>();
 					viewVPMap.put(nv, vpMap);
 					vpMap.put(BasicVisualLexicon.NETWORK_HEIGHT, nv.getVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT));
 					vpMap.put(BasicVisualLexicon.NETWORK_WIDTH, nv.getVisualProperty(BasicVisualLexicon.NETWORK_WIDTH));
@@ -507,18 +499,18 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		}
 
 		// Let's guarantee the network views are rendered
-		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		var eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 		eventHelper.flushPayloadEvents();
 		
 		// Set the saved visual properties again, because the renderer may have overwritten the original values
-		for (Entry<CyNetworkView, Map<VisualProperty<?>, Object>> entry1 : viewVPMap.entrySet()) {
-			CyNetworkView nv = entry1.getKey();
+		for (var entry1 : viewVPMap.entrySet()) {
+			var nv = entry1.getKey();
 			
-			for (Entry<VisualProperty<?>, Object> entry2 : entry1.getValue().entrySet())
+			for (var entry2 : entry1.getValue().entrySet())
 				nv.setVisualProperty(entry2.getKey(), entry2.getValue());
 		}
 		
-		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+		var appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 		
 		if (!selectedViews.isEmpty())
 			appMgr.setCurrentNetworkView(selectedViews.get(0));
@@ -526,51 +518,57 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		appMgr.setSelectedNetworkViews(selectedViews);
 	}
 	
-	
+	@SuppressWarnings("unchecked")
 	private void restoreTableViews(CySession sess) {
 		var appManager = serviceRegistrar.getService(CyApplicationManager.class);
 		var tableViewManager = serviceRegistrar.getService(CyTableViewManager.class);
 		var networkTableManager = serviceRegistrar.getService(CyNetworkTableManager.class);
 		var tableMappingManager = serviceRegistrar.getService(TableVisualMappingManager.class);
 		
-		Set<VisualStyle> styles = sess.getTableStyles();
-		Map<String, VisualStyle> stylesMap = new HashMap<>();
+		var styles = sess.getTableStyles();
+		var stylesMap = new HashMap<String, VisualStyle>();
+		
 		if (styles != null) {
-			for (VisualStyle vs : styles) {
+			for (var vs : styles)
 				stylesMap.put(vs.getTitle(), vs);
-			}
 		}
 		
-		Set<CyTableViewMetadata> tableViews = sess.getTableViews();
-		for(var tableViewMetadata : tableViews) {
-			TableViewRenderer renderer = appManager.getTableViewRenderer(tableViewMetadata.getRendererID());
-			if(renderer != null) {
-				CyTableMetadata tableMetadata = tableViewMetadata.getUnderlyingTable();
-				if(tableMetadata != null) {
-					CyTable table = tableMetadata.getTable();
+		var tableViews = sess.getTableViews();
+		
+		for (var tableViewMetadata : tableViews) {
+			var renderer = appManager.getTableViewRenderer(tableViewMetadata.getRendererID());
+			
+			if (renderer != null) {
+				var tableMetadata = tableViewMetadata.getUnderlyingTable();
+				
+				if (tableMetadata != null) {
+					var table = tableMetadata.getTable();
 					
 					// Check if the table view was created for a facade table.
-					if(CyNetwork.LOCAL_ATTRS.equals(tableMetadata.getNamespace()) && CyNetwork.DEFAULT_ATTRS.equals(tableViewMetadata.getNamespace())) {
+					if (CyNetwork.LOCAL_ATTRS.equals(tableMetadata.getNamespace()) && CyNetwork.DEFAULT_ATTRS.equals(tableViewMetadata.getNamespace())) {
 						// get the facade table
-						table = networkTableManager.getTable(tableMetadata.getNetwork(), ((Class<? extends CyIdentifiable>)tableMetadata.getType()), CyNetwork.DEFAULT_ATTRS);
+						table = networkTableManager.getTable(tableMetadata.getNetwork(),
+								((Class<? extends CyIdentifiable>) tableMetadata.getType()), CyNetwork.DEFAULT_ATTRS);
 					}
 					
-					CyTableViewFactory tableViewFactory = renderer.getTableViewFactory();
-					CyTableView tableView = tableViewFactory.createTableView(table);
+					var tableViewFactory = renderer.getTableViewFactory();
+					var tableView = tableViewFactory.createTableView(table);
 					
-					VisualLexicon lexicon = renderer.getRenderingEngineFactory(TableViewRenderer.DEFAULT_CONTEXT).getVisualLexicon();
+					var lexicon = renderer.getRenderingEngineFactory(TableViewRenderer.DEFAULT_CONTEXT).getVisualLexicon();
 					restoreTableViewBypasses(sess, tableView, tableViewMetadata, lexicon);
 					
 					tableViewManager.setTableView(tableView);
 					
-					
-					for(var colViewMeta : tableViewMetadata.getColumnViews()) {
-						String styleName = colViewMeta.getStyleName();
-						if(styleName != null) {
-							VisualStyle vs = stylesMap.get(styleName);
+					for (var colViewMeta : tableViewMetadata.getColumnViews()) {
+						var styleName = colViewMeta.getStyleName();
+						
+						if (styleName != null) {
+							var vs = stylesMap.get(styleName);
+							
 							if (vs != null) {
 								var colView = tableView.getColumnView(colViewMeta.getName());
-								if(colView != null) {
+								
+								if (colView != null) {
 									tableMappingManager.setVisualStyle(colView, vs);
 									vs.apply(colView);
 								}
@@ -581,80 +579,86 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 			}
 		}
 	}
-	
 
 	private void restoreTableViewBypasses(CySession sess, CyTableView tableView, CyTableViewMetadata tableViewMetadata, VisualLexicon lexicon) {
-		for(var entry : tableViewMetadata.getBypassValues().entrySet()) {
-			String vpId = entry.getKey();
-			String vpStr = entry.getValue();
+		for (var entry : tableViewMetadata.getBypassValues().entrySet()) {
+			var vpId = entry.getKey();
+			var vpStr = entry.getValue();
 			
-			VisualProperty<?> vp = lexicon.lookup(CyTable.class, vpId);
-			if(vp != null) {
-				Object parsedValue = vp.parseSerializableString(vpStr);
-				if(parsedValue != null) {
+			var vp = lexicon.lookup(CyTable.class, vpId);
+			
+			if (vp != null) {
+				var parsedValue = vp.parseSerializableString(vpStr);
+				
+				if (parsedValue != null)
 					tableView.setLockedValue(vp, parsedValue);
-				}
 			}
 		}
 		
 		// Restore column view visual property bypass values. Other values come from the style.
-		for(CyColumnViewMetadata colViewMeta : tableViewMetadata.getColumnViews()) {
-			View<CyColumn> colView = tableView.getColumnView(colViewMeta.getName());
+		for (var colViewMeta : tableViewMetadata.getColumnViews()) {
+			var colView = tableView.getColumnView(colViewMeta.getName());
 			
-			for(var entry : colViewMeta.getBypassValues().entrySet()) {
-				String vpId = entry.getKey();
-				String vpStr = entry.getValue();
+			if (colView == null)
+				continue;
+			
+			for (var entry : colViewMeta.getBypassValues().entrySet()) {
+				var vpId = entry.getKey();
+				var vpStr = entry.getValue();
 				
-				VisualProperty<?> vp = lexicon.lookup(CyColumn.class, vpId);
-				if(vp != null) {
-					Object parsedValue = vp.parseSerializableString(vpStr);
-					if(parsedValue != null) {
+				var vp = lexicon.lookup(CyColumn.class, vpId);
+				
+				if (vp != null) {
+					var parsedValue = vp.parseSerializableString(vpStr);
+					
+					if (parsedValue != null)
 						colView.setLockedValue(vp, parsedValue);
-					}
 				}
 			}
 		}
 		
-		for(CyRowViewMetadata rowViewMeta : tableViewMetadata.getRowViews()) {
-			CyRow row = tableView.getModel().getRow(rowViewMeta.getKeyValue());
-			View<CyRow> rowView = tableView.getRowView(row);
+		for (var rowViewMeta : tableViewMetadata.getRowViews()) {
+			var row = tableView.getModel().getRow(rowViewMeta.getKeyValue());
+			var rowView = tableView.getRowView(row);
 			
-			for(var entry : rowViewMeta.getBypassValues().entrySet()) {
-				String vpId = entry.getKey();
-				String vpStr = entry.getValue();
+			if (rowView == null)
+				continue;
+			
+			for (var entry : rowViewMeta.getBypassValues().entrySet()) {
+				var vpId = entry.getKey();
+				var vpStr = entry.getValue();
 				
-				VisualProperty<?> vp = lexicon.lookup(CyRow.class, vpId);
-				if(vp != null) {
-					Object parsedValue = vp.parseSerializableString(vpStr);
-					if(parsedValue != null) {
+				var vp = lexicon.lookup(CyRow.class, vpId);
+				
+				if (vp != null) {
+					var parsedValue = vp.parseSerializableString(vpStr);
+					
+					if (parsedValue != null)
 						rowView.setLockedValue(vp, parsedValue);
-					}
 				}
 			}
 		}
 	}
 	
-	
-	private void restoreTables(final CySession sess) {
-		final Set<CyTable> allTables = new HashSet<>();
+	private void restoreTables(CySession sess) {
+		var allTables = new HashSet<CyTable>();
 		
 		// Register all tables sent through the CySession, if not already registered
-		for (final CyTableMetadata metadata : sess.getTables()) {
+		for (var metadata : sess.getTables())
 			allTables.add(metadata.getTable());
-		}
 		
 		// There may be other network tables in the CyNetworkTableManager that were not serialized in the session file
 		// (e.g. Table Facades), so it's necessary to add them to CyTableManager as well
-		final CyNetworkTableManager netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
-		final CyRootNetworkManager rootNetMgr = serviceRegistrar.getService(CyRootNetworkManager.class);
+		var netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
+		var rootNetMgr = serviceRegistrar.getService(CyRootNetworkManager.class);
 		
-		for (final CyNetwork net : sess.getNetworks()) {
+		for (var net : sess.getNetworks()) {
 			allTables.addAll(netTblMgr.getTables(net, CyNetwork.class).values());
 			allTables.addAll(netTblMgr.getTables(net, CyNode.class).values());
 			allTables.addAll(netTblMgr.getTables(net, CyEdge.class).values());
 			
 			if (!(net instanceof CyRootNetwork)) {
-				final CyRootNetwork root = rootNetMgr.getRootNetwork(net);
+				var root = rootNetMgr.getRootNetwork(net);
 				allTables.addAll(netTblMgr.getTables(root, CyNetwork.class).values());
 				allTables.addAll(netTblMgr.getTables(root, CyNode.class).values());
 				allTables.addAll(netTblMgr.getTables(root, CyEdge.class).values());
@@ -662,29 +666,29 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		}
 		
 		// Register all tables sent through the CySession, if not already registered
-		final CyTableManager tblMgr = serviceRegistrar.getService(CyTableManager.class);
+		var tblMgr = serviceRegistrar.getService(CyTableManager.class);
 		
-		for (final CyTable tbl : allTables) {
+		for (var tbl : allTables) {
 			if (tblMgr.getTable(tbl.getSUID()) == null)
 				tblMgr.addTable(tbl);
 		}
 	}
 	
-	private void restoreVisualStyles(final CySession sess) {
+	private void restoreVisualStyles(CySession sess) {
 		logger.debug("Restoring visual styles...");
 		// Register visual styles
-		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
-		final VisualStyle defStyle = vmMgr.getDefaultVisualStyle();
-		final String DEFAULT_STYLE_NAME = defStyle.getTitle();
+		var vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
+		var defStyle = vmMgr.getDefaultVisualStyle();
+		var DEFAULT_STYLE_NAME = defStyle.getTitle();
 		
-		final Set<VisualStyle> styles = sess.getVisualStyles();
-		final Map<String, VisualStyle> stylesMap = new HashMap<>();
+		var styles = sess.getVisualStyles();
+		var stylesMap = new HashMap<String, VisualStyle>();
 		
-		final RenderingEngineManager engineManager = serviceRegistrar.getService(RenderingEngineManager.class);
-		final VisualLexicon lexicon = engineManager.getDefaultVisualLexicon();
+		var engineManager = serviceRegistrar.getService(RenderingEngineManager.class);
+		var lexicon = engineManager.getDefaultVisualLexicon();
 		
 		if (styles != null) {
-			for (VisualStyle vs : styles) {
+			for (var vs : styles) {
 				if (vs.getTitle().equals(DEFAULT_STYLE_NAME)) {
 					// Update the current default style, because it can't be replaced or removed
 					updateVisualStyle(vs, defStyle, lexicon);
@@ -699,13 +703,13 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		}
 		
 		// Set visual styles to network views
-		final Map<CyNetworkView, String> viewStyleMap = sess.getViewVisualStyleMap();
+		var viewStyleMap = sess.getViewVisualStyleMap();
 		
 		if (viewStyleMap != null) {
-			for (Entry<CyNetworkView, String> entry : viewStyleMap.entrySet()) {
-				final CyNetworkView netView = entry.getKey();
-				final String stName = entry.getValue();
-				VisualStyle vs = stylesMap.get(stName);
+			for (var entry : viewStyleMap.entrySet()) {
+				var netView = entry.getKey();
+				var stName = entry.getValue();
+				var vs = stylesMap.get(stName);
 
 				if (vs == null)
 					vs = defStyle;
@@ -718,29 +722,27 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		}
 	}
 	
-	
 	/**
 	 * @param source the Visual Style that will provide the new properties and values.
 	 * @param target the Visual Style that will be updated.
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private static void updateVisualStyle(final VisualStyle source, final VisualStyle target, VisualLexicon lexicon) {
+	private static void updateVisualStyle(VisualStyle source, VisualStyle target, VisualLexicon lexicon) {
 		// First clean up the target
-		final HashSet<VisualMappingFunction<?, ?>> mapingSet = new HashSet<>(target.getAllVisualMappingFunctions());
+		var mapingSet = new HashSet<>(target.getAllVisualMappingFunctions());
 		
-		for (final VisualMappingFunction<?, ?> mapping : mapingSet)
+		for (var mapping : mapingSet)
 			target.removeVisualMappingFunction(mapping.getVisualProperty());
 		
-		final Set<VisualPropertyDependency<?>> depList = 
-				new HashSet<VisualPropertyDependency<?>>(target.getAllVisualPropertyDependencies());
+		var depList = new HashSet<VisualPropertyDependency<?>>(target.getAllVisualPropertyDependencies());
 		
-		for (final VisualPropertyDependency<?> dep : depList)
+		for (var dep : depList)
 			target.removeVisualPropertyDependency(dep);
 		
 		// Copy the default visual properties, mappings and dependencies from source to target
-		final Set<VisualProperty<?>> properties = lexicon.getAllVisualProperties();
+		var properties = lexicon.getAllVisualProperties();
 		
-		for (final VisualProperty vp : properties) {
+		for (VisualProperty vp : properties) {
 			if (!vp.equals(BasicVisualLexicon.NETWORK)
 					&& !vp.equals(BasicVisualLexicon.NODE)
 					&& !vp.equals(BasicVisualLexicon.EDGE)
@@ -750,24 +752,24 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 				target.setDefaultValue(vp, source.getDefaultValue(vp));
 		}
 		
-		for (final VisualPropertyDependency<?> dep : source.getAllVisualPropertyDependencies())
+		for (var dep : source.getAllVisualPropertyDependencies())
 			target.addVisualPropertyDependency(dep);
 		
-		for (final VisualMappingFunction<?, ?> mapping : source.getAllVisualMappingFunctions())
+		for (var mapping : source.getAllVisualMappingFunctions())
 			target.addVisualMappingFunction(mapping);
 	}
 
-	private void restoreNetworkSelection(final CySession sess, final List<CyNetwork> selectedNets) {
+	private void restoreNetworkSelection(CySession sess, List<CyNetwork> selectedNets) {
 		// If the current view/network was not set, set the first selected network as current
 		if (!selectedNets.isEmpty()) {
-			final CyNetwork cn = selectedNets.get(0);
-			final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+			var cn = selectedNets.get(0);
+			var appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 			appMgr.setCurrentNetwork(cn);
 			
 			// Also set the current view, if there is one
-			final CyNetworkViewManager nvMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
-			final Collection<CyNetworkView> cnViews = nvMgr.getNetworkViews(cn);
-			final CyNetworkView cv = cnViews.isEmpty() ? null : cnViews.iterator().next();
+			var nvMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+			var cnViews = nvMgr.getNetworkViews(cn);
+			var cv = cnViews.isEmpty() ? null : cnViews.iterator().next();
 			appMgr.setCurrentNetworkView(cv);
 		
 			// The selected networks must be set after setting the current one!
@@ -777,15 +779,15 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 
 	private void restoreCurrentVisualStyle() {
 		// Make sure the current visual style is the one applied to the current network view
-		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		var eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 		eventHelper.flushPayloadEvents();
 		
-		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
-		final CyNetworkView cv = appMgr.getCurrentNetworkView();
+		var appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+		var cv = appMgr.getCurrentNetworkView();
 		
 		if (cv != null) {
-			final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
-			final VisualStyle style = vmMgr.getVisualStyle(cv);
+			var vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
+			var style = vmMgr.getVisualStyle(cv);
 			
 			if (style != null && !style.equals(vmMgr.getCurrentVisualStyle()))
 				vmMgr.setCurrentVisualStyle(style);
@@ -797,51 +799,52 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		logger.debug("Disposing current session...");
 		
 		// Destroy network views
-		CyNetworkViewManager nvMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
-		for (CyNetworkView nv : nvMgr.getNetworkViewSet())
+		var nvMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+		
+		for (var nv : nvMgr.getNetworkViewSet())
 			nvMgr.destroyNetworkView(nv);
 		
 		nvMgr.reset();
 		
 		// Destroy table views
-		CyTableViewManager tvMgr = serviceRegistrar.getService(CyTableViewManager.class);
-		for(CyTableView tv : tvMgr.getTableViewSet()) {
+		var tvMgr = serviceRegistrar.getService(CyTableViewManager.class);
+		
+		for (var tv : tvMgr.getTableViewSet())
 			tvMgr.destroyTableView(tv);
-		}
 		
 		tvMgr.reset();
 		
 		// Destroy networks
-		final CyNetworkManager netMgr = serviceRegistrar.getService(CyNetworkManager.class);
-		final Set<CyNetwork> networks = netMgr.getNetworkSet();
+		var netMgr = serviceRegistrar.getService(CyNetworkManager.class);
+		var networks = netMgr.getNetworkSet();
 		
-		for (final CyNetwork n : networks)
+		for (var n : networks)
 			netMgr.destroyNetwork(n);
 		
 		netMgr.reset();
 
 		// Destroy styles
 		logger.debug("Removing current visual styles...");
-		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
-		final VisualStyle defaultStyle = vmMgr.getDefaultVisualStyle();
-		final List<VisualStyle> allStyles = new ArrayList<>(vmMgr.getAllVisualStyles());
+		var vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
+		var defaultStyle = vmMgr.getDefaultVisualStyle();
+		var allStyles = new ArrayList<>(vmMgr.getAllVisualStyles());
 
-		for (VisualStyle vs : allStyles) {
+		for (var vs : allStyles) {
 			if (!vs.equals(defaultStyle))
 				vmMgr.removeVisualStyle(vs);
 		}
 
 		// Destroy tables
-		final CyTableManager tblMgr = serviceRegistrar.getService(CyTableManager.class);
+		var tblMgr = serviceRegistrar.getService(CyTableManager.class);
 		tblMgr.reset();
 		
 		// Reset groups
 		serviceRegistrar.getService(CyGroupManager.class).reset();
 		
 		// Unregister session properties
-		final Set<CyProperty<?>> cyPropsClone = getAllProperties();
+		var cyPropsClone = getAllProperties();
 		
-		for (CyProperty<?> cyProps : cyPropsClone) {
+		for (var cyProps : cyPropsClone) {
 			if (cyProps.getSavePolicy().equals(CyProperty.SavePolicy.SESSION_FILE)) {
 				serviceRegistrar.unregisterAllServices(cyProps);
 				sessionProperties.remove(cyProps.getName());
@@ -852,7 +855,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		serviceRegistrar.getService(UndoSupport.class).reset();
 		
 		// Reset current table and rendering engine
-		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+		var appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 		appMgr.reset();
 		
 		currentFileName = null;
