@@ -553,8 +553,9 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 				Iterable<View<CyNode>> nodeIterable = justSelectedNodes ? selectedNodes : netViewSnapshot.getNodeViewsIterable();
 				
 				for(View<CyNode> node : nodeIterable) {
-					var bounds = picker.getLabelBoundingBox(node, labelCache);
-					if(bounds != null) {
+					var label = picker.getLabelShape(node, labelCache);
+					if(label != null) {
+						var bounds = label.getShape().getBounds2D();
 						if(bounds.getMinX() < extents[0])
 							extents[0] = bounds.getMinX();
 						if(bounds.getMinY() < extents[1])

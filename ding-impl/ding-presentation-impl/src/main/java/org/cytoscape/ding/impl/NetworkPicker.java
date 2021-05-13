@@ -1,6 +1,7 @@
 package org.cytoscape.ding.impl;
 
 import static org.cytoscape.graph.render.stateful.RenderDetailFlags.*;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_POSITION;
 
 import java.awt.Font;
 import java.awt.Point;
@@ -42,6 +43,7 @@ import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.EdgeStacking;
 import org.cytoscape.view.presentation.property.values.Handle;
+import org.cytoscape.view.presentation.property.values.ObjectPosition;
 import org.cytoscape.view.presentation.property.values.Position;
 
 
@@ -118,13 +120,15 @@ public class NetworkPicker {
 	/**
 	 * Returns a rectangular shape that contains the label, the shape may be rotated.
 	 */
-	public Shape getLabelShape(View<CyNode> node, LabelInfoProvider labelProvider) {
+	public LabelSelection getLabelShape(View<CyNode> node, LabelInfoProvider labelProvider) {
 		String text = nodeDetails.getLabelText(node);
 		if(text == null || text.isBlank())
 			return null;
 	
 		final double[] doubleBuff1 = new double[4];
 		final double[] doubleBuff2 = new double[2];
+		
+		final ObjectPosition originalPosition = node.getVisualProperty(NODE_LABEL_POSITION);
 		
 		final Font font = nodeDetails.getLabelFont(node);
 		final Position textAnchor = nodeDetails.getLabelTextAnchor(node);
@@ -139,16 +143,17 @@ public class NetworkPicker {
 		double nodeWidth = nodeDetails.getWidth(node);
 		double nodeHeight = nodeDetails.getHeight(node);
 		
-		doubleBuff1[0] = x - nodeWidth/2;
-		doubleBuff1[1] = y - nodeHeight/2;
-		doubleBuff1[2] = x + nodeWidth/2;
-		doubleBuff1[3] = y + nodeHeight/2;
+		doubleBuff1[0] = x - nodeWidth  / 2;
+		doubleBuff1[1] = y - nodeHeight / 2;
+		doubleBuff1[2] = x + nodeWidth  / 2;
+		doubleBuff1[3] = y + nodeHeight / 2;
 		GraphRenderer.computeAnchor(nodeAnchor, doubleBuff1, doubleBuff2);
 
 		double nodeAnchorPointX = doubleBuff2[0];
 		double nodeAnchorPointY = doubleBuff2[1];
 		
 		var frc = new FontRenderContext(null, false, false);
+		
 		LabelInfo labelInfo = labelProvider.getLabelInfo(text, font, nodeLabelWidth, frc);
 
 		doubleBuff1[0] = -0.5d * labelInfo.getMaxLineWidth();
@@ -168,29 +173,22 @@ public class NetworkPicker {
 //		double xMax = textXCenter + (w/2);
 //		double yMax = textYCenter + (h/2); 
 		
-		var rect = new Rectangle2D.Double(xMin, yMin, w, h);
-		if(degrees == 0.0) {
-			return rect;
+		double labelAnchorX = nodeAnchorPointX + offsetVectorX;
+		double labelAnchorY = nodeAnchorPointY + offsetVectorY;
+		
+		Shape shape = new Rectangle2D.Double(xMin, yMin, w, h);
+		if(degrees != 0.0) {
+			double angle = degrees * 0.01745329252;
+			var rotateTransform = AffineTransform.getRotateInstance(angle, labelAnchorX, labelAnchorY);
+			shape = rotateTransform.createTransformedShape(shape);
 		}
 		
-		// Handle rotated labels
-		var rotateTransform = AffineTransform.getRotateInstance(degrees*.01745329252, nodeAnchorPointX+offsetVectorX, nodeAnchorPointY+offsetVectorY);
-		var rotatedShape = rotateTransform.createTransformedShape(rect);
-		return rotatedShape;
+		return new LabelSelection(node, shape, originalPosition, labelAnchorX, labelAnchorY, degrees);
 	}
 	
 	
-	/**
-	 * Returns a minimum bounding box for the given node's label. The bounding box is always parallel to the x/y axis.
-	 */
-	public Rectangle2D getLabelBoundingBox(View<CyNode> node, LabelInfoProvider labelProvider) {
-		var shape = getLabelShape(node, labelProvider);
-		var bounds = shape.getBounds2D();
-		return bounds;
-	}
 	
-	
-	public List<LabelSelection> getNodeLabelsAt(Point2D mousePoint) {
+	public LabelSelection getNodeLabelAt(Point2D mousePoint) {
 		if(!renderDetailFlags.has(LOD_NODE_LABELS))
 			return null;
 		
@@ -202,22 +200,16 @@ public class NetworkPicker {
 		
 		LabelInfoProvider labelProvider = re.getGraphLOD().isLabelCacheEnabled() ? re.getLabelCache() : LabelInfoProvider.NO_CACHE;
 		
-		List<LabelSelection> selection = null;
-		
 		while(nodeHits.hasNext()) {
 			Long suid = nodeHits.next();
 			View<CyNode> node = snapshot.getNodeView(suid);
 			
-			var shape = getLabelShape(node, labelProvider);
-			
-			if(shape.contains(point)) {
-				if(selection == null)
-					selection = new ArrayList<>();
-				selection.add(new LabelSelection(node, shape));
+			var labelSelection = getLabelShape(node, labelProvider);
+			if(labelSelection != null && labelSelection.getShape().contains(point)) {
+				return labelSelection;
 			}
 		}
-		
-		return selection;
+		return null;
 	}
 	
 	

@@ -53,6 +53,7 @@ import org.cytoscape.ding.impl.cyannotator.tasks.EditAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.ding.impl.undo.AnnotationEdit;
 import org.cytoscape.ding.impl.undo.CompositeCyEdit;
+import org.cytoscape.ding.impl.undo.NodeLabelChangeEdit;
 import org.cytoscape.ding.impl.undo.ViewChangeEdit;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.ding.internal.util.OrderedMouseAdapter;
@@ -83,6 +84,7 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.values.ObjectPosition;
 import org.cytoscape.view.presentation.property.values.Position;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
@@ -825,9 +827,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		private ViewChangeEdit addHandleEdit;
 		private ViewChangeEdit moveNodesEdit;
 		
-//		private Set<DLabelSelection> selectedLabels = null;
-//		private DLabelSelection selectedLabel = null;
-		
 		private final Cursor rotateCursor = createRotateCursor();
 
 		@Override
@@ -855,46 +854,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		private boolean mousePressedCheckHit(MouseEvent e) {
 			NetworkPicker picker = re.getPicker();
 
-			if (labelSelectionEnabled()) { // if label drag feature is enabled
-//				// TODO the RenderDetailFlags must also indicate that node labels were renderered.
-				
-				List<LabelSelection> nodeLabels = picker.getNodeLabelsAt(e.getPoint());
-				if(nodeLabels != null) {
-					re.getLabelSelectionManager().addAll(nodeLabels);
-					return true;
-				}
-//				
-//				
-//				LabelSelection label = picker.getNodeLabelAt(e.getPoint());
-//				if (label != null) {
-//					// If we have control down, the user might be trying to rotate an existing selection
-//					if (isControlOrMetaDown(e)) {
-//						changeCursor(rotateCursor);
-//
-//						// This might be redundant, but it won't hurt
-//						if (selectedLabels == null || !selectedLabels.contains(label)) {
-//							selectedLabels = LabelSelection.addLabelSelection(selectedLabels, label);
-//							selectedLabel = label;
-//						} else {
-//							selectedLabel = LabelSelection.get(selectedLabels, label);
-//						}
-//					} else {
-//						if (!e.isShiftDown()) {
-//							resetLabelSelection();
-//						}
-//						if (selectedLabels != null && selectedLabels.contains(label)) {
-//							selectedLabels.remove(label);
-//						} else {
-//							selectedLabels = LabelSelection.addLabelSelection(selectedLabels, label);
-//							selectedLabel = label;
-//						}
-//					}
-//					toggleSelection(selectedLabel.getNode(), CyNode.class, Toggle.SELECT);
-//					repaint();
-//					return true;
-//				}
-			}
-			
 			if(annotationSelectionEnabled()) {
 				var annotationSelection = cyAnnotator.getAnnotationSelection();
 				annotationSelection.setMovingStartOffset(e.getPoint());
@@ -920,6 +879,19 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 					if (isControlOrMetaDown(e)) {
 						changeCursor(rotateCursor);
 						annotationSelection.setRotations();
+					}
+					return true;
+				}
+			}
+			
+			if(labelSelectionEnabled()) {
+				LabelSelection selectedLabel = picker.getNodeLabelAt(e.getPoint());
+				if(selectedLabel != null) {
+					var labelSelectionManager = re.getLabelSelectionManager();
+					labelSelectionManager.setCurrentDragPoint(e.getPoint());
+					labelSelectionManager.set(selectedLabel);
+					if(isControlOrMetaDown(e)) {
+						changeCursor(rotateCursor);
 					}
 					return true;
 				}
@@ -1074,6 +1046,34 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			if(!isLeftClick(e)) // We only care about left mouse button
 				return;
 
+			var labelSelectionManager = re.getLabelSelectionManager();
+			if(!labelSelectionManager.isEmpty()) {
+				var selectedLabel = labelSelectionManager.getSelectedLabel();
+				
+				View<CyNode> mutableNode = re.getViewModelSnapshot().getMutableNodeView(selectedLabel.getNode().getSUID());
+						
+				ObjectPosition originalPosition = selectedLabel.getOriginalPosition();
+				ObjectPosition newPosition = selectedLabel.getPosition();
+				double originalAngle = selectedLabel.getOriginalAngleDegrees();
+				double newAngle = selectedLabel.getAngleDegrees();
+				
+				NodeLabelChangeEdit undoEntry = new NodeLabelChangeEdit(registrar, InputHandlerGlassPane.this,
+						originalPosition, originalAngle, re.getViewModel(),
+						mutableNode.getModel().getSUID(), "Move Label");
+				
+				labelSelectionManager.clear();
+				mutableNode.setLockedValue(DVisualLexicon.NODE_LABEL_POSITION, newPosition);
+				mutableNode.setLockedValue(DVisualLexicon.NODE_LABEL_ROTATION, newAngle);
+				undoEntry.post(newPosition, 0.0);
+				
+				// If moving a label then nothing else moves
+				mousePressedPoint = null;
+				e.consume();
+				return;
+			}
+			
+			   
+			
 //			if (selectedLabels != null) {
 //				for (LabelSelection label : selectedLabels) {
 //					View<CyNode> mutableNode = re.getViewModelSnapshot()
@@ -1155,6 +1155,8 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		}
 		
 		
+		
+		
 		@Override
 		public void mouseDragged(MouseEvent e) {
 			if (!hit || !isLeftMouse(e))
@@ -1162,28 +1164,17 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			if (get(SelectionRectangleListener.class).isDragging() || maybe(SelectionLassoListener.class).map(l -> l.isDragging()).orElse(false))
 				return;
 
-//			if (selectedLabels != null && !selectedLabels.isEmpty()) {
-//				if (isControlOrMetaDown(e)) {
-//					// Rotation
-//					double angle = selectedLabel.adjustAngle(mousePressedPoint.getX(), mousePressedPoint.getY(), e.getX(), e.getY());
-//					// System.out.println("Label: "+selectedLabel+" rotated to "+angle);
-//					for (LabelSelection label : selectedLabels) {
-//						// System.out.print("Label: "+label);
-//						if (!label.equals(selectedLabel)) { // SelectedLabel is the last label that we clicked on
-//							// System.out.print(" rotated to "+angle);
-//							label.adjustAngle(angle);
-//						}
-//						// System.out.println();
-//					}
-//				} else {
-//					// Movement
-//					for (LabelSelection label : selectedLabels) {
-//						label.moveRectangle(e.getX() - (int) mousePressedPoint.getX(), e.getY() - (int) mousePressedPoint.getY());
-//					}
-//				}
-//				repaint(); // repaint the glass pane
-//				return;
-//			}
+			var labelSelectionManager = re.getLabelSelectionManager();
+			if(!labelSelectionManager.isEmpty()) {
+				if(isControlOrMetaDown(e)) {
+					labelSelectionManager.rotate(e.getPoint());
+				} else {
+					labelSelectionManager.move(e.getPoint());
+				}
+				labelSelectionManager.setCurrentDragPoint(e.getPoint());
+				re.updateView(UpdateType.ALL_FAST);
+				return;
+			}
 
 			var selectedNodes = re.getViewModelSnapshot().getTrackedNodes(DingNetworkViewFactory.SELECTED_NODES);
 
@@ -1690,7 +1681,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	
 	private boolean edgeCountIsLowEnoughToEnablePicking() {
 		// Optimization, turn edge selection off if there are too many edges visible.
-		// Picking the edge that the user clicked on can become very performance intensive, and chances are they
+		// Picking the edge that the user clicked can become very performance intensive, and chances are they
 		// are not trying to select individual edges from a hairball.
 		var snapshot = re.getViewModelSnapshot();
 		var fastLod = re.getGraphLOD().faster();
@@ -1735,7 +1726,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			if(rows.isEmpty())
 				return false;
 			batchDeselectRows(table, rows);
-			re.getLabelSelectionManager().clear();
 			return true;
 		}
 		return false;

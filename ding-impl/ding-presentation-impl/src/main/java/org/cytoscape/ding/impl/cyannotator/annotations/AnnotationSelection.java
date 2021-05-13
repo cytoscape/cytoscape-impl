@@ -1,17 +1,7 @@
 package org.cytoscape.ding.impl.cyannotator.annotations;
 
-import static org.cytoscape.ding.impl.cyannotator.annotations.AnchorLocation.isEast;
-import static org.cytoscape.ding.impl.cyannotator.annotations.AnchorLocation.isNorth;
-import static org.cytoscape.ding.impl.cyannotator.annotations.AnchorLocation.isSouth;
-import static org.cytoscape.ding.impl.cyannotator.annotations.AnchorLocation.isWest;
-import static org.cytoscape.view.presentation.property.values.Position.EAST;
-import static org.cytoscape.view.presentation.property.values.Position.NORTH;
-import static org.cytoscape.view.presentation.property.values.Position.NORTH_EAST;
-import static org.cytoscape.view.presentation.property.values.Position.NORTH_WEST;
-import static org.cytoscape.view.presentation.property.values.Position.SOUTH;
-import static org.cytoscape.view.presentation.property.values.Position.SOUTH_EAST;
-import static org.cytoscape.view.presentation.property.values.Position.SOUTH_WEST;
-import static org.cytoscape.view.presentation.property.values.Position.WEST;
+import static org.cytoscape.ding.impl.cyannotator.annotations.AnchorLocation.*;
+import static org.cytoscape.view.presentation.property.values.Position.*;
 
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
@@ -306,66 +296,68 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 		
 		return new Rectangle2D.Double(x, y, w, h);
 	}
-	
+
 	public void setMovingStartOffset(Point offset) {
 		this.movingStartOffset = offset;
-    if (union != null)
-      this.initialCenter = new Point2D.Double(union.getX()+union.getWidth()/2, union.getY()+union.getHeight()/2);
+		if (union != null)
+			this.initialCenter = new Point2D.Double(union.getX() + union.getWidth() / 2, union.getY() + union.getHeight() / 2);
 	}
 
 	public void setRotations() {
 		for (var a : selectedAnnotations) {
-      initialRotations.put(a, a.getRotation());
-      initialBounds.put(a, a.getBounds());
-    }
+			initialRotations.put(a, a.getRotation());
+			initialBounds.put(a, a.getBounds());
+		}
 	}
-	
+
 	public void rotateSelection(Point p) {
-    // If we have more than one annotation selected, we need to temporarily group them
-    // in order to make the movement work since we will probably be doing a rotate *and*
-    // a move for each annotation
+		// If we have more than one annotation selected, we need to temporarily group
+		// them
+		// in order to make the movement work since we will probably be doing a rotate
+		// *and*
+		// a move for each annotation
 
 		// Avoid moving the same annotation twice
 		var annotationsToMove = annotationsToChange();
-    double centerX = initialCenter.getX();
-    double centerY = initialCenter.getY();
+		double centerX = initialCenter.getX();
+		double centerY = initialCenter.getY();
 
 		var transform = cyAnnotator.getRenderingEngine().getTransform();
 		var nodePt = transform.getNodeCoordinates(p);
 		var offsetPt = transform.getNodeCoordinates(movingStartOffset);
 
-    double angle1 = Math.atan2(centerY - offsetPt.getY(), centerX - offsetPt.getX());
-    double angle2 = Math.atan2(centerY - nodePt.getY(), centerX - nodePt.getX());
+		double angle1 = Math.atan2(centerY - offsetPt.getY(), centerX - offsetPt.getX());
+		double angle2 = Math.atan2(centerY - nodePt.getY(), centerX - nodePt.getX());
 
 		for (var a : annotationsToMove) {
-      double angle;
-      if (initialRotations.get(a) == null)
-			  angle = 0d-Math.toDegrees(angle1-angle2);
-      else
-			  angle = initialRotations.get(a)-Math.toDegrees(angle1-angle2);
+			double angle;
+			if (initialRotations.get(a) == null)
+				angle = 0d - Math.toDegrees(angle1 - angle2);
+			else
+				angle = initialRotations.get(a) - Math.toDegrees(angle1 - angle2);
 
-      // Get the center of the annotation relative to the center of the union
-      Rectangle2D bounds = initialBounds.get(a);
-      Point2D aCenter = getCenter(bounds);
-      double x = aCenter.getX()-centerX;
-      double y = aCenter.getY()-centerY;
-      if (Math.abs(x) > 0.1 || Math.abs(y) > 0.1) {
-        double aRadians = Math.toRadians(angle);
-        // Calculate the displacement relative to the center of the union
-        double newCenterX = x*Math.cos(aRadians)-y*Math.sin(aRadians); 
-        double newCenterY = y*Math.cos(aRadians)+x*Math.sin(aRadians);
+			// Get the center of the annotation relative to the center of the union
+			Rectangle2D bounds = initialBounds.get(a);
+			Point2D aCenter = getCenter(bounds);
+			double x = aCenter.getX() - centerX;
+			double y = aCenter.getY() - centerY;
+			if (Math.abs(x) > 0.1 || Math.abs(y) > 0.1) {
+				double aRadians = Math.toRadians(angle);
+				// Calculate the displacement relative to the center of the union
+				double newCenterX = x * Math.cos(aRadians) - y * Math.sin(aRadians);
+				double newCenterY = y * Math.cos(aRadians) + x * Math.sin(aRadians);
 
-        // Now get the position relative to the screen
-        newCenterX += centerX;
-        newCenterY += centerY;
+				// Now get the position relative to the screen
+				newCenterX += centerX;
+				newCenterY += centerY;
 
-        a.setLocation(newCenterX - bounds.getWidth()/2d, newCenterY - bounds.getHeight()/2d);
-      }
-      a.setRotation(angle);
+				a.setLocation(newCenterX - bounds.getWidth() / 2d, newCenterY - bounds.getHeight() / 2d);
+			}
+			a.setRotation(angle);
 			a.update();
 		}
-    updateBounds();
-  }
+		updateBounds();
+	}
 
 	public void moveSelection(Point p) {
 		moveSelection(p.x, p.y);
