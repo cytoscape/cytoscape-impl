@@ -404,6 +404,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 	
 	private void setContentChanged(boolean b) {
+		cyAnnotator.getAnnotationSelection().getBounds();
 		contentChanged = b;
 	}
 	
