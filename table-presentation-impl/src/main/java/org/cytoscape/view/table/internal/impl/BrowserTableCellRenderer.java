@@ -8,6 +8,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
+import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
@@ -179,10 +180,10 @@ public class BrowserTableCellRenderer extends JPanel implements TableCellRendere
 		}
 		
 		if (isSelected) {
-			if (table.getSelectedColumn() == colIndex && table.getSelectedRow() == rowIndex) { // Selected
+			if (hasFocus) {
 				bg = UIManager.getColor("Table.focusCellBackground");
 				fg = UIManager.getColor("Table.focusCellForeground");
-			} else {
+			} else if (Arrays.binarySearch(table.getColumnModel().getSelectedColumns(), colIndex) >= 0) {
 				bg = UIManager.getColor("Table.selectionBackground");
 				fg = isError ? LookAndFeelUtil.getErrorColor() : UIManager.getColor("Table.selectionForeground");
 			}
