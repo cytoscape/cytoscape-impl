@@ -1,16 +1,17 @@
 package org.cytoscape.ding.impl.undo;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.undo.AbstractCyEdit;
 import org.cytoscape.work.undo.UndoSupport;
 
-public class CompositeCyEdit {
+public class CompositeCyEdit<T extends AbstractCyEdit> {
 
 	private final String compositeName;
-	private final List<AbstractCyEdit> children;
+	private final List<T> children;
 	private final CyServiceRegistrar registrar;
 	
 	public CompositeCyEdit(String name, CyServiceRegistrar registrar, int initialCapacity) {
@@ -19,12 +20,15 @@ public class CompositeCyEdit {
 		this.children = new ArrayList<>(initialCapacity);
 	}
 	
-	public void add(AbstractCyEdit ... edits) {
-		for(var edit : edits) {
-			if(edit != null) {
-				children.add(edit);
-			}
+	public CompositeCyEdit<T> add(T edit) {
+		if(edit != null) {
+			children.add(edit);
 		}
+		return this;
+	}
+	
+	public Collection<T> getChildren() {
+		return children;
 	}
 	
 	public void post() {

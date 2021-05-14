@@ -60,7 +60,7 @@ public class ViewChangeEdit extends AbstractCyEdit {
 		origState = new ViewState(re, savedObjs);
 	}
 
-	protected void saveNewPositions() {
+	public void saveNewPositions() {
 		newState = new ViewState(re, savedObjs);
 	}
 

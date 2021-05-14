@@ -30,7 +30,7 @@ public class AnnotationEdit extends AbstractCyEdit {
 		oldState = annotator.createSavableNetworkAttribute();
 	}
 
-	private void saveNewAnnotations() {
+	public void saveNewAnnotations() {
 		newState = annotator.createSavableNetworkAttribute();
 	}
 	

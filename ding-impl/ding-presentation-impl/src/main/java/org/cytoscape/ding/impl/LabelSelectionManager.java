@@ -4,6 +4,9 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Shape;
 import java.beans.PropertyChangeListener;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.UIManager;
 import javax.swing.event.SwingPropertyChangeSupport;
@@ -16,8 +19,8 @@ public class LabelSelectionManager {
 	private final DRenderingEngine re;
 	private final SwingPropertyChangeSupport propChangeSupport = new SwingPropertyChangeSupport(this);
 	
-//	private Set<LabelSelection> selectedNodeLabels = new HashSet<>();
-	private LabelSelection selectedLabel;
+	private Set<LabelSelection> selectedNodeLabels = new HashSet<>();
+	private LabelSelection primarySelection;
 	private Point currentDragPoint;
 	
 	
@@ -25,51 +28,42 @@ public class LabelSelectionManager {
 		this.re = re;
 	}
 	
-	public void set(LabelSelection selectedLabel) {
-		this.selectedLabel = selectedLabel;
+	public void add(LabelSelection sel) {
+		selectedNodeLabels.add(sel);
 		fireSelectionChanged();
 	}
 	
+	// The last clicked on label, used to make rotating consistent for all selected labels.
+	public void setPrimary(LabelSelection sel) {
+		this.primarySelection = sel;
+	}
+	
+	public void remove(LabelSelection sel) {
+		selectedNodeLabels.remove(sel);
+		fireSelectionChanged();
+	}
+	
+	public void addAll(Collection<LabelSelection> nodeLabels) {
+		selectedNodeLabels.addAll(nodeLabels);
+		fireSelectionChanged();
+	}
+	
+	public Collection<LabelSelection> getSelectedLabels() {
+		return selectedNodeLabels;
+	}
+	
 	public void clear() {
-		this.selectedLabel = null;
+		selectedNodeLabels.clear();
 		fireSelectionChanged();
 	}
 	
 	public boolean isEmpty() {
-		return selectedLabel == null;
+		return selectedNodeLabels.isEmpty();
 	}
 	
-	public LabelSelection getSelectedLabel() {
-		return selectedLabel;
+	public boolean contains(LabelSelection sel) {
+		return selectedNodeLabels.contains(sel);
 	}
-	
-//	public void set(LabelSelection sel) {
-//		selectedNodeLabels.add(sel);
-//		fireSelectionChanged();
-//	}
-//	
-//	public void remove(LabelSelection sel) {
-//		selectedNodeLabels.remove(sel);
-//		fireSelectionChanged();
-//	}
-//	
-//	public void addAll(Collection<LabelSelection> nodeLabels) {
-//		selectedNodeLabels.addAll(nodeLabels);
-//		fireSelectionChanged();
-//	}
-//	
-//	public void clear() {
-//		selectedNodeLabels.clear();
-//		fireSelectionChanged();
-//	}
-//	
-//	public boolean isEmpty() {
-//		return selectedNodeLabels.isEmpty();
-//	}
-//	
-//	public boolean contains(LabelSelection sel) {
-//		return selectedNodeLabels.contains(sel);
-//	}
 	
 	
 	public void setCurrentDragPoint(Point offset) {
@@ -84,14 +78,17 @@ public class LabelSelectionManager {
 		double dx = nodePt.getX() - offsetPt.getX();
 		double dy = nodePt.getY() - offsetPt.getY();
 		
-		selectedLabel.translate(dx, dy);
+		selectedNodeLabels.forEach(sl -> sl.translate(dx, dy));
 		currentDragPoint = p;
 	}
 	
 	
 	public void rotate(Point p) {
-		double anchorX = selectedLabel.getAnchorX();
-		double anchorY = selectedLabel.getAnchorY();
+		if(primarySelection == null)
+			return ;
+		
+		double anchorX = primarySelection.getAnchorX();
+		double anchorY = primarySelection.getAnchorY();
 		
 		var transform = re.getTransform();
 		var pt1 = transform.getNodeCoordinates(currentDragPoint);
@@ -103,7 +100,7 @@ public class LabelSelectionManager {
 		
 		double angle = angle2 - angle1;
 		
-		selectedLabel.rotate(angle);
+		selectedNodeLabels.forEach(sl -> sl.rotate(angle));
 	}
 	
 	
@@ -115,16 +112,12 @@ public class LabelSelectionManager {
 		var dpiScale  = re.getTransform().getDpiScaleFactor();
 		g.scale(dpiScale, dpiScale);
 		
-//		// Draw selection rectangle
-//		for(LabelSelection sel : selectedNodeLabels) {
-//			Shape shape = sel.getShape();
-//			var transformedShape = transform.createTransformedShape(shape);
-//			g.draw(transformedShape);
-//		}
-		
-		Shape shape = selectedLabel.getShape();
-		var transformedShape = transform.createTransformedShape(shape);
-		g.draw(transformedShape);
+		// Draw selection rectangle
+		for(LabelSelection sel : selectedNodeLabels) {
+			Shape shape = sel.getShape();
+			var transformedShape = transform.createTransformedShape(shape);
+			g.draw(transformedShape);
+		}
 	}
 
 	
