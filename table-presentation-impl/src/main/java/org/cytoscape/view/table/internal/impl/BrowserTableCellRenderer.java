@@ -136,7 +136,7 @@ public class BrowserTableCellRenderer extends JPanel implements TableCellRendere
 		var browserTable = (BrowserTable) table;
 		var model = (BrowserTableModel) browserTable.getModel();
 		tableView = model.getTableView();
-		col = model.getColumnByModelIndex(browserTable.convertColumnIndexToModel(colIndex));
+		col = model.getCyColumn(browserTable.convertColumnIndexToModel(colIndex));
 		row = model.getCyRow(browserTable.convertRowIndexToModel(rowIndex));
 		
 		columnView = (CyColumnView) tableView.getColumnView(col);

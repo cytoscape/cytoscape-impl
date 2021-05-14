@@ -8,12 +8,35 @@ import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractTableColumnTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.AbstractCyEdit;
 import org.cytoscape.work.undo.UndoSupport;
+
+/*
+ * #%L
+ * Cytoscape Table Browser Impl (table-browser-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class ClearAllErrorsTask extends AbstractTableColumnTask {
 
@@ -28,27 +51,30 @@ public class ClearAllErrorsTask extends AbstractTableColumnTask {
 
 	@Override
 	public void run(TaskMonitor tm) {
-		final CyTable table = column.getTable();
-		final EquationCompiler compiler = serviceRegistrar.getService(EquationCompiler.class);
-		final List<ErrorEquation> errorEquations = new ArrayList<>();
+		tm.setTitle("Clear Equation Errors");
+		tm.setStatusMessage("Clearing equation errors from column '" + column.getName() + "'...");
+		
+		var table = column.getTable();
+		var compiler = serviceRegistrar.getService(EquationCompiler.class);
+		var errorEquations = new ArrayList<ErrorEquation>();
 				
-		for (CyRow row : table.getAllRows()) {
+		for (var row : table.getAllRows()) {
 			if (cancelled)
 				return;
 			
-			final Object raw = row.getRaw(column.getName());
+			var raw = row.getRaw(column.getName());
 
 			if (raw instanceof Equation) {
-				final Equation eq = (Equation) raw;
-				final boolean success =
-						compiler.compile(eq.toString(), TableBrowserUtil.getAttNameToTypeMap(table, null));
+				var eq = (Equation) raw;
+				boolean success = compiler.compile(eq.toString(), TableBrowserUtil.getAttNameToTypeMap(table, null));
+				
 				//TODO: success is incorrectly set to yes on broken equations [=ABS(String)]
 				if (!success || row.get(column.getName(), column.getType()) == null)
 					errorEquations.add(new ErrorEquation(row, column.getName(), eq));
 			}
 		}
 		
-		for (ErrorEquation err : errorEquations) {
+		for (var err : errorEquations) {
 			if (cancelled) {
 				restoreDeletedEquations();
 				return;
@@ -59,13 +85,13 @@ public class ClearAllErrorsTask extends AbstractTableColumnTask {
 		}
 		
 		if (!deletedEquations.isEmpty()) {
-			final UndoSupport undoSupport = serviceRegistrar.getService(UndoSupport.class);
+			var undoSupport = serviceRegistrar.getService(UndoSupport.class);
 			undoSupport.postEdit(new ClearErrorsEdit(column.getName(), deletedEquations));
 		}
 	}
 
 	private void restoreDeletedEquations() {
-		for (ErrorEquation err : deletedEquations)
+		for (var err : deletedEquations)
 			err.restore();
 	}
 }
@@ -76,7 +102,7 @@ class ErrorEquation {
 	private String columnName;
 	private Equation equation;
 	
-	ErrorEquation(final CyRow row, final String columnName, final Equation equation) {
+	ErrorEquation(CyRow row, String columnName, Equation equation) {
 		this.row = row;
 		this.columnName = columnName;
 		this.equation = equation;
@@ -95,20 +121,20 @@ class ClearErrorsEdit extends AbstractCyEdit {
 
 	private List<ErrorEquation> errEquations;
 
-	public ClearErrorsEdit(final String columnName, final List<ErrorEquation> errEquations) {
+	public ClearErrorsEdit(String columnName, List<ErrorEquation> errEquations) {
 		super("Clear all errors in column \"" + columnName + "\"");
 		this.errEquations = errEquations;
 	}
 
 	@Override
 	public void undo() {
-		for (ErrorEquation err : errEquations)
+		for (var err : errEquations)
 			err.restore();
 	}
 
 	@Override
 	public void redo() {
-		for (ErrorEquation err : errEquations)
+		for (var err : errEquations)
 			err.clear();
 	}
 }

@@ -32,7 +32,6 @@ import org.cytoscape.ding.impl.cyannotator.annotations.TextAnnotationImpl;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.swing.ColorButton;
-import org.cytoscape.util.swing.CyColorPaletteChooser;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
@@ -42,7 +41,7 @@ import org.cytoscape.view.presentation.annotations.TextAnnotation;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2020 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -119,7 +118,7 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 
 				if (annotation.getFont() != null) {
 					for (int i = 0; i < total; i++) {
-						if (annotation.getFont().getFamily().equals(model.getElementAt(i).getFamily())) {
+						if (annotation.getFont().getFontName().equals(model.getElementAt(i).getFontName())) {
 							getFontFamilyCombo().setSelectedItem(FONTS[i]);
 							
 							break;
@@ -323,13 +322,13 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 					super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 					
 					setFont(((Font) value).deriveFont(getSmallFontSize()));
-					setText(((Font) value).getFamily());
-					setToolTipText(((Font) value).getFamily());
+					setText(((Font) value).getFontName());
+					setToolTipText(((Font) value).getFontName());
 					
 					return this;
 				}
 			});
-			fontFamilyCombo.setSelectedItem(UIManager.getFont("Label.font").getFamily());
+			fontFamilyCombo.setSelectedItem(UIManager.getFont("Label.font").getFontName());
 			fontFamilyCombo.addActionListener(evt -> apply());
 		}
 
@@ -401,7 +400,7 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 			fontStyle = Font.ITALIC + Font.BOLD;
 
 		var font = (Font) getFontFamilyCombo().getSelectedItem();
-		var size = (Integer) getFontSizeCombo().getSelectedItem();
+		var size = (Integer) getFontSizeCombo().getEditor().getItem();
 		
 		return font.deriveFont(fontStyle, size.floatValue());
 	}

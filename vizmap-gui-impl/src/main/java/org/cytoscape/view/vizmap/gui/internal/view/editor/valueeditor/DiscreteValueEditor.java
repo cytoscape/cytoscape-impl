@@ -322,7 +322,7 @@ public class DiscreteValueEditor<T> implements VisualPropertyValueEditor<T> {
 			// Current engine is not ready yet.
 			if (engine != null) {
 				synchronized (values) {
-					for (T value: values) {
+					for (T value : values) {
 						Icon icon = null;
 						
 						if (value instanceof CyCustomGraphics) {

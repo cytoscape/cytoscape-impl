@@ -24,6 +24,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.TableCellEditor;
 
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.table.internal.util.ValidatedObjectAndEditString;
 
 /*
@@ -32,7 +33,7 @@ import org.cytoscape.view.table.internal.util.ValidatedObjectAndEditString;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -76,7 +77,30 @@ public class MultiLineTableCellEditor extends AbstractCellEditor implements Tabl
 
 	@Override
 	public boolean isCellEditable(EventObject e) {
-		return !(e instanceof MouseEvent) || (((MouseEvent) e).getClickCount() >= 2);
+		if (e instanceof KeyEvent) {
+			var ke = (KeyEvent) e;
+			var keyCode = ke.getKeyCode();
+			
+			if (LookAndFeelUtil.isMac()) {
+				// macOS: ignore the COMMAND and CTRL keys
+				if (keyCode == KeyEvent.VK_META || keyCode == KeyEvent.VK_CONTROL)
+					return false;
+			} else {
+				// Windows | Linux: ignore CTRL and WINDOWS keys
+				if (keyCode == KeyEvent.VK_CONTROL || keyCode == KeyEvent.VK_WINDOWS)
+					return false;
+			}
+			
+			// Also prevents CTRL-C or COMMAND-C (copy) from editing the cell, in case the previous checks don't work
+			int modifier = LookAndFeelUtil.isAquaLAF() ? KeyEvent.META_DOWN_MASK : KeyEvent.CTRL_DOWN_MASK;
+			
+			if (ke.getKeyCode() == KeyEvent.VK_C && (ke.getModifiersEx() & modifier) == modifier)
+				return false;
+			
+			return super.isCellEditable(e);
+		}
+		
+		return !(e instanceof MouseEvent) || ((MouseEvent) e).getClickCount() >= 2;
 	}
 
 	@Override
