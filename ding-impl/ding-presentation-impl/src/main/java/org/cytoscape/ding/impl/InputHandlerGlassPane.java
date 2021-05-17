@@ -306,6 +306,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		private AnnotationEdit moveAnnotationsEdit;
 		private ViewChangeEdit moveNodesEdit;
 		private ViewChangeEdit panEdit;
+		private CompositeCyEdit<LabelEdit> labelEdit;
 		
 		private Timer swingTimer;
 		
@@ -316,7 +317,10 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				swingTimer = null;
 			}
 			
-			if(moveAnnotationsEdit != null || moveNodesEdit != null || panEdit != null) {
+			if(labelEdit != null) {
+				labelEdit.getChildren().forEach(LabelEdit::savePositionAndAngle);
+				labelEdit.post();
+			} else if(moveAnnotationsEdit != null || moveNodesEdit != null || panEdit != null) {
 				if(moveAnnotationsEdit != null)
 					 moveAnnotationsEdit.saveNewAnnotations();
 				if(moveNodesEdit != null)
@@ -331,6 +335,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			moveAnnotationsEdit = null;
 			moveNodesEdit = null;
 			panEdit = null;
+			labelEdit = null;
 		}
 		
 		/**
@@ -364,43 +369,44 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		
 		@Override
 		public void keyPressed(KeyEvent e) {
-			// Clear the label selection if it is enabled
-			// if (labelSelectionEnabled()) 
-			// 	get(SelectionClickAndDragListener.class).resetLabelSelection();
-			
 			int code = e.getKeyCode();
 			
+			// These flags will tell us if a re-render is needed and what kind
 			boolean allChanged = false;
 			boolean annotationsChanged = false;
 			boolean moved = false;
 			
-			if (code == VK_UP || code == VK_DOWN || code == VK_LEFT || code == VK_RIGHT) {
-				if (isControlOrMetaDown(e)) {
+			if(code == VK_UP || code == VK_DOWN || code == VK_LEFT || code == VK_RIGHT) {
+				if(isControlOrMetaDown(e)) {
 					panCanvas(e);
 					moved = allChanged = true;
 				} else {
-					if (nodeSelectionEnabled())
-						moved |= allChanged = moveNodesAndHandles(e);
-					
-					if (annotationSelectionEnabled())
-						moved |= annotationsChanged = moveAnnotations(e);
+					if(labelSelectionEnabled() && !re.getLabelSelectionManager().isEmpty()) {
+						moved |= allChanged = moveNodeLabels(e);
+					} else {
+						if(nodeSelectionEnabled()) {
+							moved |= allChanged = moveNodesAndHandles(e);
+						}
+						if(annotationSelectionEnabled()) {
+							moved |= annotationsChanged = moveAnnotations(e);
+						}
+					}
 				}
-			} else if (code == VK_ESCAPE) {
+			} else if(code == VK_ESCAPE) {
 				allChanged = cancelAddingEdge();
-				
-				if (annotationSelectionEnabled())
+				if(annotationSelectionEnabled()) {
 					allChanged |= cancelAnnotations();
-			} else if (code == VK_BACK_SPACE || code == VK_DELETE) {
-				// In this case changing the model will trigger a render
-				deleteSelected();
+				}
+			} else if(code == VK_BACK_SPACE || code == VK_DELETE) {
+				deleteSelected();  // In this case changing the model will trigger a render
 			}
 
-			if (allChanged)
+			if(allChanged)
 				re.updateView(UpdateType.ALL_FULL);
-			else if (annotationsChanged)
+			else if(annotationsChanged)
 				re.updateView(UpdateType.JUST_ANNOTATIONS);
 
-			if (moved)
+			if(moved)
 				resetMoveTimer();
 		}
 		
@@ -410,8 +416,9 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			var annotationSelection = cyAnnotator.getAnnotationSelection();
 
 			if (annotationSelectionEnabled() && !annotationSelection.isEmpty() && code == VK_DELETE) {
-				for (DingAnnotation a : annotationSelection)
+				for (DingAnnotation a : annotationSelection) {
 					a.removeAnnotation();
+				}
 			}
 		}
 		
@@ -516,6 +523,51 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			
 			return !selectedNodes.isEmpty() || re.getBendStore().areHandlesSelected();
 		}
+		
+		
+		private boolean moveNodeLabels(KeyEvent k) {
+			var labelSelectionManager = re.getLabelSelectionManager();
+			var selectedLabels = labelSelectionManager.getSelectedLabels();
+			if(selectedLabels == null || selectedLabels.isEmpty())
+				return false;
+			
+			if(labelEdit == null) {
+				labelEdit = new CompositeCyEdit<LabelEdit>("Move Labels", registrar, selectedLabels.size());
+				for(var selectedLabel : selectedLabels) {
+					View<CyNode> mutableNode = re.getViewModelSnapshot().getMutableNodeView(selectedLabel.getNode().getSUID());
+					Long suid = mutableNode.getModel().getSUID();
+					var edit = new LabelEdit(registrar, re, re.getViewModel(), suid, selectedLabel);
+					labelEdit.add(edit);
+				}
+			}
+			
+			var pos = selectedLabels.iterator().next().getPosition();
+			Point start = re.getTransform().getImageCoordinates(pos.getOffsetX(), pos.getOffsetY());
+			int x = start.x;
+			int y = start.y;
+			
+			final int move = getMoveAmountImageUnit(k);
+			switch(k.getKeyCode()) {
+				case VK_UP:    y -= move; break;
+				case VK_DOWN:  y += move; break;
+				case VK_LEFT:  x -= move; break;
+				case VK_RIGHT: x += move; break;
+			}
+			
+			labelSelectionManager.setCurrentDragPoint(start);
+			labelSelectionManager.move(new Point(x, y));
+			
+			for(var selectedLabel : re.getLabelSelectionManager().getSelectedLabels()) {
+				View<CyNode> mutableNode = re.getViewModelSnapshot().getMutableNodeView(selectedLabel.getNode().getSUID());
+				ObjectPosition newPosition = selectedLabel.getPosition();
+				double newAngle = selectedLabel.getAngleDegrees();
+				mutableNode.setLockedValue(DVisualLexicon.NODE_LABEL_POSITION, newPosition);
+				mutableNode.setLockedValue(DVisualLexicon.NODE_LABEL_ROTATION, newAngle);
+			}
+			
+			return true;
+		}
+		
 		
 		private boolean cancelAddingEdge() {
 			var addEdgeListener = get(AddEdgeListener.class);
