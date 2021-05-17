@@ -246,6 +246,20 @@ public class BrowserTable extends JTable
 	}
 	
 	@Override
+	public void selectAll() {
+		super.selectAll();
+		
+		// Also make sure all columns and rows really are selected
+		int columnCount = getColumnModel().getColumnCount();
+		int rowCount = getRowCount();
+		
+		if (columnCount > 0)
+			getColumnModel().getSelectionModel().addSelectionInterval(0, columnCount - 1);
+		if (rowCount > 0)
+			getSelectionModel().addSelectionInterval(0, rowCount - 1);
+	}
+	
+	@Override
 	public synchronized void addMouseListener(MouseListener listener) {
 		// Hack to prevent selected rows from being deselected when the user
 		// CONTROL-clicks one of those rows on Mac (popup trigger).

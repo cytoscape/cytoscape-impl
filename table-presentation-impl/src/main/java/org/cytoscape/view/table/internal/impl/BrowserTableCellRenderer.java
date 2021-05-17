@@ -140,6 +140,9 @@ public class BrowserTableCellRenderer extends JPanel implements TableCellRendere
 		col = model.getCyColumn(browserTable.convertColumnIndexToModel(colIndex));
 		row = model.getCyRow(browserTable.convertRowIndexToModel(rowIndex));
 		
+		if (col == null || row == null)
+			return this;
+		
 		columnView = (CyColumnView) tableView.getColumnView(col);
 		
 		bg = presentation.getBackgroundColor(row, rowIndex, columnView, tableView);

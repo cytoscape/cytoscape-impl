@@ -6,6 +6,9 @@ import static javax.swing.GroupLayout.Alignment.LEADING;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.GroupLayout;
@@ -14,14 +17,10 @@ import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
-import javax.swing.RowSorter;
-import javax.swing.RowSorter.SortKey;
 import javax.swing.SortOrder;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableModel;
 
-import org.cytoscape.application.swing.CyColumnPresentation;
 import org.cytoscape.application.swing.CyColumnPresentationManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
@@ -55,6 +54,8 @@ import org.cytoscape.util.swing.IconManager;
 @SuppressWarnings("serial")
 final class BrowserTableHeaderRenderer extends JPanel implements TableCellRenderer {
 
+	private static final int SELECTION_WIDTH = 2;
+	
 	private final JLabel namespaceLabel;
 	private final JLabel namespaceIconLabel;
 	private final JLabel nameLabel;
@@ -62,6 +63,8 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 	private final JLabel sharedLabel;
 	private final JLabel immutableLabel;
 	private final JLabel sortLabel;
+	
+	private boolean isTableColumnSelected;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -71,7 +74,6 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 		IconManager iconManager = serviceRegistrar.getService(IconManager.class);
 		
 		setBorder(UIManager.getBorder("TableHeader.cellBorder"));
-		setBackground(UIManager.getColor("TableHeader.background"));
 		
 		namespaceLabel = new JLabel();
 		namespaceLabel.setFont(UIManager.getFont("TableHeader.font"));
@@ -167,6 +169,11 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 		// rowIndex is always -1
 		// isSelected is always false
 		// hasFocus is always false
+		
+		isTableColumnSelected = Arrays.binarySearch(table.getColumnModel().getSelectedColumns(), col) >= 0;
+		
+		boolean isAllRowsSelected = table.getSelectedRowCount() == table.getRowCount();
+		setBackground(UIManager.getColor(isAllRowsSelected ? "Table.selectionBackground" : "TableHeader.background"));
 
 		// Configure the component with the specified value
 		final String colName = value != null ? value.toString() : "";
@@ -296,7 +303,23 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 		return this;
 	}
 	
-	private String getMinimizedType (String type){
-		return type.substring(type.lastIndexOf('.')+1);
+	@Override
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
+		
+		if (isTableColumnSelected) {
+			var g2 = (Graphics2D) g.create();
+			g2.setColor(UIManager.getColor("Table.focusCellBackground"));
+			
+			var w = getWidth();
+			var h = getHeight();
+			g2.fillRect(0, h - SELECTION_WIDTH - 1/*usual "TableHeader.cellBorder" border width*/, w, SELECTION_WIDTH);
+			
+			g2.dispose();
+		}
+	}
+	
+	private String getMinimizedType(String type) {
+		return type.substring(type.lastIndexOf('.') + 1);
 	}
 }
