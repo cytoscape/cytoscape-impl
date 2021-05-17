@@ -1,12 +1,26 @@
 package org.cytoscape.view.table.internal.impl.icon;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.font.FontRenderContext;
+import java.awt.font.TextLayout;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
+
 /*
  * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * Cytoscape Table Presentation Impl (table-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2021 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,47 +38,32 @@ package org.cytoscape.view.table.internal.impl.icon;
  * #L%
  */
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
-import java.awt.font.FontRenderContext;
-import java.awt.font.TextLayout;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Rectangle2D;
-import java.awt.image.AffineTransformOp;
-import java.awt.image.BufferedImage;
-
 /**
  * Icon renderer for font face.
  */
+@SuppressWarnings("serial")
 public class FontFaceIcon extends VisualPropertyIcon<Font> {
-
-	private static final long serialVersionUID = 4629615986711780878L;
 
 	private static final String TEXT = "A";
 	private static final int FONT_SIZE = 28;
 	
-	public FontFaceIcon(final Font value, int width, int height, String name) {
+	public FontFaceIcon(Font value, int width, int height, String name) {
 		super(value, width, height, name);
 	}
 
 	@Override
-	public void paintIcon(final Component c, final Graphics g, int x, int y) {
+	public void paintIcon(Component c, Graphics g, int x, int y) {
 		if (value != null) {
 			// First get a large image from the text value
-			final Font font = new Font(value.getFontName(), value.getStyle(), FONT_SIZE);
-			final BufferedImage bi = createLargeImage(TEXT, font, c.getForeground());
+			var font = new Font(value.getFontName(), value.getStyle(), FONT_SIZE);
+			var bi = createLargeImage(TEXT, font, c.getForeground());
 			
 			// Then down-sample the image to fit the required width and height
 			downSample(bi, c, g, x, y);
 		}
 	}
 	
-	private BufferedImage createLargeImage(final String text, final Font font, final Color color) {
+	private BufferedImage createLargeImage(String text, Font font, Color color) {
         final FontRenderContext frc = new FontRenderContext(null, true, true);
         final TextLayout layout = new TextLayout(text, font, frc);
         final Rectangle r = layout.getPixelBounds(null, 0, 0);
@@ -80,7 +79,7 @@ public class FontFaceIcon extends VisualPropertyIcon<Font> {
         return bi;
     }
 	
-	private void downSample(final BufferedImage bi, final Component c, final Graphics g, int x, int y) {
+	private void downSample(BufferedImage bi, Component c, Graphics g, int x, int y) {
 		int iw = bi.getWidth();
 		int ih = bi.getHeight();
 		double scale = Math.min( (double)width/(double)iw, (double)height/(double)ih );

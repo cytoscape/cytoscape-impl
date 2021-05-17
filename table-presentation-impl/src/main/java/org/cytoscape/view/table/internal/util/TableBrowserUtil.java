@@ -16,11 +16,11 @@ import org.cytoscape.view.table.internal.impl.BrowserTableModel;
 
 /*
  * #%L
- * Cytoscape Table Browser Impl (table-browser-impl)
+ * Cytoscape Table Presentation Impl (table-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2021 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -37,7 +37,6 @@ import org.cytoscape.view.table.internal.impl.BrowserTableModel;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
 public final class TableBrowserUtil {
 
 	private static final int EOF = -1;

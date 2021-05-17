@@ -32,7 +32,7 @@ import org.osgi.framework.BundleContext;
 
 /*
  * #%L
- * Cytoscape Table Presentation Impl (table-browser-impl)
+ * Cytoscape Table Presentation Impl (table-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%

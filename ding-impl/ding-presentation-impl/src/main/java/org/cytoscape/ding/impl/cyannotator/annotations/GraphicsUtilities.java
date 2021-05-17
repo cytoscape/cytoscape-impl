@@ -118,14 +118,17 @@ public class GraphicsUtilities {
     return bounds;
   }
 
-	// Given a position and a size, draw a shape. We use the ShapeAnnotation to get the shape itself, colors, strokes, etc.
+	/**
+	 *  Given a position and a size, draw a shape.
+	 *  We use the ShapeAnnotation to get the shape itself, colors, strokes, etc.
+	 */
 	public static void drawShape(Graphics g, double x, double y, double width, double height, double rotation,
-                               ShapeAnnotation annotation, boolean isPrinting) {
-		Graphics2D g2 = (Graphics2D) g;
+			ShapeAnnotation annotation, boolean isPrinting) {
+		var g2 = (Graphics2D) g;
 
 		float border = (float) (annotation.getBorderWidth() * annotation.getZoom());
-
-		Shape shape;
+		Shape shape = null;
+		
 		if (annotation.getShapeType().equals(ShapeType.CUSTOM.shapeName())) {
 			final double destX = x + border;
 			final double destY = y + border;
@@ -133,38 +136,39 @@ public class GraphicsUtilities {
 			final double destH = height - border;
 
 			shape = annotation.getShape();
+			
 			if (shape == null)
 				return;
+			
 			// Scale the shape appropriately
-			Rectangle2D originalBounds = shape.getBounds2D();
+			var originalBounds = shape.getBounds2D();
 			double widthScale = destW / originalBounds.getWidth();
 			double heightScale = destH / originalBounds.getHeight();
 
-			AffineTransform transform = new AffineTransform();
+			var transform = new AffineTransform();
 			transform.translate(destX, destY);
 			transform.scale(widthScale, heightScale);
 			transform.translate(-originalBounds.getX(), -originalBounds.getY());
-      // This needs to be tested!
-      transform.rotate(Math.toRadians(rotation), destX + destW/2, destY + destH/2);
+			// TODO This needs to be tested!
+			transform.rotate(Math.toRadians(rotation), destX + destW / 2, destY + destH / 2);
 			shape = transform.createTransformedShape(shape);
 		} else {
-      if (rotation == 0)
-			  shape = getShape(annotation.getShapeType(), x, y, width, height);
-      else {
-			  shape = getShape(annotation.getShapeType(), x, y, width, height);
-			  AffineTransform transform = new AffineTransform();
-        transform.rotate(Math.toRadians(rotation), x + width/2, y+height/2);
-			  shape = transform.createTransformedShape(shape);
-      }
+			if (rotation == 0) {
+				shape = getShape(annotation.getShapeType(), x, y, width, height);
+			} else {
+				shape = getShape(annotation.getShapeType(), x, y, width, height);
+				var transform = new AffineTransform();
+				transform.rotate(Math.toRadians(rotation), x + width / 2, y + height / 2);
+				shape = transform.createTransformedShape(shape);
+			}
 		}
 
-		// Set our fill color
+		// Fill Color
 		if (annotation.getFillColor() != null) {
-			// System.out.println("drawShape: fill color = "+annotation.getFillColor());
 			// If we've filled with a gradient, we need to fix it up a little. We create
 			// our gradients using proportional x,y values rather than absolute x,y values.
 			// Fix them now.
-			Paint fillColor = annotation.getFillColor();
+			var fillColor = annotation.getFillColor();
 			fillColor = fixGradients(fillColor, shape);
 			g2.setPaint(fillColor);
 			float opacity = clamp((float) (annotation.getFillOpacity() / 100.0), 0.0f, 1.0f);
@@ -174,12 +178,14 @@ public class GraphicsUtilities {
 			g2.setComposite(originalComposite);
 		}
 
+		// Border
 		if (border > 0.0f) { // only paint a border if the border thickness is greater than zero
 			float opacity = clamp((float) (((ShapeAnnotationImpl) annotation).getBorderOpacity() / 100.0), 0.0f, 1.0f);
-			Composite originalComposite = g2.getComposite();
+			var originalComposite = g2.getComposite();
 
-			Paint color = annotation.getBorderColor();
-			if(color == null)
+			var color = annotation.getBorderColor();
+			
+			if (color == null)
 				color = Color.BLACK;
 			
 			g2.setPaint(color);

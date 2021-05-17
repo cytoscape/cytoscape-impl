@@ -2,7 +2,7 @@ package org.cytoscape.view.table.internal.util;
 
 /*
  * #%L
- * Cytoscape Table Browser Impl (table-browser-impl)
+ * Cytoscape Table Presentation Impl (table-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%

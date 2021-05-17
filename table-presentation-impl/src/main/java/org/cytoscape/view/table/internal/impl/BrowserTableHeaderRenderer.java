@@ -29,7 +29,7 @@ import org.cytoscape.util.swing.IconManager;
 
 /*
  * #%L
- * Cytoscape Table Browser Impl (table-browser-impl)
+ * Cytoscape Table Presentation Impl (table-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
@@ -71,7 +71,7 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 	BrowserTableHeaderRenderer(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 		
-		IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+		var iconManager = serviceRegistrar.getService(IconManager.class);
 		
 		setBorder(UIManager.getBorder("TableHeader.cellBorder"));
 		
@@ -104,12 +104,12 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 		sortLabel.setMinimumSize(sortLabel.getPreferredSize());
 		sortLabel.setSize(sortLabel.getPreferredSize());
 		
-		JPanel panel = new JPanel();
+		var panel = new JPanel();
 		panel.setOpaque(false);
 		setLayout(new BorderLayout());
 		add(panel, BorderLayout.SOUTH);
 		
-		final GroupLayout layout = new GroupLayout(panel);
+		var layout = new GroupLayout(panel);
 		panel.setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(true);
@@ -149,22 +149,23 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 	}
 
 	private Icon getNamespaceIcon(String namespace) {
-		CyColumnPresentationManager presentationManager = serviceRegistrar.getService(CyColumnPresentationManager.class);
-		CyColumnPresentation presentation = presentationManager.getColumnPresentation(namespace);
+		var presentationManager = serviceRegistrar.getService(CyColumnPresentationManager.class);
+		var presentation = presentationManager.getColumnPresentation(namespace);
 		
-		if(presentation == null)
+		if (presentation == null)
 			return null;
 		
-		Icon icon = presentation.getNamespaceIcon();
-		if(icon == null)
+		var icon = presentation.getNamespaceIcon();
+		
+		if (icon == null)
 			return null;
  		
  		return IconManager.resizeIcon(icon, 16);
 	}
 	
 	@Override
-	public Component getTableCellRendererComponent(final JTable table, final Object value, boolean isSelected,
-			boolean hasFocus, int row, int col) {
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+			int row, int col) {
 		// 'value' is column header value of column 'col'
 		// rowIndex is always -1
 		// isSelected is always false
@@ -176,10 +177,10 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 		setBackground(UIManager.getColor(isAllRowsSelected ? "Table.selectionBackground" : "TableHeader.background"));
 
 		// Configure the component with the specified value
-		final String colName = value != null ? value.toString() : "";
+		var colName = value != null ? value.toString() : "";
 		
-		String[] parts = CyColumn.splitColumnName(colName);
-		String namespace = parts[0];
+		var parts = CyColumn.splitColumnName(colName);
+		var namespace = parts[0];
 		
 		if (namespace == null) {
 			namespaceLabel.setVisible(false);
@@ -188,7 +189,7 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 			namespaceLabel.setVisible(true);
 			namespaceLabel.setText(namespace);
 
-			Icon icon = getNamespaceIcon(namespace);
+			var icon = getNamespaceIcon(namespace);
 
 			if (icon == null) {
 				namespaceIconLabel.setVisible(false);
@@ -198,7 +199,7 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 			}
 		}
 
-		final Font font = nameLabel.getFont();
+		var font = nameLabel.getFont();
 		nameLabel.setFont(colName.equals(CyIdentifiable.SUID) ? font.deriveFont(Font.BOLD) : font.deriveFont(Font.PLAIN));
 		nameLabel.setText(parts[1]);
 		
@@ -216,11 +217,11 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 			return this;
 		}
 
-		final BrowserTableModel model = (BrowserTableModel) table.getModel();
-		final CyColumn column = model.getDataTable().getColumn(colName);
+		var model = (BrowserTableModel) table.getModel();
+		var column = model.getDataTable().getColumn(colName);
 		
 		if (column != null) {
-			StringBuilder toolTip = new StringBuilder("<html><div style='text-align: center;'>");
+			var toolTip = new StringBuilder("<html><div style='text-align: center;'>");
 	
 			if (colName.equals(CyIdentifiable.SUID))
 				toolTip.append("Session-Unique ID");
@@ -278,12 +279,12 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 			int index = -1;
 			boolean ascending = true;
 			
-			RowSorter<? extends TableModel> rowSorter = table.getRowSorter();
+			var rowSorter = table.getRowSorter();
 			int modelColumn = col >= 0 && col < table.getColumnCount() ? table.convertColumnIndexToModel(col) : -1;
-			List<? extends SortKey> sortKeys = rowSorter.getSortKeys();
+			var sortKeys = rowSorter.getSortKeys();
 			
 			if (sortKeys.size() > 0) {
-				SortKey key = sortKeys.get(0);
+				var key = sortKeys.get(0);
 				
 				if (key.getColumn() == modelColumn) {
 					index = col;

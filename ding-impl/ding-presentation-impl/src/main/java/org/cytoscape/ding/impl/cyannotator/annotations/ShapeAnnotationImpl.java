@@ -308,7 +308,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
   public void paint(Graphics g, boolean showSelection) {
 	  super.paint(g, showSelection);
 	  
-	  if(this.borderOpacity == 0 && this.fillOpacity == 0) // not here as an optimization, avoids invisible artifacts when exporting PDF
+	  if (borderOpacity == 0 && fillOpacity == 0) // not here as an optimization, avoids invisible artifacts when exporting PDF
 		  return;
 
       GraphicsUtilities.drawShape(g, getX(), getY(), getWidth(), getHeight(), getRotation(), this, false);

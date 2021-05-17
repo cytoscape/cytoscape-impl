@@ -13,6 +13,30 @@ import org.fife.ui.rsyntaxtextarea.Token;
 import org.fife.ui.rsyntaxtextarea.TokenMap;
 import org.fife.ui.rsyntaxtextarea.TokenTypes;
 
+/*
+ * #%L
+ * Cytoscape Table Presentation Impl (table-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2010 - 2021 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 public class EquationTokenMaker extends AbstractTokenMaker {
 	
 	private final CyServiceRegistrar registrar;
@@ -25,7 +49,6 @@ public class EquationTokenMaker extends AbstractTokenMaker {
 		super.wordsToHighlight = getWordsToHighlight();
 	}
 
-	
 	@Override
 	public Token getTokenList(Segment text, int initialTokenType, final int startOffset) {
 //		System.out.println("EquationTokenMaker.getTokenList()");
@@ -60,7 +83,6 @@ public class EquationTokenMaker extends AbstractTokenMaker {
 		return firstToken;
 	}
 	
-
 	@Override
 	public void addToken(Segment segment, int start, int end, int tokenType, int startOffset) {
 //		System.out.println("addToken: '" + segment + "' (" + start + "," + end + "," + startOffset + ") " + tokenType);
@@ -74,7 +96,6 @@ public class EquationTokenMaker extends AbstractTokenMaker {
 		super.addToken(segment, start, end, tokenType, startOffset);
 	}
 
-	
 	private static int getTokenType(org.cytoscape.equations.Token token) {
 		switch(token.getType()) {
 			case ERROR:
@@ -114,7 +135,6 @@ public class EquationTokenMaker extends AbstractTokenMaker {
 		return -1;
 	}
 	
-
 	@Override
 	public TokenMap getWordsToHighlight() {
 		if(registrar == null)
@@ -129,5 +149,4 @@ public class EquationTokenMaker extends AbstractTokenMaker {
 		}
 		return tokenMap;
 	}
-
 }

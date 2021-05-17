@@ -1,12 +1,20 @@
 package org.cytoscape.view.table.internal.impl.icon;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.Stroke;
+
 /*
  * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * Cytoscape Table Presentation Impl (table-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2021 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,28 +32,19 @@ package org.cytoscape.view.table.internal.impl.icon;
  * #L%
  */
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.Stroke;
-
+@SuppressWarnings("serial")
 public class ColorIcon extends VisualPropertyIcon<Color> {
 
-	private static final long serialVersionUID = 5636448639330547200L;
-	
 	private static final float ARC_RATIO = 0.35f;
 	private static final Stroke STROKE = new BasicStroke(0.5f);
 
-	public ColorIcon(final Color value, final int width, final int height, final String name) {
+	public ColorIcon(Color value, int width, int height, String name) {
 		super(value, width, height, name);
 	}
 
 	@Override
 	public void paintIcon(Component c, Graphics g, int x, int y) {
-		final Graphics2D g2d = (Graphics2D) g;
+		var g2d = (Graphics2D) g;
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
 		g2d.setColor(value);

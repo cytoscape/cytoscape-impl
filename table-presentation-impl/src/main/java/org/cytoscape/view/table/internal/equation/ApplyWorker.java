@@ -17,6 +17,30 @@ import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
+/*
+ * #%L
+ * Cytoscape Table Presentation Impl (table-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2010 - 2021 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 public class ApplyWorker extends SwingWorker<InternalResult,Void> {
 	
 	private final CyServiceRegistrar registrar;
@@ -47,6 +71,7 @@ public class ApplyWorker extends SwingWorker<InternalResult,Void> {
 	/**
 	 * Run the equation evaluation on Swing's worker background thread.
 	 */
+	@Override
     protected InternalResult doInBackground() {
     	Set<String> errors = new HashSet<>();
 		int numErrors = 0;
@@ -103,6 +128,7 @@ public class ApplyWorker extends SwingWorker<InternalResult,Void> {
     /**
      * This method runs on the EDT, update the UI with the results.
      */
+	@Override
     protected void done() {
 		try {
 			var result = get();
@@ -117,8 +143,8 @@ public class ApplyWorker extends SwingWorker<InternalResult,Void> {
     }
 }
 
-
 class InternalResult {
+	
 	final Set<String> errors;
 	final int numErrors;
 	

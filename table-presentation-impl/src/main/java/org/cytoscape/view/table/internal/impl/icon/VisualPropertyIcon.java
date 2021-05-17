@@ -1,12 +1,16 @@
 package org.cytoscape.view.table.internal.impl.icon;
 
+import java.awt.Color;
+
+import javax.swing.ImageIcon;
+
 /*
  * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * Cytoscape Table Presentation Impl (table-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2021 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,10 +27,6 @@ package org.cytoscape.view.table.internal.impl.icon;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import java.awt.Color;
-
-import javax.swing.ImageIcon;
 
 /**
  * 

@@ -32,11 +32,11 @@ import org.cytoscape.view.table.internal.util.ValidatedObjectAndEditString;
 
 /*
  * #%L
- * Cytoscape Table Browser Impl (table-browser-impl)
+ * Cytoscape Table Presentation Impl (table-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2021 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -112,7 +112,7 @@ public final class BrowserTableModel extends AbstractTableModel
 		this.maxRowIndex = 0;
 		var pkName = dataTable.getPrimaryKey().getName();
 		
-		for (CyRow row : rows)
+		for (var row : rows)
 			rowIndexToPrimaryKey[maxRowIndex++] = row.getRaw(pkName);
 	}
 

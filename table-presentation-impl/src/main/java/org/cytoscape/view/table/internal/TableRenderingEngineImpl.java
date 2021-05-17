@@ -41,6 +41,30 @@ import org.cytoscape.view.table.internal.impl.BrowserTableRowHeaderRenderer;
 import org.cytoscape.view.table.internal.impl.PopupMenuHelper;
 import org.cytoscape.view.table.internal.impl.icon.VisualPropertyIconFactory;
 
+/*
+ * #%L
+ * Cytoscape Table Presentation Impl (table-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2010 - 2021 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 	
 	private final CyTableView tableView;
@@ -152,29 +176,35 @@ public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 	
 	// MKTODO is this needed?
 	public Collection<View<CyRow>> getSelectedRows() {
-		int selectedRow = browserTable.getSelectedRow();
-		if(selectedRow >= 0) {
-			TableModel model = browserTable.getModel();
-			if(model instanceof BrowserTableModel) {
-				CyRow row = ((BrowserTableModel)model).getCyRow(selectedRow);
-				View<CyRow> rowView = tableView.getRowView(row);
-				if(rowView != null) {
+		int selectedRow = getBrowserTable().getSelectedRow();
+		
+		if (selectedRow >= 0) {
+			var model = getBrowserTable().getModel();
+			
+			if (model instanceof BrowserTableModel) {
+				var row = ((BrowserTableModel) model).getCyRow(selectedRow);
+				var rowView = tableView.getRowView(row);
+				
+				if (rowView != null)
 					return Collections.singletonList(rowView);
-				}
 			}
 		}
+		
 		return Collections.emptyList();
 	}
 
 	// MKTODO is this needed?
 	public View<CyColumn> getSelectedColumn() {
-		int selectedColumn = browserTable.getSelectedColumn();
-		if(selectedColumn >= 0) {
-			int cellColum = browserTable.convertColumnIndexToModel(selectedColumn);
-			String colName = browserTable.getColumnName(cellColum);
-			CyColumn column = tableView.getModel().getColumn(colName);
+		int selectedColumn = getBrowserTable().getSelectedColumn();
+		
+		if (selectedColumn >= 0) {
+			int cellColum = getBrowserTable().convertColumnIndexToModel(selectedColumn);
+			var colName = getBrowserTable().getColumnName(cellColum);
+			var column = tableView.getModel().getColumn(colName);
+			
 			return tableView.getColumnView(column);
 		}
+		
 		return null;
 	}
 	

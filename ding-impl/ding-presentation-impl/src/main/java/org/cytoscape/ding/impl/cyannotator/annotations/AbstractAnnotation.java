@@ -472,11 +472,9 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 		g2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
 		g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
-
-		if (!isUsedForPreviews()) {
-			// We need to control composite ourselves for previews...
+		// We need to control composite ourselves for previews...
+		if (!isUsedForPreviews())
 			g2.setComposite(AlphaComposite.Src);
-		}
 	}
 
 	@Override

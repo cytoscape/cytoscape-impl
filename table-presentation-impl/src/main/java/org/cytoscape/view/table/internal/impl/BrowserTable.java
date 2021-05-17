@@ -16,6 +16,7 @@ import static org.cytoscape.view.presentation.property.table.BasicTableVisualLex
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.ALL;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.AUTO;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.SELECTED;
+import static org.cytoscape.view.table.internal.util.ViewUtil.invokeOnEDT;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -96,11 +97,11 @@ import org.slf4j.LoggerFactory;
 
 /*
  * #%L
- * Cytoscape Table Browser Impl (table-browser-impl)
+ * Cytoscape Table Presentation Impl (table-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2021 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -746,16 +747,7 @@ public class BrowserTable extends JTable
 			return;
 		
 		renameColumnName(e.getOldColumnName(), e.getNewColumnName());
-		
-		if (SwingUtilities.isEventDispatchThread()) {
-			tableHeader.repaint();
-		} else {
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					tableHeader.repaint();
-				}
-			});
-		}
+		invokeOnEDT(() -> tableHeader.repaint());
 	}
 	
 	@Override
@@ -799,10 +791,10 @@ public class BrowserTable extends JTable
 			tableModel.fireTableDataChanged();
 
 			if (tableModel.getViewMode() == ALL) {
-				CyTableManager tableManager = serviceRegistrar.getService(CyTableManager.class);
-				if (!tableManager.getGlobalTables().contains(dataTable)) {
+				var tableManager = serviceRegistrar.getService(CyTableManager.class);
+				
+				if (!tableManager.getGlobalTables().contains(dataTable))
 					bulkUpdate(rows);
-				}
 			}
 		}
 	}
@@ -857,7 +849,6 @@ public class BrowserTable extends JTable
 			}
 		};
 		header.setOpaque(false);
-//		header.setDefaultRenderer(new BrowserTableHeaderRenderer(serviceRegistrar.getService(IconManager.class)));
 		header.getColumnModel().setColumnSelectionAllowed(true);
 		header.addMouseMotionListener(this);
 		header.addMouseListener(new MouseAdapter() {

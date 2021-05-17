@@ -25,8 +25,9 @@ public class TableRenderingEngineFactoryImpl implements RenderingEngineFactory<C
 	
 	@Override
 	public RenderingEngine<CyTable> createRenderingEngine(Object visualizationContainer, View<CyTable> viewModel) {
-		var engine = new TableRenderingEngineImpl((CyTableView)viewModel, visualLexicon, popupMenuHelper, registrar);
-		engine.install((JComponent)visualizationContainer);
+		var engine = new TableRenderingEngineImpl((CyTableView) viewModel, visualLexicon, popupMenuHelper, registrar);
+		engine.install((JComponent) visualizationContainer);
+		
 		return engine;
 	}
 
@@ -34,5 +35,4 @@ public class TableRenderingEngineFactoryImpl implements RenderingEngineFactory<C
 	public VisualLexicon getVisualLexicon() {
 		return visualLexicon;
 	}
-
 }
