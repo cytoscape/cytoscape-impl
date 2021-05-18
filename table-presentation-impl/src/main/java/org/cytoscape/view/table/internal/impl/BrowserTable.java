@@ -962,6 +962,10 @@ public class BrowserTable extends JTable
 					continue;
 				
 				var cyColumn = tableModel.getCyColumn(convertColumnIndexToModel(idx));
+				
+				if (cyColumn == null)
+					return; // This column might have been deleted!
+				
 				var columnView = tableView.getColumnView(cyColumn);
 				var selected = isColumnSelected(idx);
 				

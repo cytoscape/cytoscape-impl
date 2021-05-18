@@ -48,6 +48,6 @@ public final class DeleteColumnTaskFactoryImpl extends AbstractTableColumnTaskFa
 
 	@Override
 	public boolean isReady(CyColumn column) {
-		return !column.isImmutable();
+		return column != null && !column.isImmutable();
 	}
 }
