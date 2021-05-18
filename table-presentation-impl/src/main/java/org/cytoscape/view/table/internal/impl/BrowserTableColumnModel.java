@@ -118,7 +118,9 @@ public class BrowserTableColumnModel extends DefaultTableColumnModel {
 			// column gets added at the end
 			int index = getColumnCount();
 			addColumn(col);
-			super.moveColumn(index, visibleIndex);
+			
+			if (index != visibleIndex)
+				super.moveColumn(index, visibleIndex);
 		} else {
 			visibleColumns.remove(col);
 			removeColumn(col);

@@ -64,7 +64,7 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 	private final JLabel immutableLabel;
 	private final JLabel sortLabel;
 	
-	private boolean isTableColumnSelected;
+	private boolean isColumnSelected;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -171,10 +171,10 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 		// isSelected is always false
 		// hasFocus is always false
 		
-		isTableColumnSelected = Arrays.binarySearch(table.getColumnModel().getSelectedColumns(), col) >= 0;
+		isColumnSelected = Arrays.binarySearch(table.getColumnModel().getSelectedColumns(), col) >= 0;
 		
-		boolean isAllRowsSelected = table.getSelectedRowCount() == table.getRowCount();
-		setBackground(UIManager.getColor(isAllRowsSelected ? "Table.selectionBackground" : "TableHeader.background"));
+		boolean isAllRowsSelected = isColumnSelected && table.getSelectedRowCount() == table.getRowCount();
+		setBackground(UIManager.getColor(isAllRowsSelected ? "Focus.color" : "TableHeader.background"));
 
 		// Configure the component with the specified value
 		var colName = value != null ? value.toString() : "";
@@ -308,7 +308,7 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		
-		if (isTableColumnSelected) {
+		if (isColumnSelected) {
 			var g2 = (Graphics2D) g.create();
 			g2.setColor(UIManager.getColor("Table.focusCellBackground"));
 			

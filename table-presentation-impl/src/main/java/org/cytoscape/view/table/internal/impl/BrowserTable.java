@@ -448,8 +448,6 @@ public class BrowserTable extends JTable
 		if (oldWidth == null || newWidth != oldWidth)
 			columnView.setVisualProperty(COLUMN_WIDTH, newWidth);
 		
-		if (getSelectedRowCount() > 0)
-			setSelectedColumn(colIdx);
 	}
 	
 	@Override
@@ -459,9 +457,6 @@ public class BrowserTable extends JTable
 		// The removed (or hidden) column might have COLUMN_TEXT_WRAPPED set to true,
 		// which affected the row height. So we need to reset it.
 		resetRowHeight();
-		
-		if (getColumnCount() > 0 && getSelectedRowCount() > 0)
-			setSelectedColumn(Math.min(e.getFromIndex(), getColumnCount() - 1));
 	}
 	
 	@Override
