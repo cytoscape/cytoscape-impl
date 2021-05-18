@@ -7,6 +7,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.print.Printable;
@@ -15,12 +16,17 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Properties;
 
+import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.TableColumnModelEvent;
+import javax.swing.event.TableColumnModelListener;
 
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.model.CyColumn;
@@ -105,9 +111,35 @@ public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 		component.add(scrollPane);
 		
 		getBrowserTable().getModel().addTableModelListener(evt -> {
+			// Update the row header when the table model changes (e.g. added/removed rows)
 			getRowHeader().updateModel();
+			getCornerPanel().update();
 		});
-		
+		getBrowserTable().getColumnModel().addColumnModelListener(new TableColumnModelListener() {
+			@Override
+			public void columnAdded(TableColumnModelEvent evt) {
+				getRowHeader().update();
+				getCornerPanel().update();
+			}
+			@Override
+			public void columnRemoved(TableColumnModelEvent evt) {
+				getRowHeader().update();
+				getCornerPanel().update();
+			}
+			@Override
+			public void columnSelectionChanged(ListSelectionEvent evt) {
+				if (!ignoreTableSelectionEvents)
+					updateHeader();
+			}
+			@Override
+			public void columnMoved(TableColumnModelEvent evt) {
+				// Ignore...
+			}
+			@Override
+			public void columnMarginChanged(ChangeEvent evt) {
+				// Ignore...
+			}
+		});
 		getBrowserTable().getSelectionModel().addListSelectionListener(evt -> {
 			if (!ignoreTableSelectionEvents) {
 				ignoreHeaderSelectionEvents = true;
@@ -130,10 +162,6 @@ public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 				// Always update the row header, because it also indicates partial row selection (i.e. not all columns)
 				updateHeader();
 			}
-		});
-		getBrowserTable().getColumnModel().getSelectionModel().addListSelectionListener(evt -> {
-			if (!ignoreTableSelectionEvents)
-				updateHeader();
 		});
 		
 		getRowHeader().getSelectionModel().addListSelectionListener(evt -> {
@@ -267,6 +295,7 @@ public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 		return browserTable;
 	}
 	
+	@SuppressWarnings("serial")
 	private BrowserTableRowHeader getRowHeader() {
 		if (rowHeader == null) {
 			rowHeader = new BrowserTableRowHeader(getBrowserTable());
@@ -277,6 +306,19 @@ public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 			rowHeader.setBackground(getBrowserTable().getBackground());
 			rowHeader.setForeground(getBrowserTable().getForeground());
 			rowHeader.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+			
+			// Redirect the copy action (Control-C) from this JList to the table;
+			// otherwise the "Control-C" key input would copy the row header values.
+			var copyKey = "copy";
+			rowHeader.getActionMap().put(copyKey, new AbstractAction() {
+				@Override
+				public void actionPerformed(ActionEvent evt) {
+					var action = getBrowserTable().getActionMap().get(copyKey);
+					
+					if (action != null)
+						action.actionPerformed(new ActionEvent(getBrowserTable(), evt.getID(), copyKey));
+				}
+			});
 		}
 		
 		return rowHeader;
