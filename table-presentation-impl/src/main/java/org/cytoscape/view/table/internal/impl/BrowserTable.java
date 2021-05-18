@@ -448,6 +448,8 @@ public class BrowserTable extends JTable
 		if (oldWidth == null || newWidth != oldWidth)
 			columnView.setVisualProperty(COLUMN_WIDTH, newWidth);
 		
+		// Scroll to the new column
+		scrollRectToVisible(getCellRect(0, colIdx, true));
 	}
 	
 	@Override
