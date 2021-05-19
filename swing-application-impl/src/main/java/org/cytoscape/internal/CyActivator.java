@@ -729,15 +729,31 @@ public class CyActivator extends AbstractCyActivator {
 			
 			if (isAquaLAF()) {
 				// Mac OS X + Aqua:
+				var tableHeaderBorderColor = UIManager.getColor("Separator.foreground");
+				
+				UIManager.put("TableHeader.borderColor", tableHeaderBorderColor);
 				UIManager.put(
 						"TableHeader.cellBorder",
 						BorderFactory.createCompoundBorder(
-								BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground")),
+								BorderFactory.createMatteBorder(0, 0, 1, 0, tableHeaderBorderColor),
 								BorderFactory.createCompoundBorder(
 										BorderFactory.createEmptyBorder(2, 0, 2, 0),
 										BorderFactory.createCompoundBorder(
-												BorderFactory.createMatteBorder(0, 0, 0, 1, UIManager.getColor("Separator.foreground")),
+												BorderFactory.createMatteBorder(0, 0, 0, 1, tableHeaderBorderColor),
 												BorderFactory.createEmptyBorder(0, 4, 0, 4)
+										)
+								)
+						)
+				);
+				UIManager.put(
+						"TableRowHeader.cellBorder",
+						BorderFactory.createCompoundBorder(
+								BorderFactory.createMatteBorder(0, 0, 0, 1, tableHeaderBorderColor),
+								BorderFactory.createCompoundBorder(
+										BorderFactory.createEmptyBorder(0, 2, 0, 2),
+										BorderFactory.createCompoundBorder(
+												BorderFactory.createMatteBorder(0, 0, 1, 0, tableHeaderBorderColor),
+												BorderFactory.createEmptyBorder(4, 0, 4, 0)
 										)
 								)
 						)
@@ -750,18 +766,34 @@ public class CyActivator extends AbstractCyActivator {
 				UIManager.put("Tree.font", tableFont);
 			} else if (isWinLAF()) {
 				// Windows:
+				var tableHeaderBorderColor = new Color(223, 223, 223);
+				
+				UIManager.put("TableHeader.borderColor", tableHeaderBorderColor);
 				UIManager.put(
 						"TableHeader.cellBorder", 
 						BorderFactory.createCompoundBorder(
 								BorderFactory.createEmptyBorder(2, 0, 6, 0),
 								BorderFactory.createCompoundBorder(
-										BorderFactory.createMatteBorder(0, 0, 0, 1, new Color(223, 223, 223)),
+										BorderFactory.createMatteBorder(0, 0, 0, 1, tableHeaderBorderColor),
 										BorderFactory.createEmptyBorder(2, 6, 2, 6)
+								)
+						)
+				);
+				UIManager.put(
+						"TableRowHeader.cellBorder", 
+						BorderFactory.createCompoundBorder(
+								BorderFactory.createEmptyBorder(0, 2, 0, 6),
+								BorderFactory.createCompoundBorder(
+										BorderFactory.createMatteBorder(0, 0, 1, 0, tableHeaderBorderColor),
+										BorderFactory.createEmptyBorder(6, 2, 6, 2)
 								)
 						)
 				);
 				UIManager.put("TableHeader.background", UIManager.getColor("Table.background"));
 				UIManager.put("Table.alternateRowColor", new Color(245, 245, 245, 0));
+				UIManager.put("Table.showGrid", false);
+				UIManager.put("Table.gridColor", new Color(223, 223, 223, 0)); // starts with a 100% transparency, or Swing will not respect a false "Table.showGrid"
+				
 				UIManager.put("Viewport.background", UIManager.getColor("Table.background"));
 				UIManager.put("ScrollPane.background", UIManager.getColor("Table.background"));
 				UIManager.put("Separator.foreground", new Color(208, 208, 208));
@@ -785,7 +817,7 @@ public class CyActivator extends AbstractCyActivator {
 				UIManager.put("Table.alternateRowColor", new Color(242, 242, 242, 0));
 				UIManager.put("Table:\"Table.cellRenderer\".background", Color.WHITE);
 				UIManager.put("Table.showGrid", true);
-				UIManager.put("Table.gridColor", UIManager.getColor("Separator.background"));
+				UIManager.put("Table.gridColor", UIManager.getColor("nimbusBorder"));
 				UIManager.put("Table.font", tableFont);
 				
 				UIManager.put("Viewport.background", Color.WHITE);
@@ -801,11 +833,22 @@ public class CyActivator extends AbstractCyActivator {
 				UIManager.put("Focus.color", new Color(nimbusColor.getRGB()));
 				
 				UIManager.put("TextField.selectionBackground", UIManager.getColor("nimbusSelectionBackground"));
+				
+				var tableHeaderBorderColor = UIManager.getColor("nimbusBorder");
+				
+				UIManager.put("TableHeader.borderColor", tableHeaderBorderColor);
 				UIManager.put(
 						"TableHeader.cellBorder", 
 						BorderFactory.createCompoundBorder(
-								BorderFactory.createMatteBorder(0, 0, 1, 1, UIManager.getColor("nimbusBorder")),
+								BorderFactory.createMatteBorder(0, 0, 1, 1, tableHeaderBorderColor),
 								BorderFactory.createEmptyBorder(2, 4, 2, 4)
+						)
+				);
+				UIManager.put(
+						"TableRowHeader.cellBorder", 
+						BorderFactory.createCompoundBorder(
+								BorderFactory.createMatteBorder(0, 0, 1, 1, tableHeaderBorderColor),
+								BorderFactory.createEmptyBorder(4, 2, 4, 2)
 						)
 				);
 				
@@ -814,11 +857,21 @@ public class CyActivator extends AbstractCyActivator {
 				UIManager.getLookAndFeelDefaults().put("List[Selected].textForeground", Color.WHITE);
 			} else if (isGtkLAF()) {
 				// GTK (usually Linux):
+				var tableHeaderBorderColor = UIManager.getColor("Separator.foreground");
+				
+				UIManager.put("TableHeader.borderColor", tableHeaderBorderColor);
 				UIManager.put(
 						"TableHeader.cellBorder", 
 						BorderFactory.createCompoundBorder(
-								BorderFactory.createMatteBorder(0, 0, 0, 1, UIManager.getColor("Separator.foreground")),
+								BorderFactory.createMatteBorder(0, 0, 0, 1, tableHeaderBorderColor),
 								BorderFactory.createEmptyBorder(2, 4, 2, 4)
+						)
+				);
+				UIManager.put(
+						"TableRowHeader.cellBorder", 
+						BorderFactory.createCompoundBorder(
+								BorderFactory.createMatteBorder(0, 0, 1, 0, tableHeaderBorderColor),
+								BorderFactory.createEmptyBorder(4, 2, 4, 2)
 						)
 				);
 				UIManager.put("TableHeader.background", UIManager.getColor("Table.background"));

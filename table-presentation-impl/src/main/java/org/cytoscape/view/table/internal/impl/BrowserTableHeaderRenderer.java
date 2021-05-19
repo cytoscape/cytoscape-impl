@@ -4,6 +4,7 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -26,6 +27,7 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.view.table.internal.util.ViewUtil;
 
 /*
  * #%L
@@ -66,12 +68,18 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 	
 	private boolean isColumnSelected;
 	
+	private final Color defBgColor;
+	private final Color selBgColor;
+	
 	private final CyServiceRegistrar serviceRegistrar;
 
 	BrowserTableHeaderRenderer(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 		
 		var iconManager = serviceRegistrar.getService(IconManager.class);
+		
+		defBgColor = ViewUtil.getDefaultTableHeaderBg();
+		selBgColor = ViewUtil.getSelectedTableHeaderBg();
 		
 		setBorder(UIManager.getBorder("TableHeader.cellBorder"));
 		
@@ -173,8 +181,8 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 		
 		isColumnSelected = Arrays.binarySearch(table.getColumnModel().getSelectedColumns(), col) >= 0;
 		
-		boolean isAllRowsSelected = isColumnSelected && table.getSelectedRowCount() == table.getRowCount();
-		setBackground(UIManager.getColor(isAllRowsSelected ? "Focus.color" : "TableHeader.background"));
+		var isAllRowsSelected = table.getSelectedRowCount() == table.getRowCount();
+		setBackground(isColumnSelected && isAllRowsSelected ? selBgColor : defBgColor);
 
 		// Configure the component with the specified value
 		var colName = value != null ? value.toString() : "";
@@ -305,8 +313,8 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 	}
 	
 	@Override
-	public void paintComponent(Graphics g) {
-		super.paintComponent(g);
+	public void paint(Graphics g) {
+		super.paint(g);
 		
 		if (isColumnSelected) {
 			var g2 = (Graphics2D) g.create();
@@ -314,7 +322,7 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 			
 			var w = getWidth();
 			var h = getHeight();
-			g2.fillRect(0, h - SELECTION_WIDTH - 1/*usual "TableHeader.cellBorder" border width*/, w, SELECTION_WIDTH);
+			g2.fillRect(0, h - SELECTION_WIDTH, w, SELECTION_WIDTH);
 			
 			g2.dispose();
 		}

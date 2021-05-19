@@ -1,5 +1,6 @@
 package org.cytoscape.view.table.internal.impl;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -10,6 +11,8 @@ import javax.swing.JList;
 import javax.swing.JTable;
 import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
+
+import org.cytoscape.view.table.internal.util.ViewUtil;
 
 /*
  * #%L
@@ -40,19 +43,25 @@ public class BrowserTableRowHeaderRenderer extends JLabel implements ListCellRen
 
 	private static final int SELECTION_WIDTH = 2;
 	
-	private boolean isTableRowSelected;
+	private boolean isRowSelected;
+	
+	private final Color defBgColor;
+	private final Color selBgColor;
 	
 	private final JTable table;
 
 	public BrowserTableRowHeaderRenderer(JTable table) {
 		this.table = table;
 		
+		defBgColor = ViewUtil.getDefaultTableHeaderBg();
+		selBgColor = ViewUtil.getSelectedTableHeaderBg();
+		
 		setText("");
 		setHorizontalAlignment(CENTER);
 		setVerticalAlignment(CENTER);
 		setOpaque(true);
-		setBorder(UIManager.getBorder("TableHeader.cellBorder"));
 		setForeground(UIManager.getColor("TableHeader.foreground"));
+		setBorder(UIManager.getBorder("TableRowHeader.cellBorder"));
 		setFont(UIManager.getFont("TableHeader.font"));
 		
 		setDoubleBuffered(true);
@@ -61,25 +70,25 @@ public class BrowserTableRowHeaderRenderer extends JLabel implements ListCellRen
 	@Override
 	public Component getListCellRendererComponent(JList<? extends Integer> list, Integer value, int index,
 			boolean isSelected, boolean hasFocus) {
-		isTableRowSelected = table.isRowSelected(index);
+		isRowSelected = table.isRowSelected(index);
 		
+		setBackground(isSelected ? selBgColor : defBgColor);
 		setPreferredSize(new Dimension((int) getPreferredSize().getWidth(), table.getRowHeight(index)));
-		setBackground(UIManager.getColor(isSelected ? "Table.selectionBackground" : "TableHeader.background"));
 		
 		return this;
 	}
 	
 	@Override
-	public void paintComponent(Graphics g) {
-		super.paintComponent(g);
+	public void paint(Graphics g) {
+		super.paint(g);
 		
-		if (isTableRowSelected) {
+		if (isRowSelected) {
 			var g2 = (Graphics2D) g.create();
 			g2.setColor(UIManager.getColor("Table.focusCellBackground"));
 			
 			var w = getWidth();
 			var h = getHeight();
-			g2.fillRect(w - SELECTION_WIDTH - 1/*usual "TableHeader.cellBorder" border width*/, 0, SELECTION_WIDTH, h);
+			g2.fillRect(w - SELECTION_WIDTH, 0, SELECTION_WIDTH, h);
 			
 			g2.dispose();
 		}

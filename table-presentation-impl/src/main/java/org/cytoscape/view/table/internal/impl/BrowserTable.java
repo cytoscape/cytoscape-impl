@@ -227,13 +227,13 @@ public class BrowserTable extends JTable
 			if (color == null) // Just in case "Table.gridColor" is not set for the current LAF
 				color = UIManager.getColor("Separator.foreground");
 			
-			if (color.getAlpha() == 0) {
-				// Cytoscape had to start with a 100% transparency for the UIManager property "Table.gridColor",
-				// otherwise the Swing implementations would not respect the property "Table.showGrid" with a 'false' value.
-				// We can now set the "correct" transparency of the LAF color and set it again.
+			// Cytoscape had to start with a 100% transparency for the UIManager property "Table.gridColor",
+			// otherwise the Swing implementations would not respect the property "Table.showGrid" with a 'false' value.
+			// We can now set the "correct" transparency of the LAF color and set it again.
+			if (color.getAlpha() == 0)
 				color = new Color(color.getRed(), color.getGreen(), color.getBlue(), 255);
-				setGridColor(color);
-			}
+			
+			setGridColor(color);
 		}
 		
 		super.setShowGrid(showGrid);

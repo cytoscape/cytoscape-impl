@@ -1,7 +1,11 @@
 package org.cytoscape.view.table.internal.util;
 
-import javax.swing.SwingUtilities;
+import java.awt.Color;
 
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.slf4j.Logger;
 
 /*
@@ -30,6 +34,37 @@ import org.slf4j.Logger;
 
 public final class ViewUtil {
 
+	public static Color getDefaultTableHeaderBg() {
+		return UIManager.getColor("TableHeader.background");
+	}
+	
+	public static Color getSelectedTableHeaderBg() {
+		int alpha = LookAndFeelUtil.isNimbusLAF() ? 50 : 25;
+		
+		return alphaBlendColors(getDefaultTableHeaderBg(), UIManager.getColor("Focus.color"), alpha);
+	}
+	
+	public static Color alphaBlendColors(Color bottom, Color top, int topAlpha) {
+		if (topAlpha == 255)
+			return top;
+		if (topAlpha == 0)
+			return bottom;
+
+        int br = bottom.getRed();
+        int bg = bottom.getGreen();
+        int bb = bottom.getBlue();
+        
+        int tr = top.getRed();
+        int tg = top.getGreen();
+        int tb = top.getBlue();
+        
+        var r = (tr * topAlpha + br * (255 - topAlpha)) / 255;
+        var g = (tg * topAlpha + bg * (255 - topAlpha)) / 255;
+        var b = (tb * topAlpha + bb * (255 - topAlpha)) / 255;
+        
+        return new Color(r, g, b);
+	}
+	
 	/**
 	 * Utility method that invokes the code in Runnable.run on the AWT Event Dispatch Thread.
 	 * @param runnable
