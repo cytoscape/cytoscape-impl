@@ -622,29 +622,25 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 	
 	public class Panner {
-		private boolean changed = false;
-		
-		private Panner() {
-			renderComponent.startPan();
-		}
+		private boolean panned = false;
 		
 		public void continuePan(double dx, double dy) {
-			synchronized (dingLock) { // MKTODO is this necessary?
-				changed = true;
+			if(!panned)
+				renderComponent.startPan();
 			
-				NetworkTransform transform = renderComponent.getTransform();
-				double x = transform.getCenterX() + dx;
-				double y = transform.getCenterY() + dy;
-				renderComponent.setCenter(x, y);
-				
-				updateView(UpdateType.ALL_FAST);
-			}
+			panned = true;
+		
+			NetworkTransform transform = renderComponent.getTransform();
+			double x = transform.getCenterX() + dx;
+			double y = transform.getCenterY() + dy;
+			renderComponent.setCenter(x, y);
+			
+			updateView(UpdateType.ALL_FAST);
 		}
 		
 		public void endPan() {
-			renderComponent.endPan();
-			
-			if(changed) {
+			if(panned) {
+				renderComponent.endPan();
 				updateCenterVPs();
 				updateView(UpdateType.ALL_FULL);
 			}
