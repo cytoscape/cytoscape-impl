@@ -29,32 +29,31 @@ public class LabelSelectionManager {
 	}
 	
 	public void add(LabelSelection sel) {
-		selectedNodeLabels.add(sel);
-		fireSelectionChanged();
+		boolean changed = selectedNodeLabels.add(sel);
+		if(changed)
+			fireSelectionChanged();
+	}
+	
+	public void remove(LabelSelection sel) {
+		boolean changed = selectedNodeLabels.remove(sel);
+		if(changed)
+			fireSelectionChanged();
+	}
+	
+	public void clear() {
+		if(!selectedNodeLabels.isEmpty()) {
+			selectedNodeLabels.clear();
+			fireSelectionChanged();
+		}
 	}
 	
 	// The last clicked on label, used to make rotating consistent for all selected labels.
 	public void setPrimary(LabelSelection sel) {
 		this.primarySelection = sel;
 	}
-	
-	public void remove(LabelSelection sel) {
-		selectedNodeLabels.remove(sel);
-		fireSelectionChanged();
-	}
-	
-	public void addAll(Collection<LabelSelection> nodeLabels) {
-		selectedNodeLabels.addAll(nodeLabels);
-		fireSelectionChanged();
-	}
-	
+		
 	public Collection<LabelSelection> getSelectedLabels() {
 		return selectedNodeLabels;
-	}
-	
-	public void clear() {
-		selectedNodeLabels.clear();
-		fireSelectionChanged();
 	}
 	
 	public boolean isEmpty() {
@@ -64,7 +63,6 @@ public class LabelSelectionManager {
 	public boolean contains(LabelSelection sel) {
 		return selectedNodeLabels.contains(sel);
 	}
-	
 	
 	public void setCurrentDragPoint(Point offset) {
 		this.currentDragPoint = offset;

@@ -140,6 +140,7 @@ public class ReadDataManager {
 	private final SUIDUpdater suidUpdater;
 	private final GroupUtil groupUtil;
 	private final CyServiceRegistrar serviceRegistrar;
+	private CyRootNetworkManager rootNetworkManager;
 
 	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
@@ -427,15 +428,22 @@ public class ReadDataManager {
 		final CyNetworkFactory networkFactory = serviceRegistrar.getService(CyNetworkFactory.class);
 		final CyNetwork baseNet = networkFactory.createNetwork();
 		
-		final CyRootNetworkManager rootNetworkManager = serviceRegistrar.getService(CyRootNetworkManager.class);
+		final CyRootNetworkManager rootNetworkManager = getRootNetworkManager();
 		final CyRootNetwork rootNetwork = rootNetworkManager.getRootNetwork(baseNet);
 		
 		return rootNetwork;
 	}
 	
 	protected CyRootNetwork getRootNetwork() {
-		return (currentNetwork != null) ?
-				serviceRegistrar.getService(CyRootNetworkManager.class).getRootNetwork(currentNetwork) : null;
+		return (currentNetwork != null) ? getRootNetworkManager().getRootNetwork(currentNetwork) : null;
+	}
+	
+	private CyRootNetworkManager getRootNetworkManager() {
+		// Optimization, getting the CyRootNetworkManager service for every edge adds noticeable overhead
+		if(rootNetworkManager == null) {
+			rootNetworkManager = serviceRegistrar.getService(CyRootNetworkManager.class);
+		}
+		return rootNetworkManager;
 	}
 	
     protected CyNode createNode(final Object oldId, final String label, final CyNetwork net) {

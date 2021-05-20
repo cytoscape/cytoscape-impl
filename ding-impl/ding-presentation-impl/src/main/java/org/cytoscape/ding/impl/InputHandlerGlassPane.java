@@ -259,9 +259,9 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	
 	@Override
 	protected void paintComponent(Graphics g) {
-		get(AddEdgeListener.class).drawAddingEdge(g);
-		get(SelectionRectangleListener.class).drawSelectionRectangle(g);
-		maybe(SelectionLassoListener.class).ifPresent(listener -> listener.drawSelectionLasso(g));
+		maybe(AddEdgeListener.class).ifPresent(l -> l.drawAddingEdge(g));
+		maybe(SelectionRectangleListener.class).ifPresent(l -> l.drawSelectionRectangle(g));
+		maybe(SelectionLassoListener.class).ifPresent(l -> l.drawSelectionLasso(g));
 	}
 	
 	@Override
