@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
@@ -163,7 +164,7 @@ public class SimpleSpacialIndex2DSnapshotImpl implements NetworkSpacialIndex2D {
 		return snapshot.getNodeCount();
 	}
 
-	private QueryResults computeQueryOverlap(float xMin, float yMin, float xMax, float yMax) {
+	private QueryResults computeQueryOverlap(float xMin, float yMin, float xMax, float yMax, BooleanSupplier isCancelled) {
 		initMBR();
 		
 		// Snap to MBR, if user zooms way out we can use cached MBR results.
@@ -178,10 +179,12 @@ public class SimpleSpacialIndex2DSnapshotImpl implements NetworkSpacialIndex2D {
 			return cache;
 		}
 		
-		cachedQueryResults = null;
-		
 		List<CyNodeViewSnapshotImpl> overlapNodes = new ArrayList<>();
 		for(var node : snapshot.getSnapshotNodeViews()) {
+			if(isCancelled != null && isCancelled.getAsBoolean()) {
+				return null;
+			}
+			
 			double x = node.x;
 			double y = node.y;
 			double h = node.h;
@@ -209,31 +212,38 @@ public class SimpleSpacialIndex2DSnapshotImpl implements NetworkSpacialIndex2D {
 	
 	@Override
 	public SpacialIndex2DEnumerator<Long> queryOverlap(float xMin, float yMin, float xMax, float yMax) {
-		QueryResults cache = computeQueryOverlap(xMin, yMin, xMax, yMax);
+		QueryResults cache = computeQueryOverlap(xMin, yMin, xMax, yMax, null);
 		return new SimpleNodeEnumerator(cache.getOverlapNodes());
 	}
 	
 	@Override
-	public NodeSpacialIndex2DEnumerator queryAllNodes() {
+	public NodeSpacialIndex2DEnumerator queryAllNodes(BooleanSupplier isCancelled) {
 		initMBR();
-		return queryOverlapNodes(mbrf[X_MIN], mbrf[Y_MIN], mbrf[X_MAX], mbrf[Y_MAX]);
+		return queryOverlapNodes(mbrf[X_MIN], mbrf[Y_MIN], mbrf[X_MAX], mbrf[Y_MAX], isCancelled);
 	}
 	
 	@Override
-	public NodeSpacialIndex2DEnumerator queryOverlapNodes(float xMin, float yMin, float xMax, float yMax) {
-		QueryResults cache = computeQueryOverlap(xMin, yMin, xMax, yMax);
+	public NodeSpacialIndex2DEnumerator queryOverlapNodes(float xMin, float yMin, float xMax, float yMax, BooleanSupplier isCancelled) {
+		QueryResults cache = computeQueryOverlap(xMin, yMin, xMax, yMax, isCancelled);
+		if(cache == null)
+			return null;
 		return new SimpleNodeEnumerator(cache.getOverlapNodes());
 	}
 	
-	public EdgeSpacialIndex2DEnumerator queryAllEdges() {
+	public EdgeSpacialIndex2DEnumerator queryAllEdges(BooleanSupplier isCancelled) {
 		initMBR();
-		return queryOverlapEdges(mbrf[X_MIN], mbrf[Y_MIN], mbrf[X_MAX], mbrf[Y_MAX]);
+		return queryOverlapEdges(mbrf[X_MIN], mbrf[Y_MIN], mbrf[X_MAX], mbrf[Y_MAX], isCancelled);
 	}
 	
 	
-	public EdgeSpacialIndex2DEnumerator queryOverlapEdges(float xMin, float yMin, float xMax, float yMax) {
-		QueryResults cache = computeQueryOverlap(xMin, yMin, xMax, yMax);
-		return new SimpleEdgeEnumerator(cache.getAdjacentEdges());
+	public EdgeSpacialIndex2DEnumerator queryOverlapEdges(float xMin, float yMin, float xMax, float yMax, BooleanSupplier isCancelled) {
+		QueryResults cache = computeQueryOverlap(xMin, yMin, xMax, yMax, isCancelled);
+		if(cache == null)
+			return null;
+		var adjacentEdges = cache.getAdjacentEdges(isCancelled);
+		if(adjacentEdges == null)
+			return null;
+		return new SimpleEdgeEnumerator(adjacentEdges);
 	}
 	
 
@@ -252,7 +262,7 @@ public class SimpleSpacialIndex2DSnapshotImpl implements NetworkSpacialIndex2D {
 		private final List<CyNodeViewSnapshotImpl> overlapNodes;
 		private List<View<CyEdge>> edges;
 		
-		public QueryResults(float xMin, float yMin, float xMax, float yMax, List<CyNodeViewSnapshotImpl> overlapNodes) {
+		QueryResults(float xMin, float yMin, float xMax, float yMax, List<CyNodeViewSnapshotImpl> overlapNodes) {
 			this.xMin = xMin;
 			this.yMin = yMin;
 			this.xMax = xMax;
@@ -260,35 +270,41 @@ public class SimpleSpacialIndex2DSnapshotImpl implements NetworkSpacialIndex2D {
 			this.overlapNodes = overlapNodes;
 		}
 		
-		public boolean matches(float xMin, float yMin, float xMax, float yMax) {
+		boolean matches(float xMin, float yMin, float xMax, float yMax) {
 			return this.xMin == xMin && this.yMin == yMin && this.xMax == xMax && this.yMax == yMax;
 		}
 		
-		public List<CyNodeViewSnapshotImpl> getOverlapNodes() {
+		List<CyNodeViewSnapshotImpl> getOverlapNodes() {
 			return overlapNodes;
 		}
 		
-		public synchronized List<View<CyEdge>> getAdjacentEdges() {
+		synchronized List<View<CyEdge>> getAdjacentEdges(BooleanSupplier isCancelled) {
 			if(edges == null) {
-				edges = new ArrayList<>();
+				List<View<CyEdge>> tempEdges = new ArrayList<>();
 				
 				Set<Long> visitedNodes = new HashSet<>();
 				for(var node : overlapNodes) {
+					if(isCancelled != null && isCancelled.getAsBoolean()) {
+						return null;
+					}
+					
 					long nodeSuid = node.getSUID();
 					Iterable<View<CyEdge>> touchingEdges = snapshot.getAdjacentEdgeIterable(nodeSuid);
 					for(View<CyEdge> edge : touchingEdges) {
 						SnapshotEdgeInfo edgeInfo = snapshot.getEdgeInfo(edge);
 						long otherNode = nodeSuid ^ edgeInfo.getSourceViewSUID() ^ edgeInfo.getTargetViewSUID();
 						if(!visitedNodes.contains(otherNode)) {
-							edges.add(edge);
+							tempEdges.add(edge);
 						}
 					}
 					visitedNodes.add(nodeSuid);
 				}
 				
 				if(snapshot.hasEdgeZ()) {
-					edges.sort(edgeZComparator);
+					tempEdges.sort(edgeZComparator);
 				}
+				
+				edges = tempEdges;
 			}
 			return edges;
 		}

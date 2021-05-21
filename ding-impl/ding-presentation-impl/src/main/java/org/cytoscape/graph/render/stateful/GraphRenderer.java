@@ -98,14 +98,14 @@ public final class GraphRenderer {
 		
 		EdgeSpacialIndex2DEnumerator edgeHits;
 		Rectangle2D.Float area = grafx.getTransform().getNetworkVisibleAreaNodeCoords();
-		if (flags.renderEdges() == RenderEdges.ALL)
-			// We want to render edges in the same order (back to front) that
-			// we would use to render just edges on visible nodes; this is assuming
-			// that our spacial index has the subquery order-preserving property.
-			edgeHits = netView.getSpacialIndex2D().queryAllEdges();
-		else
-			edgeHits = netView.getSpacialIndex2D().queryOverlapEdges(area.x, area.y, area.x + area.width, area.y + area.height);
 		
+		if (flags.renderEdges() == RenderEdges.ALL)
+			edgeHits = netView.getSpacialIndex2D().queryAllEdges(pm::isCancelled);
+		else
+			edgeHits = netView.getSpacialIndex2D().queryOverlapEdges(area.x, area.y, area.x + area.width, area.y + area.height, pm::isCancelled);
+		
+		if(edgeHits == null) // cancelled
+			return;
 		
 		if (flags.not(LOD_HIGH_DETAIL)) { // Low detail.
 
@@ -399,7 +399,10 @@ public final class GraphRenderer {
 		final double[] doubleBuff2 = new double[2];
 		
 		Rectangle2D.Float area = grafx.getTransform().getNetworkVisibleAreaNodeCoords();
-		NodeSpacialIndex2DEnumerator nodeHits = netView.getSpacialIndex2D().queryOverlapNodes(area.x, area.y, area.x + area.width, area.y + area.height);
+		NodeSpacialIndex2DEnumerator nodeHits = netView.getSpacialIndex2D().queryOverlapNodes(area.x, area.y, area.x + area.width, area.y + area.height, pm::isCancelled);
+		
+		if(nodeHits == null) // cancelled
+			return;
 		
 		if (flags.not(LOD_HIGH_DETAIL)) { // Low detail.
 			

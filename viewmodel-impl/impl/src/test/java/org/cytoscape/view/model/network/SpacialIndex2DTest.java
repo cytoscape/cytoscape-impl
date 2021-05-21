@@ -266,11 +266,11 @@ public class SpacialIndex2DTest {
 		List<Long> suids2 = enumToList(overlapEnum);
 		assertEquals(expectedOrder, suids2);
 		
-		NodeSpacialIndex2DEnumerator allNodesEnum = spacialIndex.queryAllNodes();
+		NodeSpacialIndex2DEnumerator allNodesEnum = spacialIndex.queryAllNodes(null);
 		List<Long> suids3 = enumToList(allNodesEnum);
 		assertEquals(expectedOrder, suids3);
 		
-		NodeSpacialIndex2DEnumerator overlapNodesEnum = spacialIndex.queryOverlapNodes(0, 0, 4, 4);
+		NodeSpacialIndex2DEnumerator overlapNodesEnum = spacialIndex.queryOverlapNodes(0, 0, 4, 4, null);
 		List<Long> suids4 = enumToList(overlapNodesEnum);
 		assertEquals(expectedOrder, suids4);
 	}
@@ -346,12 +346,50 @@ public class SpacialIndex2DTest {
 		
 		NetworkSpacialIndex2D spacialIndex = networkView.createSnapshot().getSpacialIndex2D();
 		
-		EdgeSpacialIndex2DEnumerator allEnum = spacialIndex.queryAllEdges();
+		EdgeSpacialIndex2DEnumerator allEnum = spacialIndex.queryAllEdges(null);
 		List<Long> suids = enumToList(allEnum);
 		assertEquals(expectedOrder, suids);
 		
-		EdgeSpacialIndex2DEnumerator overlapEnum = spacialIndex.queryOverlapEdges(0, 0, 4, 4);
+		EdgeSpacialIndex2DEnumerator overlapEnum = spacialIndex.queryOverlapEdges(0, 0, 4, 4, null);
 		List<Long> suids2 = enumToList(overlapEnum);
 		assertEquals(expectedOrder, suids2);
+	}
+	
+	
+	@Test
+	public void testIsCancelled() {
+		CyNetwork network = networkSupport.getNetwork();
+		CyNode n1 = network.addNode();
+		CyNode n2 = network.addNode();
+		CyNode n3 = network.addNode();
+		network.addEdge(n1, n2, false);
+		network.addEdge(n2, n3, false);
+		network.addEdge(n3, n1, false);
+		
+		CyNetworkViewImpl networkView = createNetworkView(network);
+		
+		setGeometry(networkView.getNodeView(n1), 4, 3, 4, 2, 1);
+		setGeometry(networkView.getNodeView(n2), 5, 8, 4, 2, 2);
+		setGeometry(networkView.getNodeView(n3), 11, 10, 4, 2, 3);
+		
+		NetworkSpacialIndex2D spacialIndex = networkView.createSnapshot().getSpacialIndex2D();
+		
+		var edges1 = spacialIndex.queryAllEdges(() -> true);
+		assertNull(edges1);
+		var edges2 = spacialIndex.queryOverlapEdges(-1000, -1000, 1000, 1000, () -> true);
+		assertNull(edges2);
+		var nodes1 = spacialIndex.queryAllNodes(() -> true);
+		assertNull(nodes1);
+		var nodes2 = spacialIndex.queryOverlapNodes(-1000, -1000, 1000, 1000, () -> true);
+		assertNull(nodes2);
+		
+		edges1 = spacialIndex.queryAllEdges(() -> false);
+		assertNotNull(edges1);
+		edges2 = spacialIndex.queryOverlapEdges(-1000, -1000, 1000, 1000, () -> false);
+		assertNotNull(edges2);
+		nodes1 = spacialIndex.queryAllNodes(() -> false);
+		assertNotNull(nodes1);
+		nodes2 = spacialIndex.queryOverlapNodes(-1000, -1000, 1000, 1000, () -> false);
+		assertNotNull(nodes2);
 	}
 }
