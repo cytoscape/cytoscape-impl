@@ -446,7 +446,7 @@ public class BrowserTable extends JTable
 		var oldWidth = columnView.getVisualProperty(COLUMN_WIDTH);
 
 		if (oldWidth == null || newWidth != oldWidth)
-			columnView.setVisualProperty(COLUMN_WIDTH, newWidth);
+			columnView.setLockedValue(COLUMN_WIDTH, newWidth);
 		
 		// Scroll to the new column
 		scrollRectToVisible(getCellRect(0, colIdx, true));
@@ -883,7 +883,7 @@ public class BrowserTable extends JTable
 							var oldWidth = view.getVisualProperty(COLUMN_WIDTH);
 
 							if (oldWidth == null || newWidth != oldWidth)
-								view.setVisualProperty(COLUMN_WIDTH, newWidth);
+								view.setLockedValue(COLUMN_WIDTH, newWidth);
 						}
 					}
 				}

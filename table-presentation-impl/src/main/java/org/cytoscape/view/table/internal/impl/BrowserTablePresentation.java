@@ -159,15 +159,11 @@ public class BrowserTablePresentation {
 		return fn != null ? fn.apply(row) : null;
 	}
 	
-	public boolean isTextWrapped(CyRow row, CyColumnView colView) {
+	public boolean isTextWrapped(CyColumnView colView) {
 		var b = false;
 		
-		if (colView.isSet(COLUMN_TEXT_WRAPPED)) {
-			var fn = colView.getCellVisualProperty(COLUMN_TEXT_WRAPPED);
-			
-			if (fn != null)
-				b = fn.apply(row);
-		}
+		if (colView.isSet(COLUMN_TEXT_WRAPPED))
+			b = colView.getVisualProperty(COLUMN_TEXT_WRAPPED);
 		
 		return b;
 	}

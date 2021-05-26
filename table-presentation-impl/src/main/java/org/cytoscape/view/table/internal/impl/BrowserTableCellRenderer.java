@@ -208,7 +208,7 @@ public class BrowserTableCellRenderer extends JPanel implements TableCellRendere
 		
 		// Numbers and Booleans should not be wrapped, though error messages can be
 		boolean wrap = (isError || !(validatedObj instanceof Boolean) || !(validatedObj instanceof Number))
-				&& presentation.isTextWrapped(row, columnView);
+				&& presentation.isTextWrapped(columnView);
 		
 		if (wrap) {
 			var matcher = htmlPattern.matcher(text);
