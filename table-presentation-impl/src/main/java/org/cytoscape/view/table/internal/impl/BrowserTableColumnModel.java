@@ -44,11 +44,11 @@ public class BrowserTableColumnModel extends DefaultTableColumnModel {
 	
 	private final List<BrowserTableColumnModelListener> listeners = new CopyOnWriteArrayList<>();
 	
-	
 	public void addColumn(TableColumn col, Long viewSuid, boolean isVisible, double gravity) {
 		col.setIdentifier(viewSuid);
 		gravities.put(col, gravity);
-		if(isVisible) {
+		
+		if (isVisible) {
 			visibleColumns.add(col);
 			super.addColumn(col);
 		}
@@ -81,11 +81,11 @@ public class BrowserTableColumnModel extends DefaultTableColumnModel {
 	}
 	
 	public TableColumn getTableColumn(Long suid) {
-		for(TableColumn col : gravities.keySet()) {
-			if(suid.equals(col.getIdentifier())) {
+		for (var col : gravities.keySet()) {
+			if (suid.equals(col.getIdentifier()))
 				return col;
-			}
 		}
+		
 		return null;
 	}
 	
@@ -94,25 +94,24 @@ public class BrowserTableColumnModel extends DefaultTableColumnModel {
         list.sort(Entry.comparingByValue());
 
         int i = 0;
-        for(var entry : list) {
-        	TableColumn curCol = entry.getKey();
-        	if(curCol == col) {
-        		return i;
-        	}
-        	if(isVisible(curCol)) {
-        		i++;
-        	}
+        for (var entry : list) {
+        	var curCol = entry.getKey();
+        	
+			if (curCol == col)
+				return i;
+			
+			if (isVisible(curCol))
+				i++;
         }
+        
        	throw new IllegalArgumentException("Table Column not found");
 	}
 	
-	
-	
 	public void setColumnVisible(TableColumn col, boolean visible) {
-		if(visible == isVisible(col))
+		if (visible == isVisible(col))
 			return;
 		
-		if(visible) {
+		if (visible) {
 			int visibleIndex = getSetVisibleIndex(col);
 			visibleColumns.add(col);
 			// column gets added at the end
@@ -127,24 +126,24 @@ public class BrowserTableColumnModel extends DefaultTableColumnModel {
 		}
 	}
 	
-	
 	public void setColumnGravity(TableColumn col, double gravity) {
 		gravities.put(col, gravity);
 	}
 	
-
 	public void reorderColumnsToRespectGravity() {
 		var list = new ArrayList<>(gravities.entrySet());
         list.sort(Entry.comparingByValue());
         
         int i = 0;
-        for(var entry : list) {
-        	TableColumn curCol = entry.getKey();
-        	if(isVisible(curCol)) {
+        for (var entry : list) {
+        	var curCol = entry.getKey();
+        	
+        	if (isVisible(curCol)) {
 	        	int index = super.getColumnIndex(curCol.getIdentifier());
-	        	if(index != i) {
+	        	
+	        	if (index != i)
 	        		super.moveColumn(index, i);
-	        	}
+	        	
 	        	i++;
         	}
         }
@@ -157,7 +156,8 @@ public class BrowserTableColumnModel extends DefaultTableColumnModel {
 	@Override
 	public void moveColumn(int columnIndex, int newIndex) {
 		BrowserTableColumnModelGravityEvent event = null;
-		if(columnIndex != newIndex) {
+		
+		if (columnIndex != newIndex) {
 			final var c1 = super.getColumn(columnIndex);
 			final var c2 = super.getColumn(newIndex);
 			final var g1 = gravities.get(c1);
@@ -165,27 +165,26 @@ public class BrowserTableColumnModel extends DefaultTableColumnModel {
 			gravities.put(c1, g2);
 			gravities.put(c2, g1);
 			
-			Long c1Suid = (Long) c1.getIdentifier();
-			Long c2Suid = (Long) c2.getIdentifier();
+			var c1Suid = (Long) c1.getIdentifier();
+			var c2Suid = (Long) c2.getIdentifier();
 			event = new BrowserTableColumnModelGravityEvent(c1Suid, g2, c2Suid, g1);
 		}
 		
 		super.moveColumn(columnIndex, newIndex);
 		
-		if(event != null) {
-			for(var listener : listeners) {
+		if (event != null) {
+			for (var listener : listeners) {
 				listener.columnGravityChanged(event);
 			}
 		}
 	}
 	
 	public TableColumn getColumnByModelIndex(int modelColumnIndex) {
-		for (TableColumn column : gravities.keySet()) {
-			if (column.getModelIndex() == modelColumnIndex) {
+		for (var column : gravities.keySet()) {
+			if (column.getModelIndex() == modelColumnIndex)
 				return column;
-			}
 		}
+		
 		return null;
 	}
-
 }

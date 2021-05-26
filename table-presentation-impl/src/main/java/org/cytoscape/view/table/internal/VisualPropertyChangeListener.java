@@ -143,24 +143,31 @@ public class VisualPropertyChangeListener implements TableViewChangedListener {
 	}
 	
 	private void updateColumnVP(CyColumnView colView, VisualProperty<?> vp, Object value) {
+		var colModel = (BrowserTableColumnModel) browserTable.getColumnModel();
+		
 		if (vp == COLUMN_VISIBLE) {
 			boolean visible = Boolean.TRUE.equals(value);
-			var colModel = (BrowserTableColumnModel) browserTable.getColumnModel();
 			var col = colModel.getTableColumn(colView.getSUID());
 			colModel.setColumnVisible(col, visible);
 		} else if (vp == CELL_BACKGROUND_PAINT) {
-			browserTable.repaint();
+			invokeOnEDT(() -> browserTable.repaint());
 		} else if (vp == COLUMN_FORMAT) {
-			browserTable.repaint();
+			invokeOnEDT(() -> browserTable.repaint());
 		} else if (vp == COLUMN_WIDTH) {
 			if (value instanceof Number) {
 				int width = ((Number) value).intValue();
 				
 				if (width > 0) {
-					var colModel = (BrowserTableColumnModel) browserTable.getColumnModel();
 					var col = colModel.getTableColumn(colView.getSUID());
-					col.setPreferredWidth(width);
-					col.setWidth(width);
+					
+					if (width != col.getWidth()) {
+						invokeOnEDT(() -> {
+							col.setPreferredWidth(width);
+							col.setWidth(width);
+							browserTable.revalidate();
+							browserTable.repaint();
+						});
+					}
 				}
 			}
 		} else if (vp == COLUMN_TEXT_WRAPPED) {
@@ -169,11 +176,12 @@ public class VisualPropertyChangeListener implements TableViewChangedListener {
 					browserTable.repaint();
 				else
 					browserTable.resetRowHeight();
+				
+				rowHeader.update();
 			});
 		} else if (vp == COLUMN_GRAVITY) {
 			if (value instanceof Number) {
 				double gravity = ((Number) value).doubleValue();
-				var colModel = (BrowserTableColumnModel) browserTable.getColumnModel();
 				var column = colModel.getTableColumn(colView.getSUID());
 				
 				if (column != null)

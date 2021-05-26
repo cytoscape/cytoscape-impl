@@ -210,13 +210,15 @@ public class BrowserTable extends JTable
 	
 	@Override
 	public void setColumnModel(TableColumnModel columnModel) {
-		super.setColumnModel(columnModel);
-		
-		// Update the COLUMN_SELECTED Visual Property
-		columnModel.getSelectionModel().addListSelectionListener(e -> {
-			if (!e.getValueIsAdjusting() && !ignoreColumnSelectionEvents)
-				setColumnSelectedVP(e.getFirstIndex(), e.getLastIndex());
-		});
+		if (columnModel != getColumnModel()) {
+			super.setColumnModel(columnModel);
+			
+			// Update the COLUMN_SELECTED Visual Property
+			columnModel.getSelectionModel().addListSelectionListener(e -> {
+				if (!e.getValueIsAdjusting() && !ignoreColumnSelectionEvents)
+					setColumnSelectedVP(e.getFirstIndex(), e.getLastIndex());
+			});
+		}
 	}
 	
 	@Override
@@ -429,24 +431,13 @@ public class BrowserTable extends JTable
 	public void columnAdded(TableColumnModelEvent e) {
 		super.columnAdded(e);
 		
+		if (getParent() == null)
+			return; // Updating the column width here does not work
+		
 		// Update the COLUMN_WIDTH visual property value.
 		var colIdx = e.getToIndex();
-		var tableModel = getBrowserTableModel();
-		
-		if (tableModel == null)
-			return;
-		
-		var columnModel = (BrowserTableColumnModel) getColumnModel();
-		var column = columnModel.getColumn(colIdx);
-		var tableView = tableModel.getTableView();
-		var name = tableModel.getColumnName(convertColumnIndexToModel(colIdx));
-		var columnView = tableView.getColumnView(name);
-				
-		var newWidth = column.getWidth();
-		var oldWidth = columnView.getVisualProperty(COLUMN_WIDTH);
-
-		if (oldWidth == null || newWidth != oldWidth)
-			columnView.setLockedValue(COLUMN_WIDTH, newWidth);
+		syncColumnWidth(colIdx);
+		resizeAndRepaint();
 		
 		// Scroll to the new column
 		scrollRectToVisible(getCellRect(0, colIdx, true));
@@ -459,6 +450,19 @@ public class BrowserTable extends JTable
 		// The removed (or hidden) column might have COLUMN_TEXT_WRAPPED set to true,
 		// which affected the row height. So we need to reset it.
 		resetRowHeight();
+	}
+	
+	@Override
+	public void addNotify() {
+		super.addNotify();
+		
+		// Try to set the COLUMN_WIDTH visual property value to all columns
+		int columnCount = getColumnCount();
+		
+		for (int i = 0; i < columnCount; i++)
+			syncColumnWidth(i);
+		
+		resizeAndRepaint();
 	}
 	
 	@Override
@@ -976,6 +980,40 @@ public class BrowserTable extends JTable
 			// the selection may have been changed again, which could cause infinite loops
 			if (changed)
 				serviceRegistrar.getService(CyEventHelper.class).flushPayloadEvents();
+		}
+	}
+	
+	/**
+	 * Applies the COLUMN_WIDTH visual property value to the column or updates the COLUMN_WIDTH visual property
+	 * with the current column width.
+	 * @param idx the column index
+	 */
+	private void syncColumnWidth(int idx) {
+		if (idx < 0)
+			return;
+		
+		var tableModel = getBrowserTableModel();
+		
+		if (tableModel == null)
+			return;
+		
+		var columnModel = (BrowserTableColumnModel) getColumnModel();
+		var column = columnModel.getColumn(idx);
+		var tableView = tableModel.getTableView();
+		var name = tableModel.getColumnName(convertColumnIndexToModel(idx));
+		var columnView = tableView.getColumnView(name);
+		
+		var oldWidth = column.getWidth();
+		
+		if (columnView.isSet(COLUMN_WIDTH)) {
+			var newWidth = columnView.getVisualProperty(COLUMN_WIDTH);
+
+			if (newWidth != null && newWidth > 0 && newWidth != oldWidth) {
+				column.setPreferredWidth(newWidth);
+				column.setWidth(newWidth);
+			}
+		} else {
+			columnView.setLockedValue(COLUMN_WIDTH, oldWidth);
 		}
 	}
 	
