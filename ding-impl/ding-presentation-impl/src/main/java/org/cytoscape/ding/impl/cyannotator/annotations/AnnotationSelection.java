@@ -13,6 +13,7 @@ import java.awt.RenderingHints;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -69,6 +70,7 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 	// node coordinates
 	private Rectangle2D union; 
 	private Rectangle2D savedUnion;
+	private Rectangle2D shiftResizeUnion;
 	
 	// Everything below in image coordinates
 	private final Map<Position,Rectangle> anchors = new EnumMap<>(Position.class);
@@ -143,14 +145,18 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 	}
 
 	private void updateBounds() {
-		union = null;
-		
 		synchronized (lock) {
-			for (var a : this) {
-				var bounds = GraphicsUtilities.getRotatedBounds(a);
-				union = (union == null) ? bounds : union.createUnion(bounds);
-			}
+			union = unionBounds(selectedAnnotations);
 		}
+	}
+	
+	private static Rectangle2D unionBounds(Collection<DingAnnotation> annotations) {
+		Rectangle2D union = null;
+		for(var a : annotations) {
+			var bounds = GraphicsUtilities.getRotatedBounds(a);
+			union = (union == null) ? bounds : union.createUnion(bounds);
+		}
+		return union;
 	}
 	
 	/**
@@ -196,6 +202,12 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 	}
 	
 	public void resizeAnnotationsRelative(int mouseX, int mouseY, boolean keepAspectRatio) {
+		// Save the aspect ratio at the moment that shift was pressed
+		if(keepAspectRatio && shiftResizeUnion == null)
+			shiftResizeUnion = unionBounds(selectedAnnotations);
+		else if(!keepAspectRatio && shiftResizeUnion != null)
+			shiftResizeUnion = null;
+		
 		// compensate for the difference between the anchor location and the mouse location
 		var position = resizingAnchor.getPosition();
 		
@@ -209,7 +221,7 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 			mouseX -= resizingAnchor.getMouseOffsetX();
 
 		var node = re.getTransform().getNodeCoordinates(mouseX, mouseY);
-		var newOutlineBounds = resize(position, savedUnion, node.getX(), node.getY(), keepAspectRatio);
+		var newOutlineBounds = resize(position, node.getX(), node.getY());
 
 		synchronized (lock) {
 			for (var a : this) {
@@ -221,60 +233,67 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 		updateBounds();
 	}
 	
-	public static Rectangle2D resize(Position position, Rectangle2D bounds, double mouseX, double mouseY,
-			boolean keepAspectRatio) {
-		keepAspectRatio = keepAspectRatio && (position == NORTH_WEST || position == NORTH_EAST || position == SOUTH_WEST
-				|| position == SOUTH_EAST);
+	private Rectangle2D resize(Position position, double mouseX, double mouseY) {
+		double x, y, w, h;
+		{
+			final double boundsX = savedUnion.getX();
+			final double boundsY = savedUnion.getY();
+			final double boundsWidth = savedUnion.getWidth();
+			final double boundsHeight = savedUnion.getHeight();
+			final double boundsYBottom = boundsY + boundsHeight;
+			final double boundsXRight = boundsX + boundsWidth;
+	
+			x = boundsX;
+			y = boundsY;
+			w = boundsWidth;
+			h = boundsHeight;
+			
+			// y and height
+			if (isNorth(position)) {
+				if (mouseY > boundsYBottom) {
+					y = boundsYBottom;
+					h = mouseY - boundsYBottom;
+				} else {
+					y = mouseY;
+					h = boundsYBottom - mouseY;
+				}
+			} else if (isSouth(position)) {
+				if (mouseY < boundsY) {
+					y = mouseY;
+					h = boundsY - mouseY;
+				} else {
+					h = mouseY - boundsY;
+				}
+			}
+	
+			// x and width
+			if (isWest(position)) {
+				if (mouseX > boundsXRight) {
+					x = boundsXRight;
+					w = mouseX - boundsXRight;
+				} else {
+					x = mouseX;
+					w = boundsXRight - mouseX;
+				}
+			} else if (isEast(position)) {
+				if (mouseX < boundsX) {
+					x = mouseX;
+					w = boundsX - mouseX;
+				} else {
+					w = mouseX - boundsX;
+				}
+			}
+		}
 		
-		double boundsX = bounds.getX();
-		double boundsY = bounds.getY();
-		double boundsWidth = bounds.getWidth();
-		double boundsHeight = bounds.getHeight();
-		double boundsYBottom = boundsY + boundsHeight;
-		double boundsXRight = boundsX + boundsWidth;
-
-		double x = boundsX;
-		double y = boundsY;
-		double w = boundsWidth;
-		double h = boundsHeight;
-
-		// y and height
-		if (isNorth(position)) {
-			if (mouseY > boundsYBottom) {
-				y = boundsYBottom;
-				h = mouseY - boundsYBottom;
-			} else {
-				y = mouseY;
-				h = boundsYBottom - mouseY;
-			}
-		} else if (isSouth(position)) {
-			if (mouseY < boundsY) {
-				y = mouseY;
-				h = boundsY - mouseY;
-			} else {
-				h = mouseY - boundsY;
-			}
-		}
-
-		// x and width
-		if (isWest(position)) {
-			if (mouseX > boundsXRight) {
-				x = boundsXRight;
-				w = mouseX - boundsXRight;
-			} else {
-				x = mouseX;
-				w = boundsXRight - mouseX;
-			}
-		} else if (isEast(position)) {
-			if (mouseX < boundsX) {
-				x = mouseX;
-				w = boundsX - mouseX;
-			} else {
-				w = mouseX - boundsX;
-			}
-		}
-
-		if (keepAspectRatio) {
+		// If shift is pressed then preserve the aspect ratio
+		if(shiftResizeUnion != null && isCorner(position)) { // MKTODO why does this only work for corners?
+			final double boundsX = shiftResizeUnion.getX();
+			final double boundsY = shiftResizeUnion.getY();
+			final double boundsWidth = shiftResizeUnion.getWidth();
+			final double boundsHeight = shiftResizeUnion.getHeight();
+			final double boundsYBottom = boundsY + boundsHeight;
+			final double boundsXRight = boundsX + boundsWidth;
+			
 			double f1 = w / boundsWidth;
 			double f2 = h / boundsHeight;
 			double f = Math.max(f1, f2);

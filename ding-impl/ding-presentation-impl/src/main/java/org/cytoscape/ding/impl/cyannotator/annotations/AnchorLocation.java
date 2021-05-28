@@ -1,13 +1,6 @@
 package org.cytoscape.ding.impl.cyannotator.annotations;
 
-import static org.cytoscape.view.presentation.property.values.Position.EAST;
-import static org.cytoscape.view.presentation.property.values.Position.NORTH;
-import static org.cytoscape.view.presentation.property.values.Position.NORTH_EAST;
-import static org.cytoscape.view.presentation.property.values.Position.NORTH_WEST;
-import static org.cytoscape.view.presentation.property.values.Position.SOUTH;
-import static org.cytoscape.view.presentation.property.values.Position.SOUTH_EAST;
-import static org.cytoscape.view.presentation.property.values.Position.SOUTH_WEST;
-import static org.cytoscape.view.presentation.property.values.Position.WEST;
+import static org.cytoscape.view.presentation.property.values.Position.*;
 
 import org.cytoscape.view.presentation.property.values.Position;
 
@@ -69,6 +62,10 @@ public class AnchorLocation {
 	
 	public static boolean isEast(Position position) {
 		return position == EAST || position == NORTH_EAST || position == SOUTH_EAST;
+	}
+	
+	public static boolean isCorner(Position position) {
+		return position == NORTH_WEST || position == NORTH_EAST || position == SOUTH_WEST || position == SOUTH_EAST;
 	}
 	
 }

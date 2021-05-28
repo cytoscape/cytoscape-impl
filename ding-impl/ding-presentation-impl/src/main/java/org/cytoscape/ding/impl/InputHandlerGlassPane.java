@@ -45,7 +45,6 @@ import org.cytoscape.ding.impl.DRenderingEngine.Panner;
 import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.AnchorLocation;
-import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
@@ -85,7 +84,6 @@ import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.ObjectPosition;
-import org.cytoscape.view.presentation.property.values.Position;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -1357,62 +1355,43 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		
 		@Override
 		public void mouseMoved(MouseEvent e) {
-			// This handles when you first add an annotation to the canvas and it auto-resizes
-			// This operation is initiated by the various annotation dialogs
+			// Note: Auto resizing was removed in 3.9, however this remaining code is still needed for arrow annotations
 			
-			var resizeAnnotation = cyAnnotator.getResizeShape();
-			var annotationSelection = cyAnnotator.getAnnotationSelection();
-			var repositionAnnotation = cyAnnotator.getRepositioningArrow();
-			
-			if (resizeAnnotation == null && annotationSelection.isEmpty() && repositionAnnotation == null)
-				return;
-
-			if (resizeAnnotation != null) {
-				var initialBounds = cyAnnotator.getResizeBounds(); // node coords
-				var point = re.getTransform().getNodeCoordinates(e.getPoint());
-				var bounds = AnnotationSelection.resize(Position.SOUTH_EAST, initialBounds, point.getX(), point.getY(),
-						e.isShiftDown());
-				resizeAnnotation.setBounds(bounds);
-				resizeAnnotation.update();
-				re.updateView(UpdateType.JUST_ANNOTATIONS);
-			} else if (repositionAnnotation != null) {
+			var arrow = cyAnnotator.getRepositioningArrow();
+			if (arrow != null) {
 				var mousePoint = e.getPoint();
 				var annotations = re.getPicker().getAnnotationsAt(mousePoint);
 				
-				if (annotations.contains(repositionAnnotation))
-					annotations.remove(repositionAnnotation);
+				if (annotations.contains(arrow))
+					annotations.remove(arrow);
 
 				// Target can be another annotation, a node, or just a point.
 				if (!annotations.isEmpty()) {
-					repositionAnnotation.setTarget(annotations.get(0));
+					arrow.setTarget(annotations.get(0));
 				} else if (overNode(mousePoint)) {
 					var overNode = re.getPicker().getNodeAt(mousePoint);
 					// The node view must be mutable so that the coordinates will update when the node is moved
 					var mutableNodeView = re.getViewModelSnapshot().getMutableNodeView(overNode.getSUID());
-					repositionAnnotation.setTarget(mutableNodeView);
+					arrow.setTarget(mutableNodeView);
 				} else {
 					var nodeCoordinates = re.getTransform().getNodeCoordinates(mousePoint);
-					repositionAnnotation.setTarget(nodeCoordinates);
+					arrow.setTarget(nodeCoordinates);
 				}
 
-				repositionAnnotation.update();
+				arrow.update();
 				re.updateView(UpdateType.JUST_ANNOTATIONS);
 			}
 		}
 		
 		@Override
 		public void mouseClicked(MouseEvent e) {
-			if (cyAnnotator.getResizeShape() != null) {
-				cyAnnotator.getResizeShape().contentChanged();
-				cyAnnotator.resizeShape(null);
-				cyAnnotator.postUndoEdit(); // markUndoEdit() is in the dialogs like ShapeAnnotationDialog
-			} else if (cyAnnotator.getRepositioningArrow() != null
-					&& cyAnnotator.getRepositioningArrow().getTarget() != null) {
-				cyAnnotator.getRepositioningArrow().contentChanged();
+			var arrow = cyAnnotator.getRepositioningArrow();
+			if(arrow != null && arrow.getTarget() != null) {
+				arrow.contentChanged();
 				
 				// Select only the new arrow annotation
 				cyAnnotator.clearSelectedAnnotations();
-				ViewUtils.selectAnnotation(re, cyAnnotator.getRepositioningArrow());
+				ViewUtils.selectAnnotation(re, arrow);
 				
 				cyAnnotator.positionArrow(null);
 				cyAnnotator.postUndoEdit(); // markUndoEdit() is in ArrowAnnotationDialog
