@@ -47,7 +47,9 @@ public final class ViewUtil {
 	public static Color alphaBlendColors(Color bottom, Color top, int topAlpha) {
 		if (topAlpha == 255)
 			return top;
-		if (topAlpha == 0)
+
+    // If this is being called by the tests, then "Focus.color" is apparently null
+		if (topAlpha == 0 || top == null)
 			return bottom;
 
         int br = bottom.getRed();
