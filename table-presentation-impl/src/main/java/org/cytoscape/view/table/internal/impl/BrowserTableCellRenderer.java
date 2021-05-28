@@ -1,5 +1,7 @@
 package org.cytoscape.view.table.internal.impl;
 
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL_TEXT_COLOR;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -143,6 +145,8 @@ public class BrowserTableCellRenderer extends JPanel implements TableCellRendere
 		if (col == null || row == null)
 			return this;
 		
+		boolean isColumnSelected = Arrays.binarySearch(table.getColumnModel().getSelectedColumns(), colIndex) >= 0;
+		
 		columnView = (CyColumnView) tableView.getColumnView(col);
 		
 		bg = presentation.getBackgroundColor(row, rowIndex, columnView, tableView);
@@ -182,20 +186,22 @@ public class BrowserTableCellRenderer extends JPanel implements TableCellRendere
 				tooltip = null; // don't show an empty tooltip rectangle!
 		}
 		
-		if (isSelected) {
+		if (isSelected && isColumnSelected) {
 			if (hasFocus) {
 				bg = UIManager.getColor("Table.focusCellBackground");
 				fg = UIManager.getColor("Table.focusCellForeground");
-			} else if (Arrays.binarySearch(table.getColumnModel().getSelectedColumns(), colIndex) >= 0) {
+			} else {
 				bg = UIManager.getColor("Table.selectionBackground");
 				fg = isError ? LookAndFeelUtil.getErrorColor() : UIManager.getColor("Table.selectionForeground");
 			}
 		} else {
 			// If non-editable, grey it out.
-			if (!table.isCellEditable(0, colIndex))
-				fg = UIManager.getColor("TextField.inactiveForeground");
-			else
+			if (!table.isCellEditable(rowIndex, colIndex)) {
+				if (!columnView.isSet(CELL_TEXT_COLOR))
+					fg = UIManager.getColor("TextField.inactiveForeground");
+			} else {
 				fg = isError ? LookAndFeelUtil.getErrorColor() : fg;
+			}
 		}
 		
 		// Save the custom graphics
