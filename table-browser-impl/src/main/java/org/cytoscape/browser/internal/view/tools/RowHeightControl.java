@@ -69,8 +69,7 @@ public class RowHeightControl extends AbstractToolBarControl {
 	private void setValue(int value) {
 		if (value != this.value) {
 			this.value = value;
-			apply(TABLE_ROW_HEIGHT, value); // TODO Apply to RowView
-			// TODO Add listener to VP changes
+			apply(TABLE_ROW_HEIGHT, value);
 		}
 	}
 
@@ -127,8 +126,7 @@ public class RowHeightControl extends AbstractToolBarControl {
 			resetButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(10.0f));
 			resetButton.setToolTipText("Reset");
 			resetButton.addActionListener(evt -> {
-				getHeightText().setText("" + TABLE_ROW_HEIGHT.getDefault());
-				setValue(TABLE_ROW_HEIGHT.getDefault());
+				getHeightSlider().setValue(TABLE_ROW_HEIGHT.getDefault());
 			});
 		}
 		
