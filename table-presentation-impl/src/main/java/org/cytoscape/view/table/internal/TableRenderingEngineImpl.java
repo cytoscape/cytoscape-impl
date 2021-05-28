@@ -99,8 +99,7 @@ public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 	}
 	
 	public void install(JComponent component) {
-		// MKTODO there's more to it than this, there's a bunch of swing listeners to register and stuff
-		vpChangeListener = new VisualPropertyChangeListener(getBrowserTable(), tableView, getRowHeader());
+		vpChangeListener = new VisualPropertyChangeListener(getBrowserTable(), tableView);
 		
 		var scrollPane = new JScrollPane();
 		scrollPane.setViewportView(getBrowserTable());
@@ -110,6 +109,8 @@ public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 		component.setLayout(new BorderLayout());
 		component.add(scrollPane);
 		
+		getBrowserTable().addPropertyChangeListener("rowHeight", evt -> getRowHeader().update());
+		getBrowserTable().addPropertyChangeListener("rowHeightChanged", evt -> getRowHeader().update());
 		getBrowserTable().getModel().addTableModelListener(evt -> {
 			// Update the row header when the table model changes (e.g. added/removed rows)
 			getRowHeader().updateModel();
@@ -335,8 +336,10 @@ public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 			cornerPanel.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mousePressed(MouseEvent evt) {
-					getBrowserTable().selectAll();
-					updateHeader();
+					if (cornerPanel.isEnabled() && !evt.isPopupTrigger()) {
+						getBrowserTable().selectAll();
+						updateHeader();
+					}
 				}
 			});
 		}
@@ -377,6 +380,9 @@ public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 		protected void paintComponent(Graphics g) {
 			super.paintComponent(g);
 			
+			if (!isEnabled())
+				return;
+			
 			// Draw triangle that indicates when all cells selected
 			var g2 = (Graphics2D) g.create();
 			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -401,6 +407,8 @@ public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 		}
 		
 		void update() {
+			setEnabled(getBrowserTable().getRowCount() > 0 && getBrowserTable().getColumnCount() > 0);
+			
 			var allSelected = isAllTableCellsSelected();
 			setBackground(UIManager.getColor(allSelected ? "Table.background" : "TableHeader.background"));
 			repaint();

@@ -467,6 +467,11 @@ public class BrowserTable extends JTable
 	
 	@Override
 	public void setRowHeight(int row, int rowHeight) {
+		int old = getRowHeight(row);
+		
+		if (rowHeight == old)
+			return;
+		
 		super.setRowHeight(row, rowHeight);
 		
 		// Update the ROW_HEIGHT visual property
@@ -485,6 +490,8 @@ public class BrowserTable extends JTable
 			// which will almost certainly cause an infinite loop!
 			serviceRegistrar.getService(CyEventHelper.class).flushPayloadEvents();
 		}
+		
+		fireRowHeightChange(old, rowHeight);
 	}
 	
 	@Override
@@ -811,11 +818,18 @@ public class BrowserTable extends JTable
 		
 		if (h > 0) {
 			setRowHeight(h);
-			
+		
 			// Remember that the cell renderer might set a different height to each row
 			// if COLUMN_TEXT_WRAPPED is true for any visible column
-			repaint();
+			resizeAndRepaint();
+			fireRowHeightChange(0, h);
 		}
+	}
+
+	public void fireRowHeightChange(int oldValue, int newValue) {
+		// Notify any listeners that the row height may have changed, but let's use our 'rowHeightChanged' key,
+		// because we don't want to interfere with any internal Swing listeners by using the standard 'rowHeight'.
+		firePropertyChange("rowHeightChanged", oldValue, newValue);
 	}
 
 	// ==[ PRIVATE METHODS ]============================================================================================

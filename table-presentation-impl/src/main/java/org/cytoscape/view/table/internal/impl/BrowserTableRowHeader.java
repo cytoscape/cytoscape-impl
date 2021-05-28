@@ -52,8 +52,14 @@ public class BrowserTableRowHeader extends JList<Integer> {
 	}
 
 	public void update() {
-		// Force repaint on JList (set updateLayoutStateNeeded = true) on BasicListUI
-		firePropertyChange("cellRenderer", 0, 1);
-		repaint();
+		// It's weird showing the row header when there are no columns
+		setVisible(table.getColumnCount() > 0);
+		
+		if (isVisible()) {
+			// Force repaint on JList (set updateLayoutStateNeeded = true) on BasicListUI
+			firePropertyChange("cellRenderer", 0, 1);
+			revalidate();
+			repaint();
+		}
 	}
 }

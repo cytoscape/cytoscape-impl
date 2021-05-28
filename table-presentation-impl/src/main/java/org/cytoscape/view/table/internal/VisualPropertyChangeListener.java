@@ -34,7 +34,6 @@ import org.cytoscape.view.table.internal.impl.BrowserTableColumnModel;
 import org.cytoscape.view.table.internal.impl.BrowserTableColumnModelGravityEvent;
 import org.cytoscape.view.table.internal.impl.BrowserTableColumnModelListener;
 import org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode;
-import org.cytoscape.view.table.internal.impl.BrowserTableRowHeader;
 
 /*
  * #%L
@@ -64,17 +63,11 @@ public class VisualPropertyChangeListener implements TableViewChangedListener {
 
 	private final CyTableView tableView;
 	private final BrowserTable browserTable;
-	private final BrowserTableRowHeader rowHeader;
 	
-	public VisualPropertyChangeListener(
-			BrowserTable browserTable,
-			CyTableView tableView,
-			BrowserTableRowHeader rowHeader
-	) {
+	public VisualPropertyChangeListener(BrowserTable browserTable, CyTableView tableView) {
 		this.tableView = tableView;
 		this.browserTable = browserTable;
-		this.rowHeader = rowHeader;
-		
+
 		handleTableColumnReorder();
 	}
 	
@@ -122,12 +115,7 @@ public class VisualPropertyChangeListener implements TableViewChangedListener {
 				if (vp == TABLE_VIEW_MODE) {
 					changeSelectionMode((TableMode) value);
 				} else if (vp == TABLE_ROW_HEIGHT) {
-					invokeOnEDT(() -> {
-						// Change table's row height
-						browserTable.resetRowHeight();
-						// Force repaint on the Row Header
-						rowHeader.update();
-					});
+					invokeOnEDT(() ->  browserTable.resetRowHeight());
 				} else if (vp == TABLE_GRID_VISIBLE) {
 					invokeOnEDT(() -> browserTable.setShowGrid(Boolean.TRUE.equals(value)));
 				} else if (vp == TABLE_ALTERNATE_ROW_COLORS) {
@@ -172,12 +160,14 @@ public class VisualPropertyChangeListener implements TableViewChangedListener {
 			}
 		} else if (vp == COLUMN_TEXT_WRAPPED) {
 			invokeOnEDT(() -> {
-				if (Boolean.TRUE.equals(value))
+				if (Boolean.TRUE.equals(value)) {
+					browserTable.revalidate();
 					browserTable.repaint();
-				else
+				} else {
 					browserTable.resetRowHeight();
+				}
 				
-				rowHeader.update();
+				browserTable.fireRowHeightChange(0, browserTable.getRowHeight());
 			});
 		} else if (vp == COLUMN_GRAVITY) {
 			if (value instanceof Number) {
@@ -220,8 +210,6 @@ public class VisualPropertyChangeListener implements TableViewChangedListener {
 						if (idx >= 0 && idx < browserTable.getRowCount() && h != browserTable.getRowHeight(idx))
 							browserTable.setRowHeight(idx, h);
 					}
-					
-					rowHeader.update();
 				}
 			}
 		} else if (vp == ROW_SELECTED) {
