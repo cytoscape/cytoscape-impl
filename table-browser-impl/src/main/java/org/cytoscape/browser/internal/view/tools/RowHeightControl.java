@@ -126,7 +126,10 @@ public class RowHeightControl extends AbstractToolBarControl {
 			resetButton = new JButton(IconManager.ICON_REFRESH);
 			resetButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(10.0f));
 			resetButton.setToolTipText("Reset");
-			resetButton.addActionListener(evt -> setValue(TABLE_ROW_HEIGHT.getDefault()));
+			resetButton.addActionListener(evt -> {
+				getHeightText().setText("" + TABLE_ROW_HEIGHT.getDefault());
+				setValue(TABLE_ROW_HEIGHT.getDefault());
+			});
 		}
 		
 		return resetButton;
