@@ -19,7 +19,9 @@ import java.util.Properties;
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.JComponent;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.UIManager;
@@ -34,6 +36,8 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.ColumnResizer;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
@@ -73,6 +77,9 @@ import org.cytoscape.view.table.internal.impl.icon.VisualPropertyIconFactory;
 
 public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 	
+	private static float SMALL_ICON_FONT_SIZE = 14.0f;
+	private static int SMALL_ICON_SIZE = 16;
+	
 	private final CyTableView tableView;
 	private final VisualLexicon lexicon;
 	private final PopupMenuHelper popupMenuHelper;
@@ -82,6 +89,8 @@ public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 	private BrowserTableRowHeader rowHeader;
 	private CornerPanel cornerPanel;
 	private VisualPropertyChangeListener vpChangeListener;
+	
+	private final Icon copyIcon;
 	
 	private boolean ignoreHeaderSelectionEvents;
 	private boolean ignoreTableSelectionEvents;
@@ -96,6 +105,10 @@ public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 		this.lexicon = lexicon;
 		this.popupMenuHelper = popupMenuHelper;
 		this.registrar = registrar;
+		
+		var iconManager = registrar.getService(IconManager.class);
+		var iconFont = iconManager.getIconFont(SMALL_ICON_FONT_SIZE);
+		copyIcon = new TextIcon(IconManager.ICON_COPY, iconFont, SMALL_ICON_SIZE, SMALL_ICON_SIZE);
 	}
 	
 	public void install(JComponent component) {
@@ -105,6 +118,13 @@ public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 		scrollPane.setViewportView(getBrowserTable());
 		scrollPane.setRowHeaderView(getRowHeader());
 		scrollPane.setCorner(JScrollPane.UPPER_LEADING_CORNER, getCornerPanel());
+		scrollPane.getViewport().addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent evt) {
+				if (!evt.isPopupTrigger())
+					getBrowserTable().clearSelection();
+			}
+		});
 		
 		component.setLayout(new BorderLayout());
 		component.add(scrollPane);
@@ -310,14 +330,30 @@ public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 			
 			// Redirect the copy action (Control-C) from this JList to the table;
 			// otherwise the "Control-C" key input would copy the row header values.
-			var copyKey = "copy";
-			rowHeader.getActionMap().put(copyKey, new AbstractAction() {
+			rowHeader.getActionMap().put("copy", new AbstractAction() {
 				@Override
 				public void actionPerformed(ActionEvent evt) {
-					var action = getBrowserTable().getActionMap().get(copyKey);
-					
-					if (action != null)
-						action.actionPerformed(new ActionEvent(getBrowserTable(), evt.getID(), copyKey));
+					copyFromTable(evt.getID());
+				}
+			});
+			
+			rowHeader.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mousePressed(MouseEvent evt) {
+					if (evt.isPopupTrigger()) {
+						int index = rowHeader.locationToIndex(evt.getPoint());
+						
+						if (index >= 0 && !rowHeader.isSelectedIndex(index))
+							rowHeader.setSelectedIndex(index);
+						
+						var popup = new JPopupMenu();
+						{
+							var mi = new JMenuItem("Copy", copyIcon);
+							mi.addActionListener(mie -> copyFromTable(mie.getID()));
+							popup.add(mi);
+						}
+						popup.show(rowHeader, evt.getX(), evt.getY());
+					}
 				}
 			});
 		}
@@ -336,9 +372,19 @@ public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 			cornerPanel.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mousePressed(MouseEvent evt) {
-					if (cornerPanel.isEnabled() && !evt.isPopupTrigger()) {
+					if (cornerPanel.isEnabled()) {
 						getBrowserTable().selectAll();
 						updateHeader();
+						
+						if (evt.isPopupTrigger()) {
+							var popup = new JPopupMenu();
+							{
+								var mi = new JMenuItem("Copy", copyIcon);
+								mi.addActionListener(mie -> copyFromTable(mie.getID()));
+								popup.add(mi);
+							}
+							popup.show(cornerPanel, evt.getX(), evt.getY());
+						}
 					}
 				}
 			});
@@ -357,6 +403,13 @@ public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 		registrar.unregisterAllServices(getBrowserTable());
 		registrar.unregisterAllServices(getBrowserTable().getModel());
 		registrar.unregisterService(vpChangeListener, TableViewChangedListener.class);
+	}
+	
+	private void copyFromTable(int eventId) {
+		var action = getBrowserTable().getActionMap().get("copy");
+		
+		if (action != null)
+			action.actionPerformed(new ActionEvent(getBrowserTable(), eventId, "copy"));
 	}
 	
 	private void updateHeader() {
