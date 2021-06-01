@@ -1,5 +1,9 @@
 package org.cytoscape.view.vizmap.gui.internal.view;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -33,6 +37,8 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonModel;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
@@ -425,37 +431,58 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			topPnl.setBorder(BorderFactory.createEmptyBorder(1, 2, 0, 2));
 			topPnl.setLayout(new BoxLayout(topPnl, BoxLayout.X_AXIS));
 			
-			topPnl.add(Box.createHorizontalStrut(BTN_H_MARGIN));
+			var layout = new GroupLayout(topPnl);
+			topPnl.setLayout(layout);
+			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(false);
 			
-			if (model.getVisualPropertyDependency() == null)
-				topPnl.add(getDefaultBtn());
-			else
-				topPnl.add(getDependencyCkb());
+			var hGroup = layout.createSequentialGroup();
+			var vGroup = layout.createParallelGroup(Alignment.CENTER);
+			layout.setHorizontalGroup(hGroup);
+			layout.setVerticalGroup(vGroup);
 			
-			topPnl.add(Box.createHorizontalStrut(BTN_H_MARGIN));
+			hGroup.addGap(BTN_H_MARGIN);
+			
+			if (model.getVisualPropertyDependency() == null) {
+				hGroup.addComponent(getDefaultBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+				vGroup.addComponent(getDefaultBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+			} else {
+				hGroup.addComponent(getDependencyCkb(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+				vGroup.addComponent(getDependencyCkb(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+			}
+			
+			hGroup.addGap(BTN_H_MARGIN);
 			
 			if (model.isVisualMappingAllowed()) {
-				topPnl.add(Box.createHorizontalStrut(BTN_H_MARGIN));
-				topPnl.add(getMappingBtn());
-				topPnl.add(Box.createHorizontalStrut(BTN_H_MARGIN));
+				hGroup
+					.addGap(BTN_H_MARGIN)
+					.addComponent(getMappingBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGap(BTN_H_MARGIN);
+				vGroup.addComponent(getMappingBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
 			}
 			
 			if (model.isLockedValueAllowed()) {
-				topPnl.add(Box.createHorizontalStrut(BTN_H_MARGIN));
-				topPnl.add(getBypassBtn());
-				topPnl.add(Box.createHorizontalStrut(BTN_H_MARGIN));
+				hGroup
+					.addGap(BTN_H_MARGIN)
+					.addComponent(getBypassBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGap(BTN_H_MARGIN);
+				vGroup.addComponent(getBypassBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
 			}
 			
-			topPnl.add(Box.createHorizontalStrut(4));
-			topPnl.add(getTitleLbl());
-			topPnl.add(Box.createHorizontalGlue());
-			topPnl.add(Box.createHorizontalStrut(2));
-			topPnl.add(getMsgIconLbl());
+			hGroup
+				.addGap(4)
+				.addComponent(getTitleLbl(), 30, 40, Short.MAX_VALUE)
+				.addGap(2)
+				.addComponent(getMsgIconLbl(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+			vGroup
+				.addComponent(getTitleLbl(), HEIGHT, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(getMsgIconLbl(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
 			
-			if (model.isVisualMappingAllowed())
-				topPnl.add(getShowMappingBtn()); // Network view properties don't have visual mappings
-			
-			topPnl.add(Box.createRigidArea(new Dimension(0, HEIGHT)));
+			if (model.isVisualMappingAllowed()) {
+				// Network view properties don't have visual mappings
+				hGroup.addComponent(getShowMappingBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+				vGroup.addComponent(getShowMappingBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+			}
 			
 			updateSelection();
 		}
@@ -660,6 +687,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		if (titleLbl == null) {
 			titleLbl = new JLabel(model.getTitle());
 			titleLbl.setHorizontalAlignment(SwingConstants.LEFT);
+			makeSmall(titleLbl);
 		}
 		
 		return titleLbl;
@@ -768,6 +796,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		
 		getMsgIconLbl().setText(text);
 		getMsgIconLbl().setForeground(fg);
+		getMsgIconLbl().setVisible(text != null);
 	}
 	
 	private void updateMappingIcon() {

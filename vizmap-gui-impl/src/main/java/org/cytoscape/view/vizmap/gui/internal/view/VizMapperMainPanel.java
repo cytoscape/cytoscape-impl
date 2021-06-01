@@ -259,8 +259,8 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	
 
 	private void init() {
-		setMinimumSize(new Dimension(420, 240));
-		setPreferredSize(new Dimension(420, 385));
+		setMinimumSize(new Dimension(260, 240));
+		setPreferredSize(new Dimension(400, 385));
 		setOpaque(!isAquaLAF());
 		
 		JPanel topPanel = new JPanel(new BorderLayout());
