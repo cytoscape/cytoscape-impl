@@ -138,27 +138,29 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	}
 	
 	VisualStylePanel getStylesPnl() {
-		if(visualStylePanel == null) {
+		if (visualStylePanel == null) {
 			visualStylePanel = new VisualStylePanel(servicesUtil);
 		}
+		
 		return visualStylePanel;
 	}
-	
+
 	ColumnStylePanel getColumnStylePnl() {
-		if(columnStylePanel == null) {
+		if (columnStylePanel == null) {
 			columnStylePanel = new ColumnStylePanel(servicesUtil);
 		}
+		
 		return columnStylePanel;
 	}
-	
+
 	PropertySheetPanel getPropertiesPnl() {
-		if(propertySheetPanel == null) {
+		if (propertySheetPanel == null) {
 			propertySheetPanel = new PropertySheetPanel();
 		}
+		
 		return propertySheetPanel;
 	}
-	
-	
+
 	/**
 	 * @return The correspondent JPanel which was used to create the rendering engine that then generates
 	 * the preview image of the visual style in the Current Style selector.
@@ -185,11 +187,11 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		return getStylesPnl().getSelectedVisualStyle();
 	}
 	
-	public void setSelectedVisualStyle(final VisualStyle style) {
+	public void setSelectedVisualStyle(VisualStyle style) {
 		getStylesPnl().setSelectedVisualStyle(style);
 	}
 	
-	public void removeContextMenuItem(final JMenuItem menuItem) {
+	public void removeContextMenuItem(JMenuItem menuItem) {
 		getPropertiesPnl().removeContextMenuItem(menuItem);
 	}
 	
@@ -198,7 +200,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	}
 	
 	@Override
-	public VisualPropertySheet getVisualPropertySheet(final Class<? extends CyIdentifiable> targetDataType) {
+	public VisualPropertySheet getVisualPropertySheet(Class<? extends CyIdentifiable> targetDataType) {
 		return getPropertiesPnl().getVisualPropertySheet(targetDataType);
 	}
 	
@@ -218,12 +220,12 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	}
 	
 	@Override
-	public void addVisualPropertySheet(final VisualPropertySheet sheet) {
+	public void addVisualPropertySheet(VisualPropertySheet sheet) {
 		getPropertiesPnl().addVisualPropertySheet(sheet);
 	}
 	
 	@Override
-	public void setSelectedVisualPropertySheet(final VisualPropertySheet sheet) {
+	public void setSelectedVisualPropertySheet(VisualPropertySheet sheet) {
 		getPropertiesPnl().setSelectedVisualPropertySheet(sheet);
 	}
 			
@@ -257,33 +259,35 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		getColumnStylePnl().updateColumns(tableName, columns, selected);
 	}
 	
-
 	private void init() {
 		setMinimumSize(new Dimension(260, 240));
 		setPreferredSize(new Dimension(400, 385));
 		setOpaque(!isAquaLAF());
 		
-		JPanel topPanel = new JPanel(new BorderLayout());
+		var topPanel = new JPanel(new BorderLayout());
 		
 		topPanel.add(getStylesPnl().getComponent(), BorderLayout.CENTER);
 		
 		getPropertiesPnl().getPropertiesPn().addChangeListener(e -> {
 			var sheet = getPropertiesPnl().getSelectedVisualPropertySheet();
-			if(sheet == null)
+			
+			if (sheet == null)
 				return;
+			
 			var type = sheet.getModel().getTargetDataType();
 			topPanel.removeAll();
-			if(CyColumn.class.equals(type) || CyTable.class.equals(type)) {
+			
+			if (CyColumn.class.equals(type) || CyTable.class.equals(type))
 				topPanel.add(getColumnStylePnl().getComponent(), BorderLayout.CENTER);
-			} else {
+			else
 				topPanel.add(getStylesPnl().getComponent(), BorderLayout.CENTER);
-			}
+			
 			topPanel.revalidate();
 			topPanel.repaint();
 	    });
 		
-		final GroupLayout layout = new GroupLayout(this);
-		this.setLayout(layout);
+		var layout = new GroupLayout(this);
+		setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(!isAquaLAF());
 		

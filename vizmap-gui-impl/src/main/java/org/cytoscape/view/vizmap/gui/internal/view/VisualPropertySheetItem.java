@@ -2,12 +2,14 @@ package org.cytoscape.view.vizmap.gui.internal.view;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.cytoscape.util.swing.LookAndFeelUtil.getErrorColor;
+import static org.cytoscape.util.swing.LookAndFeelUtil.getInfoColor;
+import static org.cytoscape.util.swing.LookAndFeelUtil.getWarnColor;
 import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GradientPaint;
@@ -32,15 +34,12 @@ import java.util.concurrent.TimeUnit;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
-import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.ButtonModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
-import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -60,11 +59,7 @@ import javax.swing.table.TableCellEditor;
 
 import org.cytoscape.model.CyNode;
 import org.cytoscape.util.swing.IconManager;
-import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.vizmap.VisualMappingFunction;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
 import org.cytoscape.view.vizmap.gui.internal.model.LockedValueState;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
@@ -75,7 +70,6 @@ import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 import org.jdesktop.swingx.icon.EmptyIcon;
 
-import com.l2fprod.common.propertysheet.Property;
 import com.l2fprod.common.propertysheet.PropertyEditorRegistry;
 import com.l2fprod.common.propertysheet.PropertyRendererRegistry;
 import com.l2fprod.common.propertysheet.PropertySheetPanel;
@@ -153,9 +147,11 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public VisualPropertySheetItem(final VisualPropertySheetItemModel<T> model,
-								   final VizMapPropertyBuilder vizMapPropertyBuilder,
-								   final ServicesUtil servicesUtil) {
+	public VisualPropertySheetItem(
+			VisualPropertySheetItemModel<T> model,
+			VizMapPropertyBuilder vizMapPropertyBuilder,
+			ServicesUtil servicesUtil
+	) {
 		if (model == null)
 			throw new IllegalArgumentException("'model' must not be null");
 		if (vizMapPropertyBuilder == null)
@@ -181,7 +177,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		return selected;
 	}
 	
-	public void setSelected(final boolean selected) {
+	public void setSelected(boolean selected) {
 		this.selected = selected;
 		
 		if (!selected && getModel().isVisualMappingAllowed())
@@ -208,10 +204,10 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		return model.isVisualMappingAllowed() && getMappingPnl().isVisible();
 	}
 	
-	public void fitToWidth(final int width) {
+	public void fitToWidth(int width) {
 		if (getModel().isVisualMappingAllowed()) {
 			updateMappingPanelSize();	
-			final Dimension prefSize = getPropSheetPnl().getPreferredSize();
+			var prefSize = getPropSheetPnl().getPreferredSize();
 			// Set new preferred width to the mapping panel
 			getPropSheetPnl().setPreferredSize(new Dimension(width, prefSize.height));
 			
@@ -251,7 +247,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			if (state == LockedValueState.ENABLED_MULTIPLE_VALUES) {
 				var iconManager = servicesUtil.get(IconManager.class);
 				
-				bypassBtn.setForeground(LookAndFeelUtil.getInfoColor());
+				bypassBtn.setForeground(getInfoColor());
 				bypassBtn.setFont(iconManager.getIconFont(19.0f));
 				bypassBtn.setText(IconManager.ICON_QUESTION_CIRCLE);
 			} else {
@@ -280,31 +276,29 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		if (!model.isVisualMappingAllowed())
 			return;
 		
-		final VisualMappingFunction<?, T> mapping = getModel().getVisualMappingFunction();
-		final VisualMappingFunctionFactory mappingFactory = vizMapPropertyBuilder.getMappingFactory(mapping);
+		var mapping = getModel().getVisualMappingFunction();
+		var mappingFactory = vizMapPropertyBuilder.getMappingFactory(mapping);
 		
-		final VizMapperProperty<VisualProperty<?>, String, VisualMappingFunctionFactory> columnProp = 
-				vizMapPropertyBuilder.getColumnProperty(getPropSheetPnl());
+		var columnProp = vizMapPropertyBuilder.getColumnProperty(getPropSheetPnl());
 		columnProp.setValue(mapping == null ? null : mapping.getMappingColumnName());
 		columnProp.setInternalValue(mappingFactory);
 		
-		final VizMapperProperty<String, VisualMappingFunctionFactory, VisualMappingFunction<?, ?>> mappingProp =
-				vizMapPropertyBuilder.getMappingTypeProperty(getPropSheetPnl());
+		var mappingProp = vizMapPropertyBuilder.getMappingTypeProperty(getPropSheetPnl());
 		mappingProp.setValue(mappingFactory);
 		mappingProp.setInternalValue(mapping);
 		
 		if (mapping == null) {
 			vizMapPropertyBuilder.removeMappingProperties(getPropSheetPnl());
 		} else {
-			final int rowCount = getPropSheetTbl().getRowCount();
-			final int[] selectedRows = getPropSheetTbl().getSelectedRows();
+			int rowCount = getPropSheetTbl().getRowCount();
+			int[] selectedRows = getPropSheetTbl().getSelectedRows();
 			vizMapPropertyBuilder.createMappingProperties(mapping, getPropSheetPnl(), mappingFactory);
 			
 			if (selectedRows != null && selectedRows.length > 0 && getPropSheetTbl().getRowCount() == rowCount) {
 				// Keep the same rows selected
-				final ListSelectionModel selModel = getPropSheetTbl().getSelectionModel();
+				var selModel = getPropSheetTbl().getSelectionModel();
 				
-				for (final int r : selectedRows)
+				for (int r : selectedRows)
 					selModel.addSelectionInterval(r, r);
 			}
 		}
@@ -317,7 +311,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			updateMappingPanelSize();
 	}
 	
-	public void setMessage(final String text, final MessageType type) {
+	public void setMessage(String text, MessageType type) {
 		if (type == null) {
 			// If no message icon, just set the tooltip to the item itself
 			setToolTipText(text);
@@ -332,7 +326,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	}
 	
 	@Override
-	public void setEnabled(final boolean enabled) {
+	public void setEnabled(boolean enabled) {
 		if (enabled == isEnabled())
 			return;
 		
@@ -360,14 +354,14 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	}
 	
 	@Override
-	public int compareTo(final VisualPropertySheetItem<?> other) {
-		final VisualPropertySheetItemModel<?> m1 = this.getModel();
-		final VisualPropertySheetItemModel<?> m2 = other.getModel();
-		String title1 = m1.getTitle();
-		String title2 = m2.getTitle();
+	public int compareTo(VisualPropertySheetItem<?> other) {
+		var m1 = this.getModel();
+		var m2 = other.getModel();
+		var title1 = m1.getTitle();
+		var title2 = m2.getTitle();
 		
-		final VisualPropertyDependency<?> dep1 = m1.getVisualPropertyDependency();
-		final VisualPropertyDependency<?> dep2 = m2.getVisualPropertyDependency();
+		var dep1 = m1.getVisualPropertyDependency();
+		var dep2 = m2.getVisualPropertyDependency();
 		
 		// Put dependencies in the end of the sorted list
 		if (dep1 == null && dep2 != null)
@@ -381,7 +375,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		}
 		
 		// Locale-specific sorting
-		final Collator collator = Collator.getInstance(Locale.getDefault());
+		var collator = Collator.getInstance(Locale.getDefault());
 		collator.setStrength(Collator.PRIMARY);
 		
 		return collator.compare(title1, title2);
@@ -499,7 +493,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			
 			mappingPnl.add(getPropSheetPnl(), BorderLayout.CENTER);
 			
-			final JPanel bottomPnl = new JPanel();
+			var bottomPnl = new JPanel();
 			bottomPnl.setLayout(new BoxLayout(bottomPnl, BoxLayout.X_AXIS));
 			bottomPnl.add(Box.createHorizontalGlue());
 			bottomPnl.add(getRemoveMappingBtn());
@@ -510,7 +504,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			
 			mappingPnl.addComponentListener(new ComponentAdapter() {
 				@Override
-				public void componentShown(final ComponentEvent e) {
+				public void componentShown(ComponentEvent e) {
 					updateMappingPanelSize();
 				}
 			});
@@ -528,22 +522,22 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			propSheetPnl.getTable().setEditorFactory(new PropertyEditorRegistry());
 			propSheetPnl.getTable().setRendererFactory(new PropertyRendererRegistry());
 			
-			final VisualMappingFunction<?, T> mapping = model.getVisualMappingFunction();
+			var mapping = model.getVisualMappingFunction();
 
 			if (mapping == null) {
 				// Create the properties for a new visual mapping
-				final VisualProperty<?> vp = (VisualProperty<?>) model.getVisualProperty();
+				var vp = (VisualProperty<?>) model.getVisualProperty();
 				vizMapPropertyBuilder.buildProperty(vp, propSheetPnl);
 			} else {
 				// There is already a visual mapping for this style's property
-				final VisualMappingFunctionFactory mappingFactory = vizMapPropertyBuilder.getMappingFactory(mapping);
+				var mappingFactory = vizMapPropertyBuilder.getMappingFactory(mapping);
 				vizMapPropertyBuilder.buildProperty(mapping, propSheetPnl, mappingFactory);
 				updateMappingRowHeight();
 			}
 			
 			// This is necessary because the Property Sheet Table steals the mouse wheel event
 			// which prevents the parent scroll pane from receiving it when the mouse is over the property sheet panel.
-			final Container c = propSheetPnl.getTable().getParent().getParent();
+			var c = propSheetPnl.getTable().getParent().getParent();
 			
 			if (c instanceof JScrollPane)
 				c.addMouseWheelListener(new CustomMouseWheelListener((JScrollPane)c));
@@ -560,7 +554,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			
 			propSheetTbl.addComponentListener(new ComponentAdapter() {
 				@Override
-				public void componentResized(final ComponentEvent e) {
+				public void componentResized(ComponentEvent e) {
 					updateMappingPanelSize();
 				}
 			});
@@ -579,12 +573,12 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			});
 			getMappingPnl().addComponentListener(new ComponentAdapter() {
 				@Override
-				public void componentShown(final ComponentEvent ce) {
+				public void componentShown(ComponentEvent ce) {
 					if (showMappingBtn != null && !showMappingBtn.isSelected())
 						showMappingBtn.setSelected(true);
 				}
 				@Override
-				public void componentHidden(final ComponentEvent ce) {
+				public void componentHidden(ComponentEvent ce) {
 					if (showMappingBtn != null && showMappingBtn.isSelected())
 						showMappingBtn.setSelected(false);
 				}
@@ -634,14 +628,14 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			});
 			getMappingPnl().addComponentListener(new ComponentAdapter() {
 				@Override
-				public void componentShown(final ComponentEvent ce) {
+				public void componentShown(ComponentEvent ce) {
 					if (mappingBtn != null)
 						mappingBtn.setSelected(true);
 					
 					updateMappingIcon();
 				}
 				@Override
-				public void componentHidden(final ComponentEvent ce) {
+				public void componentHidden(ComponentEvent ce) {
 					if (mappingBtn != null)
 						mappingBtn.setSelected(false);
 					
@@ -667,7 +661,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	
 	protected JButton getRemoveMappingBtn() {
 		if (removeMappingBtn == null) {
-			final IconManager iconManager = servicesUtil.get(IconManager.class);
+			var iconManager = servicesUtil.get(IconManager.class);
 			
 			removeMappingBtn = new JButton(IconManager.ICON_TRASH_O); // icon-trash
 			removeMappingBtn.setToolTipText("Remove Mapping");
@@ -695,7 +689,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	
 	public JLabel getMsgIconLbl() {
 		if (msgIconLbl == null) {
-			final IconManager iconManager = servicesUtil.get(IconManager.class);
+			var iconManager = servicesUtil.get(IconManager.class);
 			
 			msgIconLbl = new JLabel(" ");
 			msgIconLbl.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -705,16 +699,16 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			// Hack to prolong a tooltip’s visible delay
 			// Thanks to: http://tech.chitgoks.com/2010/05/31/disable-tooltip-delay-in-java-swing/
 			msgIconLbl.addMouseListener(new MouseAdapter() {
-			    final int defaultDismissTimeout = ToolTipManager.sharedInstance().getDismissDelay();
-			    final int dismissDelayMinutes = (int) TimeUnit.MINUTES.toMillis(1); // 1 minute
+			    int defaultDismissTimeout = ToolTipManager.sharedInstance().getDismissDelay();
+			    int dismissDelayMinutes = (int) TimeUnit.MINUTES.toMillis(1); // 1 minute
 			    
 			    @Override
-			    public void mouseEntered(final MouseEvent e) {
+			    public void mouseEntered(MouseEvent e) {
 			        ToolTipManager.sharedInstance().setDismissDelay(dismissDelayMinutes);
 			    }
 			 
 			    @Override
-			    public void mouseExited(final MouseEvent e) {
+			    public void mouseExited(MouseEvent e) {
 			        ToolTipManager.sharedInstance().setDismissDelay(defaultDismissTimeout);
 			    }
 			});
@@ -758,7 +752,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	}
 	
 	private void updateMappingPanelSize() {
-		final PropertySheetTable tbl = getPropSheetPnl().getTable();
+		var tbl = getPropSheetPnl().getTable();
 		tbl.repaint();
 		int h = 0;
 		
@@ -766,7 +760,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			h += tbl.getRowHeight(i);
 		}
 		
-		final int TOTAL_PAD = 6;
+		int TOTAL_PAD = 6;
 		getPropSheetPnl().setPreferredSize(new Dimension(tbl.getWidth()+TOTAL_PAD, h+TOTAL_PAD));
 		tbl.repaint();
 		getPropSheetPnl().repaint();
@@ -779,19 +773,19 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		repaint();
 	}
 	
-	private void updateMessageIcon(final MessageType type) {
+	private void updateMessageIcon(MessageType type) {
 		String text = null;
 		Color fg = null;
 		
 		if (type == MessageType.INFO) {
 			text = IconManager.ICON_INFO_CIRCLE;
-			fg = LookAndFeelUtil.getInfoColor();
+			fg = getInfoColor();
 		} else if (type == MessageType.WARNING) {
 			text = IconManager.ICON_WARNING;
-			fg = LookAndFeelUtil.getWarnColor();
+			fg = getWarnColor();
 		} else if (type == MessageType.ERROR) {
 			text = IconManager.ICON_MINUS_CIRCLE;
-			fg = LookAndFeelUtil.getErrorColor();
+			fg = getErrorColor();
 		}
 		
 		getMsgIconLbl().setText(text);
@@ -803,11 +797,11 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		if (!model.isVisualMappingAllowed())
 			return;
 		
-		final JToggleButton btn = getMappingBtn();
-		final VisualMappingFunction<?, T> mapping = model.getVisualMappingFunction();
-		final String colName = mapping != null ? mapping.getMappingColumnName() : null;
+		var btn = getMappingBtn();
+		var mapping = model.getVisualMappingFunction();
+		var colName = mapping != null ? mapping.getMappingColumnName() : null;
 		
-		final IconManager iconManager = servicesUtil.get(IconManager.class);
+		var iconManager = servicesUtil.get(IconManager.class);
 		btn.setFont(iconManager.getIconFont(16.0f));
 		
 		if (btn.isSelected())
@@ -886,18 +880,18 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		
 		@Override
 		public String getToolTipText(MouseEvent me) {
-			final Point pt = me.getPoint();
-			final int row = rowAtPoint(pt);
+			var pt = me.getPoint();
+			int row = rowAtPoint(pt);
 
 			if (row < 0) {
 				return null;
 			} else {
-				final Property prop = ((Item) getValueAt(row, 0)).getProperty();
+				var prop = ((Item) getValueAt(row, 0)).getProperty();
 
 				if (prop == null)
 					return null;
 
-				final String displayName = prop.getDisplayName();
+				var displayName = prop.getDisplayName();
 				
 				if (displayName.equals(VizMapPropertyBuilder.GRAPHICAL_MAP_VIEW))
 					return "Click to edit this mapping...";
@@ -913,8 +907,8 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		}
 		
 		private void setKeyBindings() {
-			final ActionMap actionMap = getActionMap();
-			final InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+			var actionMap = getActionMap();
+			var inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
 
 			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), KeyAction.VK_SPACE);
 			actionMap.put(KeyAction.VK_SPACE, new KeyAction(KeyAction.VK_SPACE));
@@ -924,18 +918,18 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 
 			final static String VK_SPACE = "VK_SPACE";
 			
-			KeyAction(final String actionCommand) {
+			KeyAction(String actionCommand) {
 				putValue(ACTION_COMMAND_KEY, actionCommand);
 			}
 
 			@Override
-			public void actionPerformed(final ActionEvent e) {
-				final int[] selectedRows = getSelectedRows();
+			public void actionPerformed(ActionEvent e) {
+				int[] selectedRows = getSelectedRows();
 				
 				if (selectedRows == null || selectedRows.length == 0 || isEditing())
 					return;
 				
-				final String cmd = e.getActionCommand();
+				var cmd = e.getActionCommand();
 				
 				if (cmd.equals(VK_SPACE)) {
 					// The default SPACE key action only works when the editable cell has focus,
@@ -952,7 +946,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		private Icon expandedIcon;
 		private Icon collapsedIcon;
 		
-	    public ExpandCollapseButton(final boolean selected, final ActionListener al) {
+	    public ExpandCollapseButton(boolean selected, ActionListener al) {
 	    	expandedIcon = UIManager.getIcon("Tree.expandedIcon");
 	    	collapsedIcon = UIManager.getIcon("Tree.rightToLeftCollapsedIcon");
     		
@@ -967,7 +961,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			setFocusPainted(false);
 			setHorizontalAlignment(RIGHT);
 			
-			Dimension d = new Dimension(
+			var d = new Dimension(
 					expandedIcon.getIconWidth() + 2 * BUTTON_H_PAD,
 					expandedIcon.getIconHeight() + 2 * BUTTON_V_PAD
 			);
@@ -981,7 +975,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	    }
 	    
 	    @Override
-	    public void setSelected(final boolean b) {
+	    public void setSelected(boolean b) {
 	    	super.setSelected(b);
 	    	updateIcon();
 	    }
@@ -1007,13 +1001,13 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		}
 
 		@Override
-		protected void paintComponent(final Graphics g) {
+		protected void paintComponent(Graphics g) {
 			paintBackground(g, this);
 			super.paintComponent(g);
 		}
 		
-		static void paintBackground(final Graphics g, final AbstractButton btn) {
-			final Graphics2D g2 = (Graphics2D) g.create();
+		static void paintBackground(Graphics g, AbstractButton btn) {
+			var g2 = (Graphics2D) g.create();
 			final Paint p;
 			
 			if (btn.isEnabled())
@@ -1036,7 +1030,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		}
 		
 		@Override
-		protected void paintComponent(final Graphics g) {
+		protected void paintComponent(Graphics g) {
 			VizMapperButton.paintBackground(g, this);
 			super.paintComponent(g);
 		}
@@ -1060,16 +1054,16 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			this(CENTER);
 		}
 		
-		public VPButtonUI(final int anchor) {
+		public VPButtonUI(int anchor) {
 			super();
 			this.anchor = anchor;
 		}
 
 		@Override
-		public void installUI(final JComponent c) {
+		public void installUI(JComponent c) {
 			super.installUI(c);
 
-			final AbstractButton btn = (AbstractButton) c;
+			var btn = (AbstractButton) c;
 			btn.setRolloverEnabled(true);
 			btn.setVerticalTextPosition(SwingConstants.CENTER);
 			btn.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -1110,12 +1104,12 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		}
 
 		@Override
-		public void paint(final Graphics g, final JComponent c) {
-			final AbstractButton btn = (AbstractButton) c;
-			final ButtonModel btnModel = btn.getModel();
+		public void paint(Graphics g, JComponent c) {
+			var btn = (AbstractButton) c;
+			var btnModel = btn.getModel();
 			
 			if (btnModel.isRollover() || btnModel.isArmed() || btnModel.isSelected()) {
-				final Color oldColor = g.getColor();
+				var oldColor = g.getColor();
 				
 				if (btnModel.isSelected())
 					g.setColor(BG_SELECTED_COLOR);
@@ -1154,14 +1148,14 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		private JScrollPane parentScrollPane;
 		private JScrollPane customScrollPane;
 
-		CustomMouseWheelListener(final JScrollPane scrollPane) {
+		CustomMouseWheelListener(JScrollPane scrollPane) {
 			this.customScrollPane = scrollPane;
 			this.bar = this.customScrollPane.getVerticalScrollBar();
 		}
 
 		@Override
-		public void mouseWheelMoved(final MouseWheelEvent e) {
-			JScrollPane parent = getParentScrollPane();
+		public void mouseWheelMoved(MouseWheelEvent e) {
+			var parent = getParentScrollPane();
 			
 			if (parent != null) {
 				if (e.getWheelRotation() < 0) {
@@ -1188,7 +1182,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		/** @return The parent scroll pane, or null if there is no parent. */
 		private JScrollPane getParentScrollPane() {
 			if (this.parentScrollPane == null) {
-				Component parent = this.customScrollPane.getParent();
+				var parent = this.customScrollPane.getParent();
 				
 				while (!(parent instanceof JScrollPane) && parent != null)
 					parent = parent.getParent();
@@ -1199,7 +1193,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			return this.parentScrollPane;
 		}
 
-		private MouseWheelEvent cloneEvent(final MouseWheelEvent e) {
+		private MouseWheelEvent cloneEvent(MouseWheelEvent e) {
 			return new MouseWheelEvent(getParentScrollPane(), e.getID(),
 					e.getWhen(), e.getModifiers(), 1, 1,
 					e.getClickCount(), false, e.getScrollType(),
