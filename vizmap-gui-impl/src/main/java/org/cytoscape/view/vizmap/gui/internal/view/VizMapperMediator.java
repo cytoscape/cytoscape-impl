@@ -50,6 +50,7 @@ import javax.swing.JSeparator;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.event.DebounceTimer;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -173,6 +174,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	
 	private final Map<Class<? extends CyIdentifiable>, Set<String>> defVisibleProps;
 	
+	private final DebounceTimer debounceTimer = new DebounceTimer(240);
+	
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
@@ -270,7 +273,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 						if (style.equals(vmProxy.getCurrentVisualStyle()))
 							updateNetworkVisualPropertySheets(style, false);
 						
-						invokeOnEDT(() -> vizMapperMainPanel.getStylesPnl().update(style));
+						invokeOnEDT(() -> vizMapperMainPanel.getStylesPanelProvider().update(style));
 					}
 				}
 				break;
@@ -297,7 +300,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			case VISUAL_STYLE_NAME_CHANGED:
 				invokeOnEDT(() -> {
 					vizMapperMainPanel.getStylesBtn().update();
-					vizMapperMainPanel.getStylesPnl().update((VisualStyle) body);
+					vizMapperMainPanel.getStylesPanelProvider().update((VisualStyle) body);
 				});
 				break;
 			case CURRENT_TABLE_CHANGED:
@@ -785,18 +788,20 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		attrProxy.setCurrentMappingType(null);
 		mappingFactoryProxy.setCurrentColumnName(null);
 		
-		invokeOnEDT(() -> {
-			ignoreVisualStyleSelectedEvents = true;
-			var vs = vmProxy.getCurrentVisualStyle();
-			var table = vmProxy.getCurrentTable();
-			vizMapperMainPanel.updateVisualStyles(styles, vs);
-			selectCurrentVisualStyle(vs);
-			updateNetworkVisualPropertySheets(vs, resetDefaultVisibleItems);
-
-			if (table != null)
-				updateTableVisualPropertySheets(table, resetDefaultVisibleItems, false);
-
-			ignoreVisualStyleSelectedEvents = false;
+		debounceTimer.debounce(() -> {
+			invokeOnEDT(() -> {
+				ignoreVisualStyleSelectedEvents = true;
+				var vs = vmProxy.getCurrentVisualStyle();
+				var table = vmProxy.getCurrentTable();
+				vizMapperMainPanel.updateVisualStyles(styles, vs);
+				selectCurrentVisualStyle(vs);
+				updateNetworkVisualPropertySheets(vs, resetDefaultVisibleItems);
+	
+				if (table != null)
+					updateTableVisualPropertySheets(table, resetDefaultVisibleItems, false);
+	
+				ignoreVisualStyleSelectedEvents = false;
+			});
 		});
 	}
 	
@@ -811,7 +816,6 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				vizMapperMainPanel.setSelectedVisualStyle(vs);
 		});
 	}
-	
 	
 	private void updateNetworkVisualPropertySheets(VisualStyle vs, boolean resetDefaultVisibleItems) {
 		boolean rebuild = shouldRebuildNetworkVisualPropertySheets(vs);
@@ -858,7 +862,6 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		selectedColumns.put(col.getTable().getSUID(), col.getSUID());
 		updateTableVisualPropertySheets(col.getTable(), false, true);
 	}
-	
 	
 	@SuppressWarnings("rawtypes")
 	private void updateVisualPropertySheets(VisualStyle vs, List<Class<? extends CyIdentifiable>> sheetTypes, boolean resetDefaultVisibleItems, boolean rebuild) {
@@ -950,7 +953,6 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		
 		return vs != null && !vs.equals(curStyle);
 	}
-	
 	
 	private void createVisualPropertySheets(VisualStyle style, List<Class<? extends CyIdentifiable>> sheetTypes, boolean resetDefaultVisibleItems) {
 		invokeOnEDT(() -> {

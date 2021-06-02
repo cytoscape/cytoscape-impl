@@ -446,7 +446,7 @@ public class VisualStyleSelector extends JPanel {
 	
 	JToggleButton getFilterAppliedBtn() {
 		if (filterAppliedBtn == null) {
-			filterAppliedBtn = createToolBarToggleButton(ICON_SHARE_ALT_SQUARE, "Only Applied Styles", 16.0f);
+			filterAppliedBtn = createToolBarToggleButton(ICON_SHARE_ALT_SQUARE, "Show only Applied Styles", 16.0f);
 			filterAppliedBtn.addActionListener(evt -> setAppliedFilter(filterAppliedBtn.isSelected()));
 		}
 		
