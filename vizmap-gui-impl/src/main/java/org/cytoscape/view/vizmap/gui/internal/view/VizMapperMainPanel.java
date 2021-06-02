@@ -35,7 +35,7 @@ import org.cytoscape.view.vizmap.gui.DefaultViewEditor;
 import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
 import org.cytoscape.view.vizmap.gui.VizMapGUI;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
-import org.cytoscape.view.vizmap.gui.internal.view.VisualStylePanel.VisualStyleDropDownButton;
+import org.cytoscape.view.vizmap.gui.internal.view.VisualStylePanelProvider.VisualStyleDropDownButton;
 
 /*
  * #%L
@@ -74,7 +74,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	private TextIcon icon;
 	private final ServicesUtil servicesUtil;
 	
-	private VisualStylePanel visualStylePanel;
+	private VisualStylePanelProvider visualStylePanel;
 	private ColumnStylePanel columnStylePanel;
 	private PropertySheetPanel propertySheetPanel;
 	
@@ -137,9 +137,9 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		return getStylesBtn().getRenderingEngine(getSelectedVisualStyle());
 	}
 	
-	VisualStylePanel getStylesPnl() {
+	VisualStylePanelProvider getStylesPanelProvider() {
 		if (visualStylePanel == null) {
-			visualStylePanel = new VisualStylePanel(servicesUtil);
+			visualStylePanel = new VisualStylePanelProvider(servicesUtil);
 		}
 		
 		return visualStylePanel;
@@ -169,7 +169,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	@Override
 	@Deprecated
 	public Component getDefaultView(VisualStyle vs) {
-		return getStylesPnl().getDefaultView(vs);
+		return getStylesPanelProvider().getDefaultView(vs);
 	}
 
 	@Override
@@ -179,16 +179,16 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	}
 	
 	VisualStyleDropDownButton getStylesBtn() {
-		return getStylesPnl().getStylesBtn();
+		return getStylesPanelProvider().getStylesBtn();
 	}
 	
 	
 	public VisualStyle getSelectedVisualStyle() {
-		return getStylesPnl().getSelectedVisualStyle();
+		return getStylesPanelProvider().getSelectedVisualStyle();
 	}
 	
 	public void setSelectedVisualStyle(VisualStyle style) {
-		getStylesPnl().setSelectedVisualStyle(style);
+		getStylesPanelProvider().setSelectedVisualStyle(style);
 	}
 	
 	public void removeContextMenuItem(JMenuItem menuItem) {
@@ -196,7 +196,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	}
 	
 	public void updateVisualStyles(SortedSet<VisualStyle> styles, VisualStyle selectedStyle) {
-		getStylesPnl().updateVisualStyles(styles, selectedStyle);
+		getStylesPanelProvider().updateVisualStyles(styles, selectedStyle);
 	}
 	
 	@Override
@@ -235,11 +235,11 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	}
 	
 	public void addOption(JMenuItem menuItem, double gravity, boolean insertSeparatorBefore, boolean insertSeparatorAfter) {
-		getStylesPnl().getOptionsBtn().addOption(menuItem, gravity, insertSeparatorBefore, insertSeparatorAfter);
+		getStylesPanelProvider().getOptionsBtn().addOption(menuItem, gravity, insertSeparatorBefore, insertSeparatorAfter);
 	}
 	
 	public void removeOption(JMenuItem menuItem) {
-		getStylesPnl().getOptionsBtn().removeOption(menuItem);
+		getStylesPanelProvider().getOptionsBtn().removeOption(menuItem);
 	}
 	
 	public void addTableOption(JMenuItem menuItem, double gravity, boolean insertSeparatorBefore, boolean insertSeparatorAfter) {
@@ -266,7 +266,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		
 		var topPanel = new JPanel(new BorderLayout());
 		
-		topPanel.add(getStylesPnl().getComponent(), BorderLayout.CENTER);
+		topPanel.add(getStylesPanelProvider().getComponent(), BorderLayout.CENTER);
 		
 		getPropertiesPnl().getPropertiesPn().addChangeListener(e -> {
 			var sheet = getPropertiesPnl().getSelectedVisualPropertySheet();
@@ -280,7 +280,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			if (CyColumn.class.equals(type) || CyTable.class.equals(type))
 				topPanel.add(getColumnStylePnl().getComponent(), BorderLayout.CENTER);
 			else
-				topPanel.add(getStylesPnl().getComponent(), BorderLayout.CENTER);
+				topPanel.add(getStylesPanelProvider().getComponent(), BorderLayout.CENTER);
 			
 			topPanel.revalidate();
 			topPanel.repaint();

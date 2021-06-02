@@ -44,7 +44,7 @@ import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
  * #L%
  */
 
-public class VisualStylePanel {
+public class VisualStylePanelProvider {
 	
 	private OptionsButton optionsBtn;
 	private JPanel stylesPnl;
@@ -52,9 +52,11 @@ public class VisualStylePanel {
 	protected VisualStyleDropDownButton stylesBtn;
 	protected VisualStyleSelector styleSelector;
 	
+	private boolean isAdjusting;
+	
 	private final ServicesUtil servicesUtil;
 	
-	public VisualStylePanel(ServicesUtil servicesUtil) {
+	public VisualStylePanelProvider(ServicesUtil servicesUtil) {
 		this.servicesUtil = servicesUtil;
 		styleSelector = new VisualStyleSelector(2, 0, servicesUtil);
 	}
@@ -68,7 +70,9 @@ public class VisualStylePanel {
 	}
 	
 	public void setSelectedVisualStyle(final VisualStyle style) {
+		isAdjusting = true;
 		getStylesBtn().setSelectedItem(style);
+		isAdjusting = false;
 	}
 	
 	private JPanel getStylesPnl() {
@@ -144,7 +148,10 @@ public class VisualStylePanel {
 			
 			styleSelector.addPropertyChangeListener("selectedStyle", evt -> {
 				update();
-				disposePopup();
+				
+				if (!isAdjusting)
+					disposePopup();
+				
 				firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
 			});
 		}
