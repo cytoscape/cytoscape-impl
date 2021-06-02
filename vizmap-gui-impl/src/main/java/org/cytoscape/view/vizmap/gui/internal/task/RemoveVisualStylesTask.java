@@ -1,7 +1,9 @@
 package org.cytoscape.view.vizmap.gui.internal.task;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.view.model.CyNetworkView;
@@ -45,7 +47,7 @@ public class RemoveVisualStylesTask extends AbstractTask {
 	
 	private final Set<VisualStyle> styles = new HashSet<>();
 	private final ServicesUtil servicesUtil;
-	private final Set<CyNetworkView> networkViews = new HashSet<>();
+	private final Map<CyNetworkView, VisualStyle> stylesByView = new HashMap<>();
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
@@ -97,7 +99,7 @@ public class RemoveVisualStylesTask extends AbstractTask {
 			// First save the network views that have the style which is about to be deleted
 			for (var view : viewSet) {
 				if (vs.equals(vmMgr.getVisualStyle(view)))
-					networkViews.add(view);
+					stylesByView.put(view, vs);
 			}
 			
 			// Now we can delete the visual style
@@ -123,12 +125,15 @@ public class RemoveVisualStylesTask extends AbstractTask {
 				// First register the visual style again
 				if (!vmMgr.getAllVisualStyles().contains(vs))
 					vmMgr.addVisualStyle(vs);
+			}
+			
+			// Now set the style to the saved views
+			for (var entry : stylesByView.entrySet()) {
+				var view = entry.getKey();
+				var vs = entry.getValue();
 				
-				// Now set the style to the saved views
-				for (var view : networkViews) {
-					if (viewSet.contains(view)) // Check if this view is still registered
-						vmMgr.setVisualStyle(vs, view);
-				}
+				if (viewSet.contains(view)) // Check if this view is still registered
+					vmMgr.setVisualStyle(vs, view);
 			}
 		}
 
