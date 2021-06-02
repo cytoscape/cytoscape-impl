@@ -8,6 +8,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -37,19 +38,26 @@ public class AddEdgeTask extends AbstractTask implements ObservableTask {
 		this.postUndo = postUndo;
 	}
 
+	
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setTitle("Add Edge");
 		
-		CyNetwork net = netView.getMutableNetworkView().getModel();
+		CyNetworkView mutableNetView = netView.getMutableNetworkView();
 		View<CyNode> mutableSourceNodeView = netView.getMutableNodeView(sourceNodeView.getSUID());
 		View<CyNode> mutableTargetNodeView = netView.getMutableNodeView(targetNodeView.getSUID());
 		
 		if (mutableSourceNodeView == null || mutableTargetNodeView == null)
 			return;
 		
-		CyNode sourceNode = mutableSourceNodeView.getModel();
-		CyNode targetNode = mutableTargetNodeView.getModel();
+		createEdge(mutableNetView, mutableSourceNodeView, mutableTargetNodeView, tm);
+	}
+	
+	
+	private void createEdge(CyNetworkView netView, View<CyNode> sourceView, View<CyNode> targetView, TaskMonitor tm) {
+		CyNetwork net = netView.getModel();
+		CyNode sourceNode = sourceView.getModel();
+		CyNode targetNode = targetView.getModel();
 		
 		String sourceName = net.getRow(sourceNode).get(CyRootNetwork.SHARED_NAME, String.class);
 		String targetName = net.getRow(targetNode).get(CyRootNetwork.SHARED_NAME, String.class);
@@ -68,13 +76,13 @@ public class AddEdgeTask extends AbstractTask implements ObservableTask {
 		registrar.getService(CyEventHelper.class).flushPayloadEvents(net);
 		
 		VisualStyle vs = registrar.getService(VisualMappingManager.class).getVisualStyle(netView);
-		View<CyEdge> edgeView = netView.getMutableNetworkView().getEdgeView(edge);
+		View<CyEdge> edgeView = netView.getEdgeView(edge);
 		
 		if (edgeView != null) {
 			vs.apply(edgeRow, edgeView);
 			
 			if (postUndo) {
-				AddEdgeEdit addEdgeEdit = new AddEdgeEdit(registrar, netView, sourceNodeView, targetNodeView, edgeView);
+				AddEdgeEdit addEdgeEdit = new AddEdgeEdit(registrar, this.netView, this.sourceNodeView, this.targetNodeView, edgeView);
 				addEdgeEdit.post();
 			}
 		}
