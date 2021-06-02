@@ -1,6 +1,8 @@
 package org.cytoscape.ding.impl;
 
-import static org.cytoscape.graph.render.stateful.RenderDetailFlags.*;
+import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_HIGH_DETAIL;
+import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_NODE_LABELS;
+import static org.cytoscape.graph.render.stateful.RenderDetailFlags.OPT_LABEL_CACHE;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -363,9 +365,9 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 	private void advanceAnimatedEdges() {
 		edgeDetails.advanceAnimatedEdges();
+		var flags = renderComponent.getLastFastRenderFlags();
 		
-		RenderDetailFlags flags = renderComponent.getLastFastRenderFlags();
-		if(flags.renderEdges() != RenderEdges.NONE) {
+		if (flags != null && flags.renderEdges() != RenderEdges.NONE) {
 			updateView(UpdateType.JUST_EDGES);
 		}
 	}
