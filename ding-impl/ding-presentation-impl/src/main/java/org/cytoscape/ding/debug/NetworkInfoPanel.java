@@ -24,6 +24,7 @@ public class NetworkInfoPanel extends BasicCollapsiblePanel {
 	private JLabel edgeCountLabel;
 	private JLabel transformViewLabel;
 	private JLabel transformCntrLabel;
+	private JLabel transformBoundsLabel;
 	private JLabel transformZoomLabel;
 	private JLabel selectedNodeLabel;
 	
@@ -38,6 +39,7 @@ public class NetworkInfoPanel extends BasicCollapsiblePanel {
 		networkNameLabel = new JLabel();
 		transformViewLabel = new JLabel();
 		transformCntrLabel = new JLabel();
+		transformBoundsLabel = new JLabel();
 		transformZoomLabel = new JLabel();
 		edgeCountLabel = new JLabel();
 		selectedNodeLabel = new JLabel();
@@ -47,7 +49,7 @@ public class NetworkInfoPanel extends BasicCollapsiblePanel {
 		edgeButton.addActionListener(e -> countEdges());
 		
 		LookAndFeelUtil.makeSmall(edgeCountLabel, selectedNodeLabel, edgeButton);
-		LookAndFeelUtil.makeSmall(transformViewLabel, transformCntrLabel, transformZoomLabel);
+		LookAndFeelUtil.makeSmall(transformViewLabel, transformCntrLabel, transformBoundsLabel, transformZoomLabel);
 		
 		JPanel panel = new JPanel();
 		panel.setOpaque(false);
@@ -60,6 +62,7 @@ public class NetworkInfoPanel extends BasicCollapsiblePanel {
 			.addComponent(networkNameLabel)
 			.addComponent(transformViewLabel)
 			.addComponent(transformCntrLabel)
+			.addComponent(transformBoundsLabel)
 			.addComponent(transformZoomLabel)
 			.addComponent(selectedNodeLabel)
 			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
@@ -72,6 +75,7 @@ public class NetworkInfoPanel extends BasicCollapsiblePanel {
 			.addComponent(networkNameLabel)
 			.addComponent(transformViewLabel)
 			.addComponent(transformCntrLabel)
+			.addComponent(transformBoundsLabel)
 			.addComponent(transformZoomLabel)
 			.addComponent(selectedNodeLabel)
 			.addGroup(layout.createSequentialGroup()
@@ -89,15 +93,18 @@ public class NetworkInfoPanel extends BasicCollapsiblePanel {
 		networkNameLabel.setText("-none-");
 		transformViewLabel.setText("");
 		transformCntrLabel.setText("");
+		transformBoundsLabel.setText("");
 		transformZoomLabel.setText("");
 		edgeCountLabel.setText("");
 		selectedNodeLabel.setText("Selected Node - none");
 	}
 	
 	public void updateTransform(NetworkTransform t) {
-		transformViewLabel.setText(String.format("Viewport - w:%d h:%d",           t.getWidth(), t.getHeight()));
-		transformCntrLabel.setText(String.format("Network Center - x:%.4f y:%.4f", t.getCenterX(), t.getCenterY()));
-		transformZoomLabel.setText(String.format("Zoom - %.4f",                    t.getScaleFactor()));
+		var b = t.getNetworkVisibleAreaNodeCoords();
+		transformViewLabel.setText(String.format("Viewport - w:%d h:%d", t.getWidth(), t.getHeight()));
+		transformCntrLabel.setText(String.format("Center - x:%.2f, y:%.2f", t.getCenterX(), t.getCenterY()));
+		transformBoundsLabel.setText(String.format("Bounds - xMin:%.2f, yMin:%.2f, xMax:%.2f, yMax:%.2f", b.getMinX(), b.getMinY(), b.getMaxX(), b.getMaxY()));
+		transformZoomLabel.setText(String.format("Zoom - %.4f", t.getScaleFactor()));
 	}
 	
 	public void setNetworkName(String name) {

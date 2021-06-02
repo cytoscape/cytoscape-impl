@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.function.Consumer;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
@@ -66,8 +67,10 @@ public class ClipboardImpl {
 	private final Set<Annotation> annotations;
 	private final Map<CyNode, Map<VisualProperty<?>, Object>> nodeBypass;
 	private final Map<CyEdge, Map<VisualProperty<?>, Object>> edgeBypassMap;
-	private final Map<CyNode, double[]> nodePositions;
 	private boolean cutOperation;
+	
+	private final Map<CyNode, double[]> nodePositions;
+	private final Map<Long, Integer> multiPasteOffset; // CyNetworkView SUID is key, value is number of times pasted to that network
 
 	// Row maps
 	private Map<CyIdentifiable, CyRow> oldSharedRowMap;
@@ -75,7 +78,7 @@ public class ClipboardImpl {
 	private Map<CyIdentifiable, CyRow> oldHiddenRowMap;
 	private Map<CyRow, Map<String, Object>> oldValueMap;
 
-	private double xCenter, yCenter;
+	private final double xTopLeft, yTopLeft;
 	
 	private final List<AnnotationFactory<? extends Annotation>> annotationFactories;
 	private final CyServiceRegistrar serviceRegistrar;
@@ -129,34 +132,37 @@ public class ClipboardImpl {
 		var nodeProps = lexicon.getAllDescendants(BasicVisualLexicon.NODE);
 		var edgeProps = lexicon.getAllDescendants(BasicVisualLexicon.EDGE);
 		
-		xCenter = 0.0;
-		yCenter = 0.0;
 		nodePositions = new HashMap<>();
+		multiPasteOffset = new HashMap<>();
+		
+		// calculate top-left of nodes
+		double[] topLeft = { Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY };
+		Consumer<View<CyNode>> updateTopLeft = nodeView -> {
+			double x = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
+			double y = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
+			double w = nodeView.getVisualProperty(BasicVisualLexicon.NODE_WIDTH);
+			double h = nodeView.getVisualProperty(BasicVisualLexicon.NODE_HEIGHT);
+			topLeft[0] = Math.min(topLeft[0], x - (w * 0.5));
+			topLeft[1] = Math.min(topLeft[1], y - (h * 0.5));
+		};
 		
 		for (var node : nodes) {
 			addRows(node, sourceRootNetwork, sourceNetwork);
 
 			var nodeView = sourceView.getNodeView(node);
-
 			if (nodeView == null)
 				continue;
 
-			double[] position = saveNodePosition(nodeView);
-			xCenter += position[0];
-			yCenter += position[1];
+			saveNodePosition(nodeView);
 			saveLockedValues(nodeView, nodeProps, nodeBypass);
+			
+			updateTopLeft.accept(nodeView);
 		}
 		
-		if (nodes.size() > 0) {
-			xCenter = xCenter / nodes.size();
-			yCenter = yCenter / nodes.size();
-		}
-
 		for (var edge : edges) {
 			addRows(edge, sourceRootNetwork, sourceNetwork);
 
 			var edgeView = sourceView.getEdgeView(edge);
-
 			if (edgeView == null)
 				continue;
 
@@ -170,22 +176,29 @@ public class ClipboardImpl {
 			
 			if (!nodes.contains(src)) {
 				var nodeView = sourceView.getNodeView(src);
-
 				if (nodeView != null) {
 					saveNodePosition(nodeView);
 					saveLockedValues(nodeView, nodeProps, nodeBypass);
 				}
+				updateTopLeft.accept(nodeView);
 			}
 
 			if (!nodes.contains(tgt)) {
 				var nodeView = sourceView.getNodeView(tgt);
-
 				if (nodeView != null) {
 					saveNodePosition(nodeView);
 					saveLockedValues(nodeView, nodeProps, nodeBypass);
 				}
+				updateTopLeft.accept(nodeView);
 			}
 		}
+		
+		if(!Double.isFinite(topLeft[0]) || !Double.isFinite(topLeft[1])) {
+			topLeft[0] = 0.0;
+			topLeft[1] = 0.0;
+		}
+		this.xTopLeft = topLeft[0];
+		this.yTopLeft = topLeft[1];
 	}
 
 	public Set<CyNode> getNodes() {
@@ -200,13 +213,13 @@ public class ClipboardImpl {
 		return annotations;
 	}
 
-	public double getCenterX() {
-		return xCenter;
-	}
-
-	public double getCenterY() {
-		return yCenter;
-	}
+//	public double getCenterX() {
+//		return xCenter;
+//	}
+//
+//	public double getCenterY() {
+//		return yCenter;
+//	}
 
 	public boolean clipboardHasData() {
 		return !nodes.isEmpty() || !edges.isEmpty() || !annotations.isEmpty();
@@ -250,19 +263,52 @@ public class ClipboardImpl {
 		eventHelper.flushPayloadEvents(); // Make sure node/edge views were created
 		targetView.updateView();
 
-		// Pass 3: paste locked visual properties and reposition the new node views
-		double xOffset = xCenter - x;
-		double yOffset = yCenter - y;
+		// Calculate new position
+		double xOffset = 0; 
+		double yOffset = 0;
 		
+		// adding moves down and to the right
+		int shiftTimes = multiPasteOffset.merge(targetView.getSUID(), 1, (a,b) -> a + 1);
+		for(int i = 0; i < shiftTimes; i++) {
+			xOffset += 10;
+			yOffset += 10;
+		}
+	
+		double centerx = targetView.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION);
+		double centery = targetView.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION);
+		double scale   = targetView.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
+		double width   = targetView.getVisualProperty(BasicVisualLexicon.NETWORK_WIDTH);
+		double height  = targetView.getVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT);
+		
+		// Find the bounds of the visible area in node coordinates
+		double xMin = centerx - ((0.5 * width)  / scale);
+		double yMin = centery - ((0.5 * height) / scale);
+		double xMax = centerx + ((0.5 * width)  / scale); 
+		double yMax = centery + ((0.5 * height) / scale);
+		
+		// if the paste location is outside the visible area then adjust so that it is inside
+		if(yTopLeft + yOffset < yMin) { // above the visible area
+			yOffset = yOffset + (yMin - yTopLeft);
+		}
+		if(xTopLeft + xOffset < xMin) { // left of the visible area
+			xOffset = xOffset + (xMin - xTopLeft);
+		}
+		if(yTopLeft > yMax) { // below the visible area
+			yOffset = yMax - yTopLeft - 30;
+		}
+		if(xTopLeft > xMax) { // right of the visible area
+			xOffset = xMax - xTopLeft - 30;
+		}
+		
+		// Pass 3: paste locked visual properties and reposition the new node views
 		for (var node : nodePositions.keySet()) {
 			var newNode = newNodeMap.get(node);
-			
 			if (newNode == null || !pastedObjects.contains(newNode))
 				continue;
 			
 			var position = nodePositions.get(node);
-			double nodeX = (position == null ? 0 : position[0]) - xOffset;
-			double nodeY = (position == null ? 0 : position[1]) - yOffset;
+			double nodeX = (position == null ? 0 : position[0]) + xOffset;
+			double nodeY = (position == null ? 0 : position[1]) + yOffset;
 
 			// Now, get the new node view
 			var newNodeView = targetView.getNodeView(newNode);
@@ -303,7 +349,7 @@ public class ClipboardImpl {
 			if (a instanceof ArrowAnnotation) {
 				arrowAnnotations.add((ArrowAnnotation) a);
 			} else {
-				var na = pasteAnnotation(targetView, annotationMgr, a, a.getX() - xOffset, a.getY() - yOffset);
+				var na = pasteAnnotation(targetView, annotationMgr, a, a.getX() + xOffset, a.getY() + yOffset);
 				
 				if (na != null)
 					newAnnotationMap.put(a, na);
@@ -654,7 +700,6 @@ public class ClipboardImpl {
 		argMap.put(Annotation.Y, Double.toString(y));
 		
 		var type = argMap.get("type");
-		
 		if (type == null)
 			type = a.getClass().getName();
 		

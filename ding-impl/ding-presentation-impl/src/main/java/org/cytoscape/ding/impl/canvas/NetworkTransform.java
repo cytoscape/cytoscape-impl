@@ -15,15 +15,19 @@ import org.cytoscape.ding.impl.TransformChangeListener;
 
 public class NetworkTransform {
 	
+	// width and height of viewport (JComponent) in image coordinate space
 	private int width;
 	private int height;
 	
+	// x/y is center of network in node coordinate space
 	private double x = 0;
 	private double y = 0;
+	
+	// scale factor is same as zoom level
 	private double scaleFactor = 1;
 	private double dpiScaleFactor = 1.0;
 	
-	// This transform is used to convert from window (ie mouse) coordinates to node coordinates.
+	// This transform is used to convert from window (ie mouse or image) coordinates to node coordinates.
 	private final AffineTransform windowXform = new AffineTransform();
 	// This transform is used when painting, and it incorporates the dpiScaleFactor to render at higher resolution.
 	private final AffineTransform paintXform = new AffineTransform();

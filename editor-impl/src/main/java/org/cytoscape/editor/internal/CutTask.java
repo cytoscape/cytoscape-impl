@@ -141,7 +141,8 @@ public class CutTask extends AbstractTask {
 		@Override
 		public void undo() {
 			clipMgr.setCurrentClipboard(clipboard);
-			var objects = new HashSet<>(clipMgr.paste(netView, clipboard.getCenterX(), clipboard.getCenterY()));
+			
+			var objects = new HashSet<>(clipMgr.paste(netView, 0, 0));
 			
 			// Restore edges that were not cut, but were deleted because their nodes were cut
 			if (netView.getModel() instanceof CySubNetwork) {
