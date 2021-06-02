@@ -1,20 +1,9 @@
 package org.cytoscape.task.internal.filter;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,7 +40,6 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskMonitor.Level;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
@@ -351,9 +339,9 @@ public class CreateFilterTaskTest {
 		
 		when(transformer.getTransformers()).thenReturn(List.of(validatableTransformer));
 		
-		boolean valid = TransformerJsonTunable.validate(transformer, tm);
+		var errors = TransformerJsonTunable.validate(transformer);
 		
-		assertFalse(valid);
+		assertFalse(errors.isEmpty());
 	}
 	
 	@Test
@@ -367,8 +355,8 @@ public class CreateFilterTaskTest {
 		
 		when(transformer.getTransformers()).thenReturn(List.of(validatableTransformer));
 		
-		boolean valid = TransformerJsonTunable.validate(transformer, tm);
+		var errors = TransformerJsonTunable.validate(transformer);
 		
-		assertTrue(valid);
+		assertTrue(errors.isEmpty());
 	}
 }

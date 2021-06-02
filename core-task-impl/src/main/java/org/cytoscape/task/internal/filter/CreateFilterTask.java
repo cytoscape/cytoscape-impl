@@ -1,5 +1,7 @@
 package org.cytoscape.task.internal.filter;
 
+import java.util.List;
+
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.filter.TransformerContainer;
 import org.cytoscape.filter.model.NamedTransformer;
@@ -69,9 +71,9 @@ public class CreateFilterTask extends AbstractTask {
 			throw new Exception("Error parsing Filter JSON");
 		}
 		
-		boolean valid = TransformerJsonTunable.validate(transformer, taskMonitor);
-		if(!valid) {
-			throw new Exception("Transformer is not valid: " + transformer.getName());
+		List<String> errors = TransformerJsonTunable.validate(transformer);
+		if(!errors.isEmpty()) {
+			throw new Exception("Transformer '" + transformer.getName() + "' is not valid: " + String.join(",", errors));
 		}
 
 		container.addNamedTransformer(transformer);

@@ -1,7 +1,7 @@
 package org.cytoscape.task.internal.filter;
 
-import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -65,7 +65,7 @@ public class SelectFilterTask extends AbstractTask {
 	}
 	
 	@Override
-	public void run(TaskMonitor tm) throws IOException {
+	public void run(TaskMonitor tm) throws Exception {
 		if (network == null) {
 			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 			if (network == null) {
@@ -83,11 +83,14 @@ public class SelectFilterTask extends AbstractTask {
 			return;
 		}
 
-		boolean valid = TransformerJsonTunable.validate(transformer, tm);
-		if (!valid) {
-			tm.showMessage(Level.ERROR, "Cannot parse JSON format");
-			return;
+		List<String> errors = TransformerJsonTunable.validate(transformer);
+		if(!errors.isEmpty()) {
+			for(String error : errors) {
+				tm.showMessage(Level.ERROR, error);
+			}
+			throw new Exception("Transformer '" + transformer.getName() + "' is not valid: " + String.join(",", errors));
 		}
+
 
 		Optional<SelectTunable.Action> action = select.getAction();
 		if(action.isEmpty()) {
