@@ -252,7 +252,6 @@ public class VisualStyleSelector extends JPanel {
 	public void update(SortedSet<VisualStyle> styles, VisualStyle currentStyle) {
 		allStyles.clear();
 		
-		
 		if (styles != null)
 			allStyles.addAll(styles);
 		
@@ -512,7 +511,9 @@ public class VisualStyleSelector extends JPanel {
 			gridScrollPane.getViewport().addComponentListener(new ComponentAdapter() {
 				@Override
 				public void componentResized(ComponentEvent evt) {
-					debouncer.debounce(() -> getStyleGrid().update());
+					debouncer.debounce(() -> {
+						invokeOnEDT(() -> getStyleGrid().update());
+					});
 				}
 			});
 			gridScrollPane.getViewport().addMouseListener(new MouseAdapter() {
@@ -1033,63 +1034,60 @@ public class VisualStyleSelector extends JPanel {
 		}
 		
 		void updateStylePanels() {
-			for (var itemPnl : vsPanelMap.values()) {
-				if (itemPnl.isDirty())
-					itemPnl.update();
+			for (var item : vsPanelMap.values()) {
+				if (item.isDirty())
+					item.update();
 			}
 		}
 		
 		void update() {
-			invokeOnEDT(() -> {
-				this.removeAll();
+			removeAll();
+			
+			var dm = getModel();
+			
+			if (dm.getSize() > 0) {
+				var size = this.getParent() != null ? this.getParent().getSize() : null;
 				
-				var dm = getModel();
-				
-				if (dm.getSize() > 0) {
-					var size = this.getParent() != null ? this.getParent().getSize() : null;
-					
-					if (size != null) {
-						var itemWidth = IMAGE_WIDTH + 2 * ITEM_BORDER_WIDTH + 2 * ITEM_MARGIN + 2 * ITEM_PAD;
-						var width = size != null ? size.width : itemWidth;
-						cols = width <= 0 ? minColumns : calculateColumns(itemWidth, width);
-					} else {
-						cols = minColumns;
-					}
-					
-					var rows = calculateRows(dm.getSize(), cols);
-		
-					this.setLayout(new GridLayout(rows, cols));
-					
-					for (int i = 0; i < dm.getSize(); i++) {
-						var vs = dm.getElementAt(i);
-						var itemPnl = vsPanelMap.get(vs);
-						
-						if (itemPnl == null)
-							itemPnl = this.createItem(vs);
-						
-						if (!isFilteredOut(vs))
-							this.add(itemPnl);
-					}
-					
-					var diff = (cols * rows) - dm.getSize();
-						
-					for (int i = 0; i < diff; i++) {
-						var fillPnl = new JPanel();
-						fillPnl.setBackground(BG_COLOR);
-						fillPnl.addMouseListener(new MouseAdapter() {
-							@Override
-							public void mousePressed(MouseEvent evt) {
-								if (isEditMode() && !evt.isShiftDown()) // Deselect all items
-									deselectAll();
-							}
-						});
-						this.add(fillPnl);
-					}
+				if (size != null) {
+					var itemWidth = IMAGE_WIDTH + 2 * ITEM_BORDER_WIDTH + 2 * ITEM_MARGIN + 2 * ITEM_PAD;
+					var width = size != null ? size.width : itemWidth;
+					cols = width <= 0 ? minColumns : calculateColumns(itemWidth, width);
+				} else {
+					cols = minColumns;
 				}
 				
-				this.revalidate();
-				this.repaint();
-			});
+				var rows = calculateRows(dm.getSize(), cols);
+				setLayout(new GridLayout(rows, cols));
+				
+				for (int i = 0; i < dm.getSize(); i++) {
+					var vs = dm.getElementAt(i);
+					var itemPnl = getItem(vs);
+					
+					if (itemPnl == null)
+						itemPnl = createItem(vs);
+					
+					if (!isFilteredOut(vs))
+						add(itemPnl);
+				}
+				
+				var diff = (cols * rows) - dm.getSize();
+					
+				for (int i = 0; i < diff; i++) {
+					var fillPnl = new JPanel();
+					fillPnl.setBackground(BG_COLOR);
+					fillPnl.addMouseListener(new MouseAdapter() {
+						@Override
+						public void mousePressed(MouseEvent evt) {
+							if (isEditMode() && !evt.isShiftDown()) // Deselect all items
+								deselectAll();
+						}
+					});
+					add(fillPnl);
+				}
+			}
+			
+			revalidate();
+			repaint();
 		}
 		
 		void update(List<VisualStyle> data) {
@@ -1412,7 +1410,7 @@ public class VisualStyleSelector extends JPanel {
 
 		StylePanel(VisualStyle style) {
 			this.style = style;
-			this.init();
+			init();
 			
 			this.addMouseListener(new MouseAdapter() {
 				@Override
@@ -1437,14 +1435,14 @@ public class VisualStyleSelector extends JPanel {
 		}
 		
 		private void init() {
-			this.setBackground(BG_COLOR);
-			this.setFocusable(true);
+			setBackground(BG_COLOR);
+			setFocusable(true);
 			
 			var gap = ITEM_MARGIN + ITEM_PAD;
-			this.setBorder(BorderFactory.createEmptyBorder(gap,  gap,  gap,  gap));
+			setBorder(BorderFactory.createEmptyBorder(gap,  gap,  gap,  gap));
 			
 			var layout = new GroupLayout(this);
-			this.setLayout(layout);
+			setLayout(layout);
 			layout.setAutoCreateGaps(false);
 			layout.setAutoCreateContainerGaps(false);
 			
@@ -1456,8 +1454,6 @@ public class VisualStyleSelector extends JPanel {
 					.addComponent(getImageLabel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getTitleTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
-			
-//			update();
 		}
 		
 		JLabel getImageLabel() {
@@ -1465,7 +1461,10 @@ public class VisualStyleSelector extends JPanel {
 				imageLabel = new JLabel();
 				imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
 				imageLabel.setOpaque(true);
-				imageLabel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, BORDER_COLOR));
+				
+				int bw = 1;
+				imageLabel.setBorder(BorderFactory.createMatteBorder(0, 0, bw, 0, BORDER_COLOR));
+				imageLabel.setMinimumSize(new Dimension(IMAGE_WIDTH, IMAGE_HEIGHT + bw));
 			}
 			
 			return imageLabel;
