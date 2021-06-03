@@ -1067,7 +1067,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 					re.getBendStore().selectHandle(chosenAnchor);
 				}
 			}
-			re.setContentChanged();	
+			re.updateView(UpdateType.ALL_FULL);
 		}
 		
 		
@@ -1088,7 +1088,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				}
 			}
 
-			re.setContentChanged();
+			re.updateView(UpdateType.ALL_FULL);
 			return toggle;
 		}
 		
@@ -1296,7 +1296,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			}
 			
 			if (!selectedNodes.isEmpty() || re.getBendStore().areHandlesSelected()) {
-				re.setContentChanged();
+				re.updateView(UpdateType.ALL_FULL);
 			}
 		}
 	}

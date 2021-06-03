@@ -23,6 +23,7 @@ import org.cytoscape.application.CyUserLog;
 import org.cytoscape.cg.event.CustomGraphicsLibraryUpdatedEvent;
 import org.cytoscape.cg.event.CustomGraphicsLibraryUpdatedListener;
 import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
 import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
@@ -205,7 +206,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener, CustomGraphic
 			logger.error("Annotations were not loaded correctly.", e);
 		} finally {
 			loading = false;
-			re.setContentChanged();
+			re.updateView(UpdateType.JUST_ANNOTATIONS);
 			propChangeSupport.firePropertyChange(PROP_ANNOTATIONS, Collections.emptySet(), new HashSet<>(annotationSet));
 		}
 	}
@@ -301,7 +302,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener, CustomGraphic
 		getAnnotationTree().resetZOrder();
 		
 		if (!loading) {
-			re.setContentChanged();
+			re.updateView(UpdateType.JUST_ANNOTATIONS);
 			propChangeSupport.firePropertyChange(PROP_ANNOTATIONS, oldValue, new HashSet<>(annotationSet));
 		}
 	}
@@ -320,7 +321,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener, CustomGraphic
 		getAnnotationTree().resetZOrder();
 		
 		if (!loading) {
-			re.setContentChanged();
+			re.updateView(UpdateType.JUST_ANNOTATIONS);
 			propChangeSupport.firePropertyChange(PROP_ANNOTATIONS, oldValue, new HashSet<>(annotationSet));
 		}
 	}
@@ -332,7 +333,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener, CustomGraphic
 		annotationSelection.remove(annotation);
 		
 		if (changed && !loading) {
-			re.setContentChanged();
+			re.updateView(UpdateType.JUST_ANNOTATIONS);
 			propChangeSupport.firePropertyChange(PROP_ANNOTATIONS, oldValue, new HashSet<>(annotationSet));
 		}
 	}
@@ -349,7 +350,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener, CustomGraphic
 		}
 		
 		if (changed && !loading) {
-			re.setContentChanged();
+			re.updateView(UpdateType.JUST_ANNOTATIONS);
 			propChangeSupport.firePropertyChange(PROP_ANNOTATIONS, oldValue, new HashSet<>(annotationSet));
 		}
 	}

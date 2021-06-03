@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.view.model.CyNetworkView;
@@ -480,7 +481,7 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	@Override
 	public void contentChanged() {
 		if (re != null)
-			re.setContentChanged();
+			re.updateView(UpdateType.JUST_ANNOTATIONS);
 	}
 
 	@Override
