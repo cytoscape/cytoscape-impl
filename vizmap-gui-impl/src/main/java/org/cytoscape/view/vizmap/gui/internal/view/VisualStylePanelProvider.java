@@ -14,6 +14,7 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.Timer;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.presentation.RenderingEngine;
@@ -146,11 +147,15 @@ public class VisualStylePanelProvider {
 					showDialog();
 			});
 			
+			// Sets a delay to close the popup so the user can see that the style has been selected
+			var timer = new Timer(100, ae -> disposePopup());
+			timer.setRepeats(false);
+			
 			styleSelector.addPropertyChangeListener("selectedStyle", evt -> {
 				update();
 				
-				if (!isAdjusting)
-					disposePopup();
+				if (!isAdjusting && popup != null && popup.isVisible())
+					timer.restart();
 				
 				firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
 			});

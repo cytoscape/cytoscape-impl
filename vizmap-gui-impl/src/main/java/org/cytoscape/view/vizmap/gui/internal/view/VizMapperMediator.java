@@ -1446,26 +1446,31 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		sendNotification(NotificationNames.REMOVE_LOCKED_VALUES, vo);
 	}
 
-	private void onSelectedVisualStyleChanged(final PropertyChangeEvent e) {
-		final VisualStyle newStyle = (VisualStyle) e.getNewValue();
-		final VisualStyle oldStyle = vmProxy.getCurrentVisualStyle();
+	private void onSelectedVisualStyleChanged(PropertyChangeEvent e) {
+		if (ignoreVisualStyleSelectedEvents)
+			return;
 		
-		if (!ignoreVisualStyleSelectedEvents && newStyle != null && !newStyle.equals(oldStyle)) {
-			// Update proxy
-			vmProxy.setCurrentVisualStyle(newStyle);
-			
-			// Undo support
-			final UndoSupport undo = servicesUtil.get(UndoSupport.class);
-			undo.postEdit(new AbstractCyEdit("Set Current Style") {
-				@Override
-				public void undo() {
-					vmProxy.setCurrentVisualStyle(oldStyle);
-				}
-				@Override
-				public void redo() {
-					vmProxy.setCurrentVisualStyle(newStyle);
-				}
-			});
+		var newStyle = (VisualStyle) e.getNewValue();
+		var oldStyle = vmProxy.getCurrentVisualStyle();
+		
+		if (!Objects.equals(newStyle, oldStyle)) {
+			new Thread(() -> {
+				// Update proxy
+				vmProxy.setCurrentVisualStyle(newStyle);
+				
+				// Undo support
+				var undo = servicesUtil.get(UndoSupport.class);
+				undo.postEdit(new AbstractCyEdit("Set Current Style") {
+					@Override
+					public void undo() {
+						vmProxy.setCurrentVisualStyle(oldStyle);
+					}
+					@Override
+					public void redo() {
+						vmProxy.setCurrentVisualStyle(newStyle);
+					}
+				});
+			}).start();
 		}
 	}
 	
