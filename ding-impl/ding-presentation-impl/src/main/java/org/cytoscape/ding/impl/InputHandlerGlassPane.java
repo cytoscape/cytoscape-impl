@@ -932,7 +932,8 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				if(annotation != null) {
 					Toggle select = mousePressedHandleAnnotation(annotation, e);
 					if(select != Toggle.NOCHANGE && !isAdditiveSelect(e)) {
-						deselectAllNodesAndEdges();
+						deselectAllNodes();
+						deselectAllEdges();
 					}
 					annotationSelection.setMovingStartOffset(e.getPoint());
 					if (isControlOrMetaDown(e)) {
@@ -1733,28 +1734,22 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	}
 	
 	private boolean deselectAllNodes() {
-		if(nodeSelectionEnabled()) {
-			var table = re.getViewModel().getModel().getDefaultNodeTable();
-			var rows = table.getMatchingRows(CyNetwork.SELECTED, true);
-			if(rows.isEmpty())
-				return false;
-			batchDeselectRows(table, rows);
-			return true;
-		}
-		return false;
+		var table = re.getViewModel().getModel().getDefaultNodeTable();
+		var rows = table.getMatchingRows(CyNetwork.SELECTED, true);
+		if(rows.isEmpty())
+			return false;
+		batchDeselectRows(table, rows);
+		return true;
 	}
 	
 	private boolean deselectAllEdges() {
 		re.getBendStore().unselectAllHandles();
-		if(edgeSelectionEnabled()) {
-			var table = re.getViewModel().getModel().getDefaultEdgeTable();
-			var rows = table.getMatchingRows(CyNetwork.SELECTED, true);
-			if(rows.isEmpty())
-				return false;
-			batchDeselectRows(table, rows);
-			return true;
-		}
-		return false;
+		var table = re.getViewModel().getModel().getDefaultEdgeTable();
+		var rows = table.getMatchingRows(CyNetwork.SELECTED, true);
+		if(rows.isEmpty())
+			return false;
+		batchDeselectRows(table, rows);
+		return true;
 	}
 		
 	// We want to fire the selection event immediately, waiting for the payload event to fire
@@ -1782,18 +1777,11 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	}
 	
 	private boolean deselectAllAnnotations() {
-		if(annotationSelectionEnabled()) {
-			if(!cyAnnotator.getAnnotationSelection().isEmpty()) {
-				cyAnnotator.clearSelectedAnnotations();
-				return true;
-			}
+		if(!cyAnnotator.getAnnotationSelection().isEmpty()) {
+			cyAnnotator.clearSelectedAnnotations();
+			return true;
 		}
 		return false;
-	}
-	
-	private void deselectAllNodesAndEdges() {
-		deselectAllNodes();
-		deselectAllEdges();
 	}
 	
 	private void deselectAll() {
