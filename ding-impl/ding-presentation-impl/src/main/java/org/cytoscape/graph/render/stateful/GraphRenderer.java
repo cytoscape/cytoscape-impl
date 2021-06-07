@@ -114,7 +114,6 @@ public final class GraphRenderer {
 			ProgressMonitor labelPm = subPms[1];
 			
 			final boolean selectedOnly = flags.has(RenderDetailFlags.OPT_SELECTED_ONLY);
-			System.out.println("SELECTED EDGES ONLY");
 			
 			shapePm.start("Line");
 			DiscreteProgressMonitor shapeDpm = shapePm.toDiscrete(edgeHits.size());
@@ -412,7 +411,6 @@ public final class GraphRenderer {
 			ProgressMonitor labelPm = subPms[1];
 			
 			final boolean selectedOnly = flags.has(RenderDetailFlags.OPT_SELECTED_ONLY);
-			System.out.println("SELECTED NODES ONLY");
 			
 			shapePm.start("Shape");
 			final int nodeHitCount = nodeHits.size();
