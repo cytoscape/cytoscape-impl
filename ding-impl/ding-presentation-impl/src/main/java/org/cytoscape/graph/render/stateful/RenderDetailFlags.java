@@ -6,11 +6,9 @@ import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
 import org.cytoscape.ding.impl.canvas.NetworkTransform;
 import org.cytoscape.graph.render.stateful.GraphLOD.RenderEdges;
-import org.cytoscape.util.intr.LongHash;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
-import org.cytoscape.view.model.SnapshotEdgeInfo;
+import org.cytoscape.view.model.spacial.NetworkSpacialIndex2D;
 import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 /**
  * The GraphLOD combined with the number of visible nodes/edges tells us exactly what level of
@@ -143,33 +141,19 @@ public class RenderDetailFlags {
 		}
 	}
 	
-	public static int countEdges(DRenderingEngine re) {
-		// Note: calling getAdjacentEdgeIterable() for every node on every frame is very slow
-		CyNetworkViewSnapshot netView = re.getViewModelSnapshot();
+	public static int[] countNodesEdges(DRenderingEngine re) {
 		Rectangle2D.Float area = re.getTransform().getNetworkVisibleAreaNodeCoords();
-		SpacialIndex2DEnumerator<Long> nodeHits = netView.getSpacialIndex2D().queryOverlap(area.x, area.y, area.x + area.width, area.y + area.height);
 		
-		int edgeCount = 0;
-		LongHash nodeBuff = new LongHash();
+		CyNetworkViewSnapshot netView = re.getViewModelSnapshot();
+		NetworkSpacialIndex2D spacialIndex = netView.getSpacialIndex2D();
 		
-		while(nodeHits.hasNext()) {
-			long nodeSuid = nodeHits.next();
-			var touchingEdges = netView.getAdjacentEdgeIterable(nodeSuid);
-
-			for(var edge : touchingEdges) {
-				boolean isVisible = Boolean.TRUE.equals(edge.getVisualProperty(BasicVisualLexicon.EDGE_VISIBLE));
-				if(!isVisible)
-					continue;
-				
-				SnapshotEdgeInfo edgeInfo = netView.getEdgeInfo(edge);
-				long otherNode = nodeSuid ^ edgeInfo.getSourceViewSUID() ^ edgeInfo.getTargetViewSUID();
-				if(nodeBuff.get(otherNode) < 0)
-					edgeCount++;
-			}
-			nodeBuff.put(nodeSuid);
-		}
-
-		return edgeCount;
+		var nodeHits = spacialIndex.queryOverlapNodes(area.x, area.y, area.x + area.width, area.y + area.height, null);
+		int nodeCount = nodeHits.size();
+		
+		var edgeHits = spacialIndex.queryOverlapEdges(area.x, area.y, area.x + area.width, area.y + area.height, null);
+		int edgeCount = edgeHits.size();
+		
+		return new int[] { nodeCount, edgeCount };
 	}
 	
 	
