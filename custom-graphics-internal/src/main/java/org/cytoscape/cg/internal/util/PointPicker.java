@@ -103,7 +103,7 @@ public class PointPicker extends JPanel {
     	setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
     	
     	var layout = new GroupLayout(this);
-		this.setLayout(layout);
+		setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(true);
 		
@@ -124,7 +124,7 @@ public class PointPicker extends JPanel {
 		layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING, true)
 				.addComponent(getCanvas())
 				.addGroup(layout.createSequentialGroup()
-						.addGap((int)fieldY)
+						.addGap((int) fieldY)
 						.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 								.addComponent(xLbl)
 								.addComponent(getXTxt(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)

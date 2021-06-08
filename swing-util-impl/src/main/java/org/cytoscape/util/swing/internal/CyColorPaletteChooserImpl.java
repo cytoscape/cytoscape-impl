@@ -3,14 +3,11 @@ package org.cytoscape.util.swing.internal;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,9 +18,6 @@ import javax.swing.JColorChooser;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
-
-import javax.swing.border.BevelBorder;
-import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.colorchooser.AbstractColorChooserPanel;
 
@@ -58,15 +52,12 @@ import org.cytoscape.util.swing.CyColorPaletteChooser;
  * #L%
  */
 
+@SuppressWarnings("serial")
 class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser {
-	private static final long serialVersionUID = -1L; // FIXME
-
+	
 	private final PaletteProviderManager paletteManager;
 	private final PaletteType paletteType;
 
-	private Component parent;
-	private String title;
-	private PaletteType type;
 	protected Palette initialPalette;
 	protected Color initialColor;
 
@@ -74,26 +65,25 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 	// private Color selectedColor;
 	private boolean paletteOnly;
 
-  /**
-   * True if OK was pressed; false otherwise.
-   */
-  protected boolean okWasPressed = false;
+	/**
+	 * True if OK was pressed; false otherwise.
+	 */
+	protected boolean okWasPressed;
 
-  /**
-   * OK Action Listener
-   */
-  protected ActionListener okListener = null;
+	/**
+	 * OK Action Listener
+	 */
+	protected ActionListener okListener;
 
-  /**
-   * Cancel Action Listener
-   */
-  protected ActionListener cancelListener = null;
-
+	/**
+	 * Cancel Action Listener
+	 */
+	protected ActionListener cancelListener;
 
 	/**
 	 * The inner panel containing everything.
 	 */
-	protected JPanel innerPanel = null;
+	protected JPanel innerPanel;
 
 	/**
 	 * If we want to be able to remember our color choices, we need
@@ -102,33 +92,33 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 	 * we switch types or the number of colors or from paletteOnly
 	 * to a full chooser, we need to know that.
 	 */
-	private static JColorChooser colorChooser = null;
-	private static ColorPanelSelectionModel model = null;
-	private static boolean lastPaletteOnly = false;
-	private static int colorCount = 0;
-	private static PaletteType lastPaletteType = null;
-	private static ColorPaletteProviderPanel[] palettePanels = null;
+	private static JColorChooser colorChooser;
+	private static ColorPanelSelectionModel model;
+	private static boolean lastPaletteOnly;
+	private static int colorCount;
+	private static PaletteType lastPaletteType;
+	private static ColorPaletteProviderPanel[] palettePanels;
 
-	public CyColorPaletteChooserImpl(final PaletteProviderManager paletteManager, final PaletteType type, boolean paletteOnly) {
+	public CyColorPaletteChooserImpl(PaletteProviderManager paletteManager, PaletteType type, boolean paletteOnly) {
 		this.paletteOnly = paletteOnly;
 		this.paletteManager = paletteManager;
 		this.paletteType = type;
 	}
 
 	@Override
-  public Color showDialog(final Component parent, final String title, 
-                          final Palette initialPalette, final Color initialColor, int colors) {
-
-		// System.out.println("showDialog - false");
+	public Color showDialog(Component parent, String title, Palette initialPalette, Color initialColor, int colors) {
 		checkColorChooser(colors, false);
 		paletteOnly = false;
 		lastPaletteOnly = false;
 		lastPaletteType = paletteType;
-		if (colors < 1) 
+		
+		if (colors < 1)
 			colorCount = 9;
 		else
 			colorCount = colors;
+		
 		init(parent, title, initialPalette, initialColor);
+		
 		if (showDialog())
 			return getSelectedColor();
 
@@ -136,21 +126,22 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 	}
 
 	@Override
-  public Palette showDialog(final Component parent, final String title,
-                            final Palette initialPalette, int colors) {
-
-		// System.out.println("showDialog - true");
+	public Palette showDialog(Component parent, String title, Palette initialPalette, int colors) {
 		checkColorChooser(colors, true);
 		paletteOnly = true;
 		lastPaletteOnly = true;
 		lastPaletteType = paletteType;
+		
 		if (colors < 1) 
 			colorCount = 9;
 		else
 			colorCount = colors;
+		
 		init(parent, title, initialPalette, null);
+		
 		if (showDialog())
 			return getSelectedPalette();
+		
 		return initialPalette;
 	}
 
@@ -164,21 +155,18 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 		return getColorPalette();
 	}
 
-	private void init(final Component parent, final String title, 
-                    final Palette initialPalette, final Color initialColor) {
-		this.parent = parent;
-		this.setLocationRelativeTo(parent);
-		this.title = title;
+	private void init(Component parent, String title, Palette initialPalette, Color initialColor) {
 		this.initialPalette = initialPalette;
 		this.initialColor = initialColor;
-		this.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
 
 		// UI configuration
-		this.setTitle(title);
-		this.setDefaultCloseOperation( WindowConstants.HIDE_ON_CLOSE );
+		setLocationRelativeTo(parent);
+		setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
+		setTitle(title);
+		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 
-		final Container pane = this.getContentPane();
-		pane.setLayout( new BorderLayout( ) );
+		var pane = getContentPane();
+		pane.setLayout(new BorderLayout());
 
 		// Inner panel
 		innerPanel = new JPanel();
@@ -187,19 +175,17 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 		pane.add(innerPanel, BorderLayout.CENTER);
 
 		// Colors Tab
-		final JPanel colorsTab = new JPanel( );
+		var colorsTab = new JPanel();
 		colorsTab.setBorder(new EmptyBorder(10, 10, 10, 10));
-		//colorsTab.setLayout( new GridLayout(3, 1, 5, 0) );
 		colorsTab.setLayout(new BoxLayout(colorsTab, BoxLayout.Y_AXIS));
-		this.innerPanel.add(colorsTab);
+		innerPanel.add(colorsTab);
 
 		if (colorChooser == null) {
-			// System.out.println("Creating new colorchooser");
 			model = new ColorPanelSelectionModel();
 			colorChooser = new JColorChooser(model);
 
 			// Get the list of palettes
-			List<PaletteProvider> providers = getPaletteProviders(false);
+			var providers = getPaletteProviders(false);
 			palettePanels = getPanels(providers, colorCount);
 
 			// Get the standard color panels
@@ -209,6 +195,7 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 			} else {
 				AbstractColorChooserPanel[] oldPanels = colorChooser.getChooserPanels();
 				AbstractColorChooserPanel[] newPanels = new AbstractColorChooserPanel[oldPanels.length+palettePanels.length];
+				
 				for (int i = 0; i < palettePanels.length; i++) {
 					newPanels[i] = palettePanels[i];
 				}
@@ -216,6 +203,7 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 				for (int i = 0; i < oldPanels.length; i++) {
 					newPanels[i+palettePanels.length] = oldPanels[i];
 				}
+				
 				colorChooser.setChooserPanels(newPanels);
 			}
 		}
@@ -227,218 +215,209 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 		if (initialColor != null)
 			model.setSelectedColor(initialColor);
 
-		colorsTab.add( this.colorChooser, BorderLayout.CENTER );
+		colorsTab.add(colorChooser, BorderLayout.CENTER);
 
 		// color blind friendly checkbox
-		final JPanel cbFriendlyPanel = new JPanel( );
+		var cbFriendlyPanel = new JPanel();
 		cbFriendlyPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 0, 0));
 		cbFriendlyPanel.setBorder(new EmptyBorder(10, 0, 0, 0));
 		colorsTab.add(cbFriendlyPanel, BorderLayout.SOUTH);
 
-		final JPanel cbFriendlyGridPanel = new JPanel( );
+		var cbFriendlyGridPanel = new JPanel();
 
 		cbFriendlyPanel.add(cbFriendlyGridPanel);
 
-		final JCheckBox colorBlindOnly = new JCheckBox("show only colorblind-friendly");
-		colorBlindOnly.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				JCheckBox source = (JCheckBox) e.getSource();
-				for (ColorBlindAwareColorChooserPanel cbccp : palettePanels) {
-
-					cbccp.setShowColorBlindSafe(source.isSelected());
-
-					cbccp.updateChooser();
-
-					colorChooser.repaint();
-
-				}
+		var colorBlindOnly = new JCheckBox("show only colorblind-friendly");
+		colorBlindOnly.addActionListener(e -> {
+			var source = (JCheckBox) e.getSource();
+			
+			for (var cbccp : palettePanels) {
+				cbccp.setShowColorBlindSafe(source.isSelected());
+				cbccp.updateChooser();
+				colorChooser.repaint();
 			}
 		});
 		cbFriendlyGridPanel.add(colorBlindOnly);
 
 		// OK, Cancel, and Reset buttons
-		final JPanel buttonPanel = new JPanel( );
+		var buttonPanel = new JPanel();
 		buttonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 0, 0));
 		buttonPanel.setBorder(new EmptyBorder(10, 0, 0, 0));
 		colorsTab.add(buttonPanel, BorderLayout.CENTER);
 
-		final JPanel buttonGridPanel = new JPanel( );
+		var buttonGridPanel = new JPanel();
 		buttonGridPanel.setLayout(new GridLayout(1, 3, 5, 0));
 		buttonPanel.add(buttonGridPanel);
 
-
 		// Reset
-		final JButton resetButton = new JButton( "Reset" );
-		resetButton.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
+		var resetButton = new JButton("Reset");
+		resetButton.addActionListener(e -> {
+			setPalette(CyColorPaletteChooserImpl.this.initialPalette);
+			setColor(CyColorPaletteChooserImpl.this.initialColor);
 
-				setPalette(CyColorPaletteChooserImpl.this.initialPalette);
-				setColor(CyColorPaletteChooserImpl.this.initialColor);
-				for (ColorBlindAwareColorChooserPanel cbccp : palettePanels) {
-					cbccp.setSelectedPalette(CyColorPaletteChooserImpl.this.initialPalette.getName());
-					cbccp.updateChooser();
-					colorChooser.repaint();
-				}
+			for (var cbccp : palettePanels) {
+				cbccp.setSelectedPalette(CyColorPaletteChooserImpl.this.initialPalette.getName());
+				cbccp.updateChooser();
+				colorChooser.repaint();
 			}
 		});
 		buttonGridPanel.add( resetButton );
 
 		// OK
-		final JButton okButton = new JButton( "OK" );
+		var okButton = new JButton("OK");
 		okButton.setDefaultCapable(true);
-		this.getRootPane( ).setDefaultButton(okButton);
-		okButton.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				CyColorPaletteChooserImpl.this.okWasPressed = true;
-				CyColorPaletteChooserImpl.this.setVisible(false);
-				CyColorPaletteChooserImpl.this.initialPalette = getColorPalette();
-				if (CyColorPaletteChooserImpl.this.okListener != null) 
-					CyColorPaletteChooserImpl.this.okListener.actionPerformed(e);
-			}
+		getRootPane().setDefaultButton(okButton);
+		okButton.addActionListener(e -> {
+			CyColorPaletteChooserImpl.this.okWasPressed = true;
+			CyColorPaletteChooserImpl.this.setVisible(false);
+			CyColorPaletteChooserImpl.this.initialPalette = getColorPalette();
+			
+			if (CyColorPaletteChooserImpl.this.okListener != null)
+				CyColorPaletteChooserImpl.this.okListener.actionPerformed(e);
 		});
-		buttonGridPanel.add( okButton );
+		buttonGridPanel.add(okButton);
 
 		// Cancel
-		final JButton cancelButton = new JButton( "Cancel" );
-		cancelButton.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				setPalette(CyColorPaletteChooserImpl.this.initialPalette);
-				CyColorPaletteChooserImpl.this.okWasPressed = false;
-				CyColorPaletteChooserImpl.this.setVisible(false);
-				if (CyColorPaletteChooserImpl.this.cancelListener != null) 
-					CyColorPaletteChooserImpl.this.cancelListener.actionPerformed(e);
-			}
+		var cancelButton = new JButton("Cancel");
+		cancelButton.addActionListener(e -> {
+			setPalette(CyColorPaletteChooserImpl.this.initialPalette);
+			CyColorPaletteChooserImpl.this.okWasPressed = false;
+			CyColorPaletteChooserImpl.this.setVisible(false);
+			
+			if (CyColorPaletteChooserImpl.this.cancelListener != null)
+				CyColorPaletteChooserImpl.this.cancelListener.actionPerformed(e);
 		});
-		buttonGridPanel.add( cancelButton );
+		buttonGridPanel.add(cancelButton);
 
-		this.pack( );
-		this.validate( );
+		this.pack();
+		this.validate();
 	}
 
 	private boolean checkColorChooser(int colors, boolean paletteO) {
-		if (colors < 1) colors = 9;
-		// System.out.println("static colorCount = "+CyColorPaletteChooserImpl.colorCount+", colors = "+colors);
-		// System.out.println("static lastPaletteOnly = "+CyColorPaletteChooserImpl.lastPaletteOnly+", paletteO = "+paletteO);
-		// System.out.println("static lastPaletteType = "+CyColorPaletteChooserImpl.lastPaletteType+", paletteType = "+paletteType);
-		if (CyColorPaletteChooserImpl.colorCount == colors && 
-		    CyColorPaletteChooserImpl.lastPaletteOnly == paletteO &&
-				CyColorPaletteChooserImpl.lastPaletteType == paletteType) return true;
+		if (colors < 1)
+			colors = 9;
+
+		if (CyColorPaletteChooserImpl.colorCount == colors && CyColorPaletteChooserImpl.lastPaletteOnly == paletteO
+				&& CyColorPaletteChooserImpl.lastPaletteType == paletteType)
+			return true;
+		
 		colorChooser = null;
+		
 		return false;
 	}
 
 //----------------------------------------------------------------------
 //  Methods
 //----------------------------------------------------------------------
-  /**
-   * Shows the dialog box and waits for the user to press OK or
-   * Cancel.  When either is pressed, the dialog box is hidden.
-   * A true is returned if OK was pressed, and false otherwise.
-   * <P>
-   * This method blocks until the dialog is closed by the user,
-   * regardless of whether the dialog box is modal or not.
-   *
-   * @return      true if OK was pressed
-   */
-  public boolean showDialog( )
-  { 
-    if ( this.isModal( ) )
-    { 
-      this.show( );
-      return this.okWasPressed;
-    }
-    this.setModal( true );
-    this.show( ); 
-    final boolean status = this.okWasPressed;
-    this.setModal( false );
-    this.dispose();
-    return status;
-  }
+	
+	/**
+	 * Shows the dialog box and waits for the user to press OK or Cancel. When
+	 * either is pressed, the dialog box is hidden. A true is returned if OK was
+	 * pressed, and false otherwise.
+	 * <P>
+	 * This method blocks until the dialog is closed by the user, regardless of
+	 * whether the dialog box is modal or not.
+	 *
+	 * @return true if OK was pressed
+	 */
+	public boolean showDialog() {
+		if (isModal()) {
+			setVisible(true);
+			return okWasPressed;
+		}
 
-  /**
-   * Returns true if the OK button was pressed to close the
-   * window, and false otherwise.
-   *
-   * @return      true if OK was pressed
-   */
-  public boolean wasOKPressed( )
-  {
-    return this.okWasPressed;
-  }
+		setModal(true);
+		setVisible(true);
 
-  /**
-   * Get the current color in the color chooser.
-   *
-   * @return      the current color
-   */
-  public Color getColor( )
-  {
-    return this.colorChooser.getColor( );
-  }
+		boolean status = okWasPressed;
+		setModal(false);
+		dispose();
 
-  /**
-   * Set the current color in the color chooser.
-   *
-   * @param color   the new color
-   */
-  public void setColor( final Color color )
-  {
-    this.colorChooser.setColor( color );
-    this.initialColor = color;
-  }
+		return status;
+	}
 
-  /**
-   * Set the current color in the color chooser.
-   *
-   * @param red   the red component of the new color
-   * @param green   the green component of the new color
-   * @param blue    the blue component of the new color
-   */
-  public void setColor( final int red, final int green, final int blue )
-  {
-    this.initialColor = new Color( red, green, blue );
-    this.colorChooser.setColor( this.initialColor );
-  }
-  
-  /**
-   * Get the current color in the color chooser.
-   *
-   * @return      the current color
-   */
-  public Palette getColorPalette( )
-  {
-    ColorPanelSelectionModel model = (ColorPanelSelectionModel)colorChooser.getSelectionModel();
-    return model.getPalette();
-  }
+	/**
+	 * Returns true if the OK button was pressed to close the window, and false
+	 * otherwise.
+	 *
+	 * @return true if OK was pressed
+	 */
+	public boolean wasOKPressed() {
+		return okWasPressed;
+	}
 
-  /**
-   * Set the current color in the color chooser.
-   *
-   * @param color   the new color
-   */
-  public void setPalette(Palette palette)
-  {
-    if (palette == null) palette = initialPalette;
-    ColorPanelSelectionModel model = (ColorPanelSelectionModel)colorChooser.getSelectionModel();
-    model.setPalette(palette);
-    initialPalette = palette;
-  }
+	/**
+	 * Get the current color in the color chooser.
+	 *
+	 * @return the current color
+	 */
+	public Color getColor() {
+		return colorChooser.getColor();
+	}
+
+	/**
+	 * Set the current color in the color chooser.
+	 *
+	 * @param color the new color
+	 */
+	public void setColor(Color color) {
+		colorChooser.setColor(color);
+		initialColor = color;
+	}
+
+	/**
+	 * Set the current color in the color chooser.
+	 *
+	 * @param red   the red component of the new color
+	 * @param green the green component of the new color
+	 * @param blue  the blue component of the new color
+	 */
+	public void setColor(int red, int green, int blue) {
+		initialColor = new Color(red, green, blue);
+		colorChooser.setColor(initialColor);
+	}
+
+	/**
+	 * Get the current color in the color chooser.
+	 *
+	 * @return the current color
+	 */
+	public Palette getColorPalette() {
+		var model = (ColorPanelSelectionModel) colorChooser.getSelectionModel();
+		return model.getPalette();
+	}
+
+	/**
+	 * Set the current color in the color chooser.
+	 *
+	 * @param color the new color
+	 */
+	public void setPalette(Palette palette) {
+		if (palette == null)
+			palette = initialPalette;
+		
+		var model = (ColorPanelSelectionModel) colorChooser.getSelectionModel();
+		model.setPalette(palette);
+		initialPalette = palette;
+	}
 
 	private List<PaletteProvider> getPaletteProviders(boolean colorBlindOnly) {
 		return paletteManager.getPaletteProviders(paletteType, colorBlindOnly);
 	}
 
 	private ColorPaletteProviderPanel[] getPanels(List<PaletteProvider> providers, int size) {
-		List<ColorPaletteProviderPanel> panels = new ArrayList<ColorPaletteProviderPanel>();
-		for (PaletteProvider provider: providers) {
-      if (paletteType.equals(BrewerType.ANY)) {
-        for (PaletteType t: provider.getPaletteTypes()) {
-			    panels.add(new ColorPaletteProviderPanel(provider, t, size, paletteOnly));
-        }
-      } else {
-			  panels.add(new ColorPaletteProviderPanel(provider, paletteType, size, paletteOnly));
-      }
+		var panels = new ArrayList<ColorPaletteProviderPanel>();
+		
+		for (var provider : providers) {
+			if (paletteType.equals(BrewerType.ANY)) {
+				for (var t : provider.getPaletteTypes()) {
+					panels.add(new ColorPaletteProviderPanel(provider, t, size, paletteOnly));
+				}
+			} else {
+				panels.add(new ColorPaletteProviderPanel(provider, paletteType, size, paletteOnly));
+			}
 		}
+		
 		return panels.toArray(new ColorPaletteProviderPanel[1]);
 	}
 }

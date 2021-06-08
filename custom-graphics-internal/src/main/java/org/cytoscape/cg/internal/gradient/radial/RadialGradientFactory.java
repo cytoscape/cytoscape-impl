@@ -24,7 +24,7 @@ public class RadialGradientFactory implements CyCustomGraphics2Factory<RadialGra
 
 	@Override
 	public CyCustomGraphics2<RadialGradientLayer> getInstance(CyCustomGraphics2<RadialGradientLayer> gradient) {
-		return new RadialGradient((RadialGradient)gradient);
+		return new RadialGradient((RadialGradient) gradient);
 	}
 
 	@Override
@@ -54,7 +54,7 @@ public class RadialGradientFactory implements CyCustomGraphics2Factory<RadialGra
 	
 	@Override
 	public JComponent createEditor(CyCustomGraphics2<RadialGradientLayer> gradient) {
-		return new RadialGradientEditor((RadialGradient)gradient);
+		return new RadialGradientEditor((RadialGradient) gradient, serviceRegistrar);
 	}
 	
 	@Override

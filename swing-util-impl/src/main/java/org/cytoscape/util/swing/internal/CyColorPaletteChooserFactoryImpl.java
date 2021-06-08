@@ -1,9 +1,5 @@
 package org.cytoscape.util.swing.internal;
 
-import java.awt.Color;
-import java.awt.Component;
-
-import org.cytoscape.util.color.Palette;
 import org.cytoscape.util.color.PaletteProviderManager;
 import org.cytoscape.util.color.PaletteType;
 import org.cytoscape.util.swing.CyColorPaletteChooser;
@@ -34,11 +30,14 @@ import org.cytoscape.util.swing.CyColorPaletteChooserFactory;
  */
 
 class CyColorPaletteChooserFactoryImpl implements CyColorPaletteChooserFactory {
-	final PaletteProviderManager paletteManager;
-	public CyColorPaletteChooserFactoryImpl(final PaletteProviderManager paletteManager) {
+	
+	private final PaletteProviderManager paletteManager;
+	
+	public CyColorPaletteChooserFactoryImpl(PaletteProviderManager paletteManager) {
 		this.paletteManager = paletteManager;
 	}
 
+	@Override
 	public CyColorPaletteChooser getColorPaletteChooser(PaletteType type, boolean paletteOnly) {
 		return new CyColorPaletteChooserImpl(paletteManager, type, paletteOnly);
 	}
