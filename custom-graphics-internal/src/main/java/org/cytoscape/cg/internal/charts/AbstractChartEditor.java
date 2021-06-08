@@ -84,6 +84,7 @@ import org.cytoscape.cg.model.Orientation;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.util.swing.BasicCollapsiblePanel.CollapseListener;
 import org.cytoscape.util.swing.ColorButton;
@@ -916,7 +917,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	protected ColorButton getAxisColorBtn() {
 		if (axisColorBtn == null) {
 			var color = chart.get(AXIS_COLOR, Color.class, Color.DARK_GRAY);
-			axisColorBtn = new ColorButton(color);
+			axisColorBtn = new ColorButton(serviceRegistrar, null, BrewerType.ANY, color, false);
 			axisColorBtn.setVisible(hasAxes);
 			
 			axisColorBtn.addPropertyChangeListener("color", evt -> {
@@ -1038,7 +1039,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	protected ColorButton getBorderColorBtn() {
 		if (borderColorBtn == null) {
 			var color = chart.get(BORDER_COLOR, Color.class, Color.DARK_GRAY);
-			borderColorBtn = new ColorButton(color);
+			borderColorBtn = new ColorButton(serviceRegistrar, null, BrewerType.ANY, color, false);
 			
 			borderColorBtn.addPropertyChangeListener("color", evt -> {
 				var newColor = (Color) evt.getNewValue();
