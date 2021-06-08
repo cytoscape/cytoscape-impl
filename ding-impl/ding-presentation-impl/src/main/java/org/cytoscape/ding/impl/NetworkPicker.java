@@ -335,59 +335,6 @@ public class NetworkPicker {
 		return suidsToEdges(suids);
 	}
 
-	public List<View<CyEdge>> getEdgesInPath(GeneralPath path) {
-		List<Long> edges = computeEdgesIntersecting(path);
-		return suidsToEdges(edges);
-	}
-	
-	
-	private List<Long> computeEdgesIntersecting(GeneralPath path) {
-		CyNetworkViewSnapshot snapshot = re.getViewModelSnapshot();
-		path = re.getTransform().pathInNodeCoords(path);
-		if(path == null)
-			return Collections.emptyList();
-		
-		Line2D.Float line = new Line2D.Float();
-		float[] extentsBuff = new float[4];
-		
-		// get viewport bounds in node coords
-		Rectangle2D.Float area = re.getTransform().getNetworkVisibleAreaNodeCoords();
-		SpacialIndex2DEnumerator<Long> nodeHits = snapshot.getSpacialIndex2D().queryOverlap(area.x, area.y, area.x + area.width, area.y + area.height);
-		
-		Set<Long> processedNodes = new HashSet<>();
-		List<Long> resultEdges = new ArrayList<>();
-		
-		// AWT has no API for computing the intersection of two general paths, so we must default to treating edges as lines.
-		while(nodeHits.hasNext()) {
-			long node = nodeHits.nextExtents(extentsBuff);
-			
-			// MKTODO make this into a utility method
-			float nodeX = (extentsBuff[0] + extentsBuff[2]) / 2;
-			float nodeY = (extentsBuff[1] + extentsBuff[3]) / 2;
-			
-			Iterable<View<CyEdge>> touchingEdges = snapshot.getAdjacentEdgeIterable(node);
-			
-			for(View<CyEdge> e : touchingEdges) {
-				SnapshotEdgeInfo edgeInfo = snapshot.getEdgeInfo(e);
-				long edge = e.getSUID();
-				long otherNode = node ^ edgeInfo.getSourceViewSUID() ^ edgeInfo.getTargetViewSUID();
-				
-				if(!processedNodes.contains(otherNode)) {
-					snapshot.getSpacialIndex2D().get(otherNode, extentsBuff);
-					float otherNodeX = (extentsBuff[0] + extentsBuff[2]) / 2;
-					float otherNodeY = (extentsBuff[1] + extentsBuff[3]) / 2;
-					line.setLine(nodeX, nodeY, otherNodeX, otherNodeY);
-					
-					if(intersectsLine(line, path)) {
-						resultEdges.add(edge);
-					}
-				}
-			}
-			processedNodes.add(node);
-		}
-		return resultEdges;
-	}
-	
 	
 	public List<Long> getEdgesIntersecting(int xMini, int yMini, int xMaxi, int yMaxi) {
 		double[] ptBuff = new double[2];
