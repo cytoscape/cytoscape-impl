@@ -9,17 +9,13 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Area;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
-import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
@@ -36,6 +32,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.SnapshotEdgeInfo;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.spacial.EdgeSpacialIndex2DEnumerator;
 import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.EdgeStackingVisualProperty;
@@ -235,75 +232,46 @@ public class NetworkPicker {
 		return getHandlesIntersecting(r, -1);
 	}
 	
-	public List<HandleInfo> getHandlesIntersecting(Rectangle r, int maxCount) {
+	
+	private List<HandleInfo> getHandlesIntersecting(Rectangle r, int maxCount) {
 		Rectangle2D selectionArea = re.getTransform().getNodeCoordinates(r);
 		
 		CyNetworkViewSnapshot snapshot = re.getViewModelSnapshot();
-		EdgeDetails edgeDetails = re.getEdgeDetails();
+		List<HandleInfo> resultHandles = maxCount == 1 ? new ArrayList<>(1) : new ArrayList<>();
 		
 		Rectangle2D.Float area = re.getTransform().getNetworkVisibleAreaNodeCoords();
-		SpacialIndex2DEnumerator<Long> nodeHits = snapshot.getSpacialIndex2D().queryOverlap(area.x, area.y, area.x + area.width, area.y + area.height);
+		EdgeSpacialIndex2DEnumerator edgeHits = snapshot.getSpacialIndex2D().queryOverlapEdges(area.x, area.y, area.x + area.width, area.y + area.height, null);
 		
-		List<HandleInfo> resultHandles = maxCount == 1 ? new ArrayList<>(1) : new ArrayList<>();
-		Set<Long> processedNodes = new HashSet<>();
-		while(nodeHits.hasNext()) {
-			long node = nodeHits.next();
-			
-			Iterable<View<CyEdge>> touchingEdges = snapshot.getAdjacentEdgeIterable(node);
-			for(View<CyEdge> e : touchingEdges) {
-				if(edgeDetails.isSelected(e)) {
-					SnapshotEdgeInfo edgeInfo = snapshot.getEdgeInfo(e);
-					long otherNode = node ^ edgeInfo.getSourceViewSUID() ^ edgeInfo.getTargetViewSUID();
-					
-					if(!processedNodes.contains(otherNode)) {
-						Bend bend = edgeDetails.getBend(e);
-						if(bend != null) {
-							List<Handle> handles = bend.getAllHandles();
-							if(handles != null) {
-								for(Handle handle : handles) {
-									Point2D p = handle.calculateHandleLocation(snapshot, e);
-									var size = DEdgeDetails.HANDLE_SIZE;
-									if(selectionArea.intersects(p.getX()-(size/2), p.getY()-(size/2), size, size)) {
-										resultHandles.add(new HandleInfo(e, bend, handle));
-										if(maxCount > 0 && resultHandles.size() >= maxCount) {
-											return resultHandles;
-										}
-									}
-								}
-							}
-						}
-					}
-				}
+		while(edgeHits.hasNext()) {
+			View<CyEdge> edge = edgeHits.nextEdge();
+			getHandles(snapshot, edge, selectionArea, resultHandles);
+			if(maxCount > 0 && resultHandles.size() >= maxCount) {
+				return resultHandles.subList(0, maxCount);
 			}
-			processedNodes.add(node);
 		}
 		
 		return resultHandles;
 	}
 	
 	
-	
-	private static boolean intersectsLine(Line2D line, GeneralPath path) {
-		// This assumes the path is made up of straight line segments
-		Point2D p1 = null;
-		Point2D p2 = null;
-		float[] coords = new float[6];
-		
-		for(PathIterator iter = path.getPathIterator(null); !iter.isDone(); iter.next()) {
-			iter.currentSegment(coords);
-			p1 = p2;
-			p2 = new Point2D.Float(coords[0], coords[1]);
-			
-			if(p1 != null) {
-				Line2D seg = new Line2D.Float(p1, p2);
-				if(seg.intersectsLine(line)) {
-					return true;
+	private void getHandles(CyNetworkViewSnapshot snapshot, View<CyEdge> edge, Rectangle2D selectionAreaNode, List<HandleInfo> resultHandles) {
+		if(edgeDetails.isSelected(edge)) {
+			Bend bend = edgeDetails.getBend(edge);
+			if(bend != null) {
+				List<Handle> handles = bend.getAllHandles();
+				if(handles != null) {
+					for(Handle handle : handles) {
+						Point2D p = handle.calculateHandleLocation(snapshot, edge);
+						var size = DEdgeDetails.HANDLE_SIZE;
+						if(selectionAreaNode.intersects(p.getX()-(size/2), p.getY()-(size/2), size, size)) {
+							resultHandles.add(new HandleInfo(edge, bend, handle));
+						}
+					}
 				}
 			}
 		}
-		return false;
 	}
-	
+
 	private List<View<CyNode>> suidsToNodes(List<Long> suids) {
 		CyNetworkViewSnapshot snapshot = re.getViewModelSnapshot();
 		List<View<CyNode>> selectedNodes = new ArrayList<>(suids.size());
@@ -351,142 +319,100 @@ public class NetworkPicker {
 		final float xMax = (float) ptBuff[0];
 		final float yMax = (float) ptBuff[1];
 		
-		Line2D.Float line = new Line2D.Float();
-		float[] extentsBuff = new float[4];
+		final float[] srcExtents = new float[4];
+		final float[] trgExtents = new float[4];
 		
 		CyNetworkViewSnapshot snapshot = re.getViewModelSnapshot();
 		Rectangle2D.Float area = re.getTransform().getNetworkVisibleAreaNodeCoords();
-		SpacialIndex2DEnumerator<Long> nodeHits = snapshot.getSpacialIndex2D().queryOverlap(area.x, area.y, area.x + area.width, area.y + area.height);
+		EdgeSpacialIndex2DEnumerator edgeHits = snapshot.getSpacialIndex2D().queryOverlapEdges(area.x, area.y, area.x + area.width, area.y + area.height, null);
 		
-		Set<Long> processedNodes = new HashSet<>();
 		List<Long> resultEdges = new ArrayList<>();
 		
 		if (getFlags().not(LOD_HIGH_DETAIL)) {
+			Line2D.Float line = new Line2D.Float();
+			
 			// We won't need to look up arrows and their sizes.
-			while(nodeHits.hasNext()) {
-				long node = nodeHits.nextExtents(extentsBuff);
+			while(edgeHits.hasNext()) {
+				View<CyEdge> edge = edgeHits.nextEdgeWithNodeExtents(srcExtents, trgExtents, null);
 				
-				// MKTODO make this into a utility method
-				float nodeX = (extentsBuff[0] + extentsBuff[2]) / 2;
-				float nodeY = (extentsBuff[1] + extentsBuff[3]) / 2;
-				
-				Iterable<View<CyEdge>> touchingEdges = snapshot.getAdjacentEdgeIterable(node);
-				
-				for(View<CyEdge> e : touchingEdges) {
-					SnapshotEdgeInfo edgeInfo = snapshot.getEdgeInfo(e);
-					long edge = e.getSUID();
-					long otherNode = node ^ edgeInfo.getSourceViewSUID() ^ edgeInfo.getTargetViewSUID();
+				if(edgeDetails.isVisible(edge)) {
+					float sourceNodeX = (srcExtents[0] + srcExtents[2]) / 2;
+					float sourceNodeY = (srcExtents[1] + srcExtents[3]) / 2;
+					float targetNodeX = (trgExtents[0] + trgExtents[2]) / 2;
+					float targetNodeY = (trgExtents[1] + trgExtents[3]) / 2;
 					
-					if(!processedNodes.contains(otherNode)) {
-						snapshot.getSpacialIndex2D().get(otherNode, extentsBuff);
-						float otherNodeX = (extentsBuff[0] + extentsBuff[2]) / 2;
-						float otherNodeY = (extentsBuff[1] + extentsBuff[3]) / 2;
-						line.setLine(nodeX, nodeY, otherNodeX, otherNodeY);
-						
-						if(line.intersects(xMin, yMin, xMax - xMin, yMax - yMin)) {
-							resultEdges.add(edge);
-						}
+					line.setLine(sourceNodeX, sourceNodeY, targetNodeX, targetNodeY);
+					
+					if(line.intersects(xMin, yMin, xMax - xMin, yMax - yMin)) {
+						resultEdges.add(edge.getSUID());
 					}
 				}
-				processedNodes.add(node);
 			}
+			
 		} else { // Last render high detail.
 			byte[] haystackDataBuff = new byte[16];
-				
-			float[] extentsBuff2 = new float[4];
+			final float[] floatBuff1 = new float[4];
+			final float[] floatBuff2 = new float[4];
 			
-			while(nodeHits.hasNext()) {
-				long node = nodeHits.nextExtents(extentsBuff);
-				View<CyNode> nodeView = snapshot.getNodeView(node);
-				byte nodeShape = nodeDetails.getShape(nodeView);
+			while(edgeHits.hasNext()) {
+				View<CyEdge> edge = edgeHits.nextEdgeWithNodeExtents(srcExtents, trgExtents, null);
 				
-				Iterable<View<CyEdge>> touchingEdges = snapshot.getAdjacentEdgeIterable(node);
+				SnapshotEdgeInfo edgeInfo = snapshot.getEdgeInfo(edge);
+				long edgeSuid = edgeInfo.getSUID();
+				double segThicknessDiv2 = edgeDetails.getWidth(edge) / 2.0d;
+				EdgeStacking stacking = edgeDetails.getStacking(edge);
 				
-				for(View<CyEdge> edge : touchingEdges) {
-					
-					SnapshotEdgeInfo edgeInfo = snapshot.getEdgeInfo(edge);
-					long edgeSuid = edgeInfo.getSUID();
-					double segThicknessDiv2 = edgeDetails.getWidth(edge) / 2.0d;
-					long otherNode = node ^ edgeInfo.getSourceViewSUID() ^ edgeInfo.getTargetViewSUID();
-					View<CyNode> otherNodeView = snapshot.getNodeView(otherNode);
-					
-					EdgeStacking stacking = edgeDetails.getStacking(edge);
-					
-					if(!processedNodes.contains(otherNode)) {
-						snapshot.getSpacialIndex2D().get(otherNode, extentsBuff2);
-						
-						final byte otherNodeShape = nodeDetails.getShape(otherNodeView);
-						final byte srcShape;
-						final byte trgShape;
-						final float[] srcExtents;
-						final float[] trgExtents;
-						final long srcSuid;
-						final long trgSuid;
-
-						if (node == edgeInfo.getSourceViewSUID()) {
-							srcShape = nodeShape;
-							trgShape = otherNodeShape;
-							srcExtents = extentsBuff;
-							trgExtents = extentsBuff2;
-							srcSuid = node;
-							trgSuid = otherNode;
-						} else { // node == graph.edgeTarget(edge).
-							srcShape = otherNodeShape;
-							trgShape = nodeShape;
-							srcExtents = extentsBuff2;
-							trgExtents = extentsBuff;
-							srcSuid = otherNode;
-							trgSuid = node;
-						}
-
-						final ArrowShape srcArrow;
-						final ArrowShape trgArrow;
-						final float srcArrowSize;
-						final float trgArrowSize;
-
-						final float[] floatBuff1 = new float[2];
-						final float[] floatBuff2 = new float[2];
-						GeneralPath path  = new GeneralPath();
-						GeneralPath path2 = new GeneralPath();
-						
-						if (getFlags().not(LOD_EDGE_ARROWS) || stacking == EdgeStackingVisualProperty.HAYSTACK) {
-							srcArrow = trgArrow = ArrowShapeVisualProperty.NONE;
-							srcArrowSize = trgArrowSize = 0.0f;
-						} else {
-							srcArrow = edgeDetails.getSourceArrowShape(edge);
-							trgArrow = edgeDetails.getTargetArrowShape(edge);
-							srcArrowSize = ((srcArrow == ArrowShapeVisualProperty.NONE) ? 0.0f : edgeDetails.getSourceArrowSize(edge));
-							trgArrowSize = ((trgArrow == ArrowShapeVisualProperty.NONE) ? 0.0f : edgeDetails.getTargetArrowSize(edge));
-						}
-
-						final EdgeAnchors anchors = getFlags().not(LOD_EDGE_ANCHORS) ? null : edgeDetails.getAnchors(snapshot, edge);
-
-						
-						if(stacking == EdgeStackingVisualProperty.HAYSTACK) {
-							float radiusModifier = edgeDetails.getStackingDensity(edge);
-							GraphRenderer.computeEdgeEndpointsHaystack(srcExtents, trgExtents, srcSuid, trgSuid, edgeSuid, radiusModifier, stacking, 
-									floatBuff1, floatBuff2, haystackDataBuff);
-						} else {
-							GraphRenderer.computeEdgeEndpoints(srcExtents, srcShape, srcArrow,
-				                          srcArrowSize, anchors, trgExtents, trgShape,
-				                          trgArrow, trgArrowSize, floatBuff1, floatBuff2);
-						}
-
-						GraphGraphics.getEdgePath(srcArrow, srcArrowSize, trgArrow, trgArrowSize,
-						                    floatBuff1[0], floatBuff1[1], anchors,
-						                    floatBuff2[0], floatBuff2[1], path);
-						GraphRenderer.computeClosedPath(path.getPathIterator(null), path2);
-
-						if (path2.intersects(xMin - segThicknessDiv2, yMin - segThicknessDiv2,
-						                       (xMax - xMin) + (segThicknessDiv2 * 2),
-						                       (yMax - yMin) + (segThicknessDiv2 * 2)))
-							resultEdges.add(edge.getSUID());
-					}
+				View<CyNode> sourceNode = edgeInfo.getSourceNodeView();
+				View<CyNode> targetNode = edgeInfo.getTargetNodeView();
+				
+				byte srcShape = nodeDetails.getShape(sourceNode);
+				byte trgShape = nodeDetails.getShape(targetNode);
+				
+				final long srcSuid = sourceNode.getSUID();
+				final long trgSuid = targetNode.getSUID();
+			
+				final ArrowShape srcArrow;
+				final ArrowShape trgArrow;
+				final float srcArrowSize;
+				final float trgArrowSize;
+				
+				if (getFlags().not(LOD_EDGE_ARROWS) || stacking == EdgeStackingVisualProperty.HAYSTACK) {
+					srcArrow = trgArrow = ArrowShapeVisualProperty.NONE;
+					srcArrowSize = trgArrowSize = 0.0f;
+				} else {
+					srcArrow = edgeDetails.getSourceArrowShape(edge);
+					trgArrow = edgeDetails.getTargetArrowShape(edge);
+					srcArrowSize = ((srcArrow == ArrowShapeVisualProperty.NONE) ? 0.0f : edgeDetails.getSourceArrowSize(edge));
+					trgArrowSize = ((trgArrow == ArrowShapeVisualProperty.NONE) ? 0.0f : edgeDetails.getTargetArrowSize(edge));
 				}
 
-				processedNodes.add(node);
+				EdgeAnchors anchors = getFlags().not(LOD_EDGE_ANCHORS) ? null : edgeDetails.getAnchors(snapshot, edge);
+
+				if(stacking == EdgeStackingVisualProperty.HAYSTACK) {
+					float radiusModifier = edgeDetails.getStackingDensity(edge);
+					GraphRenderer.computeEdgeEndpointsHaystack(srcExtents, trgExtents, srcSuid, trgSuid, edgeSuid, radiusModifier, stacking, 
+							floatBuff1, floatBuff2, haystackDataBuff);
+				} else {
+					GraphRenderer.computeEdgeEndpoints(srcExtents, srcShape, srcArrow,
+		                          srcArrowSize, anchors, trgExtents, trgShape,
+		                          trgArrow, trgArrowSize, floatBuff1, floatBuff2);
+				}
+
+				GeneralPath path  = new GeneralPath();
+				GeneralPath path2 = new GeneralPath();
+				
+				GraphGraphics.getEdgePath(srcArrow, srcArrowSize, trgArrow, trgArrowSize,
+				                    floatBuff1[0], floatBuff1[1], anchors,
+				                    floatBuff2[0], floatBuff2[1], path);
+				GraphRenderer.computeClosedPath(path.getPathIterator(null), path2);
+
+				if (path2.intersects(xMin - segThicknessDiv2, yMin - segThicknessDiv2,
+				                       (xMax - xMin) + (segThicknessDiv2 * 2),
+				                       (yMax - yMin) + (segThicknessDiv2 * 2)))
+					resultEdges.add(edge.getSUID());
 			}
 		}
+		
 		return resultEdges;
 	}
 	
@@ -506,13 +432,6 @@ public class NetworkPicker {
 		return suidsToNodes(nodesXSect);
 	}
 	
-	public List<View<CyNode>> getNodesInPath(GeneralPath path) {
-		path = re.getTransform().pathInNodeCoords(path);
-		if(path == null)
-			return Collections.emptyList();
-		List<Long> nodesXSect = getNodesIntersectingPath(path);
-		return suidsToNodes(nodesXSect);
-	}
 	
 	public List<Long> getNodesIntersectingRectangle(double xMinimum, double yMinimum, double xMaximum, double yMaximum) {
 		CyNetworkViewSnapshot snapshot = re.getViewModelSnapshot();
@@ -569,49 +488,6 @@ public class NetworkPicker {
 	}
 
 
-	public List<Long> getNodesIntersectingPath(GeneralPath path) {
-		CyNetworkViewSnapshot snapshot = re.getViewModelSnapshot();
-		Rectangle2D mbr = path.getBounds2D();
-		SpacialIndex2DEnumerator<Long> under = snapshot.getSpacialIndex2D()
-				.queryOverlap((float)mbr.getMinX(), (float)mbr.getMinY(), (float)mbr.getMaxX(), (float)mbr.getMaxY());
-		if(!under.hasNext())
-			return Collections.emptyList();
-		
-		List<Long> result = new ArrayList<>(under.size());
-		float[] extents = new float[4];
-		
-		if(treatNodeShapesAsRectangle()) {
-			while(under.hasNext()) {
-				Long suid = under.nextExtents(extents);
-				float x = extents[0];
-				float y = extents[1];
-				float w = extents[2] - x;
-				float h = extents[3] - y;
-				if(path.intersects(x, y, w, h)) {
-					result.add(suid);
-				}
-			}
-		} else {
-			while(under.hasNext()) {
-				Long suid = under.nextExtents(extents);
-				View<CyNode> nodeView = snapshot.getNodeView(suid);
-				GeneralPath nodeShape = new GeneralPath();
-				GraphGraphics.getNodeShape(nodeDetails.getShape(nodeView),
-						extents[0], extents[1],
-						extents[2], extents[3], nodeShape);
-				Area pathArea = new Area(path);
-				Area nodeArea = new Area(nodeShape);
-				pathArea.intersect(nodeArea);
-				if(!pathArea.isEmpty()) {
-					result.add(suid);
-				}
-			}
-		}
-		
-		return result;
-	}
-	
-	
 //	public HandleKey getHandleAt(Point2D pt) {
 //		double[] ptBuff = {pt.getX(), pt.getY()};
 //		re.getTransform().xformImageToNodeCoords(ptBuff);

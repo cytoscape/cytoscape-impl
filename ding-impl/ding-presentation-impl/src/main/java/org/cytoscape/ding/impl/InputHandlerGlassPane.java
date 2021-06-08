@@ -1432,7 +1432,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		public void mouseReleased(MouseEvent e) {
 			if(selectionRect != null) {
 				List<DingAnnotation> annotations = Collections.emptyList();
-				List<HandleInfo> handles = Collections.emptyList();
 				List<View<CyNode>> nodes = Collections.emptyList();
 				List<View<CyEdge>> edges = Collections.emptyList();
 
@@ -1444,7 +1443,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				}
 				if(edgeSelectionEnabled()) {
 					edges = re.getPicker().getEdgesInRectangle(selectionRect);
-					handles = re.getPicker().getHandlesInRectangle(selectionRect);
 				}
 				
 				// Select
@@ -1452,8 +1450,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 					select(nodes, CyNode.class, true);
 				if(!edges.isEmpty())
 					select(edges, CyEdge.class, true);
-				for(HandleInfo handle : handles)
-					re.getBendStore().selectHandle(handle);
 				for(DingAnnotation a : annotations)
 					a.setSelected(true);
 				
