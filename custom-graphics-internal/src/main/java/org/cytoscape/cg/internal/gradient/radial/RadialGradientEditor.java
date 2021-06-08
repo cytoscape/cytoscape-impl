@@ -14,6 +14,7 @@ import javax.swing.JPanel;
 import org.cytoscape.cg.internal.gradient.AbstractGradientEditor;
 import org.cytoscape.cg.internal.util.PointPicker;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 @SuppressWarnings("serial")
 public class RadialGradientEditor extends AbstractGradientEditor<RadialGradient> {
@@ -53,6 +54,8 @@ public class RadialGradientEditor extends AbstractGradientEditor<RadialGradient>
 				.addComponent(centerLbl)
 				.addComponent(getPointPicker(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
+		
+		LookAndFeelUtil.makeSmall(centerLbl);
 		
 		return p;
 	}

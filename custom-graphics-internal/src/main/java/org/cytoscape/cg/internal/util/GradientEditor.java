@@ -308,6 +308,8 @@ public class GradientEditor extends JPanel {
 			}
 		});
 		
+		LookAndFeelUtil.makeSmall(addBtn, editBtn, delBtn);
+		
 		poly.addPoint(0, 0);
 		poly.addPoint(5, 10);
 		poly.addPoint(-5, 10);

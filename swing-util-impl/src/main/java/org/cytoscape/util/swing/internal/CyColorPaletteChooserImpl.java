@@ -181,12 +181,10 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 		pane.setLayout( new BorderLayout( ) );
 
 		// Inner panel
-		this.innerPanel = new JPanel( );
-		this.innerPanel.setLayout( new BorderLayout( ) );
-		this.innerPanel.setBorder( new CompoundBorder(
-			new BevelBorder( BevelBorder.LOWERED ),
-			new EmptyBorder( new Insets( 10, 10, 10, 10 ) ) ) );
-		pane.add(this.innerPanel, BorderLayout.CENTER);
+		innerPanel = new JPanel();
+		innerPanel.setLayout(new BorderLayout());
+		innerPanel.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
+		pane.add(innerPanel, BorderLayout.CENTER);
 
 		// Colors Tab
 		final JPanel colorsTab = new JPanel( );

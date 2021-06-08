@@ -16,6 +16,7 @@ import javax.swing.JPanel;
 import org.cytoscape.cg.internal.charts.AbstractChartEditor.DoubleInputVerifier;
 import org.cytoscape.cg.internal.gradient.AbstractGradientEditor;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 public class LinearGradientEditor extends AbstractGradientEditor<LinearGradient> {
 	
@@ -60,6 +61,8 @@ public class LinearGradientEditor extends AbstractGradientEditor<LinearGradient>
 				.addComponent(angleLbl)
 				.addComponent(getAngleCmb(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
+		
+		LookAndFeelUtil.makeSmall(angleLbl, getAngleCmb());
 		
 		return p;
 	}

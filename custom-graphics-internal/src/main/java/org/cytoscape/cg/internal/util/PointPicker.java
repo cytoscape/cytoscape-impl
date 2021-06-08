@@ -97,8 +97,8 @@ public class PointPicker extends JPanel {
     }
     
     private void init() {
-    	xLbl = new JLabel("x");
-    	yLbl = new JLabel("y");
+    	xLbl = new JLabel("x:");
+    	yLbl = new JLabel("y:");
     	
     	setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
     	
@@ -135,11 +135,12 @@ public class PointPicker extends JPanel {
 						)
 				)
 		);
+		
+		LookAndFeelUtil.makeSmall(xLbl, yLbl, getXTxt(), getYTxt());
     	
         add(getCanvas());
 	}
 
-    @SuppressWarnings("serial")
 	private JPanel getCanvas() {
     	if (canvas == null) {
     		canvas = new JPanel() {

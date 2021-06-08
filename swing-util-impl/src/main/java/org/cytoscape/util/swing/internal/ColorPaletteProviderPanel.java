@@ -134,6 +134,7 @@ public class ColorPaletteProviderPanel extends ColorBlindAwareColorChooserPanel
 
 		Border border = BorderFactory.createEmptyBorder(2,6,2,6);
 		Border selectedBorder = BorderFactory.createLineBorder(Color.blue, 2);
+		var selectedBorder = BorderFactory.createLineBorder(UIManager.getColor("List.selectionBackground"), 2);
 
 		if (selectedPalette == null) {
 			ColorPanelSelectionModel model = (ColorPanelSelectionModel)getColorSelectionModel();
@@ -171,10 +172,10 @@ public class ColorPaletteProviderPanel extends ColorBlindAwareColorChooserPanel
 			JPanel selectedPanel = paletteMap.get(palette.getName());
 			if (palette.getName().equals(selectedPalette)) {
 				((ColorPanelSelectionModel) model).setPalette(palette);
-				selectedPanel.setBorder(
-					BorderFactory.createCompoundBorder(
-							BorderFactory.createEmptyBorder(2,4,2,4),
-							BorderFactory.createLineBorder(Color.blue, 2)));
+				selectedPanel.setBorder(BorderFactory.createCompoundBorder(
+						BorderFactory.createEmptyBorder(2, 4, 2, 4),
+						BorderFactory.createLineBorder(UIManager.getColor("List.selectionBackground"), 2)
+				));
 			} else {
 				selectedPanel.setBorder(BorderFactory.createEmptyBorder(2,6,2,6));
 			}
@@ -192,10 +193,10 @@ public class ColorPaletteProviderPanel extends ColorBlindAwareColorChooserPanel
 			JPanel selectedPanel = paletteMap.get(plt.getName());
 			if (plt.getName().equals(selectedPalette)) {
 				((ColorPanelSelectionModel) model).setPalette(plt);
-				selectedPanel.setBorder(
-					BorderFactory.createCompoundBorder(
-							BorderFactory.createEmptyBorder(2,4,2,4),
-							BorderFactory.createLineBorder(Color.blue, 2)));
+				selectedPanel.setBorder(BorderFactory.createCompoundBorder(
+						BorderFactory.createEmptyBorder(2, 4, 2, 4),
+						BorderFactory.createLineBorder(UIManager.getColor("List.selectionBackground"), 2)
+				));
 			} else {
 				selectedPanel.setBorder(BorderFactory.createEmptyBorder(2,6,2,6));
 			}
