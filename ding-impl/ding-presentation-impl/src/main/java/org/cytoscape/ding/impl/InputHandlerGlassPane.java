@@ -3,7 +3,6 @@ package org.cytoscape.ding.impl;
 import static java.awt.event.KeyEvent.*;
 import static org.cytoscape.ding.internal.util.ViewUtil.*;
 
-import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
@@ -22,7 +21,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -259,7 +257,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	protected void paintComponent(Graphics g) {
 		maybe(AddEdgeListener.class).ifPresent(l -> l.drawAddingEdge(g));
 		maybe(SelectionRectangleListener.class).ifPresent(l -> l.drawSelectionRectangle(g));
-		maybe(SelectionLassoListener.class).ifPresent(l -> l.drawSelectionLasso(g));
 	}
 	
 	@Override
@@ -1176,12 +1173,11 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		}
 		
 		
-		
 		@Override
 		public void mouseDragged(MouseEvent e) {
 			if (!hit || !isLeftMouse(e))
 				return;
-			if (get(SelectionRectangleListener.class).isDragging() || maybe(SelectionLassoListener.class).map(l -> l.isDragging()).orElse(false))
+			if (get(SelectionRectangleListener.class).isDragging())
 				return;
 
 			var labelSelectionManager = re.getLabelSelectionManager();
@@ -1399,86 +1395,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			}
 		}
 	}
-	
-	/**
-	 * MKTODO This listener is not finished and should not be enabled.
-	 * @author mkucera
-	 */
-	private class SelectionLassoListener extends MouseAdapter {
-		
-		private final Color SELECTION_RECT_BORDER_COLOR_1 = UIManager.getColor("Focus.color");
-
-		private GeneralPath selectionLasso;
-		
-		@Override
-		public void mousePressed(MouseEvent e) {
-			if(e.isShiftDown() && isControlOrMetaDown(e)) { // Temporary
-				get(AddEdgeListener.class).reset();
-				selectionLasso = new GeneralPath();
-				selectionLasso.moveTo(e.getX(), e.getY());
-				e.consume();
-			}
-		}
-		
-		@Override
-		public void mouseDragged(MouseEvent e) {
-			if(selectionLasso != null) {
-				selectionLasso.lineTo(e.getX(), e.getY());
-				repaint();
-			}
-		}
-		
-		@Override
-		public void mouseReleased(MouseEvent e) {
-			if(selectionLasso != null) {
-				selectionLasso.closePath();
-				
-				List<DingAnnotation> annotations = Collections.emptyList();
-				List<HandleInfo> handles = Collections.emptyList();
-				List<View<CyNode>> nodes = Collections.emptyList();
-				List<View<CyEdge>> edges = Collections.emptyList();
-
-				if(annotationSelectionEnabled()) {
-					annotations = re.getPicker().getAnnotationsInPath(selectionLasso);
-				}
-				if(nodeSelectionEnabled()) {
-					nodes = re.getPicker().getNodesInPath(selectionLasso);
-				}
-				if(edgeSelectionEnabled()) {
-					// MKTODO getEdgesInPath() is not accurate, it does not work for curved edges
-					edges   = re.getPicker().getEdgesInPath(selectionLasso);
-//					handles = re.getPicker().getHandlesInPath(selectionLasso);
-				}
-				
-				// Select
-				if(!nodes.isEmpty())
-					select(nodes, CyNode.class, true);
-				if(!edges.isEmpty())
-					select(edges, CyEdge.class, true);
-				for(HandleInfo handle : handles)
-					re.getBendStore().selectHandle(handle);
-				for(DingAnnotation a : annotations)
-					a.setSelected(true);
-			}
-			selectionLasso = null;
-			repaint(); // repaint the glass pane
-		}
-		
-		public boolean isDragging() {
-			return selectionLasso != null;
-		}
-		
-		public void drawSelectionLasso(Graphics graphics) {
-			if(selectionLasso != null) {
-				Graphics2D g = (Graphics2D) graphics.create();
-				g.setColor(SELECTION_RECT_BORDER_COLOR_1);
-				GeneralPath path = new GeneralPath(selectionLasso);
-				path.closePath();
-				g.setStroke(new BasicStroke(2));
-				g.draw(path);
-			}
-		}
-	}
 
 	
 	private class SelectionRectangleListener extends MouseAdapter {
@@ -1516,7 +1432,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		public void mouseReleased(MouseEvent e) {
 			if(selectionRect != null) {
 				List<DingAnnotation> annotations = Collections.emptyList();
-				List<HandleInfo> handles = Collections.emptyList();
 				List<View<CyNode>> nodes = Collections.emptyList();
 				List<View<CyEdge>> edges = Collections.emptyList();
 
@@ -1528,7 +1443,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				}
 				if(edgeSelectionEnabled()) {
 					edges = re.getPicker().getEdgesInRectangle(selectionRect);
-					handles = re.getPicker().getHandlesInRectangle(selectionRect);
 				}
 				
 				// Select
@@ -1536,8 +1450,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 					select(nodes, CyNode.class, true);
 				if(!edges.isEmpty())
 					select(edges, CyEdge.class, true);
-				for(HandleInfo handle : handles)
-					re.getBendStore().selectHandle(handle);
 				for(DingAnnotation a : annotations)
 					a.setSelected(true);
 				
