@@ -2,16 +2,10 @@ package org.cytoscape.internal.view;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
-import static javax.swing.GroupLayout.Alignment.CENTER;
-import static javax.swing.GroupLayout.Alignment.LEADING;
-import static javax.swing.GroupLayout.Alignment.TRAILING;
+import static javax.swing.GroupLayout.Alignment.*;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 import static org.cytoscape.internal.view.util.ViewUtil.styleToolBarButton;
-import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE;
-import static org.cytoscape.util.swing.IconManager.ICON_CIRCLE;
-import static org.cytoscape.util.swing.IconManager.ICON_CROSSHAIRS;
-import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
-import static org.cytoscape.util.swing.IconManager.ICON_EYE_SLASH;
+import static org.cytoscape.util.swing.IconManager.*;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -39,7 +33,6 @@ import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
-import javax.swing.JToolBar;
 import javax.swing.JToolTip;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
@@ -403,7 +396,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	@SuppressWarnings("unchecked")
 	private void createSelectionModeButtons() {
 		for (var mode : SelectionMode.values()) {
-			var vp = lexicon.lookup(CyNetwork.class, mode.getPropertyId());
+			final var vp = lexicon.lookup(CyNetwork.class, mode.getPropertyId());
 			
 			if (vp != null && lexicon.isSupported(vp)) {
 				var range = vp.getRange();
@@ -414,7 +407,11 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 				var btn = new SelectionModeButton((VisualProperty<Boolean>) vp, mode);
 				selectionModeButtons.add(btn);
 				
-				btn.addActionListener(evt -> networkView.setLockedValue(vp, btn.isSelected()));
+				btn.addActionListener(evt -> {
+					boolean selected = btn.isSelected();
+					// use batch() to avoid setting dirty flag which causes redraw
+					networkView.batch(nv -> nv.setLockedValue(vp, selected), false);
+				});
 			}
 		}
 	}

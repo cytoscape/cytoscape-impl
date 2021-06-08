@@ -1674,20 +1674,20 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	}
 	
 	private boolean annotationSelectionEnabled() {
-		return re.getViewModelSnapshot().getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION);
+		return re.getViewModel().getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION);
 	}
 	
 	private boolean nodeSelectionEnabled() {
-		return re.getViewModelSnapshot().getVisualProperty(DVisualLexicon.NETWORK_NODE_SELECTION);
+		return re.getViewModel().getVisualProperty(DVisualLexicon.NETWORK_NODE_SELECTION);
 	}
 	
 	private boolean labelSelectionEnabled() {
-		return re.getViewModelSnapshot().getVisualProperty(DVisualLexicon.NETWORK_NODE_LABEL_SELECTION);
+		return re.getViewModel().getVisualProperty(DVisualLexicon.NETWORK_NODE_LABEL_SELECTION);
 	}
 	
 	
 	private boolean edgeSelectionEnabled() {
-		if(Boolean.FALSE.equals(re.getViewModelSnapshot().getVisualProperty(DVisualLexicon.NETWORK_EDGE_SELECTION))) {
+		if(Boolean.FALSE.equals(re.getViewModel().getVisualProperty(DVisualLexicon.NETWORK_EDGE_SELECTION))) {
 			return false;
 		}
 		return true;
