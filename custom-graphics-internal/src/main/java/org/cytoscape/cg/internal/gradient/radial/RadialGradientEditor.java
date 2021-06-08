@@ -13,6 +13,7 @@ import javax.swing.JPanel;
 
 import org.cytoscape.cg.internal.gradient.AbstractGradientEditor;
 import org.cytoscape.cg.internal.util.PointPicker;
+import org.cytoscape.service.util.CyServiceRegistrar;
 
 @SuppressWarnings("serial")
 public class RadialGradientEditor extends AbstractGradientEditor<RadialGradient> {
@@ -22,8 +23,8 @@ public class RadialGradientEditor extends AbstractGradientEditor<RadialGradient>
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public RadialGradientEditor(RadialGradient gradient) {
-		super(gradient);
+	public RadialGradientEditor(RadialGradient gradient, CyServiceRegistrar serviceRegistrar) {
+		super(gradient, serviceRegistrar);
 	}
 	
 	// ==[ PRIVATE METHODS ]============================================================================================

@@ -19,10 +19,12 @@ import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.JButton;
-import javax.swing.JColorChooser;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.color.BrewerType;
+import org.cytoscape.util.swing.CyColorPaletteChooserFactory;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 /**
@@ -58,17 +60,21 @@ public class GradientEditor extends JPanel {
 	/** The listeners that should be notified of changes to this emitter */
 	private List<ActionListener> listeners = new ArrayList<>();
 	
+	private final CyServiceRegistrar serviceRegistrar;
+	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
 	/**
 	 * Create a new editor for gradients
 	 */
-	public GradientEditor(List<ControlPoint> points) {
+	public GradientEditor(List<ControlPoint> points, CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 		setPoints(points);
 		init();
 	}
 	
-	public GradientEditor(List<Float> positions, List<Color> colors) {
+	public GradientEditor(List<Float> positions, List<Color> colors, CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 		var points = new ArrayList<ControlPoint>();
 		
 		if (positions != null) {
@@ -439,7 +445,9 @@ public class GradientEditor extends JPanel {
 		if (selected == null)
 			return;
 		
-		Color col = JColorChooser.showDialog(this, "Select Color", selected.getColor());
+		var chooserFactory = serviceRegistrar.getService(CyColorPaletteChooserFactory.class);
+		var chooser = chooserFactory.getColorPaletteChooser(BrewerType.ANY, false);
+		var col = chooser.showDialog(this, "Colors", null, selected.getColor(), 8);
 		
 		if (col != null) {
 			selected.setColor(col);

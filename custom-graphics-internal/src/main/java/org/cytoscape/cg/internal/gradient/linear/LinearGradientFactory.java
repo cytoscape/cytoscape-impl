@@ -5,11 +5,18 @@ import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 
 public class LinearGradientFactory implements CyCustomGraphics2Factory<LinearGradientLayer> {
 	
+	private final CyServiceRegistrar serviceRegistrar;
+
+	public LinearGradientFactory(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
+	}
+
 	@Override
 	public CyCustomGraphics2<LinearGradientLayer> getInstance(String input) {
 		return new LinearGradient(input);

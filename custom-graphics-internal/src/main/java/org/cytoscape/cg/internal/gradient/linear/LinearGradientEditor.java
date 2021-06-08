@@ -15,6 +15,7 @@ import javax.swing.JPanel;
 
 import org.cytoscape.cg.internal.charts.AbstractChartEditor.DoubleInputVerifier;
 import org.cytoscape.cg.internal.gradient.AbstractGradientEditor;
+import org.cytoscape.service.util.CyServiceRegistrar;
 
 public class LinearGradientEditor extends AbstractGradientEditor<LinearGradient> {
 	
@@ -29,8 +30,8 @@ public class LinearGradientEditor extends AbstractGradientEditor<LinearGradient>
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public LinearGradientEditor(final LinearGradient gradient) {
-		super(gradient);
+	public LinearGradientEditor(LinearGradient gradient, CyServiceRegistrar serviceRegistrar) {
+		super(gradient, serviceRegistrar);
 	}
 	
 	// ==[ PRIVATE METHODS ]============================================================================================

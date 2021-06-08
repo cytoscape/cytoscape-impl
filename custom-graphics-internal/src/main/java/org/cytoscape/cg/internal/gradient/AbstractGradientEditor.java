@@ -18,6 +18,7 @@ import javax.swing.JSeparator;
 
 import org.cytoscape.cg.internal.util.GradientEditor;
 import org.cytoscape.cg.model.AbstractCustomGraphics2;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 @SuppressWarnings("serial")
@@ -28,11 +29,13 @@ public abstract class AbstractGradientEditor<T extends AbstractCustomGraphics2<?
 	private JPanel otherOptionsPnl;
 
 	protected final T gradient;
+	protected final CyServiceRegistrar serviceRegistrar;
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public AbstractGradientEditor(final T gradient) {
+	public AbstractGradientEditor(T gradient, CyServiceRegistrar serviceRegistrar) {
 		this.gradient = gradient;
+		this.serviceRegistrar = serviceRegistrar;
 		init();
 	}
 	
@@ -72,7 +75,7 @@ public abstract class AbstractGradientEditor<T extends AbstractCustomGraphics2<?
 		if (grEditor == null) {
 			final List<Float> fractions = gradient.getList(GRADIENT_FRACTIONS, Float.class);
 			final List<Color> colors = gradient.getList(GRADIENT_COLORS, Color.class);
-			grEditor = new GradientEditor(fractions, colors);
+			grEditor = new GradientEditor(fractions, colors, serviceRegistrar);
 			
 			// Add listener--update gradient when user interacts with the UI
 			grEditor.addActionListener(new ActionListener() {

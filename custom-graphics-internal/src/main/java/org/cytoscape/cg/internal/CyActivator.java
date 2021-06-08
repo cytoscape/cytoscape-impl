@@ -138,11 +138,11 @@ public class CyActivator extends AbstractCyActivator {
 		var props = new Properties();
 		props.setProperty(CyCustomGraphics2Factory.GROUP, CustomGraphics2Manager.GROUP_GRADIENTS);
 		{
-			var factory = new LinearGradientFactory();
+			var factory = new LinearGradientFactory(serviceRegistrar);
 			registerService(bc, factory, CyCustomGraphics2Factory.class, props);
 		}
 		{
-			var factory = new RadialGradientFactory();
+			var factory = new RadialGradientFactory(serviceRegistrar);
 			registerService(bc, factory, CyCustomGraphics2Factory.class, props);
 		}
 	}
