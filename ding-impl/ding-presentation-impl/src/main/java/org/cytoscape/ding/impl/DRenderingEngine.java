@@ -1,6 +1,8 @@
 package org.cytoscape.ding.impl;
 
-import static org.cytoscape.graph.render.stateful.RenderDetailFlags.*;
+import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_HIGH_DETAIL;
+import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_NODE_LABELS;
+import static org.cytoscape.graph.render.stateful.RenderDetailFlags.OPT_LABEL_CACHE;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -344,14 +346,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		double scaleFactor = viewModelSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
 		renderComponent.setScaleFactor(scaleFactor);
-		
-		boolean annotationSelection = viewModelSnapshot.getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION);
-		if(!annotationSelection)
-			cyAnnotator.getAnnotationSelection().clear();
-		
-		boolean labelSelection = viewModelSnapshot.getVisualProperty(DVisualLexicon.NETWORK_NODE_LABEL_SELECTION);
-		if(!labelSelection)
-			labelSelectionManager.clear();
 		
 		setContentChanged(true);
 	}
