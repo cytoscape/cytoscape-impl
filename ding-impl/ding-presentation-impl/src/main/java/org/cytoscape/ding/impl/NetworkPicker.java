@@ -335,17 +335,15 @@ public class NetworkPicker {
 			while(edgeHits.hasNext()) {
 				View<CyEdge> edge = edgeHits.nextEdgeWithNodeExtents(srcExtents, trgExtents, null);
 				
-				if(edgeDetails.isVisible(edge)) {
-					float sourceNodeX = (srcExtents[0] + srcExtents[2]) / 2;
-					float sourceNodeY = (srcExtents[1] + srcExtents[3]) / 2;
-					float targetNodeX = (trgExtents[0] + trgExtents[2]) / 2;
-					float targetNodeY = (trgExtents[1] + trgExtents[3]) / 2;
-					
-					line.setLine(sourceNodeX, sourceNodeY, targetNodeX, targetNodeY);
-					
-					if(line.intersects(xMin, yMin, xMax - xMin, yMax - yMin)) {
-						resultEdges.add(edge.getSUID());
-					}
+				float sourceNodeX = (srcExtents[0] + srcExtents[2]) / 2;
+				float sourceNodeY = (srcExtents[1] + srcExtents[3]) / 2;
+				float targetNodeX = (trgExtents[0] + trgExtents[2]) / 2;
+				float targetNodeY = (trgExtents[1] + trgExtents[3]) / 2;
+				
+				line.setLine(sourceNodeX, sourceNodeY, targetNodeX, targetNodeY);
+				
+				if(line.intersects(xMin, yMin, xMax - xMin, yMax - yMin)) {
+					resultEdges.add(edge.getSUID());
 				}
 			}
 			

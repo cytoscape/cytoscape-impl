@@ -8,6 +8,7 @@ import org.cytoscape.view.model.events.ViewChangedEvent;
 import org.cytoscape.view.model.internal.base.CyViewBase;
 import org.cytoscape.view.model.internal.base.VPStore;
 import org.cytoscape.view.model.internal.base.ViewLock;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 public class CyEdgeViewImpl extends CyViewBase<CyEdge> {
 
@@ -16,6 +17,7 @@ public class CyEdgeViewImpl extends CyViewBase<CyEdge> {
 	private final long sourceSuid;
 	private final long targetSuid;
 	private final boolean isDirected;
+	private boolean visible = true;
 	
 	public CyEdgeViewImpl(CyNetworkViewImpl netView, CyEdge model, long sourceSuid, long targetSuid) {
 		super(model);
@@ -23,6 +25,10 @@ public class CyEdgeViewImpl extends CyViewBase<CyEdge> {
 		this.sourceSuid = sourceSuid;
 		this.targetSuid = targetSuid;
 		this.isDirected = model.isDirected();
+	}
+	
+	public boolean isVisible() {
+		return visible;
 	}
 	
 	@Override
@@ -60,6 +66,13 @@ public class CyEdgeViewImpl extends CyViewBase<CyEdge> {
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void fireViewChangedEvent(VisualProperty<?> vp, Object value, boolean lockedValue) {
+		if(netView.isBVL() && vp == BasicVisualLexicon.EDGE_VISIBLE) {
+			visible = !Boolean.FALSE.equals(value);
+			if(!visible) {
+				netView.setElementHidden();
+			}
+		}
+		
 		var record = new ViewChangeRecord<>(this, vp, value, lockedValue);
 		netView.getEventHelper().addEventPayload(netView, record, ViewChangedEvent.class);
 	}

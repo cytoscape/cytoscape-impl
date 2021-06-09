@@ -123,17 +123,14 @@ public final class GraphRenderer {
 				
 				View<CyEdge> edge = edgeHits.nextEdgeWithNodeExtents(floatBuff1, floatBuff2, null);
 				
-				if(edgeDetails.isVisible(edge)) {
-					float sourceNodeX = (floatBuff1[0] + floatBuff1[2]) / 2;
-					float sourceNodeY = (floatBuff1[1] + floatBuff1[3]) / 2;
-					float targetNodeX = (floatBuff2[0] + floatBuff2[2]) / 2;
-					float targetNodeY = (floatBuff2[1] + floatBuff2[3]) / 2;
-					
-					grafx.drawEdgeLow(
-							sourceNodeX, sourceNodeY, 
-							targetNodeX, targetNodeY, 
-							edgeDetails.getColorLowDetail(netView, edge));
-				}
+				float sourceNodeX = (floatBuff1[0] + floatBuff1[2]) / 2;
+				float sourceNodeY = (floatBuff1[1] + floatBuff1[3]) / 2;
+				float targetNodeX = (floatBuff2[0] + floatBuff2[2]) / 2;
+				float targetNodeY = (floatBuff2[1] + floatBuff2[3]) / 2;
+				
+				Color color = edgeDetails.getColorLowDetail(netView, edge);
+				grafx.drawEdgeLow(sourceNodeX, sourceNodeY, targetNodeX, targetNodeY, color);
+				
 				shapeDpm.increment();
 			}
 			
@@ -156,226 +153,224 @@ public final class GraphRenderer {
 				if(pm.isCancelled())
 					return;
 				
+				// Hidden edges are not included in the results
 				View<CyEdge> edge = edgeHits.nextEdgeWithNodeExtents(floatBuff1, floatBuff2, nodeBuff);
 					
-				if(edgeDetails.isVisible(edge)) {
-					
-					SnapshotEdgeInfo edgeInfo = netView.getEdgeInfo(edge);
-					final long srcSuid = edgeInfo.getSourceViewSUID();
-					final long trgSuid = edgeInfo.getTargetViewSUID();
-					final View<CyNode> sourceNode = nodeBuff[0];
-					final View<CyNode> targetNode = nodeBuff[1];
-					final byte srcShape = nodeDetails.getShape(sourceNode);
-					final byte trgShape = nodeDetails.getShape(targetNode);
-					
-					shapePm.start("Line");
-					final EdgeStacking stacking = edgeDetails.getStacking(edge);
+				SnapshotEdgeInfo edgeInfo = netView.getEdgeInfo(edge);
+				final long srcSuid = edgeInfo.getSourceViewSUID();
+				final long trgSuid = edgeInfo.getTargetViewSUID();
+				final View<CyNode> sourceNode = nodeBuff[0];
+				final View<CyNode> targetNode = nodeBuff[1];
+				final byte srcShape = nodeDetails.getShape(sourceNode);
+				final byte trgShape = nodeDetails.getShape(targetNode);
+				
+				shapePm.start("Line");
+				final EdgeStacking stacking = edgeDetails.getStacking(edge);
 
-					// Compute visual attributes that do not depend on LOD.
-					final float thickness = (float) edgeDetails.getWidth(edge);
-					final Stroke edgeStroke = edgeDetails.getStroke(edge);
-					final Paint segPaint = edgeDetails.getPaint(edge);
+				// Compute visual attributes that do not depend on LOD.
+				final float thickness = (float) edgeDetails.getWidth(edge);
+				final Stroke edgeStroke = edgeDetails.getStroke(edge);
+				final Paint segPaint = edgeDetails.getPaint(edge);
 
-					// Compute arrows.
-					final ArrowShape srcArrow;
-					final ArrowShape trgArrow;
-					final float srcArrowSize;
-					final float trgArrowSize;
-					final Paint srcArrowPaint;
-					final Paint trgArrowPaint;
+				// Compute arrows.
+				final ArrowShape srcArrow;
+				final ArrowShape trgArrow;
+				final float srcArrowSize;
+				final float trgArrowSize;
+				final Paint srcArrowPaint;
+				final Paint trgArrowPaint;
 
-					if (flags.not(LOD_EDGE_ARROWS) || stacking == EdgeStackingVisualProperty.HAYSTACK) { // Not rendering arrows.
-						trgArrow = srcArrow = ArrowShapeVisualProperty.NONE;
-						trgArrowSize = srcArrowSize = 0.0f;
-						trgArrowPaint = srcArrowPaint = null;
-					} else { // Rendering edge arrows.
-						srcArrow = edgeDetails.getSourceArrowShape(edge);
-						trgArrow = edgeDetails.getTargetArrowShape(edge);
-						srcArrowSize  = ((srcArrow == ArrowShapeVisualProperty.NONE) ? 0.0f : edgeDetails.getSourceArrowSize(edge));
-						trgArrowSize  = ((trgArrow == ArrowShapeVisualProperty.NONE) ? 0.0f : edgeDetails.getTargetArrowSize(edge));
-						srcArrowPaint = ((srcArrow == ArrowShapeVisualProperty.NONE) ? null : edgeDetails.getSourceArrowPaint(edge));
-						trgArrowPaint = ((trgArrow == ArrowShapeVisualProperty.NONE) ? null : edgeDetails.getTargetArrowPaint(edge));
-					}
-
-					// Compute the anchors to use when rendering edge.
-					final EdgeAnchors anchors = flags.not(LOD_EDGE_ANCHORS) ? null : edgeDetails.getAnchors(netView, edge);
-
-					if(stacking == EdgeStackingVisualProperty.HAYSTACK) {
-						float radiusModifier = edgeDetails.getStackingDensity(edge);
-						computeEdgeEndpointsHaystack(floatBuff1, floatBuff2, srcSuid, trgSuid, edgeInfo.getSUID(), radiusModifier, stacking, 
-								floatBuff3, floatBuff4, haystackDataBuff);
-					} else /* auto bend */ {
-						computeEdgeEndpoints(floatBuff1, srcShape, srcArrow, srcArrowSize, anchors, floatBuff2, 
-								trgShape,  trgArrow, trgArrowSize, floatBuff3, floatBuff4);
-					}
-					
-					final float srcXAdj = floatBuff3[0];
-					final float srcYAdj = floatBuff3[1];
-					final float trgXAdj = floatBuff4[0];
-					final float trgYAdj = floatBuff4[1];
-
-					grafx.drawEdgeFull(srcArrow, srcArrowSize, srcArrowPaint, trgArrow,
-					                   trgArrowSize, trgArrowPaint, srcXAdj, srcYAdj,
-					                   anchors, trgXAdj, trgYAdj, thickness, edgeStroke, segPaint);
-
-					// Take care of edge anchor rendering.
-					if (anchors != null) {
-						for (int k = 0; k < anchors.numAnchors(); k++) {
-							final float anchorSize;
-
-							if ((anchorSize = edgeDetails.getAnchorSize(edge, k)) > 0.0f) {
-								anchors.getAnchor(k, floatBuff4);
-								grafx.drawNodeFull(GraphGraphics.SHAPE_RECTANGLE,
-								                   (float) (floatBuff4[0] - (anchorSize / 2.0d)),
-								                   (float) (floatBuff4[1] - (anchorSize / 2.0d)),
-								                   (float) (floatBuff4[0] + (anchorSize / 2.0d)),
-								                   (float) (floatBuff4[1] + (anchorSize / 2.0d)),
-								                   edgeDetails.getAnchorPaint(edge, k), 0.0f, null, null);
-							}
-						}
-					}
-
-					shapePm.done();
-					
-					labelPm.start("Label");
-					
-					// Take care of label rendering.
-					if (flags.has(LOD_EDGE_LABELS)) {
-						final int labelCount = edgeDetails.getLabelCount(edge);
-						for (int labelInx = 0; labelInx < labelCount; labelInx++) {
-							if(pm.isCancelled()) {
-								return;
-							}
-							
-							final String text = edgeDetails.getLabelText(edge);
-							final Font font = edgeDetails.getLabelFont(edge);
-							final Paint paint = edgeDetails.getLabelPaint(edge);
-							final Position textAnchor = edgeDetails.getLabelTextAnchor(edge);
-							final Position edgeAnchor = edgeDetails.getLabelEdgeAnchor(edge);
-							final float offsetVectorX = edgeDetails.getLabelOffsetVectorX(edge);
-							final float offsetVectorY = edgeDetails.getLabelOffsetVectorY(edge);
-							final double theta = edgeDetails.getLabelRotation(edge)*.01745329252;
-							final Justification justify;
-
-							if (text.indexOf('\n') >= 0)
-								justify = edgeDetails.getLabelJustify(edge);
-							else
-								justify = Justification.JUSTIFY_CENTER;
-
-							final double edgeAnchorPointX;
-							final double edgeAnchorPointY;
-
-							final double edgeLabelWidth = edgeDetails.getLabelWidth(edge);
-
-							// Note that we reuse the position enum here.  West == source and East == target
-							// This is sort of safe since we don't provide an API for changing this
-							// in any case.
-							if (edgeAnchor == Position.WEST) {		edgeAnchorPointX = srcXAdj;   edgeAnchorPointY = srcYAdj;
-							} else if (edgeAnchor == Position.EAST) { edgeAnchorPointX = trgXAdj; edgeAnchorPointY = trgYAdj;
-							} else if (edgeAnchor == Position.CENTER) {
-								if (!GraphGraphics.getEdgePath(srcArrow, srcArrowSize, trgArrow,
-								              trgArrowSize, srcXAdj, srcYAdj, anchors,  trgXAdj, trgYAdj, path2d)) {
-									continue;
-								}
-
-								// Count the number of path segments.  This count
-								// includes the initial SEG_MOVETO.  So, for example, a
-								// path composed of 2 cubic curves would have a numPaths
-								// of 3.  Note that numPaths will be at least 2 in all
-								// cases.
-								final int numPaths;
-
-								{
-									final PathIterator pathIter = path2d.getPathIterator(null);
-									int numPathsTemp = 0;
-
-									while (!pathIter.isDone()) {
-										numPathsTemp++; // pathIter.currentSegment().
-										pathIter.next();
-									}
-
-									numPaths = numPathsTemp;
-								}
-
-								// Compute "midpoint" of edge.
-								if ((numPaths % 2) != 0) {
-									final PathIterator pathIter = path2d.getPathIterator(null);
-
-									for (int i = numPaths / 2; i > 0; i--)
-										pathIter.next();
-
-									final int subPathType = pathIter.currentSegment(floatBuff5);
-
-									if (subPathType == PathIterator.SEG_LINETO) {
-										edgeAnchorPointX = floatBuff5[0];
-										edgeAnchorPointY = floatBuff5[1];
-									} else if (subPathType == PathIterator.SEG_QUADTO) {
-										edgeAnchorPointX = floatBuff5[2];
-										edgeAnchorPointY = floatBuff5[3];
-									} else if (subPathType == PathIterator.SEG_CUBICTO) {
-										edgeAnchorPointX = floatBuff5[4];
-										edgeAnchorPointY = floatBuff5[5];
-									} else
-										throw new IllegalStateException("got unexpected PathIterator segment type: " + subPathType);
-								} else { // numPaths % 2 == 0.
-
-									final PathIterator pathIter = path2d.getPathIterator(null);
-
-									for (int i = numPaths / 2; i > 0; i--) {
-										if (i == 1) {
-											final int subPathType = pathIter.currentSegment(floatBuff5);
-
-											if ((subPathType == PathIterator.SEG_MOVETO)
-											    || (subPathType == PathIterator.SEG_LINETO)) {
-												floatBuff5[6] = floatBuff5[0];
-												floatBuff5[7] = floatBuff5[1];
-											} else if (subPathType == PathIterator.SEG_QUADTO) {
-												floatBuff5[6] = floatBuff5[2];
-												floatBuff5[7] = floatBuff5[3];
-											} else if (subPathType == PathIterator.SEG_CUBICTO) {
-												floatBuff5[6] = floatBuff5[4];
-												floatBuff5[7] = floatBuff5[5];
-											} else
-												throw new IllegalStateException("got unexpected PathIterator segment type: " + subPathType);
-										}
-
-										pathIter.next();
-									}
-
-									final int subPathType = pathIter.currentSegment(floatBuff5);
-
-									if (subPathType == PathIterator.SEG_LINETO) {
-										edgeAnchorPointX = (0.5d * floatBuff5[6]) + (0.5d * floatBuff5[0]);
-										edgeAnchorPointY = (0.5d * floatBuff5[7]) + (0.5d * floatBuff5[1]);
-									} else if (subPathType == PathIterator.SEG_QUADTO) {
-										edgeAnchorPointX = (0.25d * floatBuff5[6]) + (0.5d * floatBuff5[0]) + (0.25d * floatBuff5[2]);
-										edgeAnchorPointY = (0.25d * floatBuff5[7]) + (0.5d * floatBuff5[1]) + (0.25d * floatBuff5[3]);
-									} else if (subPathType == PathIterator.SEG_CUBICTO) {
-										edgeAnchorPointX = (0.125d * floatBuff5[6]) + (0.375d * floatBuff5[0]) + (0.375d * floatBuff5[2]) + (0.125d * floatBuff5[4]);
-										edgeAnchorPointY = (0.125d * floatBuff5[7]) + (0.375d * floatBuff5[1]) + (0.375d * floatBuff5[3]) + (0.125d * floatBuff5[5]);
-									} else
-										throw new IllegalStateException("got unexpected PathIterator segment type: " + subPathType);
-								}
-							} else
-								throw new IllegalStateException("encountered an invalid EDGE_ANCHOR_* constant: " + edgeAnchor);
-
-							LabelInfo labelInfo = labelInfoProvider.getLabelInfo(text, font, edgeLabelWidth, grafx.getFontRenderContextFull());
-							
-							doubleBuff1[0] = -0.5d * labelInfo.getMaxLineWidth();
-							doubleBuff1[1] = -0.5d * labelInfo.getTotalHeight(); 
-							doubleBuff1[2] =  0.5d * labelInfo.getMaxLineWidth(); 
-							doubleBuff1[3] =  0.5d * labelInfo.getTotalHeight(); 
-							computeAnchor(textAnchor, doubleBuff1, doubleBuff2);
-
-							final double textXCenter = edgeAnchorPointX - doubleBuff2[0] + offsetVectorX;
-							final double textYCenter = edgeAnchorPointY - doubleBuff2[1] + offsetVectorY;
-							renderText(grafx, labelInfo, (float) textXCenter, (float) textYCenter,
-									edgeAnchorPointX, edgeAnchorPointY, justify, paint, theta, flags.has(LOD_TEXT_AS_SHAPE));
-						}
-					}
-					
-					labelPm.done();
+				if (flags.not(LOD_EDGE_ARROWS) || stacking == EdgeStackingVisualProperty.HAYSTACK) { // Not rendering arrows.
+					trgArrow = srcArrow = ArrowShapeVisualProperty.NONE;
+					trgArrowSize = srcArrowSize = 0.0f;
+					trgArrowPaint = srcArrowPaint = null;
+				} else { // Rendering edge arrows.
+					srcArrow = edgeDetails.getSourceArrowShape(edge);
+					trgArrow = edgeDetails.getTargetArrowShape(edge);
+					srcArrowSize  = ((srcArrow == ArrowShapeVisualProperty.NONE) ? 0.0f : edgeDetails.getSourceArrowSize(edge));
+					trgArrowSize  = ((trgArrow == ArrowShapeVisualProperty.NONE) ? 0.0f : edgeDetails.getTargetArrowSize(edge));
+					srcArrowPaint = ((srcArrow == ArrowShapeVisualProperty.NONE) ? null : edgeDetails.getSourceArrowPaint(edge));
+					trgArrowPaint = ((trgArrow == ArrowShapeVisualProperty.NONE) ? null : edgeDetails.getTargetArrowPaint(edge));
 				}
+
+				// Compute the anchors to use when rendering edge.
+				final EdgeAnchors anchors = flags.not(LOD_EDGE_ANCHORS) ? null : edgeDetails.getAnchors(netView, edge);
+
+				if(stacking == EdgeStackingVisualProperty.HAYSTACK) {
+					float radiusModifier = edgeDetails.getStackingDensity(edge);
+					computeEdgeEndpointsHaystack(floatBuff1, floatBuff2, srcSuid, trgSuid, edgeInfo.getSUID(), radiusModifier, stacking, 
+							floatBuff3, floatBuff4, haystackDataBuff);
+				} else /* auto bend */ {
+					computeEdgeEndpoints(floatBuff1, srcShape, srcArrow, srcArrowSize, anchors, floatBuff2, 
+							trgShape,  trgArrow, trgArrowSize, floatBuff3, floatBuff4);
+				}
+				
+				final float srcXAdj = floatBuff3[0];
+				final float srcYAdj = floatBuff3[1];
+				final float trgXAdj = floatBuff4[0];
+				final float trgYAdj = floatBuff4[1];
+
+				grafx.drawEdgeFull(srcArrow, srcArrowSize, srcArrowPaint, trgArrow,
+				                   trgArrowSize, trgArrowPaint, srcXAdj, srcYAdj,
+				                   anchors, trgXAdj, trgYAdj, thickness, edgeStroke, segPaint);
+
+				// Take care of edge anchor rendering.
+				if (anchors != null) {
+					for (int k = 0; k < anchors.numAnchors(); k++) {
+						final float anchorSize;
+
+						if ((anchorSize = edgeDetails.getAnchorSize(edge, k)) > 0.0f) {
+							anchors.getAnchor(k, floatBuff4);
+							grafx.drawNodeFull(GraphGraphics.SHAPE_RECTANGLE,
+							                   (float) (floatBuff4[0] - (anchorSize / 2.0d)),
+							                   (float) (floatBuff4[1] - (anchorSize / 2.0d)),
+							                   (float) (floatBuff4[0] + (anchorSize / 2.0d)),
+							                   (float) (floatBuff4[1] + (anchorSize / 2.0d)),
+							                   edgeDetails.getAnchorPaint(edge, k), 0.0f, null, null);
+						}
+					}
+				}
+
+				shapePm.done();
+				
+				labelPm.start("Label");
+				
+				// Take care of label rendering.
+				if (flags.has(LOD_EDGE_LABELS)) {
+					final int labelCount = edgeDetails.getLabelCount(edge);
+					for (int labelInx = 0; labelInx < labelCount; labelInx++) {
+						if(pm.isCancelled()) {
+							return;
+						}
+						
+						final String text = edgeDetails.getLabelText(edge);
+						final Font font = edgeDetails.getLabelFont(edge);
+						final Paint paint = edgeDetails.getLabelPaint(edge);
+						final Position textAnchor = edgeDetails.getLabelTextAnchor(edge);
+						final Position edgeAnchor = edgeDetails.getLabelEdgeAnchor(edge);
+						final float offsetVectorX = edgeDetails.getLabelOffsetVectorX(edge);
+						final float offsetVectorY = edgeDetails.getLabelOffsetVectorY(edge);
+						final double theta = edgeDetails.getLabelRotation(edge)*.01745329252;
+						final Justification justify;
+
+						if (text.indexOf('\n') >= 0)
+							justify = edgeDetails.getLabelJustify(edge);
+						else
+							justify = Justification.JUSTIFY_CENTER;
+
+						final double edgeAnchorPointX;
+						final double edgeAnchorPointY;
+
+						final double edgeLabelWidth = edgeDetails.getLabelWidth(edge);
+
+						// Note that we reuse the position enum here.  West == source and East == target
+						// This is sort of safe since we don't provide an API for changing this
+						// in any case.
+						if (edgeAnchor == Position.WEST) {		edgeAnchorPointX = srcXAdj;   edgeAnchorPointY = srcYAdj;
+						} else if (edgeAnchor == Position.EAST) { edgeAnchorPointX = trgXAdj; edgeAnchorPointY = trgYAdj;
+						} else if (edgeAnchor == Position.CENTER) {
+							if (!GraphGraphics.getEdgePath(srcArrow, srcArrowSize, trgArrow,
+							              trgArrowSize, srcXAdj, srcYAdj, anchors,  trgXAdj, trgYAdj, path2d)) {
+								continue;
+							}
+
+							// Count the number of path segments.  This count
+							// includes the initial SEG_MOVETO.  So, for example, a
+							// path composed of 2 cubic curves would have a numPaths
+							// of 3.  Note that numPaths will be at least 2 in all
+							// cases.
+							final int numPaths;
+
+							{
+								final PathIterator pathIter = path2d.getPathIterator(null);
+								int numPathsTemp = 0;
+
+								while (!pathIter.isDone()) {
+									numPathsTemp++; // pathIter.currentSegment().
+									pathIter.next();
+								}
+
+								numPaths = numPathsTemp;
+							}
+
+							// Compute "midpoint" of edge.
+							if ((numPaths % 2) != 0) {
+								final PathIterator pathIter = path2d.getPathIterator(null);
+
+								for (int i = numPaths / 2; i > 0; i--)
+									pathIter.next();
+
+								final int subPathType = pathIter.currentSegment(floatBuff5);
+
+								if (subPathType == PathIterator.SEG_LINETO) {
+									edgeAnchorPointX = floatBuff5[0];
+									edgeAnchorPointY = floatBuff5[1];
+								} else if (subPathType == PathIterator.SEG_QUADTO) {
+									edgeAnchorPointX = floatBuff5[2];
+									edgeAnchorPointY = floatBuff5[3];
+								} else if (subPathType == PathIterator.SEG_CUBICTO) {
+									edgeAnchorPointX = floatBuff5[4];
+									edgeAnchorPointY = floatBuff5[5];
+								} else
+									throw new IllegalStateException("got unexpected PathIterator segment type: " + subPathType);
+							} else { // numPaths % 2 == 0.
+
+								final PathIterator pathIter = path2d.getPathIterator(null);
+
+								for (int i = numPaths / 2; i > 0; i--) {
+									if (i == 1) {
+										final int subPathType = pathIter.currentSegment(floatBuff5);
+
+										if ((subPathType == PathIterator.SEG_MOVETO)
+										    || (subPathType == PathIterator.SEG_LINETO)) {
+											floatBuff5[6] = floatBuff5[0];
+											floatBuff5[7] = floatBuff5[1];
+										} else if (subPathType == PathIterator.SEG_QUADTO) {
+											floatBuff5[6] = floatBuff5[2];
+											floatBuff5[7] = floatBuff5[3];
+										} else if (subPathType == PathIterator.SEG_CUBICTO) {
+											floatBuff5[6] = floatBuff5[4];
+											floatBuff5[7] = floatBuff5[5];
+										} else
+											throw new IllegalStateException("got unexpected PathIterator segment type: " + subPathType);
+									}
+
+									pathIter.next();
+								}
+
+								final int subPathType = pathIter.currentSegment(floatBuff5);
+
+								if (subPathType == PathIterator.SEG_LINETO) {
+									edgeAnchorPointX = (0.5d * floatBuff5[6]) + (0.5d * floatBuff5[0]);
+									edgeAnchorPointY = (0.5d * floatBuff5[7]) + (0.5d * floatBuff5[1]);
+								} else if (subPathType == PathIterator.SEG_QUADTO) {
+									edgeAnchorPointX = (0.25d * floatBuff5[6]) + (0.5d * floatBuff5[0]) + (0.25d * floatBuff5[2]);
+									edgeAnchorPointY = (0.25d * floatBuff5[7]) + (0.5d * floatBuff5[1]) + (0.25d * floatBuff5[3]);
+								} else if (subPathType == PathIterator.SEG_CUBICTO) {
+									edgeAnchorPointX = (0.125d * floatBuff5[6]) + (0.375d * floatBuff5[0]) + (0.375d * floatBuff5[2]) + (0.125d * floatBuff5[4]);
+									edgeAnchorPointY = (0.125d * floatBuff5[7]) + (0.375d * floatBuff5[1]) + (0.375d * floatBuff5[3]) + (0.125d * floatBuff5[5]);
+								} else
+									throw new IllegalStateException("got unexpected PathIterator segment type: " + subPathType);
+							}
+						} else
+							throw new IllegalStateException("encountered an invalid EDGE_ANCHOR_* constant: " + edgeAnchor);
+
+						LabelInfo labelInfo = labelInfoProvider.getLabelInfo(text, font, edgeLabelWidth, grafx.getFontRenderContextFull());
+						
+						doubleBuff1[0] = -0.5d * labelInfo.getMaxLineWidth();
+						doubleBuff1[1] = -0.5d * labelInfo.getTotalHeight(); 
+						doubleBuff1[2] =  0.5d * labelInfo.getMaxLineWidth(); 
+						doubleBuff1[3] =  0.5d * labelInfo.getTotalHeight(); 
+						computeAnchor(textAnchor, doubleBuff1, doubleBuff2);
+
+						final double textXCenter = edgeAnchorPointX - doubleBuff2[0] + offsetVectorX;
+						final double textYCenter = edgeAnchorPointY - doubleBuff2[1] + offsetVectorY;
+						renderText(grafx, labelInfo, (float) textXCenter, (float) textYCenter,
+								edgeAnchorPointX, edgeAnchorPointY, justify, paint, theta, flags.has(LOD_TEXT_AS_SHAPE));
+					}
+				}
+				
+				labelPm.done();
 
 				shapeDpm.increment();
 				labelDpm.increment();

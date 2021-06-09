@@ -69,6 +69,9 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	protected final VPNodeStore nodeVPs;
 	protected final VPEdgeStore edgeVPs;
 	protected final VPNetworkStore netVPs;
+	
+	// minor optimization, true if no node or edge in this network has ever been hidden
+	private boolean isNeverHidden = true;
 
 	
 	public CyNetworkViewImpl(CyServiceRegistrar registrar, CyNetwork network, VisualLexicon visualLexicon, String rendererId, CyNetworkViewFactoryConfigImpl config) {
@@ -150,6 +153,14 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	
 	public VisualLexicon getVisualLexicon() {
 		return visualLexicon;
+	}
+	
+	public boolean isNeverHidden() {
+		return isNeverHidden;
+	}
+	
+	public void setElementHidden() {
+		isNeverHidden = false;
 	}
 	
 	public View<CyNode> addNode(CyNode model) {
