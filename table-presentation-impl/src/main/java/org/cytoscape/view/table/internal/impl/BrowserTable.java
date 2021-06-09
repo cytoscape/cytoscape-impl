@@ -84,6 +84,7 @@ import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.ColumnResizer;
 import org.cytoscape.util.swing.TextWrapToolTip;
 import org.cytoscape.view.model.events.AboutToRemoveColumnViewEvent;
 import org.cytoscape.view.model.events.AboutToRemoveColumnViewListener;
@@ -1017,9 +1018,9 @@ public class BrowserTable extends JTable
 		var name = tableModel.getColumnName(convertColumnIndexToModel(idx));
 		var columnView = tableView.getColumnView(name);
 		
-		var oldWidth = column.getWidth();
-		
 		if (columnView.isSet(COLUMN_WIDTH)) {
+			// Just apply the value from the visual property
+			var oldWidth = column.getWidth();
 			var newWidth = columnView.getVisualProperty(COLUMN_WIDTH);
 
 			if (newWidth != null && newWidth > 0 && newWidth != oldWidth) {
@@ -1027,7 +1028,9 @@ public class BrowserTable extends JTable
 				column.setWidth(newWidth);
 			}
 		} else {
-			columnView.setLockedValue(COLUMN_WIDTH, oldWidth);
+			// Calculate the best width to fit the column name and icons and update the visual property
+			ColumnResizer.adjustColumnPreferredWidth(this, idx, false);
+			columnView.setLockedValue(COLUMN_WIDTH, column.getWidth());
 		}
 	}
 	
