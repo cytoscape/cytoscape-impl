@@ -148,12 +148,6 @@ public class DropDownMenuButton extends JButton {
 	}
 	
 	@Override
-	public void setEnabled(final boolean b) {
-		super.setEnabled(b);
-		setForeground(UIManager.getColor(b ? "Button.foreground" : "Label.disabledForeground"/*to change the icon color*/));
-	}
-	
-	@Override
 	public void addActionListener(final ActionListener l) {
 		super.addActionListener(l);
 		updateEnabled();
@@ -191,25 +185,29 @@ public class DropDownMenuButton extends JButton {
 	class MenuArrowIcon implements Icon {
 		
 		@Override
-		public void paintIcon(final Component c, final Graphics g, int x, int y) {
-			Graphics2D g2 = (Graphics2D) g;
+		public void paintIcon(Component c, Graphics g, int x, int y) {
+			var g2 = (Graphics2D) g.create();
 			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			g2.setColor(c.getForeground());
+			g2.setColor(UIManager.getColor(c.isEnabled() ? "Button.foreground" : "Button.disabledForeground"));
+
+			var w = getIconWidth();
+			var h = getIconHeight();
+			var pad = 2;
+			
 			g2.translate(x, y);
-			g2.drawLine(2, 3, 6, 3);
-			g2.drawLine(3, 4, 5, 4);
-			g2.drawLine(4, 5, 4, 5);
-			g2.translate(-x, -y);
+			g2.fillPolygon(new int[]{ pad, w - pad, w / 2 }, new int[]{ pad + 1, pad + 1, h - pad }, 3); // downward triangle
+			
+			g2.dispose();
 		}
 
 		@Override
 		public int getIconWidth() {
-			return 9;
+			return 10;
 		}
 
 		@Override
 		public int getIconHeight() {
-			return 9;
+			return 10;
 		}
 	}
 }
