@@ -1,8 +1,6 @@
 package org.cytoscape.ding.impl;
 
-import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_HIGH_DETAIL;
-import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_NODE_LABELS;
-import static org.cytoscape.graph.render.stateful.RenderDetailFlags.OPT_LABEL_CACHE;
+import static org.cytoscape.graph.render.stateful.RenderDetailFlags.*;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -117,7 +115,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	public enum UpdateType {
 		ALL_FAST,            // Render a fast frame, used internally for panning etc
 		ALL_FULL,            // Render a fast frame, then if needed start rendering a full frame asynchronously
-		ALL_FULL_DIRTY,      // Like ALL_FULL but only happens when the model is dirty (used for certain optimizations)
 		JUST_ANNOTATIONS,    // Render a fast frame that redraws just annotations
 		JUST_EDGES;          // Render a fast frame that redraws just edges, used for animated edges
 	}
@@ -295,7 +292,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		boolean modelDirty = viewModel.dirty(true);
 		if(modelDirty) {
 			updateModel();
-			updateView(UpdateType.ALL_FULL_DIRTY);
+			updateView(UpdateType.ALL_FULL);
 		} else if(contentChanged) { 
 			// ding internal state changed, no need to update model, usually caused by pan or zoom
 			updateView(UpdateType.ALL_FULL);

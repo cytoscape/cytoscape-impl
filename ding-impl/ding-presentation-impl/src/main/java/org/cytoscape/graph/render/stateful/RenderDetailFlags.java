@@ -29,7 +29,6 @@ public class RenderDetailFlags {
 	// Optimizations
 	public final static int OPT_EDGE_BUFF_PAN   = 1 << 10;
 	public final static int OPT_LABEL_CACHE     = 1 << 11;
-	public final static int OPT_SELECTED_ONLY   = 1 << 12;
 
 	
 	private final int lodBits;
@@ -188,17 +187,10 @@ public class RenderDetailFlags {
 			lodbits |= OPT_EDGE_BUFF_PAN;
 		if (lod.isLabelCacheEnabled())
 			lodbits |= OPT_LABEL_CACHE;
-		if (lod.isRenderSelectedEnabled() && !highDetail && snapshotIsSelectedOnly(netView, updateType)) {
-			lodbits |= OPT_SELECTED_ONLY;
-		}
 		
 		return lodbits;
 	}
 
-	private static boolean snapshotIsSelectedOnly(CyNetworkViewSnapshot netView, UpdateType updateType) {
-		return netView.isSelectionStrictlyIncreased() && updateType == UpdateType.ALL_FULL_DIRTY; // This is why we need ALL_FULL_DIRTY
-	}
-	
 	
 	@Override
 	public int hashCode() {

@@ -113,8 +113,6 @@ public final class GraphRenderer {
 			ProgressMonitor shapePm = subPms[0];
 			ProgressMonitor labelPm = subPms[1];
 			
-			final boolean selectedOnly = flags.has(RenderDetailFlags.OPT_SELECTED_ONLY);
-			
 			shapePm.start("Line");
 			DiscreteProgressMonitor shapeDpm = shapePm.toDiscrete(edgeHits.size());
 			
@@ -125,18 +123,16 @@ public final class GraphRenderer {
 				
 				View<CyEdge> edge = edgeHits.nextEdgeWithNodeExtents(floatBuff1, floatBuff2, null);
 				
-				if(!selectedOnly || edgeDetails.isSelected(edge)) {
-					if(edgeDetails.isVisible(edge)) {
-						float sourceNodeX = (floatBuff1[0] + floatBuff1[2]) / 2;
-						float sourceNodeY = (floatBuff1[1] + floatBuff1[3]) / 2;
-						float targetNodeX = (floatBuff2[0] + floatBuff2[2]) / 2;
-						float targetNodeY = (floatBuff2[1] + floatBuff2[3]) / 2;
-						
-						grafx.drawEdgeLow(
-								sourceNodeX, sourceNodeY, 
-								targetNodeX, targetNodeY, 
-								edgeDetails.getColorLowDetail(netView, edge));
-					}
+				if(edgeDetails.isVisible(edge)) {
+					float sourceNodeX = (floatBuff1[0] + floatBuff1[2]) / 2;
+					float sourceNodeY = (floatBuff1[1] + floatBuff1[3]) / 2;
+					float targetNodeX = (floatBuff2[0] + floatBuff2[2]) / 2;
+					float targetNodeY = (floatBuff2[1] + floatBuff2[3]) / 2;
+					
+					grafx.drawEdgeLow(
+							sourceNodeX, sourceNodeY, 
+							targetNodeX, targetNodeY, 
+							edgeDetails.getColorLowDetail(netView, edge));
 				}
 				shapeDpm.increment();
 			}
@@ -410,8 +406,6 @@ public final class GraphRenderer {
 			ProgressMonitor shapePm = subPms[0];
 			ProgressMonitor labelPm = subPms[1];
 			
-			final boolean selectedOnly = flags.has(RenderDetailFlags.OPT_SELECTED_ONLY);
-			
 			shapePm.start("Shape");
 			final int nodeHitCount = nodeHits.size();
 			
@@ -424,11 +418,9 @@ public final class GraphRenderer {
 				
 				View<CyNode> node = nodeHits.nextNodeExtents(floatBuff1);
 				
-				if(!selectedOnly || nodeDetails.isSelected(node)) {
-					if ((floatBuff1[0] != floatBuff1[2]) && (floatBuff1[1] != floatBuff1[3])) {
-						Color color = nodeDetails.getColorLowDetail(netView, node);
-						grafx.drawNodeLow(floatBuff1[0], floatBuff1[1], floatBuff1[2], floatBuff1[3], color);
-					}
+				if ((floatBuff1[0] != floatBuff1[2]) && (floatBuff1[1] != floatBuff1[3])) {
+					Color color = nodeDetails.getColorLowDetail(netView, node);
+					grafx.drawNodeLow(floatBuff1[0], floatBuff1[1], floatBuff1[2], floatBuff1[3], color);
 				}
 				shapeDpm.increment();
 			}

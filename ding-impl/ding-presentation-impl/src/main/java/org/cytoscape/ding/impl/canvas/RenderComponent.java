@@ -317,7 +317,7 @@ public abstract class RenderComponent extends JComponent {
 			future = fastFuture;
 
 			// start a slow frame if necessary
-			if((updateType == UpdateType.ALL_FULL || updateType == UpdateType.ALL_FULL_DIRTY) && !sameDetail()) { 
+			if(updateType == UpdateType.ALL_FULL && !sameDetail()) { 
 				var slowPm = debugPm(updateType, getSlowProgressMonitor());
 				slowFuture = slowCanvas.paint(slowPm, PaintParameters.updateType(updateType));
 				slowFuture.thenRun(() -> {
