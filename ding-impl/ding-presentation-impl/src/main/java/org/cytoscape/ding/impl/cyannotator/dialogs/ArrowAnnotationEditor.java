@@ -502,7 +502,7 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 		
 		private ColorButton getArrowColorButton() {
 			if (arrowColorButton == null) {
-				arrowColorButton = new ColorButton(Color.BLACK);
+				arrowColorButton = new ColorButton(serviceRegistrar, null, BrewerType.ANY, Color.BLACK, false);
 				arrowColorButton.setToolTipText("Select arrow color...");
 				arrowColorButton.addPropertyChangeListener("color", evt -> ArrowAnnotationEditor.this.apply());
 			}
