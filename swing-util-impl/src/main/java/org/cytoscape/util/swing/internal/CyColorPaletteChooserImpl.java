@@ -252,11 +252,12 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 		// Reset
 		var resetButton = new JButton("Reset");
 		resetButton.addActionListener(e -> {
-			setPalette(CyColorPaletteChooserImpl.this.initialPalette);
+			var palette = CyColorPaletteChooserImpl.this.initialPalette;
+			setPalette(palette);
 			setColor(CyColorPaletteChooserImpl.this.initialColor);
 
 			for (var cbccp : palettePanels) {
-				cbccp.setSelectedPalette(CyColorPaletteChooserImpl.this.initialPalette.getName());
+				cbccp.setSelectedPalette(palette != null ? palette.getName() : null);
 				cbccp.updateChooser();
 				colorChooser.repaint();
 			}
