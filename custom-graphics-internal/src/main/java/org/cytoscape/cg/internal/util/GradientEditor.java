@@ -2,7 +2,6 @@ package org.cytoscape.cg.internal.util;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -19,10 +18,12 @@ import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.JButton;
-import javax.swing.JColorChooser;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.color.BrewerType;
+import org.cytoscape.util.swing.CyColorPaletteChooserFactory;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 /**
@@ -58,17 +59,21 @@ public class GradientEditor extends JPanel {
 	/** The listeners that should be notified of changes to this emitter */
 	private List<ActionListener> listeners = new ArrayList<>();
 	
+	private final CyServiceRegistrar serviceRegistrar;
+	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
 	/**
 	 * Create a new editor for gradients
 	 */
-	public GradientEditor(List<ControlPoint> points) {
+	public GradientEditor(List<ControlPoint> points, CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 		setPoints(points);
 		init();
 	}
 	
-	public GradientEditor(List<Float> positions, List<Color> colors) {
+	public GradientEditor(List<Float> positions, List<Color> colors, CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 		var points = new ArrayList<ControlPoint>();
 		
 		if (positions != null) {
@@ -92,7 +97,7 @@ public class GradientEditor extends JPanel {
 	@Override
 	public void setEnabled(boolean enabled) {
 		super.setEnabled(enabled);
-		Component[] components = getComponents();
+		var components = getComponents();
 		
 		for (int i = 0; i < components.length; i++)
 			components[i].setEnabled(enabled);
@@ -133,8 +138,8 @@ public class GradientEditor extends JPanel {
 		var lineColor = UIManager.getColor(isEnabled() ? "Label.disabledForeground" : "Separator.foreground");
 		
 		for (int i = 0; i < controlPoints.size() - 1; i++) {
-			ControlPoint now = controlPoints.get(i);
-			ControlPoint next = controlPoints.get(i+1);
+			var now = controlPoints.get(i);
+			var next = controlPoints.get(i+1);
 			
 			int size = (int) ((next.getPosition() - now.getPosition()) * width);
 			g.setPaint(new GradientPaint(x, y, now.getColor(), x + size, y, next.getColor()));
@@ -146,7 +151,7 @@ public class GradientEditor extends JPanel {
 		g.drawRect(10, y, width, barHeight - 1);
 		
 		for (int i = 0; i < controlPoints.size(); i++) {
-			ControlPoint pt = controlPoints.get(i);
+			var pt = controlPoints.get(i);
 			g.translate(10 + (width * pt.getPosition()), y + barHeight);
 			g.setColor(pt.getColor());
 			g.fillPolygon(poly);
@@ -283,30 +288,17 @@ public class GradientEditor extends JPanel {
 		delBtn.setEnabled(false);
 		add(delBtn);
 		
-		addBtn.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				addPoint();
-			}
-		});
-		delBtn.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				delPoint();
-			}
-		});
-		editBtn.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				editPoint();
-			}
-		});
+		addBtn.addActionListener(e -> addPoint());
+		delBtn.addActionListener(e -> delPoint());
+		editBtn.addActionListener(e -> editPoint());
+		
+		LookAndFeelUtil.makeSmall(addBtn, editBtn, delBtn);
 		
 		poly.addPoint(0, 0);
 		poly.addPoint(5, 10);
 		poly.addPoint(-5, 10);
 		
-		this.addMouseListener(new MouseAdapter() {
+		addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
 				selectPoint(e.getX(), e.getY());
@@ -317,7 +309,7 @@ public class GradientEditor extends JPanel {
 			}
 		});
 		
-		this.addMouseMotionListener(new MouseMotionListener() {
+		addMouseMotionListener(new MouseMotionListener() {
 			@Override
 			public void mouseDragged(MouseEvent e) {
 				movePoint(e.getX(), e.getY());
@@ -361,7 +353,7 @@ public class GradientEditor extends JPanel {
 	 * Fire an update to all listeners
 	 */
 	private void fireUpdate() {
-		ActionEvent event = new ActionEvent(this,0,"");
+		var event = new ActionEvent(this,0,"");
 		
 		for (int i=0; i < listeners.size(); i++)
 			listeners.get(i).actionPerformed(event);
@@ -389,11 +381,11 @@ public class GradientEditor extends JPanel {
 	 * Add a new control point
 	 */
 	private void addPoint() {
-		ControlPoint point = new ControlPoint(Color.WHITE, 0.5f);
+		var point = new ControlPoint(Color.WHITE, 0.5f);
 		
 		for (int i = 0; i < controlPoints.size() - 1; i++) {
-			ControlPoint now = controlPoints.get(i);
-			ControlPoint next = controlPoints.get(i+1);
+			var now = controlPoints.get(i);
+			var next = controlPoints.get(i+1);
 			
 			if ((now.getPosition() <= 0.5f) && (next.getPosition() >=0.5f)) {
 				controlPoints.add(i+1,point);
@@ -417,6 +409,7 @@ public class GradientEditor extends JPanel {
 		var lastPt  = controlPoints.get(controlPoints.size()-1);
 		
 		var compare = new Comparator<ControlPoint>() {
+			@Override
 			public int compare(ControlPoint first, ControlPoint second) {
 				if (first == firstPt)
 					return -1;
@@ -439,7 +432,9 @@ public class GradientEditor extends JPanel {
 		if (selected == null)
 			return;
 		
-		Color col = JColorChooser.showDialog(this, "Select Color", selected.getColor());
+		var chooserFactory = serviceRegistrar.getService(CyColorPaletteChooserFactory.class);
+		var chooser = chooserFactory.getColorPaletteChooser(BrewerType.ANY, false);
+		var col = chooser.showDialog(this, "Colors", null, selected.getColor(), 8);
 		
 		if (col != null) {
 			selected.setColor(col);
@@ -455,9 +450,8 @@ public class GradientEditor extends JPanel {
 	 * @param my The mouse y coordinate
 	 */
 	private void selectPoint(int mx, int my) {
-		if (!isEnabled()) {
+		if (!isEnabled())
 			return;
-		}
 		
 		for (int i = 1; i < controlPoints.size() - 1; i++) {
 			if (checkPoint(mx, my, controlPoints.get(i))) {

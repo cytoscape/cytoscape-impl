@@ -1,7 +1,5 @@
 package org.cytoscape.view.model.internal.network;
 
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SELECTED;
-
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
@@ -10,17 +8,22 @@ import org.cytoscape.view.model.events.ViewChangedEvent;
 import org.cytoscape.view.model.internal.base.CyViewBase;
 import org.cytoscape.view.model.internal.base.VPStore;
 import org.cytoscape.view.model.internal.base.ViewLock;
-import org.cytoscape.view.model.internal.network.CyNetworkViewImpl.SelectionUpdateState;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 public class CyNodeViewImpl extends CyViewBase<CyNode> {
 
 	private final CyNetworkViewImpl netView;
+	private boolean visible = true;
 	
 	public CyNodeViewImpl(CyNetworkViewImpl netView, CyNode model) {
 		super(model);
 		this.netView = netView;
 	}
 
+	public boolean isVisible() {
+		return visible;
+	}
+	
 	@Override
 	public void setDirty() {
 		netView.setDirty();
@@ -44,11 +47,11 @@ public class CyNodeViewImpl extends CyViewBase<CyNode> {
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void fireViewChangedEvent(VisualProperty<?> vp, Object value, boolean lockedValue) {
-		// These events only fire when the VP value actually changed, so its a good place to check for changes to selection.
-		if(vp == NODE_SELECTED && netView.isBVL() && Boolean.TRUE.equals(value)) {
-			netView.updateSelectionState(SelectionUpdateState.SELECTION_INCREASED);
-		} else {
-			netView.updateSelectionState(SelectionUpdateState.OTHER_VALUES_CHAGED);
+		if(netView.isBVL() && vp == BasicVisualLexicon.NODE_VISIBLE) {
+			visible = !Boolean.FALSE.equals(value);
+			if(!visible) {
+				netView.setElementHidden();
+			}
 		}
 		
 		var record = new ViewChangeRecord<>(this, vp, value, lockedValue);

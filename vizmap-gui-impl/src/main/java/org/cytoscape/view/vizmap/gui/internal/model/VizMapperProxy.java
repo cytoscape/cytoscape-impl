@@ -216,8 +216,8 @@ public class VizMapperProxy extends Proxy
 
 	@Deprecated
 	public void setCurrentVisualStyle(VisualStyle vs) {
-		final VisualStyle curVs = getCurrentVisualStyle();
-		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
+		var curVs = getCurrentVisualStyle();
+		var vmMgr = servicesUtil.get(VisualMappingManager.class);
 		
 		if (vs != null && !vs.equals(curVs))
 			vmMgr.setCurrentVisualStyle(vs);
@@ -228,9 +228,8 @@ public class VizMapperProxy extends Proxy
 	}
 	
 	
-	
 	public CyTableView getTableView(CyColumn column) {
-		CyTableViewManager tableViewManager = servicesUtil.get(CyTableViewManager.class);
+		var tableViewManager = servicesUtil.get(CyTableViewManager.class);
 		return tableViewManager.getTableView(column.getTable());
 	}
 	

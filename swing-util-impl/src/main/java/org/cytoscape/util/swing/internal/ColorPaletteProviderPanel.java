@@ -56,14 +56,11 @@ import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import javax.swing.JToggleButton;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
-import javax.swing.colorchooser.AbstractColorChooserPanel;
-import javax.swing.colorchooser.ColorSelectionModel;
 import javax.swing.event.ChangeEvent;
 
 import org.cytoscape.util.color.BrewerType;
@@ -77,39 +74,38 @@ import org.cytoscape.util.color.PaletteType;
  * 
  * @author Peter Rose
  */
-public class ColorPaletteProviderPanel extends ColorBlindAwareColorChooserPanel
-                               implements ActionListener {
-	private static final long serialVersionUID = 1L;
-	// protected String selectedPalette = null;
+@SuppressWarnings("serial")
+public class ColorPaletteProviderPanel extends ColorBlindAwareColorChooserPanel implements ActionListener {
 
-	Map<String, JPanel> paletteMap;
+	private Map<String, JPanel> paletteMap;
 	private PaletteProvider provider;
 	private PaletteType paletteType;
 	private List<Palette> palettes;
 	private boolean paletteOnly;
 	private int paletteSize;
 
-	public ColorPaletteProviderPanel(PaletteProvider provider, PaletteType type, 
-	                                 int size, boolean paletteOnly) {
+	public ColorPaletteProviderPanel(PaletteProvider provider, PaletteType type, int size, boolean paletteOnly) {
 		this.provider = provider;
 		this.paletteType = type;
 		this.paletteOnly = paletteOnly;
 		this.paletteSize = size;
 		palettes = new ArrayList<>();
-		for (Object paletteId: provider.listPaletteIdentifiers(type, false)) {
+		
+		for (var paletteId : provider.listPaletteIdentifiers(type, false)) {
 			palettes.add(provider.getPalette(paletteId, size));
 		}
 	}
 
 	protected JPanel createPalette(Palette palette, Border normalBorder, Border selectedBorder) {
-		// System.out.println("palette = "+palette.getName()+", selectedPalette = "+selectedPalette);
-		JPanel panel = new JPanel();
-		BoxLayout layout = new BoxLayout(panel, BoxLayout.Y_AXIS);
+		var panel = new JPanel();
+		var layout = new BoxLayout(panel, BoxLayout.Y_AXIS);
 		panel.setLayout(layout);
-		Color colors[] = palette.getColors(paletteSize);
+		
+		var colors = palette.getColors(paletteSize);
+		
 		for (int colorIndex = 0; colorIndex < paletteSize; colorIndex++) {
-			JButton colorButton = new JButton();
-			colorButton.setActionCommand(palette.getName()+":"+String.valueOf(colors[colorIndex].getRGB()));
+			var colorButton = new JButton();
+			colorButton.setActionCommand(palette.getName() + ":" + String.valueOf(colors[colorIndex].getRGB()));
 			colorButton.addActionListener(this);
 			colorButton.setIcon(new ColorIcon(colors[colorIndex], 15, 15, paletteOnly));
 			// colorButton.setBorder(normalBorder);
@@ -123,85 +119,95 @@ public class ColorPaletteProviderPanel extends ColorBlindAwareColorChooserPanel
 		} else {
 			panel.setBorder(normalBorder);
 		}
-		if (paletteMap == null) paletteMap = new HashMap<String, JPanel>();
+		
+		if (paletteMap == null)
+			paletteMap = new HashMap<String, JPanel>();
+		
 		paletteMap.put(palette.getName(), panel);
+		
 		return panel;
 	}
 
-
+	@Override
 	protected void buildChooser() {
 		setLayout(new FlowLayout(FlowLayout.RIGHT, 0, 0));
 
-		Border border = BorderFactory.createEmptyBorder(2,6,2,6);
-		Border selectedBorder = BorderFactory.createLineBorder(Color.blue, 2);
+		var border = BorderFactory.createEmptyBorder(2, 6, 2, 6);
+		var selectedBorder = BorderFactory.createLineBorder(UIManager.getColor("List.selectionBackground"), 2);
 
 		if (selectedPalette == null) {
-			ColorPanelSelectionModel model = (ColorPanelSelectionModel)getColorSelectionModel();
-			Palette b = model.getPalette();
-			if (b != null) selectedPalette = b.getName();
-			// System.out.println("selectedPalette = "+selectedPalette);
+			var model = (ColorPanelSelectionModel) getColorSelectionModel();
+			var p = model.getPalette();
+			
+			if (p != null)
+				selectedPalette = p.getName();
 		}
 
-		for (Palette palette: palettes) {
-			if ( isShowColorBlindSafe() ){
-				if (!  palette.isColorBlindSafe()) {
+		for (var palette : palettes) {
+			if (isShowColorBlindSafe()) {
+				if (!palette.isColorBlindSafe())
 					continue;
-				}
 			}
 
-			JPanel button = createPalette(palette, border, selectedBorder);
+			var button = createPalette(palette, border, selectedBorder);
 			add(button);
 			currentButtons.add(button);
 		}
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent e) {
-		ColorSelectionModel model = getColorSelectionModel();
+		var model = getColorSelectionModel();
 
-		String command = ((JButton)e.getSource()).getActionCommand();
-		String[] colorSplit = command.split(":");
+		var command = ((JButton) e.getSource()).getActionCommand();
+		var colorSplit = command.split(":");
 		selectedPalette = colorSplit[0];
-		// System.out.println("selectedPalette = "+selectedPalette);
-		Color color = new Color(Integer.parseInt(colorSplit[1]));
-		// System.out.println("selectedColor = "+color);
+		
+		var color = new Color(Integer.parseInt(colorSplit[1]));
+		
 		if (!paletteOnly)
 			model.setSelectedColor(color);
 
-		for (Palette palette: palettes) {
-			JPanel selectedPanel = paletteMap.get(palette.getName());
+		for (var palette: palettes) {
+			var selectedPanel = paletteMap.get(palette.getName());
+			
 			if (palette.getName().equals(selectedPalette)) {
 				((ColorPanelSelectionModel) model).setPalette(palette);
-				selectedPanel.setBorder(
-					BorderFactory.createCompoundBorder(
-							BorderFactory.createEmptyBorder(2,4,2,4),
-							BorderFactory.createLineBorder(Color.blue, 2)));
+				selectedPanel.setBorder(BorderFactory.createCompoundBorder(
+						BorderFactory.createEmptyBorder(2, 4, 2, 4),
+						BorderFactory.createLineBorder(UIManager.getColor("List.selectionBackground"), 2)
+				));
 			} else {
-				selectedPanel.setBorder(BorderFactory.createEmptyBorder(2,6,2,6));
+				selectedPanel.setBorder(BorderFactory.createEmptyBorder(2, 6, 2, 6));
 			}
 		}
 	}
 
-	public String getDisplayName() {return provider.getProviderName()+" "+getTypeName();}
+	@Override
+	public String getDisplayName() {
+		return provider.getProviderName() + " " + getTypeName();
+	}
 
 	@Override
 	public void setSelectedPalette(String palette) {
 		selectedPalette = palette;
-		ColorSelectionModel model = getColorSelectionModel();
+		var model = getColorSelectionModel();
 
-		for (Palette plt: palettes) {
-			JPanel selectedPanel = paletteMap.get(plt.getName());
+		for (var plt: palettes) {
+			var selectedPanel = paletteMap.get(plt.getName());
+			
 			if (plt.getName().equals(selectedPalette)) {
 				((ColorPanelSelectionModel) model).setPalette(plt);
-				selectedPanel.setBorder(
-					BorderFactory.createCompoundBorder(
-							BorderFactory.createEmptyBorder(2,4,2,4),
-							BorderFactory.createLineBorder(Color.blue, 2)));
+				selectedPanel.setBorder(BorderFactory.createCompoundBorder(
+						BorderFactory.createEmptyBorder(2, 4, 2, 4),
+						BorderFactory.createLineBorder(UIManager.getColor("List.selectionBackground"), 2)
+				));
 			} else {
-				selectedPanel.setBorder(BorderFactory.createEmptyBorder(2,6,2,6));
+				selectedPanel.setBorder(BorderFactory.createEmptyBorder(2, 6, 2, 6));
 			}
 		}
 	}
-	
+
 	public void stateChanged(ChangeEvent ce) {
 		// getColorSelectionModel().setSelectedColor(new Color(1));
 	}
@@ -218,15 +224,14 @@ public class ColorPaletteProviderPanel extends ColorBlindAwareColorChooserPanel
 		return null;
 	}
 
-  private String getTypeName() {
-    if (paletteType.equals(BrewerType.DIVERGING)) {
-      return "Diverging";
-    } else if (paletteType.equals(BrewerType.SEQUENTIAL)) {
-      return "Sequential";
-    } else if (paletteType.equals(BrewerType.QUALITATIVE)) {
-      return "Qualitative";
-    }
-    return "";
-  }
-	
+	private String getTypeName() {
+		if (paletteType.equals(BrewerType.DIVERGING))
+			return "Diverging";
+		else if (paletteType.equals(BrewerType.SEQUENTIAL))
+			return "Sequential";
+		else if (paletteType.equals(BrewerType.QUALITATIVE))
+			return "Qualitative";
+		
+		return "";
+	}
 }

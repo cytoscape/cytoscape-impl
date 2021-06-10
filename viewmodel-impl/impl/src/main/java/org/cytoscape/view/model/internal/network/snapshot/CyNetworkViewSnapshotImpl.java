@@ -18,7 +18,6 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.internal.base.VPStore;
 import org.cytoscape.view.model.internal.network.CyEdgeViewImpl;
 import org.cytoscape.view.model.internal.network.CyNetworkViewImpl;
-import org.cytoscape.view.model.internal.network.CyNetworkViewImpl.SelectionUpdateState;
 import org.cytoscape.view.model.internal.network.CyNodeViewImpl;
 import org.cytoscape.view.model.internal.network.VPEdgeStore;
 import org.cytoscape.view.model.internal.network.VPNetworkStore;
@@ -58,8 +57,7 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	private final java.util.Map<Long,CyNodeViewSnapshotImpl> snapshotNodeViews = new ConcurrentHashMap<>();
 	private final java.util.Map<Long,CyEdgeViewSnapshotImpl> snapshotEdgeViews = new ConcurrentHashMap<>();
 	
-	private final boolean isSelectionIncreased;
-	
+	private final boolean isNeverHidden;
 	
 	public CyNetworkViewSnapshotImpl(
 			CyNetworkViewImpl networkView,
@@ -72,7 +70,6 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 			VPNodeStore nodeVPs,
 			VPEdgeStore edgeVPs,
 			VPNetworkStore netVPs,
-			SelectionUpdateState selectionState,
 			VisualLexicon lexicon
 	) {
 		super(networkView.getSUID());
@@ -86,8 +83,8 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 		this.nodeVPs = nodeVPs;
 		this.edgeVPs = edgeVPs;
 		this.netVPs = netVPs;
-		this.isSelectionIncreased = selectionState == SelectionUpdateState.SELECTION_INCREASED;
 		this.isBVL = lexicon instanceof BasicVisualLexicon;
+		this.isNeverHidden = networkView.isNeverHidden();
 		
 		this.spacialIndex = new SimpleSpacialIndex2DSnapshotImpl(this);
 	}
@@ -97,23 +94,34 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 		return netVPs;
 	}
 	
-	@Override
-	public boolean isSelectionStrictlyIncreased() {
-		return isSelectionIncreased;
-	}
-
-	private boolean isNodeVisible(Long nodeSuid) {
-		if(!isBVL)
-			return true;
-		return Boolean.TRUE.equals(nodeVPs.getVisualProperty(nodeSuid, BasicVisualLexicon.NODE_VISIBLE));
-	}
-	
 	public boolean isBVL() {
 		return isBVL;
 	}
 	
+	// Tried to optimize visibility checking as much as possible without adding much overhead.
+	
+	private boolean isNodeVisible(Long nodeSuid) {
+		if(!isBVL)
+			return true;
+		if(isNeverHidden)
+			return true;
+		return Boolean.TRUE.equals(nodeVPs.getVisualProperty(nodeSuid, BasicVisualLexicon.NODE_VISIBLE));
+	}
+	
+	private boolean isNodeVisible(CyNodeViewImpl node) {
+		if(!isBVL)
+			return true;
+		if(isNeverHidden)
+			return true;
+		return node.isVisible();
+	}
+	
 	private boolean isEdgeVisible(CyEdgeViewImpl mutableEdgeView) {
-		if(!Boolean.TRUE.equals(edgeVPs.getVisualProperty(mutableEdgeView.getSUID(), BasicVisualLexicon.EDGE_VISIBLE)))
+		if(!isBVL)
+			return true;
+		if(isNeverHidden)
+			return true;
+		if(!mutableEdgeView.isVisible())
 			return false;
 		if(!isNodeVisible(mutableEdgeView.getSourceSuid()))
 			return false;
@@ -137,7 +145,7 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	protected CyNodeViewSnapshotImpl getSnapshotNodeView(CyNodeViewImpl mutableNodeView) {
 		Long suid = mutableNodeView.getSUID();
 		var view = snapshotNodeViews.get(suid);
-		if(view == null && isNodeVisible(suid)) {
+		if(view == null && isNodeVisible(mutableNodeView)) {
 			view = new CyNodeViewSnapshotImpl(this, mutableNodeView);
 			snapshotNodeViews.put(suid, view);
 		}

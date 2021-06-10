@@ -3,7 +3,6 @@ package org.cytoscape.ding.impl;
 import static java.awt.event.KeyEvent.*;
 import static org.cytoscape.ding.internal.util.ViewUtil.*;
 
-import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
@@ -22,7 +21,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -259,7 +257,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	protected void paintComponent(Graphics g) {
 		maybe(AddEdgeListener.class).ifPresent(l -> l.drawAddingEdge(g));
 		maybe(SelectionRectangleListener.class).ifPresent(l -> l.drawSelectionRectangle(g));
-		maybe(SelectionLassoListener.class).ifPresent(l -> l.drawSelectionLasso(g));
 	}
 	
 	@Override
@@ -932,7 +929,8 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				if(annotation != null) {
 					Toggle select = mousePressedHandleAnnotation(annotation, e);
 					if(select != Toggle.NOCHANGE && !isAdditiveSelect(e)) {
-						deselectAllNodesAndEdges();
+						deselectAllNodes();
+						deselectAllEdges();
 					}
 					annotationSelection.setMovingStartOffset(e.getPoint());
 					if (isControlOrMetaDown(e)) {
@@ -1067,7 +1065,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 					re.getBendStore().selectHandle(chosenAnchor);
 				}
 			}
-			re.setContentChanged();	
+			re.updateView(UpdateType.ALL_FULL);
 		}
 		
 		
@@ -1088,7 +1086,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				}
 			}
 
-			re.setContentChanged();
+			re.updateView(UpdateType.ALL_FULL);
 			return toggle;
 		}
 		
@@ -1175,12 +1173,11 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		}
 		
 		
-		
 		@Override
 		public void mouseDragged(MouseEvent e) {
 			if (!hit || !isLeftMouse(e))
 				return;
-			if (get(SelectionRectangleListener.class).isDragging() || maybe(SelectionLassoListener.class).map(l -> l.isDragging()).orElse(false))
+			if (get(SelectionRectangleListener.class).isDragging())
 				return;
 
 			var labelSelectionManager = re.getLabelSelectionManager();
@@ -1296,7 +1293,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			}
 			
 			if (!selectedNodes.isEmpty() || re.getBendStore().areHandlesSelected()) {
-				re.setContentChanged();
+				re.updateView(UpdateType.ALL_FULL);
 			}
 		}
 	}
@@ -1398,86 +1395,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			}
 		}
 	}
-	
-	/**
-	 * MKTODO This listener is not finished and should not be enabled.
-	 * @author mkucera
-	 */
-	private class SelectionLassoListener extends MouseAdapter {
-		
-		private final Color SELECTION_RECT_BORDER_COLOR_1 = UIManager.getColor("Focus.color");
-
-		private GeneralPath selectionLasso;
-		
-		@Override
-		public void mousePressed(MouseEvent e) {
-			if(e.isShiftDown() && isControlOrMetaDown(e)) { // Temporary
-				get(AddEdgeListener.class).reset();
-				selectionLasso = new GeneralPath();
-				selectionLasso.moveTo(e.getX(), e.getY());
-				e.consume();
-			}
-		}
-		
-		@Override
-		public void mouseDragged(MouseEvent e) {
-			if(selectionLasso != null) {
-				selectionLasso.lineTo(e.getX(), e.getY());
-				repaint();
-			}
-		}
-		
-		@Override
-		public void mouseReleased(MouseEvent e) {
-			if(selectionLasso != null) {
-				selectionLasso.closePath();
-				
-				List<DingAnnotation> annotations = Collections.emptyList();
-				List<HandleInfo> handles = Collections.emptyList();
-				List<View<CyNode>> nodes = Collections.emptyList();
-				List<View<CyEdge>> edges = Collections.emptyList();
-
-				if(annotationSelectionEnabled()) {
-					annotations = re.getPicker().getAnnotationsInPath(selectionLasso);
-				}
-				if(nodeSelectionEnabled()) {
-					nodes = re.getPicker().getNodesInPath(selectionLasso);
-				}
-				if(edgeSelectionEnabled()) {
-					// MKTODO getEdgesInPath() is not accurate, it does not work for curved edges
-					edges   = re.getPicker().getEdgesInPath(selectionLasso);
-//					handles = re.getPicker().getHandlesInPath(selectionLasso);
-				}
-				
-				// Select
-				if(!nodes.isEmpty())
-					select(nodes, CyNode.class, true);
-				if(!edges.isEmpty())
-					select(edges, CyEdge.class, true);
-				for(HandleInfo handle : handles)
-					re.getBendStore().selectHandle(handle);
-				for(DingAnnotation a : annotations)
-					a.setSelected(true);
-			}
-			selectionLasso = null;
-			repaint(); // repaint the glass pane
-		}
-		
-		public boolean isDragging() {
-			return selectionLasso != null;
-		}
-		
-		public void drawSelectionLasso(Graphics graphics) {
-			if(selectionLasso != null) {
-				Graphics2D g = (Graphics2D) graphics.create();
-				g.setColor(SELECTION_RECT_BORDER_COLOR_1);
-				GeneralPath path = new GeneralPath(selectionLasso);
-				path.closePath();
-				g.setStroke(new BasicStroke(2));
-				g.draw(path);
-			}
-		}
-	}
 
 	
 	private class SelectionRectangleListener extends MouseAdapter {
@@ -1515,7 +1432,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		public void mouseReleased(MouseEvent e) {
 			if(selectionRect != null) {
 				List<DingAnnotation> annotations = Collections.emptyList();
-				List<HandleInfo> handles = Collections.emptyList();
 				List<View<CyNode>> nodes = Collections.emptyList();
 				List<View<CyEdge>> edges = Collections.emptyList();
 
@@ -1527,7 +1443,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				}
 				if(edgeSelectionEnabled()) {
 					edges = re.getPicker().getEdgesInRectangle(selectionRect);
-					handles = re.getPicker().getHandlesInRectangle(selectionRect);
 				}
 				
 				// Select
@@ -1535,8 +1450,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 					select(nodes, CyNode.class, true);
 				if(!edges.isEmpty())
 					select(edges, CyEdge.class, true);
-				for(HandleInfo handle : handles)
-					re.getBendStore().selectHandle(handle);
 				for(DingAnnotation a : annotations)
 					a.setSelected(true);
 				
@@ -1673,20 +1586,20 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	}
 	
 	private boolean annotationSelectionEnabled() {
-		return re.getViewModelSnapshot().getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION);
+		return re.getViewModel().getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION);
 	}
 	
 	private boolean nodeSelectionEnabled() {
-		return re.getViewModelSnapshot().getVisualProperty(DVisualLexicon.NETWORK_NODE_SELECTION);
+		return re.getViewModel().getVisualProperty(DVisualLexicon.NETWORK_NODE_SELECTION);
 	}
 	
 	private boolean labelSelectionEnabled() {
-		return re.getViewModelSnapshot().getVisualProperty(DVisualLexicon.NETWORK_NODE_LABEL_SELECTION);
+		return re.getViewModel().getVisualProperty(DVisualLexicon.NETWORK_NODE_LABEL_SELECTION);
 	}
 	
 	
 	private boolean edgeSelectionEnabled() {
-		if(Boolean.FALSE.equals(re.getViewModelSnapshot().getVisualProperty(DVisualLexicon.NETWORK_EDGE_SELECTION))) {
+		if(Boolean.FALSE.equals(re.getViewModel().getVisualProperty(DVisualLexicon.NETWORK_EDGE_SELECTION))) {
 			return false;
 		}
 		return true;
@@ -1733,28 +1646,22 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	}
 	
 	private boolean deselectAllNodes() {
-		if(nodeSelectionEnabled()) {
-			var table = re.getViewModel().getModel().getDefaultNodeTable();
-			var rows = table.getMatchingRows(CyNetwork.SELECTED, true);
-			if(rows.isEmpty())
-				return false;
-			batchDeselectRows(table, rows);
-			return true;
-		}
-		return false;
+		var table = re.getViewModel().getModel().getDefaultNodeTable();
+		var rows = table.getMatchingRows(CyNetwork.SELECTED, true);
+		if(rows.isEmpty())
+			return false;
+		batchDeselectRows(table, rows);
+		return true;
 	}
 	
 	private boolean deselectAllEdges() {
 		re.getBendStore().unselectAllHandles();
-		if(edgeSelectionEnabled()) {
-			var table = re.getViewModel().getModel().getDefaultEdgeTable();
-			var rows = table.getMatchingRows(CyNetwork.SELECTED, true);
-			if(rows.isEmpty())
-				return false;
-			batchDeselectRows(table, rows);
-			return true;
-		}
-		return false;
+		var table = re.getViewModel().getModel().getDefaultEdgeTable();
+		var rows = table.getMatchingRows(CyNetwork.SELECTED, true);
+		if(rows.isEmpty())
+			return false;
+		batchDeselectRows(table, rows);
+		return true;
 	}
 		
 	// We want to fire the selection event immediately, waiting for the payload event to fire
@@ -1782,18 +1689,11 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	}
 	
 	private boolean deselectAllAnnotations() {
-		if(annotationSelectionEnabled()) {
-			if(!cyAnnotator.getAnnotationSelection().isEmpty()) {
-				cyAnnotator.clearSelectedAnnotations();
-				return true;
-			}
+		if(!cyAnnotator.getAnnotationSelection().isEmpty()) {
+			cyAnnotator.clearSelectedAnnotations();
+			return true;
 		}
 		return false;
-	}
-	
-	private void deselectAllNodesAndEdges() {
-		deselectAllNodes();
-		deselectAllEdges();
 	}
 	
 	private void deselectAll() {

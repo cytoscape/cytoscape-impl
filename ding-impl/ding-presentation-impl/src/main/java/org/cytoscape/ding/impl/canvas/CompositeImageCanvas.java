@@ -224,7 +224,7 @@ public class CompositeImageCanvas {
 	
 	// Methods to determine which canvases are rendered.
 	private static boolean renderAllCanvases(UpdateType ut) {
-		return ut == ALL_FAST || ut == ALL_FULL || ut == ALL_FULL_DIRTY;
+		return ut == ALL_FAST || ut == ALL_FULL;
 	}
 	private static boolean renderNodeCanvas(UpdateType ut) {
 		return renderAllCanvases(ut);

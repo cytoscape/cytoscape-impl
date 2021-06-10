@@ -4,9 +4,6 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.cg.internal.gradient.linear.LinearGradient.ANGLE;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JComboBox;
@@ -15,6 +12,8 @@ import javax.swing.JPanel;
 
 import org.cytoscape.cg.internal.charts.AbstractChartEditor.DoubleInputVerifier;
 import org.cytoscape.cg.internal.gradient.AbstractGradientEditor;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 public class LinearGradientEditor extends AbstractGradientEditor<LinearGradient> {
 	
@@ -29,8 +28,8 @@ public class LinearGradientEditor extends AbstractGradientEditor<LinearGradient>
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public LinearGradientEditor(final LinearGradient gradient) {
-		super(gradient);
+	public LinearGradientEditor(LinearGradient gradient, CyServiceRegistrar serviceRegistrar) {
+		super(gradient, serviceRegistrar);
 	}
 	
 	// ==[ PRIVATE METHODS ]============================================================================================
@@ -43,10 +42,10 @@ public class LinearGradientEditor extends AbstractGradientEditor<LinearGradient>
 	
 	@Override
 	protected JPanel getOtherOptionsPnl() {
-		final JPanel p = super.getOtherOptionsPnl();
+		var p = super.getOtherOptionsPnl();
 		p.setVisible(true);
 		
-		final GroupLayout layout = new GroupLayout(p);
+		var layout = new GroupLayout(p);
 		p.setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(true);
@@ -60,6 +59,8 @@ public class LinearGradientEditor extends AbstractGradientEditor<LinearGradient>
 				.addComponent(getAngleCmb(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
 		
+		LookAndFeelUtil.makeSmall(angleLbl, getAngleCmb());
+		
 		return p;
 	}
 	
@@ -71,12 +72,9 @@ public class LinearGradientEditor extends AbstractGradientEditor<LinearGradient>
 			angleCmb.setSelectedItem(gradient.get(ANGLE, Double.class, 0.0));
 			angleCmb.setInputVerifier(new DoubleInputVerifier());
 			
-			angleCmb.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					final Object angle = angleCmb.getSelectedItem();
-		            gradient.set(ANGLE, angle instanceof Number ? ((Number)angle).doubleValue() : 0.0);
-				}
+			angleCmb.addActionListener(e -> {
+				var angle = angleCmb.getSelectedItem();
+				gradient.set(ANGLE, angle instanceof Number ? ((Number)angle).doubleValue() : 0.0);
 			});
 		}
 		

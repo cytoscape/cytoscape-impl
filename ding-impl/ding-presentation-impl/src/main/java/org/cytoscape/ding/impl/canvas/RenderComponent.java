@@ -209,6 +209,11 @@ public abstract class RenderComponent extends JComponent {
 			if(flags.renderEdges() != RenderEdges.NONE) {
 				return PaintParameters.updateType(updateType); // Fast canvas can render its own edges, don't need to buffer pan
 			}
+			if(updateType == UpdateType.JUST_ANNOTATIONS) {
+				if(Objects.equals(slowCanvasLastPaintSnapshot, fastCanvasLastPaintSnapshot)) {
+					return PaintParameters.pan(0, 0, slowCanvas, "slow");
+				}
+			}
 			// Try to optimize panning by just shifting the edge canvas image buffer by some number of pixels
 			if((updateType == UpdateType.ALL_FAST || updateType == UpdateType.ALL_FULL) && fastCanvasPanStartedSnapshot != null) {
 				if(Objects.equals(slowCanvasLastPaintSnapshot, fastCanvasPanStartedSnapshot)) {
@@ -312,7 +317,7 @@ public abstract class RenderComponent extends JComponent {
 			future = fastFuture;
 
 			// start a slow frame if necessary
-			if((updateType == UpdateType.ALL_FULL || updateType == UpdateType.ALL_FULL_DIRTY) && !sameDetail()) { 
+			if(updateType == UpdateType.ALL_FULL && !sameDetail()) { 
 				var slowPm = debugPm(updateType, getSlowProgressMonitor());
 				slowFuture = slowCanvas.paint(slowPm, PaintParameters.updateType(updateType));
 				slowFuture.thenRun(() -> {

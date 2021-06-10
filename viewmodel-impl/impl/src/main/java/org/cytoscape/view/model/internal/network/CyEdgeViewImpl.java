@@ -1,7 +1,5 @@
 package org.cytoscape.view.model.internal.network;
 
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SELECTED;
-
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
@@ -10,7 +8,7 @@ import org.cytoscape.view.model.events.ViewChangedEvent;
 import org.cytoscape.view.model.internal.base.CyViewBase;
 import org.cytoscape.view.model.internal.base.VPStore;
 import org.cytoscape.view.model.internal.base.ViewLock;
-import org.cytoscape.view.model.internal.network.CyNetworkViewImpl.SelectionUpdateState;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 public class CyEdgeViewImpl extends CyViewBase<CyEdge> {
 
@@ -19,6 +17,7 @@ public class CyEdgeViewImpl extends CyViewBase<CyEdge> {
 	private final long sourceSuid;
 	private final long targetSuid;
 	private final boolean isDirected;
+	private boolean visible = true;
 	
 	public CyEdgeViewImpl(CyNetworkViewImpl netView, CyEdge model, long sourceSuid, long targetSuid) {
 		super(model);
@@ -26,6 +25,10 @@ public class CyEdgeViewImpl extends CyViewBase<CyEdge> {
 		this.sourceSuid = sourceSuid;
 		this.targetSuid = targetSuid;
 		this.isDirected = model.isDirected();
+	}
+	
+	public boolean isVisible() {
+		return visible;
 	}
 	
 	@Override
@@ -63,11 +66,11 @@ public class CyEdgeViewImpl extends CyViewBase<CyEdge> {
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void fireViewChangedEvent(VisualProperty<?> vp, Object value, boolean lockedValue) {
-		// These events only fire when the VP value actually changed, so its a good place to check for changes to selection.
-		if(vp == EDGE_SELECTED && netView.isBVL() && Boolean.TRUE.equals(value)) {
-			netView.updateSelectionState(SelectionUpdateState.SELECTION_INCREASED);
-		} else {
-			netView.updateSelectionState(SelectionUpdateState.OTHER_VALUES_CHAGED);
+		if(netView.isBVL() && vp == BasicVisualLexicon.EDGE_VISIBLE) {
+			visible = !Boolean.FALSE.equals(value);
+			if(!visible) {
+				netView.setElementHidden();
+			}
 		}
 		
 		var record = new ViewChangeRecord<>(this, vp, value, lockedValue);

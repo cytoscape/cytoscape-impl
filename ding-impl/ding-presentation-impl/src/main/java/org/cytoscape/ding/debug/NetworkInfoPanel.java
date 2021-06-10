@@ -23,10 +23,9 @@ public class NetworkInfoPanel extends BasicCollapsiblePanel {
 	private JLabel networkNameLabel;
 	private JLabel edgeCountLabel;
 	private JLabel transformViewLabel;
-	private JLabel transformCntrLabel;
-	private JLabel transformBoundsLabel;
-	private JLabel transformZoomLabel;
 	private JLabel selectedNodeLabel;
+	
+	private NetworkViewportPanel viewportPanel;
 	
 	
 	public NetworkInfoPanel(Supplier<DRenderingEngine> reSupplier) {
@@ -38,18 +37,17 @@ public class NetworkInfoPanel extends BasicCollapsiblePanel {
 	private void createContents() {
 		networkNameLabel = new JLabel();
 		transformViewLabel = new JLabel();
-		transformCntrLabel = new JLabel();
-		transformBoundsLabel = new JLabel();
-		transformZoomLabel = new JLabel();
+		
+		viewportPanel = new NetworkViewportPanel();
 		edgeCountLabel = new JLabel();
 		selectedNodeLabel = new JLabel();
 		clear();
 		
-		JButton edgeButton = new JButton("Count Edges");
-		edgeButton.addActionListener(e -> countEdges());
+		JButton countButton = new JButton("Count Visible Nodes/Edges");
+		countButton.addActionListener(e -> countNodesEdges());
 		
-		LookAndFeelUtil.makeSmall(edgeCountLabel, selectedNodeLabel, edgeButton);
-		LookAndFeelUtil.makeSmall(transformViewLabel, transformCntrLabel, transformBoundsLabel, transformZoomLabel);
+		LookAndFeelUtil.makeSmall(edgeCountLabel, selectedNodeLabel, countButton);
+		LookAndFeelUtil.makeSmall(transformViewLabel);
 		
 		JPanel panel = new JPanel();
 		panel.setOpaque(false);
@@ -60,26 +58,22 @@ public class NetworkInfoPanel extends BasicCollapsiblePanel {
 		
 		layout.setVerticalGroup(layout.createSequentialGroup()
 			.addComponent(networkNameLabel)
+			.addComponent(viewportPanel)
 			.addComponent(transformViewLabel)
-			.addComponent(transformCntrLabel)
-			.addComponent(transformBoundsLabel)
-			.addComponent(transformZoomLabel)
 			.addComponent(selectedNodeLabel)
 			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-				.addComponent(edgeButton)
+				.addComponent(countButton)
 				.addComponent(edgeCountLabel)
 			)
 		);
 		
 		layout.setHorizontalGroup(layout.createParallelGroup()
 			.addComponent(networkNameLabel)
+			.addComponent(viewportPanel, Alignment.CENTER)
 			.addComponent(transformViewLabel)
-			.addComponent(transformCntrLabel)
-			.addComponent(transformBoundsLabel)
-			.addComponent(transformZoomLabel)
 			.addComponent(selectedNodeLabel)
 			.addGroup(layout.createSequentialGroup()
-				.addComponent(edgeButton)
+				.addComponent(countButton)
 				.addComponent(edgeCountLabel)
 			)
 		);
@@ -92,30 +86,29 @@ public class NetworkInfoPanel extends BasicCollapsiblePanel {
 	public void clear() {
 		networkNameLabel.setText("-none-");
 		transformViewLabel.setText("");
-		transformCntrLabel.setText("");
-		transformBoundsLabel.setText("");
-		transformZoomLabel.setText("");
+		viewportPanel.clear();
 		edgeCountLabel.setText("");
 		selectedNodeLabel.setText("Selected Node - none");
 	}
 	
 	public void updateTransform(NetworkTransform t) {
-		var b = t.getNetworkVisibleAreaNodeCoords();
 		transformViewLabel.setText(String.format("Viewport - w:%d h:%d", t.getWidth(), t.getHeight()));
-		transformCntrLabel.setText(String.format("Center - x:%.2f, y:%.2f", t.getCenterX(), t.getCenterY()));
-		transformBoundsLabel.setText(String.format("Bounds - xMin:%.2f, yMin:%.2f, xMax:%.2f, yMax:%.2f", b.getMinX(), b.getMinY(), b.getMaxX(), b.getMaxY()));
-		transformZoomLabel.setText(String.format("Zoom - %.4f", t.getScaleFactor()));
+		viewportPanel.updateTransform(t);
 	}
 	
 	public void setNetworkName(String name) {
 		networkNameLabel.setText(name == null ? "-none-" : name);
 	}
 	
-	private void countEdges() {
+	private void countNodesEdges() {
 		String text = "-";
 		var re = reSupplier.get();
-		if(re != null)
-			text = "" + RenderDetailFlags.countEdges(re);
+		if(re != null) {
+			int[] counts = RenderDetailFlags.countNodesEdges(re);
+			int nodeCount = counts[0];
+			int edgeCount = counts[1];
+			text = "nodes: " + nodeCount + ", edges: " + edgeCount;
+		}
 		edgeCountLabel.setText(text);
 	}
 	

@@ -70,8 +70,7 @@ public class NodeCanvas<GP extends GraphicsProvider> extends DingCanvas<GP> {
 		var nodeDetails = re.getNodeDetails();
 		var labelProvider = flags.has(RenderDetailFlags.OPT_LABEL_CACHE) ? re.getLabelCache() : LabelInfoProvider.NO_CACHE;
 		
-		boolean clear = flags.not(RenderDetailFlags.OPT_SELECTED_ONLY);
-		graphGraphics.update(flags, clear);
+		graphGraphics.update(flags, true);
 		
 		GraphRenderer.renderNodes(pm, graphGraphics, snapshot, flags, nodeDetails, dependencies, labelProvider);
 	}

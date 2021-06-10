@@ -5,11 +5,18 @@ import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 
 public class RadialGradientFactory implements CyCustomGraphics2Factory<RadialGradientLayer> {
 	
+	private final CyServiceRegistrar serviceRegistrar;
+
+	public RadialGradientFactory(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
+	}
+
 	@Override
 	public CyCustomGraphics2<RadialGradientLayer> getInstance(String input) {
 		return new RadialGradient(input);
@@ -17,7 +24,7 @@ public class RadialGradientFactory implements CyCustomGraphics2Factory<RadialGra
 
 	@Override
 	public CyCustomGraphics2<RadialGradientLayer> getInstance(CyCustomGraphics2<RadialGradientLayer> gradient) {
-		return new RadialGradient((RadialGradient)gradient);
+		return new RadialGradient((RadialGradient) gradient);
 	}
 
 	@Override
@@ -47,7 +54,7 @@ public class RadialGradientFactory implements CyCustomGraphics2Factory<RadialGra
 	
 	@Override
 	public JComponent createEditor(CyCustomGraphics2<RadialGradientLayer> gradient) {
-		return new RadialGradientEditor((RadialGradient)gradient);
+		return new RadialGradientEditor((RadialGradient) gradient, serviceRegistrar);
 	}
 	
 	@Override

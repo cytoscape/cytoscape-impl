@@ -35,7 +35,6 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.swing.ColumnResizer;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.model.View;
@@ -309,8 +308,6 @@ public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 			// So the drop event can go straight through the table to the drop target associated with this panel
 			if (browserTable.getDropTarget() != null)
 				browserTable.getDropTarget().setActive(false);
-			
-			ColumnResizer.adjustColumnPreferredWidths(browserTable, false);
 		}
 		
 		return browserTable;

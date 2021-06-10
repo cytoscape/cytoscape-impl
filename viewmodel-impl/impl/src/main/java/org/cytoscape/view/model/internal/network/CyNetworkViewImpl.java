@@ -44,13 +44,6 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		NODE_X_LOCATION, NODE_Y_LOCATION, NODE_HEIGHT, NODE_WIDTH, NODE_VISIBLE
 	);
 	
-	/** For optimizing the re-drawing of selected nodes/edges only. */
-	public static enum SelectionUpdateState {
-		CLEAR,                // selection state has been reset to clear 
-		SELECTION_INCREASED,  // the only changes since last clear is that some nodes/edges have had selected set to true
-		OTHER_VALUES_CHAGED   // some node/edge had selected set to false, or some other VP changed, or network topology changed, need to do a full re-render 
-	}
-	
 	private final CyEventHelper eventHelper;
 	private final String rendererId;
 	private final VisualLexicon visualLexicon;
@@ -59,7 +52,6 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	private CopyOnWriteArrayList<CyNetworkViewListener> listeners = new CopyOnWriteArrayList<>();
 	
 	private boolean dirty = true; // set to true initially so that the first frame is rendered
-	private SelectionUpdateState selectionState = SelectionUpdateState.CLEAR;
 	
 	// View object is stored twice, using both the view suid and model suid as keys.
 	private Map<Long,CyNodeViewImpl> dataSuidToNode = HashMap.empty();
@@ -77,6 +69,9 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	protected final VPNodeStore nodeVPs;
 	protected final VPEdgeStore edgeVPs;
 	protected final VPNetworkStore netVPs;
+	
+	// minor optimization, true if no node or edge in this network has ever been hidden
+	private boolean isNeverHidden = true;
 
 	
 	public CyNetworkViewImpl(CyServiceRegistrar registrar, CyNetwork network, VisualLexicon visualLexicon, String rendererId, CyNetworkViewFactoryConfigImpl config) {
@@ -107,9 +102,6 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		synchronized (nodeLock) {
 			synchronized (edgeLock) {
 				synchronized (netLock) {
-					final var selectionState = this.selectionState;
-					this.selectionState = SelectionUpdateState.CLEAR;
-					
 					return new CyNetworkViewSnapshotImpl(
 						this, 
 						rendererId, 
@@ -121,7 +113,6 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 						nodeVPs.createSnapshot(),
 						edgeVPs.createSnapshot(),
 						netVPs.createSnapshot(),
-						selectionState,
 						visualLexicon
 					);
 				}
@@ -156,23 +147,20 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		this.dirty = true;
 	}
 	
-	private void internalSetDirty() {
-		setDirty();
-		updateSelectionState(SelectionUpdateState.OTHER_VALUES_CHAGED);
-	}
-	
-	void updateSelectionState(SelectionUpdateState selectionState) {
-		if(this.selectionState.ordinal() < selectionState.ordinal()) {
-			this.selectionState = selectionState;
-		}
-	}
-	
 	public CyEventHelper getEventHelper() {
 		return eventHelper;
 	}
 	
 	public VisualLexicon getVisualLexicon() {
 		return visualLexicon;
+	}
+	
+	public boolean isNeverHidden() {
+		return isNeverHidden;
+	}
+	
+	public void setElementHidden() {
+		isNeverHidden = false;
 	}
 	
 	public View<CyNode> addNode(CyNode model) {
@@ -183,7 +171,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		synchronized (nodeLock) {
 			dataSuidToNode = dataSuidToNode.put(model.getSUID(), view);
 			viewSuidToNode = viewSuidToNode.put(view.getSUID(), view);
-			internalSetDirty();
+			setDirty();
 		}
 		
 		eventHelper.addEventPayload(this, view, AddedNodeViewsEvent.class);
@@ -202,7 +190,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 			dataSuidToEdge = dataSuidToEdge.put(edge.getSUID(), view);
 			viewSuidToEdge = viewSuidToEdge.put(view.getSUID(), view);
 			updateAdjacentEdgeMap(view, true);
-			internalSetDirty();
+			setDirty();
 		}
 		
 		eventHelper.addEventPayload(this, view, AddedEdgeViewsEvent.class);
@@ -225,7 +213,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 					}
 					adjacentEdgeMap = adjacentEdgeMap.remove(nodeView.getSUID());
 					nodeVPs.remove(nodeView.getSUID());
-					internalSetDirty();
+					setDirty();
 				}
 				return nodeView;
 			}
@@ -243,7 +231,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 				viewSuidToEdge = viewSuidToEdge.remove(edgeView.getSUID());
 				updateAdjacentEdgeMap(edgeView, false);
 				edgeVPs.remove(edgeView.getSUID());
-				internalSetDirty();
+				setDirty();
 			}
 			return edgeView;
 		}
@@ -423,7 +411,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		for(CyNetworkViewListener listener : listeners) {
 			listener.handleFitContent();
 		}
-		internalSetDirty();
+		setDirty();
 	}
 
 	@Override
@@ -431,7 +419,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		for(CyNetworkViewListener listener : listeners) {
 			listener.handleFitSelected();
 		}
-		internalSetDirty();
+		setDirty();
 	}
 
 	@Override
@@ -444,7 +432,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		for(CyNetworkViewListener listener : listeners) {
 			listener.handleUpdateView();
 		}
-		internalSetDirty();
+		setDirty();
 	}
 	
 	@Override

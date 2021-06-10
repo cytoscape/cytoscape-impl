@@ -77,6 +77,7 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.presentation.NetworkImageFactory;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -1509,17 +1510,12 @@ public class VisualStyleSelector extends JPanel {
 			getImageLabel().setBackground(bgColor);
 			
 			if (previewNetView != null) {
-				var engine = getRenderingEngine(style);
+				style.apply(previewNetView);
 				
-				if (engine != null) {
-					style.apply(previewNetView);
-					previewNetView.updateView();
-					previewNetView.fitContent();
-					
-					var img = engine.createImage(IMAGE_WIDTH, IMAGE_HEIGHT);
-					var icon = new ImageIcon(img); 
-					getImageLabel().setIcon(icon);
-				}
+				var netImgFactory = servicesUtil.get(NetworkImageFactory.class);
+				var img = netImgFactory.createImage(previewNetView, IMAGE_WIDTH, IMAGE_HEIGHT);
+				var icon = new ImageIcon(img); 
+				getImageLabel().setIcon(icon);
 			}
 			
 			// Title

@@ -6,8 +6,6 @@ import static org.cytoscape.cg.internal.gradient.AbstractGradient.GRADIENT_COLOR
 import static org.cytoscape.cg.internal.gradient.AbstractGradient.GRADIENT_FRACTIONS;
 
 import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.List;
 
 import javax.swing.GroupLayout;
@@ -18,6 +16,7 @@ import javax.swing.JSeparator;
 
 import org.cytoscape.cg.internal.util.GradientEditor;
 import org.cytoscape.cg.model.AbstractCustomGraphics2;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 @SuppressWarnings("serial")
@@ -28,11 +27,13 @@ public abstract class AbstractGradientEditor<T extends AbstractCustomGraphics2<?
 	private JPanel otherOptionsPnl;
 
 	protected final T gradient;
+	protected final CyServiceRegistrar serviceRegistrar;
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public AbstractGradientEditor(final T gradient) {
+	public AbstractGradientEditor(T gradient, CyServiceRegistrar serviceRegistrar) {
 		this.gradient = gradient;
+		this.serviceRegistrar = serviceRegistrar;
 		init();
 	}
 	
@@ -43,12 +44,12 @@ public abstract class AbstractGradientEditor<T extends AbstractCustomGraphics2<?
 		
 		setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 		
-		final GroupLayout layout = new GroupLayout(this);
+		var layout = new GroupLayout(this);
 		setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
-		final JSeparator sep = new JSeparator();
+		var sep = new JSeparator();
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
 				.addComponent(colorsLbl)
@@ -62,6 +63,8 @@ public abstract class AbstractGradientEditor<T extends AbstractCustomGraphics2<?
 				.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(getOtherOptionsPnl())
 		);
+		
+		LookAndFeelUtil.makeSmall(colorsLbl);
 	}
 	
 	protected void createLabels() {
@@ -72,15 +75,10 @@ public abstract class AbstractGradientEditor<T extends AbstractCustomGraphics2<?
 		if (grEditor == null) {
 			final List<Float> fractions = gradient.getList(GRADIENT_FRACTIONS, Float.class);
 			final List<Color> colors = gradient.getList(GRADIENT_COLORS, Color.class);
-			grEditor = new GradientEditor(fractions, colors);
+			grEditor = new GradientEditor(fractions, colors, serviceRegistrar);
 			
 			// Add listener--update gradient when user interacts with the UI
-			grEditor.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					updateGradient();
-				}
-			});
+			grEditor.addActionListener(e -> updateGradient());
 			
 			if (fractions == null || fractions.size() < 2) {
 				gradient.set(GRADIENT_FRACTIONS, getGrEditor().getPositions());
