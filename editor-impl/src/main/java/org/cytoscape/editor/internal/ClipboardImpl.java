@@ -30,6 +30,7 @@ import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 import org.cytoscape.view.presentation.annotations.BoundedTextAnnotation;
+import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.cytoscape.view.presentation.annotations.ImageAnnotation;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
@@ -354,8 +355,7 @@ public class ClipboardImpl {
 			if (a instanceof ArrowAnnotation) {
 				arrowAnnotations.add((ArrowAnnotation) a);
 			} else {
-				var na = pasteAnnotation(targetView, annotationMgr, a, a.getX() + xOffset, a.getY() + yOffset);
-				
+				var na = pasteAnnotation(targetView, annotationMgr, a, xOffset, yOffset);
 				if (na != null)
 					newAnnotationMap.put(a, na);
 			}
@@ -519,10 +519,10 @@ public class ClipboardImpl {
 			CyNetworkView targetView,
 			AnnotationManager annotationMgr,
 			Annotation a,
-			double x,
-			double y
+			double xOffset, 
+			double yOffset
 	) {
-		var na = cloneAnnotation(targetView, a, x, y);
+		var na = cloneAnnotation(targetView, a, xOffset, yOffset);
 		
 		if (na != null)
 			annotationMgr.addAnnotation(na);
@@ -540,7 +540,7 @@ public class ClipboardImpl {
 			double xOffset,
 			double yOffset
 	) {
-		var na = cloneAnnotation(targetView, a, a.getX() - xOffset, a.getY() - yOffset);
+		var na = cloneAnnotation(targetView, a, xOffset, yOffset);
 		
 		if (na instanceof ArrowAnnotation) {
 			var newArrow = (ArrowAnnotation) na;
@@ -697,16 +697,16 @@ public class ClipboardImpl {
 		return position;
 	}
 	
-	private Annotation cloneAnnotation(CyNetworkView targetView, Annotation a, double x, double y) {
+	private Annotation cloneAnnotation(CyNetworkView targetView, Annotation a, double xOffset, double yOffset) {
 		var argMap = new HashMap<>(a.getArgMap());
 		argMap.remove("uuid");
 		
-		argMap.put(Annotation.X, Double.toString(x));
-		argMap.put(Annotation.Y, Double.toString(y));
+		argMap.put(Annotation.X, Double.toString(a.getX() + xOffset));
+		argMap.put(Annotation.Y, Double.toString(a.getY() + yOffset));
 		
 		var type = argMap.get("type");
 		if (type == null)
-			type = a.getClass().getName();
+			return null;
 		
 		if (type.equals("ARROW") || type.equals("org.cytoscape.view.presentation.annotations.ArrowAnnotation"))
 			return createAnnotation(ArrowAnnotation.class, targetView, argMap);
@@ -723,6 +723,19 @@ public class ClipboardImpl {
 		if (type.equals("IMAGE") || type.equals("org.cytoscape.view.presentation.annotations.ImageAnnotation"))
 			return createAnnotation(ImageAnnotation.class, targetView, argMap);
 		
+		if (type.equals("GROUP") || type.equals("org.cytoscape.view.presentation.annotations.GroupAnnotation")) {
+			GroupAnnotation group = (GroupAnnotation) a;
+			
+			argMap.remove(GroupAnnotation.MEMBERS);
+			GroupAnnotation newGroup = (GroupAnnotation) createAnnotation(GroupAnnotation.class, targetView, argMap);
+			
+			for(var child : group.getMembers()) {
+				Annotation newChild = cloneAnnotation(targetView, child, xOffset, yOffset);
+				newGroup.addMember(newChild);
+			}
+			return newGroup;
+		}
+		
 		return null;
 	}
 	
@@ -730,17 +743,14 @@ public class ClipboardImpl {
 	public Annotation createAnnotation(Class type, CyNetworkView netView, Map<String, String> argMap) {
 		for (var factory : annotationFactories) {
 			var a = factory.createAnnotation(type, netView, argMap);
-			
 			if (a != null)
 				return a;
 		}
-		
 		return null;
 	}
 
 	private boolean isSelected(CyNetworkView networkView, CyIdentifiable object) {
 		var network = networkView.getModel();
-		
 		return Boolean.TRUE.equals(network.getRow(object).get(CyNetwork.SELECTED, Boolean.class));
 	}
 
@@ -761,7 +771,6 @@ public class ClipboardImpl {
 		for (var vp : visualProps) {
 			if (view.isValueLocked(vp)) {
 				var vpMap = bypassMap.get(view.getModel());
-				
 				if (vpMap == null)
 					bypassMap.put(view.getModel(), vpMap = new HashMap<>());
 				
@@ -776,7 +785,6 @@ public class ClipboardImpl {
 			Map<T, Map<VisualProperty<?>, Object>> bypassMap
 	) {
 		var vpMap = bypassMap.get(orginalModel);
-		
 		if (vpMap != null) {
 			for (var entry : vpMap.entrySet())
 				target.setLockedValue(entry.getKey(), entry.getValue());
