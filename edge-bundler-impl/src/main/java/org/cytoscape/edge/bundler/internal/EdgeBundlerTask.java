@@ -87,7 +87,6 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 	@Tunable(description = "Maximum iterations:")
 	public int maxIterations = 500;
 	
-
 	private boolean animate = false;
 
 	private double[][][] edgePos; // source/target, X/Y, edgeIndex
@@ -108,6 +107,7 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 		this.selection = selection;
 		this.serviceRegistrar = serviceRegistrar;
 	}
+
 	
 	@Override
 	public void run(TaskMonitor tm) {
@@ -122,7 +122,7 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 		tm.setTitle("Edge Bundle Layout");
 
 		// Pre-cache data structures
-		tm.setStatusMessage("Caching network data");
+		tm.setStatusMessage("Caching network data...");
 		Collection<View<CyEdge>> edges = null;
 
 		// Get selection
@@ -203,7 +203,13 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 			ei++;
 		}
 
-		computeEdgeCompatability();
+		computeEdgeCompatability(tm);
+		if (this.cancelled) {
+			logger.info("Edge bundling cancelled.");
+			edgeCompatability = null;
+			edgeAlign = null;
+			return;
+		}
 
 		// Simulating physics
 		tm.setStatusMessage("Simulating physics");
@@ -325,7 +331,7 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 		}
 	}
 
-	private void computeEdgeCompatability() {
+	private void computeEdgeCompatability(final TaskMonitor tm) {
 		edgeCompatability = new double[edgeLength.length][];
 		edgeAlign = new boolean[edgeLength.length][];
 		edgeMatcher = new int[edgeLength.length][];
@@ -333,11 +339,18 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 		edgeMatcher[0] = new int[0];
 
 		for (int ei = 1; ei < edgeLength.length; ei++) {
+			tm.setStatusMessage("Preparing data for edge bundling (" + ei + "/" + edgeLength.length + ")" );
+			if (this.cancelled) {
+				break;
+			}
 			edgeCompatability[ei] = new double[ei];
 			edgeAlign[ei] = new boolean[ei];
 
 			List<Integer> compatibleEdges = new ArrayList<Integer>(1000);
 			for (int ej = 0; ej < ei; ej++) {
+				if (this.cancelled) {
+					break;
+				}
 				edgeCompatability[ei][ej] = cangle(ei, ej) * cscale(ei, ej) * cpos(ei, ej) * cvis(ei, ej);
 				edgeAlign[ei][ej] = cangleSign(ei, ej) > 0;
 
@@ -346,8 +359,12 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 			}
 
 			edgeMatcher[ei] = new int[compatibleEdges.size()];
-			for (int i = 0; i < compatibleEdges.size(); i++)
+			for (int i = 0; i < compatibleEdges.size(); i++) {
+				if (this.cancelled) {
+					break;
+				}
 				edgeMatcher[ei][i] = compatibleEdges.get(i);
+			}
 		}
 	}
 
