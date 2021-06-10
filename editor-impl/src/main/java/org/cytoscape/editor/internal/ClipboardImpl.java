@@ -78,7 +78,7 @@ public class ClipboardImpl {
 	private Map<CyIdentifiable, CyRow> oldHiddenRowMap;
 	private Map<CyRow, Map<String, Object>> oldValueMap;
 
-	private final double xTopLeft, yTopLeft;
+	private double xTopLeft, yTopLeft;
 	
 	private final List<AnnotationFactory<? extends Annotation>> annotationFactories;
 	private final CyServiceRegistrar serviceRegistrar;
@@ -112,28 +112,34 @@ public class ClipboardImpl {
 		this.cutOperation = cut;
 		this.serviceRegistrar = serviceRegistrar;
 		this.annotationFactories = annotationFactories;
-
-		var sourceNetwork = sourceView.getModel();
+		
 		oldSharedRowMap = new WeakHashMap<>();
 		oldLocalRowMap = new WeakHashMap<>();
 		oldHiddenRowMap = new WeakHashMap<>();
+		
+		nodeBypass = new HashMap<>();
+		edgeBypassMap = new HashMap<>();
+		
+		nodePositions = new HashMap<>();
+		multiPasteOffset = new HashMap<>();
 
 		// For local and hidden rows, we also need to keep track of
 		// the values since they will be removed when the row gets removed
 		// This is only really necessary for cut operations
 		oldValueMap = new WeakHashMap<>();
+		
+		init(lexicon);
+	}
+	
+	private void init(VisualLexicon lexicon) {
+		var sourceNetwork = sourceView.getModel();
 
 		// We need the root network to get the shared attributes
 		var sourceRootNetwork = ((CySubNetwork) sourceNetwork).getRootNetwork();
 
-		// save bypass values and the positions of the nodes
-		nodeBypass = new HashMap<>();
-		edgeBypassMap = new HashMap<>();
 		var nodeProps = lexicon.getAllDescendants(BasicVisualLexicon.NODE);
 		var edgeProps = lexicon.getAllDescendants(BasicVisualLexicon.EDGE);
 		
-		nodePositions = new HashMap<>();
-		multiPasteOffset = new HashMap<>();
 		
 		// calculate top-left of nodes
 		double[] topLeft = { Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY };
@@ -193,6 +199,15 @@ public class ClipboardImpl {
 			}
 		}
 		
+		for (var annotation : annotations) {
+			var bounds = annotation.getRotatedBounds();
+			var x = bounds.getMinX();
+			var y = bounds.getMinY();
+			
+			topLeft[0] = Math.min(topLeft[0], x);
+			topLeft[1] = Math.min(topLeft[1], y);
+		}
+		
 		if(!Double.isFinite(topLeft[0]) || !Double.isFinite(topLeft[1])) {
 			topLeft[0] = 0.0;
 			topLeft[1] = 0.0;
@@ -212,14 +227,6 @@ public class ClipboardImpl {
 	public Set<Annotation> getAnnotations() {
 		return annotations;
 	}
-
-//	public double getCenterX() {
-//		return xCenter;
-//	}
-//
-//	public double getCenterY() {
-//		return yCenter;
-//	}
 
 	public boolean clipboardHasData() {
 		return !nodes.isEmpty() || !edges.isEmpty() || !annotations.isEmpty();
@@ -264,15 +271,13 @@ public class ClipboardImpl {
 		targetView.updateView();
 
 		// Calculate new position
-		double xOffset = 0; 
-		double yOffset = 0;
-		
 		// adding moves down and to the right
+		final int downwardShift = 10;
+		final int upwardShift = 50;
+		
 		int shiftTimes = multiPasteOffset.merge(targetView.getSUID(), 1, (a,b) -> a + 1);
-		for(int i = 0; i < shiftTimes; i++) {
-			xOffset += 10;
-			yOffset += 10;
-		}
+		double xOffset = shiftTimes * downwardShift;
+		double yOffset = shiftTimes * downwardShift;
 	
 		double centerx = targetView.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION);
 		double centery = targetView.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION);
@@ -294,10 +299,10 @@ public class ClipboardImpl {
 			xOffset = xOffset + (xMin - xTopLeft);
 		}
 		if(yTopLeft > yMax) { // below the visible area
-			yOffset = yMax - yTopLeft - 30;
+			yOffset = yMax - yTopLeft - upwardShift;
 		}
 		if(xTopLeft > xMax) { // right of the visible area
-			xOffset = xMax - xTopLeft - 30;
+			xOffset = xMax - xTopLeft - upwardShift;
 		}
 		
 		// Pass 3: paste locked visual properties and reposition the new node views

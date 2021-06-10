@@ -153,7 +153,7 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 	private static Rectangle2D unionBounds(Collection<DingAnnotation> annotations) {
 		Rectangle2D union = null;
 		for(var a : annotations) {
-			var bounds = GraphicsUtilities.getRotatedBounds(a);
+			var bounds = a.getRotatedBounds();
 			union = (union == null) ? bounds : union.createUnion(bounds);
 		}
 		return union;

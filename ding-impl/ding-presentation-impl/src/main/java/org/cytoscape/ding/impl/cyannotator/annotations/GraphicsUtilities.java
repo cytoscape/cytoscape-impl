@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl.ArrowType;
-import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation.ArrowEnd;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation.ShapeType;
@@ -106,17 +105,6 @@ public class GraphicsUtilities {
 		return Arrays.stream(ShapeType.values()).map(ShapeType::shapeName).collect(Collectors.toList());
 	}
 
-  public static Rectangle2D getRotatedBounds(Annotation annotation) {
-    Rectangle2D bounds = ((DingAnnotation)annotation).getBounds();
-
-    if (annotation.getRotation() != 0d) {
-      AffineTransform transform = AffineTransform.getRotateInstance(Math.toRadians(annotation.getRotation()), 
-                                                                    bounds.getX()+bounds.getWidth()/2, 
-                                                                    bounds.getY()+bounds.getHeight()/2);
-      bounds = transform.createTransformedShape(bounds).getBounds2D();
-    }
-    return bounds;
-  }
 
 	/**
 	 *  Given a position and a size, draw a shape.
