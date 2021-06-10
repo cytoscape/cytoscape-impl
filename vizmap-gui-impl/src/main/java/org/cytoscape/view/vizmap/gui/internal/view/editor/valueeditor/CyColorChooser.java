@@ -1,5 +1,14 @@
 package org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Paint;
+
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.color.BrewerType;
+import org.cytoscape.util.swing.CyColorPaletteChooserFactory;
+import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
+
 /*
  * #%L
  * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
@@ -24,43 +33,29 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor;
  * #L%
  */
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Paint;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.JColorChooser;
-import javax.swing.JDialog;
-
-import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
-
 /**
  * This is an annoying re-implementation of JColorChooser.showDialog() that
  * remembers recently used colors between invocations of the chooser dialog.
  */
 public class CyColorChooser implements ValueEditor<Paint> {
 
-	protected JColorChooser chooser = new JColorChooser();
-	protected ColorListener listener = new ColorListener();
-	protected Paint color = Color.WHITE;
+	private Paint color = Color.WHITE;
+	
+	private final CyServiceRegistrar serviceRegistrar;
+
+	public CyColorChooser(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
+	}
 
 	@Override
 	public Paint showEditor(Component parent, Paint initialValue) {
 		color = initialValue;
-		if (initialValue != null)
-			chooser.setColor((Color)initialValue);
-		JDialog dialog = JColorChooser.createDialog(parent, "Colors", true, chooser, listener, null);
-		dialog.setVisible(true);
+		
+		var chooserFactory = serviceRegistrar.getService(CyColorPaletteChooserFactory.class);
+		var chooser = chooserFactory.getColorPaletteChooser(BrewerType.ANY, false);
+		color = chooser.showDialog(parent, "Colors", null, (Color) initialValue, 8);
 
 		return color;
-	}
-
-	class ColorListener implements ActionListener {
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			color = chooser.getColor();
-		}
 	}
 
 	@Override

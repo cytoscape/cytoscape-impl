@@ -1,7 +1,13 @@
 package org.cytoscape.view.vizmap.gui.internal;
 
 import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_NETWORK_AND_VIEW;
-import static org.cytoscape.work.ServiceProperties.*;
+import static org.cytoscape.work.ServiceProperties.EDGE_EDIT_MENU;
+import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
+import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+import static org.cytoscape.work.ServiceProperties.TITLE;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -135,7 +141,7 @@ public class CyActivator extends AbstractCyActivator {
 		var booleanValueEditor = new BooleanValueEditor();
 		var fontValueEditor = new FontValueEditor(servicesUtil);
 		
-		var colorChooser = new CyColorChooser();
+		var colorChooser = new CyColorChooser(serviceRegistrar);
 		var cyColorPropertyEditor = new CyColorPropertyEditor(colorChooser, servicesUtil);
 		var cyFontPropertyEditor = new CyFontPropertyEditor();
 		
