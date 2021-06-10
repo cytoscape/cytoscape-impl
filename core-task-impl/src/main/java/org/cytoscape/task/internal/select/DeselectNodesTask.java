@@ -54,7 +54,14 @@ public class DeselectNodesTask extends AbstractSelectTask {
 	
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Deselect Edges");
 		tm.setProgress(0.0);
+		
+		if (network == null) {
+			tm.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
+			return;
+		}
+		
 		tm.showMessage(TaskMonitor.Level.INFO, "Deselecting " + nodeList.getValue().size() + " nodes");
 		selectUtils.setSelectedNodes(network, nodeList.getValue(), false);
 		

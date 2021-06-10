@@ -2,7 +2,6 @@ package org.cytoscape.task.internal.select;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 
@@ -41,7 +40,12 @@ public class SelectAllEdgesTask extends AbstractSelectTask {
 		tm.setTitle("Select All Edges");
 		tm.setProgress(0.0);
 		
-		CyNetworkView view = getNetworkView(network);
+		if (network == null) {
+			tm.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
+			return;
+		}
+		
+		var view = getNetworkView(network);
 
 		serviceRegistrar.getService(UndoSupport.class).postEdit(
 				new SelectionEdit("Select All Edges", network, view,

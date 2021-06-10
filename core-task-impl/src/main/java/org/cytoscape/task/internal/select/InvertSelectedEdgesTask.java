@@ -3,7 +3,6 @@ package org.cytoscape.task.internal.select;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 
@@ -42,7 +41,12 @@ public class InvertSelectedEdgesTask extends AbstractSelectTask {
 		tm.setTitle("Invert Edge Selection");
 		tm.setProgress(0.0);
 		
-		CyNetworkView view = getNetworkView(network);
+		if (network == null) {
+			tm.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
+			return;
+		}
+		
+		var view = getNetworkView(network);
 
 		serviceRegistrar.getService(UndoSupport.class).postEdit(new SelectionEdit(
 				"Invert Selected Edges", network, view, SelectionEdit.SelectionFilter.EDGES_ONLY, serviceRegistrar));

@@ -55,15 +55,16 @@ public class DeselectTask extends AbstractSelectTask implements ObservableTask {
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		CyNetwork network = nodesAndEdges.getNetwork();
+		tm.setTitle("Deselect Nodes and Edges");
+		tm.setProgress(0.0);
+		
+		var network = nodesAndEdges.getNetwork();
 		
 		if (network == null) {
 			tm.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
 			return;
 		}
 		
-		tm.setProgress(0.0);
-
 		deselectedNodes = nodesAndEdges.getNodeList(false);
 		deselectedEdges = nodesAndEdges.getEdgeList(false);
 		int edgeCount = 0;

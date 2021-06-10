@@ -42,6 +42,11 @@ public class SelectAllTask extends AbstractSelectTask {
 		tm.setTitle("Select All");
 		tm.setProgress(0.0);
 
+		if (network == null) {
+			tm.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
+			return;
+		}
+		
 		var view = getNetworkView(network);
 
 		serviceRegistrar.getService(UndoSupport.class).postEdit(

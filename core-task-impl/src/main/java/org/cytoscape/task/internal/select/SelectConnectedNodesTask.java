@@ -1,15 +1,11 @@
 package org.cytoscape.task.internal.select;
 
 import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
-import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 
@@ -48,7 +44,12 @@ public class SelectConnectedNodesTask extends AbstractSelectTask {
 		tm.setTitle("Select Connected Nodes");
 		tm.setProgress(0.0);
 
-		CyNetworkView view = getNetworkView(network);
+		if (network == null) {
+			tm.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
+			return;
+		}
+		
+		var view = getNetworkView(network);
 
 		serviceRegistrar.getService(UndoSupport.class).postEdit(
 				new SelectionEdit("Select Nodes Connected by Selected Edges", network, view,
@@ -57,12 +58,12 @@ public class SelectConnectedNodesTask extends AbstractSelectTask {
 		tm.setStatusMessage("Selecting Nodes...");
 		tm.setProgress(0.1);
 		
-		final List<CyEdge> selectedEdges = CyTableUtil.getEdgesInState(network, "selected", true);
-		final Set<CyNode> nodes = new HashSet<>();
+		var selectedEdges = CyTableUtil.getEdgesInState(network, "selected", true);
+		var nodes = new HashSet<CyNode>();
 		
 		tm.setProgress(0.2);
 		
-		for (CyEdge edge : selectedEdges) {
+		for (var edge : selectedEdges) {
 			nodes.add(edge.getSource());
 			nodes.add(edge.getTarget());
 		}
