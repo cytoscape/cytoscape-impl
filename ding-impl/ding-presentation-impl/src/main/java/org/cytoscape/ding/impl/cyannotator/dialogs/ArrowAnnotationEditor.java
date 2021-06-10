@@ -33,7 +33,6 @@ import org.cytoscape.ding.impl.cyannotator.annotations.GraphicsUtilities;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.swing.ColorButton;
-import org.cytoscape.util.swing.CyColorPaletteChooser;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation.AnchorType;
