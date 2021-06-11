@@ -329,11 +329,18 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 		}
 	}
 
+	public void stopRotating() {
+		initialRotations.clear();
+		initialBounds.clear();
+	}
+	
+	public boolean isRotating() {
+		return !initialRotations.isEmpty();
+	}
+	
 	public void rotateSelection(Point p) {
-		// If we have more than one annotation selected, we need to temporarily group
-		// them
-		// in order to make the movement work since we will probably be doing a rotate
-		// *and*
+		// If we have more than one annotation selected, we need to temporarily group them
+		// in order to make the movement work since we will probably be doing a rotate *and*
 		// a move for each annotation
 
 		// Avoid moving the same annotation twice

@@ -933,10 +933,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 						deselectAllEdges();
 					}
 					annotationSelection.setMovingStartOffset(e.getPoint());
-					if (isControlOrMetaDown(e)) {
-						changeCursor(rotateCursor);
-						annotationSelection.setRotations();
-					}
 					return true;
 				}
 			}
@@ -1137,6 +1133,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				var annotationSelection = cyAnnotator.getAnnotationSelection();
 				annotationSelection.stopResizing();
 				annotationSelection.stopMoving();
+				annotationSelection.stopRotating();
 			}
 			
 			mousePressedPoint = null;
@@ -1218,7 +1215,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 					re.updateView(UpdateType.JUST_ANNOTATIONS);
 
 					return;
-				} if (isControlOrMetaDown(e)) {
+				} if (annotationSelection.isRotating()) {
 					annotationSelection.rotateSelection(e.getPoint());
 				} else {
 					if (annotationMovingEdit == null)
