@@ -356,6 +356,8 @@ public class GraphicsUtilities {
 				return triangleArrow(size);
 			case TSHAPE:
 				return tshapeArrow(size);
+			case X:
+				return xArrow(size);
 			default:
 				return null;
 		}
@@ -604,6 +606,15 @@ public class GraphicsUtilities {
 		Path2D path = new Path2D.Double();
 		path.moveTo(0.0, size / 2.0);
 		path.lineTo(0.0, -size / 2.0);
+		return path;
+	}
+	
+	static Shape xArrow(double size) {
+		Path2D path = new Path2D.Double();
+		path.moveTo(0.0, -size / 2.0);
+		path.lineTo(-size, size / 2.0);
+		path.moveTo(-size, -size / 2.0);
+		path.lineTo(0.0, size / 2.0);
 		return path;
 	}
 
