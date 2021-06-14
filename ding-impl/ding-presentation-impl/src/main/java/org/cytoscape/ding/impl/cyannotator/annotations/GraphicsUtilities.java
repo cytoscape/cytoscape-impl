@@ -399,33 +399,20 @@ public class GraphicsUtilities {
 			return;
 
 		// Get the shape
-		Shape arrow = getArrowShape(type, size);
+		var arrow = getArrowShape(type, size);
 
-		// Figure out the angle
-		double angle = calculateAngle(line, end);
+		// Translate and rotate the arrow
+		if (end == ArrowEnd.SOURCE)
+			arrow = transformArrowShape(arrow, line.getX2(), line.getY2(), line.getX1(), line.getY1());
+		else
+			arrow = transformArrowShape(arrow, line.getX1(), line.getY1(), line.getX2(), line.getY2());
 
-		AffineTransform trans = new AffineTransform();
-		if (end == ArrowEnd.SOURCE) {
-			trans.translate(line.getX1(), line.getY1());
-			Shape t1 = trans.createTransformedShape(arrow);
-			trans.rotate(angle);
-			trans = new AffineTransform();
-			arrow = trans.createTransformedShape(t1);
-		} else {
-			trans.translate(line.getX2(), line.getY2());
-			Shape t1 = trans.createTransformedShape(arrow);
-			trans = new AffineTransform();
-			trans.rotate(angle, line.getX2(), line.getY2());
-			arrow = trans.createTransformedShape(t1);
-		}
-
-		Graphics2D g2 = (Graphics2D) g;
+		var g2 = (Graphics2D) g.create();
 
 		if (paint != null)
 			g2.setPaint(paint);
 
 		// Handle opacity
-		final Composite originalComposite = g2.getComposite();
 		if (paint instanceof Color) {
 			int alpha = ((Color) paint).getAlpha();
 			float opacity = (float) alpha / (float) 255;
@@ -436,7 +423,7 @@ public class GraphicsUtilities {
 			g2.fill(arrow);
 
 		g2.draw(arrow); // We're relying on the stroke to be done by the caller
-		g2.setComposite(originalComposite);
+		g2.dispose();
 	}
 
 	// Shapes.
@@ -663,23 +650,15 @@ public class GraphicsUtilities {
 		return new Point2D.Double(x, y);
 	}
 
-	// Return the angle in radians
-	static double calculateAngle(Line2D line, ArrowEnd end) {
-		// Translate the line to 0,0
-		double x1 = line.getX1();
-		double y1 = line.getY1();
-		double x2 = line.getX2();
-		double y2 = line.getY2();
-		double opposite = y2 - y1;
-		double adjacent = x2 - x1;
-
-		double radians = Math.atan(opposite / adjacent);
-
-		if (adjacent < 0)
-			radians += Math.PI;
-
-		// TODO: Flip for other end
-		return radians;
+	static Shape transformArrowShape(Shape arrow, double x1, double y1, double x2, double y2) {
+		double angle = Math.atan2(y2 - y1, x2 - x1);
+		
+		var trans = new AffineTransform();
+		trans.translate(x2, y2);
+		trans.rotate(angle);
+		arrow = trans.createTransformedShape(arrow);
+		
+		return arrow;
 	}
 
 	static private Paint mixColor(Paint p, double value) {
