@@ -507,16 +507,17 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			if (sourceColor == null)
 				sourceColor = lineColor;
 
-			GraphicsUtilities.drawArrow(g, arrowLine, ArrowEnd.SOURCE, sourceColor, sourceSize * 10.0 * getZoom(),
-					sourceType);
+			
+			double arrowSize = getArrowSize(sourceType, sourceSize);
+			GraphicsUtilities.drawArrow(g, arrowLine, ArrowEnd.SOURCE, sourceColor, arrowSize, sourceType);
 		}
 
 		if (targetType != ArrowType.NONE) {
 			if (targetColor == null)
 				targetColor = lineColor;
 
-			GraphicsUtilities.drawArrow(g, arrowLine, ArrowEnd.TARGET, targetColor, targetSize * 10.0 * getZoom(),
-					targetType);
+			double arrowSize = getArrowSize(targetType, targetSize);
+			GraphicsUtilities.drawArrow(g, arrowLine, ArrowEnd.TARGET, targetColor, arrowSize, targetType);
 		}
 	}
 
@@ -581,6 +582,15 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		var sourcePoint = findFace(targetPoint, sourceBounds, sourceAnchorType);
 		
 		return targetPoint != null ? new Line2D.Double(sourcePoint, targetPoint) : null;
+	}
+	
+	private double getArrowSize(ArrowType type, double defaultArrowSize) {
+		if (type == ArrowType.NONE)
+			return 0.0;
+		
+		double factor = type == ArrowType.DIAMOND ? 5.0 : 10;
+		
+		return defaultArrowSize * factor * getZoom();
 	}
 
 	private static Point2D centerPoint(Rectangle2D bounds) {
