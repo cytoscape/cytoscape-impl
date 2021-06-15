@@ -323,7 +323,7 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 
 		this.canvas = canvasID;
 
-		for (ArrowAnnotation arrow : arrowList) {
+		for (var arrow : arrowList) {
 			if (arrow instanceof DingAnnotation)
 				((DingAnnotation) arrow).changeCanvas(canvasID);
 		}

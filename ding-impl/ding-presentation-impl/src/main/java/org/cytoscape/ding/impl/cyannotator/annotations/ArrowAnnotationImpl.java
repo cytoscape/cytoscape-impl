@@ -17,7 +17,6 @@ import java.util.UUID;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
-import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.View;
@@ -127,7 +126,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 		// Source
 		if (argMap.containsKey(SOURCEANN)) {
-			UUID uuid = UUID.fromString(argMap.get(SOURCEANN));
+			var uuid = UUID.fromString(argMap.get(SOURCEANN));
 			source = cyAnnotator.getAnnotation(uuid);
 		}
 
@@ -143,17 +142,17 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 		// Figure out the target
 		if (argMap.containsKey(TARGETPOINT)) {
-			String point = argMap.get(TARGETPOINT);
-			String[] xy = point.split(",");
+			var point = argMap.get(TARGETPOINT);
+			var xy = point.split(",");
 			double x = Double.parseDouble(xy[0]);
 			double y = Double.parseDouble(xy[1]);
 			target = new Point2D.Double(x, y);
 		} else if (argMap.containsKey(TARGETANN)) {
-			UUID uuid = UUID.fromString(argMap.get(TARGETANN));
+			var uuid = UUID.fromString(argMap.get(TARGETANN));
 			target = cyAnnotator.getAnnotation(uuid);
 		} else if (argMap.containsKey(TARGETNODE)) {
-			String point = argMap.get(TARGETNODE);
-			String[] xy = point.split(",");
+			var point = argMap.get(TARGETNODE);
+			var xy = point.split(",");
 			double centerX = Double.parseDouble(xy[0]);
 			double centerY = Double.parseDouble(xy[1]);
 			// MKTODO This is a terrible way of looking up the node. What if there are overlapping nodes???
@@ -169,6 +168,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public Map<String, String> getArgMap() {
 		var argMap = super.getArgMap();
 		argMap.put(TYPE, ArrowAnnotation.class.getName());
@@ -478,7 +478,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		var g2 = (Graphics2D) g;
 
 		// Get the stroke
-		float border = (float)(lineWidth/2.0);
+		float border = (float) (lineWidth / 2.0);
 		
 		if (!isPrinting && border < 1.0f) 
 			border = 1.0f;
@@ -489,8 +489,8 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		if (arrowLine != null) {
 			// Handle opacity
 			if (lineColor instanceof Color) {
-				int alpha = ((Color)lineColor).getAlpha();
-				float opacity = (float)alpha/(float)255;
+				int alpha = ((Color) lineColor).getAlpha();
+				float opacity = (float) alpha / (float) 255;
 				final Composite originalComposite = g2.getComposite();
 				g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
 				g2.draw(arrowLine);
@@ -506,7 +506,6 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		if (sourceType != ArrowType.NONE) {
 			if (sourceColor == null)
 				sourceColor = lineColor;
-
 			
 			double arrowSize = getArrowSize(sourceType, sourceSize);
 			GraphicsUtilities.drawArrow(g, arrowLine, ArrowEnd.SOURCE, sourceColor, arrowSize, sourceType);
@@ -556,9 +555,10 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private Line2D getArrowLine(Object target, DingAnnotation source) {
 		if (usedForPreviews)
-			return new Line2D.Double(10.0, getHeight()/2, getWidth()-20.0, getHeight()/2);
+			return new Line2D.Double(10.0, getHeight() / 2, getWidth() - 20.0, getHeight() / 2);
 
 		Point2D targetPoint = null;
 		Point2D sourceCenter = centerPoint(source.getBounds());
@@ -680,7 +680,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		if (nv == null)
 			return null;
 		
-		NodeDetails nodeDetails = re.getNodeDetails();
+		var nodeDetails = re.getNodeDetails();
 		
 		// First, get our starting and ending points in node coordinates
 		double xCenter = nodeDetails.getXPosition(nv);
