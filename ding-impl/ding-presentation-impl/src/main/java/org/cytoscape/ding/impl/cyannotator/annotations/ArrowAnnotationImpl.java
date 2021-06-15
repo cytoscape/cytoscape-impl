@@ -570,16 +570,19 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			// get the bounds
 			var targetBounds = a.getBounds();
 			// Find the closest face and return
-			targetPoint = findFace(sourceCenter, targetBounds, targetAnchorType);
+			double arrowSize = getArrowSize(targetType, targetSize);
+			targetPoint = findFace(sourceCenter, targetBounds, targetAnchorType, targetType, arrowSize);
 		} else if (target instanceof View) {
 			// get the target point from ding
 			var nv = (View<CyNode>) target;
 			var nodeBounds = getNodeBounds(nv);
-			targetPoint = findFace(sourceCenter, nodeBounds, targetAnchorType);
+			double arrowSize = getArrowSize(targetType, targetSize);
+			targetPoint = findFace(sourceCenter, nodeBounds, targetAnchorType, targetType, arrowSize);
 		}
 
 		var sourceBounds = source.getBounds();
-		var sourcePoint = findFace(targetPoint, sourceBounds, sourceAnchorType);
+		double arrowSize = getArrowSize(sourceType, sourceSize);
+		var sourcePoint = findFace(targetPoint, sourceBounds, sourceAnchorType, sourceType, arrowSize);
 		
 		return targetPoint != null ? new Line2D.Double(sourcePoint, targetPoint) : null;
 	}
@@ -598,7 +601,13 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	}
 
 	// Find the mid point to draw the target to
-	private static Point2D findFace(Point2D source, Rectangle2D target, AnchorType anchorType) {
+	private static Point2D findFace(
+			Point2D source,
+			Rectangle2D target,
+			AnchorType anchorType,
+			ArrowType arrowType,
+			double arrowSize
+	) {
 		if (source == null || target == null)
 			return null;
 
@@ -610,6 +619,16 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		if (anchorType == AnchorType.CENTER)
 			return new Point2D.Double(x + w / 2, y + h / 2);
 
+		if (arrowSize > 0) {
+			if (arrowType == ArrowType.X) {
+				// Pretend the target is larger so the arrow line ends at the center of the X arrow
+				w += arrowSize;
+				h += arrowSize;
+				x -= arrowSize / 2;
+				y -= arrowSize / 2;
+			}
+		}
+		
 		var left = new Point2D.Double(x, y + h / 2.0);
 		var right = new Point2D.Double(x + w, y + h / 2.0);
 		var top = new Point2D.Double(x + w / 2.0, y);

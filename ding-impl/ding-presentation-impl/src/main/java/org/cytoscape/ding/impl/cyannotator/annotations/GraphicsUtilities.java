@@ -598,12 +598,26 @@ public class GraphicsUtilities {
 	
 	static Shape xArrow(double size) {
 		Path2D path = new Path2D.Double();
-		path.moveTo(0.0, -size / 2.0);
-		path.lineTo(-size, size / 2.0);
-		path.moveTo(-size, -size / 2.0);
-		path.lineTo(0.0, size / 2.0);
+		// The 'X' shape is shifted by 50% to the left to compensate the end of the arrow line,
+		// which must end at the center of the 'X'.
+		path.moveTo(size / 2.0, -size / 2.0);
+		path.lineTo(-size / 2.0, size / 2.0);
+		path.moveTo(-size / 2.0, -size / 2.0);
+		path.lineTo(size / 2.0, size / 2.0);
 		return path;
 	}
+	
+// Use this to debug or as a template for new arrow shapes
+//	static Shape squareArrow(double size) {
+//		// Draws a square so we can localize the arrow's bounding box
+//		Path2D path = new Path2D.Double();
+//		path.moveTo(0.0, -size / 2.0);
+//		path.lineTo(0.0, size / 2.0);
+//		path.lineTo(-size, size / 2.0);
+//		path.lineTo(-size, -size / 2.0);
+//		path.closePath();
+//		return path;
+//	}
 
 	static Shape circleArrow(double size) {
 		Ellipse2D circle = new Ellipse2D.Double(-size, -size / 2.0, size, size);
