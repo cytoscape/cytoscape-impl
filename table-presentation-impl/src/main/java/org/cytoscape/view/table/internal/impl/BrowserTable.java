@@ -374,7 +374,7 @@ public class BrowserTable extends JTable
 				@Override
 				public void keyPressed(KeyEvent event) {
 					int newRow = row, newColumn = column;
-					int modifiers = event.getModifiers();
+					int modifiers = event.getModifiersEx();
 
 					if (event.getKeyCode() == KeyEvent.VK_ENTER) {
 						if (modifiers == 0) {

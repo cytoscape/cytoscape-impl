@@ -64,7 +64,7 @@ public class FullScreenAction extends AbstractCyAction {
 		
 		if (LookAndFeelUtil.isMac())
 			ks = KeyStroke.getKeyStroke(KeyEvent.VK_F,
-					Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() + InputEvent.CTRL_DOWN_MASK);
+					Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx() + InputEvent.CTRL_DOWN_MASK);
 		else // Windows and Linux
 			ks = KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0);
 			

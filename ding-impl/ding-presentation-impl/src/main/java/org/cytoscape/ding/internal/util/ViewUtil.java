@@ -76,7 +76,7 @@ public final class ViewUtil {
 	}
 	
 	public static boolean isLeftMouse(MouseEvent e) {
-		boolean b = (e.getModifiers() & InputEvent.BUTTON1_MASK) != 0;
+		boolean b = (e.getModifiersEx() & InputEvent.BUTTON1_DOWN_MASK) != 0;
 		if(LookAndFeelUtil.isMac()) {
 			return !e.isControlDown() && b;
 		}

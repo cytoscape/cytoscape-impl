@@ -55,7 +55,7 @@ public class UndoAction extends AbstractCyAction {
 		this.serviceRegistrar = serviceRegistrar;
 		
 		setAcceleratorKeyStroke(
-				KeyStroke.getKeyStroke(KeyEvent.VK_Z, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+				KeyStroke.getKeyStroke(KeyEvent.VK_Z, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
 		setPreferredMenu("Edit");
 		setEnabled(true);
 		setMenuGravity(1.0f);

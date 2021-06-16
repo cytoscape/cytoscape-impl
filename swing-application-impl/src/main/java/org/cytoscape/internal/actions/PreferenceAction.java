@@ -65,7 +65,7 @@ public class PreferenceAction extends AbstractCyAction {
 		
 		if (LookAndFeelUtil.isMac())
 			setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_COMMA,
-					Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() + InputEvent.META_DOWN_MASK));
+					Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx() + InputEvent.META_DOWN_MASK));
 	}
 
 	@Override

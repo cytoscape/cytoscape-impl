@@ -55,7 +55,7 @@ public class ExitAction extends AbstractCyAction {
 			// setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.META_MASK));
 			setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_Q, KeyEvent.VK_CONTROL));
 		} else {
-			setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_Q, InputEvent.CTRL_MASK));
+			setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_Q, InputEvent.CTRL_DOWN_MASK));
 		}
 		
 		setMenuGravity(1000.0f);

@@ -1195,7 +1195,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 
 		private MouseWheelEvent cloneEvent(MouseWheelEvent e) {
 			return new MouseWheelEvent(getParentScrollPane(), e.getID(),
-					e.getWhen(), e.getModifiers(), 1, 1,
+					e.getWhen(), e.getModifiersEx(), 1, 1,
 					e.getClickCount(), false, e.getScrollType(),
 					e.getScrollAmount(), e.getWheelRotation());
 		}

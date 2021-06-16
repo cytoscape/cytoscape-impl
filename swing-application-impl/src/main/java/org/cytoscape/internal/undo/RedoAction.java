@@ -54,7 +54,7 @@ public class RedoAction extends AbstractCyAction {
 		super("Redo");
 		this.serviceRegistrar = serviceRegistrar;
 		
-		setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_Y, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+		setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_Y, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
 		setPreferredMenu("Edit");
 		setEnabled(true);
 		setMenuGravity(1.1f);

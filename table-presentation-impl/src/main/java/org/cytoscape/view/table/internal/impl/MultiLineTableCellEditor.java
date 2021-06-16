@@ -232,7 +232,7 @@ public class MultiLineTableCellEditor extends AbstractCellEditor implements Tabl
 			if (evt.getKeyCode() != KeyEvent.VK_ENTER)
 				return;
 
-			final int modifiers = evt.getModifiers();
+			final int modifiers = evt.getModifiersEx();
 
 			// We want to move to the next cell if Enter and no modifiers have been pressed:
 			if (modifiers == 0) {

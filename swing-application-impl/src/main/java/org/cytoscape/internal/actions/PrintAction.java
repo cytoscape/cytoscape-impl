@@ -56,7 +56,7 @@ public class PrintAction extends AbstractCyAction {
 		setPreferredMenu("File");
 		setMenuGravity(28.1f);
 		insertSeparatorBefore = true;
-		setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+		setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
 	}
 	
 	@Override
