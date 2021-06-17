@@ -848,15 +848,16 @@ public class BrowserTable extends JTable
 		var header = new JTableHeader() {
 			@Override
 			public void setDraggedColumn(TableColumn column) {
-				// When a column is dragged, that column is usually selected, but the selection listener
-				// we added to the column model does not receive a notification for that,
-				// so we need to update the column selection (visual property) ourselves right after the dragging ends.
+				// When a column is dragged or right-clicked, we want to have all cells of that column selected
+				// (this is usually the expected behavior and it prevents a few issues, such as an exception when trying
+				// to copy the selected cells to the clipboard after creating a gap on the the selection range by
+				// moving a selected column out of that initial selection range)
 				boolean finished = draggedColumn != null && column == null;
 				var colId = draggedColumn != null ? draggedColumn.getIdentifier() : null;
 				
 				super.setDraggedColumn(column);
 					
-				if (finished && getSelectedRowCount() > 0) {
+				if (finished) {
 					var idx = getColumnModel().getColumnIndex(colId);
 					
 					if (idx >= 0)
@@ -949,12 +950,18 @@ public class BrowserTable extends JTable
 		});
 	}
 	
+	/**
+	 * Deselects the other columns and selects only the passed column index (all rows).
+	 */
 	private void setSelectedColumn(int idx) {
 		ignoreColumnSelectionEvents = true;
 		
 		try {
 			getColumnModel().getSelectionModel().clearSelection();
 			addColumnSelectionInterval(idx, idx);
+			
+			if (getRowCount() > 0)
+				addRowSelectionInterval(0, getRowCount() - 1);
 		} finally {
 			ignoreColumnSelectionEvents = false;
 		}
