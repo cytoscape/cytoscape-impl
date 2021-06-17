@@ -32,6 +32,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -39,7 +40,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -315,43 +315,41 @@ public class CurrentlyInstalledAppsPanel extends JPanel {
 	 */
 	private void populateTable() {
 		boolean showCoreApps = showCoreAppsCheckbox.isSelected();
-		// The table of apps has a hidden first column that contains a reference to the
-		// actual App object
-		DefaultTableModel tableModel = new DefaultTableModel(new Object[][] {},
-				new String[] { "App", "Name", "Version", "Status" }) {
+		// The table of apps has a hidden first column that contains a reference to the App
+		DefaultTableModel tableModel = new DefaultTableModel(new Object[][] {}, new String[] { "App", "Name", "Version", "Status" }) {
 			@Override
 			public boolean isCellEditable(int row, int col) {
 				return false;
 			}
 		};
 
-		Function<App, String> getAppName = app -> {
-			StringBuilder name = new StringBuilder(app.getAppName());
-			if (app.getAppFile() == null)
-				name.append(" (file moved)");
-			return name.toString();
-		};
-
-		Function<App, String> getAppVersion = app -> {
-			StringBuilder ver = new StringBuilder(app.getVersion());
-			if (app.isBundledApp())
-				ver.append(" (core app)");
-			return ver.toString();
-		};
+//		Function<App, String> getAppName = app -> {
+//			StringBuilder name = new StringBuilder(app.getAppName());
+//			if (app.getAppFile() == null)
+//				name.append(" (file moved)");
+//			return name.toString();
+//		};
+//
+//		Function<App, String> getAppVersion = app -> {
+//			StringBuilder ver = new StringBuilder(app.getVersion());
+//			if (app.isBundledApp())
+//				ver.append(" (core app)");
+//			return ver.toString();
+//		};
 
 		Set<App> apps = appManager.getApps();
 		for (App app : apps) {
 			// Hide apps with certain statuses from the table, such as uninstalled ones.
 			if (!app.isHidden()) {
 				tableModel.addRow(
-						new Object[] { app, getAppName.apply(app), getAppVersion.apply(app), app.getReadableStatus() });
+						new Object[] { app, app, app, app });
 			}
 		}
 		if (showCoreApps) {
 			for (App app : apps) {
 				if (app.isBundledApp()) {
-					tableModel.addRow(new Object[] { app, getAppName.apply(app), getAppVersion.apply(app),
-							app.getReadableStatus() });
+					tableModel.addRow(
+						new Object[] { app, app, app, app });
 				}
 			}
 		}
@@ -362,15 +360,39 @@ public class CurrentlyInstalledAppsPanel extends JPanel {
 		appsAvailableTable.removeColumn(appsAvailableTable.getColumn("App"));
 		appsAvailableTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
 			@Override
-			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
-					boolean hasFocus, int row, int column) {
-				Object label = table.getValueAt(row, 2);
-				if (label.equals(AppStatus.FAILED_TO_LOAD.toString())
-						|| label.equals(AppStatus.FAILED_TO_START.toString()))
-					setForeground(LookAndFeelUtil.getErrorColor());
-				else
-					setForeground(null);
-				return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+				Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				
+				if(component instanceof JLabel) {
+					JLabel label = (JLabel) component;
+					App app = (App) value;
+					
+					String status = app.getReadableStatus();
+					if (status.equals(AppStatus.FAILED_TO_LOAD.toString()) || status.equals(AppStatus.FAILED_TO_START.toString()))
+						setForeground(LookAndFeelUtil.getErrorColor());
+					else
+						setForeground(null);
+					
+					if(column == 0) {
+						StringBuilder name = new StringBuilder(app.getAppName());
+						if (app.getAppFile() == null)
+							name.append(" (file moved)");
+						label.setText(name.toString());
+					} else if (column == 1) {
+						StringBuilder ver = new StringBuilder(app.getVersion());
+						if (app.isBundledApp())
+							ver.append(" (core app)");
+						label.setText(ver.toString());
+					} else if(column == 2) {
+						label.setText(status);
+						File file = app.getAppFile();
+						if(file != null) {
+							label.setToolTipText(file.getAbsolutePath());
+						}
+					}
+				}
+				
+				return component;
 			}
 		});
 

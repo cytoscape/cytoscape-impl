@@ -6,6 +6,7 @@ import static org.cytoscape.work.ServiceProperties.SMALL_ICON_ID;
 import java.awt.event.ActionEvent;
 import java.util.Map;
 
+import javax.swing.Icon;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
@@ -15,6 +16,7 @@ import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
@@ -117,24 +119,32 @@ public class TaskFactoryTunableAction extends AbstractCyAction implements PopupM
 		
 		// Icons
 		var iconManager = serviceRegistrar.getService(IconManager.class);
-		var largeIconId = configurationProperties.get(LARGE_ICON_ID);
-
-		if (largeIconId != null && !largeIconId.trim().isEmpty()) {
-			// Check if the icon is really registered
-			var icon = iconManager.getIcon(largeIconId);
+		
+		{
+			var largeIconId = configurationProperties.get(LARGE_ICON_ID);
 			
-			if (icon != null)
-				putValue(LARGE_ICON_KEY, icon);
+			Icon icon = null;
+			if (largeIconId != null && !largeIconId.trim().isEmpty()) {
+				icon = iconManager.getIcon(largeIconId);
+			}
+			if(icon == null) {
+				var iconFont = iconManager.getIconFont("cytoscape-3", 32.0f);
+				icon = new TextIcon(IconManager.ICON_SQUARE_O, iconFont, 32, 32);
+			}
+			putValue(LARGE_ICON_KEY, icon);
 		}
-		
-		var smallIconId = configurationProperties.get(SMALL_ICON_ID);
-		
-		if (smallIconId != null && !smallIconId.trim().isEmpty()) {
-			// Check if the icon is really registered
-			var icon = iconManager.getIcon(smallIconId);
+		{
+			var smallIconId = configurationProperties.get(SMALL_ICON_ID);
 			
-			if (icon != null)
-				putValue(SMALL_ICON, icon);
+			Icon icon = null;
+			if (smallIconId != null && !smallIconId.trim().isEmpty()) {
+				icon = iconManager.getIcon(smallIconId);
+			}
+			if(icon == null) {
+				var iconFont = iconManager.getIconFont("cytoscape-3", 14.0f);
+				icon = new TextIcon(IconManager.ICON_SQUARE_O, iconFont, 16, 16);
+			}
+			putValue(SMALL_ICON, icon);
 		}
 	}
 }
