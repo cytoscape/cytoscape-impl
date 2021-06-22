@@ -704,7 +704,8 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	
 	protected JCheckBox getGlobalRangeCkb() {
 		if (globalRangeCkb == null) {
-			globalRangeCkb = new JCheckBox("Network-Wide Axis Range");
+			globalRangeCkb = new JCheckBox("Same Value Range for All Charts");
+			globalRangeCkb.setToolTipText("Use the same min/max values for all charts");
 			globalRangeCkb.setSelected(chart.get(GLOBAL_RANGE, Boolean.class, Boolean.TRUE));
 			globalRangeCkb.addItemListener(evt -> {
 				var selected = evt.getStateChange() == ItemEvent.SELECTED;
