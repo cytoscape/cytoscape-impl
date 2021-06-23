@@ -127,7 +127,7 @@ public class AddAnnotationTask extends AbstractTask {
 					}
 				}
 				
-				// The can now be changed by the user, now that it has been created
+				// The annotation can now be edited by the user, now that it has been created
 				annotationMediator.editAnnotation(annotation);
 			});
 		}

@@ -51,14 +51,6 @@ public class ArrowAnnotationFactory extends AbstractDingAnnotationFactory<ArrowA
 
 	@Override
 	public ArrowAnnotationEditor createEditor() {
-		// We need to be over an annotation
-		// TODO ???
-//		var re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
-//		var annotation = re.getPicker().getAnnotationAt(location);
-//		
-//		if (annotation == null || annotation instanceof ArrowAnnotationImpl)
-//			return null;
-		
 		return new ArrowAnnotationEditor(this, serviceRegistrar);
 	}
 

@@ -1,7 +1,22 @@
 package org.cytoscape.ding.impl;
 
-import static java.awt.event.KeyEvent.*;
-import static org.cytoscape.ding.internal.util.ViewUtil.*;
+import static java.awt.event.KeyEvent.VK_BACK_SPACE;
+import static java.awt.event.KeyEvent.VK_DELETE;
+import static java.awt.event.KeyEvent.VK_DOWN;
+import static java.awt.event.KeyEvent.VK_ESCAPE;
+import static java.awt.event.KeyEvent.VK_LEFT;
+import static java.awt.event.KeyEvent.VK_RIGHT;
+import static java.awt.event.KeyEvent.VK_UP;
+import static org.cytoscape.ding.internal.util.ViewUtil.getResizeCursor;
+import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
+import static org.cytoscape.ding.internal.util.ViewUtil.isAdditiveSelect;
+import static org.cytoscape.ding.internal.util.ViewUtil.isControlOrMetaDown;
+import static org.cytoscape.ding.internal.util.ViewUtil.isDoubleLeftClick;
+import static org.cytoscape.ding.internal.util.ViewUtil.isDragSelectionKeyDown;
+import static org.cytoscape.ding.internal.util.ViewUtil.isLeftClick;
+import static org.cytoscape.ding.internal.util.ViewUtil.isLeftMouse;
+import static org.cytoscape.ding.internal.util.ViewUtil.isSingleLeftClick;
+import static org.cytoscape.ding.internal.util.ViewUtil.isSingleRightClick;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -456,13 +471,15 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				cyAnnotator.getResizeShape().contentChanged();
 				cyAnnotator.resizeShape(null);
 				cyAnnotator.postUndoEdit();
+				
 				return true;
-			} else if(cyAnnotator.getRepositioningArrow() != null) {
-				cyAnnotator.getRepositioningArrow().contentChanged();
-				cyAnnotator.positionArrow(null);
-				cyAnnotator.postUndoEdit();
+			} else if (cyAnnotator.getRepositioningArrow() != null) {
+				cyAnnotator.removeAnnotation(cyAnnotator.getRepositioningArrow());
+				cyAnnotator.clearUndoEdit();
+				
 				return true;
 			}
+			
 			return false;
 		}
 		

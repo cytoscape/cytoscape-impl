@@ -331,6 +331,9 @@ public class CyAnnotator implements SessionAboutToBeSavedListener, CustomGraphic
 		boolean changed = annotationSet.remove((DingAnnotation) annotation);
 		annotationSelection.remove(annotation);
 		
+		if (annotation.equals(repositioning))
+			repositioning = null;
+		
 		if (changed && !loading) {
 			re.updateView(UpdateType.JUST_ANNOTATIONS);
 			propChangeSupport.firePropertyChange(PROP_ANNOTATIONS, oldValue, new HashSet<>(annotationSet));
@@ -344,6 +347,9 @@ public class CyAnnotator implements SessionAboutToBeSavedListener, CustomGraphic
 		for (var a : annotations) {
 			if (annotationSet.remove((DingAnnotation) a))
 				changed = true;
+			
+			if (a.equals(repositioning))
+				repositioning = null;
 			
 			annotationSelection.remove(a);
 		}
