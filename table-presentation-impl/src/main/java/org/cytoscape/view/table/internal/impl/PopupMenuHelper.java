@@ -42,6 +42,7 @@ import org.cytoscape.task.TableColumnTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.util.swing.PopupMenuGravityTracker;
+import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.table.internal.util.TableBrowserUtil;
 import org.cytoscape.view.table.internal.util.ValidatedObjectAndEditString;
 import org.cytoscape.work.TaskFactory;
@@ -79,6 +80,9 @@ import org.slf4j.LoggerFactory;
  */
 public class PopupMenuHelper {
 
+	private static float SMALL_ICON_FONT_SIZE = 14.0f;
+	private static int SMALL_ICON_SIZE = 16;
+	
 	private final Map<TableCellTaskFactory, Map<?, ?>> tableCellFactoryMap;
 	private final Map<TableColumnTaskFactory, Map<?, ?>> tableColumnFactoryMap;
 	
@@ -151,7 +155,15 @@ public class PopupMenuHelper {
 		menu.add(new JSeparator());
 
 		// Add preset menu items
+		var iconFont = serviceRegistrar.getService(IconManager.class).getIconFont(SMALL_ICON_FONT_SIZE);
+		var editIcon = new TextIcon(IconManager.ICON_EDIT, iconFont, SMALL_ICON_SIZE, SMALL_ICON_SIZE);
+		var copyIcon = new TextIcon(IconManager.ICON_COPY, iconFont, SMALL_ICON_SIZE, SMALL_ICON_SIZE);
+		var pasteIcon = new TextIcon(IconManager.ICON_PASTE, iconFont, SMALL_ICON_SIZE, SMALL_ICON_SIZE);
+		
 		menu.add(new JMenuItem(new AbstractAction("Edit") {
+			{
+				putValue(SMALL_ICON, editIcon);
+			}
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				var point = new Point(x, y);
@@ -161,8 +173,10 @@ public class PopupMenuHelper {
 				table.transferFocus();
 			}
 		}));
-		
 		menu.add(new JMenuItem(new AbstractAction("Copy") {
+			{
+				putValue(SMALL_ICON, copyIcon);
+			}
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				var sourceRow = column.getTable().getRow(primaryKeyValue);
@@ -174,8 +188,10 @@ public class PopupMenuHelper {
 				clipboard.setContents(stringSelection, null);
 			}
 		}));
-		
 		menu.add(new JMenuItem(new AbstractAction("Paste") {
+			{
+				putValue(SMALL_ICON, pasteIcon);
+			}
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				var sourceRow = column.getTable().getRow(primaryKeyValue);
@@ -194,6 +210,21 @@ public class PopupMenuHelper {
 					JOptionPane.showMessageDialog(null, ex.getMessage(), "Invalid Value", JOptionPane.ERROR_MESSAGE);
 					logger.warn("Error pasting cell value", ex);
 				}
+			}
+		}));
+		
+		menu.add(new JSeparator());
+		
+		menu.add(new JMenuItem(new AbstractAction("Copy Selected") {
+			{
+				putValue(SMALL_ICON, copyIcon);
+			}
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				var action = table.getActionMap().get("copy");
+				
+				if (action != null)
+					action.actionPerformed(new ActionEvent(table, e.getID(), "copy"));
 			}
 		}));
 
