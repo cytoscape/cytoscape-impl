@@ -162,6 +162,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	
 	@Override
 	public void dispose() {
+		orderedMouseAdapter.dispose();
 		re = null;
 		cyAnnotator = null;
 	}
@@ -1350,7 +1351,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		@Override
 		public void mouseMoved(MouseEvent e) {
 			// Note: Auto resizing was removed in 3.9, however this remaining code is still needed for arrow annotations
-			
 			var arrow = cyAnnotator.getRepositioningArrow();
 			if (arrow != null) {
 				var mousePoint = e.getPoint();

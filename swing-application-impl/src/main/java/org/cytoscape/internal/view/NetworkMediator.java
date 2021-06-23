@@ -149,7 +149,10 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 			networkMainPanel.updateNodeEdgeCount();
 			
 			CyRootNetwork rootNetwork = network.getRootNetwork();
-			if(rootNetwork.getSubNetworkList().size() == 1 && rootNetwork.equals(networkMainPanel.getCurrentNetwork())) {
+			int subNetworkCount = rootNetwork.getSubNetworkList().size();
+			CyNetwork currentNetwork = networkMainPanel.getCurrentNetwork();
+			
+			if(subNetworkCount == 1 && (rootNetwork.equals(currentNetwork) || network.equals(currentNetwork))) {
 				networkMainPanel.setCurrentNetwork(null);
 			}
 		}

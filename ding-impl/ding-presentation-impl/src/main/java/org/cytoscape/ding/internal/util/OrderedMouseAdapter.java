@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 
+import org.cytoscape.model.CyDisposable;
+
 /**
  * The Swing API does not guarantee the order of listeners called when a mouse event fires.
  * 
@@ -16,7 +18,7 @@ import java.util.function.BiConsumer;
  * 
  * This class guarantees they are called in the expected order.
  */
-public class OrderedMouseAdapter implements MouseListener, MouseMotionListener {
+public class OrderedMouseAdapter implements MouseListener, MouseMotionListener, CyDisposable {
 
 	private final List<MouseAdapter> listeners = new ArrayList<>();
 	
@@ -82,6 +84,11 @@ public class OrderedMouseAdapter implements MouseListener, MouseMotionListener {
 				return;
 			consumer.accept(l, e);
 		}
+	}
+
+	@Override
+	public void dispose() {
+		listeners.clear();
 	}
 
 }
