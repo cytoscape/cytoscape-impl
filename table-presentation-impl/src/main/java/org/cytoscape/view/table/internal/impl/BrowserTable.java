@@ -569,7 +569,7 @@ public class BrowserTable extends JTable
 			int modelColumn = convertColumnIndexToModel(viewColumn);
 			int modelRow = convertRowIndexToModel(viewRow);
 			
-			var tableModel = (BrowserTableModel) this.getModel();
+			var tableModel = (BrowserTableModel) getModel();
 			
 			// Bail out if we're at the ID column:
 			if (tableModel.isPrimaryKey(modelColumn))
@@ -602,7 +602,7 @@ public class BrowserTable extends JTable
 			
 			if (index != -1) {
 				int colWidth = getColumnModel().getColumn(index).getWidth();
-				columnWidthMap.put(this.getColumnName(index), colWidth);
+				columnWidthMap.put(getColumnName(index), colWidth);
 			}
 		}
 	}
@@ -1091,6 +1091,10 @@ public class BrowserTable extends JTable
 	private void maybeShowHeaderPopup(MouseEvent e) {
 		if (e.isPopupTrigger()) {
 			int column = getColumnModel().getColumnIndexAtX(e.getX());
+			
+			if (column >= 0) // Make sure the whole column is selected
+				setSelectedColumn(column);
+			
 			var tableModel = getBrowserTableModel();
 
 			// Make sure the column we're clicking on actually exists!

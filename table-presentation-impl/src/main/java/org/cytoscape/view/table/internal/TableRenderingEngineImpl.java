@@ -36,6 +36,7 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
@@ -337,12 +338,21 @@ public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 			rowHeader.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mousePressed(MouseEvent evt) {
+					maybeShowPopup(evt);
+				}
+				@Override
+				public void mouseReleased(MouseEvent evt) {
+					maybeShowPopup(evt);
+				}
+				private void maybeShowPopup(MouseEvent evt) {
 					if (evt.isPopupTrigger()) {
+						// Make sure the row is selected
 						int index = rowHeader.locationToIndex(evt.getPoint());
 						
 						if (index >= 0 && !rowHeader.isSelectedIndex(index))
 							rowHeader.setSelectedIndex(index);
 						
+						// Show popup
 						var popup = new JPopupMenu();
 						{
 							var mi = new JMenuItem("Copy", copyIcon);
@@ -370,18 +380,32 @@ public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 				@Override
 				public void mousePressed(MouseEvent evt) {
 					if (cornerPanel.isEnabled()) {
+						// Select all cells
 						getBrowserTable().selectAll();
 						updateHeader();
-						
-						if (evt.isPopupTrigger()) {
-							var popup = new JPopupMenu();
-							{
-								var mi = new JMenuItem("Copy", copyIcon);
-								mi.addActionListener(mie -> copyFromTable(mie.getID()));
-								popup.add(mi);
-							}
-							popup.show(cornerPanel, evt.getX(), evt.getY());
+						// Maybe show context-menu
+						maybeShowPopup(evt);
+					}
+				}
+				@Override
+				public void mouseReleased(MouseEvent evt) {
+					maybeShowPopup(evt);
+				}
+				private void maybeShowPopup(MouseEvent evt) {
+					if (cornerPanel.isEnabled() && evt.isPopupTrigger()) {
+						if (LookAndFeelUtil.isWindows()) {
+							// Make sure all cells are selected
+							getBrowserTable().selectAll();
+							updateHeader();
 						}
+						// Show popup
+						var popup = new JPopupMenu();
+						{
+							var mi = new JMenuItem("Copy", copyIcon);
+							mi.addActionListener(mie -> copyFromTable(mie.getID()));
+							popup.add(mi);
+						}
+						popup.show(cornerPanel, evt.getX(), evt.getY());
 					}
 				}
 			});
