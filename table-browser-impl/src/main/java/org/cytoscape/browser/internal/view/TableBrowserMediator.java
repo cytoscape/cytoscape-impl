@@ -170,17 +170,13 @@ public class TableBrowserMediator implements SetCurrentNetworkListener, SetCurre
 				// We can't use getTableType() here because the table might have been removed from the
 				// CyNetworkTableManager, so we just find the table browser that has it
 				for (var tb : tableBrowsers.values()) {
-					if (tb.containsTable(table)) {
-						tb.removeTable(table);
-						
-						if (tb.isEmpty()) {
-							// The last table is deleted, hide the table browser
-							serviceRegistrar.unregisterService(tb, CytoPanelComponent.class);
-							// Make sure the application manager is sync'd with our current table
-							serviceRegistrar.getService(CyApplicationManager.class).setCurrentTable(getCurrentTable());
-						}
-						
-						break;
+					tb.removeTable(table);
+					
+					if (tb.isEmpty()) {
+						// The last table is deleted, hide the table browser
+						serviceRegistrar.unregisterService(tb, CytoPanelComponent.class);
+						// Make sure the application manager is sync'd with our current table
+						serviceRegistrar.getService(CyApplicationManager.class).setCurrentTable(getCurrentTable());
 					}
 				}
 			});
