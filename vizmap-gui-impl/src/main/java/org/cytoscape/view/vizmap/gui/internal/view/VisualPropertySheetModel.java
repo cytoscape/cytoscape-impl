@@ -24,8 +24,6 @@ public class VisualPropertySheetModel extends AbstractVizMapperModel {
 			throw new IllegalArgumentException("'targetDataType' must be CyNode.class, CyEdge.class, CyNetwork.class or CyColumn.class");
 		if (style == null)
 			throw new IllegalArgumentException("'style' must not be null");
-		if (lexicon == null)
-			throw new IllegalArgumentException("'lexicon' must not be null");
 		
 		this.targetDataType = targetDataType;
 		this.style = style;

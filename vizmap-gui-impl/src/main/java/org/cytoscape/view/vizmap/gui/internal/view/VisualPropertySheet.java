@@ -434,6 +434,9 @@ public class VisualPropertySheet extends JPanel{
 		
 		// Add new menu items
 		final VisualLexicon lexicon = model.getVisualLexicon();
+		if(lexicon == null)
+			return;
+		
 		final VisualProperty<?> rootVp = model.getRootVisualProperty();
 		final VisualLexiconNode rootNode = lexicon.getVisualLexiconNode(rootVp);
 		

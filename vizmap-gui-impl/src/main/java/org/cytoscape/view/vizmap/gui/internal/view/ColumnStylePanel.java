@@ -23,7 +23,6 @@ public class ColumnStylePanel {
 	private final ServicesUtil servicesUtil;
 	
 	private OptionsButton optionsBtn;
-//	private JLabel tableNameLabel;
 	private CyColumnComboBox columnCombo;
 	private JPanel columnPanel;
 	
@@ -70,13 +69,6 @@ public class ColumnStylePanel {
 		return columnCombo;
 	}
 	
-//	private JLabel getTableNameLabel() {
-//		if(tableNameLabel == null) {
-//			tableNameLabel = new JLabel();
-//		}
-//		return tableNameLabel;
-//	}
-	
 	OptionsButton getOptionsBtn() {
 		if (optionsBtn == null) {
 			optionsBtn = new OptionsButton(servicesUtil);
@@ -84,12 +76,11 @@ public class ColumnStylePanel {
 		return optionsBtn;
 	}
 	
-	public void updateColumns(String tableName, Collection<CyColumn> columns, CyColumn selected) {
-		// MKTODO may need to abbreviate
-//		getTableNameLabel().setText(tableName);
+	public void updateColumns(Collection<CyColumn> columns, CyColumn selected) {
 		CyColumnComboBox columnComboBox = getColumnComboBox();
 		columnComboBox.removeAllItems();
-		columns.forEach(columnComboBox::addItem);
+		if(columns != null)
+			columns.forEach(columnComboBox::addItem);
 		if(selected != null)
 			columnComboBox.setSelectedItem(selected);
 	}

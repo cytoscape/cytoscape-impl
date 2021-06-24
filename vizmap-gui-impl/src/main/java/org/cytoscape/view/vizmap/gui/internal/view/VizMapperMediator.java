@@ -25,6 +25,7 @@ import java.beans.PropertyChangeEvent;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -74,6 +75,7 @@ import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangedEvent;
 import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangedListener;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
@@ -302,12 +304,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				break;
 			case CURRENT_TABLE_CHANGED:
 				var table = (CyTable) body;
-				if (table != null) {
-					invokeOnEDT(() -> {
-						// Switching styles. Need to reset the range tracer
-						updateTableVisualPropertySheets(table, false, false);
-					});
-				}
+				invokeOnEDT(() -> {
+					// Switching styles. Need to reset the range tracer
+					updateTableVisualPropertySheets(table, false, false);
+				});
 				break;
 		}
 	}
@@ -828,14 +828,31 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	}
 	
 	private void updateTableVisualPropertySheets(CyTable table, boolean resetDefaultVisibleItems, boolean forceRebuild) {
-		var columns = table.getColumns();
-		var columnToUse = getSelectedColumn(table);
-		var vs = vmProxy.getVisualStyle(columnToUse);
-		boolean rebuild = forceRebuild || shouldRebuildTableVisualPropertySheets(vs);
+		Collection<CyColumn> columns;
+		CyColumn columnToUse;
+		VisualStyle vs;
+		boolean rebuild;
+		
+		if(table == null) {
+			columns = null;
+			columnToUse = null;
+			vs = servicesUtil.get(VisualStyleFactory.class).createVisualStyle("column-dummy");
+			rebuild = true;
+		} else {
+			columns = table.getColumns();
+			columnToUse = getSelectedColumn(table);
+			vs = vmProxy.getVisualStyle(columnToUse);
+			if(vs == null) {
+				columns = null;
+				columnToUse = null;
+			} 
+			rebuild = forceRebuild || shouldRebuildTableVisualPropertySheets(vs);
+		}
+		
 		updateVisualPropertySheets(vs, TABLE_SHEET_TYPES, resetDefaultVisibleItems, rebuild);
 		
 		vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().removeActionListener(columnChangeListener);
-		vizMapperMainPanel.updateColumns(table.getTitle(), columns, columnToUse);
+		vizMapperMainPanel.updateColumns(columns, columnToUse);
 		vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().addActionListener(columnChangeListener);
 	}
 	
@@ -971,18 +988,26 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				// Create Visual Property Sheet
 				var re = getRenderingEngine(type);
 				
-				if (re == null)
-					continue;
+				VisualPropertySheet vpSheet;
+				Set<VisualPropertySheetItem<?>> vpSheetItems;
 				
-				var lexicon = re.getVisualLexicon();
-				
-				var model = new VisualPropertySheetModel(type, style, lexicon);
-				var vpSheet = new VisualPropertySheet(model, servicesUtil);
-				vizMapperMainPanel.addVisualPropertySheet(vpSheet);
-				
-				// Create Visual Property Sheet Items
-				var vpSheetItems = createVisualPropertySheetItems(vpSheet.getModel().getTargetDataType(), lexicon, style);
-				vpSheet.setItems(vpSheetItems);
+				if (re == null) {
+					var model = new VisualPropertySheetModel(type, style, null);
+					vpSheet = new VisualPropertySheet(model, servicesUtil);
+					vizMapperMainPanel.addVisualPropertySheet(vpSheet);
+					
+					vpSheetItems = Collections.emptySet();
+					vpSheet.setItems(vpSheetItems);
+					
+				} else {
+					var lexicon = re.getVisualLexicon();
+					var model = new VisualPropertySheetModel(type, style, lexicon);
+					vpSheet = new VisualPropertySheet(model, servicesUtil);
+					vizMapperMainPanel.addVisualPropertySheet(vpSheet);
+					
+					vpSheetItems = createVisualPropertySheetItems(vpSheet.getModel().getTargetDataType(), lexicon, style);
+					vpSheet.setItems(vpSheetItems);
+				}
 				
 				// Add event listeners to the new components
 				addViewListeners(vpSheet);

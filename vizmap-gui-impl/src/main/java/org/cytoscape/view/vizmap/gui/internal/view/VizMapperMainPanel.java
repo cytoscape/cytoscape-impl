@@ -255,8 +255,8 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		getPropertiesPnl().addContextMenuItem(menuItem, gravity, insertSeparatorBefore, insertSeparatorAfter);
 	}
 	
-	public void updateColumns(String tableName, Collection<CyColumn> columns, CyColumn selected) {
-		getColumnStylePnl().updateColumns(tableName, columns, selected);
+	public void updateColumns(Collection<CyColumn> columns, CyColumn selected) {
+		getColumnStylePnl().updateColumns(columns, selected);
 	}
 	
 	private void init() {
