@@ -124,7 +124,7 @@ public class PopupMenuHelper {
 	}
 
 	@SuppressWarnings("serial")
-	public void createTableCellMenu(
+	public JPopupMenu createTableCellMenu(
 			CyColumn column,
 			Object primaryKeyValue,
 			Class<? extends CyIdentifiable> tableType,
@@ -253,6 +253,8 @@ public class PopupMenuHelper {
 
 		if (menu.getSubElements().length > 0)
 			menu.show(invoker, x, y);
+		
+		return menu;
 	}
 
 	/**

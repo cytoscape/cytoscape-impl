@@ -187,7 +187,11 @@ public class BrowserTableCellRenderer extends JPanel implements TableCellRendere
 		}
 		
 		if (isSelected && isColumnSelected) {
-			if (hasFocus) {
+			boolean hasTempFocus = 
+					browserTable.getTempFocusedRow() == rowIndex &&
+					browserTable.getTempFocusedColumn() == colIndex;
+			
+			if (hasFocus || hasTempFocus) {
 				bg = UIManager.getColor("Table.focusCellBackground");
 				fg = UIManager.getColor("Table.focusCellForeground");
 			} else {

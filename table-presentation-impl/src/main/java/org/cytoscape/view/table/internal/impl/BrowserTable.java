@@ -2,7 +2,6 @@ package org.cytoscape.view.table.internal.impl;
 
 import static org.cytoscape.util.swing.LookAndFeelUtil.getSmallFontSize;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isMac;
-import static org.cytoscape.util.swing.LookAndFeelUtil.isWindows;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_EDITABLE;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_GRAVITY;
 import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_SELECTED;
@@ -47,7 +46,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
-import javax.swing.DefaultListSelectionModel;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -63,6 +61,8 @@ import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.event.TableColumnModelEvent;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
@@ -150,6 +150,9 @@ public class BrowserTable extends JTable
 	private boolean ignoreColumnSelectionEvents;
 	private boolean ignoreRowSelectionEvents;
 	private boolean ignoreRowSetEvents;
+
+	private int tempFocusedRow = -1;
+	private int tempFocusedColumn = -1;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
@@ -411,24 +414,6 @@ public class BrowserTable extends JTable
 	}
 
 	@Override
-	public void addRowSelectionInterval(int index0, int index1) {
-		super.addRowSelectionInterval(index0, index1);
-		// Make sure this is set, so the selected cell is correctly rendered when there is more than one selected row
-		((BrowserTableListSelectionModel) selectionModel).setLastSelectedRow(index1);
-	}
-	
-	@Override
-	public int getSelectedRow() {
-		// Try the last selected row first
-		int row = ((BrowserTableListSelectionModel) selectionModel).getLastSelectedRow();
-		
-		if (row < 0 || !isRowSelected(row))
-			row = selectionModel.getMinSelectionIndex();
-		
-		return row;
-	}
-	
-	@Override
 	public void columnAdded(TableColumnModelEvent e) {
 		super.columnAdded(e);
 		
@@ -573,7 +558,6 @@ public class BrowserTable extends JTable
 
 	@Override
 	public void mousePressed(MouseEvent e) {
-		selectFocusedCell(e);
 		maybeShowPopup(e);
 	}
 
@@ -618,7 +602,7 @@ public class BrowserTable extends JTable
 			
 			if (index != -1) {
 				int colWidth = getColumnModel().getColumn(index).getWidth();
-				this.columnWidthMap.put(this.getColumnName(index), colWidth);
+				columnWidthMap.put(this.getColumnName(index), colWidth);
 			}
 		}
 	}
@@ -832,6 +816,14 @@ public class BrowserTable extends JTable
 		// because we don't want to interfere with any internal Swing listeners by using the standard 'rowHeight'.
 		firePropertyChange("rowHeightChanged", oldValue, newValue);
 	}
+	
+	public int getTempFocusedRow() {
+		return tempFocusedRow;
+	}
+	
+	public int getTempFocusedColumn() {
+		return tempFocusedColumn;
+	}
 
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
@@ -911,7 +903,6 @@ public class BrowserTable extends JTable
 		});
 		setTableHeader(header);
 		
-		setSelectionModel(new BrowserTableListSelectionModel());
 		setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		addMouseListener(this);
 		
@@ -1120,8 +1111,7 @@ public class BrowserTable extends JTable
 	
 	private void maybeShowPopup(MouseEvent e) {
 		if (e.isPopupTrigger()) {
-			if (isWindows())
-				selectFocusedCell(e);
+			selectFocusedCell(e);
 			
 			// Show context menu
 			int viewColumn = getColumnModel().getColumnIndexAtX(e.getX());
@@ -1146,29 +1136,41 @@ public class BrowserTable extends JTable
 			var networkTableManager = serviceRegistrar.getService(CyNetworkTableManager.class);
 			var tableType = networkTableManager.getTableType(tableModel.getDataTable());
 			
-			popupMenuHelper.createTableCellMenu(cyColumn, primaryKeyValue, tableType, this, e.getX(), e.getY(), this);
+			var menu = popupMenuHelper.createTableCellMenu(cyColumn, primaryKeyValue, tableType, this, e.getX(), e.getY(), this);
+			menu.addPopupMenuListener(new PopupMenuListener() {
+				@Override
+				public void popupMenuCanceled(PopupMenuEvent e) {
+					resetTempFocusedCell();
+				}
+				@Override
+				public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+					resetTempFocusedCell();
+				}
+				@Override
+				public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+					// Ignore...
+				}
+				private void resetTempFocusedCell() {
+					tempFocusedRow = -1;
+					tempFocusedColumn = -1;
+					repaint();
+				}
+			});
 		}
 	}
 	
 	private void selectFocusedCell(MouseEvent e) {
-		int row = rowAtPoint(e.getPoint());
-		int column = getColumnModel().getColumnIndexAtX(e.getX());
+		int row = tempFocusedRow = rowAtPoint(e.getPoint());
+		int column = tempFocusedColumn = getColumnModel().getColumnIndexAtX(e.getX());
 		
-		int[] selectedRows = this.getSelectedRows();
-		int binarySearch = Arrays.binarySearch(selectedRows, row);
+		int[] selectedRows = getSelectedRows();
+		boolean isRowselected = Arrays.binarySearch(selectedRows, row) >= 0;
+		boolean isColumnSelected = Arrays.binarySearch(getColumnModel().getSelectedColumns(), column) >= 0;
 		
-		// Select clicked cell, if not selected yet
-		if (binarySearch < 0) {
-			// Clicked row not selected: Select only the right-clicked row/cell
-			this.changeSelection(row, column, false, false);
-		} else {
-			// Row is already selected: Just guarantee the last clicked cell is highlighted properly
-			((BrowserTableListSelectionModel) selectionModel).setLastSelectedRow(row);
-			setColumnSelectionInterval(column, column);
-			
-			var tableModel = (BrowserTableModel) this.getModel();
-			tableModel.fireTableRowsUpdated(selectedRows[0], selectedRows[selectedRows.length-1]);
-		}
+		if (isRowselected && isColumnSelected) // Just repaint to highlight the temporarily focused cell
+			repaint();
+		else // Clicked row not selected: Select only the right-clicked row/cell
+			changeSelection(row, column, false, false);
 	}
 	
 	private String copyToClipBoard() {
@@ -1180,8 +1182,8 @@ public class BrowserTable extends JTable
 		int numcols = this.getSelectedColumnCount();
 		int numrows = this.getSelectedRowCount();
 
-		int[] rowsselected = this.getSelectedRows();
-		int[] colsselected = this.getSelectedColumns();
+		int[] rowsselected = getSelectedRows();
+		int[] colsselected = getSelectedColumns();
 
 		// Return if no cell is selected.
 		if (numcols == 0 && numrows == 0)
@@ -1407,19 +1409,6 @@ public class BrowserTable extends JTable
 		@Override
 		public void mouseReleased(MouseEvent e) {
 			listener.mouseReleased(e);
-		}
-	}
-	
-	private class BrowserTableListSelectionModel extends DefaultListSelectionModel {
-		
-		private int lastSelectedRow = -1;
-		
-		int getLastSelectedRow() {
-			return lastSelectedRow;
-		}
-		
-		public void setLastSelectedRow(int lastSelectedRow) {
-			this.lastSelectedRow = lastSelectedRow;
 		}
 	}
 	
