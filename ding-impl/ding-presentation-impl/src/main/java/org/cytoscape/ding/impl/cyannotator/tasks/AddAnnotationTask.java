@@ -70,7 +70,7 @@ public class AddAnnotationTask extends AbstractTask {
 		if (re != null && annotationFactory instanceof AbstractDingAnnotationFactory) {
 			invokeOnEDT(() -> {
 				var cyAnnotator = re.getCyAnnotator();
-				cyAnnotator.markUndoEdit("Create " + annotationFactory.getName() + " Annotation"); // FIXME
+				cyAnnotator.markUndoEdit("Create " + annotationFactory.getName() + " Annotation");
 				
 				var view = re.getViewModel();
 				var source = re.getPicker().getAnnotationAt(location); // For ArrowAnnotations only!
@@ -126,6 +126,8 @@ public class AddAnnotationTask extends AbstractTask {
 						ViewUtils.selectAnnotation(re, (DingAnnotation) annotation);
 					}
 				}
+				
+				cyAnnotator.postUndoEdit();
 				
 				// The annotation can now be edited by the user, now that it has been created
 				annotationMediator.editAnnotation(annotation);
