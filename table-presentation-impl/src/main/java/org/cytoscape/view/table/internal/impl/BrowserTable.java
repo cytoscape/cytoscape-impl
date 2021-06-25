@@ -361,7 +361,6 @@ public class BrowserTable extends JTable
 					Component comp = e.getComponent();
 					comp.removeKeyListener(this);
 					editor.stopCellEditing();
-					
 				}
 
 				@Override
@@ -1177,52 +1176,39 @@ public class BrowserTable extends JTable
 			changeSelection(row, column, false, false);
 	}
 	
-	private String copyToClipBoard() {
-		var sbf = new StringBuffer();
+	private void copyToClipBoard() {
+		int[] rows = getSelectedRows();
+		int[] columns = getSelectedColumns();
+		int numRows = rows.length;
+		int numCols = columns.length;
 
-		/*
-		 * Check to ensure we have selected only a contiguous block of cells.
-		 */
-		int numcols = this.getSelectedColumnCount();
-		int numrows = this.getSelectedRowCount();
+		if (numCols == 0 || numRows == 0)
+			return;
 
-		int[] rowsselected = getSelectedRows();
-		int[] colsselected = getSelectedColumns();
-
-		// Return if no cell is selected.
-		if (numcols == 0 && numrows == 0)
-			return null;
-
-		if (!((numrows - 1 == rowsselected[rowsselected.length - 1] - rowsselected[0] && numrows == rowsselected.length)
-				&& (numcols - 1 == colsselected[colsselected.length - 1] - colsselected[0] 
-						&& numcols == colsselected.length))) {
-			var rootFrame = (JFrame) SwingUtilities.getRoot(this);
-			JOptionPane.showMessageDialog(rootFrame, "Invalid Copy Selection", "Invalid Copy Selection",
-					JOptionPane.ERROR_MESSAGE);
-
-			return null;
-		}
-
-		for (int i = 0; i < numrows; i++) {
-			for (int j = 0; j < numcols; j++) {
-				var cellValue = this.getValueAt(rowsselected[i], colsselected[j]);
+		var sb = new StringBuffer();
+		
+		for (int r : rows) {
+			int colCount = 0;
+			
+			for (int c : columns) {
+				var cellValue = getValueAt(r, c);
 				var cellText = cellValue instanceof ValidatedObjectAndEditString ?
 						((ValidatedObjectAndEditString) cellValue).getEditString() : null;
 				
-				sbf.append(cellText != null ? escape(cellText) : "");
+				sb.append(cellText != null ? escape(cellText) : "");
 
-				if (j < numcols - 1)
-					sbf.append(CELL_BREAK);
+				if (colCount < numCols - 1)
+					sb.append(CELL_BREAK);
+				
+				colCount++;
 			}
 
-			sbf.append(LINE_BREAK);
+			sb.append(LINE_BREAK);
 		}
 		
-		var selection = new StringSelection(sbf.toString());
+		var selection = new StringSelection(sb.toString());
 		var clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 		clipboard.setContents(selection, selection);
-
-		return sbf.toString();
 	}
 	
 	private String escape(String cellValue) {
