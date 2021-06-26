@@ -940,6 +940,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 					} else {
 						mousePressedHandleAnnotationAnchor(anchor, e);
 					}
+					re.getLabelSelectionManager().clear();
 					return true;
 				}
 				
@@ -951,6 +952,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 						deselectAllEdges();
 					}
 					annotationSelection.setMovingStartOffset(e.getPoint());
+					re.getLabelSelectionManager().clear();
 					return true;
 				}
 			}
@@ -1119,6 +1121,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		public void mouseReleased(MouseEvent e) {
 			if(!hit)
 				return;
+			hit = false;
 			
 			changeCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			if(!isLeftClick(e)) // We only care about left mouse button

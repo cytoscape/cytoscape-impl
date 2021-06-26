@@ -31,11 +31,15 @@ public class SelectionCanvas<GP extends GraphicsProvider> extends DingCanvas<GP>
 		if(g == null)
 			return;
 		
+		Graphics2D g1 = (Graphics2D) g.create();
 		var annotationSelection = re.getCyAnnotator().getAnnotationSelection();
-		annotationSelection.paint(g);
+		annotationSelection.paint(g1);
+		g1.dispose();
 		
+		Graphics2D g2 = (Graphics2D) g.create();
 		var labelSelection = re.getLabelSelectionManager();
-		labelSelection.paint(g);
+		labelSelection.paint(g2);
+		g2.dispose();
 		
 		g.dispose();
 	}
