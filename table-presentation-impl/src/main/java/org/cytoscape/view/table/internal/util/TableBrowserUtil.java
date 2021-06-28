@@ -55,13 +55,13 @@ public final class TableBrowserUtil {
 	public static String createCopyString(ValidatedObjectAndEditString cellValue) {
 		// Encode cell data in Excel format so we can copy/paste list attributes as multi-line cells.
 		var sb = new StringBuffer();
-		var validatedObject = cellValue.getValidatedObject();
+		var validatedObj = cellValue.getValidatedObject();
 
-		if (validatedObject instanceof Collection) {
+		if (validatedObj instanceof Collection) {
 			sb.append("\"");
 			boolean firstRow = true;
 
-			for (var member : (Collection<?>) validatedObject) {
+			for (var member : (Collection<?>) validatedObj) {
 				if (!firstRow)
 					sb.append("\r");
 				else
@@ -72,7 +72,7 @@ public final class TableBrowserUtil {
 
 			sb.append("\"");
 		} else {
-			var text = validatedObject.toString();
+			var text = validatedObj != null ? validatedObj.toString() : null;
 			sb.append(text != null ? escape(text) : "");
 		}
 		
