@@ -179,11 +179,15 @@ public class PopupMenuHelper {
 			}
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				var sourceRow = column.getTable().getRow(primaryKeyValue);
-				var columnName = column.getName();
-				var sourceValue = sourceRow.getRaw(columnName);
-				
-				var stringSelection = new StringSelection(sourceValue.toString());
+				var point = new Point(x, y);
+				int row = table.rowAtPoint(point);
+				int column = table.columnAtPoint(point);
+				var object = table.getValueAt(row, column);
+				var data = object instanceof ValidatedObjectAndEditString
+						? TableBrowserUtil.createCopyString((ValidatedObjectAndEditString) object)
+						: object.toString();
+
+				var stringSelection = new StringSelection(data);
 				var clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 				clipboard.setContents(stringSelection, null);
 			}

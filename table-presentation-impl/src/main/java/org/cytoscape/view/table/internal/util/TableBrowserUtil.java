@@ -3,6 +3,7 @@ package org.cytoscape.view.table.internal.util;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,9 @@ import org.cytoscape.view.table.internal.impl.BrowserTableModel;
  */
 public final class TableBrowserUtil {
 
+	public static final String LINE_BREAK = "\n";
+	public static final String CELL_BREAK = "\t";
+	
 	private static final int EOF = -1;
 
 	public static CyTableView getTableView(JTable table) {
@@ -46,6 +50,33 @@ public final class TableBrowserUtil {
 		var model = (BrowserTableModel) browserTable.getModel();
 
 		return model.getTableView();
+	}
+	
+	public static String createCopyString(ValidatedObjectAndEditString cellValue) {
+		// Encode cell data in Excel format so we can copy/paste list attributes as multi-line cells.
+		var sb = new StringBuffer();
+		var validatedObject = cellValue.getValidatedObject();
+
+		if (validatedObject instanceof Collection) {
+			sb.append("\"");
+			boolean firstRow = true;
+
+			for (var member : (Collection<?>) validatedObject) {
+				if (!firstRow)
+					sb.append("\r");
+				else
+					firstRow = false;
+
+				sb.append(member.toString().replaceAll("\"", "\"\""));
+			}
+
+			sb.append("\"");
+		} else {
+			var text = validatedObject.toString();
+			sb.append(text != null ? escape(text) : "");
+		}
+		
+		return sb.toString();
 	}
 
 	/**
@@ -427,16 +458,14 @@ public final class TableBrowserUtil {
 		}
 	}
 
-	private static void grabAsciiLetters(StringReader reader, StringBuilder builder)
-	{
+	private static void grabAsciiLetters(StringReader reader, StringBuilder builder) {
 		try {
 			for (;;) {
 				reader.mark(0);
 				int ch = reader.read();
 				if (ch == EOF
 				    || (((char)ch < 'a' || (char)ch > 'z')
-					&& ((char)ch < 'A' || (char)ch > 'Z')))
-				{
+					&& ((char)ch < 'A' || (char)ch > 'Z'))) {
 					reader.reset();
 					return;
 				}
@@ -448,4 +477,7 @@ public final class TableBrowserUtil {
 		}
 	}
 	
+	private static String escape(String cellValue) {
+		return cellValue.replace(LINE_BREAK, " ").replace(CELL_BREAK, " ");
+	}
 }

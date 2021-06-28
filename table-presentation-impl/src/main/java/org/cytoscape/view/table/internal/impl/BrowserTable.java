@@ -15,6 +15,8 @@ import static org.cytoscape.view.presentation.property.table.BasicTableVisualLex
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.ALL;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.AUTO;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.SELECTED;
+import static org.cytoscape.view.table.internal.util.TableBrowserUtil.CELL_BREAK;
+import static org.cytoscape.view.table.internal.util.TableBrowserUtil.LINE_BREAK;
 import static org.cytoscape.view.table.internal.util.ViewUtil.invokeOnEDT;
 
 import java.awt.Color;
@@ -127,9 +129,6 @@ public class BrowserTable extends JTable
 
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
-	private static final String LINE_BREAK = "\n";
-	private static final String CELL_BREAK = "\t";
-
 	private static final Font BORDER_FONT = UIManager.getFont("Label.font").deriveFont(getSmallFontSize());
 	
 	private CellEditorRemover editorRemover;
@@ -635,7 +634,7 @@ public class BrowserTable extends JTable
 	@Override
 	public void actionPerformed(ActionEvent event) {
 		if (event.getActionCommand().compareTo("Copy") == 0)
-			copyToClipBoard();
+			copyToClipboard();
 	}
 
 	@Override
@@ -1176,43 +1175,11 @@ public class BrowserTable extends JTable
 			changeSelection(row, column, false, false);
 	}
 	
-	private void copyToClipBoard() {
-		int[] rows = getSelectedRows();
-		int[] columns = getSelectedColumns();
-		int numRows = rows.length;
-		int numCols = columns.length;
-
-		if (numCols == 0 || numRows == 0)
-			return;
-
-		var sb = new StringBuffer();
-		
-		for (int r : rows) {
-			int colCount = 0;
-			
-			for (int c : columns) {
-				var cellValue = getValueAt(r, c);
-				var cellText = cellValue instanceof ValidatedObjectAndEditString ?
-						((ValidatedObjectAndEditString) cellValue).getEditString() : null;
-				
-				sb.append(cellText != null ? escape(cellText) : "");
-
-				if (colCount < numCols - 1)
-					sb.append(CELL_BREAK);
-				
-				colCount++;
-			}
-
-			sb.append(LINE_BREAK);
-		}
-		
-		var selection = new StringSelection(sb.toString());
+	private void copyToClipboard() {
+		var data = createCopyString(this);
+		var selection = new StringSelection(data);
 		var clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 		clipboard.setContents(selection, selection);
-	}
-	
-	private String escape(String cellValue) {
-		return cellValue.replace(LINE_BREAK, " ").replace(CELL_BREAK, " ");
 	}
 	
 	private void renameColumnName(String oldName, String newName) {
@@ -1360,6 +1327,44 @@ public class BrowserTable extends JTable
 		}
 	}
 	
+	private static String createCopyString(BrowserTable table) {
+		int[] rows = table.getSelectedRows();
+		int[] columns = table.getSelectedColumns();
+		int numRows = rows.length;
+		int numCols = columns.length;
+
+		if (numCols == 0 || numRows == 0)
+			return null;
+
+		var sb = new StringBuffer();
+		
+		for (int r : rows) {
+			boolean firstColumn = true;
+
+			for (int c : columns) {
+				if (!firstColumn)
+					sb.append(CELL_BREAK);
+				else
+					firstColumn = false;
+
+				var object = table.getValueAt(r, c);
+
+				if (object instanceof ValidatedObjectAndEditString) {
+					var raw = (ValidatedObjectAndEditString) object;
+					var s = TableBrowserUtil.createCopyString(raw);
+					sb.append(s);
+				} else {
+					if (object != null)
+						sb.append(object.toString());
+				}
+			}
+
+			sb.append(LINE_BREAK);
+		}
+		
+		return sb.toString();
+	}
+	
 	// ==[ CLASSES ]====================================================================================================
 	
 	private class ProxyMouseListener extends MouseAdapter {
@@ -1472,52 +1477,9 @@ public class BrowserTable extends JTable
 		
 		@Override
 		protected Transferable createTransferable(JComponent source) {
-			// Encode cell data in Excel format so we can copy/paste list attributes as multi-line cells.
-			var builder = new StringBuilder();
-			var table = (BrowserTable) source;
+			var data = createCopyString((BrowserTable) source);
 			
-			for (int rowIndex : table.getSelectedRows()) {
-				boolean firstColumn = true;
-				
-				for (int columnIndex : table.getSelectedColumns()) {
-					if (!firstColumn) {
-						builder.append(CELL_BREAK);
-					} else {
-						firstColumn = false;
-					}
-					
-					var object = table.getValueAt(rowIndex, columnIndex);
-					
-					if (object instanceof ValidatedObjectAndEditString) {
-						var raw = (ValidatedObjectAndEditString) object;
-						var validatedObject = raw.getValidatedObject();
-						
-						if (validatedObject instanceof Collection) {
-							builder.append("\"");
-							boolean firstRow = true;
-							
-							for (var member : (Collection<?>) validatedObject) {
-								if (!firstRow)
-									builder.append("\r");
-								else
-									firstRow = false;
-								
-								builder.append(member.toString().replaceAll("\"", "\"\""));
-							}
-							
-							builder.append("\"");
-						} else {
-							builder.append(validatedObject.toString());
-						}
-					} else {
-						if (object != null)
-							builder.append(object.toString());
-					}
-				}
-				builder.append(LINE_BREAK);
-			}
-			
-			return new StringSelection(builder.toString());
+			return new StringSelection(data);
 		}
 		
 		@Override
