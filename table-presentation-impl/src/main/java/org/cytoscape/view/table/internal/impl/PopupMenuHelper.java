@@ -97,12 +97,14 @@ public class PopupMenuHelper {
 		tableColumnFactoryMap = new HashMap<>();
 	}
 
+	@SuppressWarnings("serial")
 	public void createColumnHeaderMenu(
 			CyColumn column,
 			Class<? extends CyIdentifiable> tableType,
 			Component invoker,
 			int x,
-			int y
+			int y,
+			JTable table
 	) {
 		if (tableColumnFactoryMap.isEmpty())
 			return;
@@ -116,6 +118,25 @@ public class PopupMenuHelper {
 			var provisioner = factoryProvisioner.createFor(taskFactory, column);
 			createMenuItem(provisioner, tracker, entry.getValue(), tableType);
 		}
+		
+		// Add preset menu items
+		var iconFont = serviceRegistrar.getService(IconManager.class).getIconFont(SMALL_ICON_FONT_SIZE);
+		var copyIcon = new TextIcon(IconManager.ICON_COPY, iconFont, SMALL_ICON_SIZE, SMALL_ICON_SIZE);
+		
+		menu.add(new JSeparator());
+		menu.add(new JMenuItem(new AbstractAction("Copy Column Values") {
+			{
+				putValue(SMALL_ICON, copyIcon);
+			}
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// We assume the column (and only one column) is selected!
+				var action = table.getActionMap().get("copy");
+				
+				if (action != null)
+					action.actionPerformed(new ActionEvent(table, e.getID(), "copy"));
+			}
+		}));
 		
 		sanitize(menu);
 
@@ -185,7 +206,7 @@ public class PopupMenuHelper {
 				var object = table.getValueAt(row, column);
 				var data = object instanceof ValidatedObjectAndEditString
 						? TableBrowserUtil.createCopyString((ValidatedObjectAndEditString) object)
-						: object.toString();
+						: (object != null ? object.toString() : "");
 
 				var stringSelection = new StringSelection(data);
 				var clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();

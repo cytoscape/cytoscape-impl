@@ -32,7 +32,6 @@ import org.cytoscape.browser.internal.action.DeleteColumnsAction;
 import org.cytoscape.browser.internal.action.ShowColumnsAction;
 import org.cytoscape.browser.internal.action.TableOptionsAction;
 import org.cytoscape.browser.internal.task.ClearAllErrorsTaskFactory;
-import org.cytoscape.browser.internal.task.CopyColumnValuesTaskFactory;
 import org.cytoscape.browser.internal.task.DeleteTableTaskFactoryImpl;
 import org.cytoscape.browser.internal.task.HideColumnTaskFactory;
 import org.cytoscape.browser.internal.task.SetColumnFormatTaskFactory;
@@ -127,21 +126,6 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TableColumnTaskFactory.class, props);
 		}
 		{
-			var iconFont = iconManager.getIconFont(SMALL_ICON_FONT_SIZE);
-			var icon = new TextIcon(IconManager.ICON_COPY, iconFont, SMALL_ICON_SIZE, SMALL_ICON_SIZE);
-			var iconId = "cy::Table::COPY_COLUMN_SMALL";
-			iconManager.addIcon(iconId, icon);
-			
-			var factory = new CopyColumnValuesTaskFactory();
-			var props = new Properties();
-			props.setProperty(TITLE, "Copy Column Values");
-			props.setProperty(MENU_GRAVITY, "2.0");
-			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
-			props.setProperty(INSERT_SEPARATOR_AFTER, "true");
-			props.setProperty(SMALL_ICON_ID, iconId);
-			registerService(bc, factory, TableColumnTaskFactory.class, props);
-		}
-		{
 			var factory = new SetColumnFormatTaskFactory(serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(TITLE, "Format Column...");
@@ -187,6 +171,7 @@ public class CyActivator extends AbstractCyActivator {
 			var props = new Properties();
 			props.setProperty(TITLE, "Wrap Text");
 			props.setProperty(MENU_GRAVITY, "2.2");
+			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
 			props.setProperty(INSERT_SEPARATOR_AFTER, "true");
 			registerService(bc, factory, TableColumnTaskFactory.class, props);
 		}

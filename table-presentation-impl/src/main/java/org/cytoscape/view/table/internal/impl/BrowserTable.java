@@ -1107,7 +1107,7 @@ public class BrowserTable extends JTable
 			var tableType = networkTableManager.getTableType(tableModel.getDataTable());
 			
 			var cyColumn = tableModel.getCyColumn(convertColumnIndexToModel(column));
-			popupMenuHelper.createColumnHeaderMenu(cyColumn, tableType, BrowserTable.this, e.getX(), e.getY());
+			popupMenuHelper.createColumnHeaderMenu(cyColumn, tableType, BrowserTable.this, e.getX(), e.getY(), this);
 		}
 	}
 	
