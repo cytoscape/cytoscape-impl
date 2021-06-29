@@ -44,6 +44,21 @@ public class PrintLOD implements GraphLOD {
 	}
 	
 	@Override
+	public boolean isEdgeBufferPanEnabled() {
+		return false;
+	}
+	
+	@Override
+	public boolean isLabelCacheEnabled() {
+		return true;
+	}
+	
+	@Override
+	public boolean isHidpiEnabled() {
+		return true;
+	}	
+	
+	@Override
 	public RenderEdges renderEdges(int visibleNodeCount, int totalNodeCount, int totalEdgeCount) {
 		return RenderEdges.TOUCHING_VISIBLE_NODES;
 	}
@@ -91,6 +106,11 @@ public class PrintLOD implements GraphLOD {
 	@Override
 	public boolean textAsShape(int renderNodeCount, int renderEdgeCount) {
 		return exportTextAsShape;
+	}
+
+	@Override
+	public double getNestedNetworkImageScaleFactor() {
+		return 1.0;
 	}
 
 	

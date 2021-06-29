@@ -84,6 +84,7 @@ public class BirdsEyeViewRenderComponent extends RenderComponent {
 	@Override
 	DebugFrameType getDebugFrameType(UpdateType type) {
 		switch(type) {
+			case JUST_ANNOTATIONS: return DebugFrameType.BEV_ANNOTAITONS;
 			case ALL_FAST: return DebugFrameType.BEV_FAST;
 			case ALL_FULL: return DebugFrameType.BEV_SLOW;
 			default: return null;

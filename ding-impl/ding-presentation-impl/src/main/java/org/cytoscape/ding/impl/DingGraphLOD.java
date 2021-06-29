@@ -51,7 +51,6 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 	
 	protected boolean edgeBufferPan;
 	protected boolean labelCache;
-	protected boolean selectedOnly;
 	protected boolean hidpi;
 
 	private final Properties props;
@@ -75,7 +74,6 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 		edgeLabelThreshold = parseInt(props.getProperty("render.edgeLabelThreshold"), 200);
 		edgeBufferPan = Boolean.valueOf(props.getProperty("render.edgeBufferPan"));
 		labelCache = Boolean.valueOf(props.getProperty("render.labelCache"));
-		selectedOnly = Boolean.valueOf(props.getProperty("render.selectedOnly"));
 		hidpi = Boolean.valueOf(props.getProperty("render.hidpi"));
 	}
 
@@ -90,6 +88,7 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 	@Override
 	public GraphLOD faster() {
 		return new GraphLOD() {
+			
 			@Override
 			public RenderEdges renderEdges(int visibleNodeCount, int totalNodeCount, int totalEdgeCount) {
 				// This is the only difference, we pass renderEdges=false
@@ -142,10 +141,6 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 			@Override
 			public boolean isLabelCacheEnabled() {
 				return DingGraphLOD.this.isLabelCacheEnabled();
-			}
-			@Override
-			public boolean isRenderSelectedEnabled() {
-				return DingGraphLOD.this.isRenderSelectedEnabled();
 			}
 			@Override
 			public boolean isHidpiEnabled() {
@@ -438,11 +433,6 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 	@Override
 	public boolean isLabelCacheEnabled() {
 		return labelCache;
-	}
-	
-	@Override
-	public boolean isRenderSelectedEnabled() {
-		return selectedOnly;
 	}
 	
 	@Override

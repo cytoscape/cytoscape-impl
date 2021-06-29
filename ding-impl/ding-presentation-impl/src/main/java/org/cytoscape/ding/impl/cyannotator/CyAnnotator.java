@@ -205,7 +205,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener, CustomGraphic
 			logger.error("Annotations were not loaded correctly.", e);
 		} finally {
 			loading = false;
-			re.updateView(UpdateType.JUST_ANNOTATIONS);
+			re.updateView(UpdateType.JUST_ANNOTATIONS, true);
 			propChangeSupport.firePropertyChange(PROP_ANNOTATIONS, Collections.emptySet(), new HashSet<>(annotationSet));
 		}
 	}
@@ -301,7 +301,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener, CustomGraphic
 		getAnnotationTree().resetZOrder();
 		
 		if (!loading) {
-			re.updateView(UpdateType.JUST_ANNOTATIONS);
+			re.updateView(UpdateType.JUST_ANNOTATIONS, true);
 			propChangeSupport.firePropertyChange(PROP_ANNOTATIONS, oldValue, new HashSet<>(annotationSet));
 		}
 	}
@@ -320,7 +320,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener, CustomGraphic
 		getAnnotationTree().resetZOrder();
 		
 		if (!loading) {
-			re.updateView(UpdateType.JUST_ANNOTATIONS);
+			re.updateView(UpdateType.JUST_ANNOTATIONS, true);
 			propChangeSupport.firePropertyChange(PROP_ANNOTATIONS, oldValue, new HashSet<>(annotationSet));
 		}
 	}
@@ -335,7 +335,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener, CustomGraphic
 			repositioning = null;
 		
 		if (changed && !loading) {
-			re.updateView(UpdateType.JUST_ANNOTATIONS);
+			re.updateView(UpdateType.JUST_ANNOTATIONS, true);
 			propChangeSupport.firePropertyChange(PROP_ANNOTATIONS, oldValue, new HashSet<>(annotationSet));
 		}
 	}
@@ -355,7 +355,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener, CustomGraphic
 		}
 		
 		if (changed && !loading) {
-			re.updateView(UpdateType.JUST_ANNOTATIONS);
+			re.updateView(UpdateType.JUST_ANNOTATIONS, true);
 			propChangeSupport.firePropertyChange(PROP_ANNOTATIONS, oldValue, new HashSet<>(annotationSet));
 		}
 	}

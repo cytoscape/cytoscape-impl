@@ -66,7 +66,7 @@ public final class BirdsEyeView implements RenderingEngine<CyNetwork>, ContentCh
 			public void componentResized(ComponentEvent e) {
 				// make sure the view is initialized properly, but we have 
 				// to wait for setBounds() to be called to know the viewport size
-				contentChanged();
+				contentChanged(UpdateType.ALL_FAST);
 				e.getComponent().removeComponentListener(this);
 			}
 		});
@@ -74,13 +74,20 @@ public final class BirdsEyeView implements RenderingEngine<CyNetwork>, ContentCh
 	
 
 	@Override
-	public void contentChanged() {
-		renderComponent.updateView(UpdateType.ALL_FAST);
+	public void contentChanged(UpdateType updateType) {
+		if(updateType == UpdateType.JUST_ANNOTATIONS)
+			renderComponent.updateView(UpdateType.JUST_ANNOTATIONS);
+		else
+			renderComponent.updateView(UpdateType.ALL_FAST);
+			
 		if(!contentChangedTimer.isShutdown()) {
 			contentChangedTimer.debounce(() -> {
-				fitCanvasToNetwork();
-				renderComponent.setBackgroundPaint(re.getBackgroundColor());
-				renderComponent.updateView(UpdateType.ALL_FULL);
+				boolean changed = fitCanvasToNetwork();
+				changed |= !renderComponent.getBackgroundPaint().equals(re.getBackgroundColor());
+				if(changed) {
+					renderComponent.setBackgroundPaint(re.getBackgroundColor());
+					renderComponent.updateView(UpdateType.ALL_FULL);
+				}
 			});
 		}
 	}	
@@ -108,7 +115,7 @@ public final class BirdsEyeView implements RenderingEngine<CyNetwork>, ContentCh
 	}
 	
 	
-	private void fitCanvasToNetwork() {
+	private boolean fitCanvasToNetwork() {
 		boolean hasComponents = getNetworkExtents(extents);
 		hasComponents |= re.getCyAnnotator().adjustBoundsToIncludeAnnotations(extents);
 		
@@ -128,8 +135,16 @@ public final class BirdsEyeView implements RenderingEngine<CyNetwork>, ContentCh
 			myScaleFactor = 1.0d;
 		}
 		
+		
+		var t = renderComponent.getTransform();
+		if(t.getCenterX() == myXCenter && t.getCenterY() == myYCenter && t.getScaleFactor() == myScaleFactor) {
+			// nothing to change
+			return false;
+		}
+		
 		renderComponent.setCenter(myXCenter, myYCenter);
 		renderComponent.setScaleFactor(myScaleFactor);
+		return true;
 	}
 	
 	

@@ -11,6 +11,8 @@ import java.util.Set;
 import javax.swing.UIManager;
 import javax.swing.event.SwingPropertyChangeSupport;
 
+import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
+
 
 public class LabelSelectionManager {
 	
@@ -120,7 +122,7 @@ public class LabelSelectionManager {
 
 	
 	private void fireSelectionChanged() {
-		re.setContentChanged();
+		re.updateView(UpdateType.ALL_FULL, true);
 		propChangeSupport.firePropertyChange(PROP_SELECTION, null, null);
 	}
 	

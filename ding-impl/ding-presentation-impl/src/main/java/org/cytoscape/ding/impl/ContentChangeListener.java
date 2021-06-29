@@ -1,5 +1,7 @@
 package org.cytoscape.ding.impl;
 
+import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -35,6 +37,7 @@ public interface ContentChangeListener {
 	 * edge view removed, node view hidden, edge view hidden, node view
 	 * restored, edge view restored, graph lod changed, node visual property
 	 * changed, edge visual property changed.
+	 * @param updateType 
 	 */
-	public void contentChanged();
+	public void contentChanged(UpdateType updateType);
 }

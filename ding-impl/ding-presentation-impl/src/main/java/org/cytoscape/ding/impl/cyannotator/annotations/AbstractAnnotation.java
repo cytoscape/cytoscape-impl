@@ -494,8 +494,9 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 
 	@Override
 	public void contentChanged() {
-		if (re != null)
-			re.updateView(UpdateType.JUST_ANNOTATIONS);
+		if (re != null) {
+			re.updateView(UpdateType.JUST_ANNOTATIONS, true);
+		}
 	}
 
 	@Override

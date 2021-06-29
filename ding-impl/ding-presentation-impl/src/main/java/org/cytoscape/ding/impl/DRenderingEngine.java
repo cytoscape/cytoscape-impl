@@ -151,9 +151,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private final CyAnnotator cyAnnotator;
 	private final LabelSelectionManager labelSelectionManager;
 	
-	//Flag that indicates that the content has changed and the graph needs to be redrawn.
-	private volatile boolean contentChanged = true;
-
 	private final List<ContentChangeListener> contentChangeListeners = new CopyOnWriteArrayList<>();
 	private final List<ThumbnailChangeListener> thumbnailChangeListeners = new CopyOnWriteArrayList<>();
 	
@@ -208,7 +205,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		picker = new NetworkPicker(this, null);
 		
 		// Updating the snapshot for nested networks
-		addContentChangeListener(() -> latestSnapshot = false);
+		addContentChangeListener(ut -> latestSnapshot = false);
 
 		viewModelSnapshot = viewModel.createSnapshot();
 		
@@ -294,22 +291,21 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		boolean modelDirty = viewModel.dirty(true);
 		if(modelDirty) {
 			updateModel();
-			updateView(UpdateType.ALL_FULL);
-		} else if(contentChanged) { 
-			// ding internal state changed, no need to update model, usually caused by pan or zoom
-			updateView(UpdateType.ALL_FULL);
-		}
-		contentChanged = false;
+			updateView(UpdateType.ALL_FULL, true);
+		} 
 	}
 	
-	
 	public void updateView(UpdateType updateType) {
+		updateView(updateType, false);
+	}
+	
+	public void updateView(UpdateType updateType, boolean contentChanged) {
 		renderComponent.updateView(updateType);
 		
 		if(contentChanged) {
-			fireContentChanged();
+			fireContentChanged(updateType); // update the BEV
+			cyAnnotator.getAnnotationSelection().getBounds();
 		}
-		setContentChanged(false);
 		
 		// Fire this event on another thread (and debounce) so that it doesn't block the renderer
 		if(!eventFireTimer.isShutdown())
@@ -346,8 +342,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		double scaleFactor = viewModelSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
 		renderComponent.setScaleFactor(scaleFactor);
-		
-		setContentChanged(true);
 	}
 	
 	public Color getBackgroundColor() {
@@ -392,18 +386,9 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 	
 	
-	public void setContentChanged() {
-		setContentChanged(true);
-	}
-	
-	private void setContentChanged(boolean b) {
-		cyAnnotator.getAnnotationSelection().getBounds();
-		contentChanged = b;
-	}
-	
-	private void fireContentChanged() {
+	private void fireContentChanged(UpdateType updateType) {
 		for(var l : contentChangeListeners) {
-			l.contentChanged();
+			l.contentChanged(updateType);
 		}
 		fireThumbnailChanged(null);
 	}
@@ -695,8 +680,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	// File > Export Network to Image... (JPEG, PNG, PDF, POSTSCRIPT, SVG)
 	@Override
 	public void printCanvas(Graphics g) {
-		final boolean contentChanged = this.contentChanged;
-		
 		// Check properties related to printing:
 		boolean exportAsShape = "true".equalsIgnoreCase(props.getProperty("exportTextAsShape"));
 		boolean transparent   = "true".equalsIgnoreCase(props.getProperty("exportTransparentBackground"));
@@ -713,12 +696,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		transform.setDPIScaleFactor(1.0);
 		
 		CompositeGraphicsCanvas.paint((Graphics2D)g, bg, printLOD, transform, this);
-		
-		// Keep previous dirty flags, otherwise the actual view canvas may not be updated next time.
-		// (this method is usually only used to export the View as image, create thumbnails, etc,
-		// therefore it should not flag the Graph View as updated, because the actual view canvas
-		// may still have to be redrawn after this).
-		setContentChanged(contentChanged);
 	}
 	
 	

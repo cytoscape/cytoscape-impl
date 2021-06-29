@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
@@ -187,7 +188,8 @@ public class BendStore {
 			
 			fireViewChangeEvent(mutableEdgeView, bend);
 			
-			re.setContentChanged();
+			re.updateView(UpdateType.ALL_FULL, true);
+			
 			return new HandleInfo(edge, bend, handle);
 		}
 		

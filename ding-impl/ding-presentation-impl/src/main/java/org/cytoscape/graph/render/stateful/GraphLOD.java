@@ -69,9 +69,7 @@ public interface GraphLOD {
 	 *   positive if all edges are to be rendered, or negative if no edges
 	 *   are to be rendered.
 	 */
-	default RenderEdges renderEdges(int visibleNodeCount, int totalNodeCount, int totalEdgeCount) {
-		return RenderEdges.TOUCHING_VISIBLE_NODES;
-	}
+	RenderEdges renderEdges(int visibleNodeCount, int totalNodeCount, int totalEdgeCount);
 
 	/**
 	 * Determines whether or not to render a graph at full detail.
@@ -104,9 +102,7 @@ public interface GraphLOD {
 	 * @param renderEdgeCount the number of edges that are about to be rendered.
 	 * @return true for full detail, false for low detail.
 	 */
-	default boolean detail(int renderNodeCount, int renderEdgeCount) {
-		return (renderNodeCount + renderEdgeCount) < 1200;
-	}
+	boolean detail(int renderNodeCount, int renderEdgeCount);
 
 	/**
 	 * Determines whether or not to render node borders.  By default this
@@ -119,9 +115,7 @@ public interface GraphLOD {
 	 * @return true if and only if node borders are to be rendered.
 	 * @see #detail(int, int)
 	 */
-	default boolean nodeBorders(int renderNodeCount, int renderEdgeCount) {
-		return renderNodeCount < 200;
-	}
+	boolean nodeBorders(int renderNodeCount, int renderEdgeCount);
 
 	/**
 	 * Determines whether or not to render node labels.  By default this method
@@ -134,9 +128,7 @@ public interface GraphLOD {
 	 * @return true if and only if node labels are to be rendered.
 	 * @see #detail(int, int)
 	 */
-	default boolean nodeLabels(int renderNodeCount, int renderEdgeCount) {
-		return renderNodeCount < 60;
-	}
+	boolean nodeLabels(int renderNodeCount, int renderEdgeCount);
 
 	/**
 	 * Determines whether or not to render custom graphics on nodes.
@@ -149,9 +141,7 @@ public interface GraphLOD {
 	 * @return true if and only if custom node graphics are to be rendered.
 	 * @see #detail(int, int)
 	 */
-	default boolean customGraphics(int renderNodeCount, int renderEdgeCount) {
-		return renderNodeCount < 60;
-	}
+	boolean customGraphics(int renderNodeCount, int renderEdgeCount);
 
 	/**
 	 * Determines whether or not to render edge arrows.  By default this
@@ -164,10 +154,8 @@ public interface GraphLOD {
 	 * @return true if and only if edge arrows are to be rendered.
 	 * @see #detail(int, int)
 	 */
-	default boolean edgeArrows(int renderNodeCount, int renderEdgeCount) {
-		return renderEdgeCount < 300;
-	}
-
+	boolean edgeArrows(int renderNodeCount, int renderEdgeCount);
+	
 	/**
 	 * Determines whether or not to honor dashed edges.  By default this
 	 * method always returns true.  If false is returned, edges that
@@ -182,9 +170,7 @@ public interface GraphLOD {
 	 * @return true if and only if dashed edges are to be honored.
 	 * @see #detail(int, int)
 	 */
-	default boolean dashedEdges(int renderNodeCount, int renderEdgeCount) {
-		return true;
-	}
+	boolean dashedEdges(int renderNodeCount, int renderEdgeCount);
 
 	/**
 	 * Determines whether or not to honor edge anchors.  By default this
@@ -198,9 +184,7 @@ public interface GraphLOD {
 	 * @return true if and only if edge anchors are to be honored.
 	 * @see #detail(int, int)
 	 */
-	default boolean edgeAnchors(int renderNodeCount, int renderEdgeCount) {
-		return true;
-	}
+	boolean edgeAnchors(int renderNodeCount, int renderEdgeCount);
 
 	/**
 	 * Determines whether or not to render edge labels.  By default this method
@@ -213,9 +197,7 @@ public interface GraphLOD {
 	 * @return true if and only if edge labels are to be rendered.
 	 * @see #detail(int, int)
 	 */
-	default boolean edgeLabels(int renderNodeCount, int renderEdgeCount) {
-		return renderEdgeCount < 80;
-	}
+	boolean edgeLabels(int renderNodeCount, int renderEdgeCount);
 
 	/**
 	 * Determines whether or not to draw text as shape when rendering node and
@@ -230,38 +212,23 @@ public interface GraphLOD {
 	 * @see #nodeLabels(int, int)
 	 * @see #edgeLabels(int, int)
 	 */
-	default boolean textAsShape(int renderNodeCount, int renderEdgeCount) {
-		return false;
-	}
+	boolean textAsShape(int renderNodeCount, int renderEdgeCount);
 
 	/**
 	 * Returns true if the edge buffer panning optimization should be turned on.
 	 */
-	default boolean isEdgeBufferPanEnabled() {
-		return false;
-	}
+	boolean isEdgeBufferPanEnabled();
 
 	/**
 	 * Returns true if the label buffer cache optimization should be turned on.
 	 */
-	default boolean isLabelCacheEnabled() {
-		return false;
-	}
-	
-	/**
-	 * Returns true if the render only selected nodes/edges optimization should be turned on.
-	 */
-	default boolean isRenderSelectedEnabled() {
-		return false;
-	}
+	boolean isLabelCacheEnabled();
 	
 	/**
 	 * Returns true if the hidpi mode should be enabled.
 	 */
-	default boolean isHidpiEnabled() {
-		return false;
-	}
+	boolean isHidpiEnabled();
 	
-	default double getNestedNetworkImageScaleFactor() { return 1.0; }
+	double getNestedNetworkImageScaleFactor();
 
 }

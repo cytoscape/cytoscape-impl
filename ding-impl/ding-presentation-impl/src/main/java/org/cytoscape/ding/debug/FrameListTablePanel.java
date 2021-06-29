@@ -119,7 +119,7 @@ public class FrameListTablePanel extends JPanel {
 			var type = entry.getType();
 			var cancelled = entry.isCancelled();
 			
-			if(type == DebugFrameType.MAIN_ANNOTAITONS)
+			if(type == DebugFrameType.MAIN_ANNOTAITONS || type == DebugFrameType.BEV_ANNOTAITONS)
 				return time + " (annotations)";
 			else if(type == DebugFrameType.MAIN_EDGES)
 				return time + " (edges)";
