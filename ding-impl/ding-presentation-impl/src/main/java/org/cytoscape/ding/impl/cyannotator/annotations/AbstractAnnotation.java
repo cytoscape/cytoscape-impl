@@ -333,6 +333,10 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	public CyNetworkView getNetworkView() {
 		return re.getViewModel();
 	}
+	
+	public DRenderingEngine getRenderingEngine() {
+		return re;
+	}
 
 	@Override
 	public UUID getUUID() {

@@ -80,12 +80,14 @@ public class BoundedTextAnnotationEditor extends AbstractAnnotationEditor<Bounde
 
 	@Override
 	protected void apply() {
+		// Its Ok to post two UNDO edits, only one of them will actually make a change.
 		getTextAnnotationEditor().apply();
 		getShapeAnnotationEditor().apply();
 	}
 	
 	@Override
 	public void apply(BoundedTextAnnotation annotation) {
+		// TODO does this even get called?
 		if (annotation instanceof TextAnnotation)
 			getTextAnnotationEditor().apply((TextAnnotation) annotation);
 		

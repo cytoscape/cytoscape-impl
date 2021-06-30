@@ -172,8 +172,7 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 		borderOpacityLabel = new JLabel("Border Opacity:");
 		rotationLabel = createRotationLabel();
 		
-		var scrollPane = new JScrollPane(getShapeList(), JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		var scrollPane = new JScrollPane(getShapeList(), JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		var sep1 = new JSeparator();
 		var sep2 = new JSeparator();
 		

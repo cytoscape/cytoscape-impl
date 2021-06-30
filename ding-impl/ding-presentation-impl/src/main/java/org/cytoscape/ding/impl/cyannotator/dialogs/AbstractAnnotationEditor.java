@@ -10,7 +10,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 
+import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.ding.impl.undo.AnnotationEdit;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
@@ -118,12 +120,27 @@ public abstract class AbstractAnnotationEditor<T extends Annotation> extends JPa
 	 * The subclass should call this method every time the user changes a style, such as the border color,
 	 * so the change is applied to the current annotation right away.
 	 */
+	protected void apply(boolean postUndo) {
+		
+	}
+	
 	protected void apply() {
 		if (annotation != null && !adjusting) {
 			applying = true;
 			
+			AnnotationEdit edit = null;
+			if(annotation instanceof AbstractAnnotation) {
+				String label = factory == null ? "Edit Annotation" : "Edit " + factory.getName() + " Annotation";
+				var re = ((AbstractAnnotation) annotation).getRenderingEngine();
+				edit = new AnnotationEdit(label, re);
+			}
+			
 			try {
 				apply(annotation);
+				
+				if(edit != null) {
+					edit.post();
+				}
 			} finally {
 				applying = false;
 			}
