@@ -449,7 +449,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			
 			if(moveAnnotationsEdit == null) {
 				String message = selection.size() == 1 ? "Move Annotation" : "Move Annotations";
-				moveAnnotationsEdit = new AnnotationEdit(message, cyAnnotator, registrar);
+				moveAnnotationsEdit = new AnnotationEdit(message, re);
 			}
 			
 			final int move = getMoveAmountImageUnit(e);
@@ -895,6 +895,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		
 		private AnnotationEdit annotationResizeEdit;
 		private AnnotationEdit annotationMovingEdit;
+		private AnnotationEdit annotationRotateEdit;
 		private ViewChangeEdit removeHandleEdit;
 		private ViewChangeEdit addHandleEdit;
 		private ViewChangeEdit moveNodesEdit;
@@ -909,6 +910,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			
 			annotationResizeEdit = null;
 			annotationMovingEdit = null;
+			annotationRotateEdit = null;
 			removeHandleEdit = null;
 			addHandleEdit = null;
 			moveNodesEdit = null;
@@ -1169,6 +1171,8 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				composite.post();
 			} else if(annotationResizeEdit != null) {
 				annotationResizeEdit.post();
+			} else if(annotationRotateEdit != null) {
+				annotationRotateEdit.post();
 			} else if(removeHandleEdit != null) {
 				removeHandleEdit.post();
 			} else if(addHandleEdit != null) {
@@ -1230,17 +1234,20 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			if (!annotationSelection.isEmpty()) {
 				if (annotationSelection.isResizing()) {
 					if (annotationResizeEdit == null)
-						annotationResizeEdit = new AnnotationEdit("Resize Annotation", cyAnnotator, registrar);
+						annotationResizeEdit = new AnnotationEdit("Resize Annotation", re);
 
 					annotationSelection.resizeAnnotationsRelative(e.getX(), e.getY(), e.isShiftDown());
 					re.updateView(UpdateType.JUST_ANNOTATIONS);
 
 					return;
 				} if (annotationSelection.isRotating()) {
+					if (annotationRotateEdit == null)
+						annotationRotateEdit = new AnnotationEdit("Rotate Annotation", re);
+					
 					annotationSelection.rotateSelection(e.getPoint());
 				} else {
 					if (annotationMovingEdit == null)
-						annotationMovingEdit = new AnnotationEdit("Move Annotation", cyAnnotator, registrar);
+						annotationMovingEdit = new AnnotationEdit("Move Annotation", re);
 
 					annotationSelection.moveSelection(e.getPoint());
 					annotationSelection.setMovingStartOffset(e.getPoint());
