@@ -85,6 +85,8 @@ public class RainbowOSCPaletteProvider implements PaletteProvider {
 			return getColors(size);
 		}
 
+		public boolean isReversable() {return false;};
+
 		public Color[] getColors(int nColors) {
 			Color[] colors = new Color[nColors];
 			final float increment = 1f / (float)nColors;

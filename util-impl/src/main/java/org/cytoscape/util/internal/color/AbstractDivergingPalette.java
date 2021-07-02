@@ -15,11 +15,11 @@ package org.cytoscape.util.internal.color;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
  * GNU General Lesser Public License for more details.
  * 
  * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
+ * License along with this program.	If not, see
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
@@ -46,16 +46,23 @@ public class AbstractDivergingPalette extends AbstractPalette {
 	}
 
 	public Color[] getColors() {
+		if (reversed) return reverseColors(colors);
 		return colors;
 	}
 
 	public Color[] getColors(int nColors) {
-		if (nColors == colors.length) return colors;
+		if (nColors == colors.length) getColors();
+		if (reversed)
+			return reverseColors(interpolatedColors(nColors));
 		return interpolatedColors(nColors);
 	}
 
 	public String toString() { 
 		return super.getName(); 
+	}
+
+	public boolean isReversable() { 
+		return true; 
 	}
 	
 	private Color[] interpolatedColors(int colorCount) {
@@ -78,9 +85,9 @@ public class AbstractDivergingPalette extends AbstractPalette {
 				c2 = colors[index];
 			}
 			// System.out.println("value: " + value + " index: " + index + " remainder: " + remainder);
-			int red   = Math.round((1 - remainder) * c1.getRed()    + (remainder) * c2.getRed());
-			int green = Math.round((1 - remainder) * c1.getGreen()  + (remainder) * c2.getGreen());
-			int blue  = Math.round((1 - remainder) * c1.getBlue()   + (remainder) * c2.getBlue());
+			int red	 = Math.round((1 - remainder) * c1.getRed()		+ (remainder) * c2.getRed());
+			int green = Math.round((1 - remainder) * c1.getGreen()	+ (remainder) * c2.getGreen());
+			int blue	= Math.round((1 - remainder) * c1.getBlue()	 + (remainder) * c2.getBlue());
 
 			newColors[i] = new Color(red, green, blue);
 		}

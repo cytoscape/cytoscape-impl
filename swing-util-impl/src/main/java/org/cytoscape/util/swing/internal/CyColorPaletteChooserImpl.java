@@ -43,11 +43,11 @@ import org.cytoscape.util.swing.CyColorPaletteChooser;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
  * GNU General Lesser Public License for more details.
  * 
  * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
+ * License along with this program.	If not, see
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
@@ -86,9 +86,16 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 	protected JPanel innerPanel;
 
 	/**
+	 * The checkbox for reversable colors.	We need to make
+	 * this available since we want to disable it if the selected
+	 * palette is not reversable.
+	 */
+	protected JCheckBox reverseColorsCB;
+
+	/**
 	 * If we want to be able to remember our color choices, we need
-	 * to make sure not to reset the JColorChooser.  All of this
-	 * static stuff is to allow us to do that.  Unfortunately, when
+	 * to make sure not to reset the JColorChooser.	All of this
+	 * static stuff is to allow us to do that.	Unfortunately, when
 	 * we switch types or the number of colors or from paletteOnly
 	 * to a full chooser, we need to know that.
 	 */
@@ -217,15 +224,43 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 
 		colorsTab.add(colorChooser, BorderLayout.CENTER);
 
-		// color blind friendly checkbox
-		var cbFriendlyPanel = new JPanel();
-		cbFriendlyPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 0, 0));
-		cbFriendlyPanel.setBorder(new EmptyBorder(10, 0, 0, 0));
-		colorsTab.add(cbFriendlyPanel, BorderLayout.SOUTH);
+		var cbPanel = new JPanel();
+		cbPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
+		cbPanel.setBorder(new EmptyBorder(10, 0, 0, 0));
 
+		// color blind friendly checkbox
+		// var cbFriendlyPanel = new JPanel();
+		// cbFriendlyPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+		// cbFriendlyPanel.setBorder(new EmptyBorder(10, 0, 0, 0));
+		colorsTab.add(cbPanel, BorderLayout.SOUTH);
+
+		// reverse colors checkbox
+		var cbReverseGridPanel = new JPanel();
+		cbPanel.add(cbReverseGridPanel);
+		var reverseColorsCB = new JCheckBox("reverse colors");
+
+		// If the initial palette is reversed, set everything to be reversed
+		if (initialPalette != null && initialPalette.isReversable() && initialPalette.isReversed()) {
+			reverseColorsCB.setSelected(true);
+		} else if (initialPalette != null && !initialPalette.isReversable()) {
+			reverseColorsCB.setEnabled(false);
+		}
+		reverseColorsCB.addActionListener(e -> {
+			var source = (JCheckBox) e.getSource();
+			var reverseColors = source.isSelected();
+
+			for (var cbccp : palettePanels) {
+				cbccp.setReverseColors(reverseColors);
+				cbccp.updateChooser();
+				colorChooser.repaint();
+			}
+		});
+		cbReverseGridPanel.add(reverseColorsCB);
+
+		// color blind friendly checkbox
 		var cbFriendlyGridPanel = new JPanel();
 
-		cbFriendlyPanel.add(cbFriendlyGridPanel);
+		cbPanel.add(cbFriendlyGridPanel);
 
 		var colorBlindOnly = new JCheckBox("show only colorblind-friendly");
 		colorBlindOnly.addActionListener(e -> {
@@ -308,7 +343,7 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 	}
 
 //----------------------------------------------------------------------
-//  Methods
+//	Methods
 //----------------------------------------------------------------------
 	
 	/**
@@ -369,9 +404,9 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 	/**
 	 * Set the current color in the color chooser.
 	 *
-	 * @param red   the red component of the new color
+	 * @param red	 the red component of the new color
 	 * @param green the green component of the new color
-	 * @param blue  the blue component of the new color
+	 * @param blue	the blue component of the new color
 	 */
 	public void setColor(int red, int green, int blue) {
 		initialColor = new Color(red, green, blue);
@@ -400,6 +435,10 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 		var model = (ColorPanelSelectionModel) colorChooser.getSelectionModel();
 		model.setPalette(palette);
 		initialPalette = palette;
+		if (palette.isReversable())
+			reverseColorsCB.setEnabled(true);
+		else
+			reverseColorsCB.setEnabled(false);
 	}
 
 	private List<PaletteProvider> getPaletteProviders(boolean colorBlindOnly) {

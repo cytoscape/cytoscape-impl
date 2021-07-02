@@ -37,6 +37,7 @@ import javax.swing.colorchooser.AbstractColorChooserPanel;
 public abstract class ColorBlindAwareColorChooserPanel extends AbstractColorChooserPanel {
 
 	boolean showColorBlindSafe;
+	boolean reverseColors;
 	ColorBlindAwareColorChooserPanel chooserPanel;
 	protected String selectedPalette;
 
@@ -49,11 +50,21 @@ public abstract class ColorBlindAwareColorChooserPanel extends AbstractColorChoo
 	public void setShowColorBlindSafe(boolean showColorBlindSafe) {
 		if (this.showColorBlindSafe == showColorBlindSafe)
 			return;
-		
+
 		this.showColorBlindSafe = showColorBlindSafe;
 		chooserPanel = null;
 		this.repaint();
 	}
+
+	public void setReverseColors(boolean reverseColors) {
+		if (this.reverseColors == reverseColors)
+			return;
+
+		this.reverseColors = reverseColors;
+		chooserPanel = null;
+		this.repaint();
+  }
+
 
 	abstract public void setSelectedPalette(String palette);
 
@@ -65,7 +76,7 @@ public abstract class ColorBlindAwareColorChooserPanel extends AbstractColorChoo
 		if (chooserPanel == null) {
 			for (var c : currentButtons)
 				remove(c);
-			
+
 			currentButtons.clear();
 
 			buildChooser();

@@ -15,11 +15,11 @@ package org.cytoscape.util.internal.color;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
  * GNU General Lesser Public License for more details.
  * 
  * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
+ * License along with this program.	If not, see
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
@@ -42,6 +42,7 @@ public abstract class AbstractPalette implements Palette {
 	protected int size;
 	protected PaletteType type;
 	protected boolean colorBlindSafe;
+	protected boolean reversed;
 
 	AbstractPalette(PaletteProvider provider, String name, int size, PaletteType type, boolean cbs) {
 		this.provider = provider;
@@ -52,7 +53,20 @@ public abstract class AbstractPalette implements Palette {
 	}
 
 	@Override
-	public String getName() { return name; }
+	public abstract boolean isReversable();
+
+	@Override
+	public boolean isReversed() { return reversed; }
+
+	@Override
+	public void reverse(boolean reverse) { reversed = reverse; }
+
+	@Override
+	public String getName() { 
+		if (isReversable() && reversed)
+			return name+" (R)";
+		return name;
+	}
 
 	@Override
 	public Object getIdentifier() { return name; }
@@ -71,4 +85,16 @@ public abstract class AbstractPalette implements Palette {
 
 	public abstract Color[] getColors();
 	public abstract Color[] getColors(int nColors);
+
+	protected Color[] reverseColors(Color[] colors) {
+		int i, k;
+		Color t;
+		int n = colors.length;
+		for (i = 0; i < n / 2; i++) {
+			t = colors[i];
+			colors[i] = colors[n - i - 1];
+		colors[n - i - 1] = t;
+		}
+		return colors;
+	}
 }

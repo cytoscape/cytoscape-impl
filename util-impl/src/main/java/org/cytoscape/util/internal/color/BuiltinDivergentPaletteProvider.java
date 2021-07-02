@@ -81,7 +81,7 @@ public class BuiltinDivergentPaletteProvider implements PaletteProvider {
 		}
 	}
 
-	public String getProviderName() { return "Built-in Divergent Palettes"; }
+	public String getProviderName() { return "Built-in"; }
 
 	public List<PaletteType> getPaletteTypes() { return Collections.singletonList(BrewerType.DIVERGING); }
 
