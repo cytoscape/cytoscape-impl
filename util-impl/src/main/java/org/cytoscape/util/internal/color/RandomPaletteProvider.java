@@ -92,6 +92,8 @@ public class RandomPaletteProvider implements PaletteProvider {
 			return colors;
 		}
 
+		public boolean isReversable() {return false;};
+
 		public Color[] getColors(int nColors) {
 			colors = new Color[nColors];
 			for (int i = 0; i < nColors; i++) {

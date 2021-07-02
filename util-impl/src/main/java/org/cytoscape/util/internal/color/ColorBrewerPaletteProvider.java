@@ -15,11 +15,11 @@ package org.cytoscape.util.internal.color;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
  * GNU General Lesser Public License for more details.
  * 
  * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
+ * License along with this program.	If not, see
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
@@ -46,19 +46,19 @@ public class ColorBrewerPaletteProvider implements PaletteProvider {
 	public ColorBrewerPaletteProvider() {
 		paletteMap = new HashMap<>();
 		paletteMap.put(BrewerType.SEQUENTIAL,
-		               getBrewerPalettes(ColorBrewer.getSequentialColorPalettes(false)));
+									 getBrewerPalettes(ColorBrewer.getSequentialColorPalettes(false)));
 		paletteMap.put(BrewerType.QUALITATIVE,
-		               getBrewerPalettes(ColorBrewer.getQualitativeColorPalettes(false)));
+									 getBrewerPalettes(ColorBrewer.getQualitativeColorPalettes(false)));
 		paletteMap.put(BrewerType.DIVERGING,
-		               getBrewerPalettes(ColorBrewer.getDivergingColorPalettes(false)));
+									 getBrewerPalettes(ColorBrewer.getDivergingColorPalettes(false)));
 	}
 
 	public String getProviderName() { return "ColorBrewer"; }
 
 	public List<PaletteType> getPaletteTypes() { 
 			return Arrays.asList(BrewerType.SEQUENTIAL, 
-			                     BrewerType.QUALITATIVE, 
-			                     BrewerType.DIVERGING); 
+													 BrewerType.QUALITATIVE, 
+													 BrewerType.DIVERGING); 
 	}
 
 	public List<String> listPaletteNames(PaletteType type, boolean colorBlindSafe) {
@@ -151,19 +151,22 @@ public class ColorBrewerPaletteProvider implements PaletteProvider {
 	/**
 	 * Wrapper for ColorBrewer palettes
 	 */
-	class BrewerPalette implements Palette {
+	class BrewerPalette extends AbstractPalette {
 		ColorBrewer palette;
-		PaletteType type;
 		PaletteProvider provider;
-		int size;
 		public BrewerPalette(final PaletteProvider provider, ColorBrewer cbPalette, int size, PaletteType type) {
+			super(provider, cbPalette.getPaletteDescription(), size, type, cbPalette.isColorBlindSave());
 			this.palette = cbPalette;
 			this.size = size;
 			this.type = type;
 			this.provider = provider;
 		}
 
-		public String getName() { return palette.getPaletteDescription(); }
+		public String getName() { 
+			if (reversed)
+				return palette.getPaletteDescription()+" (R)"; 
+			return palette.getPaletteDescription(); 
+		}
 
 		public Object getIdentifier() { return palette; }
 
@@ -171,11 +174,16 @@ public class ColorBrewerPaletteProvider implements PaletteProvider {
 			return palette.isColorBlindSave();
 		}
 
+		@Override
+		public boolean isReversable() { return true; }
+
 		public PaletteType getType() { return type; }
 
 		public int size() { return size; }
 
 		public Color[] getColors(int nColors) {
+			if (reversed)
+				return reverseColors(palette.getColorPalette(nColors));
 			return palette.getColorPalette(nColors);
 		}
 

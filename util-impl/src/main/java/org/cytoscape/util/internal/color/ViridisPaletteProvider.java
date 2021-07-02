@@ -15,11 +15,11 @@ package org.cytoscape.util.internal.color;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
  * GNU General Lesser Public License for more details.
  * 
  * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
+ * License along with this program.	If not, see
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
@@ -99,24 +99,29 @@ public class ViridisPaletteProvider implements PaletteProvider {
 	/**
 	 * Wrapper for ColorBrewer palettes
 	 */
-	class PaletteWrapper implements Palette {
+	class PaletteWrapper extends AbstractPalette {
 		Viridis palette;
-		PaletteType type;
-		int size;
 		PaletteProvider provider;
 		public PaletteWrapper(final PaletteProvider provider, Viridis cbPalette, int size) {
+			super(provider, cbPalette.getName(), size, BrewerType.SEQUENTIAL, true);
 			this.palette = cbPalette;
 			if (size < 0) size = cbPalette.getColors().length;
-			this.size = size;
-			this.type = BrewerType.SEQUENTIAL;
 			this.provider = provider;
 		}
 
-		public String getName() { return palette.getDescription(); }
+		public String getName() { 
+			if (reversed)
+				return palette.getDescription()+" (R)";
+			return palette.getDescription(); 
+	}
 
 		public Object getIdentifier() { return palette; }
 
 		public boolean isColorBlindSafe() {
+			return true;
+		}
+
+		public boolean isReversable() {
 			return true;
 		}
 
@@ -125,6 +130,8 @@ public class ViridisPaletteProvider implements PaletteProvider {
 		public int size() { return size; }
 
 		public Color[] getColors(int nColors) {
+			if (reversed)
+				return reverseColors(palette.getColorPalette(nColors));
 			return palette.getColorPalette(nColors);
 		}
 

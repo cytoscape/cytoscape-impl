@@ -104,10 +104,12 @@ public class ColorPaletteProviderPanel extends ColorBlindAwareColorChooserPanel 
 		var colors = palette.getColors(paletteSize);
 		
 		for (int colorIndex = 0; colorIndex < paletteSize; colorIndex++) {
+			Color clr;
+			clr = colors[colorIndex];
 			var colorButton = new JButton();
-			colorButton.setActionCommand(palette.getName() + ":" + String.valueOf(colors[colorIndex].getRGB()));
+			colorButton.setActionCommand(palette.getName() + ":" + String.valueOf(clr.getRGB()));
 			colorButton.addActionListener(this);
-			colorButton.setIcon(new ColorIcon(colors[colorIndex], 15, 15, paletteOnly));
+			colorButton.setIcon(new ColorIcon(clr, 15, 15, paletteOnly));
 			// colorButton.setBorder(normalBorder);
 			colorButton.setBorder(BorderFactory.createEmptyBorder());
 			colorButton.setToolTipText(palette.getName());
@@ -148,6 +150,9 @@ public class ColorPaletteProviderPanel extends ColorBlindAwareColorChooserPanel 
 				if (!palette.isColorBlindSafe())
 					continue;
 			}
+
+      // Get the color order right
+      palette.reverse(reverseColors);
 
 			var button = createPalette(palette, border, selectedBorder);
 			add(button);
