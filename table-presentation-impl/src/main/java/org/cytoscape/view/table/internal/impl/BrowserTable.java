@@ -1337,8 +1337,14 @@ public class BrowserTable extends JTable
 			return null;
 
 		var sb = new StringBuffer();
+		boolean firstRow = true;
 		
 		for (int r : rows) {
+			if (!firstRow)
+				sb.append(LINE_BREAK);
+			else
+				firstRow = false;
+			
 			boolean firstColumn = true;
 
 			for (int c : columns) {
@@ -1358,8 +1364,6 @@ public class BrowserTable extends JTable
 						sb.append(object.toString());
 				}
 			}
-
-			sb.append(LINE_BREAK);
 		}
 		
 		return sb.toString();
