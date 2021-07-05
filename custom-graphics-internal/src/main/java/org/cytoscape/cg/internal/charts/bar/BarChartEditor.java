@@ -338,7 +338,7 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 					chart,
 					getColorSchemes(),
 					serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork(),
-					serviceRegistrar.getService(IconManager.class)
+					serviceRegistrar
 			);
 		}
 		
@@ -350,8 +350,8 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	private class BarColorSchemeEditor extends ColorSchemeEditor<BarChart> {
 
 		public BarColorSchemeEditor(BarChart chart, ColorScheme[] colorSchemes, CyNetwork network,
-				IconManager iconMgr) {
-			super(chart, colorSchemes, false, network, iconMgr);
+				CyServiceRegistrar serviceRegistrar) {
+			super(chart, colorSchemes, false, network, serviceRegistrar);
 		}
 
 		@Override
@@ -372,7 +372,7 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 			var type = chart.get(BarChart.TYPE, BarChartType.class, BarChartType.GROUPED);
 			
 			if (type == BarChartType.HEAT_STRIPS || type == BarChartType.UP_DOWN) {
-				cp.setFont(iconMgr.getIconFont(11));
+				cp.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(11));
 				String label = "";
 				String toolTip = null;
 				

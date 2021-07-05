@@ -16,7 +16,6 @@ import org.cytoscape.cg.internal.charts.ColorSchemeEditor;
 import org.cytoscape.cg.model.ColorScheme;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 
@@ -85,7 +84,7 @@ public class PieChartEditor extends AbstractChartEditor<PieChart> {
 					chart,
 					getColorSchemes(),
 					serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork(),
-					serviceRegistrar.getService(IconManager.class)
+					serviceRegistrar
 			);
 		}
 		
@@ -97,8 +96,8 @@ public class PieChartEditor extends AbstractChartEditor<PieChart> {
 	private class PieColorSchemeEditor extends ColorSchemeEditor<PieChart> {
 
 		public PieColorSchemeEditor(PieChart chart, ColorScheme[] colorSchemes, CyNetwork network,
-				IconManager iconMgr) {
-			super(chart, colorSchemes, false, network, iconMgr);
+				CyServiceRegistrar serviceRegistrar) {
+			super(chart, colorSchemes, false, network, serviceRegistrar);
 		}
 
 		@Override

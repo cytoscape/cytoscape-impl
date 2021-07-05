@@ -625,7 +625,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 					getColorSchemes(),
 					columnIsSeries,
 					serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork(),
-					serviceRegistrar.getService(IconManager.class)
+					serviceRegistrar
 			);
 		}
 		

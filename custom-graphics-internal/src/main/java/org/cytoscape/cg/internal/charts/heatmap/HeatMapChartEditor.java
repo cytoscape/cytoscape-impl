@@ -66,7 +66,7 @@ public class HeatMapChartEditor extends AbstractChartEditor<HeatMapChart> {
 					chart,
 					getColorSchemes(),
 					serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork(),
-					serviceRegistrar.getService(IconManager.class)
+					serviceRegistrar
 			);
 		}
 		
@@ -83,8 +83,8 @@ public class HeatMapChartEditor extends AbstractChartEditor<HeatMapChart> {
 	private class HeatMapColorSchemeEditor extends ColorSchemeEditor<HeatMapChart> {
 
 		public HeatMapColorSchemeEditor(HeatMapChart chart, ColorScheme[] colorSchemes, CyNetwork network,
-				IconManager iconMgr) {
-			super(chart, colorSchemes, false, network, iconMgr);
+				CyServiceRegistrar serviceRegistrar) {
+			super(chart, colorSchemes, false, network, serviceRegistrar);
 		}
 
 		@Override
@@ -96,7 +96,7 @@ public class HeatMapChartEditor extends AbstractChartEditor<HeatMapChart> {
 		protected void style(ColorPanel cp, int index) {
 			super.style(cp, index);
 			
-			cp.setFont(iconMgr.getIconFont(11));
+			cp.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(11));
 			String label = "";
 			String toolTip = null;
 			

@@ -10,8 +10,6 @@ import static org.cytoscape.cg.model.ColorScheme.CUSTOM;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -23,7 +21,6 @@ import javax.swing.BoxLayout;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -42,7 +39,10 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.color.BrewerType;
+import org.cytoscape.util.color.Palette;
+import org.cytoscape.util.swing.CyColorPaletteChooserFactory;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 
@@ -50,7 +50,6 @@ import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPanel {
 
 	private static final Color DEFAULT_COLOR = Color.LIGHT_GRAY;
-	private static final JColorChooser colorChooser = new JColorChooser();
 	
 	private final Border COLOR_BORDER;
 	private final Border COLOR_HOVER_BORDER;
@@ -59,23 +58,25 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 	private JComboBox<ColorScheme> colorSchemeCmb;
 	private JPanel colorListPnl;
 	
+	private Palette palette;
+	
 	protected final T chart;
 	protected ColorScheme[] colorSchemes;
 	protected final boolean columnIsSeries;
 	protected final CyNetwork network;
-	protected final IconManager iconMgr;
+	protected final CyServiceRegistrar serviceRegistrar;
 	
 	protected int total = 0;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
 	public ColorSchemeEditor(T chart, ColorScheme[] colorSchemes, boolean columnIsSeries,
-			CyNetwork network, IconManager iconMgr) {
+			CyNetwork network, CyServiceRegistrar serviceRegistrar) {
 		this.chart = chart;
 		this.colorSchemes = colorSchemes;
 		this.columnIsSeries = columnIsSeries;
 		this.network = network;
-		this.iconMgr = iconMgr;
+		this.serviceRegistrar = serviceRegistrar;
 		
 		COLOR_BORDER = BorderFactory.createCompoundBorder(
 				BorderFactory.createLineBorder(UIManager.getColor("TextField.background"), 2),
@@ -312,22 +313,19 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 		}
 		
 		private void chooseColor() {
-			var dialog = JColorChooser.createDialog(
-					ColorSchemeEditor.this,
-					"Colors",
-					true,
-					colorChooser, 
-					new ActionListener() {
-						@Override
-						public void actionPerformed(ActionEvent e) {
-							color = colorChooser.getColor();
-							ColorPanel.this.setBackground(color);
-							ColorPanel.this.setForeground(ColorUtil.getContrastingColor(color));
-						}
-					}, null);
-			dialog.setVisible(true);
+			var chooserFactory = serviceRegistrar.getService(CyColorPaletteChooserFactory.class);
+			var chooser = chooserFactory.getColorPaletteChooser(BrewerType.ANY, false);
+			var size = palette != null ? palette.size() : 8;
+			var newColor = chooser.showDialog(this, "Colors", palette, color, size);
+			
+			if (newColor != null) {
+				color = newColor;
+				setBackground(newColor);
+				setForeground(ColorUtil.getContrastingColor(newColor));
+			}
 		}
 		
+		@SuppressWarnings("rawtypes")
 		private void onColorsUpdated() {
 			var rows = getColorListPnl().getComponents();
 			var newColors = new ArrayList<Color>();
@@ -348,7 +346,7 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 	private static class ColorSchemeComboBoxRenderer extends DefaultListCellRenderer {
 
 		@Override
-		public Component getListCellRendererComponent(JList list, Object value, int index,
+		public Component getListCellRendererComponent(JList<?> list, Object value, int index,
 				boolean isSelected, boolean cellHasFocus) {
 			var c = (DefaultListCellRenderer) super.getListCellRendererComponent(
 					list, value, index, isSelected, cellHasFocus);
