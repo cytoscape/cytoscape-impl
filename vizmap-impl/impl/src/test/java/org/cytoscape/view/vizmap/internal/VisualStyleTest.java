@@ -39,6 +39,7 @@ import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.events.VisualStyleChangeRecord;
 import org.cytoscape.view.vizmap.events.VisualStyleChangedEvent;
+import org.cytoscape.view.vizmap.internal.mappings.DiscreteMappingImpl;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 import org.junit.Before;
@@ -138,6 +139,61 @@ public class VisualStyleTest extends AbstractVisualStyleTest {
 		
 		reset(eventHelper);
 	}
+	
+	
+	private VisualPropertyDependency<Double> createLockNodeWidthHeightDependency() {
+		Set<VisualProperty<Double>> props = new HashSet<>();
+		props.add(NODE_WIDTH);
+		props.add(NODE_HEIGHT);
+		
+		VisualLexicon lexicon = new BasicVisualLexicon(new NullVisualProperty("ROOT", "Root Visual Property"));
+		
+		VisualPropertyDependency<Double> dep = new VisualPropertyDependency<>("nodeSizeDep", "Lock Node W/H", props, lexicon);
+		dep.setDependency(true);
+		
+		return dep;
+	}
+	
+	
+	@Test
+	public void testSetDependantVisualProperty() {
+		var dep = createLockNodeWidthHeightDependency();
+		style.addVisualPropertyDependency(dep);
+		
+		style.setDefaultValue(NODE_SIZE, 99.0);
+		style.apply(networkView);
+		
+		assertEquals(99.0, networkView.getNodeView(node1).getVisualProperty(NODE_SIZE), 0.0);
+		assertEquals(99.0, networkView.getNodeView(node1).getVisualProperty(NODE_HEIGHT), 0.0);
+		assertEquals(99.0, networkView.getNodeView(node1).getVisualProperty(NODE_WIDTH), 0.0);
+	}
+	
+	@Test
+	public void testSetDependantVisualPropertyMapping() {
+		var dep = createLockNodeWidthHeightDependency();
+		style.addVisualPropertyDependency(dep);
+		
+		var mapping = new DiscreteMappingImpl<String,Double>(attrName, String.class, NODE_SIZE, eventHelper);
+		mapping.putMapValue("red",   111.1);
+		mapping.putMapValue("green", 222.2);
+		mapping.putMapValue("foo",   333.3);
+		
+		style.addVisualMappingFunction(mapping);
+		style.apply(networkView);
+		
+		assertEquals(111.1, networkView.getNodeView(node1).getVisualProperty(NODE_SIZE),   0.0);
+		assertEquals(111.1, networkView.getNodeView(node1).getVisualProperty(NODE_HEIGHT), 0.0);
+		assertEquals(111.1, networkView.getNodeView(node1).getVisualProperty(NODE_WIDTH),  0.0);
+		
+		assertEquals(222.2, networkView.getNodeView(node2).getVisualProperty(NODE_SIZE),   0.0);
+		assertEquals(222.2, networkView.getNodeView(node2).getVisualProperty(NODE_HEIGHT), 0.0);
+		assertEquals(222.2, networkView.getNodeView(node2).getVisualProperty(NODE_WIDTH),  0.0);
+		
+		assertEquals(333.3, networkView.getNodeView(node3).getVisualProperty(NODE_SIZE),   0.0);
+		assertEquals(333.3, networkView.getNodeView(node3).getVisualProperty(NODE_HEIGHT), 0.0);
+		assertEquals(333.3, networkView.getNodeView(node3).getVisualProperty(NODE_WIDTH),  0.0);
+	}
+	
 	
 	@Test
 	public void testSetDefaultValueFiresEvent() {

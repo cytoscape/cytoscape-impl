@@ -169,6 +169,10 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 								  final Object value,
 								  final Set<VisualProperty<?>> children,
 								  final boolean isDefaultValue) {
+		
+		// Don't forget to set the value on the parent
+		view.setVisualProperty(parent, value);
+		
 		for (final VisualProperty<?> vp : children) {
 			// Prevent ClassCastExceptions (the child property can have a different value type)
 			if (parent.getClass() == vp.getClass() && !(isDefaultValue && vp.shouldIgnoreDefault()))

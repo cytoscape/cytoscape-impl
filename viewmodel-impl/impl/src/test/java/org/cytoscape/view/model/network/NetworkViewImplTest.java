@@ -209,7 +209,7 @@ public class NetworkViewImplTest {
 		assertTrue(n3.isValueLocked(NODE_HEIGHT));
 		assertTrue(n3.isValueLocked(NODE_WIDTH));
 		
-		assertTrue(n3.isValueLocked(NODE_SIZE));
+		assertTrue(n3.isDirectlyLocked(NODE_SIZE));
 		assertFalse(n3.isDirectlyLocked(NODE_HEIGHT));
 		assertFalse(n3.isDirectlyLocked(NODE_WIDTH));
 		
@@ -226,7 +226,7 @@ public class NetworkViewImplTest {
 		assertTrue(n3.isValueLocked(NODE_HEIGHT));
 		assertTrue(n3.isValueLocked(NODE_WIDTH));
 		
-		assertTrue(n3.isValueLocked(NODE_SIZE));
+		assertTrue(n3.isDirectlyLocked(NODE_SIZE));
 		assertFalse(n3.isDirectlyLocked(NODE_HEIGHT));
 		assertFalse(n3.isDirectlyLocked(NODE_WIDTH));
 	}
