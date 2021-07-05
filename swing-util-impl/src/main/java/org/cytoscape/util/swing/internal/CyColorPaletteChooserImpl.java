@@ -435,10 +435,9 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 		var model = (ColorPanelSelectionModel) colorChooser.getSelectionModel();
 		model.setPalette(palette);
 		initialPalette = palette;
-		if (palette.isReversable())
-			reverseColorsCB.setEnabled(true);
-		else
-			reverseColorsCB.setEnabled(false);
+		
+		if (palette != null)
+			reverseColorsCB.setEnabled(palette.isReversable());
 	}
 
 	private List<PaletteProvider> getPaletteProviders(boolean colorBlindOnly) {
