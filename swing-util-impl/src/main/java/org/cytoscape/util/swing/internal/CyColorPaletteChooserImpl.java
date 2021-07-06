@@ -237,7 +237,7 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 		// reverse colors checkbox
 		var cbReverseGridPanel = new JPanel();
 		cbPanel.add(cbReverseGridPanel);
-		var reverseColorsCB = new JCheckBox("reverse colors");
+		reverseColorsCB = new JCheckBox("reverse colors");
 
 		// If the initial palette is reversed, set everything to be reversed
 		if (initialPalette != null && initialPalette.isReversable() && initialPalette.isReversed()) {
