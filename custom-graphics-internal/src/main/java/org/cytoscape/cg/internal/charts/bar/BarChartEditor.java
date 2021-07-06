@@ -10,8 +10,6 @@ import static org.cytoscape.cg.model.ColorScheme.RAINBOW;
 import static org.cytoscape.cg.model.ColorScheme.RANDOM;
 
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.util.ArrayList;
@@ -169,13 +167,7 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	private JRadioButton getGroupedRd() {
 		if (groupedRd == null) {
 			groupedRd = new JRadioButton("Grouped");
-			
-			groupedRd.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					setType();
-				}
-			});
+			groupedRd.addActionListener(evt -> setType());
 		}
 		
 		return groupedRd;
@@ -184,13 +176,7 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	private JRadioButton getStackedRd() {
 		if (stackedRd == null) {
 			stackedRd = new JRadioButton("Stacked");
-			
-			stackedRd.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					setType();
-				}
-			});
+			stackedRd.addActionListener(evt -> setType());
 		}
 		
 		return stackedRd;
@@ -199,13 +185,7 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	public JRadioButton getHeatStripsRd() {
 		if (heatStripsRd == null) {
 			heatStripsRd = new JRadioButton("Heat Strips");
-			
-			heatStripsRd.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					setType();
-				}
-			});
+			heatStripsRd.addActionListener(evt -> setType());
 		}
 		
 		return heatStripsRd;
@@ -214,13 +194,7 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	public JRadioButton getUpDownRd() {
 		if (upDownRd == null) {
 			upDownRd = new JRadioButton("Up-Down");
-			
-			upDownRd.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					setType();
-				}
-			});
+			upDownRd.addActionListener(evt -> setType());
 		}
 		
 		return upDownRd;
@@ -263,7 +237,7 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 		
 		chart.set(BarChart.TYPE, type);
 		updateRangeMinMax(true);
-		getColorSchemeEditor().setColorSchemes(getColorSchemes());
+		getColorSchemeEditor().reset();
 	}
 	
 	protected void updateType() {
@@ -349,8 +323,12 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	
 	private class BarColorSchemeEditor extends ColorSchemeEditor<BarChart> {
 
-		public BarColorSchemeEditor(BarChart chart, ColorScheme[] colorSchemes, CyNetwork network,
-				CyServiceRegistrar serviceRegistrar) {
+		public BarColorSchemeEditor(
+				BarChart chart,
+				ColorScheme[] colorSchemes,
+				CyNetwork network,
+				CyServiceRegistrar serviceRegistrar
+		) {
 			super(chart, colorSchemes, false, network, serviceRegistrar);
 		}
 

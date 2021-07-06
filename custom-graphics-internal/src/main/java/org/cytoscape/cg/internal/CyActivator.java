@@ -26,6 +26,7 @@ import org.cytoscape.cg.internal.model.CustomGraphics2ManagerImpl;
 import org.cytoscape.cg.internal.model.CustomGraphicsManagerImpl;
 import org.cytoscape.cg.internal.vector.GradientOvalFactory;
 import org.cytoscape.cg.internal.vector.GradientRoundRectangleFactory;
+import org.cytoscape.cg.model.ColorScheme;
 import org.cytoscape.cg.model.CustomGraphics2Manager;
 import org.cytoscape.cg.model.CustomGraphicsManager;
 import org.cytoscape.cg.model.CustomGraphicsRange;
@@ -60,6 +61,8 @@ public class CyActivator extends AbstractCyActivator {
 	}
 
 	private void startCustomGraphicsMgr(BundleContext bc, CyServiceRegistrar serviceRegistrar) {
+		ColorScheme.setServiceRegistrar(serviceRegistrar);
+		
 		cgBrowser = new CustomGraphicsBrowser(serviceRegistrar);
 		registerAllServices(bc, cgBrowser);
 		
@@ -67,7 +70,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, cgManager);
 		
 		CustomGraphicsRange.setManager(cgManager);
-
+		
 		var cgManagerAction = new CustomGraphicsManagerAction(cgManager, cgBrowser, serviceRegistrar);
 		registerService(bc, cgManagerAction, CyAction.class);
 

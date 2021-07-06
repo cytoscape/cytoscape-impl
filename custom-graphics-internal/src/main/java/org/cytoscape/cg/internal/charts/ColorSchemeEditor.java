@@ -6,6 +6,9 @@ import static org.cytoscape.cg.internal.charts.AbstractChart.DATA_COLUMNS;
 import static org.cytoscape.cg.model.AbstractCustomGraphics2.COLORS;
 import static org.cytoscape.cg.model.AbstractCustomGraphics2.COLOR_SCHEME;
 import static org.cytoscape.cg.model.ColorScheme.CUSTOM;
+import static org.cytoscape.cg.model.ColorScheme.DEFAULT;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -21,6 +24,7 @@ import javax.swing.BoxLayout;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -30,20 +34,17 @@ import javax.swing.JSeparator;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
+import org.cytoscape.cg.internal.charts.bar.BarChart;
+import org.cytoscape.cg.internal.charts.bar.BarChart.BarChartType;
 import org.cytoscape.cg.internal.util.ColorUtil;
 import org.cytoscape.cg.internal.util.IconUtil;
 import org.cytoscape.cg.model.AbstractCustomGraphics2;
 import org.cytoscape.cg.model.ColorScheme;
-import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.color.Palette;
 import org.cytoscape.util.swing.CyColorPaletteChooserFactory;
-import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 
 @SuppressWarnings("serial")
@@ -56,6 +57,7 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 	
 	private JLabel colorSchemeLbl;
 	private JComboBox<ColorScheme> colorSchemeCmb;
+    private JButton colorPaletteBtn;
 	private JPanel colorListPnl;
 	
 	private Palette palette;
@@ -70,8 +72,24 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public ColorSchemeEditor(T chart, ColorScheme[] colorSchemes, boolean columnIsSeries,
-			CyNetwork network, CyServiceRegistrar serviceRegistrar) {
+	public ColorSchemeEditor(
+			T chart,
+			ColorScheme[] colorSchemes,
+			boolean columnIsSeries,
+			CyNetwork network,
+			CyServiceRegistrar serviceRegistrar
+	) {
+		this(chart, colorSchemes, columnIsSeries, false, network, serviceRegistrar);
+	}
+	
+	public ColorSchemeEditor(
+			T chart,
+			ColorScheme[] colorSchemes,
+			boolean columnIsSeries,
+			boolean upAndDow,
+			CyNetwork network,
+			CyServiceRegistrar serviceRegistrar
+	) {
 		this.chart = chart;
 		this.colorSchemes = colorSchemes;
 		this.columnIsSeries = columnIsSeries;
@@ -117,7 +135,7 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 		var layout = new GroupLayout(this);
 		setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
-		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+		layout.setAutoCreateGaps(!isAquaLAF());
 		
 		var sep = new JSeparator();
 		var colorListScr = new JScrollPane(getColorListPnl(),
@@ -128,6 +146,7 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 				.addGroup(layout.createSequentialGroup()
 						.addComponent(colorSchemeLbl)
 						.addComponent(getColorSchemeCmb(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getColorPaletteBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
 				.addComponent(colorListScr)
 				.addComponent(sep)
@@ -136,10 +155,13 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 						.addComponent(colorSchemeLbl)
 						.addComponent(getColorSchemeCmb())
+						.addComponent(getColorPaletteBtn())
 				)
 				.addComponent(colorListScr, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
+		
+		makeSmall(getColorPaletteBtn());
 	}
 	
 	protected JComboBox<ColorScheme> getColorSchemeCmb() {
@@ -150,12 +172,55 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 			
 			colorSchemeCmb.addActionListener(evt -> {
 				var newScheme = (ColorScheme) colorSchemeCmb.getSelectedItem();
+				
+				if (newScheme != CUSTOM)
+					palette = null;
+				
 				chart.set(COLOR_SCHEME, newScheme);
 				updateColorList(true);
 			});
 		}
 		
 		return colorSchemeCmb;
+	}
+	
+	protected JButton getColorPaletteBtn() {
+		if (colorPaletteBtn == null) {
+			colorPaletteBtn = new JButton("More Palettes...");
+
+			colorPaletteBtn.addActionListener(evt -> {
+				// Open color chooser
+				var chooserFactory = serviceRegistrar.getService(CyColorPaletteChooserFactory.class);
+				var type = palette != null ? palette.getType() : BrewerType.ANY;
+				var chooser = chooserFactory.getColorPaletteChooser(type, true);
+				var title = "Palettes";
+				var chartType = chart.get(BarChart.TYPE, BarChartType.class);
+				
+				int size = 1;
+				
+				if (chartType == BarChartType.UP_DOWN) {
+					size = 2;
+				} else if (chartType == BarChartType.HEAT_STRIPS) {
+					size = 3;
+				} else {
+					size = getTotal();
+					size = Math.max(size, 5);
+				}
+				
+				chooser.showDialog(this, title, palette, size);
+				palette = chooser.getSelectedPalette();
+
+				if (palette != null) {
+					getColorSchemeCmb().setSelectedItem(CUSTOM);
+					
+					var newScheme = new ColorScheme(palette);
+					chart.set(COLOR_SCHEME, newScheme);
+					updateColorList(true);
+				}
+			});
+		}
+
+		return colorPaletteBtn;
 	}
 	
 	protected JPanel getColorListPnl() {
@@ -172,10 +237,13 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 		if (colorSchemeCmb == null)
 			return;
 		
-		var scheme = chart.get(COLOR_SCHEME, ColorScheme.class, ColorScheme.DEFAULT);
+		var scheme = chart.get(COLOR_SCHEME, ColorScheme.class, DEFAULT);
 		
 		if (Arrays.asList(colorSchemes).contains(scheme)) {
 			colorSchemeCmb.setSelectedItem(scheme);
+		} else if (scheme.getPalette() != null) {
+			colorSchemeCmb.setSelectedItem(CUSTOM);
+			palette = scheme.getPalette();
 		} else {
 			scheme = CUSTOM;
 			colorSchemeCmb.setSelectedItem(scheme);
@@ -183,10 +251,10 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 		}
 	}
 	
-	protected void updateColorList(final boolean newScheme) {
+	protected void updateColorList(boolean newScheme) {
 		List<Color> colors = new ArrayList<>(chart.getList(COLORS, Color.class));
-		final ColorScheme scheme = chart.get(COLOR_SCHEME, ColorScheme.class, ColorScheme.DEFAULT);
-		final int nColors = getTotal();
+		var scheme = chart.get(COLOR_SCHEME, ColorScheme.class, DEFAULT);
+		int nColors = getTotal();
 		
 		if (nColors > 0) {
 			if (newScheme || colors.isEmpty()) {
@@ -201,7 +269,7 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 				}
 			} else if (colors.size() < nColors) {
 				// Just update existing list of colors (add new ones if there are more values now)
-				final List<Color> newColors = scheme.getColors(nColors);
+				var newColors = scheme.getColors(nColors);
 				
 				if (newColors.size() > colors.size())
 					colors.addAll(newColors.subList(colors.size(), newColors.size()));
@@ -212,8 +280,8 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 		getColorListPnl().removeAll();
 		
 		for (int i = 0; i < total; i++) {
-			final Color c = colors.size() > i ? colors.get(i) : Color.GRAY;
-			final ColorPanel cp = new ColorPanel(c, "");
+			var c = colors.size() > i ? colors.get(i) : Color.GRAY;
+			var cp = new ColorPanel(c, "");
 			style(cp, i);
 			
 			getColorListPnl().add(cp);
@@ -225,14 +293,14 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 			chart.set(COLORS, colors);
 	}
 	
-	protected void style(final ColorPanel cp, final int index) {
-		String label = "" + (index + 1);
+	protected void style(ColorPanel cp, int index) {
+		var label = "" + (index + 1);
 		cp.setText(label);
 	}
 	
 	protected int getTotal() {
 		if (total <= 0) {
-			final List<CyColumnIdentifier> dataColumns = chart.getList(DATA_COLUMNS, CyColumnIdentifier.class);
+			var dataColumns = chart.getList(DATA_COLUMNS, CyColumnIdentifier.class);
 			
 			if (columnIsSeries) {
 				// Each column represents a data series
@@ -242,17 +310,17 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 				int nColors1 = 0;
 				int nColors2 = 0;
 				
-				final List<CyNode> allNodes = network.getNodeList();
-				final CyTable table = network.getDefaultNodeTable();
+				var allNodes = network.getNodeList();
+				var table = network.getDefaultNodeTable();
 				
-				for (final CyColumnIdentifier colId : dataColumns) {
-					final CyColumn column = table.getColumn(colId.getColumnName());
+				for (var colId : dataColumns) {
+					var column = table.getColumn(colId.getColumnName());
 					if (column == null) continue;
 					
 					if (column.getType() == List.class) {
-						for (final CyNode node : allNodes) {
-							final CyRow row = network.getRow(node);
-							final List<?> values = row.getList(column.getName(), column.getListElementType());
+						for (var node : allNodes) {
+							var row = network.getRow(node);
+							var values = row.getList(column.getName(), column.getListElementType());
 							
 							if (values != null)
 								nColors1 = Math.max(nColors1, values.size());
@@ -275,7 +343,7 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 
 		private Color color;
 
-		ColorPanel(Color color, final String label) {
+		ColorPanel(Color color, String label) {
 			super(label, IconUtil.emptyIcon(20, 20), JLabel.CENTER);
 			
 			if (color == null)
@@ -315,7 +383,21 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 		private void chooseColor() {
 			var chooserFactory = serviceRegistrar.getService(CyColorPaletteChooserFactory.class);
 			var chooser = chooserFactory.getColorPaletteChooser(BrewerType.ANY, false);
-			var size = palette != null ? palette.size() : 8;
+			var chartType = chart.get(BarChart.TYPE, BarChartType.class);
+			
+			int size = 1;
+			
+			if (chartType == BarChartType.UP_DOWN)
+				size = 2;
+			else if (chartType == BarChartType.HEAT_STRIPS)
+				size = 3;
+			else {
+				if (palette != null)
+					size = palette.size();
+				else
+					size = Math.max(5, getTotal());
+			}
+			
 			var newColor = chooser.showDialog(this, "Colors", palette, color, size);
 			
 			if (newColor != null) {

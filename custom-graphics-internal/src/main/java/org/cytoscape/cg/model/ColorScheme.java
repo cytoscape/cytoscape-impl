@@ -2,12 +2,16 @@ package org.cytoscape.cg.model;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
 import org.cytoscape.cg.internal.charts.util.ColorGradient;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.color.Palette;
+import org.cytoscape.util.color.PaletteProviderManager;
 
 public class ColorScheme {
 	
@@ -22,6 +26,9 @@ public class ColorScheme {
 	private final String key;
 	private final String label;
 	private ColorGradient gradient;
+    private Palette palette;
+    
+    private static CyServiceRegistrar serviceRegistrar;
 	
 	public ColorScheme(String key, String label) {
 		this.key = key;
@@ -32,6 +39,15 @@ public class ColorScheme {
 		this.key = gradient.name();
 		this.label = gradient.getLabel();
 		this.gradient = gradient;
+	}
+	
+	/**
+	 * @since 3.9
+	 */
+	public ColorScheme(Palette palette) {
+		this.key = palette.getIdentifier().toString();
+		this.label = palette.getName();
+		this.palette = palette;
 	}
 	
 	public String getKey() {
@@ -46,13 +62,23 @@ public class ColorScheme {
 		List<Color> colors = null;
 		
 		if (nColors > 0) {
-			if (gradient != null) {
-				colors = gradient.getColors();
+			if (palette != null || gradient != null) {
+				colors = gradient != null ? gradient.getColors() : Arrays.asList(palette.getColors());
 				
-				if (colors.size() > nColors && nColors == 2) {
-					List<Color> newColors = new ArrayList<Color>();
+				if (colors.size() > nColors) {
+					var newColors = new ArrayList<Color>();
 					newColors.add(colors.get(0));
-					newColors.add(colors.get(2));
+
+					if (nColors == 2) {
+						newColors.add(colors.get(colors.size() - 1));
+					} else if (nColors == 3) {
+						newColors.add(colors.get(Math.round((colors.size() - 1) / 2.0f)));
+						newColors.add(colors.get(colors.size() - 1));
+					} else if (nColors > 1) {
+						newColors.addAll(colors.subList(1, nColors));
+					}
+					
+					colors = newColors;
 				}
 			} else if (nColors > 0) {
 				if (RANDOM.getKey().equalsIgnoreCase(key) || CUSTOM.getKey().equalsIgnoreCase(key))
@@ -72,6 +98,10 @@ public class ColorScheme {
 		return colors;
 	}
 	
+	public Palette getPalette() {
+		return palette;
+	}
+	
 	public static ColorScheme parse(String input) {
 		if (RANDOM.getKey().equalsIgnoreCase(input))      return RANDOM;
 		if (CUSTOM.getKey().equalsIgnoreCase(input))      return CUSTOM;
@@ -82,14 +112,25 @@ public class ColorScheme {
 		if (ColorGradient.contains(input))
 			return new ColorScheme(ColorGradient.getGradient(input));
 		
-		return CONTRASTING;
+		if (input != null && serviceRegistrar != null) {
+			var ppManager = serviceRegistrar.getService(PaletteProviderManager.class);
+			
+			for (var provider : ppManager.getPaletteProviders()) {
+				var palette = provider.getPalette(input);
+				
+				if (palette != null)
+					return new ColorScheme(palette);
+			}
+		}
+		
+		return CUSTOM;
 	}
 	
 	public static List<Color> generateRandomColors(int nColors) {
-		Calendar cal = Calendar.getInstance();
+		var cal = Calendar.getInstance();
 		int seed = cal.get(Calendar.SECOND);
-		Random rand = new Random(seed);
-		List<Color> result = new ArrayList<Color>(nColors);
+		var rand = new Random(seed);
+		var result = new ArrayList<Color>(nColors);
 		
 		for (int index = 0; index < nColors; index++) {
 			int r = rand.nextInt(255);
@@ -103,7 +144,7 @@ public class ColorScheme {
 
 	// Rainbow colors just divide the Hue wheel into n pieces and return them
 	public static List<Color> generateRainbowColors(int nColors) {
-		List<Color> values = new ArrayList<Color>();
+		var values = new ArrayList<Color>();
 		
 		for (float i = 0.0f; i < (float) nColors; i += 1.0f) {
 			values.add(new Color(Color.HSBtoRGB(i / (float) nColors, 1.0f, 1.0f)));
@@ -115,7 +156,7 @@ public class ColorScheme {
 	// Rainbow colors just divide the Hue wheel into n pieces and return them,
 	// but in this case, we're going to change the saturation and intensity
 	public static List<Color> generateModulatedRainbowColors(int nColors) {
-		List<Color> values = new ArrayList<Color>();
+		var values = new ArrayList<Color>();
 		
 		for (float i = 0.0f; i < (float) nColors; i += 1.0f) {
 			float sat = (Math.abs(((Number) Math.cos((8 * i) / (2 * Math.PI))).floatValue()) * 0.7f) + 0.3f;
@@ -129,7 +170,7 @@ public class ColorScheme {
 
 	// This is like rainbow, but we alternate sides of the color wheel
 	public static List<Color> generateContrastingColors(int nColors) {
-		List<Color> values = new ArrayList<Color>();
+		var values = new ArrayList<Color>();
 		
 		// We need to special-case the situation where we only have two colors
 		if (nColors == 2) {
@@ -139,12 +180,15 @@ public class ColorScheme {
 		}
 	
 		float divs = (float) nColors;
+		
 		for (float i = 0.0f; i < divs; i += 1.0f) {
-			Color rgbColor = new Color(Color.HSBtoRGB(i / divs, 1.0f, 1.0f));
+			var rgbColor = new Color(Color.HSBtoRGB(i / divs, 1.0f, 1.0f));
 			values.add(rgbColor);
 			i += 1.0f;
+			
 			if (i >= divs)
 				break;
+			
 			float hue = (i / divs) + 0.5f; // This moves to the opposite side of the color wheel
 			
 			if (hue >= 1.0f)
@@ -155,6 +199,10 @@ public class ColorScheme {
 		}
 		
 		return values;
+	}
+	
+	public static void setServiceRegistrar(CyServiceRegistrar serviceRegistrar) {
+		ColorScheme.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
@@ -173,7 +221,7 @@ public class ColorScheme {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		ColorScheme other = (ColorScheme) obj;
+		var other = (ColorScheme) obj;
 		if (key == null) {
 			if (other.key != null)
 				return false;
