@@ -6,28 +6,22 @@ import static org.cytoscape.cg.internal.charts.AbstractChart.DATA_COLUMNS;
 import static org.cytoscape.cg.model.AbstractCustomGraphics2.COLORS;
 import static org.cytoscape.cg.model.AbstractCustomGraphics2.COLOR_SCHEME;
 import static org.cytoscape.cg.model.ColorScheme.CUSTOM;
-import static org.cytoscape.cg.model.ColorScheme.DEFAULT;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
@@ -44,6 +38,8 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.color.Palette;
+import org.cytoscape.util.color.PaletteProviderManager;
+import org.cytoscape.util.color.PaletteType;
 import org.cytoscape.util.swing.CyColorPaletteChooserFactory;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 
@@ -56,14 +52,15 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 	private final Border COLOR_HOVER_BORDER;
 	
 	private JLabel colorSchemeLbl;
-	private JComboBox<ColorScheme> colorSchemeCmb;
     private JButton colorPaletteBtn;
 	private JPanel colorListPnl;
 	
 	private Palette palette;
+	private PaletteType paletteType;
+	private String defaultPaletteName;
+	private ColorScheme defaultColorScheme;
 	
 	protected final T chart;
-	protected ColorScheme[] colorSchemes;
 	protected final boolean columnIsSeries;
 	protected final CyNetwork network;
 	protected final CyServiceRegistrar serviceRegistrar;
@@ -74,27 +71,20 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 	
 	public ColorSchemeEditor(
 			T chart,
-			ColorScheme[] colorSchemes,
 			boolean columnIsSeries,
-			CyNetwork network,
-			CyServiceRegistrar serviceRegistrar
-	) {
-		this(chart, colorSchemes, columnIsSeries, false, network, serviceRegistrar);
-	}
-	
-	public ColorSchemeEditor(
-			T chart,
-			ColorScheme[] colorSchemes,
-			boolean columnIsSeries,
-			boolean upAndDow,
+			PaletteType paletteType,
+			String defaultPaletteName,
 			CyNetwork network,
 			CyServiceRegistrar serviceRegistrar
 	) {
 		this.chart = chart;
-		this.colorSchemes = colorSchemes;
 		this.columnIsSeries = columnIsSeries;
 		this.network = network;
 		this.serviceRegistrar = serviceRegistrar;
+		
+		setPaletteType(paletteType);
+		setDefaultPaletteName(defaultPaletteName);
+		palette = getDefaultPalette();
 		
 		COLOR_BORDER = BorderFactory.createCompoundBorder(
 				BorderFactory.createLineBorder(UIManager.getColor("TextField.background"), 2),
@@ -104,31 +94,47 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 				BorderFactory.createLineBorder(UIManager.getColor("TextField.background"), 1));
 		
 		init();
-		updateColorList(false);
+		updateColorList(true);
+		updateColorPaletteBtn();
 	}
 
 	// ==[ PUBLIC METHODS ]=============================================================================================
 
-	public void setColorSchemes(ColorScheme[] colorSchemes) {
-		this.colorSchemes = colorSchemes;
-		getColorSchemeCmb().removeAllItems();
+	public void setPaletteType(PaletteType paletteType) {
+		if (paletteType == null)
+			throw new IllegalArgumentException("'paletteType' must not be null.");
 		
-		for (var scheme : colorSchemes)
-			getColorSchemeCmb().addItem(scheme);
-		
-		updateColorSchemeCmb();
-		reset();
+		if (this.paletteType != paletteType) {
+			this.paletteType = paletteType;
+			
+			if (palette != null && !paletteType.equals(palette.getType()))
+				palette = null;
+		}
 	}
 	
-	public void reset() {
+	public void setDefaultPaletteName(String defaultPaletteName) {
+		if (defaultPaletteName == null)
+			throw new IllegalArgumentException("'defaultPaletteName' must not be null.");
+		
+		this.defaultPaletteName = defaultPaletteName;
+	}
+	
+	public void reset(boolean resetColorScheme) {
+		if (resetColorScheme) {
+			defaultColorScheme = null;
+			palette = getDefaultPalette();
+			chart.set(COLOR_SCHEME, getDefaultColorScheme());
+		}
+			
 		total = 0;
-		updateColorList(false);
+		updateColorList(true);
+		updateColorPaletteBtn();
 	}
 	
 	// ==[ PRIVATE METHODS ]============================================================================================
 
 	private void init() {
-		colorSchemeLbl = new JLabel("Color Scheme:");
+		colorSchemeLbl = new JLabel("Color Palette:");
 		
 		setOpaque(false);
 		
@@ -145,7 +151,6 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
 				.addGroup(layout.createSequentialGroup()
 						.addComponent(colorSchemeLbl)
-						.addComponent(getColorSchemeCmb(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(getColorPaletteBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
 				.addComponent(colorListScr)
@@ -154,7 +159,6 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 						.addComponent(colorSchemeLbl)
-						.addComponent(getColorSchemeCmb())
 						.addComponent(getColorPaletteBtn())
 				)
 				.addComponent(colorListScr, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -164,35 +168,14 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 		makeSmall(getColorPaletteBtn());
 	}
 	
-	protected JComboBox<ColorScheme> getColorSchemeCmb() {
-		if (colorSchemeCmb == null) {
-			colorSchemeCmb = new JComboBox<>(colorSchemes);
-			colorSchemeCmb.setRenderer(new ColorSchemeComboBoxRenderer());
-			updateColorSchemeCmb();
-			
-			colorSchemeCmb.addActionListener(evt -> {
-				var newScheme = (ColorScheme) colorSchemeCmb.getSelectedItem();
-				
-				if (newScheme != CUSTOM)
-					palette = null;
-				
-				chart.set(COLOR_SCHEME, newScheme);
-				updateColorList(true);
-			});
-		}
-		
-		return colorSchemeCmb;
-	}
-	
 	protected JButton getColorPaletteBtn() {
 		if (colorPaletteBtn == null) {
-			colorPaletteBtn = new JButton("More Palettes...");
+			colorPaletteBtn = new JButton();
 
 			colorPaletteBtn.addActionListener(evt -> {
 				// Open color chooser
 				var chooserFactory = serviceRegistrar.getService(CyColorPaletteChooserFactory.class);
-				var type = palette != null ? palette.getType() : BrewerType.ANY;
-				var chooser = chooserFactory.getColorPaletteChooser(type, true);
+				var chooser = chooserFactory.getColorPaletteChooser(paletteType, true);
 				var title = "Palettes";
 				var chartType = chart.get(BarChart.TYPE, BarChartType.class);
 				
@@ -211,12 +194,12 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 				palette = chooser.getSelectedPalette();
 
 				if (palette != null) {
-					getColorSchemeCmb().setSelectedItem(CUSTOM);
-					
 					var newScheme = new ColorScheme(palette);
 					chart.set(COLOR_SCHEME, newScheme);
 					updateColorList(true);
 				}
+				
+				updateColorPaletteBtn();
 			});
 		}
 
@@ -233,27 +216,52 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 		return colorListPnl;
 	}
 	
-	private void updateColorSchemeCmb() {
-		if (colorSchemeCmb == null)
-			return;
+	private Palette getDefaultPalette() {
+		var scheme = getDefaultColorScheme();
 		
-		var scheme = chart.get(COLOR_SCHEME, ColorScheme.class, DEFAULT);
-		
-		if (Arrays.asList(colorSchemes).contains(scheme)) {
-			colorSchemeCmb.setSelectedItem(scheme);
-		} else if (scheme.getPalette() != null) {
-			colorSchemeCmb.setSelectedItem(CUSTOM);
-			palette = scheme.getPalette();
-		} else {
-			scheme = CUSTOM;
-			colorSchemeCmb.setSelectedItem(scheme);
-			chart.set(COLOR_SCHEME, scheme);
+		return scheme != null ? scheme.getPalette() : null;
+	}
+	
+	protected ColorScheme getDefaultColorScheme() {
+		if (defaultColorScheme == null) {
+			var ppManager = serviceRegistrar.getService(PaletteProviderManager.class);
+			var providers = ppManager.getPaletteProviders();
+			
+			for (var pp : providers) {
+				var p = pp.getPalette(defaultPaletteName);
+				
+				if (p != null) {
+					defaultColorScheme = new ColorScheme(p);
+					break;
+				}
+			}
+			
+			if (defaultColorScheme == null)
+				defaultColorScheme = ColorScheme.CONTRASTING;
 		}
+		
+		return defaultColorScheme;
+	}
+	
+	private void updateColorPaletteBtn() {
+		getColorPaletteBtn().setText(palette != null ? palette.getName() : "None");
 	}
 	
 	protected void updateColorList(boolean newScheme) {
 		List<Color> colors = new ArrayList<>(chart.getList(COLORS, Color.class));
-		var scheme = chart.get(COLOR_SCHEME, ColorScheme.class, DEFAULT);
+		var scheme = chart.get(COLOR_SCHEME, ColorScheme.class);
+		
+		if (scheme == null) {
+			palette = getDefaultPalette();
+			scheme = getDefaultColorScheme();
+			updateColorPaletteBtn();
+		} else if (scheme.getPalette() != null && !scheme.getPalette().getType().equals(palette.getType())) {
+			palette = getDefaultPalette();
+			scheme = getDefaultColorScheme();
+			chart.set(COLOR_SCHEME, scheme);
+			updateColorPaletteBtn();
+		}
+			
 		int nColors = getTotal();
 		
 		if (nColors > 0) {
@@ -383,20 +391,10 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 		private void chooseColor() {
 			var chooserFactory = serviceRegistrar.getService(CyColorPaletteChooserFactory.class);
 			var chooser = chooserFactory.getColorPaletteChooser(BrewerType.ANY, false);
-			var chartType = chart.get(BarChart.TYPE, BarChartType.class);
+			int size = getTotal();
 			
-			int size = 1;
-			
-			if (chartType == BarChartType.UP_DOWN)
-				size = 2;
-			else if (chartType == BarChartType.HEAT_STRIPS)
-				size = 3;
-			else {
-				if (palette != null)
-					size = palette.size();
-				else
-					size = Math.max(5, getTotal());
-			}
+			if (size < 2)
+				size = 5;
 			
 			var newColor = chooser.showDialog(this, "Colors", palette, color, size);
 			
@@ -422,27 +420,6 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 			}
 			
 			chart.set(COLORS, newColors);
-		}
-	}
-	
-	private static class ColorSchemeComboBoxRenderer extends DefaultListCellRenderer {
-
-		@Override
-		public Component getListCellRendererComponent(JList<?> list, Object value, int index,
-				boolean isSelected, boolean cellHasFocus) {
-			var c = (DefaultListCellRenderer) super.getListCellRendererComponent(
-					list, value, index, isSelected, cellHasFocus);
-			
-			if (value == null)
-				c.setText("-- none --");
-			else if (value instanceof ColorScheme)
-				c.setText(((ColorScheme)value).getLabel());
-			else if (value instanceof String)
-				c.setText((String)value);
-			else
-				c.setText("[ invalid value ]"); // Should never happen
-				
-			return c;
 		}
 	}
 }

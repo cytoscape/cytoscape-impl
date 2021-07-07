@@ -1,39 +1,20 @@
 package org.cytoscape.cg.internal.charts.heatmap;
 
-import static org.cytoscape.cg.model.ColorScheme.CUSTOM;
-
-import java.util.ArrayList;
-
 import javax.swing.JComboBox;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.cg.internal.charts.AbstractChartEditor;
 import org.cytoscape.cg.internal.charts.ColorSchemeEditor;
 import org.cytoscape.cg.internal.charts.LabelPosition;
-import org.cytoscape.cg.internal.charts.util.ColorGradient;
-import org.cytoscape.cg.model.ColorScheme;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.color.BrewerType;
+import org.cytoscape.util.color.PaletteType;
 import org.cytoscape.util.swing.IconManager;
 
 @SuppressWarnings("serial")
 public class HeatMapChartEditor extends AbstractChartEditor<HeatMapChart> {
 
-	private static final ColorScheme[] UP_ZERO_DOWN_COLOR_SCHEMES;
-	
-	static {
-		var upZeroDownSchemeList = new ArrayList<>();
-		
-		for (var cg : ColorGradient.values()) {
-			if (cg.getColors().size() == 3)
-				upZeroDownSchemeList.add(new ColorScheme(cg));
-		}
-		
-		upZeroDownSchemeList.add(CUSTOM);
-		
-		UP_ZERO_DOWN_COLOR_SCHEMES = upZeroDownSchemeList.toArray(new ColorScheme[upZeroDownSchemeList.size()]);
-	}
-	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
 	public HeatMapChartEditor(HeatMapChart chart, CyServiceRegistrar serviceRegistrar) {
@@ -64,7 +45,8 @@ public class HeatMapChartEditor extends AbstractChartEditor<HeatMapChart> {
 		if (colorSchemeEditor == null) {
 			colorSchemeEditor = new HeatMapColorSchemeEditor(
 					chart,
-					getColorSchemes(),
+					getDefaultPaletteType(),
+					getDefaultPaletteName(),
 					serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork(),
 					serviceRegistrar
 			);
@@ -74,17 +56,27 @@ public class HeatMapChartEditor extends AbstractChartEditor<HeatMapChart> {
 	}
 	
 	@Override
-	protected ColorScheme[] getColorSchemes() {
-		return UP_ZERO_DOWN_COLOR_SCHEMES;
+	protected PaletteType getDefaultPaletteType() {
+		return BrewerType.DIVERGING;
+	}
+	
+	@Override
+	protected String getDefaultPaletteName() {
+		return "Red-Yellow-Blue";
 	}
 	
 	// ==[ CLASSES ]====================================================================================================
 	
 	private class HeatMapColorSchemeEditor extends ColorSchemeEditor<HeatMapChart> {
 
-		public HeatMapColorSchemeEditor(HeatMapChart chart, ColorScheme[] colorSchemes, CyNetwork network,
-				CyServiceRegistrar serviceRegistrar) {
-			super(chart, colorSchemes, false, network, serviceRegistrar);
+		public HeatMapColorSchemeEditor(
+				HeatMapChart chart,
+				PaletteType paletteType,
+				String defaultPaletteName,
+				CyNetwork network,
+				CyServiceRegistrar serviceRegistrar
+		) {
+			super(chart, false, paletteType, defaultPaletteName, network, serviceRegistrar);
 		}
 
 		@Override

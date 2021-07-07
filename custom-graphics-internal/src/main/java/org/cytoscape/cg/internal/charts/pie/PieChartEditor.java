@@ -13,9 +13,10 @@ import javax.swing.JPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.cg.internal.charts.AbstractChartEditor;
 import org.cytoscape.cg.internal.charts.ColorSchemeEditor;
-import org.cytoscape.cg.model.ColorScheme;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.color.BrewerType;
+import org.cytoscape.util.color.PaletteType;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 
@@ -82,7 +83,8 @@ public class PieChartEditor extends AbstractChartEditor<PieChart> {
 		if (colorSchemeEditor == null) {
 			colorSchemeEditor = new PieColorSchemeEditor(
 					chart,
-					getColorSchemes(),
+					getDefaultPaletteType(),
+					getDefaultPaletteName(),
 					serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork(),
 					serviceRegistrar
 			);
@@ -91,13 +93,28 @@ public class PieChartEditor extends AbstractChartEditor<PieChart> {
 		return colorSchemeEditor;
 	}
 	
+	@Override
+	protected PaletteType getDefaultPaletteType() {
+		return BrewerType.DIVERGING;
+	}
+	
+	@Override
+	protected String getDefaultPaletteName() {
+		return "Red-Yellow-Blue";
+	}
+	
 	// ==[ CLASSES ]====================================================================================================
 	
 	private class PieColorSchemeEditor extends ColorSchemeEditor<PieChart> {
 
-		public PieColorSchemeEditor(PieChart chart, ColorScheme[] colorSchemes, CyNetwork network,
-				CyServiceRegistrar serviceRegistrar) {
-			super(chart, colorSchemes, false, network, serviceRegistrar);
+		public PieColorSchemeEditor(
+				PieChart chart,
+				PaletteType paletteType,
+				String defaultPaletteName,
+				CyNetwork network,
+				CyServiceRegistrar serviceRegistrar
+		) {
+			super(chart, false, paletteType, defaultPaletteName, network, serviceRegistrar);
 		}
 
 		@Override

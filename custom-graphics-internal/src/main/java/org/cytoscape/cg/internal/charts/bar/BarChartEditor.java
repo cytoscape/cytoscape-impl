@@ -3,16 +3,10 @@ package org.cytoscape.cg.internal.charts.bar;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.cg.model.AbstractCustomGraphics2.ORIENTATION;
-import static org.cytoscape.cg.model.ColorScheme.CONTRASTING;
-import static org.cytoscape.cg.model.ColorScheme.CUSTOM;
-import static org.cytoscape.cg.model.ColorScheme.MODULATED;
-import static org.cytoscape.cg.model.ColorScheme.RAINBOW;
-import static org.cytoscape.cg.model.ColorScheme.RANDOM;
 
 import java.awt.Dimension;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.ButtonGroup;
@@ -28,42 +22,18 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.cg.internal.charts.AbstractChartEditor;
 import org.cytoscape.cg.internal.charts.ColorSchemeEditor;
 import org.cytoscape.cg.internal.charts.bar.BarChart.BarChartType;
-import org.cytoscape.cg.internal.charts.util.ColorGradient;
-import org.cytoscape.cg.model.ColorScheme;
 import org.cytoscape.cg.model.Orientation;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.color.BrewerType;
+import org.cytoscape.util.color.PaletteType;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 @SuppressWarnings("serial")
 public class BarChartEditor extends AbstractChartEditor<BarChart> {
 
-	private static final ColorScheme[] REGULAR_COLOR_SCHEMES = new ColorScheme[] {
-		CONTRASTING, MODULATED, RAINBOW, RANDOM, CUSTOM
-	};
-	private static final ColorScheme[] HEAT_STRIP_COLOR_SCHEMES;
-	private static final ColorScheme[] UP_DOWN_COLOR_SCHEMES;
-	
-	static {
-		var heatStripSchemeList = new ArrayList<ColorScheme>();
-		var upDownSchemeList = new ArrayList<ColorScheme>();
-		
-		for (var cg : ColorGradient.values()) {
-			if (cg.getColors().size() == 2)
-				upDownSchemeList.add(new ColorScheme(cg));
-			else if (cg.getColors().size() == 3)
-				heatStripSchemeList.add(new ColorScheme(cg));
-		}
-		
-		heatStripSchemeList.add(CUSTOM);
-		upDownSchemeList.add(CUSTOM);
-		
-		HEAT_STRIP_COLOR_SCHEMES = heatStripSchemeList.toArray(new ColorScheme[heatStripSchemeList.size()]);
-		UP_DOWN_COLOR_SCHEMES = upDownSchemeList.toArray(new ColorScheme[upDownSchemeList.size()]);
-	}
-	
 	private ButtonGroup typeGrp;
 	private JRadioButton groupedRd;
 	private JRadioButton stackedRd;
@@ -86,15 +56,6 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 	protected void createLabels() {
 		super.createLabels();
 		separationLbl = new JLabel("Separation (0.0-0.5):");
-	}
-	
-	@Override
-	protected ColorScheme[] getColorSchemes() {
-		var type = chart.get(BarChart.TYPE, BarChartType.class, BarChartType.GROUPED);
-		
-		return type == BarChartType.HEAT_STRIPS ? 
-				HEAT_STRIP_COLOR_SCHEMES : 
-				(type == BarChartType.UP_DOWN ? UP_DOWN_COLOR_SCHEMES : REGULAR_COLOR_SCHEMES);
 	}
 	
 	@Override
@@ -237,7 +198,13 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 		
 		chart.set(BarChart.TYPE, type);
 		updateRangeMinMax(true);
-		getColorSchemeEditor().reset();
+		
+		if (type == BarChartType.HEAT_STRIPS || type == BarChartType.UP_DOWN)
+			getColorSchemeEditor().setPaletteType(BrewerType.DIVERGING);
+		else
+			getColorSchemeEditor().setPaletteType(BrewerType.ANY);
+		
+		getColorSchemeEditor().reset(true);
 	}
 	
 	protected void updateType() {
@@ -310,7 +277,8 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 		if (colorSchemeEditor == null) {
 			colorSchemeEditor = new BarColorSchemeEditor(
 					chart,
-					getColorSchemes(),
+					getDefaultPaletteType(),
+					getDefaultPaletteName(),
 					serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork(),
 					serviceRegistrar
 			);
@@ -325,11 +293,12 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 
 		public BarColorSchemeEditor(
 				BarChart chart,
-				ColorScheme[] colorSchemes,
+				PaletteType paletteType,
+				String defaultPaletteName,
 				CyNetwork network,
 				CyServiceRegistrar serviceRegistrar
 		) {
-			super(chart, colorSchemes, false, network, serviceRegistrar);
+			super(chart, false, paletteType, defaultPaletteName, network, serviceRegistrar);
 		}
 
 		@Override

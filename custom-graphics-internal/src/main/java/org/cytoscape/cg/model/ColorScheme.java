@@ -15,13 +15,11 @@ import org.cytoscape.util.color.PaletteProviderManager;
 
 public class ColorScheme {
 	
-	public static final ColorScheme CONTRASTING = new ColorScheme("CONTRASTING", "Contrasting");
-	public static final ColorScheme MODULATED = new ColorScheme("MODULATED", "Modulated");
-	public static final ColorScheme RAINBOW = new ColorScheme("RAINBOW", "Rainbow");
-	public static final ColorScheme RANDOM = new ColorScheme("RANDOM", "Random");
-	public static final ColorScheme CUSTOM = new ColorScheme("CUSTOM", "Custom");
-	
-	public static ColorScheme DEFAULT = CONTRASTING;
+	@Deprecated public static final ColorScheme CONTRASTING = new ColorScheme("CONTRASTING", "Contrasting");
+	@Deprecated public static final ColorScheme MODULATED = new ColorScheme("MODULATED", "Modulated");
+	@Deprecated public static final ColorScheme RAINBOW = new ColorScheme("RAINBOW", "Rainbow");
+	@Deprecated public static final ColorScheme RANDOM = new ColorScheme("RANDOM", "Random");
+	@Deprecated public static final ColorScheme CUSTOM = new ColorScheme("CUSTOM", "Custom");
 	
 	private final String key;
 	private final String label;
@@ -30,11 +28,13 @@ public class ColorScheme {
     
     private static CyServiceRegistrar serviceRegistrar;
 	
+    @Deprecated
 	public ColorScheme(String key, String label) {
 		this.key = key;
 		this.label = label;
 	}
 	
+	@Deprecated
 	public ColorScheme(ColorGradient gradient) {
 		this.key = gradient.name();
 		this.label = gradient.getLabel();

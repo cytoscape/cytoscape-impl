@@ -14,6 +14,8 @@ import javax.swing.JTextField;
 import org.cytoscape.cg.internal.charts.AbstractChartEditor;
 import org.cytoscape.cg.internal.charts.pie.PieChart;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.color.BrewerType;
+import org.cytoscape.util.color.PaletteType;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 @SuppressWarnings("serial")
@@ -105,5 +107,15 @@ public class RingChartEditor extends AbstractChartEditor<RingChart> {
 		}
 		
 		return holeTxt;
+	}
+	
+	@Override
+	protected PaletteType getDefaultPaletteType() {
+		return BrewerType.DIVERGING;
+	}
+	
+	@Override
+	protected String getDefaultPaletteName() {
+		return "Red-Yellow-Blue";
 	}
 }

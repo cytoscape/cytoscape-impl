@@ -23,11 +23,6 @@ import static org.cytoscape.cg.internal.charts.AbstractChart.SHOW_ITEM_LABELS;
 import static org.cytoscape.cg.internal.charts.AbstractChart.SHOW_RANGE_AXIS;
 import static org.cytoscape.cg.internal.charts.AbstractChart.SHOW_RANGE_ZERO_BASELINE;
 import static org.cytoscape.cg.model.AbstractCustomGraphics2.ORIENTATION;
-import static org.cytoscape.cg.model.ColorScheme.CONTRASTING;
-import static org.cytoscape.cg.model.ColorScheme.CUSTOM;
-import static org.cytoscape.cg.model.ColorScheme.MODULATED;
-import static org.cytoscape.cg.model.ColorScheme.RAINBOW;
-import static org.cytoscape.cg.model.ColorScheme.RANDOM;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isWinLAF;
 
@@ -79,12 +74,12 @@ import org.cytoscape.cg.internal.util.SortedListModel;
 import org.cytoscape.cg.internal.util.SortedListModel.SortOrder;
 import org.cytoscape.cg.internal.util.ViewUtil;
 import org.cytoscape.cg.model.AbstractCustomGraphics2;
-import org.cytoscape.cg.model.ColorScheme;
 import org.cytoscape.cg.model.Orientation;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.color.BrewerType;
+import org.cytoscape.util.color.PaletteType;
 import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.util.swing.BasicCollapsiblePanel.CollapseListener;
 import org.cytoscape.util.swing.ColorButton;
@@ -96,10 +91,6 @@ import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory
 @SuppressWarnings("serial")
 public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> extends JPanel {
 
-	private static final ColorScheme[] BASIC_COLOR_SCHEMES = new ColorScheme[] {
-		CONTRASTING, MODULATED, RAINBOW, RANDOM, CUSTOM
-	};
-	
 	protected static Double[] ANGLES = new Double[] { 0.0, 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0 };
 	
 	private BasicCollapsiblePanel basicOptionsPnl;
@@ -622,8 +613,9 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		if (colorSchemeEditor == null) {
 			colorSchemeEditor = new ColorSchemeEditor<>(
 					chart,
-					getColorSchemes(),
 					columnIsSeries,
+					getDefaultPaletteType(),
+					getDefaultPaletteName(),
 					serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork(),
 					serviceRegistrar
 			);
@@ -1213,10 +1205,6 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		}
 	}
 	
-	protected ColorScheme[] getColorSchemes() {
-		return BASIC_COLOR_SCHEMES;
-	}
-	
 	protected boolean isDataColumn(CyColumn c) {
 		var colType = c.getType();
 		var colListType = c.getListElementType();
@@ -1258,6 +1246,14 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		});
 		
 		return cmb;
+	}
+	
+	protected PaletteType getDefaultPaletteType() {
+		return BrewerType.ANY;
+	}
+	
+	protected String getDefaultPaletteName() {
+		return "Set3 colors";
 	}
 	
 	// ==[ CLASSES ]====================================================================================================
@@ -1374,7 +1370,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			}
 			
 			updateButtons();
-			getColorSchemeEditor().reset();
+			getColorSchemeEditor().reset(false);
 		}
 		
 		private JList<CyColumnIdentifier> getAllColumnsLs() {
@@ -1562,7 +1558,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 			
 			if (!initializing) {
 				updateRangeMinMax(true);
-				getColorSchemeEditor().reset();
+				getColorSchemeEditor().reset(false);
 			}
 		}
 		
