@@ -28,6 +28,7 @@ package org.cytoscape.task.internal.export;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
@@ -40,6 +41,7 @@ import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.io.write.CyWriterFactory;
 import org.cytoscape.io.write.CyWriterManager;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 
 
@@ -148,7 +150,17 @@ public abstract class AbstractCyWriter<S extends CyWriterFactory,T extends CyWri
 	public final void run(final TaskMonitor tm) throws Exception {
 		// Create the FileOutputStream here.
 		outputStream.setDelegate(new FileOutputStream(outputFile));
-		insertTasksAfterCurrentTask(getWriter());
+		
+		CyWriter writeTask = getWriter();
+		
+		Task closeTask = new AbstractTask() {
+			@Override
+			public void run(TaskMonitor tm) throws IOException {
+				outputStream.close();
+			}
+		};
+		
+		insertTasksAfterCurrentTask(writeTask, closeTask);
 	}
 
 	/**
