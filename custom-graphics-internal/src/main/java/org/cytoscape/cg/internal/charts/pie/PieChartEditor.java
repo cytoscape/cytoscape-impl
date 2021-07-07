@@ -15,7 +15,6 @@ import org.cytoscape.cg.internal.charts.AbstractChartEditor;
 import org.cytoscape.cg.internal.charts.ColorSchemeEditor;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.color.PaletteType;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
@@ -91,16 +90,6 @@ public class PieChartEditor extends AbstractChartEditor<PieChart> {
 		}
 		
 		return colorSchemeEditor;
-	}
-	
-	@Override
-	protected PaletteType getDefaultPaletteType() {
-		return BrewerType.DIVERGING;
-	}
-	
-	@Override
-	protected String getDefaultPaletteName() {
-		return "Red-Yellow-Blue";
 	}
 	
 	// ==[ CLASSES ]====================================================================================================

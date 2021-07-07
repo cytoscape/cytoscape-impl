@@ -28,8 +28,6 @@ import javax.swing.JSeparator;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
-import org.cytoscape.cg.internal.charts.bar.BarChart;
-import org.cytoscape.cg.internal.charts.bar.BarChart.BarChartType;
 import org.cytoscape.cg.internal.util.ColorUtil;
 import org.cytoscape.cg.internal.util.IconUtil;
 import org.cytoscape.cg.model.AbstractCustomGraphics2;
@@ -177,18 +175,7 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 				var chooserFactory = serviceRegistrar.getService(CyColorPaletteChooserFactory.class);
 				var chooser = chooserFactory.getColorPaletteChooser(paletteType, true);
 				var title = "Palettes";
-				var chartType = chart.get(BarChart.TYPE, BarChartType.class);
-				
-				int size = 1;
-				
-				if (chartType == BarChartType.UP_DOWN) {
-					size = 2;
-				} else if (chartType == BarChartType.HEAT_STRIPS) {
-					size = 3;
-				} else {
-					size = getTotal();
-					size = Math.max(size, 5);
-				}
+				int size = getTotal();
 				
 				chooser.showDialog(this, title, palette, size);
 				palette = chooser.getSelectedPalette();

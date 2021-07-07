@@ -199,11 +199,8 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 		chart.set(BarChart.TYPE, type);
 		updateRangeMinMax(true);
 		
-		if (type == BarChartType.HEAT_STRIPS || type == BarChartType.UP_DOWN)
-			getColorSchemeEditor().setPaletteType(BrewerType.DIVERGING);
-		else
-			getColorSchemeEditor().setPaletteType(BrewerType.ANY);
-		
+		getColorSchemeEditor().setPaletteType(getDefaultPaletteType());
+		getColorSchemeEditor().setDefaultPaletteName(getDefaultPaletteName());
 		getColorSchemeEditor().reset(true);
 	}
 	
@@ -285,6 +282,22 @@ public class BarChartEditor extends AbstractChartEditor<BarChart> {
 		}
 		
 		return colorSchemeEditor;
+	}
+	
+	@Override
+	protected PaletteType getDefaultPaletteType() {
+		var type = chart.get(BarChart.TYPE, BarChartType.class);
+
+		return type == BarChartType.HEAT_STRIPS || type == BarChartType.UP_DOWN ?
+				BrewerType.DIVERGING : super.getDefaultPaletteType();
+	}
+
+	@Override
+	protected String getDefaultPaletteName() {
+		var type = chart.get(BarChart.TYPE, BarChartType.class);
+
+		return type == BarChartType.HEAT_STRIPS || type == BarChartType.UP_DOWN ?
+				"Red-Blue" : super.getDefaultPaletteName();
 	}
 	
 	// ==[ CLASSES ]====================================================================================================
