@@ -63,7 +63,7 @@ public class ColorScheme {
 		
 		if (nColors > 0) {
 			if (palette != null || gradient != null) {
-				colors = gradient != null ? gradient.getColors() : Arrays.asList(palette.getColors());
+				colors = gradient != null ? gradient.getColors() : Arrays.asList(palette.getColors(nColors));
 				
 				if (colors.size() > nColors) {
 					var newColors = new ArrayList<Color>();
