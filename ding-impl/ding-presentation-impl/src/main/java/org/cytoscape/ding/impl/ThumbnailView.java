@@ -24,6 +24,9 @@ public class ThumbnailView extends JComponent implements RenderingEngine<CyNetwo
 	private final DRenderingEngine re;
 	private Image thumbnail;
 	
+	private double dpiScaleFactor = 1.0;
+	
+	
 	public ThumbnailView(DRenderingEngine re) {
 		this.re = Objects.requireNonNull(re);
 		re.addThumbnailChangeListener(this);
@@ -34,7 +37,9 @@ public class ThumbnailView extends JComponent implements RenderingEngine<CyNetwo
 		if(image == null) {
 			thumbnail = null;
 		} else {
-			thumbnail = scaleAndClip(image, getWidth(), getHeight());
+			int thumbWidth  = (int)(getWidth()  * dpiScaleFactor);
+			int thumbHeight = (int)(getHeight() * dpiScaleFactor);
+			thumbnail = scaleAndClip(image, thumbWidth, thumbHeight);
 		}
 		repaint();
 	}
@@ -54,11 +59,32 @@ public class ThumbnailView extends JComponent implements RenderingEngine<CyNetwo
 	
 	@Override
 	protected void paintComponent(Graphics g) {
+		double scaleX;
+		if(re.getGraphLOD().isHidpiEnabled()) {
+			var config = ((Graphics2D)g).getDeviceConfiguration();
+			var trans = config.getDefaultTransform();
+			scaleX = trans.getScaleX();
+		} else {
+			scaleX = 1.0;
+		}
+
+		// This typically only happens if the user drags the cytoscape window from one monitor to another.
+		if(scaleX != dpiScaleFactor) {
+			this.dpiScaleFactor = scaleX;
+			thumbnail = null;
+		}
+
 		if(thumbnail == null) {
 			Image image = re.getImage();
-			thumbnail = scaleAndClip(image, getWidth(), getHeight());
+			int thumbWidth  = (int)(getWidth()  * dpiScaleFactor);
+			int thumbHeight = (int)(getHeight() * dpiScaleFactor);
+			thumbnail = scaleAndClip(image, thumbWidth, thumbHeight);
 		}
-		g.drawImage(thumbnail, 0, 0, null);
+		
+		int w = (int)(thumbnail.getWidth(null)  / dpiScaleFactor);
+		int h = (int)(thumbnail.getHeight(null) / dpiScaleFactor);
+
+		g.drawImage(thumbnail, 0, 0, w, h, null);
 	}
 	
 	private static Image scaleAndClip(Image image, int w, int h) {

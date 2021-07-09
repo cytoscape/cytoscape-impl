@@ -278,7 +278,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		return dingGraphLOD;
 	}
 	
-	
 	/**
 	 * This is being called by a Swing Timer, so this method is being run on the EDT.
 	 * Painting is also done on the EDT. This is how we make sure that viewModelSnapshot does not

@@ -91,6 +91,9 @@ public abstract class RenderComponent extends JComponent {
 		this.initializedCallback = callback;
 	}
 	
+	public double getDpiScaleFactor() {
+		return dpiScaleFactor;
+	}
 	
 	@Override
 	public void setBounds(int x, int y, int width, int height) {
