@@ -163,12 +163,16 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		isNeverHidden = false;
 	}
 	
-	public View<CyNode> addNode(CyNode model) {
-		if(dataSuidToNode.containsKey(model.getSUID()))
-			return null;
+	
+	public CyNodeViewImpl addNode(CyNode model) {
+		CyNodeViewImpl view;
 		
-		CyNodeViewImpl view = new CyNodeViewImpl(this, model);
 		synchronized (nodeLock) {
+			if(dataSuidToNode.containsKey(model.getSUID()))
+				return null;
+			
+			view = new CyNodeViewImpl(this, model);
+			
 			dataSuidToNode = dataSuidToNode.put(model.getSUID(), view);
 			viewSuidToNode = viewSuidToNode.put(view.getSUID(), view);
 			setDirty();
@@ -178,15 +182,31 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		return view;
 	}
 	
+	
 	public View<CyEdge> addEdge(CyEdge edge) {
-		if(dataSuidToEdge.containsKey(edge.getSUID())) {
-			return null;
+		CyNode source = edge.getSource();
+		CyNode target = edge.getTarget();
+			
+		CyNodeViewImpl sourceView = dataSuidToNode.getOrElse(source.getSUID(), null);
+		CyNodeViewImpl targetView = dataSuidToNode.getOrElse(target.getSUID(), null);
+		
+		if(sourceView == null || targetView == null) {
+			// corner case, its possible that the event for adding an edge came before the source/target node events
+			addNode(source);
+			addNode(target);
+			// addNode() returns null if another thread added the node, so must lookup in map again
+			sourceView = dataSuidToNode.getOrElse(source.getSUID(), null);
+			targetView = dataSuidToNode.getOrElse(target.getSUID(), null);
 		}
-		CyNodeViewImpl sourceView = dataSuidToNode.getOrElse(edge.getSource().getSUID(), null);
-		CyNodeViewImpl targetView = dataSuidToNode.getOrElse(edge.getTarget().getSUID(), null);
-		CyEdgeViewImpl view = new CyEdgeViewImpl(this, edge, sourceView.getSUID(), targetView.getSUID());
+			
+		CyEdgeViewImpl view;
 		
 		synchronized (edgeLock) {
+			if(dataSuidToEdge.containsKey(edge.getSUID()))
+				return null;
+			
+			view = new CyEdgeViewImpl(this, edge, sourceView.getSUID(), targetView.getSUID());
+		
 			dataSuidToEdge = dataSuidToEdge.put(edge.getSUID(), view);
 			viewSuidToEdge = viewSuidToEdge.put(view.getSUID(), view);
 			updateAdjacentEdgeMap(view, true);
@@ -196,6 +216,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		eventHelper.addEventPayload(this, view, AddedEdgeViewsEvent.class);
 		return view;
 	}
+	
 	
 	public View<CyNode> removeNode(CyNode model) {
 		synchronized (nodeLock) {
