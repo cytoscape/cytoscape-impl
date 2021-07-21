@@ -175,7 +175,7 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 				var chooserFactory = serviceRegistrar.getService(CyColorPaletteChooserFactory.class);
 				var chooser = chooserFactory.getColorPaletteChooser(paletteType, true);
 				var title = "Palettes";
-				int size = getTotal();
+				int size = getPaletteSize();
 				
 				chooser.showDialog(this, title, palette, size);
 				palette = chooser.getSelectedPalette();
@@ -250,6 +250,7 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 		}
 			
 		int nColors = getTotal();
+		int paletteSize = getPaletteSize();
 		
 		if (nColors > 0) {
 			if (newScheme || colors.isEmpty()) {
@@ -260,7 +261,18 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 					for (int i = 0; i < newSize; i++)
 						colors.add(i%2 == 0 ? DEFAULT_COLOR : DEFAULT_COLOR.darker());
 				} else {
-					colors = scheme.getColors(nColors);
+					colors = scheme.getColors(paletteSize);
+					
+					// If the required palette size is smaller than the total number of colors,
+					// fill the remaining colors with gray
+					var missing = nColors - paletteSize;
+					
+					if (missing > 0) {
+						colors = new ArrayList<>(colors); // make sure this list accepts the add() operation we'll need below!
+						
+						for (int i = 0; i < missing; i++)
+							colors.add(Color.GRAY);
+					}
 				}
 			} else if (colors.size() < nColors) {
 				// Just update existing list of colors (add new ones if there are more values now)
@@ -291,6 +303,14 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 	protected void style(ColorPanel cp, int index) {
 		var label = "" + (index + 1);
 		cp.setText(label);
+	}
+	
+	/**
+	 * By default, returns the same as {@link #getTotal()}.
+	 * Can be overwritten in order to open the palette chooser with a different palette size.
+	 */
+	protected int getPaletteSize() {
+		return getTotal();
 	}
 	
 	protected int getTotal() {
@@ -378,7 +398,7 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 		private void chooseColor() {
 			var chooserFactory = serviceRegistrar.getService(CyColorPaletteChooserFactory.class);
 			var chooser = chooserFactory.getColorPaletteChooser(BrewerType.ANY, false);
-			int size = getTotal();
+			int size = getPaletteSize();
 			
 			if (size < 2)
 				size = 5;
