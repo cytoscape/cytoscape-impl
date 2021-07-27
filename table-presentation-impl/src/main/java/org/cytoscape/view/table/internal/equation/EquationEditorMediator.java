@@ -125,7 +125,7 @@ public class EquationEditorMediator {
 		
 		String attribName = column.getName();
 		
-		dialog.setTitle("Equation Builder for " + attribName);
+		dialog.setTitle("Formula Builder for " + attribName);
 		dialog.setModal(true);
 		dialog.getContentPane().setLayout(new BorderLayout());
 		dialog.getContentPane().add(builderPanel, BorderLayout.CENTER);

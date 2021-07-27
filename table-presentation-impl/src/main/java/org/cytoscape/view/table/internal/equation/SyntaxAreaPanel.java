@@ -244,7 +244,7 @@ public class SyntaxAreaPanel extends JPanel {
 	
 	private JPanel getTopPanel() {
 		if(topPanel == null) {
-			JLabel label = new JLabel("Equation Editor");
+			JLabel label = new JLabel("Formula Editor");
 			LookAndFeelUtil.makeSmall(label);
 			topPanel = new JPanel();
 			topPanel.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
