@@ -28,6 +28,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.cytoscape.cg.internal.charts.AbstractChart;
 import org.cytoscape.cg.internal.charts.AbstractChartEditor;
 import org.cytoscape.cg.model.CustomGraphics2Manager;
 import org.cytoscape.cg.model.NullCustomGraphics;
@@ -334,7 +335,14 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 					var icon = cf.getIcon(ICON_SIZE, ICON_SIZE);
 					
 					if (cg2 != null) {
-						initialCg2 = cf.getInstance(cg2.getProperties());
+						var props = new HashMap<>(cg2.getProperties());
+						
+						if (!cf.getSupportedClass().isAssignableFrom(cg2.getClass())) {
+							props.remove(AbstractChart.COLOR_SCHEME);
+							props.remove(AbstractChart.COLORS);
+						}
+						
+						initialCg2 = cf.getInstance(props);
 						
 						if (cf.getSupportedClass().isAssignableFrom(cg2.getClass())) {
 							selectedEditorPn = cg2EditorPn;
@@ -391,9 +399,13 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 						if (c instanceof CustomGraphics2EditorPane) {
 							var cf = ((CustomGraphics2EditorPane)c).getFactory();
 							
-							if (cg2 == null || !cf.getSupportedClass().isAssignableFrom(cg2.getClass()))
-								cg2 = cf.getInstance(
-										cg2 != null ? cg2.getProperties() : new HashMap<String, Object>());
+							if (cg2 == null || !cf.getSupportedClass().isAssignableFrom(cg2.getClass())) {
+								var props = cg2 != null ? new HashMap<>(cg2.getProperties()) : new HashMap<>();
+								props.remove(AbstractChart.COLOR_SCHEME);
+								props.remove(AbstractChart.COLORS);
+								
+								cg2 = cf.getInstance(props);
+							}
 								
 							((CustomGraphics2EditorPane)c).update(cg2);
 						}

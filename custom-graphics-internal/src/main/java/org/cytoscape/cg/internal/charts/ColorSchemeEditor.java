@@ -176,6 +176,7 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 				var chooser = chooserFactory.getColorPaletteChooser(paletteType, true);
 				var title = "Palettes";
 				int size = getPaletteSize();
+				size = Math.max(size, 2);
 				
 				chooser.showDialog(this, title, palette, size);
 				palette = chooser.getSelectedPalette();
@@ -241,13 +242,12 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 		if (scheme == null) {
 			palette = getDefaultPalette();
 			scheme = getDefaultColorScheme();
-			updateColorPaletteBtn();
-		} else if (scheme.getPalette() != null && !scheme.getPalette().getType().equals(palette.getType())) {
-			palette = getDefaultPalette();
-			scheme = getDefaultColorScheme();
 			chart.set(COLOR_SCHEME, scheme);
-			updateColorPaletteBtn();
+		} else {
+			palette = scheme.getPalette();
 		}
+		
+		updateColorPaletteBtn();
 			
 		int nColors = getTotal();
 		int paletteSize = getPaletteSize();
