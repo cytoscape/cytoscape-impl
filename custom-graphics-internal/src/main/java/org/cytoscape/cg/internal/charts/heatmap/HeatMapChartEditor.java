@@ -79,6 +79,15 @@ public class HeatMapChartEditor extends AbstractChartEditor<HeatMapChart> {
 			super(chart, false, paletteType, defaultPaletteName, network, serviceRegistrar);
 		}
 
+		/**
+		 * Though the total number of colors we need is 4, we should choose from 3-color palettes (upper, zero, lower).
+		 * The fourth color just means "not available" and will be a simple gray.
+		 */
+		@Override
+		protected int getPaletteSize() {
+			return 3;
+		}
+		
 		@Override
 		protected int getTotal() {
 			return total = 4;
