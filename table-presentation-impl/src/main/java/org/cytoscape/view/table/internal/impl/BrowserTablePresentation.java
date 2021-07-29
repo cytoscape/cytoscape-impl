@@ -116,14 +116,15 @@ public class BrowserTablePresentation {
 			font = iconManager.getIconFont(12.0f);
 		} else if (colView.isSet(CELL_FONT_FACE)) {
 			var fn = colView.getCellVisualProperty(CELL_FONT_FACE);
-
 			if (fn != null)
-				font = fn.apply(row);
+				font = fn.apply(row); // may return null
 		}
+		
+		if (font == null)
+			font = defaultFont;
 		
 		if (colView.isSet(CELL_FONT_SIZE)) {
 			var fn = colView.getCellVisualProperty(CELL_FONT_SIZE);
-			
 			if (fn != null) {
 				float size = fn.apply(row);
 				font = font.deriveFont(size);
