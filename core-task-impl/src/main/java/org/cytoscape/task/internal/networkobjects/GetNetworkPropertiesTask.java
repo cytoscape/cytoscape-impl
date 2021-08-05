@@ -68,13 +68,13 @@ public class GetNetworkPropertiesTask extends AbstractPropertyTask implements Ob
 			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 			if (network == null) {
 				tm.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
-				return;
+				throw new RuntimeException( "Network must be specified");
 			}
 		}
 
 		if (propertyList == null || propertyList.length() == 0) {
 			tm.showMessage(TaskMonitor.Level.ERROR, "Property list must be specified");
-			return;
+			throw new RuntimeException( "Property list must be specified");
 		}
 
 		tm.showMessage(TaskMonitor.Level.INFO, "   Property values for network "+DataUtils.getNetworkName(network)+":");

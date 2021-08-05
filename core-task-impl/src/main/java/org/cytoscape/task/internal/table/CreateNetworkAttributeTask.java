@@ -66,7 +66,7 @@ public class CreateNetworkAttributeTask extends AbstractTableDataTask implements
 			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 			if (network == null) {
 				tm.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
-				return;
+				throw new RuntimeException( "Network must be specified");
 			}
 		}
 
@@ -83,6 +83,7 @@ public class CreateNetworkAttributeTask extends AbstractTableDataTask implements
 				tm.showMessage(TaskMonitor.Level.INFO, "Created new "+columnTypeTunable.getColumnType()+" column: "+columnTunable.getColumnName());
 		} catch (Exception e) {
 			tm.showMessage(TaskMonitor.Level.ERROR, "Unable to create new column: "+e.getMessage());
+      throw new RuntimeException(e.getMessage());
 		}
 	}
 

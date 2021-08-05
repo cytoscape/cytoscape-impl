@@ -69,7 +69,7 @@ public class GetNetworkAttributeTask extends AbstractTableDataTask implements Ob
 			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 			if (network == null) {
 				tm.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
-				return;
+				throw new RuntimeException( "Network must be specified");
 			}
 		}
 

@@ -72,13 +72,13 @@ public class GetEdgeTask extends AbstractGetTask implements ObservableTask {
 			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 			if (network == null) {
 				tm.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
-				return;
+				throw new RuntimeException( "Network must be specified");
 			}
 		}
 
 		if (edge == null && (sourceNode == null || targetNode == null)) {
 			tm.showMessage(TaskMonitor.Level.ERROR, "Edge name, suid or source/target must be specified");
-			return;
+			throw new RuntimeException( "Edge name, suid or source/target must be specified");
 		}
 
 		if (edge != null) {
@@ -90,12 +90,12 @@ public class GetEdgeTask extends AbstractGetTask implements ObservableTask {
 		CyNode source = getNode(network, sourceNode);
 		if (source == null) {
 			tm.showMessage(TaskMonitor.Level.ERROR, "Cannot find node '"+sourceNode+"'");
-			return;
+			throw new RuntimeException( "Cannot find node '"+sourceNode+"'");
 		}
 		CyNode target = getNode(network, targetNode);
 		if (target == null) {
 			tm.showMessage(TaskMonitor.Level.ERROR, "Cannot find node '"+targetNode+"'");
-			return;
+			throw new RuntimeException( "Cannot find node '"+targetNode+"'");
 		}
 		CyEdge.Type edgeType = CyEdge.Type.ANY;
 		if (type.getSelectedValue().equals("directed"))

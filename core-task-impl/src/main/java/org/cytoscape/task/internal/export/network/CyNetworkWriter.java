@@ -76,7 +76,7 @@ public final class CyNetworkWriter
 			return;
 
 		if (network == null)
-			throw new NullPointerException("Network is null.");
+			throw new RuntimeException("Network must be specified.");
 
 		this.outputFile = getSuggestedFile();
 	}
@@ -99,7 +99,7 @@ public final class CyNetworkWriter
 		if (network == null) {
 			network = cyApplicationManager.getCurrentNetwork();
 			if (network == null) {
-				return null;
+				throw new RuntimeException("No current network");
 			}
 		}
 		

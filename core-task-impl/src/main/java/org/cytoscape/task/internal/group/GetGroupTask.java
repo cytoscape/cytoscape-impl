@@ -74,7 +74,7 @@ public class GetGroupTask extends AbstractGroupTask implements ObservableTask {
 			network = appMgr.getCurrentNetwork();
 			if (network == null) {
 				tm.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
-				return;
+				throw new RuntimeException("Network must be specified");
 			}
 		}
 		net = network;
@@ -82,7 +82,7 @@ public class GetGroupTask extends AbstractGroupTask implements ObservableTask {
 		group = getGroup(node);
 		if (group == null) {
 			tm.showMessage(TaskMonitor.Level.ERROR, "Can't find a group with that group node "+node);
-			return;
+			throw new RuntimeException("Can't find a group with that group node "+node);
 		}
 		// Now find the corresponding group
 		//group = mgr.getGroup(returnedNode.getGroupNode(), network);

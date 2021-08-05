@@ -69,25 +69,25 @@ public class SetNetworkPropertiesTask extends AbstractPropertyTask {
 			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 			if (network == null) {
 				tm.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
-				return;
+				throw new RuntimeException( "Network must be specified");
 			}
 		}
 
 		if (propertyList == null || propertyList.length() == 0) {
 			tm.showMessage(TaskMonitor.Level.ERROR, "Property list must be specified");
-			return;
+			throw new RuntimeException( "Property list must be specified");
 		}
 
 		if (valueList == null || valueList.length() == 0) {
 			tm.showMessage(TaskMonitor.Level.ERROR, "Value list must be specified");
-			return;
+			throw new RuntimeException( "Value list must be specified");
 		}
 
 		String[] props = propertyList.split(",");
 		String[] values = DataUtils.getCSV(valueList);
 		if (props.length != values.length) {
 			tm.showMessage(TaskMonitor.Level.ERROR, "Property list and value list are not the same length");
-			return;
+			throw new RuntimeException( "Property list and value list are not the same length");
 		}
 
 		int valueIndex = 0;
@@ -99,7 +99,7 @@ public class SetNetworkPropertiesTask extends AbstractPropertyTask {
 				tm.showMessage(TaskMonitor.Level.INFO, DataUtils.getNetworkName(network)+" "+vp.getDisplayName()+" set to "+value.toString());
 			} catch (Exception e) {
 				tm.showMessage(TaskMonitor.Level.ERROR, e.getMessage());
-				return;
+				throw new RuntimeException(e.getMessage());
 			}
 		}
 	}

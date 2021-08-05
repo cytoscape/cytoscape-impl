@@ -62,24 +62,24 @@ public class RenameGroupTask extends AbstractGroupTask {
 			net = network;
 			if (network == null) {
 				tm.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
-				return;
+				throw new RuntimeException("Network must be specified");
 			}
 		}
 
 		if (groupName == null) {
 			tm.showMessage(TaskMonitor.Level.ERROR, "Group must be specified");
-			return;
+			throw new RuntimeException( "Group must be specified");
 		}
 
 		if (newName == null) {
 			tm.showMessage(TaskMonitor.Level.ERROR, "New name must be specified");
-			return;
+			throw new RuntimeException( "New name must be specified");
 		}
 
 		CyGroup grp = getGroup(groupName);
 		if (grp == null) {
 			tm.showMessage(TaskMonitor.Level.ERROR, "Can't find group '"+groupName+"' in network: "+net.toString());
-			return;
+			throw new RuntimeException( "Can't find group '"+groupName+"' in network: "+net.toString());
 		}
 		CyRow groupRow = ((CySubNetwork)net).getRootNetwork().getRow(grp.getGroupNode(), CyRootNetwork.SHARED_ATTRS);
 		String oldName = groupRow.get(CyRootNetwork.SHARED_NAME, String.class);

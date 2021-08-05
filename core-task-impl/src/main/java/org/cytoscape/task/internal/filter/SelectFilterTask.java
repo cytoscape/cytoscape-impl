@@ -70,7 +70,7 @@ public class SelectFilterTask extends AbstractTask {
 			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 			if (network == null) {
 				tm.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
-				return;
+				throw new RuntimeException("Network must be specified");
 			}
 		}
 
@@ -80,7 +80,7 @@ public class SelectFilterTask extends AbstractTask {
 		
 		if (transformer == null) {
 			tm.showMessage(Level.ERROR, "Error parsing JSON");
-			return;
+      throw new RuntimeException("Error parsing JSON");
 		}
 
 		List<String> errors = TransformerJsonTunable.validate(transformer);
@@ -94,8 +94,8 @@ public class SelectFilterTask extends AbstractTask {
 
 		Optional<SelectTunable.Action> action = select.getAction();
 		if(action.isEmpty()) {
-			tm.showMessage(Level.ERROR, "Invalid value for 'action' arguent");
-			return;
+			tm.showMessage(Level.ERROR, "Invalid value for 'action' argument");
+      throw new RuntimeException("Invalid value for 'action' argument");
 		}
 		
 		int[] result = applyFilter(serviceRegistrar, network, transformer, action.get());

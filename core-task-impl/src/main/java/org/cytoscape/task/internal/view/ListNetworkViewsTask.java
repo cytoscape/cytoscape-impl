@@ -67,7 +67,7 @@ public class ListNetworkViewsTask extends AbstractTask implements ObservableTask
 			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 			if (network == null) {
 				tm.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
-				return;
+				throw new RuntimeException("Network must be specified");
 			}
 		}
 		

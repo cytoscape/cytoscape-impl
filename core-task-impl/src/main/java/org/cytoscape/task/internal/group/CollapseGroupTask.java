@@ -75,7 +75,7 @@ public class CollapseGroupTask extends AbstractGroupTask implements ObservableTa
 		
 		if (groups == null && groupList == null) {
 			tm.showMessage(TaskMonitor.Level.ERROR, "List of groups must be specified");
-			return;
+      throw new RuntimeException("List of groups must be specified");
 		}
 
 		if (groups == null)
@@ -83,7 +83,7 @@ public class CollapseGroupTask extends AbstractGroupTask implements ObservableTa
 
 		if (groups == null) {
 			tm.showMessage(TaskMonitor.Level.ERROR, "Can't find group "+groupList);
-			return;
+			throw new RuntimeException( "Can't find group "+groupList);
 		}
 
 		tm.setProgress(0.0);

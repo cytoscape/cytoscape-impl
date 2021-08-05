@@ -169,7 +169,7 @@ public class ExportAsWebArchiveTask extends AbstractTask implements TunableValid
 			exportName = FilenameUtils.getBaseName(sessionManager.getCurrentSessionFileName());
 		} else {
 			var network = applicationManager.getCurrentNetwork();
-			if (network == null) return null;
+			if (network == null) throw new RuntimeException("No network to export");
 			exportName = network.getRow(network).get(CyNetwork.NAME, String.class);
 		}
 		

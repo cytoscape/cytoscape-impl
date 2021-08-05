@@ -64,7 +64,7 @@ public class CreateEdgeAttributeTask extends AbstractTableDataTask implements Ob
 			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 			if (network == null) {
 				tm.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
-				return;
+				throw new RuntimeException( "Network must be specified");
 			}
 		}
 
@@ -81,6 +81,7 @@ public class CreateEdgeAttributeTask extends AbstractTableDataTask implements Ob
 				tm.showMessage(TaskMonitor.Level.INFO, "Created new "+columnTypeTunable.getColumnType()+" column: "+columnTunable.getColumnName());
 		} catch (Exception e) {
 			tm.showMessage(TaskMonitor.Level.ERROR, "Unable to create new column: "+e.getMessage());
+			throw new RuntimeException( "Unable to create new column: "+e.getMessage());
 		}
 	}
 

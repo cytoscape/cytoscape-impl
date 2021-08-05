@@ -41,21 +41,21 @@ public class ApplyFilterTask extends AbstractTask {
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		if(name == null || name.isEmpty()) {
 			taskMonitor.showMessage(Level.ERROR, "name is missing");
-			return;
+      throw new RuntimeException("Name must be specified");
 		}
 
 		if(network == null) {
 			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 			if (network == null) {
 				taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
-				return;
+				throw new RuntimeException("Network must be specified");
 			}
 		}
 		
 		TransformerContainer<CyNetwork,CyIdentifiable> container = containerTunable.getContainer(serviceRegistrar);
 		if(container == null) {
 			taskMonitor.showMessage(Level.ERROR, "container type not found: '" + containerTunable.getValue() + "'");
-			return;
+      throw new RuntimeException("container type not found: '" + containerTunable.getValue() + "'");
 		}
 		
 		NamedTransformer<CyNetwork,CyIdentifiable> transformer = container.getNamedTransformer(name);
@@ -67,8 +67,8 @@ public class ApplyFilterTask extends AbstractTask {
 		
 		Optional<SelectTunable.Action> action = select.getAction();
 		if(action.isEmpty()) {
-			taskMonitor.showMessage(Level.ERROR, "Invalid value for 'action' arguent");
-			return;
+			taskMonitor.showMessage(Level.ERROR, "Invalid value for 'action' argument");
+      throw new RuntimeException("Invalid value for 'action' argument");
 		}
 		
 		int[] result = SelectFilterTask.applyFilter(serviceRegistrar, network, transformer, action.get());
