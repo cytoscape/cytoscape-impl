@@ -1,5 +1,7 @@
 package org.cytoscape.view.table.internal;
 
+import static org.cytoscape.view.table.internal.util.ViewUtil.invokeOnEDT;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -31,6 +33,7 @@ import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
 
 import org.cytoscape.equations.EquationCompiler;
+import org.cytoscape.event.DebounceTimer;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
@@ -95,6 +98,8 @@ public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 	private boolean ignoreHeaderSelectionEvents;
 	private boolean ignoreTableSelectionEvents;
 	
+	private final DebounceTimer rowSelectionTimer;
+	
 	public TableRenderingEngineImpl(
 			CyTableView tableView,
 			VisualLexicon lexicon,
@@ -109,6 +114,8 @@ public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 		var iconManager = registrar.getService(IconManager.class);
 		var iconFont = iconManager.getIconFont(SMALL_ICON_FONT_SIZE);
 		copyIcon = new TextIcon(IconManager.ICON_COPY, iconFont, SMALL_ICON_SIZE, SMALL_ICON_SIZE);
+		
+		rowSelectionTimer = new DebounceTimer(25);
 	}
 	
 	public void install(JComponent component) {
@@ -163,25 +170,37 @@ public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 		});
 		getBrowserTable().getSelectionModel().addListSelectionListener(evt -> {
 			if (!ignoreTableSelectionEvents) {
-				ignoreHeaderSelectionEvents = true;
-				
-				try {
-					boolean allColumnsSelected = isAllTableColumnsSelected();
-					int rowCount = getBrowserTable().getRowCount();
-					
-					// Only select the row header if all table columns are selected
-					for (int i = 0; i < rowCount; i++) {
-						if (allColumnsSelected && getBrowserTable().isRowSelected(i))
-							getRowHeader().addSelectionInterval(i, i);
-						else
-							getRowHeader().removeSelectionInterval(i, i);
-					}
-				} finally {
-					ignoreHeaderSelectionEvents = false;
+				if (!rowSelectionTimer.isShutdown()) {
+					rowSelectionTimer.debounce(() -> {
+						invokeOnEDT(() -> {
+							ignoreHeaderSelectionEvents = true;
+							
+							try {
+								boolean allColumnsSelected = isAllTableColumnsSelected();
+								var tbl = getBrowserTable();
+								var rh = getRowHeader();
+								int fi = evt.getFirstIndex();
+								int li = evt.getLastIndex();
+								
+								// Only select the row header if all table columns are selected
+								for (int i = fi; i <= li; i++) {
+									if (allColumnsSelected && tbl.isRowSelected(i)) {
+										if (!rh.isSelectedIndex(i))
+											rh.addSelectionInterval(i, i);
+									} else {
+										if (rh.isSelectedIndex(i))
+											rh.removeSelectionInterval(i, i);
+									}
+								}
+							} finally {
+								ignoreHeaderSelectionEvents = false;
+							}
+						
+							// Always update the row header, because it also indicates partial row selection (i.e. not all columns)
+							updateHeader();
+						});
+					});
 				}
-				
-				// Always update the row header, because it also indicates partial row selection (i.e. not all columns)
-				updateHeader();
 			}
 		});
 		
@@ -220,6 +239,7 @@ public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 
 	@Override
 	public void dispose() {
+		rowSelectionTimer.shutdown();
 		unregisterServices();
 	}
 	
