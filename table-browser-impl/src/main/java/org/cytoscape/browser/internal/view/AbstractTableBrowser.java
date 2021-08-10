@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -54,6 +55,7 @@ import org.cytoscape.browser.internal.util.CyToolBar;
 import org.cytoscape.browser.internal.util.ViewUtil;
 import org.cytoscape.browser.internal.view.tools.AbstractToolBarControl;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
@@ -439,16 +441,24 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 			var tableViewFactory = serviceRegistrar.getService(CyTableViewFactory.class);
 			tableView = tableViewFactory.createTableView(table);
 			
-			// this will fire the event that runs the below handler
+			// This will fire the event that runs the below handleEvent(...) method.
 			tableViewManager.setTableView(tableView);
 		}
+	}
+	
+	
+	private boolean correctType(CyTable table) {
+		// what is the objType for unassigned tables?
+		var networkTableManager = serviceRegistrar.getService(CyNetworkTableManager.class);
+		var type = networkTableManager.getTableType(table);
+		return Objects.equals(objType, type);
 	}
 	
 	@Override
 	public void handleEvent(TableViewAddedEvent e) {
 		var tableView = e.getTableView();
 		
-		if (!containsTable(tableView.getModel()))
+		if(!correctType(tableView.getModel()))
 			return;
 
 		// a renderer may already exist

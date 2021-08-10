@@ -11,6 +11,7 @@ import java.util.Collections;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.cytoscape.application.swing.CyColumnComboBox;
@@ -49,13 +50,24 @@ public class ColumnStylePanel {
 			columnPanel.setLayout(layout);
 			layout.setAutoCreateGaps(!isAquaLAF());
 			
-			layout.setHorizontalGroup(layout.createSequentialGroup()
-					.addComponent(getColumnComboBox(), 0, 146, Short.MAX_VALUE)
-					.addComponent(getOptionsBtn().getOptionsBtn(), PREFERRED_SIZE, 64, PREFERRED_SIZE)
+			JLabel title = new JLabel("Apply style to column:");
+			
+			layout.setHorizontalGroup(
+				layout.createParallelGroup()
+					.addComponent(title)
+					.addGroup(layout.createSequentialGroup()
+						.addComponent(getColumnComboBox(), 0, 146, Short.MAX_VALUE)
+						.addComponent(getOptionsBtn().getOptionsBtn(), PREFERRED_SIZE, 64, PREFERRED_SIZE)
+					)
 			);
-			layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING, false)
-					.addComponent(getColumnComboBox(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getOptionsBtn().getOptionsBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			
+			layout.setVerticalGroup(
+				layout.createSequentialGroup()
+					.addComponent(title)
+					.addGroup(layout.createParallelGroup(Alignment.LEADING, false)
+						.addComponent(getColumnComboBox(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getOptionsBtn().getOptionsBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
 			);
 		}
 		return columnPanel;
