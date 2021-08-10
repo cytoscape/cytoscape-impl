@@ -19,6 +19,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import javax.imageio.ImageIO;
+
 import org.cytoscape.cg.model.AbstractURLImageCustomGraphics;
 import org.cytoscape.cg.model.BitmapCustomGraphics;
 import org.cytoscape.cg.model.CustomGraphicsManager;
@@ -29,6 +31,7 @@ import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.ding.internal.util.ImageUtil;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.ImageAnnotation;
+import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -223,9 +226,34 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 					image = ImageUtil.toBufferedImage(cg.getRenderedImage());
 					customGraphicsManager.addCustomGraphics(cg, url);
 					customGraphicsManager.setUsedInCurrentSession(cg, true);
-				}
+				} else {
+          try {
+            // We don't already have the image -- fetch it
+            image = ImageIO.read(url);
+            cg = new BitmapCustomGraphics(customGraphicsManager.getNextAvailableID(), url.toString(), image);
+            customGraphicsManager.addCustomGraphics(cg, url);
+            customGraphicsManager.setUsedInCurrentSession(cg, true);
+          } catch (Exception e) {
+            logger.error("Unable to read image from "+ url.toString() + ": "+e.getMessage());
+            throw e;
+          }
+        }
 				
-				name = getDefaultName();
+        if (name == null)
+          name = getDefaultName();
+
+        double aspectRatio = (double)image.getHeight() / (double)image.getWidth();
+        // If the user didn't specify the WIDTH and HEIGHT, it will be set to 100X100.  We want to
+        // scale that to the appropriate aspect ratio
+        if (argMap.containsKey(ShapeAnnotation.WIDTH) && argMap.containsKey(ShapeAnnotation.HEIGHT))
+          return;
+
+        // If the user specified the width, adjust the height
+        if (argMap.containsKey(ShapeAnnotation.WIDTH))
+          height = width*aspectRatio;
+        else
+          width = height/aspectRatio;
+
 			} catch (Exception e) {
 				logger.warn("Unable to restore image '" + argMap.get(URL) + "'", e);
 			}

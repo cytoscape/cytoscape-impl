@@ -61,8 +61,12 @@ public class ShapeAnnotationTunables extends AbstractAnnotationTunables {
 
     putIfNotNull(tm, args, ShapeAnnotation.FILLOPACITY, opacity);
     putIfNotNull(tm, args, ShapeAnnotation.EDGEOPACITY, borderOpacity);
-    putIfNotNull(tm, args, ShapeAnnotation.SHAPETYPE, type, getShapeTypes());
     putIfNotNull(tm, args, ShapeAnnotation.EDGETHICKNESS, borderThickness);
+
+    if (type == null)
+      type = "rectangle";
+
+    putIfNotNull(tm, args, ShapeAnnotation.SHAPETYPE, type, getShapeTypes());
     // Handle custom shapes
     if (type.equalsIgnoreCase(ShapeAnnotation.ShapeType.CUSTOM.toString()))
       putIfNotNull(tm, args, ShapeAnnotation.CUSTOMSHAPE, customShape);
