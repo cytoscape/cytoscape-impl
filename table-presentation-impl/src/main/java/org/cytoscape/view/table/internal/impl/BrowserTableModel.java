@@ -154,13 +154,13 @@ public final class BrowserTableModel extends AbstractTableModel
 		
 		switch (viewMode) {
 			case SELECTED:
-				count = dataTable.getMatchingRows(CyNetwork.SELECTED, Boolean.TRUE).size();
+				count = dataTable.countMatchingRows(CyNetwork.SELECTED, Boolean.TRUE);
 				break;
 			case ALL:
 				count = dataTable.getRowCount();
 				break;
 			case AUTO:
-				count = dataTable.getMatchingRows(CyNetwork.SELECTED, Boolean.TRUE).size();
+				count = dataTable.countMatchingRows(CyNetwork.SELECTED, Boolean.TRUE);
 				if (count == 0)
 					count = dataTable.getRowCount();
 				break;
