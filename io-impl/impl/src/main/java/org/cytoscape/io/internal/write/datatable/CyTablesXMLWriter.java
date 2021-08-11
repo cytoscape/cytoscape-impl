@@ -27,6 +27,7 @@ package org.cytoscape.io.internal.write.datatable;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.xml.bind.JAXBContext;
@@ -180,6 +181,11 @@ public class CyTablesXMLWriter extends AbstractTask implements CyWriter {
 				
 				for(var entry : rowViewMetadata.getBypassValues().entrySet()) {
 					var vpName = entry.getKey();
+					
+					// Don't save row selection, its not needed and it will bloat the session file.
+					if(Objects.equals(vpName, "ROW_SELECTED"))
+						continue;
+					
 					var value = entry.getValue();
 					if(value != null) {
 						if(xmlRowView == null) {
