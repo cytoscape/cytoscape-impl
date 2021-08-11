@@ -15,6 +15,8 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
+import org.cytoscape.view.model.events.TableViewAboutToBeDestroyedEvent;
+import org.cytoscape.view.model.events.TableViewAboutToBeDestroyedListener;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
@@ -46,7 +48,7 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
-public class RenderingEngineManagerImpl implements RenderingEngineManager, NetworkViewAboutToBeDestroyedListener {
+public class RenderingEngineManagerImpl implements RenderingEngineManager, NetworkViewAboutToBeDestroyedListener, TableViewAboutToBeDestroyedListener {
 	
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
@@ -189,18 +191,28 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 		}
 	}
 
+	
 	@Override
 	public void handleEvent(NetworkViewAboutToBeDestroyedEvent e) {
+		removeRenderingeEngine(e.getNetworkView());
+	}
+
+	@Override
+	public void handleEvent(TableViewAboutToBeDestroyedEvent e) {
+		removeRenderingeEngine(e.getTableView());
+	}
+	
+	private void removeRenderingeEngine(View<?> view) {
 		Collection<RenderingEngine<?>> engines;
 		
 		synchronized (lock) {
-			engines = renderingEngineMap.remove(e.getNetworkView());
+			engines = renderingEngineMap.remove(view);
 		}
 		
-		if (engines == null)
-			return;
-		
-		for (RenderingEngine<?> engine : engines)
-			engine.dispose();
+		if (engines != null) {
+			for (RenderingEngine<?> engine : engines) {
+				engine.dispose();
+			}
+		}
 	}
 }

@@ -65,6 +65,8 @@ import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.read.LoadTableFileTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
+import org.cytoscape.view.model.events.TableViewAboutToBeDestroyedEvent;
+import org.cytoscape.view.model.events.TableViewAboutToBeDestroyedListener;
 import org.cytoscape.view.model.events.TableViewAddedEvent;
 import org.cytoscape.view.model.events.TableViewAddedListener;
 import org.cytoscape.view.model.table.CyTableViewFactory;
@@ -106,7 +108,7 @@ import org.slf4j.LoggerFactory;
  */
 @SuppressWarnings("serial")
 public abstract class AbstractTableBrowser extends JPanel implements CytoPanelComponent2, SessionLoadedListener,
-		SessionAboutToBeSavedListener, TableViewAddedListener {
+		SessionAboutToBeSavedListener, TableViewAddedListener, TableViewAboutToBeDestroyedListener {
 
 	private final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
@@ -490,6 +492,22 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		
 		showSelectedTable();
 	}
+	
+	@Override
+	public void handleEvent(TableViewAboutToBeDestroyedEvent e) {
+		var tableView = e.getTableView();
+		
+		TableRenderer exitingRenderer = null;
+		
+		synchronized (lock) {
+			exitingRenderer = tableRenderers.remove(tableView.getModel());
+		}
+		
+		if (exitingRenderer != null) {
+			exitingRenderer.dispose();
+		}
+	}
+	
 	
 	// We have to keep this for backwards compatibility
 	@Override
