@@ -179,11 +179,10 @@ public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 								boolean allColumnsSelected = isAllTableColumnsSelected();
 								var tbl = getBrowserTable();
 								var rh = getRowHeader();
-								int fi = evt.getFirstIndex();
-								int li = evt.getLastIndex();
+								int rowCount = tbl.getRowCount();
 								
 								// Only select the row header if all table columns are selected
-								for (int i = fi; i <= li; i++) {
+								for (int i = 0; i < rowCount; i++) {
 									if (allColumnsSelected && tbl.isRowSelected(i)) {
 										if (!rh.isSelectedIndex(i))
 											rh.addSelectionInterval(i, i);
