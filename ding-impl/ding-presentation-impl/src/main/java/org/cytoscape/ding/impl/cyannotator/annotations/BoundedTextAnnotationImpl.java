@@ -113,8 +113,12 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		this.text = ViewUtils.getString(argMap, TEXT, "");
 		this.fontSize = font.getSize();
 
-		if (text != null && !text.trim().isEmpty())
-			name = text.trim();
+    if (argMap.containsKey(NAME)) {
+      this.name = ViewUtils.getString(argMap, NAME, "");
+    } else {
+      if (text != null && !text.trim().isEmpty())
+        name = text.trim();
+    }
 		
 		if (!argMap.containsKey(BoundedTextAnnotation.WIDTH)) {
 			double width = getTextWidth() + 8;
