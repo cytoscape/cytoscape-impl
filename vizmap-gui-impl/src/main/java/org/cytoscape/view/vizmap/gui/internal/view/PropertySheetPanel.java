@@ -26,6 +26,29 @@ import org.cytoscape.util.swing.MenuGravityTracker;
 import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 
+/*
+ * #%L
+ * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class PropertySheetPanel {
 
@@ -58,30 +81,29 @@ public class PropertySheetPanel {
 		tableIcon = new TextIcon(IconManager.ICON_TABLE, iconFont, 16, 16);
 	}
 	
-	
 	public JComponent getComponent() {
 		return getPropertiesPn();
 	}
-	
 	
 	public Set<VisualPropertySheet> getVisualPropertySheets() {
 		return new HashSet<>(vpSheetMap.values());
 	}
 	
-	public VisualPropertySheet getVisualPropertySheet(final Class<? extends CyIdentifiable> targetDataType) {
+	public VisualPropertySheet getVisualPropertySheet(Class<? extends CyIdentifiable> targetDataType) {
 		return vpSheetMap.get(targetDataType);
 	}
 	
-	public void addVisualPropertySheet(final VisualPropertySheet sheet) {
+	public void addVisualPropertySheet(VisualPropertySheet sheet) {
 		if (sheet == null)
 			return;
 		
-		final Class<? extends CyIdentifiable> type = sheet.getModel().getTargetDataType();
+		var type = sheet.getModel().getTargetDataType();
 		vpSheetMap.put(type, sheet);
 		
 		// Make sure the tabs are always in the correct order
 		getPropertiesPn().removeAll();
-		List<VisualPropertySheet> sheets = new ArrayList<>(vpSheetMap.values());
+		
+		var sheets = new ArrayList<VisualPropertySheet>(vpSheetMap.values());
 		sheets.sort((s1, s2) -> {
 			int o1 = tabOrder.get(s1.getModel().getTargetDataType());
 			int o2 = tabOrder.get(s2.getModel().getTargetDataType());
@@ -103,9 +125,9 @@ public class PropertySheetPanel {
 		return (VisualPropertySheet) getPropertiesPn().getSelectedComponent();
 	}
 	
-	public void setSelectedVisualPropertySheet(final VisualPropertySheet sheet) {
+	public void setSelectedVisualPropertySheet(VisualPropertySheet sheet) {
 		if (sheet != null) {
-			final int idx = getPropertiesPn().indexOfTab(sheet.getModel().getTitle());
+			int idx = getPropertiesPn().indexOfTab(sheet.getModel().getTitle());
 			
 			if (idx != -1)
 				getPropertiesPn().setSelectedIndex(idx);
@@ -129,7 +151,7 @@ public class PropertySheetPanel {
 			contextPopupMenu.add(new JSeparator());
 			
 			{
-				final JMenuItem mi = new JMenuItem("Hide Selected Visual Properties");
+				var mi = new JMenuItem("Hide Selected Visual Properties");
 				mi.addActionListener(evt -> hideSelectedItems());
 				contextPopupMenu.add(mi);
 			}
@@ -155,10 +177,10 @@ public class PropertySheetPanel {
 	}
 	
 	public void hideSelectedItems() {
-		final VisualPropertySheet vpSheet = getSelectedVisualPropertySheet();
+		var vpSheet = getSelectedVisualPropertySheet();
 		
 		if (vpSheet != null) {
-			for (final VisualPropertySheetItem<?> item : vpSheet.getSelectedItems())
+			for (var item : vpSheet.getSelectedItems())
 				vpSheet.setVisible(item, false);
 		}
 	}
@@ -171,7 +193,7 @@ public class PropertySheetPanel {
 		return editSubMenuGravityTracker;
 	}
 	
-	public void addContextMenuItem(final JMenuItem menuItem, final double gravity, boolean insertSeparatorBefore,
+	public void addContextMenuItem(JMenuItem menuItem, double gravity, boolean insertSeparatorBefore,
 			boolean insertSeparatorAfter) {
 		addMenuItem(getEditSubMenuGravityTracker(), menuItem, gravity, insertSeparatorBefore, insertSeparatorAfter);
 		
@@ -179,14 +201,14 @@ public class PropertySheetPanel {
 			getContextMenu().addPopupMenuListener((CyAction)menuItem.getAction());
 	}
 	
-	public void removeContextMenuItem(final JMenuItem menuItem) {
+	public void removeContextMenuItem(JMenuItem menuItem) {
 		getEditSubMenuGravityTracker().removeComponent(menuItem);
 		
 		if (menuItem.getAction() instanceof CyAction)
 			getContextMenu().removePopupMenuListener((CyAction)menuItem.getAction());
 	}
 	
-	private void addMenuItem(final GravityTracker gravityTracker, final JMenuItem menuItem, final double gravity,
+	private void addMenuItem(GravityTracker gravityTracker, JMenuItem menuItem, double gravity,
 			boolean insertSeparatorBefore, boolean insertSeparatorAfter) {
 		if (insertSeparatorBefore)
 			gravityTracker.addMenuSeparator(gravity - .0001);
