@@ -3,10 +3,10 @@ package org.cytoscape.view.vizmap.gui.internal.view;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -21,7 +21,11 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.util.swing.GravityTracker;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.MenuGravityTracker;
+import org.cytoscape.util.swing.TextIcon;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+
 
 public class PropertySheetPanel {
 
@@ -34,7 +38,10 @@ public class PropertySheetPanel {
 	private MenuGravityTracker editSubMenuGravityTracker;
 	private JMenu mapValueGeneratorsSubMenu;
 	
-	private static Map<Class<?>,Integer> tabOrder = new HashMap<>();
+	private final Icon networkIcon;
+	private final Icon tableIcon;
+	
+	private static Map<Class<?>, Integer> tabOrder = new HashMap<>();
 	static {
 		tabOrder.put(CyNode.class, 1);
 		tabOrder.put(CyEdge.class, 2);
@@ -42,9 +49,13 @@ public class PropertySheetPanel {
 		tabOrder.put(CyColumn.class, 4);
 	}
 	
-	
-	public PropertySheetPanel() {
+	public PropertySheetPanel(ServicesUtil servicesUtil) {
 		vpSheetMap = new HashMap<>();
+		
+		var iconManager = servicesUtil.get(IconManager.class);
+		var iconFont = iconManager.getIconFont(14.0f);
+		networkIcon = new TextIcon(IconManager.ICON_SHARE_ALT_SQUARE, iconFont, 16, 16);
+		tableIcon = new TextIcon(IconManager.ICON_TABLE, iconFont, 16, 16);
 	}
 	
 	
@@ -77,8 +88,9 @@ public class PropertySheetPanel {
 			return Integer.compare(o1, o2);
 		});
 		
-		for(var s : sheets) {
-			getPropertiesPn().addTab(s.getModel().getTitle(), s);
+		for (var s : sheets) {
+			var icon = s.getModel().getTargetDataType() == CyColumn.class ? tableIcon : null;
+			getPropertiesPn().addTab(s.getModel().getTitle(), icon, s);
 		}
 	}
 

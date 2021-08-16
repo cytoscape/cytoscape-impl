@@ -37,12 +37,14 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CyAction;
@@ -51,8 +53,10 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.ColumnCreatedEvent;
 import org.cytoscape.model.events.ColumnCreatedListener;
 import org.cytoscape.model.events.ColumnDeletedEvent;
@@ -152,7 +156,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	
 	private VisualPropertySheetItem<?> curVpSheetItem;
 	private VizMapperProperty<?, ?, ?> curVizMapperProperty;
-	private Map<Long,Long> selectedColumns;
+	private Map<Long, Long> selectedColumns;
+	private ActionListener tableChangeListener;
 	private ActionListener columnChangeListener;
 	
 	// MKTODO Current network renderer
@@ -646,6 +651,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		// Switching the current Visual Style
 		var stylesBtn = vizMapperMainPanel.getStylesBtn();
 		stylesBtn.addPropertyChangeListener("selectedStyle", evt -> onSelectedVisualStyleChanged(evt));
+		
+		tableChangeListener = e -> onSelectedTableChanged();
+		vizMapperMainPanel.getColumnStylePnl().getTableComboBox().addActionListener(tableChangeListener);
+		
 		columnChangeListener = e -> onSelectedColumnChanged();
 		vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().addActionListener(columnChangeListener);
 	}
@@ -828,31 +837,67 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	}
 	
 	private void updateTableVisualPropertySheets(CyTable table, boolean resetDefaultVisibleItems, boolean forceRebuild) {
-		Collection<CyColumn> columns;
-		CyColumn columnToUse;
-		VisualStyle vs;
-		boolean rebuild;
+		if (table != null && !table.isPublic()) // This (private table) should not happen , but let's be on the safe side
+			table = null;
 		
-		if(table == null) {
-			columns = null;
-			columnToUse = null;
+		Collection<CyTable> pubTables = null;
+		CyTable tableToUse = null;
+		Collection<CyColumn> columns = null;
+		CyColumn columnToUse = null;
+		final VisualStyle vs;
+		final boolean rebuild;
+		
+		if (table == null) {
 			vs = servicesUtil.get(VisualStyleFactory.class).createVisualStyle("column-dummy");
 			rebuild = true;
 		} else {
-			columns = table.getColumns();
-			columnToUse = getSelectedColumn(table);
+			tableToUse = table;
+			columns = tableToUse.getColumns();
+			columnToUse = getSelectedColumn(tableToUse);
+			
 			vs = vmProxy.getVisualStyle(columnToUse);
-			if(vs == null) {
+			
+			if (vs == null) {
+				tableToUse = null;
 				columns = null;
 				columnToUse = null;
-			} 
+			} else {
+				pubTables = new ArrayList<>();
+				
+				var netTableManager = servicesUtil.get(CyNetworkTableManager.class);
+				var net = netTableManager.getNetworkForTable(table);
+				
+				if (net == null)
+					net = vmProxy.getCurrentNetwork();
+				
+				// Add network tables
+				if (net != null) {
+					pubTables.addAll(netTableManager.getTables(net, CyNode.class).values());
+					pubTables.addAll(netTableManager.getTables(net, CyEdge.class).values());
+					pubTables.addAll(netTableManager.getTables(net, CyNetwork.class).values());
+				}
+				
+				// Add unassigned tables
+				pubTables.addAll(servicesUtil.get(CyTableManager.class).getGlobalTables());
+				
+				if (!pubTables.contains(table))
+					pubTables.add(table); // This should not happen if the Network/Table UI is working properly
+				
+				// Remove private tables
+				pubTables = pubTables.stream()
+						.filter(t -> t.isPublic())
+						.collect(Collectors.toList());
+			}
+			
 			rebuild = forceRebuild || shouldRebuildTableVisualPropertySheets(vs);
 		}
 		
 		updateVisualPropertySheets(vs, TABLE_SHEET_TYPES, resetDefaultVisibleItems, rebuild);
 		
+		vizMapperMainPanel.getColumnStylePnl().getTableComboBox().removeActionListener(tableChangeListener);
 		vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().removeActionListener(columnChangeListener);
-		vizMapperMainPanel.updateColumns(columns, columnToUse);
+		vizMapperMainPanel.updateColumns(pubTables, tableToUse, columns, columnToUse);
+		vizMapperMainPanel.getColumnStylePnl().getTableComboBox().addActionListener(tableChangeListener);
 		vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().addActionListener(columnChangeListener);
 	}
 	
@@ -875,6 +920,13 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		
 		// table must have at least a primary key column
 		return columns.iterator().next();
+	}
+	
+	private void onSelectedTableChanged() {
+		var table = (CyTable) vizMapperMainPanel.getColumnStylePnl().getTableComboBox().getSelectedItem();
+		
+		if (table != null)
+			servicesUtil.get(CyApplicationManager.class).setCurrentTable(table);
 	}
 	
 	private void onSelectedColumnChanged() {

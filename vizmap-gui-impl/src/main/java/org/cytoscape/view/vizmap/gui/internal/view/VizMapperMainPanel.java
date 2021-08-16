@@ -78,7 +78,6 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	private ColumnStylePanel columnStylePanel;
 	private PropertySheetPanel propertySheetPanel;
 	
-	
 	public VizMapperMainPanel(ServicesUtil servicesUtil) {
 		this.servicesUtil = Objects.requireNonNull(servicesUtil, "'servicesUtil' must not be null");
 		init();
@@ -155,7 +154,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 
 	PropertySheetPanel getPropertiesPnl() {
 		if (propertySheetPanel == null) {
-			propertySheetPanel = new PropertySheetPanel();
+			propertySheetPanel = new PropertySheetPanel(servicesUtil);
 		}
 		
 		return propertySheetPanel;
@@ -255,8 +254,8 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		getPropertiesPnl().addContextMenuItem(menuItem, gravity, insertSeparatorBefore, insertSeparatorAfter);
 	}
 	
-	public void updateColumns(Collection<CyColumn> columns, CyColumn selected) {
-		getColumnStylePnl().updateColumns(columns, selected);
+	public void updateColumns(Collection<CyTable> tables, CyTable selTable, Collection<CyColumn> columns, CyColumn selColumn) {
+		getColumnStylePnl().updateColumns(tables, selTable, columns, selColumn);
 	}
 	
 	private void init() {
