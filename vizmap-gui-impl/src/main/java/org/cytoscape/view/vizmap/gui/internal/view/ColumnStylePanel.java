@@ -210,5 +210,13 @@ public class ColumnStylePanel {
 			columns.forEach(columnComboBox::addItem);
 		if (selColumn != null)
 			columnComboBox.setSelectedItem(selColumn);
+		
+		update();
+	}
+
+	private void update() {
+		getTableComboBox().setEnabled(getTableComboBox().getItemCount() > 0);
+		getColumnComboBox().setEnabled(getColumnComboBox().getItemCount() > 0);
+		getOptionsBtn().getOptionsBtn().setEnabled(getColumnComboBox().getItemCount() > 0);
 	}
 }
