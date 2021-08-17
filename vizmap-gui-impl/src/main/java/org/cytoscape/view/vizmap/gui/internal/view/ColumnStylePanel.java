@@ -147,6 +147,7 @@ public class ColumnStylePanel {
 					
 					if (value == null) {
 						setText("-- None --");
+						setIcon(null);
 					} else {
 						var table = (CyTable) value;
 						var text = table.getTitle();
@@ -154,16 +155,15 @@ public class ColumnStylePanel {
 						var namespace = netTableManager.getTableNamespace(table);
 						var type = netTableManager.getTableType(table);
 						
-						if (namespace != null && type != null) {
-							text = "Default " + type.getSimpleName().replace("Cy", "") + " Table";
-							
-							if (type == CyNode.class)
-								icon = nodeTableIcon;
-							else if (type == CyEdge.class)
-								icon = edgeTableIcon;
-							else if (type == CyNetwork.class)
-								icon = netTableIcon;
-						}
+						if (type != null && CyNetwork.DEFAULT_ATTRS.equals(namespace))
+							text = "Default " + type.getSimpleName().replace("Cy", "");
+						
+						if (type == CyNode.class)
+							icon = nodeTableIcon;
+						else if (type == CyEdge.class)
+							icon = edgeTableIcon;
+						else if (type == CyNetwork.class)
+							icon = netTableIcon;
 						
 						comp.setText(text);
 						comp.setIcon(icon);

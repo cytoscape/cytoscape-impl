@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -862,7 +863,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				columns = null;
 				columnToUse = null;
 			} else {
-				pubTables = new ArrayList<>();
+				pubTables = new LinkedHashSet<>();
 				
 				var netTableManager = servicesUtil.get(CyNetworkTableManager.class);
 				var net = netTableManager.getNetworkForTable(table);
@@ -872,8 +873,14 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				
 				// Add network tables
 				if (net != null) {
+					// The order is important for the UI (Nodes, Edges, Network; and DEFAULT tables first)
+					pubTables.add(netTableManager.getTable(net, CyNode.class, CyNetwork.DEFAULT_ATTRS));
 					pubTables.addAll(netTableManager.getTables(net, CyNode.class).values());
+					
+					pubTables.add(netTableManager.getTable(net, CyEdge.class, CyNetwork.DEFAULT_ATTRS));
 					pubTables.addAll(netTableManager.getTables(net, CyEdge.class).values());
+					
+					pubTables.add(netTableManager.getTable(net, CyNetwork.class, CyNetwork.DEFAULT_ATTRS));
 					pubTables.addAll(netTableManager.getTables(net, CyNetwork.class).values());
 				}
 				
