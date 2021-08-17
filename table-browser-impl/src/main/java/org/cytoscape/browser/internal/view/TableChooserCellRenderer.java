@@ -1,5 +1,18 @@
 package org.cytoscape.browser.internal.view;
 
+import java.awt.Component;
+import java.util.Collections;
+import java.util.Map;
+
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
+
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkTableManager;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.LookAndFeelUtil;
+
 /*
  * #%L
  * Cytoscape Table Browser Impl (table-browser-impl)
@@ -24,34 +37,24 @@ package org.cytoscape.browser.internal.view;
  * #L%
  */
 
-import java.awt.Component;
-import java.util.Collections;
-import java.util.Map;
-
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JList;
-
-import org.cytoscape.model.CyTable;
-import org.cytoscape.util.swing.LookAndFeelUtil;
-
+@SuppressWarnings("serial")
 public class TableChooserCellRenderer extends DefaultListCellRenderer {
 
-	private static final long serialVersionUID = 3512300857227705136L;
-	
 	private final Map<CyTable, String> tableToStringMap;
+	private final CyNetworkTableManager netTableManager;
 
-	@SuppressWarnings("unchecked")
-	TableChooserCellRenderer() {
-		this(Collections.EMPTY_MAP);
+	TableChooserCellRenderer(CyServiceRegistrar seviceRegistrar) {
+		this(Collections.emptyMap(), seviceRegistrar);
 	}
 	
-	TableChooserCellRenderer(final Map<CyTable, String> tableToStringMap) {
+	TableChooserCellRenderer(Map<CyTable, String> tableToStringMap, CyServiceRegistrar seviceRegistrar) {
 		this.tableToStringMap = tableToStringMap;
+		this.netTableManager = seviceRegistrar.getService(CyNetworkTableManager.class);
 	}
 
 	@Override
-	public Component getListCellRendererComponent(final JList<?> list, final Object value,
-			final int index, final boolean isSelected, final boolean cellHasFocus) {
+	public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+			boolean cellHasFocus) {
 		super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 		
 		if (isSelected) {
@@ -67,19 +70,27 @@ public class TableChooserCellRenderer extends DefaultListCellRenderer {
 			return this;
 		}
 		
-		final CyTable table = (CyTable) value;
-		String label = tableToStringMap.get(table);
+		var table = (CyTable) value;
+		var text = tableToStringMap.get(table);
 		
-		if (label == null)
-			label = table == null ? "-- No Table --" : table.getTitle();
+		if (text == null) {
+			var namespace = netTableManager.getTableNamespace(table);
+			var type = netTableManager.getTableType(table);
+			
+			if (type != null && CyNetwork.DEFAULT_ATTRS.equals(namespace)) {
+				text = "Default " + type.getSimpleName().replace("Cy", "") + " Table";
+			} else {
+				text = table.getTitle();
+				
+				if (!text.toLowerCase().contains("table"))
+					text += " Table";
+				
+				if (table != null && !table.isPublic())
+					text += " [ PRIVATE ]";
+			}
+		}
 
-		if (!label.toLowerCase().contains("table"))
-			label += " Table";
-		
-		if (table != null && !table.isPublic())
-			label += " [ PRIVATE ]";
-		
-		setText(label);
+		setText(text);
 		
 		if (!isSelected)
 			setForeground(table.isPublic() ? list.getForeground() : LookAndFeelUtil.getErrorColor());

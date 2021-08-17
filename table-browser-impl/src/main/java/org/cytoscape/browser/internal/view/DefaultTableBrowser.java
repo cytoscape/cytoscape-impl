@@ -223,7 +223,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser {
 	protected JComboBox<CyTable> getTableChooser() {
 		if (tableChooser == null) {
 			tableChooser = new JComboBox<>(new DefaultComboBoxModel<CyTable>());
-			tableChooser.setRenderer(new TableChooserCellRenderer());
+			tableChooser.setRenderer(new TableChooserCellRenderer(serviceRegistrar));
 			tableChooser.setMaximumSize(new Dimension(600, tableChooser.getPreferredSize().height));
 			tableChooser.setVisible(false); // Table selector is invisible unless it has more than one item
 			tableChooser.addActionListener(e -> setCurrentTable());

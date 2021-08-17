@@ -127,7 +127,7 @@ public class GlobalTableBrowser extends AbstractTableBrowser implements TablePri
 		GlobalTableChooser() {
 			tableToStringMap = new HashMap<>();
 			setModel(new GlobalTableComboBoxModel(tableToStringMap));
-			setRenderer(new TableChooserCellRenderer(tableToStringMap));
+			setRenderer(new TableChooserCellRenderer(tableToStringMap, serviceRegistrar));
 		}
 	}
 	
