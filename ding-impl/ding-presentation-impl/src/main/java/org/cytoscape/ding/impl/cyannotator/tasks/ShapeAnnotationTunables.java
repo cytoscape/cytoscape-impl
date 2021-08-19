@@ -24,7 +24,7 @@ public class ShapeAnnotationTunables extends AbstractAnnotationTunables {
   public Double width = null;
 
   @Tunable(context="nogui", 
-           description="The fill color of this shape as an RGB hex string")
+           description="The fill color of this shape as an RGB hex string (not used for images)")
   public String fillColor = null;
 
   @Tunable(context="nogui", 

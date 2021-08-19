@@ -31,7 +31,7 @@ public class ImageAnnotationTunables extends AbstractAnnotationTunables {
 
   @Tunable(context="nogui", 
            description="The image opacity adjustment")
-  public Integer opacity = null;
+  public Double opacity = null;
 
   /*
    * FIXME: How do we handle SVG?
@@ -64,6 +64,6 @@ public class ImageAnnotationTunables extends AbstractAnnotationTunables {
     }
     if (contrast != null) iAnnotation.setImageContrast(contrast);
     if (brightness != null) iAnnotation.setImageBrightness(brightness);
-    if (opacity != null) iAnnotation.setImageOpacity(opacity);
+    if (opacity != null) iAnnotation.setImageOpacity(opacity.floatValue());
   }
 }

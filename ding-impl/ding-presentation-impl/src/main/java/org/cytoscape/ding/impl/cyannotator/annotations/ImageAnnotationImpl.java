@@ -67,7 +67,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	private BufferedImage modifiedImage;
 	private	URL url;
 
-	private float opacity = 1.0f;
+	private float opacity = 100.0f;
 	private int brightness;
 	private int contrast;
 	private CyCustomGraphics<?> cg;
@@ -212,7 +212,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		
 		this.customGraphicsManager = customGraphicsManager;
 		
-		opacity = ViewUtils.getFloat(argMap, OPACITY, 1.0f);
+		opacity = ViewUtils.getFloat(argMap, OPACITY, 100.0f);
 		brightness = ViewUtils.getInteger(argMap, LIGHTNESS, 0);
 		contrast = ViewUtils.getInteger(argMap, CONTRAST, 0);
 
@@ -287,6 +287,11 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	@Override
 	public Map<String, String> getArgMap() {
 		var argMap = super.getArgMap();
+    if (argMap.containsKey(ShapeAnnotation.FILLOPACITY))
+      argMap.remove(ShapeAnnotation.FILLOPACITY);
+    if (argMap.containsKey(ShapeAnnotation.FILLCOLOR))
+      argMap.remove(ShapeAnnotation.FILLCOLOR);
+
 		argMap.put(TYPE, ImageAnnotation.class.getName());
 		
 		if (url != null)
@@ -312,7 +317,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		super.setStyle(argMap);
 		
 		if (argMap != null) {
-			setImageOpacity(ViewUtils.getFloat(argMap, OPACITY, 1.0f));
+			setImageOpacity(ViewUtils.getFloat(argMap, OPACITY, 100.0f));
 			setImageBrightness(ViewUtils.getInteger(argMap, LIGHTNESS, 0));
 			setImageContrast(ViewUtils.getInteger(argMap, CONTRAST, 0));
 		}
@@ -577,7 +582,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	@Override
 	public void paint(Graphics g, boolean showSelection) {
 		var g2 = (Graphics2D) g.create();
-		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
+		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity/100.0f));
 		
 		if (isSVG()) {
 			// SVG...
