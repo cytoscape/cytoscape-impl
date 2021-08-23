@@ -44,16 +44,16 @@ public class CyActivator extends AbstractCyActivator {
 	
 	@Override
 	public void start(BundleContext bc) {
-		final CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
+		var serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 
-		TableEventHelperFacade tableEventHelper = new TableEventHelperFacade(serviceRegistrar);
+		var tableEventHelper = new TableEventHelperFacade(serviceRegistrar);
 		
-		CyNetworkManagerImpl networkManager = new CyNetworkManagerImpl(serviceRegistrar);
-		CyNetworkTableManagerImpl networkTableManager = new CyNetworkTableManagerImpl();
-		CyTableManagerImpl tableManager = new CyTableManagerImpl(networkTableManager, networkManager, serviceRegistrar);
-		CyTableFactoryImpl tableFactory = new CyTableFactoryImpl(tableEventHelper, serviceRegistrar);
-		CyNetworkFactoryImpl networkFactory = new CyNetworkFactoryImpl(tableEventHelper, tableManager, networkTableManager, tableFactory, serviceRegistrar);
-		CyRootNetworkManagerImpl rootNetworkFactory = new CyRootNetworkManagerImpl();
+		var networkManager = new CyNetworkManagerImpl(serviceRegistrar);
+		var networkTableManager = new CyNetworkTableManagerImpl();
+		var tableManager = new CyTableManagerImpl(networkTableManager, networkManager, serviceRegistrar);
+		var tableFactory = new CyTableFactoryImpl(tableEventHelper, serviceRegistrar);
+		var networkFactory = new CyNetworkFactoryImpl(tableEventHelper, tableManager, networkTableManager, tableFactory, serviceRegistrar);
+		var rootNetworkFactory = new CyRootNetworkManagerImpl();
 
 		registerService(bc, networkFactory, CyNetworkFactory.class);
 		registerService(bc, tableFactory, CyTableFactory.class);
@@ -66,7 +66,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, networkTableManager, TableAboutToBeDeletedListener.class);
 		registerService(bc, networkManager, CyNetworkManager.class);
 		
-		SelectionMediator selectionMediator = new SelectionMediator(serviceRegistrar);
+		var selectionMediator = new SelectionMediator(serviceRegistrar);
 		registerService(bc, selectionMediator, RowsSetListener.class);
 		registerServiceListener(bc, selectionMediator::listenerAdded, selectionMediator::listenerRemoved, SelectedNodesAndEdgesListener.class);
 	}
