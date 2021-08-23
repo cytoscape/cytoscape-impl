@@ -2,6 +2,7 @@ package org.cytoscape.model;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -12,6 +13,7 @@ import org.cytoscape.equations.internal.EquationParserImpl;
 import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.event.DummyCyEventHelper;
+import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
 import org.cytoscape.model.internal.CyNetworkFactoryImpl;
 import org.cytoscape.model.internal.CyNetworkManagerImpl;
 import org.cytoscape.model.internal.CyNetworkTableManagerImpl;
@@ -146,5 +148,19 @@ public class CyNetworkTableManagerTest extends AbstractCyNetworkTableManagerTest
 		extRow.set(extraColName, testValue);
 		
 		assertEquals(testValue, goodNetwork.getRow(goodNetwork, noneDefTableName).get(extraColName, Integer.class));
+	}
+	
+	@Test
+	public void testHandleTableAboutToBeDeletedEvent() throws Exception {
+		var extTable = mock(CyTable.class);
+		var namespace = "external";
+		mgr.setTable(goodNetwork, CyNode.class, namespace, extTable);
+		
+		assertNotNull(mgr.getTable(goodNetwork, CyNode.class, namespace));
+		
+		var event = new TableAboutToBeDeletedEvent(tableManager, extTable);
+		((CyNetworkTableManagerImpl) mgr).handleEvent(event);
+		
+		assertNull(mgr.getTable(goodNetwork, CyNode.class, namespace));
 	}
 }

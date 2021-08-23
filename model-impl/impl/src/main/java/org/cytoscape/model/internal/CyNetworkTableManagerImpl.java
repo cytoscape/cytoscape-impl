@@ -10,6 +10,8 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
+import org.cytoscape.model.events.TableAboutToBeDeletedListener;
 
 /*
  * #%L
@@ -35,7 +37,7 @@ import org.cytoscape.model.CyTable;
  * #L%
  */
 
-public class CyNetworkTableManagerImpl implements CyNetworkTableManager {
+public class CyNetworkTableManagerImpl implements CyNetworkTableManager, TableAboutToBeDeletedListener {
 
 	private final Map<CyNetwork, Map<Class<? extends CyIdentifiable>, Map<String, CyTable>>> tables;
 	
@@ -237,6 +239,31 @@ public class CyNetworkTableManagerImpl implements CyNetworkTableManager {
 	public void removeAllTables(CyNetwork network) {
 		synchronized (lock) {
 			tables.remove(network);
+		}
+	}
+
+	@Override
+	public void handleEvent(TableAboutToBeDeletedEvent e) {
+		var tableToDelete = e.getTable();
+		
+		synchronized (lock) {
+			for (var typeMap : tables.values()) {
+				for (var entry : typeMap.entrySet()) {
+					var namespace2tableMap = entry.getValue();
+					var iter = namespace2tableMap.entrySet().iterator();
+					
+					while (iter.hasNext()) {
+						var namespaceTblEntry = iter.next();
+						var namespace = namespaceTblEntry.getKey();
+						var tbl = namespaceTblEntry.getValue();
+						
+						if (tableToDelete.equals(tbl) && !CyNetwork.DEFAULT_ATTRS.equals(namespace)) {
+							iter.remove();
+							return;
+						}
+					}
+				}
+			}
 		}
 	}
 }
