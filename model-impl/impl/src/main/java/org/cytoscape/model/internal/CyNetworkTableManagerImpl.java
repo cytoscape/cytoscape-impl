@@ -201,7 +201,7 @@ public class CyNetworkTableManagerImpl implements CyNetworkTableManager, TableAb
 			if (namespace2tableMap == null)
 				return Collections.emptyMap();
 			
-			return Collections.unmodifiableMap(namespace2tableMap);
+			return new HashMap<>(namespace2tableMap);
 		}
 	}
 

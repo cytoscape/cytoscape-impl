@@ -267,10 +267,14 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 
 		boolean ret = removeNodesInternal(nodes);
 
-		nodeHiddenTable.deleteRows(nodeSuids);
-		nodeDefaultTable.deleteRows(nodeSuids);
-		edgeHiddenTable.deleteRows(edgeSuids);
-		edgeDefaultTable.deleteRows(edgeSuids);
+		if (nodeHiddenTable != null)
+			nodeHiddenTable.deleteRows(nodeSuids);
+		if (nodeDefaultTable != null)
+			nodeDefaultTable.deleteRows(nodeSuids);
+		if (edgeHiddenTable != null)
+			edgeHiddenTable.deleteRows(edgeSuids);
+		if (edgeDefaultTable != null)
+			edgeDefaultTable.deleteRows(edgeSuids);
 		
 		if(ret) {
 			parent.subnetworkNodesRemoved(nodes);
