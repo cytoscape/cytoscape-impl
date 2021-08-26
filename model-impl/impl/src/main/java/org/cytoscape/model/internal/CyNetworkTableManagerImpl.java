@@ -12,6 +12,7 @@ import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
 import org.cytoscape.model.events.TableAboutToBeDeletedListener;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 
 /*
  * #%L
@@ -247,6 +248,7 @@ public class CyNetworkTableManagerImpl implements CyNetworkTableManager, TableAb
 		var tableToDelete = e.getTable();
 		
 		synchronized (lock) {
+			// Check whether this table is a third party network-assigned one, so it can be removed here automatically
 			for (var typeMap : tables.values()) {
 				for (var entry : typeMap.entrySet()) {
 					var namespace2tableMap = entry.getValue();
@@ -257,8 +259,17 @@ public class CyNetworkTableManagerImpl implements CyNetworkTableManager, TableAb
 						var namespace = namespaceTblEntry.getKey();
 						var tbl = namespaceTblEntry.getValue();
 						
-						if (tableToDelete.equals(tbl) && !CyNetwork.DEFAULT_ATTRS.equals(namespace)) {
-							iter.remove();
+						if (tableToDelete.equals(tbl)) {
+							// These tables that are created by default must be deleted only
+							// when the network is disposed -- when removeAllTables() is called
+							if (!CyNetwork.DEFAULT_ATTRS.equals(namespace)
+									&& !CyNetwork.LOCAL_ATTRS.equals(namespace)
+									&& !CyNetwork.HIDDEN_ATTRS.equals(namespace)
+									&& !CyRootNetwork.SHARED_ATTRS.equals(namespace)
+									&& !CyRootNetwork.SHARED_DEFAULT_ATTRS.equals(namespace)) {
+								iter.remove();
+							}
+							
 							return;
 						}
 					}
