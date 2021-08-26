@@ -296,7 +296,7 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 		eventHelper.fireEvent(new AboutToRemoveEdgesEvent(this, edges));
 
 		CyTable hiddenTable = getTable(CyEdge.class, CyNetwork.HIDDEN_ATTRS);
-		CyTable localTable = getTable(CyEdge.class, CyNetwork.LOCAL_ATTRS);
+		//CyTable localTable = getTable(CyEdge.class, CyNetwork.LOCAL_ATTRS);
 		CyTable defaultTable = getTable(CyEdge.class, CyNetwork.DEFAULT_ATTRS);
 		List<Long> suids = new ArrayList<>();
 
@@ -309,8 +309,10 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 
 		boolean ret = removeEdgesInternal(edges);
 
-		hiddenTable.deleteRows(suids);
-		defaultTable.deleteRows(suids);
+		if (hiddenTable != null)
+			hiddenTable.deleteRows(suids);
+		if (defaultTable != null)
+			defaultTable.deleteRows(suids);
 		// Shouldn't be needed since the default table is a facade on the local table
 		// localTable.deleteRows(suids);
 
