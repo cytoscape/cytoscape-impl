@@ -16,8 +16,8 @@
 	<name>Cytoscape Implementation Parent Project POM</name>
 
 	<properties>
-		<cytoscape.api.version>3.9.0-SNAPSHOT</cytoscape.api.version>
-		<cytoscape.support.version>3.9.0-SNAPSHOT</cytoscape.support.version>
+		<cytoscape.api.version>3.10.0-SNAPSHOT</cytoscape.api.version>
+		<cytoscape.support.version>3.10.0-SNAPSHOT</cytoscape.support.version>
 	</properties>
 
 
