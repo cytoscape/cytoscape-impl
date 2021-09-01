@@ -9,6 +9,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 import javax.swing.JLabel;
+import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -51,7 +52,6 @@ public class StringHandler extends AbstractGUITunableHandler implements Document
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	private JTextField textField;
-	private boolean readOnly;
 	private boolean isUpdating;
 
 	/**
@@ -73,9 +73,10 @@ public class StringHandler extends AbstractGUITunableHandler implements Document
 	}
 
 	private void init() {
-		readOnly = getParams().getProperty("readOnly", "false").equalsIgnoreCase("true");
-		String s = null;
+		boolean readOnly = getParams().getProperty("readOnly", "false").equalsIgnoreCase("true");
+		boolean password = getParams().getProperty("password", "false").equalsIgnoreCase("true");
 		
+		String s = null;
 		try {
 			s = (String)getValue();
 		} catch (final Exception e) {
@@ -83,7 +84,7 @@ public class StringHandler extends AbstractGUITunableHandler implements Document
 			s = "";
 		}
 
-		textField = new JTextField(s);
+		textField = password ? new JPasswordField(s) : new JTextField(s);
 		textField.setPreferredSize(new Dimension(2 * TEXT_BOX_WIDTH, textField.getPreferredSize().height));
 		textField.setHorizontalAlignment(JTextField.LEFT);
 		textField.getDocument().addDocumentListener(this);
