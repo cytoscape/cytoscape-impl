@@ -318,10 +318,11 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		private ViewChangeEdit moveNodesEdit;
 		private ViewChangeEdit panEdit;
 		private CompositeCyEdit<LabelEdit> labelEdit;
+		private Panner panner = null;
 		
 		private Timer swingTimer;
 		
-		private void maybePostMoveEdit() {
+		private void endEdit() {
 			// If the timer expires, or the user switches to mouse input, then post the undo edit.
 			if(swingTimer != null) {
 				swingTimer.stop();
@@ -341,12 +342,17 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				var composite = new CompositeCyEdit<AbstractCyEdit>("Move", registrar, 3);
 				composite.add(moveAnnotationsEdit).add(moveNodesEdit).add(panEdit);
 				composite.post();
+				
+				if(panner != null) {
+					panner.endPan();
+				}
 			}
 			
 			moveAnnotationsEdit = null;
 			moveNodesEdit = null;
 			panEdit = null;
 			labelEdit = null;
+			panner = null;
 		}
 		
 		/**
@@ -354,13 +360,13 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		 */
 		@Override
 		public void mousePressed(MouseEvent e) {
-			maybePostMoveEdit();
+			endEdit();
 		}
 		
 		private void resetMoveTimer() {
 			// Use a swing timer to coalesce multiple quick keypresses into a single undo edit.
 			if(swingTimer == null) {
-				swingTimer = new Timer(KEYPRESS_TIMER_DELAY, ev -> maybePostMoveEdit());
+				swingTimer = new Timer(KEYPRESS_TIMER_DELAY, ev -> endEdit());
 				swingTimer.start();
 			} else {
 				swingTimer.restart();
@@ -487,13 +493,16 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			if(panEdit == null) {
 				panEdit = new ViewChangeEdit(re, null, "Pan", registrar); 
 			}
+			if(panner == null) {
+				panner = re.startPan();
+			}
 			
 			float move = getMoveAmountNodeUnit(k);
 			switch(k.getKeyCode()) {
-				case VK_UP:    re.setCenter(0,  move); break;
-				case VK_DOWN:  re.setCenter(0, -move); break;
-				case VK_LEFT:  re.setCenter( move, 0); break;
-				case VK_RIGHT: re.setCenter(-move, 0); break;
+				case VK_UP:    panner.continuePan(0, move); break;
+				case VK_DOWN:  panner.continuePan(0, -move); break;
+				case VK_LEFT:  panner.continuePan( move, 0); break;
+				case VK_RIGHT: panner.continuePan(-move, 0); break;
 			}
 		}
 
