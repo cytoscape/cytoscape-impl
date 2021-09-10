@@ -287,10 +287,10 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	@Override
 	public Map<String, String> getArgMap() {
 		var argMap = super.getArgMap();
-    if (argMap.containsKey(ShapeAnnotation.FILLOPACITY))
-      argMap.remove(ShapeAnnotation.FILLOPACITY);
-    if (argMap.containsKey(ShapeAnnotation.FILLCOLOR))
-      argMap.remove(ShapeAnnotation.FILLCOLOR);
+		if (argMap.containsKey(ShapeAnnotation.FILLOPACITY))
+			argMap.remove(ShapeAnnotation.FILLOPACITY);
+		if (argMap.containsKey(ShapeAnnotation.FILLCOLOR))
+			argMap.remove(ShapeAnnotation.FILLCOLOR);
 
 		argMap.put(TYPE, ImageAnnotation.class.getName());
 		
