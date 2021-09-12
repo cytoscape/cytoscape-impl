@@ -154,8 +154,10 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private final List<ContentChangeListener> contentChangeListeners = new CopyOnWriteArrayList<>();
 	private final List<ThumbnailChangeListener> thumbnailChangeListeners = new CopyOnWriteArrayList<>();
 	
-	private Timer animationTimer;
-	private final Timer checkDirtyTimer;
+	private final int timerDelay = 30;
+	private boolean animateEdges = false;
+	private int animationCounter = 0; // ok if this overflows
+	private final Timer modelAndAnimationTimer;
 	private final DebounceTimer eventFireTimer;
 	
 	private final LabelInfoCache labelInfoCache;
@@ -213,10 +215,11 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		eventFireTimer = new DebounceTimer(240);
 		
-		// Check if the view model has changed approximately 30 times per second
-		checkDirtyTimer = new Timer(30, e -> checkModelIsDirty());
-		checkDirtyTimer.setRepeats(true);
-		checkDirtyTimer.start();
+		// Check if the view model has changed approximately 30 times per second.
+		// Also use same timer for animated edges so that we don't have a race condition between two timers.
+		modelAndAnimationTimer = new Timer(timerDelay, e -> timerCheckModelAndAnimate());
+		modelAndAnimationTimer.setRepeats(true);
+		modelAndAnimationTimer.start();
 		
 		renderComponent.addTransformChangeListener(() -> {
 			fireThumbnailChanged(null);
@@ -286,13 +289,39 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	 * Also the EDT will coalesce paint events, so if the timer runs faster than the frame rate the
 	 * EDT will take care of that.
 	 */
-	private void checkModelIsDirty() {
+	private void timerCheckModelAndAnimate() {
 		boolean modelDirty = viewModel.dirty(true);
 		if(modelDirty) {
+			updateAnimationState();
 			updateModel();
+		}
+		
+		boolean paintEdges = advanceAnimatedEdges();
+		
+		if(modelDirty) {
 			updateView(UpdateType.ALL_FULL, true);
-		} 
+		} else if(paintEdges) {
+			var flags = renderComponent.getLastFastRenderFlags();
+			if (flags != null && flags.renderEdges() != RenderEdges.NONE) {
+				updateView(UpdateType.JUST_EDGES);
+			}
+		}
 	}
+	
+	private void updateAnimationState() { // call only when model is dirty
+		Collection<View<CyEdge>> animatedEdges = viewModelSnapshot.getTrackedEdges(DingNetworkViewFactory.ANIMATED_EDGES);
+		edgeDetails.updateAnimatedEdges(animatedEdges);
+		this.animateEdges = !animatedEdges.isEmpty();
+	}
+	
+	private boolean advanceAnimatedEdges() { // call every time the timer thread fires
+		if(animateEdges && animationCounter++ % 6 == 0) { // Timer fires 30 times per second, animation advances 5 times per second, 30 / 6 = 5
+			edgeDetails.advanceAnimatedEdges();
+			return true;
+		}
+		return false;
+	}
+	
 	
 	public void updateView(UpdateType updateType) {
 		updateView(updateType, false);
@@ -319,17 +348,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		Paint backgroundPaint = viewModelSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT);
 		renderComponent.setBackgroundPaint(backgroundPaint);
 		
-		Collection<View<CyEdge>> animatedEdges = viewModelSnapshot.getTrackedEdges(DingNetworkViewFactory.ANIMATED_EDGES);
-		edgeDetails.updateAnimatedEdges(animatedEdges);
-		if(animatedEdges.isEmpty() && animationTimer != null) {
-			animationTimer.stop();
-			animationTimer = null;
-		} else if(!animatedEdges.isEmpty() && animationTimer == null) {
-			animationTimer = new Timer(200, e -> advanceAnimatedEdges());
-			animationTimer.setRepeats(true);
-			animationTimer.start();
-		}
-		
 		// update LOD
 		boolean hd = viewModelSnapshot.getVisualProperty(DVisualLexicon.NETWORK_FORCE_HIGH_DETAIL);
 		renderComponent.setLOD(hd ? dingGraphLODAll : dingGraphLOD);
@@ -347,14 +365,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		return renderComponent.getBackgroundPaint();
 	}
 	
-	private void advanceAnimatedEdges() {
-		edgeDetails.advanceAnimatedEdges();
-		var flags = renderComponent.getLastFastRenderFlags();
-		
-		if (flags != null && flags.renderEdges() != RenderEdges.NONE) {
-			updateView(UpdateType.JUST_EDGES);
-		}
-	}
 	
 	
 	public BendStore getBendStore() {
@@ -835,7 +845,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			if (inputHandler != null)
 				inputHandler.dispose();
 			
-			checkDirtyTimer.stop();
+			modelAndAnimationTimer.stop();
 			eventFireTimer.shutdown();
 			cyAnnotator.dispose();
 			serviceRegistrar.unregisterAllServices(cyAnnotator);
