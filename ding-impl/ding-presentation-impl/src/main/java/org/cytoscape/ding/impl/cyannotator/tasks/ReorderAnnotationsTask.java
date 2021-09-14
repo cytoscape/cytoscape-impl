@@ -73,12 +73,15 @@ public class ReorderAnnotationsTask extends AbstractTask {
 		if (canvasName == null && shift == null)
 			return;
 		
+		var cyAnnotator = re.getCyAnnotator();
+		cyAnnotator.markUndoEdit("Reorder Annotations");
+		
 		if (canvasName != null)
 			changeCanvas();
 		else if (shift != null)
 			ViewUtils.reorder(annotations, shift, re);
 		
-		var cyAnnotator = re.getCyAnnotator();
+		cyAnnotator.postUndoEdit();
 		cyAnnotator.fireAnnotationsReordered();
 	}
 
