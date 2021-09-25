@@ -24,9 +24,6 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -549,18 +546,7 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 		return "Unknown annotation type";
 	}
 
-	@Override
-	public String toJSON() {
-		var args = getArgMap();
-		var objectMapper = new ObjectMapper();
-
-		try {
-			return objectMapper.writeValueAsString(args);
-		} catch (JsonProcessingException e) {
-			return "{\"error\":\"" + e.getMessage() + "\"}";
-		}
-	}
-
+	
 	protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
 		pcs.firePropertyChange(propertyName, oldValue, newValue);
 	}

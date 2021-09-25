@@ -81,7 +81,7 @@ public class ViewUtils {
 			
 			return rg;
 		} else if (clr instanceof Color) {
-			return String.format("#%06X", 0xFFFFFF&(((Color) clr).getRGB()));
+			return Integer.toString(((Color) clr).getRGB());
 		}
 		
 		return clr.toString();
@@ -219,7 +219,7 @@ public class ViewUtils {
 	static public Font getArgFont(Map<String, String> argMap, String defFamily, int defStyle, int defSize) {
 		var family = getString(argMap, TextAnnotation.FONTFAMILY, defFamily);
 		int size = getInteger(argMap, TextAnnotation.FONTSIZE, defSize);
-		int style = getFontStyle(argMap, TextAnnotation.FONTSTYLE, defStyle);
+		int style = getInteger(argMap, TextAnnotation.FONTSTYLE, defStyle);
 
 		return new Font(family, style, size);
 	}
@@ -287,33 +287,6 @@ public class ViewUtils {
 		re.updateView(UpdateType.JUST_ANNOTATIONS);
 	}
 
-	public static String getFontStyle(int style) {
-		if (style == Font.PLAIN)
-			return "plain";
-		if (style == Font.BOLD)
-			return "bold";
-		if (style == Font.ITALIC)
-			return "italic";
-		if (style == (Font.ITALIC | Font.BOLD))
-			return "bolditalic";
-		return "";
-	}
-
-	static public int getFontStyle(Map<String, String> argMap, String key, int defValue) {
-		if (argMap.get(key) == null)
-			return defValue;
-
-    String style = argMap.get(key);
-		if (style.equals("plain"))
-		  return Font.PLAIN;
-		if (style.equals("bold"))
-			return Font.BOLD;
-		if (style.equals("italic"))
-			return Font.ITALIC;
-		if (style.equals("bolditalic"))
-		  return (Font.ITALIC | Font.BOLD);
-		return defValue;
-	}
 
 	public static void styleWindowStateButton(AbstractButton btn) {
 		final int size = 16;

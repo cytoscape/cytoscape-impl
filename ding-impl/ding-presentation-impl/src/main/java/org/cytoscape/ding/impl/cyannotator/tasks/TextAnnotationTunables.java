@@ -2,8 +2,6 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
 
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
-
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,8 +12,6 @@ import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
-import org.cytoscape.work.util.BoundedDouble;
-import org.cytoscape.work.util.ListSingleSelection;
 
 
 public class TextAnnotationTunables extends AbstractAnnotationTunables {
@@ -92,6 +88,14 @@ public class TextAnnotationTunables extends AbstractAnnotationTunables {
       return Integer.valueOf(Font.ITALIC);
     else if (style.equalsIgnoreCase("bolditalic"))
       return Integer.valueOf(Font.BOLD|Font.ITALIC);
+    
+    try {
+    	int code = Integer.parseInt(style);
+    	if(code == Font.BOLD || code == Font.PLAIN || code == Font.ITALIC || code == (Font.BOLD|Font.ITALIC)) {
+    		return code;
+    	}
+    } catch(NumberFormatException e) {}
+    
     return Integer.valueOf(Font.PLAIN);
   }
 }

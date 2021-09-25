@@ -67,7 +67,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	private BufferedImage modifiedImage;
 	private	URL url;
 
-	private float opacity = 100.0f;
+	private float opacity = 1.0f;
 	private int brightness;
 	private int contrast;
 	private CyCustomGraphics<?> cg;
@@ -130,7 +130,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			DRenderingEngine re,
 			double x,
 			double y,
-      double rotation,
+			double rotation,
 			URL url,
 			String svg,
 			double zoom,
@@ -166,7 +166,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			AbstractURLImageCustomGraphics<?> cg,
 			int x,
 			int y,
-      double rotation,
+			double rotation,
 			double zoom,
 			CustomGraphicsManager customGraphicsManager
 	) {
@@ -212,7 +212,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		
 		this.customGraphicsManager = customGraphicsManager;
 		
-		opacity = ViewUtils.getFloat(argMap, OPACITY, 100.0f);
+		opacity = clamp(ViewUtils.getFloat(argMap, OPACITY, 1f), 0f, 1f);
 		brightness = ViewUtils.getInteger(argMap, LIGHTNESS, 0);
 		contrast = ViewUtils.getInteger(argMap, CONTRAST, 0);
 
@@ -278,6 +278,11 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		for (var cg : customGraphicsManager.getAllCustomGraphics())
 			customGraphicsManager.setUsedInCurrentSession(cg, true);
 	}
+	
+	private static float clamp(float val, float min, float max) {
+	    return Math.max(min, Math.min(max, val));
+	}
+	
 
 	@Override
 	public Class<? extends Annotation> getType() {
@@ -317,7 +322,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		super.setStyle(argMap);
 		
 		if (argMap != null) {
-			setImageOpacity(ViewUtils.getFloat(argMap, OPACITY, 100.0f));
+			setImageOpacity(ViewUtils.getFloat(argMap, OPACITY, 1.0f));
 			setImageBrightness(ViewUtils.getInteger(argMap, LIGHTNESS, 0));
 			setImageContrast(ViewUtils.getInteger(argMap, CONTRAST, 0));
 		}
@@ -395,6 +400,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 	@Override
 	public void setImageOpacity(float opacity) {
+		opacity = clamp(opacity, 0f, 1f);
 		if (this.opacity != opacity) {
 			var oldValue = this.opacity;
 			this.opacity = opacity;
@@ -582,7 +588,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	@Override
 	public void paint(Graphics g, boolean showSelection) {
 		var g2 = (Graphics2D) g.create();
-		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity/100.0f));
+		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
 		
 		if (isSVG()) {
 			// SVG...

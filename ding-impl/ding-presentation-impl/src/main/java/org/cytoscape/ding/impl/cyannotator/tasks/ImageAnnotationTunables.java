@@ -1,11 +1,6 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
-import java.awt.Font;
-import java.awt.GraphicsEnvironment;
-
 import java.net.URL;
-import java.util.Arrays;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,7 +25,7 @@ public class ImageAnnotationTunables extends AbstractAnnotationTunables {
   public Integer brightness = null;
 
   @Tunable(context="nogui", 
-           description="The image opacity adjustment")
+           description="The image opacity adjustment (0-100)")
   public Double opacity = null;
 
   /*
@@ -48,7 +43,8 @@ public class ImageAnnotationTunables extends AbstractAnnotationTunables {
     putIfNotNull(tm, args, ImageAnnotation.URL, url);
     putIfNotNull(tm, args, ImageAnnotation.CONTRAST, contrast);
     putIfNotNull(tm, args, ImageAnnotation.LIGHTNESS, brightness);
-    putIfNotNull(tm, args, ImageAnnotation.OPACITY, opacity);
+    if(opacity != null )
+    	putIfNotNull(tm, args, ImageAnnotation.OPACITY, opacity.floatValue()/100.0f);
 
     return args;
   }
@@ -64,6 +60,6 @@ public class ImageAnnotationTunables extends AbstractAnnotationTunables {
     }
     if (contrast != null) iAnnotation.setImageContrast(contrast);
     if (brightness != null) iAnnotation.setImageBrightness(brightness);
-    if (opacity != null) iAnnotation.setImageOpacity(opacity.floatValue());
+    if (opacity != null) iAnnotation.setImageOpacity(opacity.floatValue()/100.0f);
   }
 }
