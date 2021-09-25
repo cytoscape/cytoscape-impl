@@ -48,9 +48,8 @@ public final class ColorUtil {
 	}
 
 	public static Color parseColor(final String input) {
-		Color color = null;
-		
-		if (input.matches("^#([A-Fa-f0-9]{8}|[A-Fa-f0-9]{6})$")) {
+		// Check for hex color code
+		if(input.matches("^#([A-Fa-f0-9]{8}|[A-Fa-f0-9]{6})$")) {
 			// We have a hex value with either 6 (rgb) or 8 (rgba) digits
 			int r = Integer.parseInt(input.substring(1, 3), 16);
 			int g = Integer.parseInt(input.substring(3, 5), 16);
@@ -58,16 +57,25 @@ public final class ColorUtil {
 			
 			if (input.length() > 7) {
 				int a = Integer.parseInt(input.substring(7, 9), 16);
-				color = new Color(r, g, b, a);
+				return new Color(r, g, b, a);
 			} else {
-				color = new Color(r, g, b);
+				return new Color(r, g, b);
 			}
-		} else {
-			// Check for color string
-			color = ColorKeyword.getColor(input);
+		} 
+		
+		// Check for color string
+		Color color = ColorKeyword.getColor(input);
+		if(color != null) {
+			return color;
 		}
 		
-		return color;
+		// Check for RGB value
+		try {
+			int rgb = Integer.parseInt(input);
+			return new Color(rgb);
+		} catch(NumberFormatException e) {
+			return null;
+		}
 	}
 
 	public static Color getContrastingColor(final Color color) {

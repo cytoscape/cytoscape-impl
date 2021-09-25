@@ -24,7 +24,6 @@ import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
-import org.cytoscape.work.util.ListMultipleSelection;
 
 /*
  * #%L
@@ -190,7 +189,7 @@ public class GroupAnnotationsTask extends AbstractTask implements ObservableTask
         if (groupAnnotation == null) {
           return "{}";
         }
-        return ((DingAnnotation)groupAnnotation).toJSON();
+        return AnnotationJsonConverter.toJson((DingAnnotation)groupAnnotation);
       };
       return (R)res;
     }

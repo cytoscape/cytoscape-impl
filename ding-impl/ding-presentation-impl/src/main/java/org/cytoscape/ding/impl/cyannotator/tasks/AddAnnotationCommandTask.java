@@ -1,15 +1,9 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
-import static java.util.Collections.emptyMap;
-import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
-
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 import org.cytoscape.command.StringToModel;
-import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.ArrowAnnotationFactory;
@@ -17,14 +11,10 @@ import org.cytoscape.ding.impl.cyannotator.create.BoundedTextAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.ImageAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.ShapeAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.TextAnnotationFactory;
-import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
-import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
-import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 import org.cytoscape.view.presentation.annotations.BoundedTextAnnotation;
 import org.cytoscape.view.presentation.annotations.ImageAnnotation;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
@@ -34,6 +24,7 @@ import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
 /*
  * #%L
@@ -122,7 +113,6 @@ public class AddAnnotationCommandTask extends AbstractTask implements Observable
   }
 
   @Override
-  @SuppressWarnings({ "unchecked", "rawtypes" })
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setTitle("Add Annotation");
 
@@ -185,7 +175,7 @@ public class AddAnnotationCommandTask extends AbstractTask implements Observable
         if (newAnnotation == null) {
           return "{}";
         }
-        return ((DingAnnotation)newAnnotation).toJSON();
+        return AnnotationJsonConverter.toJson((DingAnnotation)newAnnotation);
       };
       return (R)res;
     }

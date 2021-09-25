@@ -125,7 +125,7 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 			annotation.setBorderColor(getBorderColorButton().getColor());
 			annotation.setBorderWidth((int) getBorderWidthCombo().getSelectedItem());
 			annotation.setBorderOpacity(getBorderOpacitySlider().getValue());
-			annotation.setImageOpacity(getOpacitySlider().getValue()); // opacity slider must range from 0 to 100
+			annotation.setImageOpacity(getOpacitySlider().getValue()/100.0f);
 			annotation.setImageBrightness(getBrightnessSlider().getValue());
 			annotation.setImageContrast(getContrastSlider().getValue());
 			annotation.setRotation((double) getRotationSlider().getValue());

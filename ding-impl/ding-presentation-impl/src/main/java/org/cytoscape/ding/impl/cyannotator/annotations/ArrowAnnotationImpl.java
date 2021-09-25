@@ -69,13 +69,13 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 	private Line2D arrowLine;
 
-	protected static final String ARROWCOLOR = "lineColor";
+	public static final String ARROWCOLOR = "lineColor";
 	protected static final String ARROWTHICKNESS = "lineThickness";
 
 	protected static final String SOURCEANN = "sourceAnnotation";
 	protected static final String SOURCETYPE = "sourceType";
 	protected static final String SOURCESIZE = "sourceSize";
-	protected static final String SOURCECOLOR = "sourceColor";
+	public static final String SOURCECOLOR = "sourceColor";
 
 	protected static final String TARGETPOINT = "targetPoint";
 	protected static final String TARGETANN = "targetAnnotation";
@@ -83,7 +83,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 	protected static final String TARGETTYPE = "targetType";
 	protected static final String TARGETSIZE = "targetSize";
-	protected static final String TARGETCOLOR = "targetColor";
+	public static final String TARGETCOLOR = "targetColor";
 
 	public enum ArrowType {
 		CIRCLE("Circle"),

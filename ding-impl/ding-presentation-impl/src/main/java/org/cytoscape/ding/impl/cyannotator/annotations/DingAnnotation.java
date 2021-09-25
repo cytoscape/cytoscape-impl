@@ -155,8 +155,5 @@ public interface DingAnnotation extends Annotation {
    */
   String toString();
 
-  /**
-   * Get a JSON representation of this annotation
-   */
-  String toJSON();
+ 
 }

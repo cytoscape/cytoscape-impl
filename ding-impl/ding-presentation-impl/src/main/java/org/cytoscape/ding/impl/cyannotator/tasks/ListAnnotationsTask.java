@@ -5,17 +5,16 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.cytoscape.command.StringToModel;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
-
-import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.work.json.JSONResult;
 
 /*
  * #%L
@@ -106,7 +105,7 @@ public class ListAnnotationsTask extends AbstractTask implements ObservableTask 
         StringBuilder sb = new StringBuilder();
         sb.append("[");
         for (Annotation a: annotations)
-          sb.append(((DingAnnotation)a).toJSON()+",");
+          sb.append(AnnotationJsonConverter.toJson((DingAnnotation)a)+",");
 
         int len = sb.length();
         sb.replace(len-1,len,"]");
