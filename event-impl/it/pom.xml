@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>event-impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.9.0</version>
+		<version>3.9.1-SNAPSHOT</version>
 	</parent>
 
 	<properties>
