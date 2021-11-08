@@ -1,5 +1,7 @@
 package org.cytoscape.equations.internal.interpreter;
 
+import java.util.ArrayList;
+
 /*
  * #%L
  * Cytoscape Equations Impl (equations-impl)
@@ -26,6 +28,7 @@ package org.cytoscape.equations.internal.interpreter;
 
 
 import java.util.EmptyStackException;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
@@ -196,6 +199,11 @@ public class InterpreterImpl implements Interpreter {
 		    || retValClass == StringList.class)
 			return retVal;
 
+		// Its not one of the internal lists used by built-in equations, but it should still be allowed
+		if(List.class.isAssignableFrom(retValClass)) {
+			return new ArrayList((List)retVal);
+		}
+		
 		throw new IllegalStateException("illegal result type at end of interpretation: " + retValClass + ".");
 	}
 
