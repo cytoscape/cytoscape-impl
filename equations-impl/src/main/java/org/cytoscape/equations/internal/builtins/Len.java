@@ -1,5 +1,7 @@
 package org.cytoscape.equations.internal.builtins;
 
+import java.util.List;
+
 /*
  * #%L
  * Cytoscape Equations Impl (equations-impl)
@@ -35,8 +37,8 @@ import org.cytoscape.equations.internal.Categories;
 public class Len extends AbstractFunction {
 	public Len() {
 		super(new ArgDescriptor[] {
-				new ArgDescriptor(ArgType.STRING, "text", "The source text."),
-			});
+			new ArgDescriptor(ArgType.ANY, "text or list", "A text string, or a list."),
+		});
 	}
 
 	/**
@@ -46,13 +48,13 @@ public class Len extends AbstractFunction {
 	public String getName() { return "LEN"; }
 	
 	@Override
-	public String getCategoryName() { return Categories.TEXT; }
+	public String getCategoryName() { return Categories.TEXT + "," + Categories.LIST; }
 
 	/**
 	 *  Used to provide help for users.
 	 *  @return a description of what this function does
 	 */
-	public String getFunctionSummary() { return "Returns the length of a string."; }
+	public String getFunctionSummary() { return "Returns the length of a string (ie number of characters in the string), or the length of a list."; }
 
 	public Class<?> getReturnType() { return Long.class; }
 
@@ -63,7 +65,10 @@ public class Len extends AbstractFunction {
 	 *  @throws IllegalArgumentException thrown if any of the arguments is not of type Boolean
 	 */
 	public Object evaluateFunction(final Object[] args) throws IllegalArgumentException, ArithmeticException {
-		final String text = FunctionUtil.getArgAsString(args[0]);
+		if(args[0] instanceof List)
+			return (Long)(long)((List)args[0]).size();
+		
+		String text = FunctionUtil.getArgAsString(args[0]);
 		return (Long)(long)text.length();
 	}
 }

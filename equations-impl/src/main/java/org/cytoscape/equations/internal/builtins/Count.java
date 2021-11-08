@@ -53,7 +53,7 @@ public class Count extends AbstractFunction {
 	 *  Used to provide help for users.
 	 *  @return a description of what this function does
 	 */
-	public String getFunctionSummary() { return "Returns the length of a list, or the combined length of multiple lists."; }
+	public String getFunctionSummary() { return "Returns the number of numeric values in a list. Can be applied to multiple list arguments and will return the total count of all numeric values in the lists."; }
 
 	public Class<?> getReturnType() { return Long.class; }
 
@@ -67,14 +67,14 @@ public class Count extends AbstractFunction {
 			if (arg instanceof List) {
 				final List list = (List)arg;
 				for (final Object listEntry : list) {
-					if (listEntry.getClass() == Double.class || listEntry.getClass() == Long.class)
+					if (listEntry.getClass() == Double.class || listEntry.getClass() == Integer.class || listEntry.getClass() == Long.class)
 						++count;
 					else if (listEntry.getClass() == String.class && isValidDouble((String)listEntry))
 						++count;
 				}
 			}
 			else {
-				if (arg.getClass() == Double.class || arg.getClass() == Long.class)
+				if (arg.getClass() == Double.class || arg.getClass() == Integer.class || arg.getClass() == Long.class)
 					++count;
 				else if (arg.getClass() == String.class && isValidDouble((String)arg))
 					++count;
