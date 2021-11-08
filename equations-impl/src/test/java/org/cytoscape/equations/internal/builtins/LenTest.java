@@ -1,5 +1,9 @@
 package org.cytoscape.equations.internal.builtins;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 /*
  * #%L
  * Cytoscape Equations Impl (equations-impl)
@@ -23,14 +27,16 @@ package org.cytoscape.equations.internal.builtins;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-
-import junit.framework.*;
+import junit.framework.TestCase;
 
 
 public class LenTest extends TestCase {
 	public void testAll() throws Exception {
 		assertTrue(Framework.executeTest("=LEN(\"baboon\")", Long.valueOf(6)));
 		assertTrue(Framework.executeTest("=LEN(\"\")", Long.valueOf(0)));
+		
+		final Map<String, Object> variablesAndValues = new HashMap<>();
+		variablesAndValues.put("list", Arrays.asList("a", "b", "c"));
+		assertTrue(Framework.executeTest("=LEN($list)", variablesAndValues, Long.valueOf(3)));
 	}
 }
