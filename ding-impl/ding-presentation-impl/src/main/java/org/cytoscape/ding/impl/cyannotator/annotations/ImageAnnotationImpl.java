@@ -220,24 +220,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			// Get the image from the image pool
 			try {
 				url = new URL(argMap.get(URL));
-				cg = customGraphicsManager.getCustomGraphicsBySourceURL(url);
-				
-				if (cg != null) {
-					image = ImageUtil.toBufferedImage(cg.getRenderedImage());
-					customGraphicsManager.addCustomGraphics(cg, url);
-					customGraphicsManager.setUsedInCurrentSession(cg, true);
-				} else {
-          try {
-            // We don't already have the image -- fetch it
-            image = ImageIO.read(url);
-            cg = new BitmapCustomGraphics(customGraphicsManager.getNextAvailableID(), url.toString(), image);
-            customGraphicsManager.addCustomGraphics(cg, url);
-            customGraphicsManager.setUsedInCurrentSession(cg, true);
-          } catch (Exception e) {
-            logger.error("Unable to read image from "+ url.toString() + ": "+e.getMessage());
-            throw e;
-          }
-        }
+        reloadImage();
 				
         if (name == null)
           name = getDefaultName();
@@ -336,11 +319,22 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			if (cg != null) {
 				if (!isSVG())
 					image = ImageUtil.toBufferedImage(cg.getRenderedImage());
+        modifiedImage = null;
 				
 				customGraphicsManager.addCustomGraphics(cg, url);
 				customGraphicsManager.setUsedInCurrentSession(cg, true);
 			} else {
-				return;
+        try {
+          // We don't already have the image -- fetch it
+          image = ImageIO.read(url);
+          cg = new BitmapCustomGraphics(customGraphicsManager.getNextAvailableID(), url.toString(), image);
+          customGraphicsManager.addCustomGraphics(cg, url);
+          customGraphicsManager.setUsedInCurrentSession(cg, true);
+          modifiedImage = null;
+        } catch (Exception e) {
+          logger.error("Unable to read image from "+ url.toString() + ": "+e.getMessage());
+          throw e;
+        }
 			}
 		} catch (Exception e) {
 			logger.warn("Unable to restore image '" + url + "'", e);
@@ -389,6 +383,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		var oldValue = this.url;
 		this.url = url;
 		reloadImage();
+    getModifiedImage();
 		update();
 		firePropertyChange("imageURL", oldValue, url);
 	}
