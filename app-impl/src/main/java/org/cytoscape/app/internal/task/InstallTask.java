@@ -34,6 +34,8 @@ public class InstallTask extends AbstractAppTask implements ObservableTask {
 	         context="nogui", required=false)
 	public File file = null;
 
+  WebApp appObject = null;
+
 	public InstallTask(final AppManager appManager) {
 		super(appManager);
 	}
@@ -50,7 +52,7 @@ public class InstallTask extends AbstractAppTask implements ObservableTask {
 					new InstallAppsFromFileTask(Collections.singletonList(file), appManager, false);
 			insertTasksAfterCurrentTask(installTask);
 		} else {
-			WebApp appObject = getWebApp(app);
+			appObject = getWebApp(app);
 			if (appObject == null) {
 				taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Can't find app '"+app+"'");
 				return;
@@ -76,6 +78,11 @@ public class InstallTask extends AbstractAppTask implements ObservableTask {
 			};
 			return (R)res;
 		} else if (type.equals(String.class)) {
+      // TODO: query the app manager to see if the app was installed?
+      if (file != null)
+        return null; // We really don't know if this was successful or not
+      if (appObject == null)
+        return null;
 			String res = "App "+app+" installed";
 			return (R)res;
 		}
