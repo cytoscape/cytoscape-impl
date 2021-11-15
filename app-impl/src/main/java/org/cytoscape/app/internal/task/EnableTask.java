@@ -28,6 +28,7 @@ public class EnableTask extends AbstractAppTask implements ObservableTask {
 	         context="nogui", required=true)
 	public String app = null;
 	public String error = null;
+	App appObject = null;
 
 	public EnableTask(final AppManager appManager) {
 		super(appManager);
@@ -40,7 +41,7 @@ public class EnableTask extends AbstractAppTask implements ObservableTask {
 			return;
 		}
 		taskMonitor.setTitle("Enabling app "+app);
-		App appObject = getApp(app);
+		appObject = getApp(app);
 		// System.out.println("App "+appObject.getAppName()+" version "+appObject.getVersion());
 		if (appObject == null) {
 			error = "Can't find app '"+app+"'";
@@ -72,6 +73,8 @@ public class EnableTask extends AbstractAppTask implements ObservableTask {
 			};
 			return (R)res;
 		} else if (type.equals(String.class)) {
+      if (appObject == null)
+        return null;
 			String res = error;
 			return (R)res;
 		}
