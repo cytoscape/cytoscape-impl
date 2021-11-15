@@ -48,7 +48,15 @@
 			<plugin>
 				<groupId>org.jvnet.jaxb2.maven2</groupId>
 				<artifactId>maven-jaxb2-plugin</artifactId>
-				<version>0.13.3</version>
+				<version>0.14.0</version>
+				<!--  https://github.com/highsource/maven-jaxb2-plugin/issues/201  -->
+				<dependencies>
+					<dependency>
+						<groupId>org.glassfish.jaxb</groupId>
+						<artifactId>jaxb-runtime</artifactId>
+						<version>2.3.3</version>
+					</dependency>
+				</dependencies>
 				<executions>
 					<execution>
 						<id>vizmap</id>
