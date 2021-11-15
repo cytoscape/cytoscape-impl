@@ -32,6 +32,7 @@ public class UpdateTask extends AbstractAppTask implements ObservableTask {
 
 	final UpdateManager updateManager;
 	List<Update> updateList;
+  App appObject;
 
 	public UpdateTask(final AppManager appManager, final UpdateManager updateManager) {
 		super(appManager);
@@ -44,8 +45,6 @@ public class UpdateTask extends AbstractAppTask implements ObservableTask {
 			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "App name not provided");
 			return;
 		}
-		if (app.equals("all")) {
-		}
 
 		updateList = new ArrayList<>();
 
@@ -54,7 +53,11 @@ public class UpdateTask extends AbstractAppTask implements ObservableTask {
 			updateList.addAll(updates);
 		} else {
 			for (Update update: updates) {
-				App appObject = update.getApp();
+				appObject = update.getApp();
+        if (appObject == null) {
+          taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Can't find app '"+app+"'");
+          return;
+        }
 				if (appObject.getAppName().equalsIgnoreCase(app))
 					updateList.add(update);
 			}
@@ -90,11 +93,14 @@ public class UpdateTask extends AbstractAppTask implements ObservableTask {
 			};
 			return (R)res;
 		} else if (type.equals(String.class)) {
-			String res = "Updated apps:\n";
-			for (Update update: updateList) {
-				res += "    "+update.getApp().getAppName()+"\n";
-			}
-			return (R)res;
+      if (updateList.size() > 0) {
+        String res = "Updated apps:\n";
+        for (Update update: updateList) {
+          res += "    "+update.getApp().getAppName()+"\n";
+        }
+        return (R)res;
+      }
+      return null;
 		}
 		return null;
 	}

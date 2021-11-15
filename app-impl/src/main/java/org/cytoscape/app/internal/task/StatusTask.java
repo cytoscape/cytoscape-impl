@@ -42,7 +42,7 @@ public class StatusTask extends AbstractAppTask implements ObservableTask {
 			return;
 		}
 		taskMonitor.setTitle("Getting the status of app "+app);
-		App appObject = getApp(app);
+		appObject = getApp(app);
 		if (appObject == null) {
 			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Can't find app '"+app+"'");
 			return;
@@ -64,6 +64,8 @@ public class StatusTask extends AbstractAppTask implements ObservableTask {
 			};
 			return (R)res;
 		} else if (type.equals(String.class)) {
+      if (appObject == null)
+        return null;
 			String res = "app: "+app+", status: "+status.toString();
 			return (R)res;
 		}

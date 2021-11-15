@@ -67,6 +67,8 @@ public class InformationTask extends AbstractAppTask implements ObservableTask {
 			};
 			return (R)res;
 		} else if (type.equals(String.class)) {
+      if (webApp == null)
+        return null;
 			String res = "App: "+webApp.getName()+", description: "+
 			             webApp.getDescription()+", version: "+getVersion(webApp);
 			return (R)res;

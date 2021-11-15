@@ -28,6 +28,8 @@ public class DisableTask extends AbstractAppTask implements ObservableTask {
 	         context="nogui", required=true)
 	public String app = null;
 
+  App appObject = null;
+
 	public DisableTask(final AppManager appManager) {
 		super(appManager);
 	}
@@ -40,7 +42,7 @@ public class DisableTask extends AbstractAppTask implements ObservableTask {
 		}
 		taskMonitor.setTitle("Disabling app "+app);
 
-		App appObject = getApp(app);
+		appObject = getApp(app);
 		if (appObject == null) {
 			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Can't find app '"+app+"'");
 			return;
@@ -64,6 +66,9 @@ public class DisableTask extends AbstractAppTask implements ObservableTask {
 			};
 			return (R)res;
 		} else if (type.equals(String.class)) {
+      // TODO: query the app manager to see if the app was installed?
+      if (appObject == null)
+        return null;
 			String res = "App "+app+" disabled";
 			return (R)res;
 		}
