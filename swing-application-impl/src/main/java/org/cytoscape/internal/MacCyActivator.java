@@ -9,6 +9,8 @@ import javax.swing.SwingUtilities;
 import org.cytoscape.application.CyShutdown;
 import org.cytoscape.application.events.CyShutdownEvent;
 import org.cytoscape.application.events.CyShutdownListener;
+import org.cytoscape.application.events.CyShutdownRequestedEvent;
+import org.cytoscape.application.events.CyShutdownRequestedListener;
 import org.cytoscape.internal.view.help.AboutDialog;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -47,11 +49,11 @@ public class MacCyActivator extends AbstractCyActivator {
 		final CyServiceRegistrar serviceRegistrar = getService(context, CyServiceRegistrar.class);
 		final CyShutdown shutdown = getService(context, CyShutdown.class);
 		
-		final CyShutdownEvent[] lastShutdownEvent = new CyShutdownEvent[1];
-		CyShutdownListener listener = evt -> {
+		final CyShutdownRequestedEvent[] lastShutdownEvent = new CyShutdownRequestedEvent[1];
+		CyShutdownRequestedListener listener = evt -> {
 			lastShutdownEvent[0] = evt;
 		};
-		registerService(context, listener, CyShutdownListener.class);
+		registerService(context, listener, CyShutdownRequestedListener.class);
 		
 		Desktop desktop = Desktop.getDesktop();
 		

@@ -17,8 +17,8 @@ import javax.swing.JOptionPane;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
-import org.cytoscape.application.events.CyShutdownEvent;
-import org.cytoscape.application.events.CyShutdownListener;
+import org.cytoscape.application.events.CyShutdownRequestedEvent;
+import org.cytoscape.application.events.CyShutdownRequestedListener;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
@@ -77,7 +77,7 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
-public class SessionHandler implements CyShutdownListener, SessionLoadedListener, SessionAboutToBeSavedListener {
+public class SessionHandler implements CyShutdownRequestedListener, SessionLoadedListener, SessionAboutToBeSavedListener {
 
 	private static final String SESSION_STATE_DOC_VERSION = "1.1";
 	
@@ -114,7 +114,7 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 	}
 
 	@Override
-	public void handleEvent(final CyShutdownEvent e) {
+	public void handleEvent(final CyShutdownRequestedEvent e) {
 		final CyNetworkManager netMgr = serviceRegistrar.getService(CyNetworkManager.class);
 		
 		// If there are no networks, just quit.
