@@ -9,6 +9,7 @@ import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyShutdown;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.events.CyShutdownEvent;
+import org.cytoscape.application.events.CyShutdownRequestedEvent;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.osgi.framework.Bundle;
@@ -59,20 +60,25 @@ public class ShutdownHandler implements CyShutdown {
 
 	@Override
 	public void exit(int retVal, boolean force) {
+		CyShutdownRequestedEvent request = new CyShutdownRequestedEvent(ShutdownHandler.this, force);
+		serviceRegistrar.getService(CyEventHelper.class).fireEvent(request);
+		
+		if (!request.actuallyShutdown()) {
+			logger.info("NOT shutting down, per listener instruction: " + request.abortShutdownReason());
+			return;
+		}
+		
+		// Notify all listeners that cytoscape is actually shutting down.
 		CyShutdownEvent ev = new CyShutdownEvent(ShutdownHandler.this, force);
 		serviceRegistrar.getService(CyEventHelper.class).fireEvent(ev);
-
-		if (ev.actuallyShutdown()) {
-			try {
-				logger.info("#CiaoBello", rootBundle);
-				CyApplicationConfiguration c = serviceRegistrar.getService(CyApplicationConfiguration.class);
-				removeFailSafeFile(c.getConfigurationDirectoryLocation().getAbsolutePath());
-				rootBundle.stop();
-			} catch (BundleException e) {
-				logger.error("Error while shutting down", e);
-			}
-		} else {
-			logger.info("NOT shutting down, per listener instruction: " + ev.abortShutdownReason());
+		
+		try {
+			logger.info("#CiaoBello", rootBundle);
+			CyApplicationConfiguration c = serviceRegistrar.getService(CyApplicationConfiguration.class);
+			removeFailSafeFile(c.getConfigurationDirectoryLocation().getAbsolutePath());
+			rootBundle.stop();
+		} catch (BundleException e) {
+			logger.error("Error while shutting down", e);
 		}
 	}
 
