@@ -17,7 +17,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -198,12 +197,10 @@ public class EquationEditorMediator {
 		SortedMap<String,SortedMap<String,Function>> categories = new TreeMap<>();
 		
 		for(Function f : equationParser.getRegisteredFunctions()) {
-			String category = f.getCategoryName();
-			if(category == null)
-				category = "Other";
-			
-			Map<String,Function> functions = categories.computeIfAbsent(category, k -> new TreeMap<>());
-			functions.put(f.getName(), f);
+			for(String category : getCategoriesFor(f)) {
+				var functions = categories.computeIfAbsent(category, k -> new TreeMap<>());
+				functions.put(f.getName(), f);
+			}
 		}
 		
 		ItemListPanel<FunctionInfo> functionPanel = builderPanel.getFunctionPanel();
@@ -235,6 +232,19 @@ public class EquationEditorMediator {
 				functionPanel.addElement(FunctionInfo.function(f));
 			}
 		}
+	}
+	
+	
+	private static String[] getCategoriesFor(Function f) {
+		String categoryList = f.getCategoryName();
+		if(categoryList == null || categoryList.isBlank()) {
+			return new String[] { "Other" };
+		}
+		String[] split = categoryList.split(",");
+		if(split == null) {
+			return new String[] { "Other" };
+		}
+		return split;
 	}
 	
 	
