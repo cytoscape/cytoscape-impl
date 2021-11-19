@@ -73,10 +73,7 @@ public class EnableTask extends AbstractAppTask implements ObservableTask {
 			};
 			return (R)res;
 		} else if (type.equals(String.class)) {
-      if (appObject == null)
-        return null;
-			String res = error;
-			return (R)res;
+			return (R)error;
 		}
 		return null;
 	}

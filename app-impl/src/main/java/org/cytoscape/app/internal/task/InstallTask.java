@@ -27,6 +27,7 @@ public class InstallTask extends AbstractAppTask implements ObservableTask {
 	         exampleStringValue="stringApp",
 	         context="nogui", required=false)
 	public String app = null;
+	String error = null;
 
 	@Tunable(description="Jar file",
 	         longDescription="Location of file containing the app jar",
@@ -54,7 +55,8 @@ public class InstallTask extends AbstractAppTask implements ObservableTask {
 		} else {
 			appObject = getWebApp(app);
 			if (appObject == null) {
-				taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Can't find app '"+app+"'");
+				error = "Can't find app '"+app+"'";
+				taskMonitor.showMessage(TaskMonitor.Level.ERROR, error);
 				return;
 			}
 
@@ -81,8 +83,8 @@ public class InstallTask extends AbstractAppTask implements ObservableTask {
       // TODO: query the app manager to see if the app was installed?
       if (file != null)
         return null; // We really don't know if this was successful or not
-      if (appObject == null)
-        return null;
+      if (error != null)
+        return (R)error;
 			String res = "App "+app+" installed";
 			return (R)res;
 		}

@@ -28,6 +28,7 @@ public class InformationTask extends AbstractAppTask implements ObservableTask {
 	         exampleStringValue="stringApp",
 	         context="nogui", required=true)
 	public String app = null;
+	String error = null;
 	WebApp webApp;
 
 	public InformationTask(final AppManager appManager) {
@@ -43,7 +44,8 @@ public class InformationTask extends AbstractAppTask implements ObservableTask {
 		taskMonitor.setTitle("Getting app "+app+" information");
 		webApp = getWebApp(app);
 		if (webApp == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Can't find app '"+app+"'");
+			error = "Can't find app '"+app+"'";
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR, error);
 			return;
 		}
 		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Got information on '"+app+"'");
@@ -67,8 +69,8 @@ public class InformationTask extends AbstractAppTask implements ObservableTask {
 			};
 			return (R)res;
 		} else if (type.equals(String.class)) {
-      if (webApp == null)
-        return null;
+      if (error != null)
+        return (R)error;
 			String res = "App: "+webApp.getName()+", description: "+
 			             webApp.getDescription()+", version: "+getVersion(webApp);
 			return (R)res;

@@ -27,6 +27,7 @@ public class UninstallTask extends AbstractAppTask implements ObservableTask {
 	         exampleStringValue="stringApp",
 	         context="nogui", required=true)
 	public String app = null;
+  String error = null;
   App appObject = null;
 
 	public UninstallTask(final AppManager appManager) {
@@ -42,12 +43,14 @@ public class UninstallTask extends AbstractAppTask implements ObservableTask {
 		taskMonitor.setTitle("Uninstalling app "+app);
 		appObject = getApp(app);
 		if (appObject == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Can't find app '"+app+"'");
+			error = "Can't find app '"+app+"'";
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR, error);
 			return;
 		}
 		appManager.uninstallApp(appObject);
 		updateApps();
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, "App '"+app+"' uninstalled");
+		error = "App '"+app+"' uninstalled";
+		taskMonitor.showMessage(TaskMonitor.Level.INFO, error);
 	}
 
 	@Override
@@ -64,11 +67,7 @@ public class UninstallTask extends AbstractAppTask implements ObservableTask {
 			};
 			return (R)res;
 		} else if (type.equals(String.class)) {
-      if (appObject == null)
-        return null;
-
-			String res = "App "+app+" uninstalled";
-			return (R)res;
+			return (R)error;
 		}
 		return null;
 	}
