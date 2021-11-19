@@ -28,6 +28,7 @@ public class StatusTask extends AbstractAppTask implements ObservableTask {
 	         exampleStringValue="stringApp",
 	         context="nogui", required=true)
 	public String app = null;
+	String error = null;
 	private App appObject = null;
 	private AppStatus status;
 
@@ -38,13 +39,15 @@ public class StatusTask extends AbstractAppTask implements ObservableTask {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		if (app == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "App name not provided");
+      error = "App name not provided";
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR, error);
 			return;
 		}
 		taskMonitor.setTitle("Getting the status of app "+app);
 		appObject = getApp(app);
 		if (appObject == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Can't find app '"+app+"'");
+			error = "Can't find app '"+app+"'";
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR, error);
 			return;
 		}
 		status = appObject.getStatus();
@@ -64,8 +67,8 @@ public class StatusTask extends AbstractAppTask implements ObservableTask {
 			};
 			return (R)res;
 		} else if (type.equals(String.class)) {
-      if (appObject == null)
-        return null;
+      if (error != null)
+        return (R)error;
 			String res = "app: "+app+", status: "+status.toString();
 			return (R)res;
 		}

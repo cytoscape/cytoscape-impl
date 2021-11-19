@@ -29,6 +29,7 @@ public class UpdateTask extends AbstractAppTask implements ObservableTask {
 	         exampleStringValue="stringApp",
 	         context="nogui", required=true)
 	public String app = null;
+  String error = null;
 
 	final UpdateManager updateManager;
 	List<Update> updateList;
@@ -55,7 +56,8 @@ public class UpdateTask extends AbstractAppTask implements ObservableTask {
 			for (Update update: updates) {
 				appObject = update.getApp();
         if (appObject == null) {
-          taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Can't find app '"+app+"'");
+          error = "Can't find app '"+app+"'";
+          taskMonitor.showMessage(TaskMonitor.Level.ERROR, error);
           return;
         }
 				if (appObject.getAppName().equalsIgnoreCase(app))
@@ -94,6 +96,9 @@ public class UpdateTask extends AbstractAppTask implements ObservableTask {
 			return (R)res;
 		} else if (type.equals(String.class)) {
       if (updateList.size() > 0) {
+        if (error != null)
+          return (R)error;
+
         String res = "Updated apps:\n";
         for (Update update: updateList) {
           res += "    "+update.getApp().getAppName()+"\n";
