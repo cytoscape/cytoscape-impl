@@ -528,7 +528,9 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			}
 			
 			// Expand the area to include annotations
-			cyAnnotator.adjustBoundsToIncludeAnnotations(extents);
+			if(!justSelectedNodes) {
+				cyAnnotator.adjustBoundsToIncludeAnnotations(extents);
+			}
 			
 			// Expand the area to include node labels, but only if node labels are visible and label caching is enabled.
 			int visibleNodes = justSelectedNodes ? selectedNodes.size() : netViewSnapshot.getNodeCount();
