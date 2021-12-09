@@ -36,8 +36,8 @@
 						<Private-Package>${bundle.namespace}.*</Private-Package>
 						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
 						<Embed-Dependency>poi|poi-ooxml|poi-ooxml-schemas|ooxml-schemas;groupId=org.apache.poi;inline=false</Embed-Dependency>
-						<Import-Package>junit.*|org.apache.poi.hdgf.*|org.apache.poi.hpbf.*|org.apache.poi.hslf.*|org.apache.poi.hsmf|org.apache.poi.hsmf.*|org.apache.poi.hwpf.*;resolution:=optional,*</Import-Package>
-						<DynamicImport-Package>*</DynamicImport-Package>
+						<!-- <Import-Package>junit.*|org.apache.poi.hdgf.*|org.apache.poi.hpbf.*|org.apache.poi.hslf.*|org.apache.poi.hsmf|org.apache.poi.hsmf.*|org.apache.poi.hwpf.*;resolution:=optional,*</Import-Package> -->
+						<Import-Package>*;resolution:=optional</Import-Package>
 					</instructions>
 				</configuration>
 			</plugin>

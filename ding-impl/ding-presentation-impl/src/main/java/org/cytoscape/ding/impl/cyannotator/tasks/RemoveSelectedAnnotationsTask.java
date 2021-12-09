@@ -40,10 +40,10 @@ import org.cytoscape.work.TaskMonitor;
 public class RemoveSelectedAnnotationsTask extends AbstractTask {
 	
 	private final DRenderingEngine re;
-	private final Collection<Annotation> annotations;
+	private final Collection<? extends Annotation> annotations;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public RemoveSelectedAnnotationsTask(DRenderingEngine re, Collection<Annotation> annotations, CyServiceRegistrar serviceRegistrar) {
+	public RemoveSelectedAnnotationsTask(DRenderingEngine re, Collection<? extends Annotation> annotations, CyServiceRegistrar serviceRegistrar) {
 		this.re = re;
 		this.annotations = annotations;
 		this.serviceRegistrar = serviceRegistrar;

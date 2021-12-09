@@ -105,7 +105,7 @@ class ConsoleDialog {
 			this.log = event.getLoggerName();
 			this.thread = event.getThreadName();
 			this.timestamp = new Date(event.getTimeStamp());
-			this.level = event.getLevel().toInt();
+			this.level = event.getLevel().toLevel().ordinal();
 		}
 
 		private String levelToString() {

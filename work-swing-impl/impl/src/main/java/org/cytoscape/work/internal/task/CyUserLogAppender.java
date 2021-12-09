@@ -2,9 +2,9 @@ package org.cytoscape.work.internal.task;
 
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.internal.view.TaskMediator;
-import org.ops4j.pax.logging.PaxLogger;
 import org.ops4j.pax.logging.spi.PaxAppender;
 import org.ops4j.pax.logging.spi.PaxLoggingEvent;
+import org.osgi.service.log.LogLevel;
 
 /*
  * #%L
@@ -42,7 +42,7 @@ public class CyUserLogAppender implements PaxAppender {
 
 	@Override
 	public void doAppend(final PaxLoggingEvent event) {
-		final TaskMonitor.Level level = getCorrespondingLevel(event.getLevel().toInt());
+		final TaskMonitor.Level level = getCorrespondingLevel(event.getLevel().toLevel());
 		final String message = event.getMessage();
 		
 		history.addUnnestedMessage(level, message);
@@ -54,11 +54,11 @@ public class CyUserLogAppender implements PaxAppender {
 		}
 	}
 
-	private static TaskMonitor.Level getCorrespondingLevel(final int level) {
+	private static TaskMonitor.Level getCorrespondingLevel(final LogLevel level) {
 		switch (level) {
-			case PaxLogger.LEVEL_ERROR:
+			case ERROR:
 				return TaskMonitor.Level.ERROR;
-			case PaxLogger.LEVEL_WARNING:
+			case WARN:
 				return TaskMonitor.Level.WARN;
 			default:
 				return TaskMonitor.Level.INFO;
