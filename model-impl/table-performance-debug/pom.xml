@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>model-impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.9.1-SNAPSHOT</version>
+		<version>3.9.1</version>
 	</parent>
 
 	<properties>
