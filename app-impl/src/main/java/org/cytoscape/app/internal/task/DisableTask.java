@@ -65,6 +65,8 @@ public class DisableTask extends AbstractAppTask implements ObservableTask {
 	public <R> R getResults(Class<? extends R> type) {
 		if (type.equals(JSONResult.class)) {
 			JSONResult res = () -> {
+        if (error != null)
+          return "{\"error\": \""+(R)error+"\"}" ;
 				return "{\"appName\": \""+app+"\"}";
 			};
 			return (R)res;

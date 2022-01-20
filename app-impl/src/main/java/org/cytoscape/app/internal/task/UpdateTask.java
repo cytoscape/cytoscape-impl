@@ -79,6 +79,8 @@ public class UpdateTask extends AbstractAppTask implements ObservableTask {
 	public <R> R getResults(Class<? extends R> type) {
 		if (type.equals(JSONResult.class)) {
 			JSONResult res = () -> {
+        if (error != null)
+          return "{\"error\": \""+(R)error+"\"}" ;
 				String str = "[";
 				int count = updateList.size();
 				int index = 0;
