@@ -49,8 +49,8 @@ public class UninstallTask extends AbstractAppTask implements ObservableTask {
 		}
 		appManager.uninstallApp(appObject);
 		updateApps();
-		error = "App '"+app+"' uninstalled";
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, error);
+		String msg = "App '"+app+"' uninstalled";
+		taskMonitor.showMessage(TaskMonitor.Level.INFO, msg);
 	}
 
 	@Override
@@ -63,11 +63,16 @@ public class UninstallTask extends AbstractAppTask implements ObservableTask {
 	public <R> R getResults(Class<? extends R> type) {
 		if (type.equals(JSONResult.class)) {
 			JSONResult res = () -> {
+        if (error != null)
+          return "{\"error\": \""+(R)error+"\"}" ;
 				return "{\"appName\": \""+app+"\"}";
 			};
 			return (R)res;
 		} else if (type.equals(String.class)) {
-			return (R)error;
+      if (error != null)
+        return (R)error;
+		  String msg = "App '"+app+"' uninstalled";
+      return (R)msg;
 		}
 		return null;
 	}

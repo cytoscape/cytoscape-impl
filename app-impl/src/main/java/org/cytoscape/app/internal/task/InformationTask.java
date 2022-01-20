@@ -61,6 +61,8 @@ public class InformationTask extends AbstractAppTask implements ObservableTask {
 	public <R> R getResults(Class<? extends R> type) {
 		if (type.equals(JSONResult.class)) {
 			JSONResult res = () -> {
+        if (error != null)
+          return "{\"error\": \""+(R)error+"\"}" ;
 				String str = "{";
 				str += "\"app\": \""+app+"\",";
 				str += "\"descriptionName\": "+AppUtil.quote(webApp.getDescription())+",";
