@@ -47,6 +47,7 @@
 		<module>presentation-impl</module>
 		<module>property-impl</module>
 		<module>search-impl</module>
+		<module>search2-impl</module>
 		<module>session-impl</module>
 		<module>swing-util-impl</module>
 		<module>swing-application-impl</module>

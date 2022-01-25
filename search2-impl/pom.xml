@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<parent>
+		<artifactId>impl-parent</artifactId>
+		<groupId>org.cytoscape</groupId>
+		<version>3.10.0-SNAPSHOT</version>
+	</parent>
+
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.cytoscape</groupId>
+	<artifactId>search2-impl</artifactId>
+	<version>3.10.0-SNAPSHOT</version>
+
+	<properties>
+		<bundle.symbolicName>org.cytoscape.search2-impl</bundle.symbolicName>
+		<bundle.namespace>org.cytoscape.search.internal</bundle.namespace>
+		<lucene.version>8.11.1</lucene.version>
+	</properties>
+
+	<name>Cytoscape Search Impl 2 (${project.artifactId})</name>
+
+	<packaging>bundle</packaging>
+
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<version>${maven-bundle-plugin.version}</version>
+				<extensions>true</extensions>
+				<configuration>
+					<instructions>
+						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
+						<Bundle-Version>${project.version}</Bundle-Version>
+						<Export-Package>!${bundle.namespace}.*</Export-Package>
+						<Private-Package>${bundle.namespace}.*</Private-Package>
+						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
+						<Embed-Dependency>lucene-core,lucene-queryparser,lucene-queries,lucene-sandbox,lucene-analyzers-common</Embed-Dependency>
+						<Embed-Transitive>true</Embed-Transitive>
+						<Import-Package>*;resolution:=optional</Import-Package>
+					</instructions>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-core</artifactId>
+			<version>${lucene.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-queryparser</artifactId>
+			<version>${lucene.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-analyzers-common</artifactId>
+			<version>${lucene.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>model-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>viewmodel-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>core-task-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>session-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>swing-util-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>swing-application-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>work-swing-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>model-impl</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>model-impl</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>event-api</artifactId>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	
+	
+	<repositories>
+		<repository>
+			<id>cytoscape_snapshots</id>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<name>Cytoscape Snapshots</name>
+			<url>http://nrnb-nexus.ucsd.edu/repository/cytoscape_snapshots/</url>
+		</repository>
+		<repository>
+			<id>cytoscape_releases</id>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<name>Cytoscape Releases</name>
+			<url>http://nrnb-nexus.ucsd.edu/repository/cytoscape_releases/</url>
+		</repository>
+		<repository>
+			<id>cytoscape_thirdparty</id>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<name>Cytoscape Third Party</name>
+			<url>http://nrnb-nexus.ucsd.edu/repository/cytoscape_thirdparty/</url>
+		</repository>
+	</repositories>
+
+
+</project>
