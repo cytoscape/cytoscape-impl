@@ -2,9 +2,10 @@ package org.cytoscape.search.internal.search;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Objects;
 
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
@@ -16,6 +17,7 @@ import org.apache.lucene.search.TotalHitCountCollector;
 import org.apache.lucene.store.FSDirectory;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.search.internal.index.CaseInsensitiveWhitespaceAnalyzer;
 import org.cytoscape.search.internal.index.SearchManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
@@ -47,7 +49,7 @@ public class SearchTask extends AbstractTask implements ObservableTask {
 	
 	@Override
 	public void run(TaskMonitor tm) {
-		tm.setTitle("Searching the network");
+		tm.setTitle("Searching the network for: " + queryString);
 		if (cancelled)
 			return;
 		
@@ -58,8 +60,9 @@ public class SearchTask extends AbstractTask implements ObservableTask {
 			return;
 		}
 		
-		StandardAnalyzer analyser = new StandardAnalyzer();
+		Analyzer analyser = new CaseInsensitiveWhitespaceAnalyzer();
 		AttributeFields fields = new AttributeFields(network);
+		System.out.println("Querying fields: " + Arrays.asList(fields.getFields()));
 		QueryParser parser = new MultiFieldQueryParser(fields.getFields(), analyser);
 		
 		Query query;
@@ -71,10 +74,13 @@ public class SearchTask extends AbstractTask implements ObservableTask {
 			return;
 		}
 		
+		System.out.println("Query: " + query);
+		
 		Path path = searchManager.getIndexPath(network);
 		IndexReader reader;
 		try {
-			reader = DirectoryReader.open(FSDirectory.open(path));
+			FSDirectory directory = FSDirectory.open(path);
+			reader = DirectoryReader.open(directory);
 		} catch (IOException e) {
 			this.results = SearchResults.fatalError();
 			logger.error(e.getMessage(), e);
@@ -84,14 +90,16 @@ public class SearchTask extends AbstractTask implements ObservableTask {
 		IndexSearcher searcher = new IndexSearcher(reader);
 		var collector = new TotalHitCountCollector();
 		try {
-			searcher.search(query, collector);
+//			searcher.search(query, collector);
+			var docs = searcher.search(query, 10);
+			System.out.println("Search complete: total hits: " + docs.totalHits);
 		} catch (IOException e) {
 			this.results = SearchResults.fatalError();
 			logger.error(e.getMessage(), e);
 			return;
 		}
 		
-		System.out.println("Search complete: total hits: " + collector.getTotalHits());
+//		System.out.println("Search complete: total hits: " + collector.getTotalHits());
 	}
 
 

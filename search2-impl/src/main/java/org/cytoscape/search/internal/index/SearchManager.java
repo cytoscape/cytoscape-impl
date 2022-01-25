@@ -55,6 +55,8 @@ public class SearchManager implements NetworkAddedListener, NetworkDestroyedList
 	@Override
 	public void handleEvent(NetworkDestroyedEvent e) {
 		System.out.println("SearchManager.handleEvent(NetworkDestroyedEvent)");
+		
+		
 	}
 
 	

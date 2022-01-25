@@ -7,13 +7,13 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.DoublePoint;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.IntPoint;
 import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.document.StringField;
+import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
@@ -44,10 +44,9 @@ public class IndexCreateTask implements Callable<IndexCreateTask.Result> {
 			System.out.println("Indexing network : " + indexPath);
 			Directory dir = FSDirectory.open(indexPath);
 			
-			Analyzer analyzer = new StandardAnalyzer();
+			Analyzer analyzer = new CaseInsensitiveWhitespaceAnalyzer();
 			IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
 			iwc.setOpenMode(OpenMode.CREATE);
-			
 			IndexWriter writer = new IndexWriter(dir, iwc);
 			
 			indexNetwork(writer);
@@ -67,11 +66,13 @@ public class IndexCreateTask implements Callable<IndexCreateTask.Result> {
 		List<CyEdge> edgeList = network.getEdgeList();
 		
 		for(CyNode cyNode : nodeList) {
+//			System.out.println("adding node: " + cyNode.getSUID());
 			Document document = createDocument(network, cyNode, SearchManager.NODE_TYPE);
 			writer.addDocument(document);
 		}
 	
 		for(CyEdge cyEdge : edgeList) {
+//			System.out.println("adding edge: " + cyEdge.getSUID());
 			Document document = createDocument(network, cyEdge, SearchManager.EDGE_TYPE);
 			writer.addDocument(document);
 		}
@@ -107,36 +108,36 @@ public class IndexCreateTask implements Callable<IndexCreateTask.Result> {
 		if(valueType == String.class) {
 			String attrValue = network.getRow(graphObject).get(attrName, String.class);
 			if(attrValue != null) {
-				doc.add(new StringField(attrName, attrValue, Field.Store.NO));
+				doc.add(new TextField(attrName, attrValue, Field.Store.NO));
 			}				
-		} else if (valueType == Integer.class) {
+		} else if(valueType == Integer.class) {
 			Integer attrValue = network.getRow(graphObject).get(attrName, Integer.class);
-			if (attrValue != null) {
+			if(attrValue != null) {
 				doc.add(new IntPoint(attrName, attrValue));
 			}
-		} else if (valueType == Long.class) {
+		} else if(valueType == Long.class) {
 			Long attrValue = network.getRow(graphObject).get(attrName, Long.class);
 			if(attrValue != null) {
 				doc.add(new LongPoint(attrName, attrValue));
 			}
-		} else if (valueType == Double.class) {	
+		} else if(valueType == Double.class) {	
 			Double attrValue = network.getRow(graphObject).get(attrName, Double.class);
-			if(attrValue != null){
+			if(attrValue != null) {
 				doc.add(new DoublePoint(attrName, attrValue));
 			}
-		} else if (valueType == Boolean.class) {
+		} else if(valueType == Boolean.class) {
 			Boolean attrValue = network.getRow(graphObject).get(attrName, Boolean.class);
-			if (attrValue != null) {
+			if(attrValue != null) {
 				doc.add(new StringField(attrName, String.valueOf(attrValue), Field.Store.NO));
 			}
-		} else if (valueType == List.class) {
+		} else if(valueType == List.class) {
 			List<?> attrValueList = network.getRow(graphObject).get(attrName, List.class);
-			if (attrValueList != null) {
+			if(attrValueList != null) {
 				Class<?> listElementType = column.getListElementType();
-				for (Object attrValue : attrValueList) {
+				for(Object attrValue : attrValueList) {
 					if(attrValue != null) {
 						if(listElementType == String.class) {
-							doc.add(new StringField(attrName, (String)attrValue, Field.Store.NO));
+							doc.add(new TextField(attrName, (String)attrValue, Field.Store.NO));
 						} else if (listElementType == Integer.class) {
 							doc.add(new IntPoint(attrName, (Integer)attrValue));
 						} else if (listElementType == Long.class) {
