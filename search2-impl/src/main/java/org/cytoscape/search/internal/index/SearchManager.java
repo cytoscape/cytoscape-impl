@@ -1,10 +1,13 @@
 package org.cytoscape.search.internal.index;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
@@ -40,6 +43,13 @@ public class SearchManager implements NetworkAddedListener, NetworkDestroyedList
 	public Path getIndexPath(CyNetwork network) {
 		return baseDir.resolve("index_" + network.getSUID());
 	}
+	
+	public Directory getDirectory(CyNetwork network) throws IOException {
+		Path path = getIndexPath(network);
+		Directory directory = FSDirectory.open(path);
+		return directory;
+	}
+	
 	
 	@Override
 	public void handleEvent(NetworkAddedEvent e) {

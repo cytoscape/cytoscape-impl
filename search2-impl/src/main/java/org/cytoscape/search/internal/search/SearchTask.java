@@ -1,11 +1,13 @@
 package org.cytoscape.search.internal.search;
 
 import java.io.IOException;
-import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
@@ -14,7 +16,7 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TotalHitCountCollector;
-import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.Directory;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.search.internal.index.CaseInsensitiveWhitespaceAnalyzer;
@@ -76,10 +78,9 @@ public class SearchTask extends AbstractTask implements ObservableTask {
 		
 		System.out.println("Query: " + query);
 		
-		Path path = searchManager.getIndexPath(network);
 		IndexReader reader;
 		try {
-			FSDirectory directory = FSDirectory.open(path);
+			Directory directory = searchManager.getDirectory(network);
 			reader = DirectoryReader.open(directory);
 		} catch (IOException e) {
 			this.results = SearchResults.fatalError();
@@ -88,27 +89,78 @@ public class SearchTask extends AbstractTask implements ObservableTask {
 		}
 		
 		IndexSearcher searcher = new IndexSearcher(reader);
-		var collector = new TotalHitCountCollector();
+		var collector = new IdentifiersCollector(searcher);
 		try {
-//			searcher.search(query, collector);
-			var docs = searcher.search(query, 10);
-			System.out.println("Search complete: total hits: " + docs.totalHits);
+			searcher.search(query, collector);
 		} catch (IOException e) {
 			this.results = SearchResults.fatalError();
 			logger.error(e.getMessage(), e);
 			return;
 		}
 		
-//		System.out.println("Search complete: total hits: " + collector.getTotalHits());
+		this.results = SearchResults.results(collector.getNodes(), collector.getEdges());
+		
+		insertTasksAfterCurrentTask(new NodeAndEdgeSelectorTask(network, results));
 	}
 
-
+	
 	@Override
 	public <R> R getResults(Class<? extends R> type) {
 		if(SearchResults.class.equals(type)) {
 			return type.cast(results);
 		}
 		return null;
+	}
+
+}
+
+
+class IdentifiersCollector extends TotalHitCountCollector {
+
+	private IndexSearcher searcher;
+
+	public List<String> nodeHitsIdentifiers = new ArrayList<>();
+	public List<String> edgeHitsIdentifiers = new ArrayList<>();
+
+	public IdentifiersCollector(IndexSearcher searcher) {
+		this.searcher = searcher;
+	}
+	
+	public int getNodeHits() {
+		return nodeHitsIdentifiers.size();
+	}
+	public int getEdgeHits() {
+		return edgeHitsIdentifiers.size();
+	}
+
+	public List<String> getNodes() {
+		return nodeHitsIdentifiers;
+	}
+	public List<String> getEdges() {
+		return edgeHitsIdentifiers;
+	}
+
+	@Override
+	public void collect(int id) {
+		super.collect(id);
+		try {
+			Document doc = searcher.doc(id);
+			String currID = doc.get(SearchManager.INDEX_FIELD);
+			String currType = doc.get(SearchManager.TYPE_FIELD);
+			
+			if (currType.equalsIgnoreCase(SearchManager.NODE_TYPE)) {
+				nodeHitsIdentifiers.add(currID);
+			} else if (currType.equalsIgnoreCase(SearchManager.EDGE_TYPE)) {
+				edgeHitsIdentifiers.add(currID);
+			}
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+		}
+	}
+	
+	@Override
+	public String toString() {
+		return IdentifiersCollector.class.getSimpleName() + " - nodeHits: " + getNodeHits() + ", edgeHits: " + getEdgeHits();
 	}
 
 }

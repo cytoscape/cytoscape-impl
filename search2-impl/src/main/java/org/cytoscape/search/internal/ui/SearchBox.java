@@ -5,6 +5,7 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.util.swing.LookAndFeelUtil.getSmallFontSize;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
+import java.awt.Color;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
@@ -14,9 +15,12 @@ import java.awt.event.KeyEvent;
 import javax.swing.AbstractAction;
 import javax.swing.GroupLayout;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.Timer;
 import javax.swing.UIManager;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -25,6 +29,7 @@ import org.cytoscape.search.internal.index.SearchManager;
 import org.cytoscape.search.internal.search.SearchResults;
 import org.cytoscape.search.internal.search.SearchTask;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
@@ -82,48 +87,51 @@ public class SearchBox extends JPanel {
 		var appManager = registrar.getService(CyApplicationManager.class);
 		var currentNetwork = appManager.getCurrentNetwork();
 		
-		if (currentNetwork != null) {
-			var taskMgr = registrar.getService(DialogTaskManager.class);
+		if(currentNetwork != null) {
 			SearchTask task = new SearchTask(searchManager, currentNetwork, queryStr);
 			
+			var taskMgr = registrar.getService(DialogTaskManager.class);
 			taskMgr.execute(new TaskIterator(task), new TaskObserver() {
+				SearchResults results;
 				@Override
 				public void taskFinished(ObservableTask task) {
-					if (task instanceof SearchTask searchTask) {
-						var result = searchTask.getResults(SearchResults.class);
-						showPopup(result);
+					if(task instanceof SearchTask searchTask) {
+						results = searchTask.getResults(SearchResults.class);
 					}
 				}
 				@Override
-				public void allFinished(FinishStatus finishStatus) { }
+				public void allFinished(FinishStatus status) {
+					if(status.getType() == FinishStatus.Type.SUCCEEDED && results != null) {
+						showPopup(results);
+					}
+				}
 			});
 		} else {
 			logger.error("Could not find network for search");
 		}
-		
 	}
 
 	private void showPopup(SearchResults results) {
-//		if (results == null)
-//			return;
-//		
-//		var label = new JLabel();
-//		
-//		if (results.isError())
-//			label.setForeground(Color.RED);
-//		
-//		label.setText("   " + results.getMessage() + "   ");
-//		
-//		makeSmall(label);
-//		
-//		var popup = new JPopupMenu();
-//		popup.add(label);
-//		
-//		var timer = new Timer(3400, e -> popup.setVisible(false));
-//		timer.setRepeats(false);
-//		timer.start();
-//		
-//		popup.show(tfSearchText, 0, tfSearchText.getHeight());
+		if (results == null)
+			return;
+		
+		var label = new JLabel();
+		
+		if (results.isError())
+			label.setForeground(Color.RED);
+		
+		label.setText("   " + results.getMessage() + "   ");
+		
+		LookAndFeelUtil.makeSmall(label);
+		
+		var popup = new JPopupMenu();
+		popup.add(label);
+		
+		var timer = new Timer(3400, e -> popup.setVisible(false));
+		timer.setRepeats(false);
+		timer.start();
+		
+		popup.show(searchTextField, 0, searchTextField.getHeight());
 	}
 	
 	private void initComponents() {
