@@ -57,6 +57,10 @@ public class SearchResults {
 		return new SearchResults(Status.SUCCESS, null, nodeHits, edgeHits);
 	}
 	
+	public static SearchResults empty() {
+		return new SearchResults(Status.SUCCESS, null, Collections.emptyList(), Collections.emptyList());
+	}
+	
 	public boolean isError() {
 		return status == Status.ERROR_FATAL || status == Status.ERROR_SYNTAX;
 	}
