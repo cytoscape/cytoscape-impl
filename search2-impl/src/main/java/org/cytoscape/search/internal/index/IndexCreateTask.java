@@ -54,7 +54,7 @@ public class IndexCreateTask implements Callable<IndexCreateTask.Result> {
 			writer.close();
 			
 			System.out.println("Indexing network complete");
-			return Result.succeeded();
+			return Result.succeeded(indexPath);
 		} catch (IOException e) {
 			return Result.failed(e);
 		}
@@ -66,13 +66,11 @@ public class IndexCreateTask implements Callable<IndexCreateTask.Result> {
 		List<CyEdge> edgeList = network.getEdgeList();
 		
 		for(CyNode cyNode : nodeList) {
-//			System.out.println("adding node: " + cyNode.getSUID());
 			Document document = createDocument(network, cyNode, SearchManager.NODE_TYPE);
 			writer.addDocument(document);
 		}
 	
 		for(CyEdge cyEdge : edgeList) {
-//			System.out.println("adding edge: " + cyEdge.getSUID());
 			Document document = createDocument(network, cyEdge, SearchManager.EDGE_TYPE);
 			writer.addDocument(document);
 		}
@@ -155,12 +153,12 @@ public class IndexCreateTask implements Callable<IndexCreateTask.Result> {
 	
 	
 	
-	public static record Result(boolean sucesss, Throwable error) {
-		public static Result succeeded() {
-			return new Result(true, null);
+	public static record Result(boolean sucesss, Path indexPath, Throwable error) {
+		public static Result succeeded(Path indexPath) {
+			return new Result(true, indexPath, null);
 		}
 		public static Result failed(Throwable error) {
-			return new Result(false, error);
+			return new Result(false, null, error);
 		}
 	}
 	

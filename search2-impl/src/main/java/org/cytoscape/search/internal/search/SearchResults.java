@@ -6,7 +6,7 @@ import java.util.List;
 public class SearchResults {
 
 	public static enum Status {
-		SUCCESS, ERROR_SYNTAX, ERROR_FATAL
+		SUCCESS, ERROR_SYNTAX, ERROR_FATAL, CANCELLED
 	}
 	
 	private final Status status;
@@ -61,6 +61,10 @@ public class SearchResults {
 		return new SearchResults(Status.SUCCESS, null, Collections.emptyList(), Collections.emptyList());
 	}
 	
+	public static SearchResults cancelled() {
+		return new SearchResults(Status.CANCELLED, null, Collections.emptyList(), Collections.emptyList());
+	}
+	
 	public boolean isError() {
 		return status == Status.ERROR_FATAL || status == Status.ERROR_SYNTAX;
 	}
@@ -92,5 +96,11 @@ public class SearchResults {
 	public List<String> getEdgeHits() {
 		return edgeHits;
 	}
+
+	@Override
+	public String toString() {
+		return "SearchResults [status=" + status + ", nodeHits=" + nodeHits + ", edgeHits=" + edgeHits + "]";
+	}
+	
 	
 }

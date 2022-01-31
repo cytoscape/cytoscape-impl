@@ -13,7 +13,6 @@ import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
 import org.cytoscape.model.events.NetworkDestroyedEvent;
 import org.cytoscape.model.events.NetworkDestroyedListener;
-import org.cytoscape.service.util.CyServiceRegistrar;
 
 public class SearchManager implements NetworkAddedListener, NetworkDestroyedListener {
 
@@ -22,15 +21,11 @@ public class SearchManager implements NetworkAddedListener, NetworkDestroyedList
 	public static final String NODE_TYPE = "node";
 	public static final String EDGE_TYPE = "edge";
 	
-	
-	private final CyServiceRegistrar registrar;
 	private final Path baseDir;
-	
 	private final ExecutorService executorService;
 	
 	
-	public SearchManager(CyServiceRegistrar registrar, Path baseDir) {
-		this.registrar = Objects.requireNonNull(registrar);
+	public SearchManager(Path baseDir) {
 		this.baseDir = Objects.requireNonNull(baseDir);
 		
 		this.executorService = Executors.newSingleThreadExecutor(r -> {

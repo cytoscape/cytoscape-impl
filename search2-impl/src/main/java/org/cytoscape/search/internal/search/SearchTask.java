@@ -51,15 +51,20 @@ public class SearchTask extends AbstractTask implements ObservableTask {
 	
 	@Override
 	public void run(TaskMonitor tm) {
+		this.results = runQuery(tm);
+		insertTasksAfterCurrentTask(new NodeAndEdgeSelectorTask(network, results));
+	}
+
+	
+	public SearchResults runQuery(TaskMonitor tm) {
 		tm.setTitle("Searching the network for: " + queryString);
 		if (cancelled)
-			return;
+			return SearchResults.cancelled();
 		
 		// bail if the length of query string is too long
 		if (queryString.length() > MAX_QUERY_LEN) {
-			this.results = SearchResults.syntaxError("At " + queryString.length() + " characters query string is too large");
 			logger.error(results.getMessage());
-			return;
+			return SearchResults.syntaxError("At " + queryString.length() + " characters query string is too large");
 		}
 		
 		Analyzer analyser = new CaseInsensitiveWhitespaceAnalyzer();
@@ -71,9 +76,8 @@ public class SearchTask extends AbstractTask implements ObservableTask {
 		try {
 			 query = parser.parse(queryString);
 		} catch (ParseException e) {
-			results = SearchResults.syntaxError();
 			logger.error(e.getMessage(), e);
-			return;
+			return SearchResults.syntaxError();
 		}
 		
 		System.out.println("Query: " + query);
@@ -83,9 +87,8 @@ public class SearchTask extends AbstractTask implements ObservableTask {
 			Directory directory = searchManager.getDirectory(network);
 			reader = DirectoryReader.open(directory);
 		} catch (IOException e) {
-			this.results = SearchResults.fatalError();
 			logger.error(e.getMessage(), e);
-			return;
+			return SearchResults.fatalError();
 		}
 		
 		IndexSearcher searcher = new IndexSearcher(reader);
@@ -93,14 +96,12 @@ public class SearchTask extends AbstractTask implements ObservableTask {
 		try {
 			searcher.search(query, collector);
 		} catch (IOException e) {
-			this.results = SearchResults.fatalError();
 			logger.error(e.getMessage(), e);
-			return;
+			return SearchResults.fatalError();
+			
 		}
 		
-		this.results = SearchResults.results(collector.getNodes(), collector.getEdges());
-		
-		insertTasksAfterCurrentTask(new NodeAndEdgeSelectorTask(network, results));
+		return SearchResults.results(collector.getNodes(), collector.getEdges());
 	}
 
 	
