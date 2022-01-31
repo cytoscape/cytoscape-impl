@@ -21,6 +21,7 @@ import org.cytoscape.search.internal.index.SearchManager;
 import org.cytoscape.search.internal.search.SearchResults;
 import org.cytoscape.search.internal.search.SearchTask;
 import org.cytoscape.work.TaskMonitor;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -30,10 +31,38 @@ public class QueryTest {
 	
 	@Rule public TestRule logSilenceRule = new LogSilenceRule(); 
 	
-	private final NetworkTestSupport networkTestSupport = new NetworkTestSupport();
+	private static CyNetwork network;
+	private static SearchManager searchManager;
 	
 	
-	public CyNetwork createTestNetwork() {
+	@BeforeClass
+	public static void initializeTestNetwork() throws Exception {
+		network = createTestNetwork();
+		
+		Path baseDir = Files.createTempDirectory("search2_impl_");
+		baseDir.toFile().deleteOnExit();
+		
+		searchManager = new SearchManager(baseDir);
+		Path indexPath = searchManager.getIndexPath(network);
+		
+		buildIndex(indexPath, network);
+	}
+	
+	
+	/*
+	 * TODO
+	 * 
+	 * Make sure there are no stop words.
+	 * Field queries
+	 * Column namespaces
+	 * Numeric range queries
+	 * Boolean connectors
+	 * Wildcards * and ?
+	 */
+	
+	
+	public static CyNetwork createTestNetwork() {
+		NetworkTestSupport networkTestSupport = new NetworkTestSupport();
 		CyNetwork network = networkTestSupport.getNetwork();
 		
 		CyTable nodeTable = network.getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS);
@@ -137,29 +166,27 @@ public class QueryTest {
 		assertTrue(result.sucesss());
 	}
 	
-	private static SearchResults queryIndex(SearchManager searchManager, CyNetwork network, String query) {
+	private static SearchResults queryIndex(String query) {
 		SearchTask searchTask = new SearchTask(searchManager, network, query);
 		return searchTask.runQuery(mock(TaskMonitor.class));
 	}
 	
-	private static void assertNodeHits(SearchResults results, CyNetwork network, int ... ids) {
+	private static void assertNodeHits(SearchResults results, int ... ids) {
 		assertEquals(ids.length, results.getNodeHitCount());
+		if(ids.length == 0)
+			return;
 		CyTable nodeTable = network.getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS);
 		List<String> nodeHits = results.getNodeHits();
 		for(int id : ids) {
 			Long suid = nodeTable.getMatchingKeys("TestID", id, Long.class).iterator().next();
-			
-			System.out.println("suid: " + suid);
 			assertTrue(nodeHits.contains(String.valueOf(suid)));
 		}
 	}
 	
-	private static void assertNodeEmpty(SearchResults results) {
-		assertEquals(0, results.getNodeHitCount());
-	}
-	
-	private static void assertEdgeHits(SearchResults results, CyNetwork network, int ... ids) {
+	private static void assertEdgeHits(SearchResults results, int ... ids) {
 		assertEquals(ids.length, results.getEdgeHitCount());
+		if(ids.length == 0)
+			return;
 		CyTable edgeTable = network.getTable(CyEdge.class, CyNetwork.DEFAULT_ATTRS);
 		List<String> edgeHits = results.getEdgeHits();
 		for(int id : ids) {
@@ -168,59 +195,69 @@ public class QueryTest {
 		}
 	}
 	
-	private static void assertEdgeEmpty(SearchResults results) {
-		assertEquals(0, results.getEdgeHitCount());
+	
+	
+	@Test
+	public void testBasicQueries() {
+		SearchResults results;
+		
+		results = queryIndex("BAR1");
+		assertNodeHits(results, 1);
+		assertEdgeHits(results);
+		
+		results = queryIndex("bar1"); // Case insensitive
+		assertNodeHits(results, 1);
+		assertEdgeHits(results);
+
+		results = queryIndex("YMR043W");
+		assertNodeHits(results, 20);
+		assertEdgeHits(results, 3, 4, 6, 7, 8, 9, 10, 11, 14, 15, 17, 20, 21, 22, 24, 25, 27, 28);
+
+		results = queryIndex("ymR043W"); // Case insensitive
+		assertNodeHits(results, 20);
+		assertEdgeHits(results, 3, 4, 6, 7, 8, 9, 10, 11, 14, 15, 17, 20, 21, 22, 24, 25, 27, 28);
+
+		results = queryIndex("BAR1 YMR043W"); // two terms
+		assertNodeHits(results, 1, 20);
+		assertEdgeHits(results, 3, 4, 6, 7, 8, 9, 10, 11, 14, 15, 17, 20, 21, 22, 24, 25, 27, 28);
+
+		results = queryIndex("");
+		assertNodeHits(results);
+		assertEdgeHits(results);
+
+		results = queryIndex("blah");
+		assertNodeHits(results);
+		assertEdgeHits(results);
 	}
 	
 	
 	@Test
-	public void testBasicQueries() throws Exception {
-		CyNetwork net = createTestNetwork();
-
-		Path baseDir = Files.createTempDirectory("search2_impl_");
-		baseDir.toFile().deleteOnExit();
-		SearchManager manager = new SearchManager(baseDir);
-		Path indexPath = manager.getIndexPath(net);
+	public void testWildcardQueries() {
+		SearchResults results;
 		
-		buildIndex(indexPath, net);
+		results = queryIndex("BAR?");
+		assertNodeHits(results, 1);
+		assertEdgeHits(results);
 		
-		{
-			SearchResults results = queryIndex(manager, net, "BAR1");
-			assertNodeHits(results, net, 1);
-			assertEdgeEmpty(results);
-		}
-		{
-			SearchResults results = queryIndex(manager, net, "bar1"); // Case insensitive
-			assertNodeHits(results, net, 1);
-			assertEdgeEmpty(results);
-		}
-		{
-			SearchResults results = queryIndex(manager, net, "YMR043W");
-			assertNodeHits(results, net, 20);
-			assertEdgeHits(results, net, 3, 4, 6, 7, 8, 9, 10, 11, 14, 15, 17, 20, 21, 22, 24, 25, 27, 28);
-		}
-		{
-			SearchResults results = queryIndex(manager, net, "ymR043W"); // Case insensitive
-			assertNodeHits(results, net, 20);
-			assertEdgeHits(results, net, 3, 4, 6, 7, 8, 9, 10, 11, 14, 15, 17, 20, 21, 22, 24, 25, 27, 28);
-		}
-		{
-			SearchResults results = queryIndex(manager, net, "BAR1 YMR043W");
-			assertNodeHits(results, net, 1, 20);
-			assertEdgeHits(results, net, 3, 4, 6, 7, 8, 9, 10, 11, 14, 15, 17, 20, 21, 22, 24, 25, 27, 28);
-		}
-		{
-			SearchResults results = queryIndex(manager, net, "");
-			assertNodeEmpty(results);
-			assertEdgeEmpty(results);
-		}
-		{
-			SearchResults results = queryIndex(manager, net, "blah");
-			assertNodeEmpty(results);
-			assertEdgeEmpty(results);
-		}
-
+		results = queryIndex("CLB?");
+		assertNodeHits(results, 4, 5);
+		assertEdgeHits(results);
+		
+		results = queryIndex("C???");
+		assertNodeHits(results, 4, 5, 6, 12); // but not CDC28 because that has 5 chars
+		assertEdgeHits(results);
+		
+		results = queryIndex("BAR? C???");
+		assertNodeHits(results, 1, 4, 5, 6, 12);
+		assertEdgeHits(results);
+		
+		results = queryIndex("YC*");
+		assertNodeHits(results, 13, 16);
+		assertEdgeHits(results, 16, 18, 19, 22, 23, 26, 29);
+		
+		results = queryIndex("YC* BAR? C???");
+		assertNodeHits(results, 1, 4, 5, 6, 12, 13, 16);
+		assertEdgeHits(results, 16, 18, 19, 22, 23, 26, 29);
 	}
-	
 	
 }
