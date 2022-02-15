@@ -1,12 +1,9 @@
 package org.cytoscape.search.internal.index;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Callable;
 
-import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.DoublePoint;
 import org.apache.lucene.document.Field;
@@ -15,10 +12,6 @@ import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.IndexWriterConfig.OpenMode;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -28,40 +21,9 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
 
-public class IndexCreateTask implements Callable<IndexCreateTask.Result> {
-
-	private final Path indexPath;
-	private final CyNetwork network;
+public class NetworkIndexer {
 	
-	public IndexCreateTask(Path indexPath, CyNetwork network) {
-		this.indexPath = indexPath;
-		this.network = network;
-	}
-
-	@Override
-	public Result call() {
-		try {
-			System.out.println("Indexing network : " + indexPath);
-			Directory dir = FSDirectory.open(indexPath);
-			
-			Analyzer analyzer = new CaseInsensitiveWhitespaceAnalyzer();
-			IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
-			iwc.setOpenMode(OpenMode.CREATE);
-			IndexWriter writer = new IndexWriter(dir, iwc);
-			
-			indexNetwork(writer);
-			
-			writer.close();
-			
-			System.out.println("Indexing network complete");
-			return Result.succeeded(indexPath);
-		} catch (IOException e) {
-			return Result.failed(e);
-		}
-	}
-	
-	
-	private void indexNetwork(IndexWriter writer) throws IOException {
+	public static void indexNetwork(CyNetwork network, IndexWriter writer) throws IOException {
 		List<CyNode> nodeList = network.getNodeList();
 		List<CyEdge> edgeList = network.getEdgeList();
 		
@@ -150,16 +112,4 @@ public class IndexCreateTask implements Callable<IndexCreateTask.Result> {
 			}
 		}
 	}
-	
-	
-	
-	public static record Result(boolean sucesss, Path indexPath, Throwable error) {
-		public static Result succeeded(Path indexPath) {
-			return new Result(true, indexPath, null);
-		}
-		public static Result failed(Throwable error) {
-			return new Result(false, null, error);
-		}
-	}
-	
 }

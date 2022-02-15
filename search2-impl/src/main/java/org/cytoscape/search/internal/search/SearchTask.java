@@ -2,24 +2,18 @@ package org.cytoscape.search.internal.search;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TotalHitCountCollector;
-import org.apache.lucene.store.Directory;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.search.internal.index.CaseInsensitiveWhitespaceAnalyzer;
 import org.cytoscape.search.internal.index.SearchManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
@@ -66,39 +60,42 @@ public class SearchTask extends AbstractTask implements ObservableTask {
 			logger.error(results.getMessage());
 			return SearchResults.syntaxError("At " + queryString.length() + " characters query string is too large");
 		}
-		
-		Analyzer analyser = new CaseInsensitiveWhitespaceAnalyzer();
-		AttributeFields fields = new AttributeFields(network);
-		System.out.println("Querying fields: " + Arrays.asList(fields.getFields()));
-		QueryParser parser = new MultiFieldQueryParser(fields.getFields(), analyser);
+		if(queryString.isBlank()) {
+			return SearchResults.empty();
+		}
 		
 		Query query;
 		try {
-			 query = parser.parse(queryString);
+			QueryParser parser = searchManager.getQueryParser(network);
+			query = parser.parse(queryString);
 		} catch (ParseException e) {
 			logger.error(e.getMessage(), e);
 			return SearchResults.syntaxError();
 		}
 		
-		System.out.println("Query: " + query);
-		
 		IndexReader reader;
 		try {
-			Directory directory = searchManager.getDirectory(network);
-			reader = DirectoryReader.open(directory);
+			reader = searchManager.getIndexReader(network);
 		} catch (IOException e) {
 			logger.error(e.getMessage(), e);
+			e.printStackTrace();
 			return SearchResults.fatalError();
+		}
+		
+		if(reader == null) {
+			logger.warn("index not ready");
+			return SearchResults.notReady();
 		}
 		
 		IndexSearcher searcher = new IndexSearcher(reader);
 		var collector = new IdentifiersCollector(searcher);
+		
 		try {
 			searcher.search(query, collector);
 		} catch (IOException e) {
 			logger.error(e.getMessage(), e);
+			e.printStackTrace();
 			return SearchResults.fatalError();
-			
 		}
 		
 		return SearchResults.results(collector.getNodes(), collector.getEdges());

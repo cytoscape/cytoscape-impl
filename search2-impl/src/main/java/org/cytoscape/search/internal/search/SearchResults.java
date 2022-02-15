@@ -6,7 +6,7 @@ import java.util.List;
 public class SearchResults {
 
 	public static enum Status {
-		SUCCESS, ERROR_SYNTAX, ERROR_FATAL, CANCELLED
+		SUCCESS, ERROR_SYNTAX, ERROR_FATAL, CANCELLED, NOT_READY
 	}
 	
 	private final Status status;
@@ -59,6 +59,10 @@ public class SearchResults {
 	
 	public static SearchResults empty() {
 		return new SearchResults(Status.SUCCESS, null, Collections.emptyList(), Collections.emptyList());
+	}
+	
+	public static SearchResults notReady() {
+		return new SearchResults(Status.NOT_READY, null, Collections.emptyList(), Collections.emptyList());
 	}
 	
 	public static SearchResults cancelled() {

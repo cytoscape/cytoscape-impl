@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.concurrent.Future;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -15,10 +16,9 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.search.internal.index.IndexCreateTask;
-import org.cytoscape.search.internal.index.IndexCreateTask.Result;
 import org.cytoscape.search.internal.index.SearchManager;
 import org.cytoscape.search.internal.search.SearchResults;
+import org.cytoscape.search.internal.search.SearchResults.Status;
 import org.cytoscape.search.internal.search.SearchTask;
 import org.cytoscape.work.TaskMonitor;
 import org.junit.BeforeClass;
@@ -35,19 +35,6 @@ public class QueryTest {
 	private static SearchManager searchManager;
 	
 	
-	@BeforeClass
-	public static void initializeTestNetwork() throws Exception {
-		network = createTestNetwork();
-		
-		Path baseDir = Files.createTempDirectory("search2_impl_");
-		baseDir.toFile().deleteOnExit();
-		
-		searchManager = new SearchManager(baseDir);
-		Path indexPath = searchManager.getIndexPath(network);
-		
-		buildIndex(indexPath, network);
-	}
-	
 	
 	/*
 	 * TODO
@@ -59,7 +46,6 @@ public class QueryTest {
 	 * Boolean connectors
 	 * Wildcards * and ?
 	 */
-	
 	
 	public static CyNetwork createTestNetwork() {
 		NetworkTestSupport networkTestSupport = new NetworkTestSupport();
@@ -159,16 +145,26 @@ public class QueryTest {
 		row.set("EdgeBetweenness", edgeBetweenness);
 	}
 	
-	
-	private static void buildIndex(Path indexPath, CyNetwork network) {
-		IndexCreateTask task = new IndexCreateTask(indexPath, network);
-		Result result = task.call();
-		assertTrue(result.sucesss());
+	@BeforeClass
+	public static void initializeTestNetwork() throws Exception {
+		network = createTestNetwork();
+		
+		Path baseDir = Files.createTempDirectory("search2_impl_");
+		baseDir.toFile().deleteOnExit();
+		
+		searchManager = new SearchManager(baseDir);
+		
+		Future<?> future = searchManager.addNetwork(network);
+		future.get(); // wait for network to be indexed
+		
+		System.out.println("done indexing network");
 	}
 	
 	private static SearchResults queryIndex(String query) {
 		SearchTask searchTask = new SearchTask(searchManager, network, query);
-		return searchTask.runQuery(mock(TaskMonitor.class));
+		var results = searchTask.runQuery(mock(TaskMonitor.class));
+		assertEquals("Error running search", Status.SUCCESS, results.getStatus());
+		return results;
 	}
 	
 	private static void assertNodeHits(SearchResults results, int ... ids) {
@@ -194,7 +190,6 @@ public class QueryTest {
 			assertTrue(edgeHits.contains(String.valueOf(suid)));
 		}
 	}
-	
 	
 	
 	@Test
