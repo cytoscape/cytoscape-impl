@@ -20,22 +20,43 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.search.internal.progress.ProgressMonitor;
 
 public class NetworkIndexer {
 	
-	public static void indexNetwork(CyNetwork network, IndexWriter writer) throws IOException {
+	public static void indexNetwork(CyNetwork network, IndexWriter writer, ProgressMonitor pm) throws IOException {
 		List<CyNode> nodeList = network.getNodeList();
 		List<CyEdge> edgeList = network.getEdgeList();
+		
+		var subPms = pm.split(1,1);
+		var nodePm = subPms[0].toDiscrete(nodeList.size());
+		var edgePm = subPms[1].toDiscrete(edgeList.size());
 		
 		for(CyNode cyNode : nodeList) {
 			Document document = createDocument(network, cyNode, SearchManager.NODE_TYPE);
 			writer.addDocument(document);
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			nodePm.increment();
 		}
 	
 		for(CyEdge cyEdge : edgeList) {
 			Document document = createDocument(network, cyEdge, SearchManager.EDGE_TYPE);
 			writer.addDocument(document);
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			edgePm.increment();
 		}
+		
+		pm.done();
 	}
 	
 

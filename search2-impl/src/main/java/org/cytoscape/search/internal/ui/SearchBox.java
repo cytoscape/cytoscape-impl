@@ -13,7 +13,10 @@ import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 
 import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -29,6 +32,7 @@ import org.cytoscape.search.internal.index.SearchManager;
 import org.cytoscape.search.internal.search.SearchResults;
 import org.cytoscape.search.internal.search.SearchTask;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
@@ -71,14 +75,143 @@ public class SearchBox extends JPanel {
 	private final CyServiceRegistrar registrar;
 	
 	private JTextField searchTextField;
+	private JButton imageLabel;
+	private ProgressPopup progressPopup;
 
+	
 	public SearchBox(SearchManager searchManager, CyServiceRegistrar registrar) {
 		this.searchManager = searchManager;
 		this.registrar = registrar;
 		initComponents();
+		showIndexingIcon(true);
 	}
+	
+	
+	private void initComponents() {
+		var layout = new GroupLayout(this);
+		setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+			.addComponent(getSearchTextField(), 120, 240, 300)
+			.addComponent(getImageLabel())
+		);
+		layout.setVerticalGroup(layout.createParallelGroup(Alignment.BASELINE)
+			.addComponent(getSearchTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			.addComponent(getImageLabel())
+		);
+	}
+	
+	private JTextField getSearchTextField() {
+		if(searchTextField == null) {
+			var defText = "Enter search term...";
+			var defFont = UIManager.getFont("TextField.font") != null ?
+					UIManager.getFont("TextField.font").deriveFont(getSmallFontSize()) : null;
+			
+			searchTextField = new JTextField();
+			searchTextField.putClientProperty("JTextField.variant", "search");
+			searchTextField.setText("search2");
 
+			searchTextField.setToolTipText("<html>Example Search Queries:<br><br>YL* -- Search all columns<br>name:YL* -- Search 'name' column<br>GO\\:1232 -- Escape special characters and spaces with backslash</html>");
+			searchTextField.setName("tfSearchText");
+			
+			if (!isAquaLAF()) {
+				searchTextField.setText(defText);
+				if (defFont != null)
+					searchTextField.setFont(defFont);
+			}
+			
+			searchTextField.addActionListener(evt -> doSearching());
+			searchTextField.addFocusListener(new FocusListener() {
+				@Override
+				public void focusGained(FocusEvent e) {
+					if (searchTextField.getText().equals(defText)) {
+						searchTextField.setText("");
+						searchTextField.setFont(UIManager.getFont("TextField.font"));
+					}
+				}
+				@Override
+				public void focusLost(FocusEvent e) {
+					if (!isAquaLAF() && searchTextField.getText().trim().isEmpty()) {
+						searchTextField.setText(defText);
+						if (defFont != null)
+							searchTextField.setFont(defFont);
+					}
+				}
+			});
+			setKeyBindings(searchTextField);
+		}
+		return searchTextField;
+	}
+	
+	
+	private JButton getImageLabel() {		
+		if(imageLabel == null) {
+			var iconManager = registrar.getService(IconManager.class);
+			imageLabel = new JButton(IconManager.ICON_HOURGLASS);
+			imageLabel.setFont(iconManager.getIconFont(14.0f));
+			
+			imageLabel.addActionListener(event -> {
+				getProgressPopupMenu().show(imageLabel, 0, imageLabel.getHeight());
+			});
+		}
+		return imageLabel;
+	}
+	
+	
+	private JPopupMenu getProgressPopupMenu() {
+		JPopupMenu menu = new JPopupMenu();
+		menu.add(getProgressPopup());
+		menu.setBackground(getProgressPopup().getBackground());
+		menu.setBorder(BorderFactory.createEmptyBorder());
+		return menu;
+	}
+	
+	
+	public ProgressPopup getProgressPopup() {
+		if(progressPopup == null) {
+			progressPopup = new ProgressPopup();
+		}
+		return progressPopup;
+	}
+	
+	
+	private void showIndexingIcon(boolean show) {
+		getImageLabel().setVisible(show);
+	}
+	
+	
+	private void setKeyBindings(JComponent comp) {
+		var actionMap = comp.getActionMap();
+		var inputMap = comp.getInputMap(WHEN_IN_FOCUSED_WINDOW);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), KeyAction.FOCUS);
+		actionMap.put(KeyAction.FOCUS, new KeyAction(KeyAction.FOCUS));
+	}
+	
+	
+	private class KeyAction extends AbstractAction {
 
+		final static String FOCUS = "FOCUS";
+		
+		KeyAction(String actionCommand) {
+			putValue(ACTION_COMMAND_KEY, actionCommand);
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			var cmd = e.getActionCommand();
+			
+			if (cmd.equals(FOCUS)) {
+				if (searchTextField.isVisible()) {
+					searchTextField.requestFocusInWindow();
+					searchTextField.selectAll();
+				}
+			}
+		}
+	}
+	
+	
 	private void doSearching() {
 		var queryStr = searchTextField.getText().trim();
 		if (queryStr == null || queryStr.length() == 0)
@@ -110,6 +243,7 @@ public class SearchBox extends JPanel {
 			logger.error("Could not find network for search");
 		}
 	}
+	
 
 	private void showPopup(SearchResults results) {
 		if (results == null)
@@ -132,84 +266,5 @@ public class SearchBox extends JPanel {
 		timer.start();
 		
 		popup.show(searchTextField, 0, searchTextField.getHeight());
-	}
-	
-	private void initComponents() {
-		var defText = "Enter search term...";
-		var defFont = UIManager.getFont("TextField.font") != null ?
-				UIManager.getFont("TextField.font").deriveFont(getSmallFontSize()) : null;
-		
-		searchTextField = new JTextField();
-		searchTextField.putClientProperty("JTextField.variant", "search");
-		searchTextField.setText("search2");
-
-		searchTextField.setToolTipText("<html>Example Search Queries:<br><br>YL* -- Search all columns<br>name:YL* -- Search 'name' column<br>GO\\:1232 -- Escape special characters and spaces with backslash</html>");
-		searchTextField.setName("tfSearchText");
-		
-		if (!isAquaLAF()) {
-			searchTextField.setText(defText);
-			if (defFont != null)
-				searchTextField.setFont(defFont);
-		}
-		
-		searchTextField.addActionListener(evt -> doSearching());
-		searchTextField.addFocusListener(new FocusListener() {
-			@Override
-			public void focusGained(FocusEvent e) {
-				if (searchTextField.getText().equals(defText)) {
-					searchTextField.setText("");
-					searchTextField.setFont(UIManager.getFont("TextField.font"));
-				}
-			}
-			@Override
-			public void focusLost(FocusEvent e) {
-				if (!isAquaLAF() && searchTextField.getText().trim().isEmpty()) {
-					searchTextField.setText(defText);
-					if (defFont != null)
-						searchTextField.setFont(defFont);
-				}
-			}
-		});
-		setKeyBindings(searchTextField);
-		
-		var layout = new GroupLayout(this);
-		setLayout(layout);
-		layout.setAutoCreateContainerGaps(true);
-		layout.setAutoCreateGaps(true);
-		
-		layout.setHorizontalGroup(layout.createSequentialGroup()
-				.addComponent(searchTextField, 120, 240, 300)
-		);
-		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addComponent(searchTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-		);
-	}
-	
-	private void setKeyBindings(JComponent comp) {
-		var actionMap = comp.getActionMap();
-		var inputMap = comp.getInputMap(WHEN_IN_FOCUSED_WINDOW);
-		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), KeyAction.FOCUS);
-		actionMap.put(KeyAction.FOCUS, new KeyAction(KeyAction.FOCUS));
-	}
-	
-	private class KeyAction extends AbstractAction {
-
-		final static String FOCUS = "FOCUS";
-		
-		KeyAction(String actionCommand) {
-			putValue(ACTION_COMMAND_KEY, actionCommand);
-		}
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			var cmd = e.getActionCommand();
-			
-			if (cmd.equals(FOCUS)) {
-				if (searchTextField.isVisible()) {
-					searchTextField.requestFocusInWindow();
-					searchTextField.selectAll();
-				}
-			}
-		}
 	}
 }

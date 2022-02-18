@@ -59,10 +59,11 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		
 		var searchManager = new SearchManager(baseDir);
-		registerAllServices(bc, searchManager);
-		
 		var searchBox = new SearchBox(searchManager, registrar);
 		var toolbarComponent = new SearchBoxToolbarComponent(searchBox);
+		searchManager.setSearchBox(searchBox);
+		
+		registerAllServices(bc, searchManager);
 		registerAllServices(bc, toolbarComponent);
 	}
 }

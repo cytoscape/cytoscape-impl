@@ -25,7 +25,10 @@ import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
+import org.cytoscape.search.internal.progress.DiscreteProgressMonitor;
+import org.cytoscape.search.internal.progress.ProgressMonitor;
 import org.cytoscape.search.internal.search.AttributeFields;
+import org.cytoscape.search.internal.ui.SearchBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +44,8 @@ public class SearchManager implements NetworkAddedListener, NetworkAboutToBeDest
 	private final Path baseDir;
 	private final ExecutorService executorService;
 	
+	private SearchBox searchBox;
+	
 	private final Map<Long,IndexWriter> networkIndexMap = new ConcurrentHashMap<>();
 	
 	
@@ -53,6 +58,11 @@ public class SearchManager implements NetworkAddedListener, NetworkAboutToBeDest
 			thread.setName("search2-" + thread.getName());
 			return thread;
 		});
+	}
+	
+	
+	public void setSearchBox(SearchBox searchBox) {
+		this.searchBox = searchBox;
 	}
 	
 	private Path getIndexPath(CyNetwork network) {
@@ -73,11 +83,19 @@ public class SearchManager implements NetworkAddedListener, NetworkAboutToBeDest
 		return parser;
 	}
 	
-	public IndexWriter createIndexWriter(CyNetwork network) throws IOException {
+	public IndexWriter createIndexWriter(CyNetwork network, ProgressMonitor pm) throws IOException {
+		DiscreteProgressMonitor dpm = pm.toDiscrete(3);
+		
 		Path indexPath = getIndexPath(network);
+		dpm.increment();
+		
 		Directory dir = FSDirectory.open(indexPath);
+		dpm.increment();
+		
 		IndexWriterConfig iwc = getIndexWriterConfig(OpenMode.CREATE);
 		IndexWriter writer = new IndexWriter(dir, iwc);
+		dpm.done();
+		
 		return writer;
 	}
 	
@@ -91,27 +109,47 @@ public class SearchManager implements NetworkAddedListener, NetworkAboutToBeDest
 	}
 	
 	
+	private ProgressMonitor getProgressMonitor(CyNetwork network) {
+		if(searchBox == null)
+			return ProgressMonitor.nullMonitor();
+		
+		Long suid = network.getSUID();
+		String name = network.getRow(network).get(CyNetwork.NAME, String.class);
+		
+		return searchBox.getProgressPopup().addProgress(suid, name);
+	}
+	
 	public Future<?> addNetwork(CyNetwork network) {
+		System.out.println("SearchManager.addNetwork() " + network.getSUID());
+		var pm = getProgressMonitor(network);
+		
 		return executorService.submit(() -> {
 			Long suid = network.getSUID();
 			if(networkIndexMap.containsKey(suid)) // This shouldn't happen, just being defensive
 				return;
 			logger.info("indexing network: " + network.getSUID());
 			try {
-				IndexWriter writer = createIndexWriter(network);
-				NetworkIndexer.indexNetwork(network, writer);
+				var subPms = pm.split(1, 10);
+				
+				IndexWriter writer = createIndexWriter(network, subPms[0]);
+				NetworkIndexer.indexNetwork(network, writer, subPms[1]);
+				
 				writer.close();
+				
 				networkIndexMap.put(suid, writer);
 			} catch(IOException e) {
-				// TODO handle exception
-				logger.error("error indexing network: " + suid, e);
+				logger.error("error indexing network: " + suid, e); // TODO handle exception
+			} finally {
+				pm.done();
 			}
+			
 			logger.info("indexing network complete: " + network.getSUID());
 		});
 	}
 	
 	
 	public Future<?> removeNetwork(CyNetwork network) {
+		// MKTODO what happens if the indexer is still running???
 		return executorService.submit(() -> {
 			Long suid = network.getSUID();
 			IndexWriter indexWriter = networkIndexMap.remove(suid);
