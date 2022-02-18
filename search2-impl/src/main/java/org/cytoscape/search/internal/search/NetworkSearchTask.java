@@ -15,13 +15,14 @@ import org.apache.lucene.search.TotalHitCountCollector;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.search.internal.index.SearchManager;
+import org.cytoscape.search.internal.index.TableType;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SearchTask extends AbstractTask implements ObservableTask {
+public class NetworkSearchTask extends AbstractTask implements ObservableTask {
 
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
@@ -36,7 +37,7 @@ public class SearchTask extends AbstractTask implements ObservableTask {
 	
 	private SearchResults results;
 	
-	public SearchTask(SearchManager searchManager, CyNetwork network, String queryString) {
+	public NetworkSearchTask(SearchManager searchManager, CyNetwork network, String queryString) {
 		this.network = Objects.requireNonNull(network);
 		this.queryString = Objects.requireNonNull(queryString);
 		this.searchManager = Objects.requireNonNull(searchManager);
@@ -73,32 +74,45 @@ public class SearchTask extends AbstractTask implements ObservableTask {
 			return SearchResults.syntaxError();
 		}
 		
-		IndexReader reader;
+		IndexReader nodeReader = null;
+		IndexReader edgeReader = null;
 		try {
-			reader = searchManager.getIndexReader(network);
+			nodeReader = searchManager.getIndexReader(network.getDefaultNodeTable());
+			edgeReader = searchManager.getIndexReader(network.getDefaultEdgeTable());
 		} catch (IOException e) {
 			logger.error(e.getMessage(), e);
 			e.printStackTrace();
 			return SearchResults.fatalError();
 		}
 		
-		if(reader == null) {
+		if(nodeReader == null || edgeReader == null) {
 			logger.warn("index not ready");
 			return SearchResults.notReady();
 		}
 		
-		IndexSearcher searcher = new IndexSearcher(reader);
-		var collector = new IdentifiersCollector(searcher);
+		// TODO figure out how to use the MultiReader, maybe we don't need to do two separate searches??
 		
+		var nodeSearcher = new IndexSearcher(nodeReader);
+		var nodeCollector = new IdentifiersCollector(nodeSearcher);
 		try {
-			searcher.search(query, collector);
+			nodeSearcher.search(query, nodeCollector);
 		} catch (IOException e) {
 			logger.error(e.getMessage(), e);
 			e.printStackTrace();
 			return SearchResults.fatalError();
 		}
 		
-		return SearchResults.results(collector.getNodes(), collector.getEdges());
+		var edgeSearcher = new IndexSearcher(edgeReader);
+		var edgeCollector = new IdentifiersCollector(edgeSearcher);
+		try {
+			edgeSearcher.search(query, edgeCollector);
+		} catch (IOException e) {
+			logger.error(e.getMessage(), e);
+			e.printStackTrace();
+			return SearchResults.fatalError();
+		}
+		
+		return SearchResults.results(nodeCollector.getIDs(), edgeCollector.getIDs());
 	}
 
 	
@@ -117,10 +131,45 @@ class IdentifiersCollector extends TotalHitCountCollector {
 
 	private IndexSearcher searcher;
 
+	public List<String> identifiers = new ArrayList<>();
+
+	public IdentifiersCollector(IndexSearcher searcher) {
+		this.searcher = searcher;
+	}
+	
+	public List<String> getIDs() {
+		return identifiers;
+	}
+
+	@Override
+	public void collect(int id) {
+		super.collect(id);
+		try {
+			Document doc = searcher.doc(id);
+			String eleID = doc.get(SearchManager.INDEX_FIELD);
+			identifiers.add(eleID);
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+		}
+	}
+	
+	@Override
+	public String toString() {
+		return IdentifiersCollector.class.getSimpleName() + " - hits: " + identifiers.size();
+	}
+
+}
+
+
+
+class TypedIdentifiersCollector extends TotalHitCountCollector {
+
+	private IndexSearcher searcher;
+
 	public List<String> nodeHitsIdentifiers = new ArrayList<>();
 	public List<String> edgeHitsIdentifiers = new ArrayList<>();
 
-	public IdentifiersCollector(IndexSearcher searcher) {
+	public TypedIdentifiersCollector(IndexSearcher searcher) {
 		this.searcher = searcher;
 	}
 	
@@ -146,9 +195,9 @@ class IdentifiersCollector extends TotalHitCountCollector {
 			String currID = doc.get(SearchManager.INDEX_FIELD);
 			String currType = doc.get(SearchManager.TYPE_FIELD);
 			
-			if (currType.equalsIgnoreCase(SearchManager.NODE_TYPE)) {
+			if(TableType.NODE.name().equals(currType)) {
 				nodeHitsIdentifiers.add(currID);
-			} else if (currType.equalsIgnoreCase(SearchManager.EDGE_TYPE)) {
+			} else if(TableType.EDGE.name().equals(currType)) {
 				edgeHitsIdentifiers.add(currID);
 			}
 		} catch (IOException ioe) {
@@ -158,7 +207,7 @@ class IdentifiersCollector extends TotalHitCountCollector {
 	
 	@Override
 	public String toString() {
-		return IdentifiersCollector.class.getSimpleName() + " - nodeHits: " + getNodeHits() + ", edgeHits: " + getEdgeHits();
+		return TypedIdentifiersCollector.class.getSimpleName() + " - nodeHits: " + getNodeHits() + ", edgeHits: " + getEdgeHits();
 	}
 
 }

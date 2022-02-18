@@ -2,6 +2,7 @@ package org.cytoscape.search.internal.index;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
@@ -13,106 +14,86 @@ import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.search.internal.progress.ProgressMonitor;
 
-public class NetworkIndexer {
+public class TableIndexer {
 	
-	public static void indexNetwork(CyNetwork network, IndexWriter writer, ProgressMonitor pm) throws IOException {
-		List<CyNode> nodeList = network.getNodeList();
-		List<CyEdge> edgeList = network.getEdgeList();
-		
-		var subPms = pm.split(1,1);
-		var nodePm = subPms[0].toDiscrete(nodeList.size());
-		var edgePm = subPms[1].toDiscrete(edgeList.size());
-		
-		for(CyNode cyNode : nodeList) {
-			Document document = createDocument(network, cyNode, SearchManager.NODE_TYPE);
-			writer.addDocument(document);
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			nodePm.increment();
-		}
 	
-		for(CyEdge cyEdge : edgeList) {
-			Document document = createDocument(network, cyEdge, SearchManager.EDGE_TYPE);
+	public static void indexTable(CyTable table, IndexWriter writer, TableType type, ProgressMonitor pm) throws IOException {
+		var dpm = pm.toDiscrete(table.getRowCount());
+		
+		CyColumn keyCol = table.getPrimaryKey();
+		String keyName = keyCol.getName();
+		Class<?> keyType = keyCol.getType();
+		
+		for(CyRow row : table.getAllRows()) {
+			var key = row.get(keyName, keyType);
+			Document document = createDocument(table, key, type);
 			writer.addDocument(document);
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			edgePm.increment();
+			dpm.increment();
 		}
 		
-		pm.done();
+		dpm.done();
 	}
 	
 
-	private static Document createDocument(CyNetwork network, CyIdentifiable graphObject, String graphObjectType) {
+	private static Document createDocument(CyTable table, Object key, TableType type) {
 		Document doc = new Document();
-		String identifier = Long.toString(graphObject.getSUID());
+		String identifier = String.valueOf(key);
 		
 		doc.add(new StringField(SearchManager.INDEX_FIELD, identifier, Field.Store.YES));
-		doc.add(new StringField(SearchManager.TYPE_FIELD, graphObjectType, Field.Store.YES));
+		doc.add(new StringField(SearchManager.TYPE_FIELD, type.name(), Field.Store.YES));
 		
-		CyRow cyRow = network.getRow(graphObject);
-		CyTable cyDataTable = cyRow.getTable();
-		Set<String> attributeNames = CyTableUtil.getColumnNames(cyDataTable);
+		Set<String> attributeNames = CyTableUtil.getColumnNames(table);
 
 		for(String attrName : attributeNames) {
 			if(attrName == null)
 				continue;
+			if(Objects.equals(CyNetwork.SELECTED, attrName))
+				continue;
+			
 			String attrIndexingName = attrName.toLowerCase();
-
-			indexField(doc, network, cyDataTable, attrIndexingName, graphObject);
+			indexField(doc, table, attrIndexingName, key);
 		}
 		return doc;
 	}
 	
 	
-	private static void indexField(Document doc, CyNetwork network, CyTable cyDataTable, String attrName, CyIdentifiable graphObject) {
-		CyColumn column = cyDataTable.getColumn(attrName);
+	private static void indexField(Document doc, CyTable table, String attrName, Object key) {
+		CyColumn column = table.getColumn(attrName);
 		Class<?> valueType = column.getType();
 		
 		if(valueType == String.class) {
-			String attrValue = network.getRow(graphObject).get(attrName, String.class);
+			String attrValue = table.getRow(key).get(attrName, String.class);
 			if(attrValue != null) {
 				doc.add(new TextField(attrName, attrValue, Field.Store.NO));
 			}				
 		} else if(valueType == Integer.class) {
-			Integer attrValue = network.getRow(graphObject).get(attrName, Integer.class);
+			Integer attrValue = table.getRow(key).get(attrName, Integer.class);
 			if(attrValue != null) {
 				doc.add(new IntPoint(attrName, attrValue));
 			}
 		} else if(valueType == Long.class) {
-			Long attrValue = network.getRow(graphObject).get(attrName, Long.class);
+			Long attrValue = table.getRow(key).get(attrName, Long.class);
 			if(attrValue != null) {
 				doc.add(new LongPoint(attrName, attrValue));
 			}
 		} else if(valueType == Double.class) {	
-			Double attrValue = network.getRow(graphObject).get(attrName, Double.class);
+			Double attrValue = table.getRow(key).get(attrName, Double.class);
 			if(attrValue != null) {
 				doc.add(new DoublePoint(attrName, attrValue));
 			}
 		} else if(valueType == Boolean.class) {
-			Boolean attrValue = network.getRow(graphObject).get(attrName, Boolean.class);
+			Boolean attrValue = table.getRow(key).get(attrName, Boolean.class);
 			if(attrValue != null) {
 				doc.add(new StringField(attrName, String.valueOf(attrValue), Field.Store.NO));
 			}
 		} else if(valueType == List.class) {
-			List<?> attrValueList = network.getRow(graphObject).get(attrName, List.class);
+			List<?> attrValueList = table.getRow(key).get(attrName, List.class);
 			if(attrValueList != null) {
 				Class<?> listElementType = column.getListElementType();
 				for(Object attrValue : attrValueList) {
@@ -133,4 +114,5 @@ public class NetworkIndexer {
 			}
 		}
 	}
+	
 }

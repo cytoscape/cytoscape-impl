@@ -30,7 +30,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.search.internal.index.SearchManager;
 import org.cytoscape.search.internal.search.SearchResults;
-import org.cytoscape.search.internal.search.SearchTask;
+import org.cytoscape.search.internal.search.NetworkSearchTask;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -79,7 +79,7 @@ public class SearchBox extends JPanel {
 	private ProgressPopup progressPopup;
 
 	
-	public SearchBox(SearchManager searchManager, CyServiceRegistrar registrar) {
+	public SearchBox(CyServiceRegistrar registrar, SearchManager searchManager) {
 		this.searchManager = searchManager;
 		this.registrar = registrar;
 		initComponents();
@@ -221,14 +221,14 @@ public class SearchBox extends JPanel {
 		var currentNetwork = appManager.getCurrentNetwork();
 		
 		if(currentNetwork != null) {
-			SearchTask task = new SearchTask(searchManager, currentNetwork, queryStr);
+			NetworkSearchTask task = new NetworkSearchTask(searchManager, currentNetwork, queryStr);
 			
 			var taskMgr = registrar.getService(DialogTaskManager.class);
 			taskMgr.execute(new TaskIterator(task), new TaskObserver() {
 				SearchResults results;
 				@Override
 				public void taskFinished(ObservableTask task) {
-					if(task instanceof SearchTask searchTask) {
+					if(task instanceof NetworkSearchTask searchTask) {
 						results = searchTask.getResults(SearchResults.class);
 					}
 				}

@@ -17,9 +17,11 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.search.internal.index.SearchManager;
+import org.cytoscape.search.internal.index.TableType;
+import org.cytoscape.search.internal.search.NetworkSearchTask;
 import org.cytoscape.search.internal.search.SearchResults;
 import org.cytoscape.search.internal.search.SearchResults.Status;
-import org.cytoscape.search.internal.search.SearchTask;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskMonitor;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -152,16 +154,20 @@ public class QueryTest {
 		Path baseDir = Files.createTempDirectory("search2_impl_");
 		baseDir.toFile().deleteOnExit();
 		
-		searchManager = new SearchManager(baseDir);
+		var registrar = mock(CyServiceRegistrar.class);
+		searchManager = new SearchManager(registrar, baseDir);
 		
-		Future<?> future = searchManager.addNetwork(network);
-		future.get(); // wait for network to be indexed
+		Future<?> future1 = searchManager.addTable(network.getDefaultNodeTable(), TableType.NODE);
+		Future<?> future2 = searchManager.addTable(network.getDefaultEdgeTable(), TableType.EDGE);
+		
+		future1.get(); // wait for network to be indexed
+		future2.get();
 		
 		System.out.println("done indexing network");
 	}
 	
 	private static SearchResults queryIndex(String query) {
-		SearchTask searchTask = new SearchTask(searchManager, network, query);
+		NetworkSearchTask searchTask = new NetworkSearchTask(searchManager, network, query);
 		var results = searchTask.runQuery(mock(TaskMonitor.class));
 		assertEquals("Error running search", Status.SUCCESS, results.getStatus());
 		return results;

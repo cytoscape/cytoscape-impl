@@ -68,7 +68,6 @@ public class ProgressPopup extends JPanel {
 	
 	
 	public ProgressMonitor addProgress(Long suid, String name) {
-		System.out.println("ProgressPopup.addProgress() " + suid);
 		var pm = new InternalProgressMonitor(suid, name);
 		progressInfo.put(suid, pm);
 		updateTable();

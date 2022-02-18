@@ -20,36 +20,55 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.cytoscape.application.CyUserLog;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
-import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
-import org.cytoscape.model.events.NetworkAddedEvent;
-import org.cytoscape.model.events.NetworkAddedListener;
+import org.cytoscape.model.CyNetworkTableManager;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.events.ColumnCreatedEvent;
+import org.cytoscape.model.events.ColumnCreatedListener;
+import org.cytoscape.model.events.ColumnDeletedEvent;
+import org.cytoscape.model.events.ColumnDeletedListener;
+import org.cytoscape.model.events.RowsCreatedEvent;
+import org.cytoscape.model.events.RowsCreatedListener;
+import org.cytoscape.model.events.RowsDeletedEvent;
+import org.cytoscape.model.events.RowsDeletedListener;
+import org.cytoscape.model.events.RowsSetEvent;
+import org.cytoscape.model.events.RowsSetListener;
+import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
+import org.cytoscape.model.events.TableAboutToBeDeletedListener;
+import org.cytoscape.model.events.TableAddedEvent;
+import org.cytoscape.model.events.TableAddedListener;
 import org.cytoscape.search.internal.progress.DiscreteProgressMonitor;
 import org.cytoscape.search.internal.progress.ProgressMonitor;
 import org.cytoscape.search.internal.search.AttributeFields;
 import org.cytoscape.search.internal.ui.SearchBox;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SearchManager implements NetworkAddedListener, NetworkAboutToBeDestroyedListener {
+public class SearchManager implements 
+	TableAddedListener, TableAboutToBeDeletedListener,
+	ColumnCreatedListener, ColumnDeletedListener, 
+	RowsSetListener, RowsCreatedListener, RowsDeletedListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
-	public static final String INDEX_FIELD = "ESP_INDEX";
-	public static final String TYPE_FIELD = "ESP_TYPE";
-	public static final String NODE_TYPE = "node";
-	public static final String EDGE_TYPE = "edge";
+	public static final String INDEX_FIELD = "CY_SEARCH2_INDEX";
+	public static final String TYPE_FIELD  = "CY_SEARCH2_TYPE";
+	
+	
+	private final CyServiceRegistrar registrar;
 	
 	private final Path baseDir;
 	private final ExecutorService executorService;
 	
 	private SearchBox searchBox;
 	
-	private final Map<Long,IndexWriter> networkIndexMap = new ConcurrentHashMap<>();
+	private final Map<Long,IndexWriter> tableIndexMap = new ConcurrentHashMap<>();
 	
 	
-	public SearchManager(Path baseDir) {
+	public SearchManager(CyServiceRegistrar registrar, Path baseDir) {
+		this.registrar = registrar;
 		this.baseDir = Objects.requireNonNull(baseDir);
 		
 		// TODO this can be a thread pool, IndexWriters are thread safe
@@ -65,8 +84,8 @@ public class SearchManager implements NetworkAddedListener, NetworkAboutToBeDest
 		this.searchBox = searchBox;
 	}
 	
-	private Path getIndexPath(CyNetwork network) {
-		return baseDir.resolve("index_" + network.getSUID());
+	private Path getIndexPath(CyIdentifiable ele) {
+		return baseDir.resolve("index_" + ele.getSUID());
 	}
 	
 	private IndexWriterConfig getIndexWriterConfig(OpenMode openMode) {
@@ -83,10 +102,10 @@ public class SearchManager implements NetworkAddedListener, NetworkAboutToBeDest
 		return parser;
 	}
 	
-	public IndexWriter createIndexWriter(CyNetwork network, ProgressMonitor pm) throws IOException {
+	public IndexWriter createIndexWriter(CyTable table, ProgressMonitor pm) throws IOException {
 		DiscreteProgressMonitor dpm = pm.toDiscrete(3);
 		
-		Path indexPath = getIndexPath(network);
+		Path indexPath = getIndexPath(table);
 		dpm.increment();
 		
 		Directory dir = FSDirectory.open(indexPath);
@@ -99,8 +118,8 @@ public class SearchManager implements NetworkAddedListener, NetworkAboutToBeDest
 		return writer;
 	}
 	
-	public IndexReader getIndexReader(CyNetwork network) throws IOException {
-		IndexWriter writer = networkIndexMap.get(network.getSUID());
+	public IndexReader getIndexReader(CyTable table) throws IOException {
+		IndexWriter writer = tableIndexMap.get(table.getSUID());
 		if(writer == null)
 			return null;
 		Directory directory = writer.getDirectory();
@@ -109,50 +128,89 @@ public class SearchManager implements NetworkAddedListener, NetworkAboutToBeDest
 	}
 	
 	
-	private ProgressMonitor getProgressMonitor(CyNetwork network) {
+	private ProgressMonitor getProgressMonitor(CyTable table) {
 		if(searchBox == null)
 			return ProgressMonitor.nullMonitor();
 		
-		Long suid = network.getSUID();
-		String name = network.getRow(network).get(CyNetwork.NAME, String.class);
+		Long suid = table.getSUID();
+		String name = table.getTitle(); // MKTODO Use the network title if its a network table.
 		
 		return searchBox.getProgressPopup().addProgress(suid, name);
 	}
 	
-	public Future<?> addNetwork(CyNetwork network) {
-		System.out.println("SearchManager.addNetwork() " + network.getSUID());
-		var pm = getProgressMonitor(network);
+	
+	private TableType getTableType(CyTable table) {
+		var networkTableManager = registrar.getService(CyNetworkTableManager.class);
+		var network = networkTableManager.getNetworkForTable(table);
+		
+		if(network == null) {
+			// Don't index unassigned public tables yet... 
+//			if(table.isPublic()) {
+//				return TableType.UNASSIGNED;
+//			}
+		} else if(network.getDefaultNodeTable().equals(table)) {
+			return TableType.NODE;
+		} else if(network.getDefaultEdgeTable().equals(table)) {
+			return TableType.EDGE;
+		}
+		
+		return null;
+	}
+	
+	
+	@Override
+	public void handleEvent(TableAddedEvent e) {
+		var table = e.getTable();
+		var objectType = getTableType(table);
+		if(objectType == null)
+			return;  // Don't index network tables that are not shown in the table viewer.
+		
+		addTable(table, objectType);
+	}
+	
+	public Future<?> addTable(CyTable table, TableType type) {
+		System.out.println("SearchManager.addTable " + table.getTitle());
+		var pm = getProgressMonitor(table);
 		
 		return executorService.submit(() -> {
-			Long suid = network.getSUID();
-			if(networkIndexMap.containsKey(suid)) // This shouldn't happen, just being defensive
+			Long suid = table.getSUID();
+			if(tableIndexMap.containsKey(suid)) // This shouldn't happen, just being defensive
 				return;
-			logger.info("indexing network: " + network.getSUID());
+			
+			logger.info("Indexing table: " + suid);
 			try {
 				var subPms = pm.split(1, 10);
 				
-				IndexWriter writer = createIndexWriter(network, subPms[0]);
-				NetworkIndexer.indexNetwork(network, writer, subPms[1]);
+				IndexWriter writer = createIndexWriter(table, subPms[0]);
+				TableIndexer.indexTable(table, writer, type, subPms[1]);
 				
 				writer.close();
 				
-				networkIndexMap.put(suid, writer);
+				tableIndexMap.put(suid, writer);
 			} catch(IOException e) {
-				logger.error("error indexing network: " + suid, e); // TODO handle exception
+				logger.error("Error indexing table: " + suid, e); // TODO handle exception
 			} finally {
 				pm.done();
 			}
 			
-			logger.info("indexing network complete: " + network.getSUID());
+			logger.info("Indexing table complete: " + suid);
 		});
 	}
 	
 	
-	public Future<?> removeNetwork(CyNetwork network) {
+	@Override
+	public void handleEvent(TableAboutToBeDeletedEvent e) {
+		System.out.println("SearchManager.handleEvent(TableAboutToBeDeletedEvent) " + e.getTable().getTitle());
+		var table = e.getTable();
+		removeTable(table);
+	}
+	
+	public Future<?> removeTable(CyTable table) {
 		// MKTODO what happens if the indexer is still running???
+		Long suid = table.getSUID();
+		
 		return executorService.submit(() -> {
-			Long suid = network.getSUID();
-			IndexWriter indexWriter = networkIndexMap.remove(suid);
+			IndexWriter indexWriter = tableIndexMap.remove(suid);
 			if(indexWriter != null) {
 				logger.info("deleting network index: " + suid);
 				try {
@@ -166,14 +224,31 @@ public class SearchManager implements NetworkAddedListener, NetworkAboutToBeDest
 		});
 	}
 	
+	
 	@Override
-	public void handleEvent(NetworkAddedEvent event) {
-		addNetwork(event.getNetwork());
+	public void handleEvent(ColumnCreatedEvent e) {
+		// TODO Auto-generated method stub
 	}
 	
 	@Override
-	public void handleEvent(NetworkAboutToBeDestroyedEvent event) {
-		removeNetwork(event.getNetwork());
+	public void handleEvent(ColumnDeletedEvent e) {
+		// TODO Auto-generated method stub
+	}
+
+
+	@Override
+	public void handleEvent(RowsSetEvent e) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void handleEvent(RowsDeletedEvent e) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void handleEvent(RowsCreatedEvent e) {
+		// TODO Auto-generated method stub
 	}
 
 
