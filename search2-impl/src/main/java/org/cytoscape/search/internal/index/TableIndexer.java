@@ -13,6 +13,7 @@ import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.Term;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
@@ -23,7 +24,7 @@ import org.cytoscape.search.internal.progress.ProgressMonitor;
 public class TableIndexer {
 	
 	
-	public static void indexTable(CyTable table, IndexWriter writer, TableType type, ProgressMonitor pm) throws IOException {
+	public static void indexTable(IndexWriter writer, CyTable table, TableType type, ProgressMonitor pm) throws IOException {
 		var dpm = pm.toDiscrete(table.getRowCount());
 		
 		CyColumn keyCol = table.getPrimaryKey();
@@ -40,7 +41,50 @@ public class TableIndexer {
 		dpm.done();
 	}
 	
+	
+	public static void updateRows(IndexWriter writer, CyTable table, Set<? extends Object> keys, TableType type, ProgressMonitor pm) throws IOException {
+		var dpm = pm.toDiscrete(table.getRowCount());
 
+		for(var key : keys) {
+			String identifier = String.valueOf(key);
+			System.out.println("Updating: " + identifier);
+			Document document = createDocument(table, key, type);
+			
+			var term = new Term(SearchManager.INDEX_FIELD, identifier);
+			writer.updateDocument(term, document);
+			
+//			writer.deleteDocuments(term);
+			
+			
+			dpm.increment();
+		}
+		
+		dpm.done();
+	}
+	
+	
+//	public static void addColumn(IndexWriter writer, CyTable table, String colName, TableType type, ProgressMonitor pm) throws IOException {
+//		var dpm = pm.toDiscrete(table.getRowCount());
+//		
+//		CyColumn keyCol = table.getPrimaryKey();
+//		String keyName = keyCol.getName();
+//		Class<?> keyType = keyCol.getType();
+//		
+//		for(CyRow row : table.getAllRows()) {
+//			var key = row.get(keyName, keyType);
+//			String identifier = String.valueOf(key);
+//			
+//			Document document = createDocument(table, key, type);
+//			var term = new Term(SearchManager.INDEX_FIELD, identifier);
+//			writer.updateDocument(term, document);
+//			
+//			dpm.increment();
+//		}
+//		
+//		dpm.done();
+//	}
+
+	
 	private static Document createDocument(CyTable table, Object key, TableType type) {
 		Document doc = new Document();
 		String identifier = String.valueOf(key);
@@ -66,34 +110,36 @@ public class TableIndexer {
 	private static void indexField(Document doc, CyTable table, String attrName, Object key) {
 		CyColumn column = table.getColumn(attrName);
 		Class<?> valueType = column.getType();
+		CyRow row = table.getRow(key);
 		
 		if(valueType == String.class) {
-			String attrValue = table.getRow(key).get(attrName, String.class);
+			String attrValue = row.get(attrName, String.class);
 			if(attrValue != null) {
-				doc.add(new TextField(attrName, attrValue, Field.Store.NO));
+				doc.add(new TextField(attrName, attrValue, Field.Store.YES));  // MKTODO, make this a NO
 			}				
 		} else if(valueType == Integer.class) {
-			Integer attrValue = table.getRow(key).get(attrName, Integer.class);
+			Integer attrValue = row.get(attrName, Integer.class);
 			if(attrValue != null) {
 				doc.add(new IntPoint(attrName, attrValue));
+				doc.add(new TextField(attrName + "_str", String.valueOf(attrValue), Field.Store.YES));  // MKTODO, make this a NO
 			}
 		} else if(valueType == Long.class) {
-			Long attrValue = table.getRow(key).get(attrName, Long.class);
+			Long attrValue = row.get(attrName, Long.class);
 			if(attrValue != null) {
 				doc.add(new LongPoint(attrName, attrValue));
 			}
 		} else if(valueType == Double.class) {	
-			Double attrValue = table.getRow(key).get(attrName, Double.class);
+			Double attrValue = row.get(attrName, Double.class);
 			if(attrValue != null) {
 				doc.add(new DoublePoint(attrName, attrValue));
 			}
 		} else if(valueType == Boolean.class) {
-			Boolean attrValue = table.getRow(key).get(attrName, Boolean.class);
+			Boolean attrValue = row.get(attrName, Boolean.class);
 			if(attrValue != null) {
 				doc.add(new StringField(attrName, String.valueOf(attrValue), Field.Store.NO));
 			}
 		} else if(valueType == List.class) {
-			List<?> attrValueList = table.getRow(key).get(attrName, List.class);
+			List<?> attrValueList = row.get(attrName, List.class);
 			if(attrValueList != null) {
 				Class<?> listElementType = column.getListElementType();
 				for(Object attrValue : attrValueList) {
@@ -114,5 +160,6 @@ public class TableIndexer {
 			}
 		}
 	}
-	
+
+
 }

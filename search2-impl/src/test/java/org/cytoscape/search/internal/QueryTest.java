@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Future;
 
 import org.cytoscape.model.CyEdge;
@@ -23,7 +24,8 @@ import org.cytoscape.search.internal.search.SearchResults;
 import org.cytoscape.search.internal.search.SearchResults.Status;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskMonitor;
-import org.junit.BeforeClass;
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -33,8 +35,10 @@ public class QueryTest {
 	
 	@Rule public TestRule logSilenceRule = new LogSilenceRule(); 
 	
-	private static CyNetwork network;
-	private static SearchManager searchManager;
+	private static final String TEST_ID = "TestID";
+	
+	private CyNetwork network;
+	private SearchManager searchManager;
 	
 	
 	
@@ -54,7 +58,7 @@ public class QueryTest {
 		CyNetwork network = networkTestSupport.getNetwork();
 		
 		CyTable nodeTable = network.getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS);
-		nodeTable.createColumn("TestID", Integer.class, false); // We can't chose the SUID value so use this instead
+		nodeTable.createColumn(TEST_ID, Integer.class, false); // We can't chose the SUID value so use this instead
 		nodeTable.createColumn("COMMON", String.class, false);
 		nodeTable.createColumn("degree.layout", Integer.class, false);
 		nodeTable.createColumn("galFiltered::gal1RGexp", Double.class, false); // Use a namespace
@@ -127,10 +131,11 @@ public class QueryTest {
 		CyNode node = network.addNode();
 		CyRow row = network.getRow(node);
 		row.set(CyRootNetwork.SHARED_NAME, sharedName);
-		row.set("TestID", testId);
+		row.set(TEST_ID, testId);
 		row.set("COMMON", common);
 		row.set("degree.layout", degree);
 		row.set("galFiltered::gal1RGexp", galexp);
+		System.out.println("Node suid: " + node.getSUID() + " with testID: " + testId);
 	}
 	
 	private static void addEdge(CyNetwork network, int testId, String sourceName, String targetName, String interaction, double edgeBetweenness) {
@@ -143,12 +148,14 @@ public class QueryTest {
 		CyRow row = network.getRow(edge);
 		row.set(CyRootNetwork.SHARED_NAME, sourceName + " (" + interaction + ") " + targetName); // TODO this might be automatic
 		row.set(CyRootNetwork.SHARED_INTERACTION, interaction);
-		row.set("TestID", testId);
+		row.set(TEST_ID, testId);
 		row.set("EdgeBetweenness", edgeBetweenness);
+		System.out.println("Edge suid: " + edge.getSUID() + " with testID: " + testId);
 	}
 	
-	@BeforeClass
-	public static void initializeTestNetwork() throws Exception {
+	@Before
+	public void initializeTestNetwork() throws Exception {
+		// Each test network will have a different SUID
 		network = createTestNetwork();
 		
 		Path baseDir = Files.createTempDirectory("search2_impl_");
@@ -162,30 +169,28 @@ public class QueryTest {
 		
 		future1.get(); // wait for network to be indexed
 		future2.get();
-		
-		System.out.println("done indexing network");
 	}
 	
-	private static SearchResults queryIndex(String query) {
+	private SearchResults queryIndex(String query) {
 		NetworkSearchTask searchTask = new NetworkSearchTask(searchManager, network, query);
 		var results = searchTask.runQuery(mock(TaskMonitor.class));
 		assertEquals("Error running search", Status.SUCCESS, results.getStatus());
 		return results;
 	}
 	
-	private static void assertNodeHits(SearchResults results, int ... ids) {
+	private void assertNodeHits(SearchResults results, int ... ids) {
 		assertEquals(ids.length, results.getNodeHitCount());
 		if(ids.length == 0)
 			return;
 		CyTable nodeTable = network.getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS);
 		List<String> nodeHits = results.getNodeHits();
 		for(int id : ids) {
-			Long suid = nodeTable.getMatchingKeys("TestID", id, Long.class).iterator().next();
-			assertTrue(nodeHits.contains(String.valueOf(suid)));
+			Long suid = nodeTable.getMatchingKeys(TEST_ID, id, Long.class).iterator().next();
+			assertTrue("nodeHits " + nodeHits + ", does not contain " + suid, nodeHits.contains(String.valueOf(suid)));
 		}
 	}
 	
-	private static void assertEdgeHits(SearchResults results, int ... ids) {
+	private void assertEdgeHits(SearchResults results, int ... ids) {
 		assertEquals(ids.length, results.getEdgeHitCount());
 		if(ids.length == 0)
 			return;
@@ -198,7 +203,7 @@ public class QueryTest {
 	}
 	
 	
-	@Test
+	@Ignore @Test
 	public void testBasicQueries() {
 		SearchResults results;
 		
@@ -232,7 +237,7 @@ public class QueryTest {
 	}
 	
 	
-	@Test
+	@Ignore @Test
 	public void testWildcardQueries() {
 		SearchResults results;
 		
@@ -261,4 +266,45 @@ public class QueryTest {
 		assertEdgeHits(results, 16, 18, 19, 22, 23, 26, 29);
 	}
 	
+	@Test
+	public void testUpdatingRows() throws Exception {
+		SearchResults results = queryIndex("foo bar baz");
+		assertNodeHits(results);
+		
+		var nodeTable = network.getDefaultNodeTable();
+		
+		searchManager.printIndex(nodeTable);
+		
+//		Long nodeSuid1  = nodeTable.getMatchingKeys(TEST_ID, 1,  Long.class).iterator().next();
+		Long nodeSuid9  = nodeTable.getMatchingKeys(TEST_ID, 9,  Long.class).iterator().next();
+//		Long nodeSuid15 = nodeTable.getMatchingKeys(TEST_ID, 15, Long.class).iterator().next();
+		
+//		nodeTable.getRow(nodeSuid1).set("COMMON", "foo");
+		nodeTable.getRow(nodeSuid9).set("COMMON", "bazinga");
+//		nodeTable.getRow(nodeSuid15).set("COMMON", "baz");
+		
+		var keys = Set.of(/*nodeSuid1, */nodeSuid9); //, nodeSuid15);
+		var future = searchManager.updateRows(nodeTable, keys, TableType.NODE);
+		future.get();
+		
+		System.out.println();
+		searchManager.printIndex(nodeTable);
+		System.out.println();
+		
+		
+//		results = queryIndex("foo");
+//		assertNodeHits(results, 1);
+		
+		results = queryIndex("bazinga");
+		assertNodeHits(results, 9);
+		
+//		results = queryIndex("baz");
+//		assertNodeHits(results, 15);
+		
+//		results = queryIndex("SSN6"); // This was replaced with 'baz', should not have results anymore
+//		assertNodeHits(results);
+//		
+//		results = queryIndex("YMR043W"); // Sanity test, querying a node that wasn't changed should still work
+//		assertNodeHits(results, 20);
+	}
 }

@@ -112,6 +112,13 @@ public class NetworkSearchTask extends AbstractTask implements ObservableTask {
 			return SearchResults.fatalError();
 		}
 		
+		try {
+			nodeReader.close();
+			edgeReader.close();
+		} catch (IOException e) {
+			logger.error(e.getMessage(), e);
+		}
+		
 		return SearchResults.results(nodeCollector.getIDs(), edgeCollector.getIDs());
 	}
 

@@ -2,24 +2,24 @@ package org.cytoscape.search.internal.index;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.IndexWriterConfig.OpenMode;
+import org.apache.lucene.index.MultiBits;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.Bits;
 import org.cytoscape.application.CyUserLog;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
@@ -38,7 +38,6 @@ import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
 import org.cytoscape.model.events.TableAboutToBeDeletedListener;
 import org.cytoscape.model.events.TableAddedEvent;
 import org.cytoscape.model.events.TableAddedListener;
-import org.cytoscape.search.internal.progress.DiscreteProgressMonitor;
 import org.cytoscape.search.internal.progress.ProgressMonitor;
 import org.cytoscape.search.internal.search.AttributeFields;
 import org.cytoscape.search.internal.ui.SearchBox;
@@ -64,7 +63,7 @@ public class SearchManager implements
 	
 	private SearchBox searchBox;
 	
-	private final Map<Long,IndexWriter> tableIndexMap = new ConcurrentHashMap<>();
+	private final Map<Long,Index> tableIndexMap = new ConcurrentHashMap<>();
 	
 	
 	public SearchManager(CyServiceRegistrar registrar, Path baseDir) {
@@ -72,7 +71,10 @@ public class SearchManager implements
 		this.baseDir = Objects.requireNonNull(baseDir);
 		
 		// TODO this can be a thread pool, IndexWriters are thread safe
-		this.executorService = Executors.newCachedThreadPool(r -> {
+		// TODO Test if using multiple threads for indexing actually speeds anything up.
+		// Indexing might be IO bound so using multiple threads might not actually be worth the added complexity.
+		// Use a single thread for now.
+		this.executorService = Executors.newSingleThreadExecutor(r -> {
 			Thread thread = Executors.defaultThreadFactory().newThread(r);
 			thread.setName("search2-" + thread.getName());
 			return thread;
@@ -88,13 +90,6 @@ public class SearchManager implements
 		return baseDir.resolve("index_" + ele.getSUID());
 	}
 	
-	private IndexWriterConfig getIndexWriterConfig(OpenMode openMode) {
-		Analyzer analyzer = new CaseInsensitiveWhitespaceAnalyzer();
-		IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
-		iwc.setOpenMode(openMode);
-		return iwc;
-	}
-	
 	public QueryParser getQueryParser(CyNetwork network) {
 		Analyzer analyser = new CaseInsensitiveWhitespaceAnalyzer();
 		AttributeFields fields = new AttributeFields(network);
@@ -102,38 +97,18 @@ public class SearchManager implements
 		return parser;
 	}
 	
-	public IndexWriter createIndexWriter(CyTable table, ProgressMonitor pm) throws IOException {
-		DiscreteProgressMonitor dpm = pm.toDiscrete(3);
-		
-		Path indexPath = getIndexPath(table);
-		dpm.increment();
-		
-		Directory dir = FSDirectory.open(indexPath);
-		dpm.increment();
-		
-		IndexWriterConfig iwc = getIndexWriterConfig(OpenMode.CREATE);
-		IndexWriter writer = new IndexWriter(dir, iwc);
-		dpm.done();
-		
-		return writer;
-	}
-	
 	public IndexReader getIndexReader(CyTable table) throws IOException {
-		IndexWriter writer = tableIndexMap.get(table.getSUID());
-		if(writer == null)
-			return null;
-		Directory directory = writer.getDirectory();
-		IndexReader reader = DirectoryReader.open(directory);
-		return reader;
+		return tableIndexMap.get(table.getSUID()).getIndexReader();
 	}
 	
-	
-	private ProgressMonitor getProgressMonitor(CyTable table) {
+	private ProgressMonitor getProgressMonitor(CyTable table, boolean update) {
 		if(searchBox == null)
 			return ProgressMonitor.nullMonitor();
 		
 		Long suid = table.getSUID();
 		String name = table.getTitle(); // MKTODO Use the network title if its a network table.
+		if(update)
+			name = name + " (update)";
 		
 		return searchBox.getProgressPopup().addProgress(suid, name);
 	}
@@ -161,16 +136,19 @@ public class SearchManager implements
 	@Override
 	public void handleEvent(TableAddedEvent e) {
 		var table = e.getTable();
-		var objectType = getTableType(table);
-		if(objectType == null)
+		var type = getTableType(table);
+		if(type == null)
 			return;  // Don't index network tables that are not shown in the table viewer.
 		
-		addTable(table, objectType);
+		addTable(table, type);
 	}
 	
 	public Future<?> addTable(CyTable table, TableType type) {
-		System.out.println("SearchManager.addTable " + table.getTitle());
-		var pm = getProgressMonitor(table);
+		System.out.println("SearchManager.addTable '" + table.getTitle() + "'");
+		var pm = getProgressMonitor(table, false);
+		
+		Path path = getIndexPath(table);
+		Index index = new Index(table.getSUID(), path);
 		
 		return executorService.submit(() -> {
 			Long suid = table.getSUID();
@@ -179,20 +157,16 @@ public class SearchManager implements
 			
 			logger.info("Indexing table: " + suid);
 			try {
-				var subPms = pm.split(1, 10);
-				
-				IndexWriter writer = createIndexWriter(table, subPms[0]);
-				TableIndexer.indexTable(table, writer, type, subPms[1]);
-				
-				writer.close();
-				
-				tableIndexMap.put(suid, writer);
+				var writer = index.getWriter();
+				TableIndexer.indexTable(writer, table, type, pm);
+				writer.commit();
 			} catch(IOException e) {
 				logger.error("Error indexing table: " + suid, e); // TODO handle exception
 			} finally {
 				pm.done();
 			}
 			
+			tableIndexMap.put(suid, index);
 			logger.info("Indexing table complete: " + suid);
 		});
 	}
@@ -208,14 +182,15 @@ public class SearchManager implements
 	public Future<?> removeTable(CyTable table) {
 		// MKTODO what happens if the indexer is still running???
 		Long suid = table.getSUID();
-		
 		return executorService.submit(() -> {
-			IndexWriter indexWriter = tableIndexMap.remove(suid);
-			if(indexWriter != null) {
+			Index index = tableIndexMap.remove(suid);
+			if(index != null) {
 				logger.info("deleting network index: " + suid);
 				try {
-					indexWriter.deleteAll();
-					indexWriter.commit();
+					var writer = index.getWriter();
+					writer.deleteAll();
+					writer.commit();
+					writer.close();
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -226,9 +201,73 @@ public class SearchManager implements
 	
 	
 	@Override
-	public void handleEvent(ColumnCreatedEvent e) {
-		// TODO Auto-generated method stub
+	public void handleEvent(RowsSetEvent e) {
+		var cols = e.getColumns();
+		if(cols.size() == 1 && cols.contains(CyNetwork.SELECTED))
+			return;
+		
+		CyTable table = e.getSource();
+		
+		var type = getTableType(table);
+		if(type == null)
+			return;  // Don't index network tables that are not shown in the table viewer.
+		
+		CyColumn keyCol = table.getPrimaryKey();
+		String keyName = keyCol.getName();
+		Class<?> keyType = keyCol.getType();
+		
+		Set<Object> keys = new HashSet<>();
+		
+		for(var rowSetRecord : e.getPayloadCollection()) {
+			var column = rowSetRecord.getColumn();
+			if(!CyNetwork.SELECTED.equals(column)) {
+				var key = rowSetRecord.getRow().get(keyName, keyType);
+				keys.add(key);
+			}
+		}
+		
+		updateRows(table, keys, type);
 	}
+	
+	public Future<?> updateRows(CyTable table, Set<? extends Object> keys, TableType type) {
+		Long suid = table.getSUID();
+		var pm = getProgressMonitor(table, true);
+		
+		return executorService.submit(() -> {
+			Index index = tableIndexMap.get(suid);
+			if(index != null) {
+				try {
+					var writer = index.getWriter();
+					TableIndexer.updateRows(writer, table, keys, type, pm);
+					writer.commit();
+				} catch(IOException e) {
+					logger.error("Error indexing table: " + suid, e); // TODO handle exception
+				} finally {
+					pm.done();
+				}
+			}
+		});
+	}
+	
+	
+	
+	@Override
+	public void handleEvent(ColumnCreatedEvent e) {
+		CyTable table = e.getSource();
+		String colName = e.getColumnName();
+	}
+	
+//	public Future<?> addColumn(CyTable table, String colName) {
+//		Long suid = table.getSUID();
+//		return executorService.submit(() -> {
+//			IndexWriter indexWriter = tableIndexMap.get(suid);
+//			if(indexWriter != null) {
+//				
+//			}
+//		});
+//	}
+	
+	
 	
 	@Override
 	public void handleEvent(ColumnDeletedEvent e) {
@@ -236,10 +275,7 @@ public class SearchManager implements
 	}
 
 
-	@Override
-	public void handleEvent(RowsSetEvent e) {
-		// TODO Auto-generated method stub
-	}
+	
 
 	@Override
 	public void handleEvent(RowsDeletedEvent e) {
@@ -252,4 +288,31 @@ public class SearchManager implements
 	}
 
 
+	
+	public void printIndex(CyTable table) throws IOException {
+		Index index = tableIndexMap.get(table.getSUID());
+		try(var indexReader = index.getIndexReader()) {
+			System.out.println("All Documents in Lucene Index");
+			Bits liveDocs = MultiBits.getLiveDocs(indexReader);
+			for (int i = 0; i < indexReader.maxDoc(); i++) {
+				if (liveDocs != null && !liveDocs.get(i))
+					continue;
+
+				Document doc = indexReader.document(i);
+				System.out.print(doc.get(INDEX_FIELD) + " - ");
+				boolean first = true;
+				for(var field : doc.getFields()) {
+					if(!first)
+						System.out.print(", ");
+					System.out.print(field.name() + ":" + doc.get(field.name()));
+					first = false;
+				}
+				System.out.println();
+			}
+
+			System.out.println();
+		}
+	}
+	
+	
 }
