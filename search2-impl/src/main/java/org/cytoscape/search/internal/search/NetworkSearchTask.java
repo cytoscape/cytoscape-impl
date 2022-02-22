@@ -8,6 +8,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
@@ -67,6 +68,7 @@ public class NetworkSearchTask extends AbstractTask implements ObservableTask {
 		try {
 			QueryParser parser = searchManager.getQueryParser(network);
 			query = parser.parse(queryString);
+			query = new ConstantScoreQuery(query);  // We don't care about sorting results, this might be faster.
 		} catch (ParseException e) {
 			logger.error(e.getMessage(), e);
 			return SearchResults.syntaxError();
