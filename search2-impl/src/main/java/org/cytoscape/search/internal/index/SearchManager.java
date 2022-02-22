@@ -148,7 +148,7 @@ public class SearchManager implements
 		var pm = getProgressMonitor(table, false);
 		
 		Path path = getIndexPath(table);
-		Index index = new Index(table.getSUID(), path);
+		Index index = new Index(table.getSUID(), type, path);
 		
 		return executorService.submit(() -> {
 			Long suid = table.getSUID();
@@ -244,6 +244,7 @@ public class SearchManager implements
 					logger.error("Error indexing table: " + suid, e); // TODO handle exception
 				} finally {
 					pm.done();
+					System.out.println("Update committed()");
 				}
 			}
 		});

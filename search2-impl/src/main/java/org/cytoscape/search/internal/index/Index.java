@@ -16,15 +16,23 @@ public class Index {
 	
 	private final Long suid;
 	private final Path indexPath;
+	private final TableType type;
+	
 	private IndexWriter indexWriter;
 
-	public Index(Long suid, Path indexPath) {
+	
+	public Index(Long suid, TableType type, Path indexPath) {
 		this.suid = suid;
+		this.type = type;
 		this.indexPath = indexPath;
 	}
 	
 	public Long getTableSUID() {
 		return suid;
+	}
+	
+	public TableType getTableType() {
+		return type;
 	}
 	
 	private IndexWriterConfig getIndexWriterConfig(OpenMode openMode) {
@@ -36,6 +44,7 @@ public class Index {
 	
 	public IndexWriter getWriter() throws IOException {
 		if(indexWriter == null) {
+			System.out.println("Create index writer");
 			Directory dir = FSDirectory.open(indexPath);
 			IndexWriterConfig iwc = getIndexWriterConfig(OpenMode.CREATE_OR_APPEND);
 			indexWriter = new IndexWriter(dir, iwc);
@@ -45,11 +54,7 @@ public class Index {
 	
 	public IndexReader getIndexReader() throws IOException {
 		IndexWriter writer = getWriter();
-		return DirectoryReader.open(writer);
-		
-//		Directory directory = FSDirectory.open(indexPath);
-//		IndexReader reader = DirectoryReader.open(directory);
-//		return reader;
+		return DirectoryReader.open(writer, true, false);
 	}
 
 }

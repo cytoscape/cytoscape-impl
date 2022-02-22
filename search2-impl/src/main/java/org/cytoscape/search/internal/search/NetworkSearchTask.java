@@ -2,7 +2,6 @@ package org.cytoscape.search.internal.search;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 import org.apache.lucene.document.Document;
@@ -11,11 +10,10 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TotalHitCountCollector;
+import org.apache.lucene.search.TopDocs;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.search.internal.index.SearchManager;
-import org.cytoscape.search.internal.index.TableType;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
@@ -92,20 +90,30 @@ public class NetworkSearchTask extends AbstractTask implements ObservableTask {
 		
 		// TODO figure out how to use the MultiReader, maybe we don't need to do two separate searches??
 		
+		var nodeIDs = new ArrayList<String>();
 		var nodeSearcher = new IndexSearcher(nodeReader);
-		var nodeCollector = new IdentifiersCollector(nodeSearcher);
 		try {
-			nodeSearcher.search(query, nodeCollector);
+			TopDocs docs = nodeSearcher.search(query, 1_000_000);
+			for(var sd : docs.scoreDocs) {
+				Document doc = nodeReader.document(sd.doc);
+				String eleID = doc.get(SearchManager.INDEX_FIELD);
+				nodeIDs.add(eleID);
+			}
 		} catch (IOException e) {
 			logger.error(e.getMessage(), e);
 			e.printStackTrace();
 			return SearchResults.fatalError();
 		}
 		
+		var edgeIDs = new ArrayList<String>();
 		var edgeSearcher = new IndexSearcher(edgeReader);
-		var edgeCollector = new IdentifiersCollector(edgeSearcher);
 		try {
-			edgeSearcher.search(query, edgeCollector);
+			TopDocs docs = edgeSearcher.search(query, 10000000);
+			for(var sd : docs.scoreDocs) {
+				Document doc = edgeReader.document(sd.doc);
+				String eleID = doc.get(SearchManager.INDEX_FIELD);
+				edgeIDs.add(eleID);
+			}
 		} catch (IOException e) {
 			logger.error(e.getMessage(), e);
 			e.printStackTrace();
@@ -119,7 +127,7 @@ public class NetworkSearchTask extends AbstractTask implements ObservableTask {
 			logger.error(e.getMessage(), e);
 		}
 		
-		return SearchResults.results(nodeCollector.getIDs(), edgeCollector.getIDs());
+		return SearchResults.results(nodeIDs, edgeIDs);
 	}
 
 	
@@ -133,88 +141,3 @@ public class NetworkSearchTask extends AbstractTask implements ObservableTask {
 
 }
 
-
-class IdentifiersCollector extends TotalHitCountCollector {
-
-	private IndexSearcher searcher;
-
-	public List<String> identifiers = new ArrayList<>();
-
-	public IdentifiersCollector(IndexSearcher searcher) {
-		this.searcher = searcher;
-	}
-	
-	public List<String> getIDs() {
-		return identifiers;
-	}
-
-	@Override
-	public void collect(int id) {
-		super.collect(id);
-		try {
-			Document doc = searcher.doc(id);
-			String eleID = doc.get(SearchManager.INDEX_FIELD);
-			identifiers.add(eleID);
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-		}
-	}
-	
-	@Override
-	public String toString() {
-		return IdentifiersCollector.class.getSimpleName() + " - hits: " + identifiers.size();
-	}
-
-}
-
-
-
-class TypedIdentifiersCollector extends TotalHitCountCollector {
-
-	private IndexSearcher searcher;
-
-	public List<String> nodeHitsIdentifiers = new ArrayList<>();
-	public List<String> edgeHitsIdentifiers = new ArrayList<>();
-
-	public TypedIdentifiersCollector(IndexSearcher searcher) {
-		this.searcher = searcher;
-	}
-	
-	public int getNodeHits() {
-		return nodeHitsIdentifiers.size();
-	}
-	public int getEdgeHits() {
-		return edgeHitsIdentifiers.size();
-	}
-
-	public List<String> getNodes() {
-		return nodeHitsIdentifiers;
-	}
-	public List<String> getEdges() {
-		return edgeHitsIdentifiers;
-	}
-
-	@Override
-	public void collect(int id) {
-		super.collect(id);
-		try {
-			Document doc = searcher.doc(id);
-			String currID = doc.get(SearchManager.INDEX_FIELD);
-			String currType = doc.get(SearchManager.TYPE_FIELD);
-			
-			if(TableType.NODE.name().equals(currType)) {
-				nodeHitsIdentifiers.add(currID);
-			} else if(TableType.EDGE.name().equals(currType)) {
-				edgeHitsIdentifiers.add(currID);
-			}
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-		}
-	}
-	
-	@Override
-	public String toString() {
-		return TypedIdentifiersCollector.class.getSimpleName() + " - nodeHits: " + getNodeHits() + ", edgeHits: " + getEdgeHits();
-	}
-
-}

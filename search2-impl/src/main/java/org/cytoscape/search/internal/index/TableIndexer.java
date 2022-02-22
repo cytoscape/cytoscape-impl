@@ -46,15 +46,10 @@ public class TableIndexer {
 		var dpm = pm.toDiscrete(table.getRowCount());
 
 		for(var key : keys) {
-			String identifier = String.valueOf(key);
-			System.out.println("Updating: " + identifier);
-			Document document = createDocument(table, key, type);
+			var term = new Term(SearchManager.INDEX_FIELD, String.valueOf(key));
+			var doc = createDocument(table, key, type);
 			
-			var term = new Term(SearchManager.INDEX_FIELD, identifier);
-			writer.updateDocument(term, document);
-			
-//			writer.deleteDocuments(term);
-			
+			writer.updateDocument(term, doc);
 			
 			dpm.increment();
 		}
@@ -62,28 +57,6 @@ public class TableIndexer {
 		dpm.done();
 	}
 	
-	
-//	public static void addColumn(IndexWriter writer, CyTable table, String colName, TableType type, ProgressMonitor pm) throws IOException {
-//		var dpm = pm.toDiscrete(table.getRowCount());
-//		
-//		CyColumn keyCol = table.getPrimaryKey();
-//		String keyName = keyCol.getName();
-//		Class<?> keyType = keyCol.getType();
-//		
-//		for(CyRow row : table.getAllRows()) {
-//			var key = row.get(keyName, keyType);
-//			String identifier = String.valueOf(key);
-//			
-//			Document document = createDocument(table, key, type);
-//			var term = new Term(SearchManager.INDEX_FIELD, identifier);
-//			writer.updateDocument(term, document);
-//			
-//			dpm.increment();
-//		}
-//		
-//		dpm.done();
-//	}
-
 	
 	private static Document createDocument(CyTable table, Object key, TableType type) {
 		Document doc = new Document();
@@ -121,7 +94,6 @@ public class TableIndexer {
 			Integer attrValue = row.get(attrName, Integer.class);
 			if(attrValue != null) {
 				doc.add(new IntPoint(attrName, attrValue));
-				doc.add(new TextField(attrName + "_str", String.valueOf(attrValue), Field.Store.YES));  // MKTODO, make this a NO
 			}
 		} else if(valueType == Long.class) {
 			Long attrValue = row.get(attrName, Long.class);

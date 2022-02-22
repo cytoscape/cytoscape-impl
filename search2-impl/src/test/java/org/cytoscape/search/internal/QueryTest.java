@@ -25,7 +25,6 @@ import org.cytoscape.search.internal.search.SearchResults.Status;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskMonitor;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -203,7 +202,7 @@ public class QueryTest {
 	}
 	
 	
-	@Ignore @Test
+	@Test
 	public void testBasicQueries() {
 		SearchResults results;
 		
@@ -237,7 +236,7 @@ public class QueryTest {
 	}
 	
 	
-	@Ignore @Test
+	@Test
 	public void testWildcardQueries() {
 		SearchResults results;
 		
@@ -266,24 +265,26 @@ public class QueryTest {
 		assertEdgeHits(results, 16, 18, 19, 22, 23, 26, 29);
 	}
 	
+	
 	@Test
 	public void testUpdatingRows() throws Exception {
-		SearchResults results = queryIndex("foo bar baz");
+		SearchResults results;
+		results = queryIndex("foo bazinga baz");
 		assertNodeHits(results);
 		
 		var nodeTable = network.getDefaultNodeTable();
 		
 		searchManager.printIndex(nodeTable);
 		
-//		Long nodeSuid1  = nodeTable.getMatchingKeys(TEST_ID, 1,  Long.class).iterator().next();
+		Long nodeSuid1  = nodeTable.getMatchingKeys(TEST_ID, 1,  Long.class).iterator().next();
 		Long nodeSuid9  = nodeTable.getMatchingKeys(TEST_ID, 9,  Long.class).iterator().next();
-//		Long nodeSuid15 = nodeTable.getMatchingKeys(TEST_ID, 15, Long.class).iterator().next();
+		Long nodeSuid15 = nodeTable.getMatchingKeys(TEST_ID, 15, Long.class).iterator().next();
 		
-//		nodeTable.getRow(nodeSuid1).set("COMMON", "foo");
+		nodeTable.getRow(nodeSuid1).set("COMMON", "foo");
 		nodeTable.getRow(nodeSuid9).set("COMMON", "bazinga");
-//		nodeTable.getRow(nodeSuid15).set("COMMON", "baz");
+		nodeTable.getRow(nodeSuid15).set("COMMON", "baz");
 		
-		var keys = Set.of(/*nodeSuid1, */nodeSuid9); //, nodeSuid15);
+		var keys = Set.of(nodeSuid1, nodeSuid9, nodeSuid15);
 		var future = searchManager.updateRows(nodeTable, keys, TableType.NODE);
 		future.get();
 		
@@ -291,20 +292,19 @@ public class QueryTest {
 		searchManager.printIndex(nodeTable);
 		System.out.println();
 		
+		results = queryIndex("foo");
+		assertNodeHits(results, 1);
 		
-//		results = queryIndex("foo");
-//		assertNodeHits(results, 1);
-		
-		results = queryIndex("bazinga");
+		results = queryIndex("common:bazinga");
 		assertNodeHits(results, 9);
 		
-//		results = queryIndex("baz");
-//		assertNodeHits(results, 15);
+		results = queryIndex("baz");
+		assertNodeHits(results, 15);
 		
-//		results = queryIndex("SSN6"); // This was replaced with 'baz', should not have results anymore
-//		assertNodeHits(results);
-//		
-//		results = queryIndex("YMR043W"); // Sanity test, querying a node that wasn't changed should still work
-//		assertNodeHits(results, 20);
+		results = queryIndex("SSN6"); // This was replaced with 'baz', should not have results anymore
+		assertNodeHits(results);
+		
+		results = queryIndex("YMR043W"); // Sanity test, querying a node that wasn't changed should still work
+		assertNodeHits(results, 20);
 	}
 }
