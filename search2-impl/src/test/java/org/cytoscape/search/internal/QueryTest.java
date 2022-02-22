@@ -269,12 +269,11 @@ public class QueryTest {
 	@Test
 	public void testUpdatingRows() throws Exception {
 		SearchResults results;
+		
 		results = queryIndex("foo bazinga baz");
 		assertNodeHits(results);
 		
 		var nodeTable = network.getDefaultNodeTable();
-		
-		searchManager.printIndex(nodeTable);
 		
 		Long nodeSuid1  = nodeTable.getMatchingKeys(TEST_ID, 1,  Long.class).iterator().next();
 		Long nodeSuid9  = nodeTable.getMatchingKeys(TEST_ID, 9,  Long.class).iterator().next();
@@ -285,12 +284,8 @@ public class QueryTest {
 		nodeTable.getRow(nodeSuid15).set("COMMON", "baz");
 		
 		var keys = Set.of(nodeSuid1, nodeSuid9, nodeSuid15);
-		var future = searchManager.updateRows(nodeTable, keys, TableType.NODE);
+		var future = searchManager.updateRows(nodeTable, keys);
 		future.get();
-		
-		System.out.println();
-		searchManager.printIndex(nodeTable);
-		System.out.println();
 		
 		results = queryIndex("foo");
 		assertNodeHits(results, 1);

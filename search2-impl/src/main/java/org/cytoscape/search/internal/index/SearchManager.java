@@ -38,6 +38,7 @@ import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
 import org.cytoscape.model.events.TableAboutToBeDeletedListener;
 import org.cytoscape.model.events.TableAddedEvent;
 import org.cytoscape.model.events.TableAddedListener;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.search.internal.progress.ProgressMonitor;
 import org.cytoscape.search.internal.search.AttributeFields;
 import org.cytoscape.search.internal.ui.SearchBox;
@@ -123,9 +124,16 @@ public class SearchManager implements
 //			if(table.isPublic()) {
 //				return TableType.UNASSIGNED;
 //			}
-		} else if(network.getDefaultNodeTable().equals(table)) {
+			return null;
+		}
+		
+		if(network instanceof CyRootNetwork) {
+			return null;
+		}
+		if(network.getDefaultNodeTable().equals(table)) {
 			return TableType.NODE;
-		} else if(network.getDefaultEdgeTable().equals(table)) {
+		}
+		if(network.getDefaultEdgeTable().equals(table)) {
 			return TableType.EDGE;
 		}
 		
@@ -174,13 +182,11 @@ public class SearchManager implements
 	
 	@Override
 	public void handleEvent(TableAboutToBeDeletedEvent e) {
-		System.out.println("SearchManager.handleEvent(TableAboutToBeDeletedEvent) " + e.getTable().getTitle());
 		var table = e.getTable();
 		removeTable(table);
 	}
 	
 	public Future<?> removeTable(CyTable table) {
-		// MKTODO what happens if the indexer is still running???
 		Long suid = table.getSUID();
 		return executorService.submit(() -> {
 			Index index = tableIndexMap.remove(suid);
@@ -192,7 +198,6 @@ public class SearchManager implements
 					writer.commit();
 					writer.close();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -202,6 +207,7 @@ public class SearchManager implements
 	
 	@Override
 	public void handleEvent(RowsSetEvent e) {
+		System.out.println("SearchManager.handleEvent(RowsSetEvent)");
 		var cols = e.getColumns();
 		if(cols.size() == 1 && cols.contains(CyNetwork.SELECTED))
 			return;
@@ -226,10 +232,10 @@ public class SearchManager implements
 			}
 		}
 		
-		updateRows(table, keys, type);
+		updateRows(table, keys);
 	}
 	
-	public Future<?> updateRows(CyTable table, Set<? extends Object> keys, TableType type) {
+	public Future<?> updateRows(CyTable table, Set<? extends Object> keys) {
 		Long suid = table.getSUID();
 		var pm = getProgressMonitor(table, true);
 		
@@ -238,6 +244,7 @@ public class SearchManager implements
 			if(index != null) {
 				try {
 					var writer = index.getWriter();
+					var type = index.getTableType();
 					TableIndexer.updateRows(writer, table, keys, type, pm);
 					writer.commit();
 				} catch(IOException e) {
