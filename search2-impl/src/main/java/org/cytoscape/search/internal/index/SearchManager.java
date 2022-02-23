@@ -2,6 +2,7 @@ package org.cytoscape.search.internal.index;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -15,8 +16,10 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.MultiBits;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Bits;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.model.CyColumn;
@@ -24,10 +27,10 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.events.ColumnCreatedEvent;
-import org.cytoscape.model.events.ColumnCreatedListener;
 import org.cytoscape.model.events.ColumnDeletedEvent;
 import org.cytoscape.model.events.ColumnDeletedListener;
+import org.cytoscape.model.events.ColumnNameChangedEvent;
+import org.cytoscape.model.events.ColumnNameChangedListener;
 import org.cytoscape.model.events.RowsCreatedEvent;
 import org.cytoscape.model.events.RowsCreatedListener;
 import org.cytoscape.model.events.RowsDeletedEvent;
@@ -47,8 +50,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SearchManager implements 
-	TableAddedListener, TableAboutToBeDeletedListener,
-	ColumnCreatedListener, ColumnDeletedListener, 
+	TableAddedListener, TableAboutToBeDeletedListener, 
+	ColumnDeletedListener, ColumnNameChangedListener, 
 	RowsSetListener, RowsCreatedListener, RowsDeletedListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
@@ -94,7 +97,13 @@ public class SearchManager implements
 	public QueryParser getQueryParser(CyNetwork network) {
 		Analyzer analyser = new CaseInsensitiveWhitespaceAnalyzer();
 		AttributeFields fields = new AttributeFields(network);
-		QueryParser parser = new MultiFieldQueryParser(fields.getFields(), analyser);
+		QueryParser parser = new MultiFieldQueryParser(fields.getFields(), analyser) {
+			@Override
+			protected Query newTermQuery(Term term, float boost) {
+//				System.out.println("Term field: " + term.field());
+				return super.newTermQuery(term, boost);
+			}
+		};
 		return parser;
 	}
 	
@@ -126,7 +135,6 @@ public class SearchManager implements
 //			}
 			return null;
 		}
-		
 		if(network instanceof CyRootNetwork) {
 			return null;
 		}
@@ -136,10 +144,13 @@ public class SearchManager implements
 		if(network.getDefaultEdgeTable().equals(table)) {
 			return TableType.EDGE;
 		}
-		
 		return null;
 	}
 	
+	private boolean isIndexable(CyTable table) {
+		return getTableType(table) != null;
+	}
+			
 	
 	@Override
 	public void handleEvent(TableAddedEvent e) {
@@ -165,9 +176,7 @@ public class SearchManager implements
 			
 			logger.info("Indexing table: " + suid);
 			try {
-				var writer = index.getWriter();
-				TableIndexer.indexTable(writer, table, type, pm);
-				writer.commit();
+				TableIndexer.indexTable(index, table, pm);
 			} catch(IOException e) {
 				logger.error("Error indexing table: " + suid, e); // TODO handle exception
 			} finally {
@@ -207,16 +216,14 @@ public class SearchManager implements
 	
 	@Override
 	public void handleEvent(RowsSetEvent e) {
-		System.out.println("SearchManager.handleEvent(RowsSetEvent)");
 		var cols = e.getColumns();
 		if(cols.size() == 1 && cols.contains(CyNetwork.SELECTED))
 			return;
 		
 		CyTable table = e.getSource();
 		
-		var type = getTableType(table);
-		if(type == null)
-			return;  // Don't index network tables that are not shown in the table viewer.
+		if(!isIndexable(table))
+			return;
 		
 		CyColumn keyCol = table.getPrimaryKey();
 		String keyName = keyCol.getName();
@@ -235,7 +242,27 @@ public class SearchManager implements
 		updateRows(table, keys);
 	}
 	
-	public Future<?> updateRows(CyTable table, Set<? extends Object> keys) {
+	@Override
+	public void handleEvent(RowsDeletedEvent e) {
+		CyTable table = e.getSource();
+		if(!isIndexable(table))
+			return;
+		
+		var keys = e.getKeys();
+		updateRows(table, keys);
+	}
+	
+	@Override
+	public void handleEvent(RowsCreatedEvent e) {
+		CyTable table = e.getSource();
+		if(!isIndexable(table))
+			return;
+		
+		var keys = e.getPayloadCollection();
+		updateRows(table, keys);
+	}
+	
+	public Future<?> updateRows(CyTable table, Collection<? extends Object> keys) {
 		Long suid = table.getSUID();
 		var pm = getProgressMonitor(table, true);
 		
@@ -243,10 +270,7 @@ public class SearchManager implements
 			Index index = tableIndexMap.get(suid);
 			if(index != null) {
 				try {
-					var writer = index.getWriter();
-					var type = index.getTableType();
-					TableIndexer.updateRows(writer, table, keys, type, pm);
-					writer.commit();
+					TableIndexer.updateRows(index, table, keys, pm);
 				} catch(IOException e) {
 					logger.error("Error indexing table: " + suid, e); // TODO handle exception
 				} finally {
@@ -258,46 +282,33 @@ public class SearchManager implements
 	}
 	
 	
-	
-	@Override
-	public void handleEvent(ColumnCreatedEvent e) {
-		CyTable table = e.getSource();
-		String colName = e.getColumnName();
-	}
-	
-//	public Future<?> addColumn(CyTable table, String colName) {
-//		Long suid = table.getSUID();
-//		return executorService.submit(() -> {
-//			IndexWriter indexWriter = tableIndexMap.get(suid);
-//			if(indexWriter != null) {
-//				
-//			}
-//		});
-//	}
-	
-	
+
 	
 	@Override
 	public void handleEvent(ColumnDeletedEvent e) {
 		// TODO Auto-generated method stub
 	}
 
-
-	
-
 	@Override
-	public void handleEvent(RowsDeletedEvent e) {
+	public void handleEvent(ColumnNameChangedEvent e) {
 		// TODO Auto-generated method stub
+		
 	}
-
-	@Override
-	public void handleEvent(RowsCreatedEvent e) {
-		// TODO Auto-generated method stub
-	}
-
-
 	
-	public void printIndex(CyTable table) throws IOException {
+	/**
+	 * For debugging purposes.
+	 */
+	protected int getDocumentCount(CyTable table) throws IOException {
+		Index index = tableIndexMap.get(table.getSUID());
+		try(var indexReader = index.getIndexReader()) {
+			return indexReader.numDocs();
+		}
+	}
+	
+	/**
+	 * For debugging purposes.
+	 */
+	protected void printIndex(CyTable table) throws IOException {
 		Index index = tableIndexMap.get(table.getSUID());
 		try(var indexReader = index.getIndexReader()) {
 			System.out.println("All Documents in Lucene Index");
@@ -321,6 +332,6 @@ public class SearchManager implements
 			System.out.println();
 		}
 	}
-	
+
 	
 }

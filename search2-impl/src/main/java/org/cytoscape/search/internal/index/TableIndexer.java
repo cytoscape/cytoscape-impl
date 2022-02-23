@@ -1,6 +1,7 @@
 package org.cytoscape.search.internal.index;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -24,41 +25,57 @@ import org.cytoscape.search.internal.progress.ProgressMonitor;
 public class TableIndexer {
 	
 	
-	public static void indexTable(IndexWriter writer, CyTable table, TableType type, ProgressMonitor pm) throws IOException {
+	public static void indexTable(Index index, CyTable table, ProgressMonitor pm) throws IOException {
 		var dpm = pm.toDiscrete(table.getRowCount());
 		
 		CyColumn keyCol = table.getPrimaryKey();
 		String keyName = keyCol.getName();
 		Class<?> keyType = keyCol.getType();
 		
+		IndexWriter writer = index.getWriter();
+		
 		for(CyRow row : table.getAllRows()) {
 			var key = row.get(keyName, keyType);
-			Document document = createDocument(table, key, type);
-			writer.addDocument(document);
+			var doc = createDocument(table, key, index.getTableType());
+			if(doc != null) {
+				writer.addDocument(doc);
+			}
 			dpm.increment();
 		}
+		
+		writer.commit();
 		
 		dpm.done();
 	}
 	
 	
-	public static void updateRows(IndexWriter writer, CyTable table, Set<? extends Object> keys, TableType type, ProgressMonitor pm) throws IOException {
+	public static void updateRows(Index index, CyTable table, Collection<? extends Object> keys, ProgressMonitor pm) throws IOException {
 		var dpm = pm.toDiscrete(table.getRowCount());
 
+		IndexWriter writer = index.getWriter();
+		
 		for(var key : keys) {
 			var term = new Term(SearchManager.INDEX_FIELD, String.valueOf(key));
-			var doc = createDocument(table, key, type);
+			var doc = createDocument(table, key, index.getTableType());
 			
-			writer.updateDocument(term, doc);
+			if(doc == null) {
+				writer.deleteDocuments(term);
+			} else {
+				writer.updateDocument(term, doc); // This also handles the case where new rows are added.
+			}
 			
 			dpm.increment();
 		}
 		
+		writer.commit();
 		dpm.done();
 	}
 	
 	
 	private static Document createDocument(CyTable table, Object key, TableType type) {
+		if(!table.rowExists(key))
+			return null;
+		
 		Document doc = new Document();
 		String identifier = String.valueOf(key);
 		

@@ -1,4 +1,4 @@
-package org.cytoscape.search.internal;
+package org.cytoscape.search.internal.index;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -17,8 +17,7 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.search.internal.index.SearchManager;
-import org.cytoscape.search.internal.index.TableType;
+import org.cytoscape.search.internal.LogSilenceRule;
 import org.cytoscape.search.internal.search.NetworkSearchTask;
 import org.cytoscape.search.internal.search.SearchResults;
 import org.cytoscape.search.internal.search.SearchResults.Status;
@@ -126,7 +125,7 @@ public class QueryTest {
 		return network;
 	}
 	
-	private static void addNode(CyNetwork network, int testId, String sharedName, String common, int degree, double galexp) {
+	private static Long addNode(CyNetwork network, int testId, String sharedName, String common, int degree, double galexp) {
 		CyNode node = network.addNode();
 		CyRow row = network.getRow(node);
 		row.set(CyRootNetwork.SHARED_NAME, sharedName);
@@ -134,10 +133,10 @@ public class QueryTest {
 		row.set("COMMON", common);
 		row.set("degree.layout", degree);
 		row.set("galFiltered::gal1RGexp", galexp);
-		System.out.println("Node suid: " + node.getSUID() + " with testID: " + testId);
+		return node.getSUID();
 	}
 	
-	private static void addEdge(CyNetwork network, int testId, String sourceName, String targetName, String interaction, double edgeBetweenness) {
+	private static Long addEdge(CyNetwork network, int testId, String sourceName, String targetName, String interaction, double edgeBetweenness) {
 		CyTable nodeTable = network.getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS);
 		Long sourceSuid = nodeTable.getMatchingKeys(CyRootNetwork.SHARED_NAME, sourceName, Long.class).iterator().next();
 		Long targetSuid = nodeTable.getMatchingKeys(CyRootNetwork.SHARED_NAME, targetName, Long.class).iterator().next();
@@ -149,8 +148,13 @@ public class QueryTest {
 		row.set(CyRootNetwork.SHARED_INTERACTION, interaction);
 		row.set(TEST_ID, testId);
 		row.set("EdgeBetweenness", edgeBetweenness);
-		System.out.println("Edge suid: " + edge.getSUID() + " with testID: " + testId);
+		return edge.getSUID();
 	}
+	
+	private static Long getSUID(CyTable table, int testID) {
+		return table.getMatchingKeys(TEST_ID, testID, Long.class).iterator().next();
+	}
+	
 	
 	@Before
 	public void initializeTestNetwork() throws Exception {
@@ -267,7 +271,7 @@ public class QueryTest {
 	
 	
 	@Test
-	public void testUpdatingRows() throws Exception {
+	public void testUpdateRows() throws Exception {
 		SearchResults results;
 		
 		results = queryIndex("foo bazinga baz");
@@ -275,9 +279,9 @@ public class QueryTest {
 		
 		var nodeTable = network.getDefaultNodeTable();
 		
-		Long nodeSuid1  = nodeTable.getMatchingKeys(TEST_ID, 1,  Long.class).iterator().next();
-		Long nodeSuid9  = nodeTable.getMatchingKeys(TEST_ID, 9,  Long.class).iterator().next();
-		Long nodeSuid15 = nodeTable.getMatchingKeys(TEST_ID, 15, Long.class).iterator().next();
+		Long nodeSuid1  = getSUID(nodeTable, 1);
+		Long nodeSuid9  = getSUID(nodeTable, 9);
+		Long nodeSuid15 = getSUID(nodeTable, 15);
 		
 		nodeTable.getRow(nodeSuid1).set("COMMON", "foo");
 		nodeTable.getRow(nodeSuid9).set("COMMON", "bazinga");
@@ -302,4 +306,55 @@ public class QueryTest {
 		results = queryIndex("YMR043W"); // Sanity test, querying a node that wasn't changed should still work
 		assertNodeHits(results, 20);
 	}
+	
+	
+	@Test
+	public void testDeleteRows() throws Exception {
+		var nodeTable = network.getDefaultNodeTable();
+		assertEquals(21, searchManager.getDocumentCount(nodeTable));
+		
+		SearchResults results = queryIndex("BAR1 MFA2 SSN6");
+		assertNodeHits(results, 1, 9, 15);
+		
+		Long nodeSuid1  = getSUID(nodeTable, 1);
+		Long nodeSuid9  = getSUID(nodeTable, 9);
+		Long nodeSuid15 = getSUID(nodeTable, 15);
+		
+		CyNode node1  = network.getNode(nodeSuid1);
+		CyNode node9  = network.getNode(nodeSuid9);
+		CyNode node15 = network.getNode(nodeSuid15);
+		
+		network.removeNodes(List.of(node1, node9, node15));
+		
+		var keys = Set.of(nodeSuid1, nodeSuid9, nodeSuid15);
+		var future = searchManager.updateRows(nodeTable, keys);
+		future.get();
+		
+		results = queryIndex("BAR1 MFA2 SSN6");
+		assertNodeHits(results);
+		
+		assertEquals(18, searchManager.getDocumentCount(nodeTable));
+	}
+	
+
+	@Test
+	public void testAddRows() throws Exception {
+		var nodeTable = network.getDefaultNodeTable();
+		assertEquals(21, searchManager.getDocumentCount(nodeTable));
+		
+		Long nodeSuid90 = addNode(network, 90, "QWERTY", "frodo", 99, -0.999);
+		Long nodeSuid91 = addNode(network, 91, "ASDFGH", "sam", 99, -0.999);
+		Long nodeSuid92 = addNode(network, 92, "ZXCVBN", "gandalf", 99, -0.999);
+		
+		var keys = Set.of(nodeSuid90, nodeSuid91, nodeSuid92);
+		
+		var future = searchManager.updateRows(nodeTable, keys);
+		future.get();
+		
+		assertEquals(24, searchManager.getDocumentCount(nodeTable));
+		
+		SearchResults results = queryIndex("QWERTY ASDFGH ZXCVBN");
+		assertNodeHits(results, 90, 91, 92);
+	}
+	
 }
