@@ -9,26 +9,30 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
+import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.search.internal.search.AttributeFields;
 
 public class Index {
 	
-	private final Long suid;
+	private final Long tableSuid;
 	private final Path indexPath;
 	private final TableType type;
 	
 	private IndexWriter indexWriter;
-
 	
-	public Index(Long suid, TableType type, Path indexPath) {
-		this.suid = suid;
+	
+	public Index(Long tableSuid, TableType type, Path indexPath) {
+		this.tableSuid = tableSuid;
 		this.type = type;
 		this.indexPath = indexPath;
 	}
 	
 	public Long getTableSUID() {
-		return suid;
+		return tableSuid;
 	}
 	
 	public TableType getTableType() {
@@ -44,7 +48,6 @@ public class Index {
 	
 	public IndexWriter getWriter() throws IOException {
 		if(indexWriter == null) {
-			System.out.println("Create index writer");
 			Directory dir = FSDirectory.open(indexPath);
 			IndexWriterConfig iwc = getIndexWriterConfig(OpenMode.CREATE_OR_APPEND);
 			indexWriter = new IndexWriter(dir, iwc);
@@ -55,6 +58,13 @@ public class Index {
 	public IndexReader getIndexReader() throws IOException {
 		IndexWriter writer = getWriter();
 		return DirectoryReader.open(writer, true, false);
+	}
+	
+	public QueryParser getQueryParser(CyTable table) {
+		var analyser = new CaseInsensitiveWhitespaceAnalyzer();
+		var fields = new AttributeFields(table);
+		var parser = new MultiFieldQueryParser(fields.getFields(), analyser);
+		return parser;
 	}
 
 }

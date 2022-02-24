@@ -37,16 +37,20 @@ import org.cytoscape.model.CyTable;
 /**
  * This object will serve as input to the CustomMultiFieldQueryParser.
  * It contains attribute fields names and their types.
- * This way CustomMultiFieldQueryParser can recognize numeric attribute fields.
  */
 public class AttributeFields {
-	private final Map<String, Class<?>> columnTypeMap;
+	
+	private final Map<String, Class<?>> columnTypeMap = new HashMap<>();
 
-	public AttributeFields(final CyNetwork network) {
-		this.columnTypeMap = new HashMap<String, Class<?>>();
-		initFields(network);
+	public AttributeFields(CyNetwork network) {
+		initFields(network.getDefaultNodeTable());
+		initFields(network.getDefaultEdgeTable());
 	}
 
+	public AttributeFields(CyTable table) {
+		initFields(table);
+	}
+	
 	/**
 	 * Initialize this object with attribute fields names and their type.
 	 * Eventually, fields[i] will hold attribute field name and types[i] will hold its type.
@@ -54,17 +58,8 @@ public class AttributeFields {
 	 * ID (INDEX_FIELD) is treated as another attribute of type string.
 	 * There are probably better ways to do this, but there you go :)
 	 */
-	private void initFields(final CyNetwork network) {
-		CyTable nodeCyDataTable = network.getDefaultNodeTable();
-		for(CyColumn column : nodeCyDataTable.getColumns()) {
-			String name = column.getName(); 
-			if(name != null) {
-				columnTypeMap.put(name.toLowerCase(), column.getType());
-			}
-		}
-
-		CyTable edgeCyDataTable = network.getDefaultEdgeTable();
-		for(CyColumn column : edgeCyDataTable.getColumns()) {
+	private void initFields(CyTable table) {
+		for(CyColumn column : table.getColumns()) {
 			String name = column.getName(); 
 			if(name != null) {
 				columnTypeMap.put(name.toLowerCase(), column.getType());
@@ -72,20 +67,17 @@ public class AttributeFields {
 		}
 	}
 
-	/**
-	 * Get list of fields
-	 */
 	public String[] getFields() {
-		final String[] keys = new String[columnTypeMap.size()];
+		String[] keys = new String[columnTypeMap.size()];
 		
 		int i = 0;
-		for (final String key : columnTypeMap.keySet())
+		for(String key : columnTypeMap.keySet()) {
 			keys[i++] = key;
-
+		}
 		return keys;
 	}
 
-	public Class<?> getType(final String attrName) {
+	public Class<?> getType(String attrName) {
 		Class<?> valueType = columnTypeMap.get(attrName);
 		return valueType;
 	}

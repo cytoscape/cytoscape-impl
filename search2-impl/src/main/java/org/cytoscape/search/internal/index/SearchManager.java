@@ -12,21 +12,20 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.MultiBits;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Bits;
 import org.cytoscape.application.CyUserLog;
+import org.cytoscape.event.DebounceTimer;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.events.ColumnCreatedEvent;
+import org.cytoscape.model.events.ColumnCreatedListener;
 import org.cytoscape.model.events.ColumnDeletedEvent;
 import org.cytoscape.model.events.ColumnDeletedListener;
 import org.cytoscape.model.events.ColumnNameChangedEvent;
@@ -43,7 +42,6 @@ import org.cytoscape.model.events.TableAddedEvent;
 import org.cytoscape.model.events.TableAddedListener;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.search.internal.progress.ProgressMonitor;
-import org.cytoscape.search.internal.search.AttributeFields;
 import org.cytoscape.search.internal.ui.SearchBox;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.slf4j.Logger;
@@ -51,7 +49,7 @@ import org.slf4j.LoggerFactory;
 
 public class SearchManager implements 
 	TableAddedListener, TableAboutToBeDeletedListener, 
-	ColumnDeletedListener, ColumnNameChangedListener, 
+	ColumnDeletedListener, ColumnNameChangedListener, ColumnCreatedListener,
 	RowsSetListener, RowsCreatedListener, RowsDeletedListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
@@ -68,6 +66,7 @@ public class SearchManager implements
 	private SearchBox searchBox;
 	
 	private final Map<Long,Index> tableIndexMap = new ConcurrentHashMap<>();
+	private final DebounceTimer columnChangeDebounceTimer = new DebounceTimer();
 	
 	
 	public SearchManager(CyServiceRegistrar registrar, Path baseDir) {
@@ -94,17 +93,12 @@ public class SearchManager implements
 		return baseDir.resolve("index_" + ele.getSUID());
 	}
 	
-	public QueryParser getQueryParser(CyNetwork network) {
-		Analyzer analyser = new CaseInsensitiveWhitespaceAnalyzer();
-		AttributeFields fields = new AttributeFields(network);
-		QueryParser parser = new MultiFieldQueryParser(fields.getFields(), analyser) {
-			@Override
-			protected Query newTermQuery(Term term, float boost) {
-//				System.out.println("Term field: " + term.field());
-				return super.newTermQuery(term, boost);
-			}
-		};
-		return parser;
+	public QueryParser getQueryParser(CyTable table) {
+		var index = tableIndexMap.get(table.getSUID());
+		if(index != null) {
+			return index.getQueryParser(table);
+		}
+		return null;
 	}
 	
 	public IndexReader getIndexReader(CyTable table) throws IOException {
@@ -163,9 +157,7 @@ public class SearchManager implements
 	}
 	
 	public Future<?> addTable(CyTable table, TableType type) {
-		System.out.println("SearchManager.addTable '" + table.getTitle() + "'");
 		var pm = getProgressMonitor(table, false);
-		
 		Path path = getIndexPath(table);
 		Index index = new Index(table.getSUID(), type, path);
 		
@@ -174,7 +166,6 @@ public class SearchManager implements
 			if(tableIndexMap.containsKey(suid)) // This shouldn't happen, just being defensive
 				return;
 			
-			logger.info("Indexing table: " + suid);
 			try {
 				TableIndexer.indexTable(index, table, pm);
 			} catch(IOException e) {
@@ -184,7 +175,6 @@ public class SearchManager implements
 			}
 			
 			tableIndexMap.put(suid, index);
-			logger.info("Indexing table complete: " + suid);
 		});
 	}
 	
@@ -200,14 +190,13 @@ public class SearchManager implements
 		return executorService.submit(() -> {
 			Index index = tableIndexMap.remove(suid);
 			if(index != null) {
-				logger.info("deleting network index: " + suid);
 				try {
 					var writer = index.getWriter();
 					writer.deleteAll();
 					writer.commit();
 					writer.close();
 				} catch (IOException e) {
-					e.printStackTrace();
+					logger.error("Error deleting table index: " + suid, e); // TODO handle exception
 				}
 			}
 		});
@@ -221,7 +210,6 @@ public class SearchManager implements
 			return;
 		
 		CyTable table = e.getSource();
-		
 		if(!isIndexable(table))
 			return;
 		
@@ -267,33 +255,71 @@ public class SearchManager implements
 		var pm = getProgressMonitor(table, true);
 		
 		return executorService.submit(() -> {
-			Index index = tableIndexMap.get(suid);
-			if(index != null) {
-				try {
+			try {
+				Index index = tableIndexMap.get(suid);
+				if(index != null) {
 					TableIndexer.updateRows(index, table, keys, pm);
-				} catch(IOException e) {
-					logger.error("Error indexing table: " + suid, e); // TODO handle exception
-				} finally {
-					pm.done();
-					System.out.println("Update committed()");
 				}
+			} catch(IOException e) {
+				logger.error("Error indexing table: " + suid, e); // TODO handle exception
+			} finally {
+				pm.done();
 			}
 		});
 	}
 	
 	
-
+	@Override
+	public void handleEvent(ColumnCreatedEvent e) {
+//		var table = e.getSource();
+//		if(isIndexable(table)) {
+//			columnChangeDebounceTimer.debounce(() -> reindexTable(table));
+//		}
+	}
 	
 	@Override
 	public void handleEvent(ColumnDeletedEvent e) {
-		// TODO Auto-generated method stub
+		var table = e.getSource();
+		if(isIndexable(table)) {
+			columnChangeDebounceTimer.debounce(() -> reindexTable(table));
+		}
 	}
 
 	@Override
 	public void handleEvent(ColumnNameChangedEvent e) {
-		// TODO Auto-generated method stub
-		
+		var table = e.getSource();
+		if(isIndexable(table)) {
+			columnChangeDebounceTimer.debounce(() -> reindexTable(table));
+		}
 	}
+	
+	public Future<?> reindexTable(CyTable table) {
+		Long suid = table.getSUID();
+		var pm = getProgressMonitor(table, true);
+		
+		return executorService.submit(() -> {
+			try {
+				Index index = tableIndexMap.get(suid);
+				if(index != null) {
+					var subPms = pm.split(1, 10);
+					
+					var writer = index.getWriter();
+					writer.deleteAll();
+					subPms[0].done();
+					
+					TableIndexer.indexTable(index, table, subPms[1]);
+					writer.commit();
+					subPms[1].done();
+				}
+			} catch (IOException e) {
+				logger.error("Error indexing table: " + suid, e);
+			} finally {
+				pm.done();
+			}
+		});
+	}
+	
+	
 	
 	/**
 	 * For debugging purposes.

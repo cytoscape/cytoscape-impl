@@ -31,20 +31,20 @@ public class ProgressPopup extends JPanel {
 	private JTable table;
 	private JScrollPane tableScrollPane;
 	
-	private Map<Long,InternalProgressMonitor> progressInfo = new LinkedHashMap<>(); // Want to maintain insertion order
+	private Map<Long,ProgressPopupMonitor> progressInfo = new LinkedHashMap<>(); // Want to maintain insertion order
 	
 	
 	public ProgressPopup() {
 		initComponents();
 	}
 	
-	private class InternalProgressMonitor implements ProgressMonitor {
+	private class ProgressPopupMonitor implements ProgressMonitor {
 		
 		private final Long suid;
 		private final String name;
 		private double progess;
 		
-		public InternalProgressMonitor(Long suid, String name) {
+		public ProgressPopupMonitor(Long suid, String name) {
 			this.suid = suid;
 			this.name = name;
 		}
@@ -68,7 +68,7 @@ public class ProgressPopup extends JPanel {
 	
 	
 	public ProgressMonitor addProgress(Long suid, String name) {
-		var pm = new InternalProgressMonitor(suid, name);
+		var pm = new ProgressPopupMonitor(suid, name);
 		progressInfo.put(suid, pm);
 		updateTable();
 		return pm;

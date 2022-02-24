@@ -64,11 +64,18 @@ public class NetworkSearchTask extends AbstractTask implements ObservableTask {
 			return SearchResults.empty();
 		}
 		
-		Query query;
+		var nodeTable = network.getDefaultNodeTable();
+		var edgeTable = network.getDefaultEdgeTable();
+		
+		Query nodeQuery;
+		Query edgeQuery;
 		try {
-			QueryParser parser = searchManager.getQueryParser(network);
-			query = parser.parse(queryString);
-			query = new ConstantScoreQuery(query);  // We don't care about sorting results, this might be faster.
+			QueryParser nodeParser = searchManager.getQueryParser(nodeTable);
+			nodeQuery = new ConstantScoreQuery(nodeParser.parse(queryString));
+			System.out.println("nodeQuery:" + nodeQuery);
+			
+			QueryParser edgeParser = searchManager.getQueryParser(edgeTable);
+			edgeQuery = new ConstantScoreQuery(edgeParser.parse(queryString));
 		} catch (ParseException e) {
 			logger.error(e.getMessage(), e);
 			return SearchResults.syntaxError();
@@ -77,8 +84,8 @@ public class NetworkSearchTask extends AbstractTask implements ObservableTask {
 		IndexReader nodeReader = null;
 		IndexReader edgeReader = null;
 		try {
-			nodeReader = searchManager.getIndexReader(network.getDefaultNodeTable());
-			edgeReader = searchManager.getIndexReader(network.getDefaultEdgeTable());
+			nodeReader = searchManager.getIndexReader(nodeTable);
+			edgeReader = searchManager.getIndexReader(edgeTable);
 		} catch (IOException e) {
 			logger.error(e.getMessage(), e);
 			e.printStackTrace();
@@ -95,7 +102,7 @@ public class NetworkSearchTask extends AbstractTask implements ObservableTask {
 		var nodeIDs = new ArrayList<String>();
 		var nodeSearcher = new IndexSearcher(nodeReader);
 		try {
-			TopDocs docs = nodeSearcher.search(query, 1_000_000);
+			TopDocs docs = nodeSearcher.search(nodeQuery, 10_000_000);
 			for(var sd : docs.scoreDocs) {
 				Document doc = nodeReader.document(sd.doc);
 				String eleID = doc.get(SearchManager.INDEX_FIELD);
@@ -110,7 +117,7 @@ public class NetworkSearchTask extends AbstractTask implements ObservableTask {
 		var edgeIDs = new ArrayList<String>();
 		var edgeSearcher = new IndexSearcher(edgeReader);
 		try {
-			TopDocs docs = edgeSearcher.search(query, 10000000);
+			TopDocs docs = edgeSearcher.search(edgeQuery, 10_000_000);
 			for(var sd : docs.scoreDocs) {
 				Document doc = edgeReader.document(sd.doc);
 				String eleID = doc.get(SearchManager.INDEX_FIELD);

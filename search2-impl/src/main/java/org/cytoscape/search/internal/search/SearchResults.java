@@ -81,7 +81,7 @@ public class SearchResults {
 	 * Returns error message if any
 	 * @return Error message or null if no error
 	 */
-	public String getMessage(){
+	public String getMessage() {
 		return message;
 	}
 

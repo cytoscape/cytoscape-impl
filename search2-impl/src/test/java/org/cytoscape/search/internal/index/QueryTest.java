@@ -8,7 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Future;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -49,6 +48,8 @@ public class QueryTest {
 	 * Numeric range queries
 	 * Boolean connectors
 	 * Wildcards * and ?
+	 * Wierd column names
+	 *   - CamelCase seems to fail. ex)  ReNamed:asdf, stays 'ReNamed' in the query for some reason
 	 */
 	
 	public static CyNetwork createTestNetwork() {
@@ -167,8 +168,8 @@ public class QueryTest {
 		var registrar = mock(CyServiceRegistrar.class);
 		searchManager = new SearchManager(registrar, baseDir);
 		
-		Future<?> future1 = searchManager.addTable(network.getDefaultNodeTable(), TableType.NODE);
-		Future<?> future2 = searchManager.addTable(network.getDefaultEdgeTable(), TableType.EDGE);
+		var future1 = searchManager.addTable(network.getDefaultNodeTable(), TableType.NODE);
+		var future2 = searchManager.addTable(network.getDefaultEdgeTable(), TableType.EDGE);
 		
 		future1.get(); // wait for network to be indexed
 		future2.get();
@@ -288,8 +289,7 @@ public class QueryTest {
 		nodeTable.getRow(nodeSuid15).set("COMMON", "baz");
 		
 		var keys = Set.of(nodeSuid1, nodeSuid9, nodeSuid15);
-		var future = searchManager.updateRows(nodeTable, keys);
-		future.get();
+		searchManager.updateRows(nodeTable, keys).get();
 		
 		results = queryIndex("foo");
 		assertNodeHits(results, 1);
@@ -327,8 +327,7 @@ public class QueryTest {
 		network.removeNodes(List.of(node1, node9, node15));
 		
 		var keys = Set.of(nodeSuid1, nodeSuid9, nodeSuid15);
-		var future = searchManager.updateRows(nodeTable, keys);
-		future.get();
+		searchManager.updateRows(nodeTable, keys).get();
 		
 		results = queryIndex("BAR1 MFA2 SSN6");
 		assertNodeHits(results);
@@ -348,13 +347,68 @@ public class QueryTest {
 		
 		var keys = Set.of(nodeSuid90, nodeSuid91, nodeSuid92);
 		
-		var future = searchManager.updateRows(nodeTable, keys);
-		future.get();
+		searchManager.updateRows(nodeTable, keys).get();
 		
 		assertEquals(24, searchManager.getDocumentCount(nodeTable));
 		
 		SearchResults results = queryIndex("QWERTY ASDFGH ZXCVBN");
 		assertNodeHits(results, 90, 91, 92);
 	}
+	
+	
+	@Test
+	public void testDeleteColumn() throws Exception {
+		var nodeTable = network.getDefaultNodeTable();
+
+		Long nodeSuid1  = getSUID(nodeTable, 1);
+		Long nodeSuid9  = getSUID(nodeTable, 9);
+		Long nodeSuid15 = getSUID(nodeTable, 15);
+		
+		SearchResults results = queryIndex("BAR1 MFA2 SSN6");
+		assertNodeHits(results, 1, 9, 15);
+		
+		nodeTable.deleteColumn("COMMON");
+		searchManager.reindexTable(nodeTable).get();
+		
+		results = queryIndex("BAR1 MFA2 SSN6");
+		assertNodeHits(results);
+		
+		nodeTable.createColumn("COMMON", String.class, false);
+		nodeTable.getRow(nodeSuid1).set("COMMON", "frodo");
+		nodeTable.getRow(nodeSuid9).set("COMMON", "sam");
+		nodeTable.getRow(nodeSuid15).set("COMMON", "gandalf");
+		
+		searchManager.reindexTable(nodeTable);
+		
+		results = queryIndex("BAR1 MFA2 SSN6");
+		assertNodeHits(results);
+		
+		results = queryIndex("frodo sam gandalf");
+		assertNodeHits(results, 1, 9, 15);
+	}
+	
+	
+	@Test
+	public void testRenameColumn() throws Exception {
+		var nodeTable = network.getDefaultNodeTable();
+
+		SearchResults results = queryIndex("BAR1 MFA2 SSN6");
+		assertNodeHits(results, 1, 9, 15);
+		
+		nodeTable.getColumn("COMMON").setName("ReNamed");
+		searchManager.reindexTable(nodeTable).get();
+		
+		searchManager.printIndex(nodeTable);
+		
+		results = queryIndex("BAR1 MFA2 SSN6");
+		assertNodeHits(results, 1, 9, 15);
+		
+		results = queryIndex("COMMON:BAR1");
+		assertNodeHits(results);
+		
+		results = queryIndex("renamed:BAR1");
+		assertNodeHits(results, 1);
+	}
+	
 	
 }

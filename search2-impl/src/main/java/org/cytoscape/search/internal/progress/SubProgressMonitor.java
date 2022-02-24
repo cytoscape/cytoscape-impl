@@ -21,6 +21,7 @@ class SubProgressMonitor implements ProgressMonitor {
 	 */
 	@Override
 	public void done() {
+		addProgress(100.0 - percentage);
 	}
 
 }
