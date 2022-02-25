@@ -5,7 +5,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.cytoscape.application.CyUserLog;
+import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.search.internal.index.SearchManager;
+import org.cytoscape.search.internal.ui.DebugSearchProgressPanel;
 import org.cytoscape.search.internal.ui.SearchBox;
 import org.cytoscape.search.internal.ui.SearchBoxToolbarComponent;
 
@@ -61,9 +63,15 @@ public class CyActivator extends AbstractCyActivator {
 		var searchManager = new SearchManager(registrar, baseDir);
 		var searchBox = new SearchBox(registrar, searchManager);
 		var toolbarComponent = new SearchBoxToolbarComponent(searchBox);
-		searchManager.setSearchBox(searchBox);
+		searchManager.addProgressViewer(searchBox);
 		
 		registerAllServices(bc, searchManager);
 		registerAllServices(bc, toolbarComponent);
+		
+		if(DebugSearchProgressPanel.showDebugPanel(registrar)) {
+			var debugPanel = new DebugSearchProgressPanel();
+			searchManager.addProgressViewer(debugPanel);
+			registerService(bc, debugPanel, CytoPanelComponent.class);
+		}
 	}
 }

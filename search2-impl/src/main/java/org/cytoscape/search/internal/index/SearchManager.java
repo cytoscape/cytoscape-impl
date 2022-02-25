@@ -1,9 +1,13 @@
 package org.cytoscape.search.internal.index;
 
+import static java.util.stream.Collectors.toList;
+
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -41,8 +45,9 @@ import org.cytoscape.model.events.TableAboutToBeDeletedListener;
 import org.cytoscape.model.events.TableAddedEvent;
 import org.cytoscape.model.events.TableAddedListener;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.search.internal.progress.CompositeProgressMonitor;
 import org.cytoscape.search.internal.progress.ProgressMonitor;
-import org.cytoscape.search.internal.ui.SearchBox;
+import org.cytoscape.search.internal.progress.ProgressViewer;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +68,7 @@ public class SearchManager implements
 	private final Path baseDir;
 	private final ExecutorService executorService;
 	
-	private SearchBox searchBox;
+	private final List<ProgressViewer> progressViewers = new ArrayList<>();
 	
 	private final Map<Long,Index> tableIndexMap = new ConcurrentHashMap<>();
 	private final DebounceTimer columnChangeDebounceTimer = new DebounceTimer();
@@ -85,8 +90,8 @@ public class SearchManager implements
 	}
 	
 	
-	public void setSearchBox(SearchBox searchBox) {
-		this.searchBox = searchBox;
+	public void addProgressViewer(ProgressViewer viewer) {
+		this.progressViewers.add(viewer);
 	}
 	
 	private Path getIndexPath(CyIdentifiable ele) {
@@ -105,16 +110,19 @@ public class SearchManager implements
 		return tableIndexMap.get(table.getSUID()).getIndexReader();
 	}
 	
-	private ProgressMonitor getProgressMonitor(CyTable table, boolean update) {
-		if(searchBox == null)
+	private ProgressMonitor getProgressMonitor(CyTable table, String suffix) {
+		if(progressViewers.isEmpty())
 			return ProgressMonitor.nullMonitor();
 		
-		Long suid = table.getSUID();
-		String name = table.getTitle(); // MKTODO Use the network title if its a network table.
-		if(update)
-			name = name + " (update)";
+		String name = (suffix == null) 
+			? table.getTitle() 
+			: table.getTitle() + " (" + suffix + ")";
 		
-		return searchBox.getProgressPopup().addProgress(suid, name);
+		if(progressViewers.size() == 1)
+			return progressViewers.get(0).addProgress(name);
+		
+		var monitors = progressViewers.stream().map(pv -> pv.addProgress(name)).collect(toList());
+		return new CompositeProgressMonitor(monitors);
 	}
 	
 	
@@ -157,7 +165,7 @@ public class SearchManager implements
 	}
 	
 	public Future<?> addTable(CyTable table, TableType type) {
-		var pm = getProgressMonitor(table, false);
+		var pm = getProgressMonitor(table, null);
 		Path path = getIndexPath(table);
 		Index index = new Index(table.getSUID(), type, path);
 		
@@ -252,7 +260,7 @@ public class SearchManager implements
 	
 	public Future<?> updateRows(CyTable table, Collection<? extends Object> keys) {
 		Long suid = table.getSUID();
-		var pm = getProgressMonitor(table, true);
+		var pm = getProgressMonitor(table, "update rows");
 		
 		return executorService.submit(() -> {
 			try {
@@ -295,7 +303,7 @@ public class SearchManager implements
 	
 	public Future<?> reindexTable(CyTable table) {
 		Long suid = table.getSUID();
-		var pm = getProgressMonitor(table, true);
+		var pm = getProgressMonitor(table, "reindex table");
 		
 		return executorService.submit(() -> {
 			try {

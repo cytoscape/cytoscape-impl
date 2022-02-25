@@ -29,8 +29,10 @@ import javax.swing.UIManager;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.search.internal.index.SearchManager;
-import org.cytoscape.search.internal.search.SearchResults;
+import org.cytoscape.search.internal.progress.ProgressMonitor;
+import org.cytoscape.search.internal.progress.ProgressViewer;
 import org.cytoscape.search.internal.search.NetworkSearchTask;
+import org.cytoscape.search.internal.search.SearchResults;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -67,7 +69,7 @@ import org.slf4j.LoggerFactory;
  */
 
 @SuppressWarnings("serial")
-public class SearchBox extends JPanel {
+public class SearchBox extends JPanel implements ProgressViewer {
 
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
@@ -76,7 +78,7 @@ public class SearchBox extends JPanel {
 	
 	private JTextField searchTextField;
 	private JButton imageLabel;
-	private ProgressPopup progressPopup;
+	private ProgressPanel progressPopup;
 
 	
 	public SearchBox(CyServiceRegistrar registrar, SearchManager searchManager) {
@@ -86,6 +88,10 @@ public class SearchBox extends JPanel {
 		showIndexingIcon(true);
 	}
 	
+	@Override
+	public ProgressMonitor addProgress(String title) {
+		return getProgressPopup().addProgress(title);
+	}
 	
 	private void initComponents() {
 		var layout = new GroupLayout(this);
@@ -169,9 +175,9 @@ public class SearchBox extends JPanel {
 	}
 	
 	
-	public ProgressPopup getProgressPopup() {
+	public ProgressPanel getProgressPopup() {
 		if(progressPopup == null) {
-			progressPopup = new ProgressPopup();
+			progressPopup = new ProgressPanel(true);
 		}
 		return progressPopup;
 	}
@@ -267,4 +273,5 @@ public class SearchBox extends JPanel {
 		
 		popup.show(searchTextField, 0, searchTextField.getHeight());
 	}
+
 }
