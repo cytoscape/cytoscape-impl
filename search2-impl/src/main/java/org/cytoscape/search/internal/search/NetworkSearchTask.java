@@ -2,6 +2,7 @@ package org.cytoscape.search.internal.search;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import org.apache.lucene.document.Document;
@@ -52,27 +53,45 @@ public class NetworkSearchTask extends AbstractTask implements ObservableTask {
 	
 	public SearchResults runQuery(TaskMonitor tm) {
 		tm.setTitle("Searching the network for: " + queryString);
-		if (cancelled)
-			return SearchResults.cancelled();
 		
-		// bail if the length of query string is too long
-		if (queryString.length() > MAX_QUERY_LEN) {
+		if(queryString.length() > MAX_QUERY_LEN) {
 			logger.error(results.getMessage());
 			return SearchResults.syntaxError("At " + queryString.length() + " characters query string is too large");
 		}
 		if(queryString.isBlank()) {
 			return SearchResults.empty();
 		}
+		if(cancelled) {
+			return SearchResults.cancelled();
+		}
 		
+		tm.setProgress(1.0);
 		var nodeTable = network.getDefaultNodeTable();
 		var edgeTable = network.getDefaultEdgeTable();
 		
-		Query nodeQuery;
-		Query edgeQuery;
+		tm.setProgress(0.2);
+		boolean first = true;
+		while(!searchManager.isReady(nodeTable, edgeTable)) {
+			if(first) {
+				tm.setStatusMessage("Waiting for network index to be ready.");
+				first = false;
+			}
+			try {
+				Thread.sleep(300);
+			} catch(InterruptedException e) {}
+			
+			if(cancelled) {
+				return SearchResults.cancelled();
+			}
+		}
+		
+		tm.setStatusMessage("Running search query.");
+		tm.setProgress(0.3);
+		
+		Query nodeQuery, edgeQuery;
 		try {
 			QueryParser nodeParser = searchManager.getQueryParser(nodeTable);
 			nodeQuery = new ConstantScoreQuery(nodeParser.parse(queryString));
-			System.out.println("nodeQuery:" + nodeQuery);
 			
 			QueryParser edgeParser = searchManager.getQueryParser(edgeTable);
 			edgeQuery = new ConstantScoreQuery(edgeParser.parse(queryString));
@@ -81,53 +100,38 @@ public class NetworkSearchTask extends AbstractTask implements ObservableTask {
 			return SearchResults.syntaxError();
 		}
 		
-		IndexReader nodeReader = null;
-		IndexReader edgeReader = null;
+		tm.setProgress(0.5);
+		
+		IndexReader nodeReader = null, edgeReader = null;
 		try {
 			nodeReader = searchManager.getIndexReader(nodeTable);
 			edgeReader = searchManager.getIndexReader(edgeTable);
 		} catch (IOException e) {
 			logger.error(e.getMessage(), e);
-			e.printStackTrace();
 			return SearchResults.fatalError();
 		}
 		
-		if(nodeReader == null || edgeReader == null) {
-			logger.warn("index not ready");
-			return SearchResults.notReady();
-		}
+		tm.setProgress(0.6);
 		
-		// TODO figure out how to use the MultiReader, maybe we don't need to do two separate searches??
-		
-		var nodeIDs = new ArrayList<String>();
-		var nodeSearcher = new IndexSearcher(nodeReader);
+		List<String> nodeIDs;
 		try {
-			TopDocs docs = nodeSearcher.search(nodeQuery, 10_000_000);
-			for(var sd : docs.scoreDocs) {
-				Document doc = nodeReader.document(sd.doc);
-				String eleID = doc.get(SearchManager.INDEX_FIELD);
-				nodeIDs.add(eleID);
-			}
+			nodeIDs = runSearch(nodeReader, nodeQuery);
 		} catch (IOException e) {
 			logger.error(e.getMessage(), e);
-			e.printStackTrace();
 			return SearchResults.fatalError();
 		}
 		
-		var edgeIDs = new ArrayList<String>();
-		var edgeSearcher = new IndexSearcher(edgeReader);
+		tm.setProgress(0.8);
+		
+		List<String> edgeIDs;
 		try {
-			TopDocs docs = edgeSearcher.search(edgeQuery, 10_000_000);
-			for(var sd : docs.scoreDocs) {
-				Document doc = edgeReader.document(sd.doc);
-				String eleID = doc.get(SearchManager.INDEX_FIELD);
-				edgeIDs.add(eleID);
-			}
+			edgeIDs = runSearch(edgeReader, edgeQuery);
 		} catch (IOException e) {
 			logger.error(e.getMessage(), e);
-			e.printStackTrace();
 			return SearchResults.fatalError();
 		}
+		
+		tm.setProgress(0.9);
 		
 		try {
 			nodeReader.close();
@@ -136,9 +140,27 @@ public class NetworkSearchTask extends AbstractTask implements ObservableTask {
 			logger.error(e.getMessage(), e);
 		}
 		
+		if(cancelled) {
+			return SearchResults.cancelled();
+		}
+		
+		tm.setProgress(1.0);
 		return SearchResults.results(nodeIDs, edgeIDs);
 	}
 
+	
+	private static List<String> runSearch(IndexReader reader, Query query) throws IOException {
+		var searcher = new IndexSearcher(reader);
+		TopDocs docs = searcher.search(query, 10_000_000);
+		var ids = new ArrayList<String>(docs.scoreDocs.length);
+		for(var sd : docs.scoreDocs) {
+			Document doc = reader.document(sd.doc);
+			String eleID = doc.get(SearchManager.INDEX_FIELD);
+			ids.add(eleID);
+		}
+		return ids;
+	}
+	
 	
 	@Override
 	public <R> R getResults(Class<? extends R> type) {

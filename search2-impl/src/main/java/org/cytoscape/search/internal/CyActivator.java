@@ -63,7 +63,6 @@ public class CyActivator extends AbstractCyActivator {
 		var searchManager = new SearchManager(registrar, baseDir);
 		var searchBox = new SearchBox(registrar, searchManager);
 		var toolbarComponent = new SearchBoxToolbarComponent(searchBox);
-		searchManager.addProgressViewer(searchBox);
 		
 		registerAllServices(bc, searchManager);
 		registerAllServices(bc, toolbarComponent);

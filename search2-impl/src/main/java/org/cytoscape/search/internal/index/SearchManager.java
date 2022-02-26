@@ -78,7 +78,6 @@ public class SearchManager implements
 		this.registrar = registrar;
 		this.baseDir = Objects.requireNonNull(baseDir);
 		
-		// TODO this can be a thread pool, IndexWriters are thread safe
 		// TODO Test if using multiple threads for indexing actually speeds anything up.
 		// Indexing might be IO bound so using multiple threads might not actually be worth the added complexity.
 		// Use a single thread for now.
@@ -89,6 +88,13 @@ public class SearchManager implements
 		});
 	}
 	
+	public boolean isReady(Long suid) {
+		return tableIndexMap.containsKey(suid);
+	}
+	
+	public boolean isReady(CyTable tab1, CyTable tab2) {
+		return isReady(tab1.getSUID()) && isReady(tab2.getSUID());
+	}
 	
 	public void addProgressViewer(ProgressViewer viewer) {
 		this.progressViewers.add(viewer);
@@ -100,10 +106,7 @@ public class SearchManager implements
 	
 	public QueryParser getQueryParser(CyTable table) {
 		var index = tableIndexMap.get(table.getSUID());
-		if(index != null) {
-			return index.getQueryParser(table);
-		}
-		return null;
+		return index == null ? null : index.getQueryParser(table);
 	}
 	
 	public IndexReader getIndexReader(CyTable table) throws IOException {

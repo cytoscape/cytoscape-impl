@@ -35,6 +35,9 @@ public class TableIndexer {
 		IndexWriter writer = index.getWriter();
 		
 		for(CyRow row : table.getAllRows()) {
+			
+			try { Thread.sleep(300); } catch(Exception e) {}
+			
 			var key = row.get(keyName, keyType);
 			var doc = createDocument(table, key, index.getTableType());
 			if(doc != null) {

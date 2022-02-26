@@ -13,10 +13,8 @@ import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 
 import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -29,12 +27,10 @@ import javax.swing.UIManager;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.search.internal.index.SearchManager;
-import org.cytoscape.search.internal.progress.ProgressMonitor;
-import org.cytoscape.search.internal.progress.ProgressViewer;
 import org.cytoscape.search.internal.search.NetworkSearchTask;
 import org.cytoscape.search.internal.search.SearchResults;
+import org.cytoscape.search.internal.search.SearchResults.Status;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
@@ -69,7 +65,7 @@ import org.slf4j.LoggerFactory;
  */
 
 @SuppressWarnings("serial")
-public class SearchBox extends JPanel implements ProgressViewer {
+public class SearchBox extends JPanel {
 
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
@@ -77,7 +73,6 @@ public class SearchBox extends JPanel implements ProgressViewer {
 	private final CyServiceRegistrar registrar;
 	
 	private JTextField searchTextField;
-	private JButton imageLabel;
 	private ProgressPanel progressPopup;
 
 	
@@ -85,12 +80,6 @@ public class SearchBox extends JPanel implements ProgressViewer {
 		this.searchManager = searchManager;
 		this.registrar = registrar;
 		initComponents();
-		showIndexingIcon(true);
-	}
-	
-	@Override
-	public ProgressMonitor addProgress(String title) {
-		return getProgressPopup().addProgress(title);
 	}
 	
 	private void initComponents() {
@@ -101,11 +90,9 @@ public class SearchBox extends JPanel implements ProgressViewer {
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
 			.addComponent(getSearchTextField(), 120, 240, 300)
-			.addComponent(getImageLabel())
 		);
 		layout.setVerticalGroup(layout.createParallelGroup(Alignment.BASELINE)
 			.addComponent(getSearchTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-			.addComponent(getImageLabel())
 		);
 	}
 	
@@ -149,42 +136,6 @@ public class SearchBox extends JPanel implements ProgressViewer {
 			setKeyBindings(searchTextField);
 		}
 		return searchTextField;
-	}
-	
-	
-	private JButton getImageLabel() {		
-		if(imageLabel == null) {
-			var iconManager = registrar.getService(IconManager.class);
-			imageLabel = new JButton(IconManager.ICON_HOURGLASS);
-			imageLabel.setFont(iconManager.getIconFont(14.0f));
-			
-			imageLabel.addActionListener(event -> {
-				getProgressPopupMenu().show(imageLabel, 0, imageLabel.getHeight());
-			});
-		}
-		return imageLabel;
-	}
-	
-	
-	private JPopupMenu getProgressPopupMenu() {
-		JPopupMenu menu = new JPopupMenu();
-		menu.add(getProgressPopup());
-		menu.setBackground(getProgressPopup().getBackground());
-		menu.setBorder(BorderFactory.createEmptyBorder());
-		return menu;
-	}
-	
-	
-	public ProgressPanel getProgressPopup() {
-		if(progressPopup == null) {
-			progressPopup = new ProgressPanel(true);
-		}
-		return progressPopup;
-	}
-	
-	
-	private void showIndexingIcon(boolean show) {
-		getImageLabel().setVisible(show);
 	}
 	
 	
@@ -240,9 +191,11 @@ public class SearchBox extends JPanel implements ProgressViewer {
 				}
 				@Override
 				public void allFinished(FinishStatus status) {
-					if(status.getType() == FinishStatus.Type.SUCCEEDED && results != null) {
+					if(results == null)
+						return;
+					if(status.getType() == FinishStatus.Type.SUCCEEDED) {
 						showPopup(results);
-					}
+					} 
 				}
 			});
 		} else {
@@ -257,7 +210,7 @@ public class SearchBox extends JPanel implements ProgressViewer {
 		
 		var label = new JLabel();
 		
-		if (results.isError())
+		if (results.isError() || results.getStatus() == Status.NOT_READY)
 			label.setForeground(Color.RED);
 		
 		label.setText("   " + results.getMessage() + "   ");

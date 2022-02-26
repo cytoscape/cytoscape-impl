@@ -15,10 +15,10 @@ public class SearchResults {
 	private final List<String> edgeHits;
 
 	
-	private SearchResults(Status status, final String message, List<String> nodeHits, List<String> edgeHits) {
+	private SearchResults(Status status, String message, List<String> nodeHits, List<String> edgeHits) {
 		this.status = status;
-		this.nodeHits = nodeHits == null ? Collections.<String>emptyList() : nodeHits;
-		this.edgeHits = edgeHits == null ? Collections.<String>emptyList() : edgeHits;
+		this.nodeHits = nodeHits == null ? Collections.emptyList() : nodeHits;
+		this.edgeHits = edgeHits == null ? Collections.emptyList() : edgeHits;
 		if (this.isError() == false && message == null) {
 			int edges = this.getEdgeHitCount();
 			int nodes = this.getNodeHitCount();
@@ -36,21 +36,26 @@ public class SearchResults {
 			this.message = message;
 		}
 	}
-
-	public static SearchResults syntaxError() {
-		return new SearchResults(Status.ERROR_SYNTAX, "Cannot execute search query", null, null);
+	
+	private SearchResults(Status status, String message) {
+		this(status, message, null, null);
 	}
 
-	public static SearchResults syntaxError(final String message) {
-		return new SearchResults(Status.ERROR_SYNTAX, message, null, null);
+	
+	public static SearchResults syntaxError() {
+		return new SearchResults(Status.ERROR_SYNTAX, "Cannot execute search query");
+	}
+
+	public static SearchResults syntaxError(String message) {
+		return new SearchResults(Status.ERROR_SYNTAX, message);
 	}
 
 	public static SearchResults fatalError() {
-		return new SearchResults(Status.ERROR_FATAL, "Query execution error", null, null);
+		return new SearchResults(Status.ERROR_FATAL, "Query execution error");
 	}
 
-	public static SearchResults fatalError(final String message) {
-		return new SearchResults(Status.ERROR_FATAL, message, null, null);
+	public static SearchResults fatalError(String message) {
+		return new SearchResults(Status.ERROR_FATAL, message);
 	}
 
 	public static SearchResults results(List<String> nodeHits, List<String> edgeHits) {
@@ -58,15 +63,15 @@ public class SearchResults {
 	}
 	
 	public static SearchResults empty() {
-		return new SearchResults(Status.SUCCESS, null, Collections.emptyList(), Collections.emptyList());
+		return new SearchResults(Status.SUCCESS, null);
 	}
 	
 	public static SearchResults notReady() {
-		return new SearchResults(Status.NOT_READY, null, Collections.emptyList(), Collections.emptyList());
+		return new SearchResults(Status.NOT_READY, "Search index is not ready, please try again.");
 	}
 	
 	public static SearchResults cancelled() {
-		return new SearchResults(Status.CANCELLED, null, Collections.emptyList(), Collections.emptyList());
+		return new SearchResults(Status.CANCELLED, null);
 	}
 	
 	public boolean isError() {
