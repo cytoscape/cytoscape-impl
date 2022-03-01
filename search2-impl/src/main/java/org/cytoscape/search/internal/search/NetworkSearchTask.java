@@ -76,9 +76,6 @@ public class NetworkSearchTask extends AbstractTask implements ObservableTask {
 				tm.setStatusMessage("Waiting for network index to be ready.");
 				first = false;
 			}
-			try {
-				Thread.sleep(300);
-			} catch(InterruptedException e) {}
 			
 			if(cancelled) {
 				return SearchResults.cancelled();
