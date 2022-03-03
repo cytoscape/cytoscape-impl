@@ -8,8 +8,6 @@ import java.util.Objects;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
@@ -87,11 +85,8 @@ public class NetworkSearchTask extends AbstractTask implements ObservableTask {
 		
 		Query nodeQuery, edgeQuery;
 		try {
-			QueryParser nodeParser = searchManager.getQueryParser(nodeTable);
-			nodeQuery = new ConstantScoreQuery(nodeParser.parse(queryString));
-			
-			QueryParser edgeParser = searchManager.getQueryParser(edgeTable);
-			edgeQuery = new ConstantScoreQuery(edgeParser.parse(queryString));
+			nodeQuery = searchManager.getQueryParser(nodeTable).parse(queryString);
+			edgeQuery = searchManager.getQueryParser(edgeTable).parse(queryString);
 		} catch (ParseException e) {
 			logger.error(e.getMessage(), e);
 			return SearchResults.syntaxError();

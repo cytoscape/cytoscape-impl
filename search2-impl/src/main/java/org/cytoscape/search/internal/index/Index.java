@@ -9,12 +9,12 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
-import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.search.internal.search.AttributeFields;
+import org.cytoscape.search.internal.search.CustomMultiFieldQueryParser;
 
 public class Index {
 	
@@ -63,7 +63,7 @@ public class Index {
 	public QueryParser getQueryParser(CyTable table) {
 		var analyser = new CaseInsensitiveWhitespaceAnalyzer();
 		var fields = new AttributeFields(table);
-		var parser = new MultiFieldQueryParser(fields.getFields(), analyser);
+		var parser = new CustomMultiFieldQueryParser(fields, analyser);
 		return parser;
 	}
 

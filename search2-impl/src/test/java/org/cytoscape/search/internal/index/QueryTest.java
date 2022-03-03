@@ -29,28 +29,22 @@ import org.junit.rules.TestRule;
 
 
 public class QueryTest {
-	
+
 	@Rule public TestRule logSilenceRule = new LogSilenceRule(); 
 	
 	private static final String TEST_ID = "TestID";
+	
+	private static final String NODE_COMMON = "COMMON";
+	private static final String NODE_DEGREE_LAYOUT = "degree.layout";
+	private static final String NODE_GAL_FILTERED_GAL1R_GEXP = "galFiltered::gal1RGexp";
+	private static final String NODE_DUMMY_TEXT = "dummyText";
+	
+	private static final String EDGE_EDGEBETWEENNESS = "EdgeBetweenness";
 	
 	private CyNetwork network;
 	private SearchManager searchManager;
 	
 	
-	
-	/*
-	 * TODO
-	 * 
-	 * Make sure there are no stop words.
-	 * Field queries
-	 * Column namespaces
-	 * Numeric range queries
-	 * Boolean connectors
-	 * Wildcards * and ?
-	 * Wierd column names
-	 *   - CamelCase seems to fail. ex)  ReNamed:asdf, stays 'ReNamed' in the query for some reason
-	 */
 	
 	public static CyNetwork createTestNetwork() {
 		NetworkTestSupport networkTestSupport = new NetworkTestSupport();
@@ -58,36 +52,36 @@ public class QueryTest {
 		
 		CyTable nodeTable = network.getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS);
 		nodeTable.createColumn(TEST_ID, Integer.class, false); // We can't chose the SUID value so use this instead
-		nodeTable.createColumn("COMMON", String.class, false);
-		nodeTable.createColumn("degree.layout", Integer.class, false);
-		nodeTable.createColumn("galFiltered::gal1RGexp", Double.class, false); // Use a namespace
+		nodeTable.createColumn(NODE_COMMON, String.class, false);
+		nodeTable.createColumn(NODE_DEGREE_LAYOUT, Integer.class, false);
+		nodeTable.createColumn(NODE_GAL_FILTERED_GAL1R_GEXP, Double.class, false); // Use a namespace
+		nodeTable.createColumn(NODE_DUMMY_TEXT, String.class, false); // Use a namespace
 		
 		CyTable edgeTable = network.getTable(CyEdge.class, CyNetwork.DEFAULT_ATTRS);
-		edgeTable.createColumn("TestID", Integer.class, false); // We can't chose the SUID value so use this instead
-		edgeTable.createColumn("EdgeBetweenness", Double.class, false);
+		edgeTable.createColumn(TEST_ID, Integer.class, false); // We can't chose the SUID value so use this instead
+		edgeTable.createColumn(EDGE_EDGEBETWEENNESS, Double.class, false);
 		
-		// TODO Add more columns, one with more complex text like lorem ipsum, and one List column
-		addNode(network, 1,  "YIL015W", "BAR1", 2, -0.622);
-		addNode(network, 2,  "YJL159W", "HSP150", 2, -0.357);
-		addNode(network, 3,  "YKR097W", "PCK1", 2, 1.289);
-		addNode(network, 4,  "YPR119W", "CLB2", 2, -0.234);
-		addNode(network, 5,  "YGR108W", "CLB1", 3, -0.25);
-		addNode(network, 6,  "YAL040C", "CLN3", 2, -0.027);
-		addNode(network, 7,  "YGL008C", "PMA1", 2, -0.352);
-		addNode(network, 8,  "YDR461W", "MFA1", 3, -0.659);
-		addNode(network, 9,  "YNL145W", "MFA2", 3, -0.764);
-		addNode(network, 10, "YJL157C", "FAR1", 4, -0.158);
-		addNode(network, 11, "YFL026W", "STE2", 3, -0.653);
-		addNode(network, 12, "YJL194W", "CDC6", 2, 0.018);
-		addNode(network, 13, "YCR084C", "TUP1", 2, 0.044);
-		addNode(network, 14, "YHR084W", "STE12", 4, -0.109);
-		addNode(network, 15, "YBR112C", "SSN6", 1, 0.108);
-		addNode(network, 16, "YCL067C", "ALPHA2", 6, 0.169);
-		addNode(network, 17, "YER111C", "SWI4", 2, 0.195);
-		addNode(network, 18, "YDR146C", "SWI5", 2, -0.19);
-		addNode(network, 19, "YPR113W", "PIS1", 1, -0.495);
-		addNode(network, 20, "YMR043W", "MCM1", 18, -0.183);
-		addNode(network, 21, "YBR160W", "CDC28", 3, -0.016);
+		addNode(network, 1,  "YIL015W", "BAR1",   2, -0.622, "Far far away, behind the word mountains, far from the countries");
+		addNode(network, 2,  "YJL159W", "HSP150", 2, -0.357, "Vokalia and Consonantia, there live the blind texts. Separated they");
+		addNode(network, 3,  "YKR097W", "PCK1",   2,  1.289, "live in Bookmarksgrove right at the coast of the Semantics, a large");
+		addNode(network, 4,  "YPR119W", "CLB2",   2, -0.234, "language ocean. A small river named Duden flows by their place and");
+		addNode(network, 5,  "YGR108W", "CLB1",   3,  -0.25, "supplies it with the necessary regelialia. It is a paradisematic");
+		addNode(network, 6,  "YAL040C", "CLN3",   2, -0.027, "country, in which roasted parts of sentences fly into your mouth.");
+		addNode(network, 7,  "YGL008C", "PMA1",   2, -0.352, "Even the all-powerful Pointing has no control about the blind texts it");
+		addNode(network, 8,  "YDR461W", "MFA1",   3, -0.659, "is an almost unorthographic life One day however a small line of");
+		addNode(network, 9,  "YNL145W", "MFA2",   3, -0.764, "blind text by the name of Lorem Ipsum decided to leave for the far");
+		addNode(network, 10, "YJL157C", "FAR1",   4, -0.158, "World of Grammar. The Big Oxmox advised her not to do so, because");
+		addNode(network, 11, "YFL026W", "STE2",   3, -0.653, "there were thousands of bad Commas, wild Question Marks and");
+		addNode(network, 12, "YJL194W", "CDC6",   2,  0.018, "devious Semikoli, but the Little Blind Text didn’t listen. She packed");
+		addNode(network, 13, "YCR084C", "TUP1",   2,  0.044, "her seven versalia, put her initial into the belt and made herself on");
+		addNode(network, 14, "YHR084W", "STE12",  4, -0.109, "the way. When she reached the first hills of the Italic Mountains, she");
+		addNode(network, 15, "YBR112C", "SSN6",   1,  0.108, "had a last view back on the skyline of her hometown");
+		addNode(network, 16, "YCL067C", "ALPHA2", 6,  0.169, "Bookmarksgrove, the headline of Alphabet Village and the subline of");
+		addNode(network, 17, "YER111C", "SWI4",   2,  0.195, "her own road, the Line Lane. Pityful a rethoric question ran over her");
+		addNode(network, 18, "YDR146C", "SWI5",   2,  -0.19, "cheek, then she continued her way. On her way she met a copy. The");
+		addNode(network, 19, "YPR113W", "PIS1",   1, -0.495, "copy warned the Little Blind Text, that where it came from it would");
+		addNode(network, 20, "YMR043W", "MCM1",  99, -0.183, "have been rewritten a thousand times and everything that was left");
+		addNode(network, 21, "YBR160W", "CDC28",  3, -0.016, "from its origin would be the word \"and\" and the Little Blind Text");
 		
 		addEdge(network, 1,  "YNL145W", "YHR084W", "pd", 4.83333333);
 		addEdge(network, 2,  "YJL157C", "YAL040C", "pp", 115.0);
@@ -126,14 +120,15 @@ public class QueryTest {
 		return network;
 	}
 	
-	private static Long addNode(CyNetwork network, int testId, String sharedName, String common, int degree, double galexp) {
+	private static Long addNode(CyNetwork network, int testId, String sharedName, String common, int degree, double galexp, String dummyText) {
 		CyNode node = network.addNode();
 		CyRow row = network.getRow(node);
 		row.set(CyRootNetwork.SHARED_NAME, sharedName);
 		row.set(TEST_ID, testId);
-		row.set("COMMON", common);
-		row.set("degree.layout", degree);
-		row.set("galFiltered::gal1RGexp", galexp);
+		row.set(NODE_COMMON, common);
+		row.set(NODE_DEGREE_LAYOUT, degree);
+		row.set(NODE_GAL_FILTERED_GAL1R_GEXP, galexp);
+		row.set(NODE_DUMMY_TEXT, dummyText);
 		return node.getSUID();
 	}
 	
@@ -148,7 +143,7 @@ public class QueryTest {
 		row.set(CyRootNetwork.SHARED_NAME, sourceName + " (" + interaction + ") " + targetName); // TODO this might be automatic
 		row.set(CyRootNetwork.SHARED_INTERACTION, interaction);
 		row.set(TEST_ID, testId);
-		row.set("EdgeBetweenness", edgeBetweenness);
+		row.set(EDGE_EDGEBETWEENNESS, edgeBetweenness);
 		return edge.getSUID();
 	}
 	
@@ -201,8 +196,8 @@ public class QueryTest {
 		CyTable edgeTable = network.getTable(CyEdge.class, CyNetwork.DEFAULT_ATTRS);
 		List<String> edgeHits = results.getEdgeHits();
 		for(int id : ids) {
-			Long suid = edgeTable.getMatchingKeys("TestID", id, Long.class).iterator().next();
-			assertTrue(edgeHits.contains(String.valueOf(suid)));
+			Long suid = edgeTable.getMatchingKeys(TEST_ID, id, Long.class).iterator().next();
+			assertTrue("id " + id + " not in query results", edgeHits.contains(String.valueOf(suid)));
 		}
 	}
 	
@@ -242,6 +237,27 @@ public class QueryTest {
 	
 	
 	@Test
+	public void testCaseInsensitiveFieldNames() {
+		SearchResults results;
+		
+		results = queryIndex("dummyText:blind");
+		assertNodeHits(results, 2, 7, 9, 12, 19, 21);
+		
+		results = queryIndex("dummytext:blind");
+		assertNodeHits(results, 2, 7, 9, 12, 19, 21);
+		
+		results = queryIndex("DuMmYtExT:blind");
+		assertNodeHits(results, 2, 7, 9, 12, 19, 21);
+		
+		results = queryIndex("edgebetweenness:9");
+		assertEdgeHits(results, 19);
+		
+		results = queryIndex("EDGEBETWEENNESS:9");
+		assertEdgeHits(results, 19);
+	}
+	
+	
+	@Test
 	public void testWildcardQueries() {
 		SearchResults results;
 		
@@ -254,11 +270,11 @@ public class QueryTest {
 		assertEdgeHits(results);
 		
 		results = queryIndex("C???");
-		assertNodeHits(results, 4, 5, 6, 12); // but not CDC28 because that has 5 chars
+		assertNodeHits(results, 4, 5, 6, 12, 19); // but not CDC28 because that has 5 chars
 		assertEdgeHits(results);
 		
 		results = queryIndex("BAR? C???");
-		assertNodeHits(results, 1, 4, 5, 6, 12);
+		assertNodeHits(results, 1, 4, 5, 6, 12, 19);
 		assertEdgeHits(results);
 		
 		results = queryIndex("YC*");
@@ -266,7 +282,7 @@ public class QueryTest {
 		assertEdgeHits(results, 16, 18, 19, 22, 23, 26, 29);
 		
 		results = queryIndex("YC* BAR? C???");
-		assertNodeHits(results, 1, 4, 5, 6, 12, 13, 16);
+		assertNodeHits(results, 1, 4, 5, 6, 12, 13, 16, 19);
 		assertEdgeHits(results, 16, 18, 19, 22, 23, 26, 29);
 	}
 	
@@ -284,9 +300,9 @@ public class QueryTest {
 		Long nodeSuid9  = getSUID(nodeTable, 9);
 		Long nodeSuid15 = getSUID(nodeTable, 15);
 		
-		nodeTable.getRow(nodeSuid1).set("COMMON", "foo");
-		nodeTable.getRow(nodeSuid9).set("COMMON", "bazinga");
-		nodeTable.getRow(nodeSuid15).set("COMMON", "baz");
+		nodeTable.getRow(nodeSuid1).set(NODE_COMMON, "foo");
+		nodeTable.getRow(nodeSuid9).set(NODE_COMMON, "bazinga");
+		nodeTable.getRow(nodeSuid15).set(NODE_COMMON, "baz");
 		
 		var keys = Set.of(nodeSuid1, nodeSuid9, nodeSuid15);
 		searchManager.updateRows(nodeTable, keys).get();
@@ -341,9 +357,9 @@ public class QueryTest {
 		var nodeTable = network.getDefaultNodeTable();
 		assertEquals(21, searchManager.getDocumentCount(nodeTable));
 		
-		Long nodeSuid90 = addNode(network, 90, "QWERTY", "frodo", 99, -0.999);
-		Long nodeSuid91 = addNode(network, 91, "ASDFGH", "sam", 99, -0.999);
-		Long nodeSuid92 = addNode(network, 92, "ZXCVBN", "gandalf", 99, -0.999);
+		Long nodeSuid90 = addNode(network, 90, "QWERTY", "frodo", 99, -0.999, "blah");
+		Long nodeSuid91 = addNode(network, 91, "ASDFGH", "sam", 99, -0.999, "blah");
+		Long nodeSuid92 = addNode(network, 92, "ZXCVBN", "gandalf", 99, -0.999, "blah");
 		
 		var keys = Set.of(nodeSuid90, nodeSuid91, nodeSuid92);
 		
@@ -367,16 +383,16 @@ public class QueryTest {
 		SearchResults results = queryIndex("BAR1 MFA2 SSN6");
 		assertNodeHits(results, 1, 9, 15);
 		
-		nodeTable.deleteColumn("COMMON");
+		nodeTable.deleteColumn(NODE_COMMON);
 		searchManager.reindexTable(nodeTable).get();
 		
 		results = queryIndex("BAR1 MFA2 SSN6");
 		assertNodeHits(results);
 		
-		nodeTable.createColumn("COMMON", String.class, false);
-		nodeTable.getRow(nodeSuid1).set("COMMON", "frodo");
-		nodeTable.getRow(nodeSuid9).set("COMMON", "sam");
-		nodeTable.getRow(nodeSuid15).set("COMMON", "gandalf");
+		nodeTable.createColumn(NODE_COMMON, String.class, false);
+		nodeTable.getRow(nodeSuid1).set(NODE_COMMON, "frodo");
+		nodeTable.getRow(nodeSuid9).set(NODE_COMMON, "sam");
+		nodeTable.getRow(nodeSuid15).set(NODE_COMMON, "gandalf");
 		
 		searchManager.reindexTable(nodeTable);
 		
@@ -395,10 +411,8 @@ public class QueryTest {
 		SearchResults results = queryIndex("BAR1 MFA2 SSN6");
 		assertNodeHits(results, 1, 9, 15);
 		
-		nodeTable.getColumn("COMMON").setName("ReNamed");
+		nodeTable.getColumn(NODE_COMMON).setName("ReNamed");
 		searchManager.reindexTable(nodeTable).get();
-		
-		searchManager.printIndex(nodeTable);
 		
 		results = queryIndex("BAR1 MFA2 SSN6");
 		assertNodeHits(results, 1, 9, 15);
@@ -408,6 +422,60 @@ public class QueryTest {
 		
 		results = queryIndex("renamed:BAR1");
 		assertNodeHits(results, 1);
+	}
+	
+	
+	@Test
+	public void testStopWords() throws Exception {
+		// Stop words should not be removed, should be able to find 'the'
+		SearchResults results = queryIndex("the");
+		assertNodeHits(results, 1, 2, 3, 5, 7, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 21);
+	}
+	
+	
+	@Test
+	public void testNumericRangeQueries() throws Exception {
+		SearchResults results;
+		
+		results = queryIndex("degree.layout:99");
+		assertNodeHits(results, 20);
+		
+		results = queryIndex("degree.layout:[3 TO 6]");
+		assertNodeHits(results, 5, 8, 9, 10, 11, 14, 16, 21);
+		
+		results = queryIndex("degree.layout:[3 TO 6}");
+		assertNodeHits(results, 5, 8, 9, 10, 11, 14, 21);
+		
+		results = queryIndex(EDGE_EDGEBETWEENNESS+":9");
+		assertEdgeHits(results, 19);
+		
+		results = queryIndex(EDGE_EDGEBETWEENNESS+":[300.0 TO 500.0]");
+		assertEdgeHits(results, 9, 11, 14, 15, 16, 24, 25, 28);
+		
+		results = queryIndex(EDGE_EDGEBETWEENNESS+":[4.83333333 TO 9.83333333]");
+		assertEdgeHits(results, 1, 12, 13, 23, 26, 29, 19);
+		
+		results = queryIndex(EDGE_EDGEBETWEENNESS+":[4.8 TO 9.9]");
+		assertEdgeHits(results, 1, 12, 13, 23, 26, 29, 19);
+		
+		results = queryIndex(EDGE_EDGEBETWEENNESS+":[4.83333333 TO 9.83333333}");
+		assertEdgeHits(results, 1, 12, 13, 19);
+		
+		results = queryIndex(EDGE_EDGEBETWEENNESS+":{4.83333333 TO 9.83333333}");
+		assertEdgeHits(results, 19);
+	}
+
+	
+	public void testColumnNamespaces() throws Exception {
+		
+	}
+	
+	public void testSpecialCharacters() throws Exception {
+		
+	}
+	
+	public void testBooleanOperators() throws Exception {
+		
 	}
 	
 	

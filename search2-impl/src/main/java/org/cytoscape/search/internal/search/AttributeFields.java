@@ -77,8 +77,8 @@ public class AttributeFields {
 		return keys;
 	}
 
-	public Class<?> getType(String attrName) {
-		Class<?> valueType = columnTypeMap.get(attrName);
-		return valueType;
+	public Class<?> getType(String name) {
+		return columnTypeMap.get(name.toLowerCase());
 	}
+	
 }
