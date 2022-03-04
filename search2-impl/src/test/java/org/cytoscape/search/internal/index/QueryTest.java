@@ -76,7 +76,7 @@ public class QueryTest {
 		addNode(network, 13, "YCR084C", "TUP1",   2,  0.044, "her seven versalia, put her initial into the belt and made herself on");
 		addNode(network, 14, "YHR084W", "STE12",  4, -0.109, "the way. When she reached the first hills of the Italic Mountains, she");
 		addNode(network, 15, "YBR112C", "SSN6",   1,  0.108, "had a last view back on the skyline of her hometown");
-		addNode(network, 16, "YCL067C", "ALPHA2", 6,  0.169, "Bookmarksgrove, the headline of Alphabet Village and the subline of");
+		addNode(network, 16, "YCL067C",  null,    6,  0.169, "Bookmarksgrove, the headline of Alphabet Village and the subline of");
 		addNode(network, 17, "YER111C", "SWI4",   2,  0.195, "her own road, the Line Lane. Pityful a rethoric question ran over her");
 		addNode(network, 18, "YDR146C", "SWI5",   2,  -0.19, "cheek, then she continued her way. On her way she met a copy. The");
 		addNode(network, 19, "YPR113W", "PIS1",   1, -0.495, "copy warned the Little Blind Text, that where it came from it would");
@@ -558,18 +558,45 @@ public class QueryTest {
 		assertNodeHits(results, 1, 9);
 	}
 
-
-	public void testSpecialCharacters() throws Exception {
-		
-	}
 	
+	@Test
 	public void testBooleanColumns() throws Exception {
+		final String BOOL = "boolCol";
 		
+		var nodeTable = network.getDefaultNodeTable();
+		nodeTable.createColumn(BOOL, Boolean.class, false);
+		
+		Long nodeSuid1  = getSUID(nodeTable, 1);
+		Long nodeSuid9  = getSUID(nodeTable, 9);
+		Long nodeSuid15 = getSUID(nodeTable, 15);
+		
+		nodeTable.getRow(nodeSuid1) .set(BOOL, true);
+		nodeTable.getRow(nodeSuid9) .set(BOOL, false);
+		nodeTable.getRow(nodeSuid15).set(BOOL, true);
+		
+		searchManager.reindexTable(nodeTable).get();
+		
+		SearchResults results;
+		
+		// Booleans are indexed as strings with value "true" or "false"
+		results = queryIndex("true");
+		assertNodeHits(results, 1, 15);
+		results = queryIndex("boolCol:true");
+		assertNodeHits(results, 1, 15);
+		results = queryIndex("false");
+		assertNodeHits(results, 9);
+		results = queryIndex("name:true");
+		assertNodeHits(results);
 	}
-	
+
+
 	public void testBooleanOperators() throws Exception {
 		
 	}
 	
+	
+	public void testSpecialCharacters() throws Exception {
+		
+	}
 	
 }
