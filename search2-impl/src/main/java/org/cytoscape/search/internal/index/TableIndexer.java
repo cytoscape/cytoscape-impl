@@ -105,7 +105,7 @@ public class TableIndexer {
 		if(valueType == String.class) {
 			String attrValue = row.get(attrName, String.class);
 			if(attrValue != null) {
-				doc.add(new TextField(attrName, attrValue, Field.Store.YES));  // MKTODO, make this a NO
+				doc.add(new TextField(attrName, attrValue, Field.Store.NO));
 			}				
 		} else if(valueType == Integer.class) {
 			Integer attrValue = row.get(attrName, Integer.class);

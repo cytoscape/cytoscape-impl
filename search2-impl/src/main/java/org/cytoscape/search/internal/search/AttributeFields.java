@@ -27,6 +27,7 @@ package org.cytoscape.search.internal.search;
 
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.model.CyColumn;
@@ -40,9 +41,10 @@ import org.cytoscape.model.CyTable;
  */
 public class AttributeFields {
 	
-	private final Map<String, Class<?>> columnTypeMap = new HashMap<>();
+	private final Map<String,Class<?>> columnTypeMap = new HashMap<>();
 	private final Map<String,String> partNameMap = new HashMap<>();
 
+	
 	public AttributeFields(CyNetwork network) {
 		initFields(network.getDefaultNodeTable());
 		initFields(network.getDefaultEdgeTable());
@@ -52,13 +54,20 @@ public class AttributeFields {
 		initFields(table);
 	}
 	
+	
 	private void initFields(CyTable table) {
 		for(CyColumn column : table.getColumns()) {
+			
 			String fullName = column.getName().toLowerCase();
-			String partName = column.getNameOnly().toLowerCase();
 			
 			if(fullName != null) {
-				columnTypeMap.putIfAbsent(fullName, column.getType());
+				Class<?> type = column.getType();
+				if(type == List.class)
+					type = column.getListElementType();
+				
+				columnTypeMap.putIfAbsent(fullName, type);
+				
+				String partName = column.getNameOnly().toLowerCase();
 				if(!fullName.equals(partName)) {
 					partNameMap.putIfAbsent(partName, fullName);
 				}
@@ -67,13 +76,7 @@ public class AttributeFields {
 	}
 
 	public String[] getFields() {
-		String[] keys = new String[columnTypeMap.size()];
-		
-		int i = 0;
-		for(String key : columnTypeMap.keySet()) {
-			keys[i++] = key;
-		}
-		return keys;
+		return columnTypeMap.keySet().toArray(String[]::new);
 	}
 
 	public Class<?> getType(String fullName) {

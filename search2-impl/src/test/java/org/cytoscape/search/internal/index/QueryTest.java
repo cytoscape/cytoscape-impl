@@ -129,6 +129,7 @@ public class QueryTest {
 		row.set(NODE_DEGREE_LAYOUT, degree);
 		row.set(NODE_GAL_FILTERED_GAL1R_GEXP, galexp);
 		row.set(NODE_DUMMY_TEXT, dummyText);
+		
 		return node.getSUID();
 	}
 	
@@ -185,7 +186,7 @@ public class QueryTest {
 		List<String> nodeHits = results.getNodeHits();
 		for(int id : ids) {
 			Long suid = nodeTable.getMatchingKeys(TEST_ID, id, Long.class).iterator().next();
-			assertTrue("nodeHits " + nodeHits + ", does not contain " + suid, nodeHits.contains(String.valueOf(suid)));
+			assertTrue("id " + id + " not in query results", nodeHits.contains(String.valueOf(suid)));
 		}
 	}
 	
@@ -478,7 +479,7 @@ public class QueryTest {
 		results = queryIndex("BAR1");
 		assertNodeHits(results, 1);
 		
-		// Namespaces must be double escaped
+		// Namespace separator must be escaped
 		results = queryIndex("namespace\\:\\:common:BAR1");
 		assertNodeHits(results, 1);
 		
@@ -488,18 +489,22 @@ public class QueryTest {
 
 		final String COMMON2 = "namespace2::common";
 		final String NUMERIC = "numeric::mycolumn";
+		
 		var nodeTable = network.getDefaultNodeTable();
+		nodeTable.createColumn(COMMON2, String.class, false);
+		nodeTable.createColumn(NUMERIC, Double.class, false);
+		
 		Long nodeSuid1  = getSUID(nodeTable, 1);
 		Long nodeSuid9  = getSUID(nodeTable, 9);
 		Long nodeSuid15 = getSUID(nodeTable, 15);
-		nodeTable.createColumn(COMMON2, String.class, false);
-		nodeTable.createColumn(NUMERIC, Double.class, false);
+		
 		nodeTable.getRow(nodeSuid1).set(COMMON2, "sam");
 		nodeTable.getRow(nodeSuid9).set(COMMON2, "frodo");
 		nodeTable.getRow(nodeSuid15).set(COMMON2, "gandalf");
 		nodeTable.getRow(nodeSuid1).set(NUMERIC, 1.0);
 		nodeTable.getRow(nodeSuid9).set(NUMERIC, 2.0);
 		nodeTable.getRow(nodeSuid15).set(NUMERIC, 3.0);
+		
 		searchManager.reindexTable(nodeTable).get();
 		
 		// The first column named 'common' should win
@@ -513,15 +518,56 @@ public class QueryTest {
 		assertNodeHits(results, 9);
 	}
 	
+	
+	@Test
+	public void testListColumns() throws Exception {
+		final String INT_LIST = "nodeIntList";
+		final String STR_LIST = "nodeStrList";
+		
+		var nodeTable = network.getDefaultNodeTable();
+		nodeTable.createListColumn(INT_LIST, Integer.class, false);
+		nodeTable.createListColumn(STR_LIST, String.class, false);
+		
+		Long nodeSuid1  = getSUID(nodeTable, 1);
+		Long nodeSuid9  = getSUID(nodeTable, 9);
+		Long nodeSuid15 = getSUID(nodeTable, 15);
+		
+		nodeTable.getRow(nodeSuid1) .set(INT_LIST, List.of(100, 101, 102));
+		nodeTable.getRow(nodeSuid9 ).set(INT_LIST, List.of(102, 103, 104));
+		nodeTable.getRow(nodeSuid15).set(INT_LIST, List.of(100));
+		nodeTable.getRow(nodeSuid1) .set(STR_LIST, List.of("sam", "gandalf", "frodo"));
+		nodeTable.getRow(nodeSuid9) .set(STR_LIST, List.of("gandalf", "legolas"));
+		nodeTable.getRow(nodeSuid15).set(STR_LIST, List.of("legolas", "boromir"));
+		
+		searchManager.reindexTable(nodeTable).get();
+		
+		SearchResults results;
+		
+		results = queryIndex("gandalf");
+		assertNodeHits(results, 1, 9);
+		results = queryIndex("nodestrlist:gandalf");
+		assertNodeHits(results, 1, 9);
+		results = queryIndex("gandalf legolas");
+		assertNodeHits(results, 1, 9, 15);
+		
+		results = queryIndex("nodeIntList:102");
+		assertNodeHits(results, 1, 9);
+		results = queryIndex("nodeIntList:[100 TO 102]");
+		assertNodeHits(results, 1, 9, 15);
+		results = queryIndex("nodeIntList:{100 TO 102]");
+		assertNodeHits(results, 1, 9);
+	}
+
+
 	public void testSpecialCharacters() throws Exception {
 		
 	}
 	
-	public void testBooleanOperators() throws Exception {
+	public void testBooleanColumns() throws Exception {
 		
 	}
 	
-	public void testListColumns() throws Exception {
+	public void testBooleanOperators() throws Exception {
 		
 	}
 	
