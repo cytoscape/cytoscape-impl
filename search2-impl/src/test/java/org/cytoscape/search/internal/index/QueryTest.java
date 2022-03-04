@@ -179,7 +179,7 @@ public class QueryTest {
 	}
 	
 	private void assertNodeHits(SearchResults results, int ... ids) {
-		assertEquals(ids.length, results.getNodeHitCount());
+		assertEquals("wrong number of hits", ids.length, results.getNodeHitCount());
 		if(ids.length == 0)
 			return;
 		CyTable nodeTable = network.getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS);
@@ -191,7 +191,7 @@ public class QueryTest {
 	}
 	
 	private void assertEdgeHits(SearchResults results, int ... ids) {
-		assertEquals(ids.length, results.getEdgeHitCount());
+		assertEquals("wrong number of hits", ids.length, results.getEdgeHitCount());
 		if(ids.length == 0)
 			return;
 		CyTable edgeTable = network.getTable(CyEdge.class, CyNetwork.DEFAULT_ATTRS);
@@ -590,13 +590,25 @@ public class QueryTest {
 	}
 
 
+	@Test
 	public void testBooleanOperators() throws Exception {
+		SearchResults results;
 		
+		results = queryIndex("far");
+		assertNodeHits(results, 1, 9);
+		results = queryIndex("from");
+		assertNodeHits(results, 1, 19, 21);
+		results = queryIndex("far from");
+		assertNodeHits(results, 1, 9, 19, 21);
+		results = queryIndex("far OR from");
+		assertNodeHits(results, 1, 9, 19, 21);
+		results = queryIndex("\"far from\"");
+		assertNodeHits(results, 1);
+		results = queryIndex("far AND from");
+		assertNodeHits(results, 1);
+		results = queryIndex("\"blind text by\"");
+		assertNodeHits(results, 9);
 	}
 	
-	
-	public void testSpecialCharacters() throws Exception {
-		
-	}
 	
 }
