@@ -34,9 +34,9 @@ public class QueryTest {
 	
 	private static final String TEST_ID = "TestID";
 	
-	private static final String NODE_COMMON = "COMMON";
+	private static final String NODE_COMMON = "namespace::COMMON";
 	private static final String NODE_DEGREE_LAYOUT = "degree.layout";
-	private static final String NODE_GAL_FILTERED_GAL1R_GEXP = "galFiltered::gal1RGexp";
+	private static final String NODE_GAL_FILTERED_GAL1R_GEXP = "gal1RGexp";
 	private static final String NODE_DUMMY_TEXT = "dummyText";
 	
 	private static final String EDGE_EDGEBETWEENNESS = "EdgeBetweenness";
@@ -310,7 +310,7 @@ public class QueryTest {
 		results = queryIndex("foo");
 		assertNodeHits(results, 1);
 		
-		results = queryIndex("common:bazinga");
+		results = queryIndex("bazinga");
 		assertNodeHits(results, 9);
 		
 		results = queryIndex("baz");
@@ -463,11 +463,54 @@ public class QueryTest {
 		
 		results = queryIndex(EDGE_EDGEBETWEENNESS+":{4.83333333 TO 9.83333333}");
 		assertEdgeHits(results, 19);
+		
+		// TODO: The MultiFieldQueryParser doesn't support this. 
+		// If you want to do a numeric query you must specify the column name.
+//		results = queryIndex("19179.59362859");
+//		assertEdgeHits(results, 6);
 	}
 
-	
+
+	@Test
 	public void testColumnNamespaces() throws Exception {
+		SearchResults results;
 		
+		results = queryIndex("BAR1");
+		assertNodeHits(results, 1);
+		
+		// Namespaces must be double escaped
+		results = queryIndex("namespace\\:\\:common:BAR1");
+		assertNodeHits(results, 1);
+		
+		// Can use just the name without the namespace.
+		results = queryIndex("common:BAR1");
+		assertNodeHits(results, 1);
+
+		final String COMMON2 = "namespace2::common";
+		final String NUMERIC = "numeric::mycolumn";
+		var nodeTable = network.getDefaultNodeTable();
+		Long nodeSuid1  = getSUID(nodeTable, 1);
+		Long nodeSuid9  = getSUID(nodeTable, 9);
+		Long nodeSuid15 = getSUID(nodeTable, 15);
+		nodeTable.createColumn(COMMON2, String.class, false);
+		nodeTable.createColumn(NUMERIC, Double.class, false);
+		nodeTable.getRow(nodeSuid1).set(COMMON2, "sam");
+		nodeTable.getRow(nodeSuid9).set(COMMON2, "frodo");
+		nodeTable.getRow(nodeSuid15).set(COMMON2, "gandalf");
+		nodeTable.getRow(nodeSuid1).set(NUMERIC, 1.0);
+		nodeTable.getRow(nodeSuid9).set(NUMERIC, 2.0);
+		nodeTable.getRow(nodeSuid15).set(NUMERIC, 3.0);
+		searchManager.reindexTable(nodeTable).get();
+		
+		// The first column named 'common' should win
+		results = queryIndex("common:BAR1");
+		assertNodeHits(results, 1);
+		results = queryIndex("common:sam");
+		assertNodeHits(results);
+		
+		// Should work for numbers
+		results  = queryIndex("mycolumn:2.0");
+		assertNodeHits(results, 9);
 	}
 	
 	public void testSpecialCharacters() throws Exception {
@@ -475,6 +518,10 @@ public class QueryTest {
 	}
 	
 	public void testBooleanOperators() throws Exception {
+		
+	}
+	
+	public void testListColumns() throws Exception {
 		
 	}
 	

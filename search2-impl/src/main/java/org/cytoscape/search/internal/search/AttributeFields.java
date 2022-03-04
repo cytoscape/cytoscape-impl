@@ -41,6 +41,7 @@ import org.cytoscape.model.CyTable;
 public class AttributeFields {
 	
 	private final Map<String, Class<?>> columnTypeMap = new HashMap<>();
+	private final Map<String,String> partNameMap = new HashMap<>();
 
 	public AttributeFields(CyNetwork network) {
 		initFields(network.getDefaultNodeTable());
@@ -51,18 +52,16 @@ public class AttributeFields {
 		initFields(table);
 	}
 	
-	/**
-	 * Initialize this object with attribute fields names and their type.
-	 * Eventually, fields[i] will hold attribute field name and types[i] will hold its type.
-	 * fields[] and types[] contain both node and edge attributes.
-	 * ID (INDEX_FIELD) is treated as another attribute of type string.
-	 * There are probably better ways to do this, but there you go :)
-	 */
 	private void initFields(CyTable table) {
 		for(CyColumn column : table.getColumns()) {
-			String name = column.getName(); 
-			if(name != null) {
-				columnTypeMap.put(name.toLowerCase(), column.getType());
+			String fullName = column.getName().toLowerCase();
+			String partName = column.getNameOnly().toLowerCase();
+			
+			if(fullName != null) {
+				columnTypeMap.putIfAbsent(fullName, column.getType());
+				if(!fullName.equals(partName)) {
+					partNameMap.putIfAbsent(partName, fullName);
+				}
 			}
 		}
 	}
@@ -77,8 +76,17 @@ public class AttributeFields {
 		return keys;
 	}
 
-	public Class<?> getType(String name) {
-		return columnTypeMap.get(name.toLowerCase());
+	public Class<?> getType(String fullName) {
+		return columnTypeMap.get(fullName.toLowerCase());
+	}
+	
+	public String getFullName(String partName) {
+		return partNameMap.get(partName);
+	}
+	
+	@Override
+	public String toString() {
+		return "AttributeFields(" + columnTypeMap.toString() + ") parts:"+partNameMap;
 	}
 	
 }

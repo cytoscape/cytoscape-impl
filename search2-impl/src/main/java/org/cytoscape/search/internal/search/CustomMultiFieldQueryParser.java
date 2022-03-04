@@ -42,8 +42,17 @@ public class CustomMultiFieldQueryParser extends MultiFieldQueryParser {
 	 */
 	@Override
 	protected Query getFieldQuery(String field, String queryText, boolean quoted) throws ParseException {
+		// field == null means its a multi-field query
 		if(field != null) {
 			Class<?> type = fields.getType(field);
+			if(type == null) {
+				String fullName = fields.getFullName(field);
+				if(fullName != null) {
+					field = fullName;
+					type = fields.getType(fullName);
+				}
+			}
+			
 			try {
 				if(type == Integer.class) {
 					int num = Integer.parseInt(queryText);
