@@ -31,7 +31,7 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.NetworkTestSupport;
-import org.cytoscape.search.internal.search.AttributeFields;
+import org.cytoscape.search.internal.index.AttributeFields;
 import org.junit.Test;
 
 public class AttributeFieldsTest {

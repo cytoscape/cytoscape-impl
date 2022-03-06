@@ -3,13 +3,19 @@ package org.cytoscape.search.internal;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.swing.CytoPanelComponent;
+import org.cytoscape.application.swing.TableToolBarComponent;
+import org.cytoscape.application.swing.ToolBarComponent;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.search.internal.index.SearchManager;
-import org.cytoscape.search.internal.ui.DebugSearchProgressPanel;
-import org.cytoscape.search.internal.ui.SearchBox;
-import org.cytoscape.search.internal.ui.SearchBoxToolbarComponent;
+import org.cytoscape.search.internal.ui.NetworkSearchBox;
+import org.cytoscape.search.internal.ui.TableSearchBox;
+import org.cytoscape.search.internal.ui.debug.DebugSearchProgressPanel;
 
 /*
  * #%L
@@ -61,12 +67,19 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		
 		var searchManager = new SearchManager(registrar, baseDir);
-		var searchBox = new SearchBox(registrar, searchManager);
-		var toolbarComponent = new SearchBoxToolbarComponent(searchBox);
-		
 		registerAllServices(bc, searchManager);
-		registerAllServices(bc, toolbarComponent);
 		
+		// Network search
+		var searchBox = new NetworkSearchBox(registrar, searchManager);
+		registerService(bc, searchBox, ToolBarComponent.class);
+		
+		// Table search
+		for(var type : List.of(CyNode.class, CyEdge.class, CyNetwork.class)) {  // add 'null' to list to support unassigned tables
+			var tableSearchBox = new TableSearchBox(registrar, searchManager, type);
+ 			registerService(bc, tableSearchBox, TableToolBarComponent.class);
+		}
+		
+		// Debug panel
 		if(DebugSearchProgressPanel.showDebugPanel(registrar)) {
 			var debugPanel = new DebugSearchProgressPanel();
 			searchManager.addProgressViewer(debugPanel);

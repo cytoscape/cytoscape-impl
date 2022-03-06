@@ -28,8 +28,6 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.events.ColumnCreatedEvent;
-import org.cytoscape.model.events.ColumnCreatedListener;
 import org.cytoscape.model.events.ColumnDeletedEvent;
 import org.cytoscape.model.events.ColumnDeletedListener;
 import org.cytoscape.model.events.ColumnNameChangedEvent;
@@ -54,7 +52,7 @@ import org.slf4j.LoggerFactory;
 
 public class SearchManager implements 
 	TableAddedListener, TableAboutToBeDeletedListener, 
-	ColumnDeletedListener, ColumnNameChangedListener, ColumnCreatedListener,
+	ColumnDeletedListener, ColumnNameChangedListener,
 	RowsSetListener, RowsCreatedListener, RowsDeletedListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
@@ -90,6 +88,10 @@ public class SearchManager implements
 	
 	public boolean isReady(Long suid) {
 		return tableIndexMap.containsKey(suid);
+	}
+	
+	public boolean isReady(CyTable tab) {
+		return isReady(tab.getSUID());
 	}
 	
 	public boolean isReady(CyTable tab1, CyTable tab2) {
@@ -279,14 +281,6 @@ public class SearchManager implements
 		});
 	}
 	
-	
-	@Override
-	public void handleEvent(ColumnCreatedEvent e) {
-//		var table = e.getSource();
-//		if(isIndexable(table)) {
-//			columnChangeDebounceTimer.debounce(() -> reindexTable(table));
-//		}
-	}
 	
 	@Override
 	public void handleEvent(ColumnDeletedEvent e) {

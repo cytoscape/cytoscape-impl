@@ -24,12 +24,8 @@ import javax.swing.KeyStroke;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.CyUserLog;
-import org.cytoscape.search.internal.index.SearchManager;
-import org.cytoscape.search.internal.search.NetworkSearchTask;
 import org.cytoscape.search.internal.search.SearchResults;
-import org.cytoscape.search.internal.search.SearchResults.Status;
+import org.cytoscape.search.internal.search.SearchTask;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.FinishStatus;
@@ -37,8 +33,6 @@ import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /*
  * #%L 
@@ -65,21 +59,21 @@ import org.slf4j.LoggerFactory;
  */
 
 @SuppressWarnings("serial")
-public class SearchBox extends JPanel {
+public abstract class SearchBox extends JPanel {
 
-	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
-	
-	private final SearchManager searchManager;
-	private final CyServiceRegistrar registrar;
-	
+	private CyServiceRegistrar registrar;
 	private JTextField searchTextField;
-	private ProgressPanel progressPopup;
 
+	public abstract SearchTask getSearchTask(String queryString);
 	
-	public SearchBox(CyServiceRegistrar registrar, SearchManager searchManager) {
-		this.searchManager = searchManager;
+	
+	public SearchBox(CyServiceRegistrar registrar) {
 		this.registrar = registrar;
 		initComponents();
+	}
+	
+	protected CyServiceRegistrar getServiceRegistrar() {
+		return registrar;
 	}
 	
 	private void initComponents() {
@@ -104,7 +98,6 @@ public class SearchBox extends JPanel {
 			
 			searchTextField = new JTextField();
 			searchTextField.putClientProperty("JTextField.variant", "search");
-			searchTextField.setText("search2");
 
 			searchTextField.setToolTipText("<html>Example Search Queries:<br><br>YL* -- Search all columns<br>name:YL* -- Search 'name' column<br>GO\\:1232 -- Escape special characters and spaces with backslash</html>");
 			searchTextField.setName("tfSearchText");
@@ -139,6 +132,35 @@ public class SearchBox extends JPanel {
 	}
 	
 	
+	private void doSearching() {
+		var queryStr = searchTextField.getText().trim();
+		if(queryStr.length() == 0)
+			return;
+		
+		SearchTask searchTask = getSearchTask(queryStr);
+		
+		var taskMgr = registrar.getService(DialogTaskManager.class);
+		taskMgr.execute(new TaskIterator(searchTask), new TaskObserver() {
+			
+			@Override
+			public void allFinished(FinishStatus status) {
+				if(status.getType() == FinishStatus.Type.SUCCEEDED) {
+					var results = searchTask.getResults(SearchResults.class);
+					if(results == null)
+						return;
+					String message = searchTask.getResults(String.class);
+					showPopup(message, results.isError());
+				} 
+			}
+
+			@Override
+			public void taskFinished(ObservableTask task) { }
+			
+		});
+	}
+	
+	
+	@SuppressWarnings("deprecation")
 	private void setKeyBindings(JComponent comp) {
 		var actionMap = comp.getActionMap();
 		var inputMap = comp.getInputMap(WHEN_IN_FOCUSED_WINDOW);
@@ -167,53 +189,15 @@ public class SearchBox extends JPanel {
 			}
 		}
 	}
-	
-	
-	private void doSearching() {
-		var queryStr = searchTextField.getText().trim();
-		if (queryStr == null || queryStr.length() == 0)
-			return;
-		
-		var appManager = registrar.getService(CyApplicationManager.class);
-		var currentNetwork = appManager.getCurrentNetwork();
-		
-		if(currentNetwork != null) {
-			NetworkSearchTask task = new NetworkSearchTask(searchManager, currentNetwork, queryStr);
-			
-			var taskMgr = registrar.getService(DialogTaskManager.class);
-			taskMgr.execute(new TaskIterator(task), new TaskObserver() {
-				SearchResults results;
-				@Override
-				public void taskFinished(ObservableTask task) {
-					if(task instanceof NetworkSearchTask searchTask) {
-						results = searchTask.getResults(SearchResults.class);
-					}
-				}
-				@Override
-				public void allFinished(FinishStatus status) {
-					if(results == null)
-						return;
-					if(status.getType() == FinishStatus.Type.SUCCEEDED) {
-						showPopup(results);
-					} 
-				}
-			});
-		} else {
-			logger.error("Could not find network for search");
-		}
-	}
-	
 
-	private void showPopup(SearchResults results) {
-		if (results == null)
+	protected void showPopup(String message, boolean error) {
+		if(message == null)
 			return;
 		
 		var label = new JLabel();
-		
-		if (results.isError() || results.getStatus() == Status.NOT_READY)
+		label.setText("   " + message + "   ");
+		if (error)
 			label.setForeground(Color.RED);
-		
-		label.setText("   " + results.getMessage() + "   ");
 		
 		LookAndFeelUtil.makeSmall(label);
 		

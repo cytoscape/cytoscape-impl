@@ -172,18 +172,18 @@ public class QueryTest {
 	}
 	
 	private SearchResults queryIndex(String query) {
-		NetworkSearchTask searchTask = new NetworkSearchTask(searchManager, network, query);
+		NetworkSearchTask searchTask = new NetworkSearchTask(searchManager, query, network);
 		var results = searchTask.runQuery(mock(TaskMonitor.class));
 		assertEquals("Error running search", Status.SUCCESS, results.getStatus());
 		return results;
 	}
 	
 	private void assertNodeHits(SearchResults results, int ... ids) {
-		assertEquals("wrong number of hits", ids.length, results.getNodeHitCount());
+		assertEquals("wrong number of hits", ids.length, results.getHitCount(network.getDefaultNodeTable()));
 		if(ids.length == 0)
 			return;
 		CyTable nodeTable = network.getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS);
-		List<String> nodeHits = results.getNodeHits();
+		List<String> nodeHits = results.getResultsFor(network.getDefaultNodeTable());
 		for(int id : ids) {
 			Long suid = nodeTable.getMatchingKeys(TEST_ID, id, Long.class).iterator().next();
 			assertTrue("id " + id + " not in query results", nodeHits.contains(String.valueOf(suid)));
@@ -191,11 +191,11 @@ public class QueryTest {
 	}
 	
 	private void assertEdgeHits(SearchResults results, int ... ids) {
-		assertEquals("wrong number of hits", ids.length, results.getEdgeHitCount());
+		assertEquals("wrong number of hits", ids.length, results.getHitCount(network.getDefaultEdgeTable()));
 		if(ids.length == 0)
 			return;
 		CyTable edgeTable = network.getTable(CyEdge.class, CyNetwork.DEFAULT_ATTRS);
-		List<String> edgeHits = results.getEdgeHits();
+		List<String> edgeHits = results.getResultsFor(network.getDefaultEdgeTable());
 		for(int id : ids) {
 			Long suid = edgeTable.getMatchingKeys(TEST_ID, id, Long.class).iterator().next();
 			assertTrue("id " + id + " not in query results", edgeHits.contains(String.valueOf(suid)));

@@ -1,4 +1,4 @@
-package org.cytoscape.search.internal.search;
+package org.cytoscape.search.internal.index;
 
 /*
  * #%L

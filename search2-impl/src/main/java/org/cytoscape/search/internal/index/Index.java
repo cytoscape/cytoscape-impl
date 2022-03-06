@@ -13,8 +13,6 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.search.internal.search.AttributeFields;
-import org.cytoscape.search.internal.search.CustomMultiFieldQueryParser;
 
 public class Index {
 	

@@ -1,4 +1,4 @@
-package org.cytoscape.search.internal.ui;
+package org.cytoscape.search.internal.ui.debug;
 
 import java.util.Properties;
 

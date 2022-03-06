@@ -1,4 +1,4 @@
-package org.cytoscape.search.internal.search;
+package org.cytoscape.search.internal.index;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.DoublePoint;

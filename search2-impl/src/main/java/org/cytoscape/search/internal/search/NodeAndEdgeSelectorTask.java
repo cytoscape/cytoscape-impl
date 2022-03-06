@@ -66,8 +66,8 @@ public class NodeAndEdgeSelectorTask extends AbstractTask {
 	}
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
-		selectNodesAndEdges(taskMonitor);
+	public void run(TaskMonitor tm) {
+		selectNodesAndEdges(tm);
 	}
 	
 	/**
@@ -79,23 +79,26 @@ public class NodeAndEdgeSelectorTask extends AbstractTask {
 	 * @param network The network to adjust selections on
 	 * @param searchResults the nodes and edges to select
 	 * @param task Task this is running under
-	 * @param taskMonitor monitor used to let caller know status
+	 * @param tm monitor used to let caller know status
 	 */
-	public void selectNodesAndEdges(TaskMonitor taskMonitor) {
+	public void selectNodesAndEdges(TaskMonitor tm) {
 		if (network == null || network.getNodeList().size() == 0)
 			return;
 
-		int nodeHitCount = searchResults.getNodeHitCount();
-		int edgeHitCount = searchResults.getEdgeHitCount();
+		List<String> nodeHits = searchResults.getResultsFor(network.getDefaultNodeTable());
+		List<String> edgeHits = searchResults.getResultsFor(network.getDefaultEdgeTable());
+		
+		int nodeHitCount = nodeHits == null ? 0 : nodeHits.size();
+		int edgeHitCount = edgeHits == null ? 0 : edgeHits.size();
 		
 		if (nodeHitCount == 0 && edgeHitCount == 0) {
-			taskMonitor.setStatusMessage("Could not find any match.");
-			unselectNodesAndEdges(taskMonitor);
-			taskMonitor.setTitle("Search Finished");
-			taskMonitor.setProgress(1.0);
+			tm.setStatusMessage("Could not find any match.");
+			unselectNodesAndEdges(tm);
+			tm.setTitle("Search Finished");
+			tm.setProgress(1.0);
 			return;
 		}
-		if (!unselectNodesAndEdges(taskMonitor)) {
+		if (!unselectNodesAndEdges(tm)) {
 			return;
 		}
 		String nodeplural = "s";
@@ -106,21 +109,19 @@ public class NodeAndEdgeSelectorTask extends AbstractTask {
 		if (edgeHitCount == 1) {
 			edgeplural = "";
 		}
-		taskMonitor.setStatusMessage("Selecting " + nodeHitCount + " node" + nodeplural + " and " + edgeHitCount + " edge" + edgeplural);
+		tm.setStatusMessage("Selecting " + nodeHitCount + " node" + nodeplural + " and " + edgeHitCount + " edge" + edgeplural);
 
-		List<String> nodeHits = searchResults.getNodeHits();
-		List<String> edgeHits = searchResults.getEdgeHits();
 		int totalHitCount = nodeHitCount + edgeHitCount;
 		long startTime = System.currentTimeMillis();
-		selectNodes(nodeHits, nodeHitCount, totalHitCount, taskMonitor);
-		selectEdges(edgeHits, edgeHitCount, totalHitCount, taskMonitor);
+		selectNodes(nodeHits, nodeHitCount, totalHitCount, tm);
+		selectEdges(edgeHits, edgeHitCount, totalHitCount, tm);
 		
 		if (cancelled) {
 			return;
 		}
-		taskMonitor.setStatusMessage("Selecting " + nodeHitCount + " nodes and "
-		                             + edgeHitCount + " edges completed in "
-				                     + Long.toString(System.currentTimeMillis() - startTime) + " ms");
+		tm.setStatusMessage("Selecting " + nodeHitCount + " nodes and "
+                             + edgeHitCount + " edges completed in "
+		                     + Long.toString(System.currentTimeMillis() - startTime) + " ms");
 	}
 
 	/**
@@ -214,6 +215,8 @@ public class NodeAndEdgeSelectorTask extends AbstractTask {
 	 * @param taskMonitor task monitor that updates the user as to status
 	 */
 	private void selectNodes(final List<String> nodeHits, int nodeHitCount, int totalHitCount, TaskMonitor taskMonitor) {
+		if(nodeHits == null)
+			return;
 		final Iterator<String> nodeIt = nodeHits.iterator();
 		int counter = 0;
 		taskMonitor.setProgress(0.0);
@@ -241,6 +244,8 @@ public class NodeAndEdgeSelectorTask extends AbstractTask {
 	 * @param taskMonitor task monitor that updates the user as to status
 	 */
 	private void selectEdges(final List<String> edgeHits, int edgeHitCount, int totalHitCount, TaskMonitor taskMonitor) {
+		if(edgeHits == null)
+			return;
 		final Iterator<String> edgeIt = edgeHits.iterator();
 		int counter = totalHitCount - edgeHitCount;
 

@@ -1,4 +1,4 @@
-package org.cytoscape.search.internal.ui;
+package org.cytoscape.search.internal.ui.debug;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;

@@ -100,7 +100,7 @@ public class NodeAndEdgeSelectorTaskTest {
 		network.getRow(node2).set(CyNetwork.NAME, "node2");
 
 		TaskMonitor mockMonitor = mock(TaskMonitor.class);
-		SearchResults results = SearchResults.results(
+		SearchResults results = SearchResults.networkResults(network,
 				Arrays.asList(node1.getSUID().toString(), node2.getSUID().toString()), new ArrayList<String>());
 		
 		NodeAndEdgeSelectorTask selector = new NodeAndEdgeSelectorTask(network, results);
@@ -129,7 +129,7 @@ public class NodeAndEdgeSelectorTaskTest {
 		network.getRow(edge1).set(CyNetwork.SELECTED, true);
 
 		TaskMonitor mockMonitor = mock(TaskMonitor.class);
-		SearchResults results = SearchResults.results(
+		SearchResults results = SearchResults.networkResults(network,
 				Arrays.asList(node1.getSUID().toString(), node2.getSUID().toString()), 
 				Arrays.asList(edge1.getSUID().toString()));
 		
@@ -165,7 +165,7 @@ public class NodeAndEdgeSelectorTaskTest {
 		CyEdge edge2 = network.addEdge(node1, node3, false);
 
 		TaskMonitor mockMonitor = mock(TaskMonitor.class);
-		SearchResults results = SearchResults.results(
+		SearchResults results = SearchResults.networkResults(network,
 				Arrays.asList(node1.getSUID().toString(), node2.getSUID().toString()), 
 				Arrays.asList(edge1.getSUID().toString(), edge2.getSUID().toString()));
 		
