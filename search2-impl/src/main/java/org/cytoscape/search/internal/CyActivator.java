@@ -58,8 +58,8 @@ public class CyActivator extends AbstractCyActivator {
 		
 		Path baseDir;
 		try {
+			// Karaf will create this folder under ~/CytoscapeConfiguration/3/karaf_data/tmp
 			baseDir = Files.createTempDirectory("search2_impl_");
-			baseDir.toFile().deleteOnExit();
 			System.out.println("Search index folder: " + baseDir);
 		} catch (IOException e) {
 			logger.error("Could not start search2-impl bundle. Cannot create temp folder for index files.", e);

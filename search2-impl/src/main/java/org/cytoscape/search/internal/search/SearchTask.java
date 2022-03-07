@@ -44,7 +44,7 @@ public class SearchTask extends AbstractTask implements ObservableTask {
 	
 	@Override
 	public void run(TaskMonitor tm) {
-		this.results = runQuery(tm);
+		runQuery(tm);
 	}
 
 	
@@ -81,7 +81,8 @@ public class SearchTask extends AbstractTask implements ObservableTask {
 		}
 		
 		tm.setProgress(1.0);
-		return results;
+		
+		return this.results = results;
 	}
 
 	

@@ -2,6 +2,7 @@ package org.cytoscape.search.internal.index;
 
 import static java.util.stream.Collectors.toList;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -208,11 +209,27 @@ public class SearchManager implements
 					writer.deleteAll();
 					writer.commit();
 					writer.close();
+					
+					deleteFolder(index.getPath().toFile());
 				} catch (IOException e) {
 					logger.error("Error deleting table index: " + suid, e); // TODO handle exception
 				}
 			}
 		});
+	}
+	
+	private static void deleteFolder(File folder) {
+		var files = folder.listFiles();
+		if(files != null) {
+			for(var file : files) {
+				if(file.isDirectory()) {
+					deleteFolder(file);
+				} else {
+					file.delete();
+				}
+			}
+		}
+		folder.delete();
 	}
 	
 	

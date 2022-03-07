@@ -37,6 +37,10 @@ public class Index {
 		return type;
 	}
 	
+	public Path getPath() {
+		return indexPath;
+	}
+	
 	private IndexWriterConfig getIndexWriterConfig(OpenMode openMode) {
 		Analyzer analyzer = new CaseInsensitiveWhitespaceAnalyzer();
 		IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
