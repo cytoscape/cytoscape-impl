@@ -507,16 +507,68 @@ public class QueryTest {
 		
 		searchManager.reindexTable(nodeTable).get();
 		
-		// The first column named 'common' should win
 		results = queryIndex("common:BAR1");
 		assertNodeHits(results, 1);
 		results = queryIndex("common:sam");
-		assertNodeHits(results);
+		assertNodeHits(results, 1);
 		
 		// Should work for numbers
 		results  = queryIndex("mycolumn:2.0");
 		assertNodeHits(results, 9);
 	}
+	
+	
+	@Test
+	public void testNameCollision() throws Exception {
+		var nodeTable = network.getDefaultNodeTable();
+		
+		final String common2 = "namespace2::Common";
+		final String common3 = "namespace3::CoMmOn";
+		final String common4 = "Common";
+		
+		nodeTable.createColumn(common2, String.class, false);
+		nodeTable.createColumn(common3, Double.class, false);
+		nodeTable.createColumn(common4, String.class, false);
+		
+		Long nodeSuid1  = getSUID(nodeTable, 1);
+		Long nodeSuid9  = getSUID(nodeTable, 9);
+		Long nodeSuid15 = getSUID(nodeTable, 15);
+		
+		nodeTable.getRow(nodeSuid1).set(common2, "sam");
+		nodeTable.getRow(nodeSuid9).set(common2, "frodo");
+		nodeTable.getRow(nodeSuid15).set(common2, "gandalf");
+		
+		nodeTable.getRow(nodeSuid1).set(common3, 1.0);
+		nodeTable.getRow(nodeSuid9).set(common3, 2.0);
+		nodeTable.getRow(nodeSuid15).set(common3, 3.0);
+		
+		nodeTable.getRow(nodeSuid1).set(common4, "3.0");
+		nodeTable.getRow(nodeSuid9).set(common4, "GANDALF");
+		nodeTable.getRow(nodeSuid15).set(common4, "frodo");
+		
+		searchManager.reindexTable(nodeTable).get();
+		
+		SearchResults results;
+		
+		results = queryIndex("common:frodo");
+		assertNodeHits(results, 9, 15);
+		results = queryIndex("Common:frodo");
+		assertNodeHits(results, 9, 15);
+		results = queryIndex("common:gandalf");
+		assertNodeHits(results, 9, 15);
+		results = queryIndex("common:frodo common:PMA1");
+		assertNodeHits(results, 9, 15, 7);
+		
+		results = queryIndex("common:1.0");
+		assertNodeHits(results, 1);
+		results = queryIndex("common:2.0");
+		assertNodeHits(results, 9);
+		results = queryIndex("common:3.0");
+		assertNodeHits(results, 1, 15);
+		results = queryIndex("common:3");
+		assertNodeHits(results, 15);
+	}
+	
 	
 	
 	@Test

@@ -1,5 +1,7 @@
 package org.cytoscape.search.internal.index;
 
+import java.util.Collections;
+
 /*
  * #%L
  * Cytoscape Search Impl (search-impl)
@@ -27,8 +29,10 @@ package org.cytoscape.search.internal.index;
 
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
@@ -42,7 +46,7 @@ import org.cytoscape.model.CyTable;
 public class AttributeFields {
 	
 	private final Map<String,Class<?>> columnTypeMap = new HashMap<>();
-	private final Map<String,String> partNameMap = new HashMap<>();
+	private final Map<String,Set<String>> altNameMap = new HashMap<>();
 
 	
 	public AttributeFields(CyNetwork network) {
@@ -54,25 +58,29 @@ public class AttributeFields {
 		initFields(table);
 	}
 	
-	
 	private void initFields(CyTable table) {
 		for(CyColumn column : table.getColumns()) {
+			String uniqueName = column.getName();
 			
-			String fullName = column.getName().toLowerCase();
+			Class<?> type = getType(column);
+			columnTypeMap.putIfAbsent(uniqueName, type);
 			
-			if(fullName != null) {
-				Class<?> type = column.getType();
-				if(type == List.class)
-					type = column.getListElementType();
-				
-				columnTypeMap.putIfAbsent(fullName, type);
-				
-				String partName = column.getNameOnly().toLowerCase();
-				if(!fullName.equals(partName)) {
-					partNameMap.putIfAbsent(partName, fullName);
-				}
+			// TODO what if the column name is already all lower case, is this necessary?
+			String lower = uniqueName.toLowerCase();
+			altNameMap.computeIfAbsent(lower, k -> new HashSet<>()).add(uniqueName);
+			
+			String nameOnly = column.getNameOnly().toLowerCase();
+			if(!uniqueName.equals(nameOnly)) {
+				altNameMap.computeIfAbsent(nameOnly, k -> new HashSet<>()).add(uniqueName);
 			}
 		}
+	}
+	
+	private static Class<?> getType(CyColumn column) {
+		Class<?> type = column.getType();
+		if(type == List.class)
+			type = column.getListElementType();
+		return type;
 	}
 
 	public String[] getFields() {
@@ -80,16 +88,16 @@ public class AttributeFields {
 	}
 
 	public Class<?> getType(String fullName) {
-		return columnTypeMap.get(fullName.toLowerCase());
+		return columnTypeMap.get(fullName);
 	}
 	
-	public String getFullName(String partName) {
-		return partNameMap.get(partName);
+	public Set<String> getAltNames(String fieldName) {
+		return altNameMap.getOrDefault(fieldName, Collections.emptySet());
 	}
-	
+
 	@Override
 	public String toString() {
-		return "AttributeFields(" + columnTypeMap.toString() + ") parts:"+partNameMap;
+		return "AttributeFields [columnTypeMap=" + columnTypeMap + ", altNameMap=" + altNameMap + "]";
 	}
 	
 }

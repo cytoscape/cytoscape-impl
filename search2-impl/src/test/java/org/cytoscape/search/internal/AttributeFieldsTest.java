@@ -62,7 +62,7 @@ public class AttributeFieldsTest {
 		assertEquals(fieldNameSet.size(), fields.getFields().length);
 		
 		// assuming suid column will be a type Long
-		assertEquals("java.lang.Long", fields.getType("suid").getName());
+		assertEquals("java.lang.Long", fields.getType("SUID").getName());
 	}
 	
 

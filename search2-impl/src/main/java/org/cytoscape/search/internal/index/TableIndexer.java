@@ -90,8 +90,7 @@ public class TableIndexer {
 			if(Objects.equals(CyNetwork.SELECTED, attrName))
 				continue;
 			
-			String attrIndexingName = attrName.toLowerCase();
-			indexField(doc, table, attrIndexingName, key);
+			indexField(doc, table, attrName, key);
 		}
 		return doc;
 	}
