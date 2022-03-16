@@ -1,10 +1,7 @@
 package org.cytoscape.search.internal.ui;
 
-import java.awt.Component;
-
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
-import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.search.internal.index.SearchManager;
 import org.cytoscape.search.internal.search.NetworkSearchTask;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -12,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("serial")
-public class NetworkSearchBox extends SearchBox implements ToolBarComponent {
+public class NetworkSearchBox extends SearchBox {
 
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
@@ -37,14 +34,6 @@ public class NetworkSearchBox extends SearchBox implements ToolBarComponent {
 		return new NetworkSearchTask(searchManager, queryString, currentNetwork);
 	}
 
-	@Override
-	public Component getComponent() {
-		return this;
-	}
-
-	@Override
-	public float getToolBarGravity() {
-		return 100000000000000.1f;
-	}
+	
 	
 }

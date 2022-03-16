@@ -103,7 +103,6 @@ public class SearchTask extends AbstractTask implements ObservableTask {
 		Query query;
 		try {
 			query = searchManager.getQueryParser(table).parse(queryString);
-			System.out.println(query);
 		} catch (ParseException e) {
 			logger.error(e.getMessage(), e);
 			return SearchResults.syntaxError();
