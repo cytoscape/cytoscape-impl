@@ -14,6 +14,7 @@ import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -82,7 +83,9 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 		
 		setPaletteType(paletteType);
 		setDefaultPaletteName(defaultPaletteName);
-		palette = getDefaultPalette();
+		
+		var colors = chart.getList(COLORS, Color.class);
+		palette = colors.isEmpty() ? getDefaultPalette() : null;
 		
 		COLOR_BORDER = BorderFactory.createCompoundBorder(
 				BorderFactory.createLineBorder(UIManager.getColor("TextField.background"), 2),
@@ -92,7 +95,7 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 				BorderFactory.createLineBorder(UIManager.getColor("TextField.background"), 1));
 		
 		init();
-		updateColorList(true);
+		updateColorList(colors.isEmpty());
 		updateColorPaletteBtn();
 	}
 
@@ -235,16 +238,16 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 		getColorPaletteBtn().setText(palette != null ? palette.getName() : "None");
 	}
 	
-	protected void updateColorList(boolean newScheme) {
+	protected void updateColorList(boolean isNewScheme) {
 		List<Color> colors = new ArrayList<>(chart.getList(COLORS, Color.class));
 		var scheme = chart.get(COLOR_SCHEME, ColorScheme.class);
 		
-		if (scheme == null) {
+		if (scheme != null) {
+			palette = scheme.getPalette();
+		} else if (colors.isEmpty()) {
 			palette = getDefaultPalette();
 			scheme = getDefaultColorScheme();
 			chart.set(COLOR_SCHEME, scheme);
-		} else {
-			palette = scheme.getPalette();
 		}
 		
 		updateColorPaletteBtn();
@@ -253,7 +256,7 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 		int paletteSize = getPaletteSize();
 		
 		if (nColors > 0) {
-			if (newScheme || colors.isEmpty()) {
+			if (isNewScheme || colors.isEmpty()) {
 				if (CUSTOM.equals(scheme)) {
 					int newSize = Math.max(colors.size(), nColors);
 					colors = new ArrayList<Color>(newSize);
@@ -261,7 +264,8 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 					for (int i = 0; i < newSize; i++)
 						colors.add(i%2 == 0 ? DEFAULT_COLOR : DEFAULT_COLOR.darker());
 				} else {
-					colors = scheme.getColors(paletteSize);
+					if (scheme != null)
+						colors = scheme.getColors(paletteSize);
 					
 					// If the required palette size is smaller than the total number of colors,
 					// fill the remaining colors with gray
@@ -378,7 +382,7 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 				@Override
 				public void mouseClicked(MouseEvent e) {
 					chooseColor();
-					onColorsUpdated();
+					onColorUpdated();
 				}
 				@Override
 				public void mouseEntered(MouseEvent e) {
@@ -409,11 +413,20 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 				color = newColor;
 				setBackground(newColor);
 				setForeground(ColorUtil.getContrastingColor(newColor));
+				
+				if (palette != null) {
+					var pColors = Arrays.asList(palette.getColors());
+					
+					if (!pColors.contains(newColor)) {
+						palette = null;
+						updateColorPaletteBtn();
+					}
+				}
 			}
 		}
 		
 		@SuppressWarnings("rawtypes")
-		private void onColorsUpdated() {
+		private void onColorUpdated() {
 			var rows = getColorListPnl().getComponents();
 			var newColors = new ArrayList<Color>();
 			
@@ -427,6 +440,9 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 			}
 			
 			chart.set(COLORS, newColors);
+			
+			if (palette == null)
+				chart.set(COLOR_SCHEME, null);
 		}
 	}
 }
