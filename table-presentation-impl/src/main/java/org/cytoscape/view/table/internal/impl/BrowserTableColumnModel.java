@@ -45,13 +45,36 @@ public class BrowserTableColumnModel extends DefaultTableColumnModel {
 	private final List<BrowserTableColumnModelListener> listeners = new CopyOnWriteArrayList<>();
 	
 	public void addColumn(TableColumn col, Long viewSuid, boolean isVisible, double gravity) {
+		// Use the ColumnView SUID as an identifier, makes it easy to look up the column.
 		col.setIdentifier(viewSuid);
+		
 		gravities.put(col, gravity);
 		
 		if (isVisible) {
 			visibleColumns.add(col);
 			super.addColumn(col);
 		}
+	}
+	
+	/**
+	 * Override to not throw an exception.
+	 * Hidden columns are removed from the model, so it becomes easy to accidentally trigger
+	 * an IllegalArgumentException.
+	 * Returns -1 if the identifier is not found.
+	 */
+	@Override
+	public int getColumnIndex(Object viewSuid) {
+		if(viewSuid == null) 
+			return -1;
+
+		int index = 0;
+		for(var col : tableColumns) {
+			if(viewSuid.equals(col.getIdentifier())) {
+                return index;
+			}
+			index++;
+		}
+		return -1;
 	}
 	
 	/**
