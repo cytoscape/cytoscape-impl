@@ -5,10 +5,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.cytoscape.application.CyUserLog;
+import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.search.internal.index.SearchManager;
 import org.cytoscape.search.internal.ui.NetworkSearchBox;
+import org.cytoscape.search.internal.ui.NetworkSearchToolbarComponent;
+import org.cytoscape.search.internal.ui.TableSearchAction;
 import org.cytoscape.search.internal.ui.debug.DebugSearchProgressPanel;
 
 /*
@@ -37,6 +40,8 @@ import org.cytoscape.search.internal.ui.debug.DebugSearchProgressPanel;
 
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.TextIcon;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +49,12 @@ import org.slf4j.LoggerFactory;
 
 public class CyActivator extends AbstractCyActivator {
 
+	public static final int ICON_WIDTH  = 24;
+	public static final int ICON_HEIGHT = 24;
+	public static final float ICON_FONT_SIZE = 18.0f;
+	
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
+	
 	
 	@Override
 	public void start(BundleContext bc) {
@@ -65,13 +75,22 @@ public class CyActivator extends AbstractCyActivator {
 		
 		// Network search
 		var searchBox = new NetworkSearchBox(registrar, searchManager);
-		registerService(bc, searchBox, ToolBarComponent.class);
+		var toolbarComponent = new NetworkSearchToolbarComponent(searchBox);
+		registerService(bc, toolbarComponent, ToolBarComponent.class);
 		
-		// Table search
+		// This puts a search box directly in the toolbar of all the table browsers.
 //		for(var type : List.of(CyNode.class, CyEdge.class, CyNetwork.class)) {  // add 'null' to list to support unassigned tables
-//			var tableSearchBox = new TableSearchBox(registrar, searchManager, type);
-// 			registerService(bc, tableSearchBox, TableToolBarComponent.class);
+//			var tableSearchBox = new TableSearchBox(registrar, searchManager);
+//			var tableToolbarComponent = new TableSearchToolbarComponent(tableSearchBox, type);
+// 			registerService(bc, tableToolbarComponent, TableToolBarComponent.class);
 //		}
+		
+		// This puts a toolbar button in the table browser that shows a pop-up search box.
+		var iconManager = getService(bc, IconManager.class);
+		var iconFont = iconManager.getIconFont(ICON_FONT_SIZE);
+		var icon = new TextIcon(IconManager.ICON_SEARCH, iconFont, ICON_WIDTH, ICON_HEIGHT);
+		var tableSearchAction = new TableSearchAction(registrar, searchManager, icon, 0.0055f);
+		registerService(bc, tableSearchAction, CyAction.class);
 		
 		// Debug panel
 		if(DebugSearchProgressPanel.showDebugPanel(registrar)) {

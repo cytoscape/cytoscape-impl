@@ -37,6 +37,14 @@ public class TableRowSelectorTask extends AbstractTask {
 		
 		var hitsSet = new HashSet<String>(tableHits);
 		
+		// Select all the columns first so that the entire row in the table browser becomes highlighted.
+		for(var col: table.getColumns()) {
+			var colView = tableView.getColumnView(col);
+			if(colView != null) {
+				colView.setLockedValue(BasicTableVisualLexicon.COLUMN_SELECTED, true);
+			}
+		}
+		
 		var keyCol = table.getPrimaryKey();
 		for(var key : keyCol.getValues(keyCol.getType())) {
 			var row = table.getRow(key);
@@ -44,7 +52,7 @@ public class TableRowSelectorTask extends AbstractTask {
 			if(rowView != null) {
 				var keyStr = String.valueOf(key);
 				boolean selected = hitsSet.contains(keyStr);
-				rowView.setVisualProperty(BasicTableVisualLexicon.ROW_SELECTED, selected);
+				rowView.setLockedValue(BasicTableVisualLexicon.ROW_SELECTED, selected);
 			}
 		}
 	}
