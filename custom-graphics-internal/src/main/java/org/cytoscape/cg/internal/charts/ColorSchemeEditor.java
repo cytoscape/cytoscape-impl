@@ -278,7 +278,7 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 							colors.add(Color.GRAY);
 					}
 				}
-			} else if (colors.size() < nColors) {
+			} else if (scheme != null && colors.size() < nColors) {
 				// Just update existing list of colors (add new ones if there are more values now)
 				var newColors = scheme.getColors(nColors);
 				
