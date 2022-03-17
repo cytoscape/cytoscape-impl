@@ -972,13 +972,11 @@ public class NetworkViewMainPanel extends JPanel {
         @Override
         public void eventDispatched(AWTEvent event) {
             if (event.getID() == MouseEvent.MOUSE_PRESSED && event instanceof MouseEvent) {
-				var keyboardFocusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
-				var window = keyboardFocusManager.getActiveWindow();
+				var me = (MouseEvent) event;
+				var window = SwingUtilities.windowForComponent(me.getComponent());
 				
 				if (!(window instanceof NetworkViewFrame || window instanceof CySwingApplication))
 					return;
-				
-				MouseEvent me = (MouseEvent) event;
 				
 				if (window instanceof CySwingApplication) {
 					// Get all CytoPanels and check if they are undocked.
