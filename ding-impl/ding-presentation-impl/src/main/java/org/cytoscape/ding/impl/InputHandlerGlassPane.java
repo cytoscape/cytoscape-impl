@@ -869,28 +869,35 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			delayTimer.debounce(() -> showTooltip(e));
 		}
 		
-		private void showTooltip(MouseEvent e) {
+		private String getNodeOrEdgeTooltipText(MouseEvent e) {
 			String text = null;
 			
 			View<CyNode> node = re.getPicker().getNodeAt(e.getPoint());
 			if(node != null) {
 				text = re.getNodeDetails().getTooltipText(node);
-			}
-			else if(edgeCountIsLowEnoughToEnablePicking()) {
+			} else if(edgeCountIsLowEnoughToEnablePicking()) {
 				View<CyEdge> edge = re.getPicker().getEdgeAt(e.getPoint());
 				if(edge != null) {
 					text = re.getEdgeDetails().getTooltipText(edge);
 				}
 			}
 			
-			if(text == null || text.isBlank()) {
-				return;
+			if(text != null) {
+				text = text.trim();
+				if(text.isBlank()) {
+					text = null;
+				}
 			}
 			
-			final String tooltip = text.trim();
+			return text;
+		}
+		
+		private void showTooltip(MouseEvent e) {
+			// CYTOSCAPE-12956: text may be null, that clears the tooltip for the component 
+			String text = getNodeOrEdgeTooltipText(e);
 			
 			ViewUtil.invokeOnEDT(() -> {
-				setToolTipText(tooltip);
+				setToolTipText(text);
 				ToolTipManager.sharedInstance().mouseMoved(e);
 			});
 		}
