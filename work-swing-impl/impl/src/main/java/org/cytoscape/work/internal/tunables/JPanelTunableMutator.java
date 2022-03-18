@@ -339,13 +339,11 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 
 	@Override
 	public void update(Object objectWithTunables) {
-		if (!handlerMap.containsKey(objectWithTunables)) {
-			return;
-		}
-
-		if (handlers != null && handlers.size() > 0) {
-			for (GUITunableHandler handler: handlers)
+		List<GUITunableHandler> handlers = handlerMap.get(objectWithTunables);
+		if(handlers != null) {
+			for(GUITunableHandler handler : handlers) {
 				handler.update();
+			}
 		}
 	}
 
