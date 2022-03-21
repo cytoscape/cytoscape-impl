@@ -44,6 +44,8 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
                                        implements BoundedTextAnnotation, TextAnnotation {
 	
 	private static final String DEF_TEXT = "Text";
+	private static final int HPAD = 4;
+	private static final int VPAD = 4;
 	
 	private String text;
 	private boolean shapeIsFit;
@@ -61,7 +63,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		this.font = new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float) initialFontSize;
 		this.text = DEF_TEXT;
-		super.setSize(getTextWidth() + 4, getTextHeight() + 4);
+		super.setSize(getTextWidth() + HPAD, getTextHeight() + VPAD);
 	}
 
 	public BoundedTextAnnotationImpl(DRenderingEngine re, double width, double height) {
@@ -102,24 +104,24 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	public BoundedTextAnnotationImpl(DRenderingEngine re, Map<String, String> argMap) {
 		super(re, argMap);
-		
+
 		this.font = ViewUtils.getArgFont(argMap, "Arial", Font.PLAIN, initialFontSize);
 		double zoom = getLegacyZoom(argMap);
-		
+
 		if (zoom != 1.0)
 			font = font.deriveFont(font.getSize2D() / (float) zoom);
-		
+
 		this.textColor = (Color) ViewUtils.getColor(argMap, COLOR, Color.BLACK);
 		this.text = ViewUtils.getString(argMap, TEXT, "");
 		this.fontSize = font.getSize();
 
-    if (argMap.containsKey(NAME)) {
-      this.name = ViewUtils.getString(argMap, NAME, "");
-    } else {
-      if (text != null && !text.trim().isEmpty())
-        name = text.trim();
-    }
-		
+		if (argMap.containsKey(NAME)) {
+			this.name = ViewUtils.getString(argMap, NAME, "");
+		} else {
+			if (text != null && !text.trim().isEmpty())
+				name = text.trim();
+		}
+
 		if (!argMap.containsKey(BoundedTextAnnotation.WIDTH)) {
 			double width = getTextWidth() + 8;
 			double height = getTextHeight() + 8;
@@ -177,8 +179,8 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	@Override
 	public void fitShapeToText() {
-		double width = getTextWidth()+8;
-		double height = getTextHeight()+8;
+		double width = getTextWidth() + 8;
+		double height = getTextHeight() + 8;
 		shapeIsFit = true;
 
 		// Different depending on the type...
@@ -186,24 +188,24 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		
 		switch (shapeType) {
 			case ELLIPSE:
-				width = getTextWidth()*3/2+8;
-				height = getTextHeight()*2;
+				width = getTextWidth() * 3 / 2 + 8;
+				height = getTextHeight() * 2;
 				break;
 			case TRIANGLE:
-				width = getTextWidth()*3/2+8;
-				height = getTextHeight()*2;
+				width = getTextWidth() * 3 / 2 + 8;
+				height = getTextHeight() * 2;
 				break;
 			case PENTAGON:
 			case HEXAGON:
 			case STAR5:
 			case STAR6:
-				width = getTextWidth()*9/7+8;
+				width = getTextWidth() * 9 / 7 + 8;
 				height = width;
 				break;
 		}
 
 		super.setSize(width, height);
-		setSize((int)width+2, (int)height+2);
+		setSize((int) width + 2, (int) height + 2);
 	}
 	
 	@Override
@@ -222,17 +224,17 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 		int halfWidth = (int) (getWidth() - getTextWidth()) / 2;
 		int halfHeight = (int) (getHeight() + getTextHeight() / 2) / 2; // Note, this is + because we start at the baseline
-    var currentTransform = g2.getTransform();
-    if (rotation != 0) {
-      g2.rotate(Math.toRadians(rotation), (int) (getX() + getWidth()/2), (int) (getY() + getHeight()/2));
-		  g2.setClip(getBounds());
-		  g2.drawString(text, (int) getX() + halfWidth, (int) getY() + halfHeight);
-      g2.setTransform(currentTransform);
-    } else {
-		  g2.setClip(getBounds());
-		  g2.drawString(text, (int) getX() + halfWidth, (int) getY() + halfHeight);
-    }
-
+		var currentTransform = g2.getTransform();
+		
+		if (rotation != 0) {
+			g2.rotate(Math.toRadians(rotation), (int) (getX() + getWidth() / 2), (int) (getY() + getHeight() / 2));
+			g2.setClip(getBounds());
+			g2.drawString(text, (int) getX() + halfWidth, (int) getY() + halfHeight);
+			g2.setTransform(currentTransform);
+		} else {
+			g2.setClip(getBounds());
+			g2.drawString(text, (int) getX() + halfWidth, (int) getY() + halfHeight);
+		}
 
 		g2.setComposite(originalComposite);
 	}
@@ -287,7 +289,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		if (fontSize != (float) size) {
 			var oldValue = fontSize;
 			fontSize = (float) size;
-			
+
 			if (font != null)
 				font = font.deriveFont(fontSize);
 
@@ -377,8 +379,8 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		}
 		
 		// Our bounds should be the larger of the shape or the text
-		double xBound = Math.max(getTextWidth() + 4,  width);
-		double yBound = Math.max(getTextHeight() + 4, height);
+		double xBound = Math.max(getTextWidth() + HPAD,  width);
+		double yBound = Math.max(getTextHeight() + VPAD, height);
 		setSize(xBound, yBound);
 	}
 
