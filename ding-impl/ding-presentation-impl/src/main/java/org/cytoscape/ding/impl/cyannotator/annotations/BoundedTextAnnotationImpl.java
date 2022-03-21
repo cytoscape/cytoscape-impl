@@ -377,9 +377,9 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		}
 		
 		// Our bounds should be the larger of the shape or the text
-		double xBound = Math.max(getTextWidth(),  width);
-		double yBound = Math.max(getTextHeight(), height);
-		setSize(xBound + 4, yBound + 4);
+		double xBound = Math.max(getTextWidth() + 4,  width);
+		double yBound = Math.max(getTextHeight() + 4, height);
+		setSize(xBound, yBound);
 	}
 
 	double getTextWidth() {
