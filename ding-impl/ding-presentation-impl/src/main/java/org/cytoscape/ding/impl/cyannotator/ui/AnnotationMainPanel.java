@@ -397,24 +397,24 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		return set;
 	}
 	
-	Collection<Annotation> getSelectedAnnotations() {
-		var set = new HashSet<Annotation>();
-		set.addAll(getSelectedAnnotations(getBackgroundTree()));
-		set.addAll(getSelectedAnnotations(getForegroundTree()));
+	List<Annotation> getSelectedAnnotations() {
+		var list = new ArrayList<Annotation>();
+		list.addAll(getSelectedAnnotations(getBackgroundTree()));
+		list.addAll(getSelectedAnnotations(getForegroundTree()));
 		
-		return set;
+		return list;
 	}
 	
 	List<Annotation> getSelectedAnnotations(JTree tree) {
 		return getSelectedAnnotations(tree, Annotation.class);
 	}
 	
-	<T extends Annotation> Collection<T> getSelectedAnnotations(Class<T> type) {
-		var set = new LinkedHashSet<T>();
-		set.addAll(getSelectedAnnotations(getBackgroundTree(), type));
-		set.addAll(getSelectedAnnotations(getForegroundTree(), type));
+	<T extends Annotation> List<T> getSelectedAnnotations(Class<T> type) {
+		var list = new ArrayList<T>();
+		list.addAll(getSelectedAnnotations(getBackgroundTree(), type));
+		list.addAll(getSelectedAnnotations(getForegroundTree(), type));
 		
-		return set;
+		return list;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -576,8 +576,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			((AbstractAnnotationEditor<?>) editComp).setAnnotation(null);
 		
 		if (!isCreateMode()) {
-			var selectedList = getSelectedAnnotations();
-			var annotation = selectedList.size() == 1 ? selectedList.iterator().next() : null;
+			var annotation = editingAnnotation;
 			
 			if (annotation instanceof DingAnnotation) {
 				var btn = buttonMap.get(((DingAnnotation) annotation).getType());
@@ -663,6 +662,11 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	void maybeUpdateEditingAnnotation(Annotation candidate) {
+		if (candidate == null) {
+			setEditingAnnotation(null);
+			return;
+		}
+		
 		// Do not edit if in creation mode; and ignore if already editing this annotation
 		if (isCreateMode() || (candidate != null && candidate.isSelected() && candidate.equals(editingAnnotation)))
 			return;

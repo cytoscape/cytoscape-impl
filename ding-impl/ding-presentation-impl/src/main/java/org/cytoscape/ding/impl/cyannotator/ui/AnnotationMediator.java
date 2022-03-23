@@ -405,20 +405,21 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		if (re == null || re.getCyAnnotator() == null)
 			return;
 		
+		var selList = mainPanel.getSelectedAnnotations();
 		var all = re.getCyAnnotator().getAnnotations();
 		
 		if (all != null && !all.isEmpty()) {
 			ignoreSelectedPropChangeEvents = true;
 			
 			try {
-				var selList = mainPanel.getSelectedAnnotations();
 				all.forEach(a -> a.setSelected(selList.contains(a)));
 			} finally {
 				ignoreSelectedPropChangeEvents = false;
 			}
 		}
 		
-		mainPanel.maybeUpdateEditingAnnotation(mainPanel.getEditingAnnotation());
+		var a = selList.size() > 0 ? selList.get(selList.size() - 1) : null;
+		mainPanel.maybeUpdateEditingAnnotation(a);
 	}
 	
 	private void groupAnnotations() {
