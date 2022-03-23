@@ -191,7 +191,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		this.bendStore = new BendStore(this, eventHelper, handleFactory);
 		
-		nodeDetails = new DNodeDetails(lexicon, registrar);
+		nodeDetails = new DNodeDetails(registrar);
 		edgeDetails = new DEdgeDetails(this);
 		
 		// Finally, intialize our annotations

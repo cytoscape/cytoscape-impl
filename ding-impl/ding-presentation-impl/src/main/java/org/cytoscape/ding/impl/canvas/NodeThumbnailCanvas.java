@@ -25,7 +25,7 @@ public class NodeThumbnailCanvas<GP extends GraphicsProvider> extends DingCanvas
 	@Override
 	public void paint(ProgressMonitor pm, RenderDetailFlags flags) {
 		var graphics = new GraphGraphics(graphicsProvider);
-		var nodeDetails = new DNodeDetails(null, null);
+		var nodeDetails = new DNodeDetails(null);
 		var labelInfoCache = LabelInfoProvider.NO_CACHE;
 		
 		GraphRenderer.renderNodes(pm, graphics, snapshot, flags, nodeDetails, null, labelInfoCache);

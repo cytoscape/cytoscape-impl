@@ -294,9 +294,9 @@ public interface NodeDetails {
 		return Justification.JUSTIFY_CENTER;
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	default Map<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo> getCustomGraphics(View<CyNode> node) {
-		return Collections.EMPTY_MAP;
+		return Collections.emptyMap();
 	}
 	
 	/**

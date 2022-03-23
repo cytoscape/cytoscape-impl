@@ -44,6 +44,7 @@ import java.util.TreeMap;
 
 import javax.imageio.ImageIO;
 
+import org.cytoscape.cg.model.NullCustomGraphics;
 import org.cytoscape.ding.DNodeShape;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.graph.render.stateful.CustomGraphicsInfo;
@@ -69,7 +70,6 @@ public class DNodeDetails implements NodeDetails {
 
 	private static final float NESTED_IMAGE_SCALE_FACTOR = 0.6f;
 	
-	private final DVisualLexicon lexicon;
 	private final CyServiceRegistrar registrar;
 	
 	// These images will be used when a view is not available for a nested network.
@@ -91,8 +91,7 @@ public class DNodeDetails implements NodeDetails {
 		}
 	}
 	
-	public DNodeDetails(DVisualLexicon lexicon, CyServiceRegistrar registrar) {
-		this.lexicon = lexicon;
+	public DNodeDetails(CyServiceRegistrar registrar) {
 		this.registrar = registrar;
 	}
 	
@@ -233,15 +232,16 @@ public class DNodeDetails implements NodeDetails {
 		return dAngle == null ? 0.0 : dAngle;
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private CustomGraphicsInfo getCustomGraphicsInfo(VisualProperty<CyCustomGraphics> cgVP, View<CyNode> node) {
 		CyCustomGraphics<CustomGraphicLayer> cg = (CyCustomGraphics<CustomGraphicLayer>) node.getVisualProperty(cgVP);
-		if(cg == null)
+		if(cg == null || cg == NullCustomGraphics.getNullObject())
 			return null;
 		
-		VisualProperty<Double> sizeVP = lexicon.getAssociatedCustomGraphicsSizeVP(cgVP);
+		VisualProperty<Double> sizeVP = DVisualLexicon.getAssociatedCustomGraphicsSizeVP(cgVP);
 		Double size = node.getVisualProperty(sizeVP);
 		
-		VisualProperty<ObjectPosition> positionVP = lexicon.getAssociatedCustomGraphicsPositionVP(cgVP);
+		VisualProperty<ObjectPosition> positionVP = DVisualLexicon.getAssociatedCustomGraphicsPositionVP(cgVP);
 		ObjectPosition position = node.getVisualProperty(positionVP);
 		
 		CustomGraphicsInfo info = new CustomGraphicsInfo(cgVP);
@@ -252,14 +252,18 @@ public class DNodeDetails implements NodeDetails {
 	}
 
 	@Override
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({ "rawtypes" })
 	public Map<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo> getCustomGraphics(View<CyNode> nodeView) {
-		Map<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo> cgInfoMap = new TreeMap<>(Comparator.comparing(VisualProperty::getIdString));
+		Map<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo> cgInfoMap = null;
 		
-		for (VisualProperty<CyCustomGraphics> cgVP : lexicon.getCustomGraphicsVisualProperties()) {
+		for(VisualProperty<CyCustomGraphics> cgVP : DVisualLexicon.getCustomGraphicsVisualProperties()) {
 			CustomGraphicsInfo info = getCustomGraphicsInfo(cgVP, nodeView);
-			if(info != null)
+			if(info != null) {
+				if(cgInfoMap == null) {
+					cgInfoMap = new TreeMap<>(Comparator.comparing(VisualProperty::getIdString));
+				}
 				cgInfoMap.put(cgVP, info);
+			}
 		}
 		return cgInfoMap;
 	}

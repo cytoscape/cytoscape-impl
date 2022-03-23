@@ -943,32 +943,34 @@ public final class GraphRenderer {
 			// don't allow our custom graphics to mutate while we iterate over them:
 //			synchronized (nodeDetails.customGraphicsLock(cyNode)) {
 			synchronized (nodeDetails) {
-				
 				// This method should return CustomGraphics in rendering order:
 				final Map<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo> cgMap = nodeDetails.getCustomGraphics(cyNode);
-				final List<CustomGraphicsInfo> infoList = new ArrayList<>(cgMap.values());
-				
-				for (final CustomGraphicsInfo cgInfo : infoList) {
+				if(cgMap != null) {
+					final List<CustomGraphicsInfo> infoList = new ArrayList<>(cgMap.values());
+					
 					// MKTODO I guess there's no way around doing this? The charts need access to the underlying table model.
 					CyNetworkView netViewForCharts = netView.getMutableNetworkView();
 					View<CyNode> mutableNode = netView.getMutableNodeView(cyNode.getSUID());
+					
 					if(mutableNode != null) {
-						List<CustomGraphicLayer> layers = cgInfo.createLayers(netViewForCharts, mutableNode, nodeDetails, dependencies);
-						
-						for (CustomGraphicLayer layer : layers) {
-							float offsetVectorX = nodeDetails.graphicOffsetVectorX(cyNode);
-							float offsetVectorY = nodeDetails.graphicOffsetVectorY(cyNode);
-							doubleBuff1[0] = floatBuff1[0];
-							doubleBuff1[1] = floatBuff1[1];
-							doubleBuff1[2] = floatBuff1[2];
-							doubleBuff1[3] = floatBuff1[3];
-							computeAnchor(Position.CENTER, doubleBuff1, doubleBuff2);
+						for(CustomGraphicsInfo cgInfo : infoList) {
+							List<CustomGraphicLayer> layers = cgInfo.createLayers(netViewForCharts, mutableNode, nodeDetails, dependencies);
 							
-							float xOffset = (float) (doubleBuff2[0] + offsetVectorX);
-							float yOffset = (float) (doubleBuff2[1] + offsetVectorY);
-							nodeShape = createCustomGraphicsShape(nodeShape, layer, -xOffset, -yOffset);
-							
-							grafx.drawCustomGraphicFull(netViewForCharts, mutableNode, nodeShape, layer, xOffset, yOffset);
+							for (CustomGraphicLayer layer : layers) {
+								float offsetVectorX = nodeDetails.graphicOffsetVectorX(cyNode);
+								float offsetVectorY = nodeDetails.graphicOffsetVectorY(cyNode);
+								doubleBuff1[0] = floatBuff1[0];
+								doubleBuff1[1] = floatBuff1[1];
+								doubleBuff1[2] = floatBuff1[2];
+								doubleBuff1[3] = floatBuff1[3];
+								computeAnchor(Position.CENTER, doubleBuff1, doubleBuff2);
+								
+								float xOffset = (float) (doubleBuff2[0] + offsetVectorX);
+								float yOffset = (float) (doubleBuff2[1] + offsetVectorY);
+								nodeShape = createCustomGraphicsShape(nodeShape, layer, -xOffset, -yOffset);
+								
+								grafx.drawCustomGraphicFull(netViewForCharts, mutableNode, nodeShape, layer, xOffset, yOffset);
+							}
 						}
 					}
 				}

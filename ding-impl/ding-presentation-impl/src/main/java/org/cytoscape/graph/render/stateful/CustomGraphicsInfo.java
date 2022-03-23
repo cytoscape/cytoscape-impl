@@ -2,6 +2,7 @@ package org.cytoscape.graph.render.stateful;
 
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -87,15 +88,12 @@ public class CustomGraphicsInfo {
 			NodeDetails details,
 			Set<VisualPropertyDependency<?>> dependencies
 	) {
-		List<CustomGraphicLayer> transformedLayers = new ArrayList<>();
-		
 		if (customGraphics == null)
-			return transformedLayers;
+			return Collections.emptyList();
 		
 		var originalLayers = customGraphics.getLayers(netView, nodeView);
-
 		if (originalLayers == null || originalLayers.isEmpty())
-			return transformedLayers;
+			return Collections.emptyList();
 
 		float fitRatio = customGraphics.getFitRatio();
 		
@@ -105,6 +103,8 @@ public class CustomGraphicsInfo {
 		ObjectPosition cgPos = position;
 		double nw = details.getWidth(nodeView);
 		double nh = details.getHeight(nodeView);
+		
+		List<CustomGraphicLayer> transformedLayers = new ArrayList<>();
 		
 		for (var layer : originalLayers) {
 			// Assume it's a Ding layer
@@ -130,16 +130,17 @@ public class CustomGraphicsInfo {
 					cgw = cgh = cgSize;
 			}
 			
-			if (cgw > 0.0 && cgh > 0.0)
+			if (cgw > 0.0 && cgh > 0.0) {
 				finalLayer = syncSize(layer, cgw, cgh, fitRatio);
 			
-			// Move the layer to the correct position
-			if (cgPos == null)
-				cgPos = ObjectPosition.DEFAULT_POSITION;
-			
-			finalLayer = moveLayer(finalLayer, cgPos, nw, nh);
-			
-			transformedLayers.add(finalLayer);
+				// Move the layer to the correct position
+				if (cgPos == null)
+					cgPos = ObjectPosition.DEFAULT_POSITION;
+				
+				finalLayer = moveLayer(finalLayer, cgPos, nw, nh);
+				
+				transformedLayers.add(finalLayer);
+			}
 		}
 		
 		return transformedLayers;
