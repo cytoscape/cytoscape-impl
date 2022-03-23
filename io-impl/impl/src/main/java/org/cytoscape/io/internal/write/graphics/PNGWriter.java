@@ -50,12 +50,8 @@ public class PNGWriter extends BitmapWriter {
 	
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		re.getProperties().setProperty("exportTransparentBackground", String.valueOf(transparentBackground));
-		try {
-			super.run(tm);
-		} finally {
-			re.getProperties().remove("exportTransparentBackground");
-		}
+		renderProps.put("exportTransparentBackground", String.valueOf(transparentBackground));
+		super.run(tm);
 	}
 	
 	@Override

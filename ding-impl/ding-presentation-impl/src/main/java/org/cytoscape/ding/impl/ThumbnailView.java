@@ -123,11 +123,6 @@ public class ThumbnailView extends JComponent implements RenderingEngine<CyNetwo
 	}
 
 	@Override
-	public Properties getProperties() {
-		return re.getProperties();
-	}
-
-	@Override
 	public Printable createPrintable() {
 		return re.createPrintable();
 	}

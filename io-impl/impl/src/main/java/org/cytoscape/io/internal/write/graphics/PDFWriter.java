@@ -30,6 +30,7 @@ import java.awt.Graphics2D;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Map;
 
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.view.presentation.RenderingEngine;
@@ -305,8 +306,6 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 		Graphics2D g = null;
 		logger.debug("!!!!! Enter block 2");
 		
-		engine.getProperties().setProperty("exportTextAsShape", String.valueOf(!exportTextAsFont));
-		engine.getProperties().setProperty("exportHideLabels",  String.valueOf(hideLabels));
 		
 		tm.setProgress(0.2);
 		
@@ -324,7 +323,11 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 		g.scale(imageScale, imageScale);
 
 		logger.debug("##### Start Rendering Phase 2: " + engine.toString());
-		engine.printCanvas(g);
+		var props = Map.of(
+			"exportTextAsShape", String.valueOf(!exportTextAsFont),
+			"exportHideLabels",  String.valueOf(hideLabels)
+		);
+		engine.printCanvas(g, props);
 		logger.debug("##### Canvas Rendering Done: ");
 			
 		tm.setProgress(0.8);
@@ -334,9 +337,6 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 		writer.close();
 		
 		stream.close();
-		
-		engine.getProperties().remove("exportTextAsShape");
-		engine.getProperties().remove("exportHideLabels");
 
 		logger.debug("PDF rendering finished.");
 		tm.setProgress(1.0);

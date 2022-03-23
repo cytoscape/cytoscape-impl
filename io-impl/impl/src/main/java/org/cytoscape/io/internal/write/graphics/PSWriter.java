@@ -2,6 +2,7 @@ package org.cytoscape.io.internal.write.graphics;
 
 import java.awt.Dimension;
 import java.io.OutputStream;
+import java.util.Map;
 import java.util.Properties;
 
 import org.cytoscape.application.CyUserLog;
@@ -71,6 +72,7 @@ public class PSWriter extends AbstractTask implements CyWriter {
 	private final RenderingEngine<?> engine;
 	private final OutputStream stream;
 	
+	
 	public PSWriter(final RenderingEngine<?> engine, final OutputStream stream) {
 		if (engine == null)
 			throw new NullPointerException("Rendering Engine is null.");
@@ -94,11 +96,6 @@ public class PSWriter extends AbstractTask implements CyWriter {
 		tm.setProgress(0.0);
 		logger.debug("PS image rendering start.");
 		
-		// TODO should be accomplished with presentation properties
-		// view.setPrintingTextAsShape(!exportTextAsFont);
-
-		engine.getProperties().setProperty("exportHideLabels", String.valueOf(hideLabels));
-		
 		final Properties p = new Properties();
 		p.setProperty(PSGraphics2D.PAGE_SIZE, "Letter");
 		p.setProperty("org.freehep.graphicsio.AbstractVectorGraphicsIO.TEXT_AS_SHAPES", Boolean.toString(!exportTextAsFont));
@@ -110,10 +107,9 @@ public class PSWriter extends AbstractTask implements CyWriter {
 		tm.setProgress(0.2);
 		
 		g.startExport();
-		engine.printCanvas(g);
+		var props = Map.of("exportHideLabels", String.valueOf(hideLabels));
+		engine.printCanvas(g, props);
 		g.endExport();
-		
-		engine.getProperties().remove("exportHideLabels");
 		
 		logger.debug("PS image created.");
 		tm.setStatusMessage("PS image created.");

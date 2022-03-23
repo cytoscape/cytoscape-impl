@@ -2,6 +2,7 @@ package org.cytoscape.io.internal.write.graphics;
 
 import java.awt.Dimension;
 import java.io.OutputStream;
+import java.util.Map;
 import java.util.Properties;
 
 import org.cytoscape.application.CyUserLog;
@@ -97,7 +98,6 @@ public class SVGWriter extends AbstractTask implements CyWriter {
 
 		final SVGGraphics2D g = new SVGGraphics2D(stream, new Dimension(width.intValue(), height.intValue()));
 
-		engine.getProperties().setProperty("exportHideLabels", String.valueOf(hideLabels));
 		// this sets text as shape
 		final Properties p = new Properties();
 		p.setProperty("org.freehep.graphicsio.AbstractVectorGraphicsIO.TEXT_AS_SHAPES", Boolean.toString(!exportTextAsFont));
@@ -106,10 +106,9 @@ public class SVGWriter extends AbstractTask implements CyWriter {
 		tm.setProgress(0.2);
 		
 		g.startExport();
-		engine.printCanvas(g);
+		var props = Map.of("exportHideLabels", String.valueOf(hideLabels));
+		engine.printCanvas(g, props);
 		g.endExport();
-		
-		engine.getProperties().remove("exportHideLabels");
 		
 		logger.debug("SVG Rendering DONE.");
 		tm.setStatusMessage("SVG Rendering DONE.");

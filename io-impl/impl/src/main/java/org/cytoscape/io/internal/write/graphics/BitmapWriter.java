@@ -7,7 +7,9 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
@@ -60,6 +62,18 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 	private static final String PIXELS = "pixels";
 	private static final String INCHES = "inches";
 	
+	protected Map<String,String> renderProps = new HashMap<>();
+	
+	@Tunable(
+			description = "High Detail:",
+			longDescription = "If true the exported image detail will be high. "
+					+ "If false then the image detail may be decreased so that the image export is faster.",
+			exampleStringValue = "true",
+			groups = { "_Others" },
+			gravity = 2.0
+	)
+	public boolean highDetail = true;
+	
 	
 	@Tunable(
 			description = "Hide Labels:",
@@ -103,8 +117,8 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 		widthInPixels = (int) ((zoom.getValue() / 100) * initialWPixel);
 		// update inch measures
 		final double dpi = resolution.getSelectedValue().doubleValue();
-		widthInInches = new Double(widthInPixels / dpi);
-		heightInInches = new Double(heightInPixels / dpi);
+		widthInInches  = Double.valueOf(widthInPixels  / dpi);
+		heightInInches = Double.valueOf(heightInPixels / dpi);
 	}
 
 	// ----------------------------
@@ -143,7 +157,7 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 	)
 	public Double getWidth() {
 		if (PIXELS.equals(units.getSelectedValue()))
-			return new Double(widthInPixels);
+			return Double.valueOf(widthInPixels);
 		else
 			return widthInInches;
 	}
@@ -187,7 +201,7 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 	)
 	public Double getHeight() {
 		if (PIXELS.equals(units.getSelectedValue()))
-			return new Double(heightInPixels);
+			return Double.valueOf(heightInPixels);
 		else
 			return heightInInches;
 	}
@@ -284,12 +298,9 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 		tm.setProgress(0.0);
 		logger.debug("Bitmap image rendering start.");
 
-		re.getProperties().setProperty("exportHideLabels", String.valueOf(hideLabels));
-		try {
-			writeImage(tm);
-		} finally {
-			re.getProperties().remove("exportHideLabels");
-		}
+		renderProps.put("exportHideLabels", String.valueOf(hideLabels));
+		renderProps.put("highDetail", String.valueOf(highDetail));
+		writeImage(tm);
 		
 		logger.debug("Bitmap image rendering finished.");
 		tm.setProgress(1.0);
@@ -303,7 +314,7 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 		g.scale(scale, scale);
 		
 		tm.setProgress(0.2);
-		re.printCanvas(g);
+		re.printCanvas(g, renderProps);
 		
 		tm.setProgress(0.4);
 		g.dispose();

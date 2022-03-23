@@ -24,23 +24,85 @@ package org.cytoscape.ding.impl;
  * #L%
  */
 
-import org.cytoscape.ding.PrintLOD;
+import org.cytoscape.graph.render.stateful.GraphLOD;
 
-public class DingGraphLODAll extends PrintLOD {
+public class DingGraphLODAll implements GraphLOD {
+	
+	private static final DingGraphLODAll instance = new DingGraphLODAll();
+	
+	public static DingGraphLODAll instance() {
+		return instance;
+	}
+	
+	
+	@Override
+	public boolean isEdgeBufferPanEnabled() {
+		return false;
+	}
+	
+	@Override
+	public boolean isLabelCacheEnabled() {
+		return true;
+	}
+	
+	@Override
+	public boolean isHidpiEnabled() {
+		return true;
+	}	
+	
+	@Override
+	public RenderEdges renderEdges(int visibleNodeCount, int totalNodeCount, int totalEdgeCount) {
+		return RenderEdges.TOUCHING_VISIBLE_NODES;
+	}
 
-    /**
-     * textAsShape is called to determine if the text labels should be converted
-     * from fonts to text
-     * 
-     * @param renderNodeCount
-     *            the number of nodes
-     * @param renderEdgeCount
-     *            the number of edges
-     * 
-     * @return true if text should be converted to shapes, false otherwise
-     */
-    public boolean textAsShape(int renderNodeCount, int renderEdgeCount) {
-			return true;
-    }
+	@Override
+	public boolean detail(int renderNodeCount, int renderEdgeCount) {
+		return true;
+	}
 
+	@Override
+	public boolean nodeBorders(int renderNodeCount, int renderEdgeCount) {
+		return true;
+	}
+
+	@Override
+	public boolean nodeLabels(int renderNodeCount, int renderEdgeCount) {
+		return true;
+	}
+
+	@Override
+	public boolean customGraphics(int renderNodeCount, int renderEdgeCount) {
+		return true;
+	}
+
+	@Override
+	public boolean edgeArrows(int renderNodeCount, int renderEdgeCount) {
+		return true;
+	}
+
+	@Override
+	public boolean dashedEdges(int renderNodeCount, int renderEdgeCount) {
+		return true;
+	}
+
+	@Override
+	public boolean edgeAnchors(int renderNodeCount, int renderEdgeCount) {
+		return true;
+	}
+
+	@Override
+	public boolean edgeLabels(int renderNodeCount, int renderEdgeCount) {
+		return true;
+	}
+
+	@Override
+	public boolean textAsShape(int renderNodeCount, int renderEdgeCount) {
+		return true;
+	}
+
+	@Override
+	public double getNestedNetworkImageScaleFactor() {
+		return 1.0;
+	}
+	
 }

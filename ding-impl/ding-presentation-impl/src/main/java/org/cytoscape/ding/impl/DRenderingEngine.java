@@ -18,8 +18,9 @@ import java.awt.image.BufferedImage;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -136,7 +137,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private final NodeDetails nodeDetails;
 	private final EdgeDetails edgeDetails;
 	
-	private final DingGraphLODAll dingGraphLODAll = new DingGraphLODAll();
 	private final DingGraphLOD dingGraphLOD;
 
 	private MainRenderComponent renderComponent;
@@ -147,7 +147,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	// Represents current snapshot is latest version or not.
 	private boolean latestSnapshot;
 
-	private final Properties props;
 	private final CyAnnotator cyAnnotator;
 	private final LabelSelectionManager labelSelectionManager;
 	
@@ -180,7 +179,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	) {
 		this.serviceRegistrar = registrar;
 		this.eventHelper = registrar.getService(CyEventHelper.class);
-		this.props = new Properties();
 		this.viewModel = view;
 		this.lexicon = dingLexicon;
 		this.dingGraphLOD = dingGraphLOD;
@@ -350,7 +348,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		// update LOD
 		boolean hd = viewModelSnapshot.getVisualProperty(DVisualLexicon.NETWORK_FORCE_HIGH_DETAIL);
-		renderComponent.setLOD(hd ? dingGraphLODAll : dingGraphLOD);
+		renderComponent.setLOD(hd ? DingGraphLODAll.instance() : dingGraphLOD);
 		
 		// update view (for example if "fit selected" was run)
 		double x = viewModelSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION);
@@ -690,15 +688,19 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 	// File > Export Network to Image... (JPEG, PNG, PDF, POSTSCRIPT, SVG)
 	@Override
-	public void printCanvas(Graphics g) {
-		// Check properties related to printing:
-		boolean exportAsShape = "true".equalsIgnoreCase(props.getProperty("exportTextAsShape"));
-		boolean transparent   = "true".equalsIgnoreCase(props.getProperty("exportTransparentBackground"));
-		boolean hideLabels    = "true".equalsIgnoreCase(props.getProperty("exportHideLabels"));
+	public void printCanvas(Graphics g, Map<String,String> props) {
+		if(props == null)
+			props = Collections.emptyMap();
 		
-		PrintLOD printLOD = new PrintLOD();
-		printLOD.setPrintingTextAsShape(exportAsShape);
-		printLOD.setExportLabels(!hideLabels);
+		// Check properties related to printing:
+		boolean exportAsShape = "true".equalsIgnoreCase(props.get("exportTextAsShape"));
+		boolean transparent   = "true".equalsIgnoreCase(props.get("exportTransparentBackground"));
+		boolean hideLabels    = "true".equalsIgnoreCase(props.get("exportHideLabels"));
+		// highDetail is different, it defaults to true.
+		boolean highDetail    = "true".equalsIgnoreCase(props.getOrDefault("highDetail", "true"));
+		
+		GraphLOD baseLOD = highDetail ? DingGraphLODAll.instance() : new DingGraphLOD(serviceRegistrar);
+		PrintLOD printLOD = new PrintLOD(baseLOD, exportAsShape, !hideLabels);
 		
 		Color bg = transparent ? null : getBackgroundColor();
 		
@@ -709,6 +711,11 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		CompositeGraphicsCanvas.paint((Graphics2D)g, bg, printLOD, transform, this);
 	}
 	
+	// File > Export Network to Image... (JPEG, PNG, PDF, POSTSCRIPT, SVG)
+	@Override
+	public void printCanvas(Graphics g) {
+		printCanvas(g, null);
+	}
 	
 	/**
 	 * Method to return a reference to an Image object, which represents the current network view.
@@ -768,12 +775,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		return this;
 	}
 	
-	@Override
-	public Properties getProperties() {
-		return this.props;
-	}
-	
-
 	@Override
 	public DVisualLexicon getVisualLexicon() {
 		return lexicon;

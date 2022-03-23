@@ -1,5 +1,7 @@
 package org.cytoscape.ding;
 
+import org.cytoscape.ding.impl.DingGraphLODAll;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -32,75 +34,80 @@ import org.cytoscape.graph.render.stateful.GraphLOD;
  */
 public class PrintLOD implements GraphLOD {
 	
-	private boolean exportTextAsShape = true;
-	private boolean exportLabels = true;
+	private final GraphLOD delegate;
 	
-	public void setPrintingTextAsShape(boolean pExportTextAsShape) {
-		exportTextAsShape = pExportTextAsShape;
+	private final boolean exportTextAsShape;
+	private final boolean exportLabels;
+	
+	
+	public PrintLOD(GraphLOD delgate, boolean exportTextAsShape, boolean exportLabels) {
+		this.delegate = delgate;
+		this.exportTextAsShape = exportTextAsShape;
+		this.exportLabels = exportLabels;
 	}
 	
-	public void setExportLabels(boolean exportLabels) {
-		this.exportLabels = exportLabels;
+	public PrintLOD() {
+		this(DingGraphLODAll.instance(), true, true);
 	}
 	
 	@Override
 	public boolean isEdgeBufferPanEnabled() {
-		return false;
+		return delegate.isEdgeBufferPanEnabled();
 	}
 	
 	@Override
 	public boolean isLabelCacheEnabled() {
-		return true;
+		return delegate.isLabelCacheEnabled();
 	}
 	
 	@Override
 	public boolean isHidpiEnabled() {
-		return true;
+		return delegate.isHidpiEnabled();
 	}	
 	
 	@Override
 	public RenderEdges renderEdges(int visibleNodeCount, int totalNodeCount, int totalEdgeCount) {
-		return RenderEdges.TOUCHING_VISIBLE_NODES;
+		return delegate.renderEdges(visibleNodeCount, totalNodeCount, totalEdgeCount);
 	}
 
 	@Override
 	public boolean detail(int renderNodeCount, int renderEdgeCount) {
-		return true;
+		return delegate.detail(renderNodeCount, renderEdgeCount);
 	}
 
 	@Override
 	public boolean nodeBorders(int renderNodeCount, int renderEdgeCount) {
-		return true;
+		return delegate.nodeBorders(renderNodeCount, renderEdgeCount);
 	}
 
 	@Override
 	public boolean nodeLabels(int renderNodeCount, int renderEdgeCount) {
-		return exportLabels;
+		return exportLabels && delegate.nodeLabels(renderNodeCount, renderEdgeCount);
 	}
 
 	@Override
 	public boolean customGraphics(int renderNodeCount, int renderEdgeCount) {
-		return true;
+		return delegate.customGraphics(renderNodeCount, renderEdgeCount);
 	}
 
 	@Override
 	public boolean edgeArrows(int renderNodeCount, int renderEdgeCount) {
-		return true;
+		return delegate.edgeArrows(renderNodeCount, renderEdgeCount);
 	}
 
 	@Override
 	public boolean dashedEdges(int renderNodeCount, int renderEdgeCount) {
-		return true;
+		return delegate.dashedEdges(renderNodeCount, renderEdgeCount);
 	}
 
 	@Override
 	public boolean edgeAnchors(int renderNodeCount, int renderEdgeCount) {
-		return true;
+		return delegate.edgeAnchors(renderNodeCount, renderEdgeCount);
 	}
 
 	@Override
 	public boolean edgeLabels(int renderNodeCount, int renderEdgeCount) {
-		return exportLabels;
+		return exportLabels && delegate.edgeLabels(renderNodeCount, renderEdgeCount);
 	}
 
 	@Override
@@ -110,8 +117,7 @@ public class PrintLOD implements GraphLOD {
 
 	@Override
 	public double getNestedNetworkImageScaleFactor() {
-		return 1.0;
+		return delegate.getNestedNetworkImageScaleFactor();
 	}
-
 	
 }

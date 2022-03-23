@@ -233,11 +233,6 @@ public final class BirdsEyeView implements RenderingEngine<CyNetwork>, ContentCh
 	}
 
 	@Override
-	public Properties getProperties() {
-		return re.getProperties();
-	}
-	
-	@Override
 	public Printable createPrintable() {
 		return re.createPrintable();
 	}

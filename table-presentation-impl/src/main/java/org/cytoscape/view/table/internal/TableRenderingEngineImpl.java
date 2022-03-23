@@ -292,11 +292,6 @@ public class TableRenderingEngineImpl implements RenderingEngine<CyTable> {
 	}
 
 	@Override
-	public Properties getProperties() {
-		return null;
-	}
-
-	@Override
 	public Printable createPrintable() {
 		return null;
 	}
