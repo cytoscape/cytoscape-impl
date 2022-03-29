@@ -325,7 +325,8 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 		logger.debug("##### Start Rendering Phase 2: " + engine.toString());
 		var props = Map.of(
 			"exportTextAsShape", String.valueOf(!exportTextAsFont),
-			"exportHideLabels",  String.valueOf(hideLabels)
+			"exportHideLabels", String.valueOf(hideLabels),
+			"pdf", "true"
 		);
 		engine.printCanvas(g, props);
 		logger.debug("##### Canvas Rendering Done: ");

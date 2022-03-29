@@ -24,9 +24,6 @@ package org.cytoscape.ding.impl;
  * #L%
  */
 import static org.cytoscape.ding.DVisualLexicon.EDGE_CURVED;
-import static org.cytoscape.ding.DVisualLexicon.EDGE_LABEL_ROTATION;
-import static org.cytoscape.ding.DVisualLexicon.EDGE_SOURCE_ARROW_UNSELECTED_PAINT;
-import static org.cytoscape.ding.DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
 
 import java.awt.Color;
@@ -246,12 +243,10 @@ public final class DEdgeDetails implements EdgeDetails {
 	}
 
 	@Override
-	public Font getLabelFont(View<CyEdge> edgeView) {
+	public Font getLabelFont(View<CyEdge> edgeView, boolean forPdf) {
 		Number size = edgeView.getVisualProperty(EDGE_LABEL_FONT_SIZE);
 		Font font = edgeView.getVisualProperty(EDGE_LABEL_FONT_FACE);
-		if (size != null && font != null)
-			font = font.deriveFont(size.floatValue());
-		return font;
+		return DNodeDetails.computeFont(font, size, forPdf);
 	}
 
 	@Override

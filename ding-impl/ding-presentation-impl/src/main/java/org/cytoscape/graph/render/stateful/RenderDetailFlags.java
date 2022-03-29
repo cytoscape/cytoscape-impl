@@ -29,6 +29,7 @@ public class RenderDetailFlags {
 	// Optimizations
 	public final static int OPT_EDGE_BUFF_PAN   = 1 << 10;
 	public final static int OPT_LABEL_CACHE     = 1 << 11;
+	public final static int OPT_PDF_FONT_HACK = 1 << 12;
 
 	
 	private final int lodBits;
@@ -41,6 +42,10 @@ public class RenderDetailFlags {
 		this.renderEdges = renderEdges;
 		this.nodeCount = nodeCount;
 		this.edgeCountEstimate = edgeCountEstimate;
+	}
+	
+	public RenderDetailFlags add(int opts) {
+		return new RenderDetailFlags(this.lodBits | opts, this.renderEdges, this.nodeCount, this.edgeCountEstimate);
 	}
 	
 	public RenderEdges renderEdges() {
@@ -63,7 +68,7 @@ public class RenderDetailFlags {
 		return (lodBits & flag) != 0;
 	}
 	
-	public boolean and(int ... flags) {
+	public boolean all(int ... flags) {
 		for(int flag : flags) {
 			if(not(flag)) {
 				return false;
@@ -72,7 +77,7 @@ public class RenderDetailFlags {
 		return true;
 	}
 	
-	public boolean or(int ... flags) {
+	public boolean any(int ... flags) {
 		for(int flag : flags) {
 			if(has(flag)) {
 				return true;

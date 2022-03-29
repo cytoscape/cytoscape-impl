@@ -534,7 +534,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			int visibleNodes = justSelectedNodes ? selectedNodes.size() : netViewSnapshot.getNodeCount();
 			RenderDetailFlags flags = RenderDetailFlags.create(netViewSnapshot, visibleNodes, getGraphLOD());
 			
-			if(flags.and(LOD_HIGH_DETAIL, LOD_NODE_LABELS, OPT_LABEL_CACHE)) {
+			if(flags.all(LOD_HIGH_DETAIL, LOD_NODE_LABELS, OPT_LABEL_CACHE)) {
 				LabelInfoProvider labelCache = getLabelCache();
 				NetworkPicker picker = getPicker();
 				
@@ -680,7 +680,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		g.clipRect(0, 0, renderComponent.getWidth(), renderComponent.getHeight());
 		
 		PrintLOD printLOD = new PrintLOD();
-		CompositeGraphicsCanvas.paint((Graphics2D)g, getBackgroundColor(), printLOD, transform, this);
+		CompositeGraphicsCanvas.paint((Graphics2D)g, getBackgroundColor(), printLOD, transform, this, false);
 		
 		return PAGE_EXISTS;
 	}
@@ -693,11 +693,11 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			props = Collections.emptyMap();
 		
 		// Check properties related to printing:
-		boolean exportAsShape = "true".equalsIgnoreCase(props.get("exportTextAsShape"));
-		boolean transparent   = "true".equalsIgnoreCase(props.get("exportTransparentBackground"));
-		boolean hideLabels    = "true".equalsIgnoreCase(props.get("exportHideLabels"));
-		// highDetail is different, it defaults to true.
-		boolean highDetail    = "true".equalsIgnoreCase(props.getOrDefault("highDetail", "true"));
+		boolean exportAsShape = Boolean.parseBoolean(props.get("exportTextAsShape"));
+		boolean transparent   = Boolean.parseBoolean(props.get("exportTransparentBackground"));
+		boolean hideLabels    = Boolean.parseBoolean(props.get("exportHideLabels"));
+		boolean highDetail    = Boolean.parseBoolean(props.getOrDefault("highDetail", "true"));
+		boolean pdf           = Boolean.parseBoolean(props.get("pdf"));
 		
 		GraphLOD baseLOD = highDetail ? DingGraphLODAll.instance() : new DingGraphLOD(serviceRegistrar);
 		PrintLOD printLOD = new PrintLOD(baseLOD, exportAsShape, !hideLabels);
@@ -708,7 +708,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		var transform = new NetworkTransform(renderComponent.getTransform());
 		transform.setDPIScaleFactor(1.0);
 		
-		CompositeGraphicsCanvas.paint((Graphics2D)g, bg, printLOD, transform, this);
+		CompositeGraphicsCanvas.paint((Graphics2D)g, bg, printLOD, transform, this, pdf);
 	}
 	
 	// File > Export Network to Image... (JPEG, PNG, PDF, POSTSCRIPT, SVG)
@@ -748,7 +748,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			NetworkImageBuffer buffer = new NetworkImageBuffer(transform);
 			Color bgColor = transparentBackground ? null : getBackgroundColor();
 			
-			CompositeGraphicsCanvas.paint(buffer.getGraphics(true), bgColor, dingGraphLOD, transform, this);
+			CompositeGraphicsCanvas.paint(buffer.getGraphics(true), bgColor, dingGraphLOD, transform, this, false);
 			
 			return buffer.getImage();
 		});

@@ -204,7 +204,11 @@ public interface EdgeDetails {
 	 * engine if labelCount(edge) returns a value greater than zero.  It is an
 	 * error to return null if this method is called by the rendering engine.
 	 */
-	public Font getLabelFont(View<CyEdge> edgeView);
+	public Font getLabelFont(View<CyEdge> edgeView, boolean forPdf);
+	
+	default Font getLabelFont(View<CyEdge> edgeView) {
+		return getLabelFont(edgeView, false);
+	}
 
   /**
    * Returns the angle (in degrees) to rotate the label.

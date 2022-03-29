@@ -211,11 +211,32 @@ public class DNodeDetails implements NodeDetails {
 	}
 
 	@Override
-	public Font getLabelFont(View<CyNode> nodeView) {
+	public Font getLabelFont(View<CyNode> nodeView, boolean forPdf) {
+		Font font = nodeView.getVisualProperty(NODE_LABEL_FONT_FACE);
 		Number size = nodeView.getVisualProperty(NODE_LABEL_FONT_SIZE);
-		Font   font = nodeView.getVisualProperty(NODE_LABEL_FONT_FACE);
-		if (size != null && font != null)
+		return computeFont(font, size, forPdf);
+	}
+	
+	public static Font computeFont(Font font, Number size, boolean forPdf) {
+		if(font == null)
+			return null;
+		if(size != null)
 			font = font.deriveFont(size.floatValue());
+		
+		// The iText PDF library won't render italic/bold unless the style bits are explicitly set.
+		// Unfortunately we have to use this font name hack to guess if the font is bold or italic.
+		if(forPdf) {
+			String name = font.getName().toLowerCase();
+			boolean italic = name.contains("italic") || name.contains("oblique");
+			boolean bold   = name.contains("bold");
+			if(italic && bold)
+				font = font.deriveFont(Font.ITALIC | Font.BOLD);
+			else if(italic)
+				font = font.deriveFont(Font.ITALIC);
+			else if(bold)
+				font = font.deriveFont(Font.BOLD);
+		}
+		
 		return font;
 	}
 

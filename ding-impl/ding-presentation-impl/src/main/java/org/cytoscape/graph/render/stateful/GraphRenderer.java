@@ -244,7 +244,7 @@ public final class GraphRenderer {
 						}
 						
 						final String text = edgeDetails.getLabelText(edge);
-						final Font font = edgeDetails.getLabelFont(edge);
+						final Font font = edgeDetails.getLabelFont(edge, flags.has(OPT_PDF_FONT_HACK));
 						final Paint paint = edgeDetails.getLabelPaint(edge);
 						final Position textAnchor = edgeDetails.getLabelTextAnchor(edge);
 						final Position edgeAnchor = edgeDetails.getLabelEdgeAnchor(edge);
@@ -451,7 +451,7 @@ public final class GraphRenderer {
 					final String text = nodeDetails.getLabelText(node);
 					
 					if(text != null && !text.isEmpty()) {
-						final Font font = nodeDetails.getLabelFont(node);
+						final Font font = nodeDetails.getLabelFont(node, flags.has(OPT_PDF_FONT_HACK));
 						final Paint paint = nodeDetails.getLabelPaint(node);
 						final Position textAnchor = nodeDetails.getLabelTextAnchor(node);
 						final Position nodeAnchor = nodeDetails.getLabelNodeAnchor(node);

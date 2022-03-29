@@ -181,7 +181,11 @@ public interface NodeDetails {
 	 * if labelCount(node) returns a value greater than zero. It is an error to
 	 * return null if this method is called by the rendering engine.
 	 */
-	Font getLabelFont(View<CyNode> node);
+	Font getLabelFont(View<CyNode> node, boolean forPdf);
+	
+	default Font getLabelFont(View<CyNode> node) {
+		return getLabelFont(node, false);
+	}
 
   /**
    * Returns the angle (in degrees) to rotate the label.

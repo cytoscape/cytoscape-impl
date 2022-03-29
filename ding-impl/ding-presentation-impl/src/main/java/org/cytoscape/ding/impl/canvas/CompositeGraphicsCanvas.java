@@ -2,6 +2,7 @@ package org.cytoscape.ding.impl.canvas;
 
 import static org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID.BACKGROUND;
 import static org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID.FOREGROUND;
+import static org.cytoscape.graph.render.stateful.RenderDetailFlags.OPT_PDF_FONT_HACK;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -23,11 +24,22 @@ import org.cytoscape.view.presentation.annotations.Annotation;
  */
 public class CompositeGraphicsCanvas {
 
-	public static void paint(Graphics2D graphics, Color bgPaint, GraphLOD lod, NetworkTransform transform, DRenderingEngine re) {
+	public static void paint(
+			Graphics2D graphics, 
+			Color bgPaint, 
+			GraphLOD lod, 
+			NetworkTransform transform, 
+			DRenderingEngine re, 
+			boolean pdfFontHack
+	) {
 		var g = new SimpleGraphicsProvider(transform, graphics);
 		var snapshot = re.getViewModelSnapshot();
-		var flags = RenderDetailFlags.create(snapshot, transform, lod, null);
 		var pm = new NoOutputProgressMonitor();
+		
+		var flags = RenderDetailFlags.create(snapshot, transform, lod, null);
+		if(pdfFontHack) {
+			flags = flags.add(OPT_PDF_FONT_HACK);
+		}
 		
 		var canvasList = Arrays.asList(
 			new AnnotationCanvas<>(g, re, FOREGROUND, false),
@@ -38,13 +50,20 @@ public class CompositeGraphicsCanvas {
 		Collections.reverse(canvasList);
 		
 		g.fill(bgPaint);
-		canvasList.forEach(c -> c.paint(pm, flags));
+		
+		for(var canvas : canvasList)
+			canvas.paint(pm, flags);
 	}
 	
 	
-	public static void paintThumbnail(Graphics2D graphics, Color bgPaint, GraphLOD lod, NetworkTransform transform, 
-			CyNetworkViewSnapshot snapshot, Collection<Annotation> annotations) {
-		
+	public static void paintThumbnail(
+			Graphics2D graphics, 
+			Color bgPaint, 
+			GraphLOD lod, 
+			NetworkTransform transform, 
+			CyNetworkViewSnapshot snapshot, 
+			Collection<Annotation> annotations
+	) {
 		var g = new SimpleGraphicsProvider(transform, graphics);
 		var flags = RenderDetailFlags.create(snapshot, transform, lod, null);
 		var pm = new NoOutputProgressMonitor();
@@ -62,15 +81,17 @@ public class CompositeGraphicsCanvas {
 		}
 		
 		var canvasList = Arrays.asList(
-			new AnnotationThumbnailCanvas<GraphicsProvider>(g, foreground),
+			new AnnotationThumbnailCanvas<>(g, foreground),
 			new NodeThumbnailCanvas<>(g, snapshot),
 			new EdgeThumbnailCanvas<>(g, snapshot),
-			new AnnotationThumbnailCanvas<GraphicsProvider>(g, background)
+			new AnnotationThumbnailCanvas<>(g, background)
 		);
 		Collections.reverse(canvasList);
 		
 		g.fill(bgPaint);
-		canvasList.forEach(c -> c.paint(pm, flags));
+		
+		for(var canvas : canvasList)
+			canvas.paint(pm, flags);
 	}
 	
 }
