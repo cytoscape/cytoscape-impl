@@ -102,7 +102,7 @@ public class TableBrowserMediator implements SetCurrentNetworkListener, SetCurre
 			((DefaultTableBrowser) tableBrowsers.get(CyNetwork.class)).update(network);
 			
 			// Get the new current table
-			var table = getCurrentTable();
+			var table = ((DefaultTableBrowser) tableBrowsers.get(CyNode.class)).getCurrentTable();
 			
 			// Update the CyApplicationManager
 			if (table == null || table.isPublic())
