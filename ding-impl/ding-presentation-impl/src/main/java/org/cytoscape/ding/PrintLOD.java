@@ -50,6 +50,16 @@ public class PrintLOD implements GraphLOD {
 		this(DingGraphLODAll.instance(), true, true);
 	}
 	
+	
+	/**
+	 * Always render in high detail, but things like labels can still be disabled based on number of visible nodes/edges.
+	 */
+	@Override
+	public boolean detail(int renderNodeCount, int renderEdgeCount) {
+		return true;
+	}
+
+	
 	@Override
 	public boolean isEdgeBufferPanEnabled() {
 		return delegate.isEdgeBufferPanEnabled();
@@ -68,11 +78,6 @@ public class PrintLOD implements GraphLOD {
 	@Override
 	public RenderEdges renderEdges(int visibleNodeCount, int totalNodeCount, int totalEdgeCount) {
 		return delegate.renderEdges(visibleNodeCount, totalNodeCount, totalEdgeCount);
-	}
-
-	@Override
-	public boolean detail(int renderNodeCount, int renderEdgeCount) {
-		return delegate.detail(renderNodeCount, renderEdgeCount);
 	}
 
 	@Override

@@ -65,14 +65,14 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 	protected Map<String,String> renderProps = new HashMap<>();
 	
 	@Tunable(
-			description = "High Detail:",
+			description = "Show All Graphics Details:",
 			longDescription = "If true the exported image detail will be high. "
 					+ "If false then the image detail may be decreased so that the image export is faster.",
 			exampleStringValue = "true",
 			groups = { "_Others" },
 			gravity = 2.0
 	)
-	public boolean highDetail = true;
+	public boolean allGraphicsDetails = true;
 	
 	
 	@Tunable(
@@ -299,7 +299,7 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 		logger.debug("Bitmap image rendering start.");
 
 		renderProps.put("exportHideLabels", String.valueOf(hideLabels));
-		renderProps.put("highDetail", String.valueOf(highDetail));
+		renderProps.put("highDetail", String.valueOf(allGraphicsDetails));
 		writeImage(tm);
 		
 		logger.debug("Bitmap image rendering finished.");

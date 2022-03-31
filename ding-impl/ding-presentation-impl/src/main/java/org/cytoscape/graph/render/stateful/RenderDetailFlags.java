@@ -29,7 +29,7 @@ public class RenderDetailFlags {
 	// Optimizations
 	public final static int OPT_EDGE_BUFF_PAN   = 1 << 10;
 	public final static int OPT_LABEL_CACHE     = 1 << 11;
-	public final static int OPT_PDF_FONT_HACK = 1 << 12;
+	public final static int OPT_PDF_FONT_HACK   = 1 << 12;
 
 	
 	private final int lodBits;
@@ -88,7 +88,7 @@ public class RenderDetailFlags {
 	
 	
 	public boolean treatNodeShapesAsRectangle() {
-		return not(RenderDetailFlags.LOD_HIGH_DETAIL);
+		return not(LOD_HIGH_DETAIL);
 	}
 	
 	
