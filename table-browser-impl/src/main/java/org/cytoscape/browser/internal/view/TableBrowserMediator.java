@@ -32,6 +32,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
 import org.cytoscape.model.events.TableAboutToBeDeletedListener;
 import org.cytoscape.model.events.TableAddedEvent;
@@ -89,27 +90,32 @@ public class TableBrowserMediator implements SetCurrentNetworkListener, SetCurre
 		tableBrowsers.put(CyEdge.class, edgeTableBrowser);
 		tableBrowsers.put(CyNetwork.class, networkTableBrowser);
 		tableBrowsers.put(null, globalTableBrowser);
-	}
-
-	@Override
-	public void handleEvent(SetCurrentNetworkEvent evt) {
-		var network = evt.getNetwork();
 		
-		invokeOnEDTAndWait(() -> {
-			// Update UI
-			((DefaultTableBrowser) tableBrowsers.get(CyNode.class)).update(network);
-			((DefaultTableBrowser) tableBrowsers.get(CyEdge.class)).update(network);
-			((DefaultTableBrowser) tableBrowsers.get(CyNetwork.class)).update(network);
-			
-			// Get the new current table
-			var table = ((DefaultTableBrowser) tableBrowsers.get(CyNode.class)).getCurrentTable();
-			
-			// Update the CyApplicationManager
-			if (table == null || table.isPublic())
-				serviceRegistrar.getService(CyApplicationManager.class).setCurrentTable(table);
-		});
+		for (var tb : tableBrowsers.values()) {
+			if (tb instanceof DefaultTableBrowser) {
+				tb.getTableChooser().addActionListener(e -> {
+					((DefaultTableBrowser) tb).updateCurrentTable();
+					
+					// Make sure the Application Manager has our current table
+					var applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
+					var table = tb.getCurrentTable();
+					
+					if (table != null && !table.equals(applicationManager.getCurrentTable())) {
+						var tableManager = serviceRegistrar.getService(CyTableManager.class);
+						
+						if (tableManager.getTable(table.getSUID()) != null)
+							applicationManager.setCurrentTable(table);
+					}
+				});
+			}
+		}
 	}
 	
+	@Override
+	public void handleEvent(SetCurrentNetworkEvent evt) {
+		updateCurrentNetworkTables(evt.getNetwork());
+	}
+
 	@Override
 	public void handleEvent(SetCurrentTableEvent evt) {
 		var table = evt.getTable();
@@ -175,6 +181,7 @@ public class TableBrowserMediator implements SetCurrentNetworkListener, SetCurre
 					if (tb.isEmpty()) {
 						// The last table is deleted, hide the table browser
 						serviceRegistrar.unregisterService(tb, CytoPanelComponent.class);
+						
 						// Make sure the application manager is sync'd with our current table
 						serviceRegistrar.getService(CyApplicationManager.class).setCurrentTable(getCurrentTable());
 					}
@@ -385,5 +392,21 @@ public class TableBrowserMediator implements SetCurrentNetworkListener, SetCurre
 		}
 		
 		return null;
+	}
+	
+	private void updateCurrentNetworkTables(CyNetwork network) {
+		invokeOnEDTAndWait(() -> {
+			// Update UI
+			((DefaultTableBrowser) tableBrowsers.get(CyNode.class)).update(network);
+			((DefaultTableBrowser) tableBrowsers.get(CyEdge.class)).update(network);
+			((DefaultTableBrowser) tableBrowsers.get(CyNetwork.class)).update(network);
+			
+			// Get the new current table
+			var table = getCurrentTable();
+			
+			// Update the CyApplicationManager
+			if (table == null || table.isPublic())
+				serviceRegistrar.getService(CyApplicationManager.class).setCurrentTable(table);
+		});
 	}
 }

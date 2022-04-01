@@ -235,14 +235,21 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 		if (table == null)
 			return null;
 		
+		TableRenderer renderer = null;
+		
 		synchronized (lock) {
-			var renderer = tableRenderers.get(table);
-			
-			if (renderer == null)
-				 createDefaultTableView(table);
-			
-			return tableRenderers.get(table);
+			renderer = tableRenderers.get(table);
 		}
+			
+		if (renderer == null) {
+			 createDefaultTableView(table);
+			 
+			 synchronized (lock) {
+				 renderer = tableRenderers.get(table);
+			 }
+		}
+			
+		return renderer;
 	}
 	
 	public TableRenderer getCurrentRenderer() {
@@ -460,7 +467,7 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 	public void handleEvent(TableViewAddedEvent e) {
 		var tableView = e.getTableView();
 		
-		if(!correctType(tableView.getModel()))
+		if (!correctType(tableView.getModel()))
 			return;
 
 		// a renderer may already exist

@@ -78,17 +78,16 @@ public class CyTableViewManagerImpl implements CyTableViewManager, TableAboutToB
 	
 	@Override
 	public void setTableView(CyTableView view) {
-		if(view == null)
+		if (view == null)
 			return;
 		
-		CyTable table = view.getModel();
-		CyTableManager tableManager = registrar.getService(CyTableManager.class);
+		var table = view.getModel();
+		var tableManager = registrar.getService(CyTableManager.class);
 		
-		synchronized (lock) {
-			if(tableManager.getTable(table.getSUID()) == null) {
-				throw new IllegalArgumentException("Table view cannot be added, because its table (" + table + ") is not registered");
-			}
+		if (tableManager.getTable(table.getSUID()) == null)
+			throw new IllegalArgumentException("Table view cannot be added, because its table (" + table + ") is not registered");
 			
+		synchronized (lock) {
 			CyTableView existingView = getTableView(table);
 			if(existingView != null) {
 				destroyTableView(existingView);

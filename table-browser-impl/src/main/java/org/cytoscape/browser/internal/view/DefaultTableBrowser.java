@@ -13,7 +13,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.browser.internal.util.IconUtil;
 import org.cytoscape.browser.internal.util.TableBrowserUtil;
 import org.cytoscape.browser.internal.view.tools.AbstractToolBarControl;
@@ -26,7 +25,6 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
@@ -161,7 +159,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser {
 		displayMode.add(displaySelect);
 	}
 
-	public void setCurrentTable() {
+	protected void updateCurrentTable() {
 		if (!ignoreSetCurrentTable) {
 			var table = (CyTable) getTableChooser().getSelectedItem();
 			setCurrentTable(table);
@@ -172,16 +170,6 @@ public class DefaultTableBrowser extends AbstractTableBrowser {
 			// SUID, required for the synchronization with node/edge selection.
 			if (viewModeControl != null && table != null)
 				viewModeControl.setVisible(table.getPrimaryKey().getType() == Long.class);
-			
-			// Make sure the Application Manager has our current table
-			var applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
-			
-			if (table != null && !table.equals(applicationManager.getCurrentTable())) {
-				var tableManager = serviceRegistrar.getService(CyTableManager.class);
-			
-				if (tableManager.getTable(table.getSUID()) != null)
-					applicationManager.setCurrentTable(table);
-			}
 		}
 	}
 
@@ -226,7 +214,6 @@ public class DefaultTableBrowser extends AbstractTableBrowser {
 			tableChooser.setRenderer(new TableChooserCellRenderer(serviceRegistrar));
 			tableChooser.setMaximumSize(new Dimension(600, tableChooser.getPreferredSize().height));
 			tableChooser.setVisible(false); // Table selector is invisible unless it has more than one item
-			tableChooser.addActionListener(e -> setCurrentTable());
 			tableChooser.getModel().addListDataListener(new ListDataListener() {
 				@Override
 				public void intervalRemoved(ListDataEvent e) {
