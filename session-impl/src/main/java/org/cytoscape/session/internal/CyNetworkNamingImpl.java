@@ -81,9 +81,14 @@ public class CyNetworkNamingImpl implements CyNetworkNaming {
 	
 	@Override
 	public String getSuggestedNetworkTitle(String desiredTitle) {
-		if (desiredTitle == null || "".equals(desiredTitle.trim())) {
+		if (desiredTitle == null || desiredTitle.isBlank()) {
 			desiredTitle = DEF_NETWORK_NAME_PREFIX;
 			logger.warn("getSuggestedNetworkTitle: desiredTitle " + "was '" + desiredTitle + "'");
+		}
+		
+		CyNetworkManager netManager = serviceRegistrar.getService(CyNetworkManager.class);
+		if (!isNetworkTitleTaken(desiredTitle, netManager)) {
+			return desiredTitle;
 		}
 		
 		Pattern p = Pattern.compile(".*_(\\d*)$"); //capture just the digits
@@ -98,12 +103,9 @@ public class CyNetworkNamingImpl implements CyNetworkNaming {
 		
 		if (desiredTitle.length() > MAX_TITLE_LENGH)
 			desiredTitle = desiredTitle.substring(0, MAX_TITLE_LENGH);
-		
-		final CyNetworkManager netManager = serviceRegistrar.getService(CyNetworkManager.class);
 
 		for (int i = start; true; i++) {
-			final String titleCandidate = desiredTitle + ((i == 0) ? "" : ("_" + i));
-
+			String titleCandidate = desiredTitle + ((i == 0) ? "" : ("_" + i));
 			if (!isNetworkTitleTaken(titleCandidate, netManager))
 				return titleCandidate;
 		}

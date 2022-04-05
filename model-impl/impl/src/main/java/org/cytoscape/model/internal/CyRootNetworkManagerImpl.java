@@ -30,16 +30,13 @@ import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 
 
-/**
- *
- */
 public class CyRootNetworkManagerImpl implements CyRootNetworkManager {
 
-	public CyRootNetwork getRootNetwork(final CyNetwork net) {
-		if (net instanceof CyRootNetwork)
-			return (CyRootNetwork) net;
-		else if (net instanceof CySubNetwork)
-			return ((CySubNetwork) net).getRootNetwork();
+	public CyRootNetwork getRootNetwork(CyNetwork net) {
+		if (net instanceof CyRootNetwork root)
+			return root;
+		else if (net instanceof CySubNetwork sub)
+			return sub.getRootNetwork();
 		else
 			throw new IllegalArgumentException("Your network isn't of proper type - can't provide a root network");
 	}
