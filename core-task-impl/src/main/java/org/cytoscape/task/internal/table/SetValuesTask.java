@@ -2,10 +2,14 @@ package org.cytoscape.task.internal.table;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringJoiner;
 
 import org.cytoscape.command.StringToModel;
+import org.cytoscape.equations.Equation;
+import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
@@ -59,7 +63,12 @@ public class SetValuesTask extends AbstractTableDataTask implements ObservableTa
 	                         "This should be a string value, which will be converted to the appropriate column type.", 
 	         exampleStringValue = StringToModel.VALUE_EXAMPLE)
 	public String value;
+	
+	
+	@Tunable(description="If true then if the value starts with '=' it will be treated as an equation.", context="nogui")
+	public boolean handleEquations = false;
 
+	
 	public SetValuesTask(CyServiceRegistrar serviceRegistrar) {
 		super(serviceRegistrar);
 		rowTunable = new RowTunable(serviceRegistrar);
@@ -95,17 +104,18 @@ public class SetValuesTask extends AbstractTableDataTask implements ObservableTa
 			return;
 		}
 
-		Class columnType = column.getType();
-		Class listType = null;
+		Class<?> columnType = column.getType();
+		Class<?> listType = null;
 		if (columnType.equals(List.class))
 			listType = column.getListElementType();
 
 		String primaryKey = table.getPrimaryKey().getName();
 		CyColumn nameColumn = table.getColumn(CyNetwork.NAME);
 		String nameKey = null;
-		if (nameColumn != null) nameKey = nameColumn.getName();
+		if (nameColumn != null)
+			nameKey = nameColumn.getName();
 
-		tm.showMessage(TaskMonitor.Level.INFO, "Retreived "+rowList.size()+" rows:");
+		tm.showMessage(TaskMonitor.Level.INFO, "Retreived " + rowList.size() + " rows:");
 
 		rowKeys = new ArrayList<>();
 		for (CyRow row: rowList) {
@@ -115,12 +125,24 @@ public class SetValuesTask extends AbstractTableDataTask implements ObservableTa
 				message += ", name: "+row.get(nameKey, String.class)+") ";
 			else
 				message += ") ";
-			if (listType == null) {
+			
+			if (handleEquations && value.startsWith("=")) {
+				var attributeToTypeMap = getAttributeMap(column);
+
+				EquationCompiler compiler = serviceRegistrar.getService(EquationCompiler.class);
+				boolean success = compiler.compile(value, attributeToTypeMap);
+				if(success) {
+					Equation equation = compiler.getEquation();
+					row.set(column.getName(), equation);
+				} else {
+					tm.showMessage(TaskMonitor.Level.ERROR, "Error parsing equation: " + compiler.getLastErrorMsg());
+					return;
+				}
+			} else if (listType == null) {
 				try {
 					row.set(column.getName(), DataUtils.convertString(value, columnType));
 				} catch (NumberFormatException nfe) {
-					tm.showMessage(TaskMonitor.Level.ERROR, 
-					                        "Unable to convert "+value+" to a "+DataUtils.getType(columnType));
+					tm.showMessage(TaskMonitor.Level.ERROR, "Unable to convert "+value+" to a "+DataUtils.getType(columnType));
 					return;
 				}
 				message += "column "+column.getName()+" set to "+DataUtils.convertString(value, columnType).toString();
@@ -128,9 +150,7 @@ public class SetValuesTask extends AbstractTableDataTask implements ObservableTa
 				try {
 					row.set(column.getName(), DataUtils.convertStringList(value, listType));
 				} catch (NumberFormatException nfe) {
-					tm.showMessage(TaskMonitor.Level.ERROR, 
-					                        "Unable to convert "+value+" to a list of "+
-					                        DataUtils.getType(listType)+"s");
+					tm.showMessage(TaskMonitor.Level.ERROR, "Unable to convert "+value+" to a list of "+DataUtils.getType(listType)+"s");
 					return;
 				}
 				message += "list column "+column.getName()+" set to "+DataUtils.convertStringList(value, listType).toString();
@@ -142,6 +162,17 @@ public class SetValuesTask extends AbstractTableDataTask implements ObservableTa
 		}
 	}
 
+	
+	private Map<String, Class<?>> getAttributeMap(CyColumn targetCol) {
+		var attrMap = new HashMap<String, Class<?>>();
+		for(var c : table.getColumns()) {
+			attrMap.put(c.getName(), c.getType());
+		}
+		attrMap.remove(targetCol.getName());
+		return attrMap;
+	}
+	
+	
 	@Override
 	public List<Class<?>> getResultClasses() {
 		return Arrays.asList(List.class, String.class, JSONResult.class);	

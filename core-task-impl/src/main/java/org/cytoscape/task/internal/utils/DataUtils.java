@@ -85,15 +85,15 @@ public class DataUtils {
 
 	public static <T> T convertString(String value, Class<T> type) {
 		if (type.equals(Long.class))
-			return (T)Long.valueOf(value);
+			return type.cast(Long.valueOf(value));
 		if (type.equals(Double.class))
-			return (T)Double.valueOf(value);
+			return type.cast(Double.valueOf(value));
 		if (type.equals(Integer.class))
-			return (T)Integer.valueOf(value);
+			return type.cast(Integer.valueOf(value));
 		if (type.equals(Boolean.class))
-			return (T)Boolean.valueOf(value);
+			return type.cast(Boolean.valueOf(value));
 		if (type.equals(String.class))
-			return (T)value;
+			return type.cast(value);
 		return null;
 	}
 
