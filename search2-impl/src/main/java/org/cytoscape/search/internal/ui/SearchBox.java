@@ -99,7 +99,14 @@ public abstract class SearchBox extends JPanel {
 			searchTextField = new JTextField();
 			searchTextField.putClientProperty("JTextField.variant", "search");
 
-			searchTextField.setToolTipText("<html>Example Search Queries:<br><br>YL* -- Search all columns<br>name:YL* -- Search 'name' column<br>GO\\:1232 -- Escape special characters and spaces with backslash</html>");
+			searchTextField.setToolTipText("""
+					<html>
+					Example Search Queries:<br><br>
+					YL* -- Search all columns<br>
+					name:YL* -- Search 'name' column<br>
+					GO\\:1232 -- Escape special characters and spaces with backslash
+					</html>""");
+			
 			searchTextField.setName("tfSearchText");
 			
 			if (!isAquaLAF()) {
