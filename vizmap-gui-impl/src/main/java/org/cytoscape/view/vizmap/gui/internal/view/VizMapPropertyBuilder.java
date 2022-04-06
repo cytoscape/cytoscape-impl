@@ -228,7 +228,7 @@ public class VizMapPropertyBuilder {
 						CyRow row = network.getRow(network);
 						CyColumn column = row.getTable().getColumn(attrName);
 						if (column != null) {
-							processDiscretValues(row, attrName, column, column.getType(), attrSet);
+							processDiscretValues(row, column, attrSet);
 						}
 					} else {
 						// Make sure all data sets have the same data type.
@@ -238,10 +238,9 @@ public class VizMapPropertyBuilder {
 							CyColumn column = firstRow.getTable().getColumn(attrName);
 							
 							if (column != null) {
-								Class<?> colType = column.getType();
 								for (CyIdentifiable go : graphObjects) {
 									CyRow row = network.getRow(go);
-									processDiscretValues(row, attrName, column, colType, attrSet);
+									processDiscretValues(row, column, attrSet);
 								}
 							}
 						}
@@ -251,16 +250,18 @@ public class VizMapPropertyBuilder {
 				CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
 				CyTable table = appMgr.getCurrentTable();
 				CyColumn column = table.getColumn(attrName);
-				Class<?> colType = column.getType();
 				for(CyRow row : table.getAllRows()) {
-					processDiscretValues(row, attrName, column, colType, attrSet);
+					processDiscretValues(row, column, attrSet);
 				}
 			}
 			
 			// Also keep current mapping entries that have non-null values
-			for (final Map.Entry<K, V> entry : ((DiscreteMapping<K, V>)visualMapping).getAll().entrySet()) {
-				if (entry.getValue() != null)
-					attrSet.add(entry.getKey());
+			for (var entry : ((DiscreteMapping<K, V>)visualMapping).getAll().entrySet()) {
+				if (entry.getValue() != null) {
+					try {
+						attrSet.add(entry.getKey()); // Using natural ordering with mixed types can result in ClassCastException.
+					} catch(ClassCastException e) {}
+				}
 			}
 			setDiscreteProps(vp, visualMapping, attrSet, vpEditor, propertySheetPanel);
 			
@@ -374,20 +375,20 @@ public class VizMapPropertyBuilder {
 		}
 	}
 
-	private void processDiscretValues(final CyRow row, final String columnName, final CyColumn column,
-			final Class<?> attrClass, final SortedSet<Object> attrSet) {
+	private void processDiscretValues(CyRow row, CyColumn column, SortedSet<Object> attrSet) {
 
 		if (column.getListElementType() != null) {
 			// Expand list contents as a flat list.
-			final List<?> list = row.getList(columnName, column.getListElementType());
+			List<?> list = row.getList(column.getName(), column.getListElementType());
 			if (list != null) {
-				for (final Object item : list) {
+				for (Object item : list) {
 					if (item != null)
 						attrSet.add(item != null ? item.toString() : null);
 				}
 			}
 		} else {
-			final Object id = row.get(columnName, attrClass);
+			var attrClass = column.getType();
+			Object id = row.get(column.getName(), attrClass);
 			if (id != null) {
 				if (id.getClass() != attrClass && id instanceof Number) {
 					attrSet.add(NumberConverter.convert(attrClass, (Number) id));
@@ -395,7 +396,7 @@ public class VizMapPropertyBuilder {
 					try {
 						attrSet.add(id);
 					} catch (Exception e) {
-						logger.debug(columnName + ": Invalid entry ignored", e);
+						logger.debug(column.getName() + ": Invalid entry ignored", e);
 					}
 				}
 			}

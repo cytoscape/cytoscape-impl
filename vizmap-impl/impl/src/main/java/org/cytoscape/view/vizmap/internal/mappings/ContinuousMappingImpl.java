@@ -132,8 +132,10 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 			// ViewColumn will automatically substitute the per-VS or global default, as appropriate
 
 			// In all cases, attribute value should be a number for continuous mapping.
-			final K attrValue = row.get(columnName, columnType);
-			value = getRangeValue(attrValue);
+			try {
+				final K attrValue = row.get(columnName, columnType);
+				value = getRangeValue(attrValue);
+			} catch(ClassCastException e) { }
 		}
 		
 		return value;

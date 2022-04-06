@@ -68,7 +68,10 @@ public class DiscreteMappingImpl<K, V> extends AbstractVisualMappingFunction<K, 
 			final Class<?> attrClass = column.getType();
 
 			if (attrClass.isAssignableFrom(List.class)) {
-				List<?> list = row.getList(columnName, column.getListElementType());
+				List<?> list = null;
+				try {
+					list = row.getList(columnName, column.getListElementType());
+				} catch(ClassCastException e) { }
 
 				if (list != null) {
 					for (Object item : list) {
@@ -84,7 +87,10 @@ public class DiscreteMappingImpl<K, V> extends AbstractVisualMappingFunction<K, 
 					}
 				}
 			} else {
-				K key = row.get(columnName, columnType);
+				K key = null;
+				try {
+					key = row.get(columnName, columnType);
+				} catch(ClassCastException e) { }
 
 				if (key != null) {
 					synchronized (lock) {
