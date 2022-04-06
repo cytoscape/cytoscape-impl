@@ -395,7 +395,7 @@ public class QueryTest {
 		nodeTable.getRow(nodeSuid9).set(NODE_COMMON, "sam");
 		nodeTable.getRow(nodeSuid15).set(NODE_COMMON, "gandalf");
 		
-		searchManager.reindexTable(nodeTable);
+		searchManager.reindexTable(nodeTable).get();
 		
 		results = queryIndex("BAR1 MFA2 SSN6");
 		assertNodeHits(results);
