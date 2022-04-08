@@ -1011,7 +1011,7 @@ public class PreviewTablePanel extends JPanel {
 		
 		editDialog = new EditDialog(parent, ModalityType.MODELESS, colIdx, attrEditorPanel);
 		editDialog.setUndecorated(true);
-		editDialog.add(attrEditorPanel);
+		editDialog.getContentPane().add(attrEditorPanel);
 		
 		final ActionMap actionMap = attrEditorPanel.getActionMap();
 		final InputMap inputMap = attrEditorPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
@@ -1124,6 +1124,7 @@ public class PreviewTablePanel extends JPanel {
 	protected void disposeEditDialog() {
 		synchronized (lock) {
 			if (editDialog != null) {
+				editDialog.getContentPane().removeAll();
 				editDialog.dispose();
 				editDialog = null;
 			}
