@@ -489,7 +489,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		otherDelimiterTextField.addKeyListener(new KeyListener() {
 			@Override
 			public void keyPressed(KeyEvent evt) {
-
+				// Ignore...
 			}
 			@Override
 			public void keyReleased(KeyEvent evt) {
@@ -502,6 +502,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			}
 			@Override
 			public void keyTyped(KeyEvent evt) {
+				// Ignore...
 			}
 		});
 		
@@ -523,6 +524,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		otherDecimalSeparatorRadioButton.addChangeListener(decimalSeparatorChangeListener);
 		otherDecimalSeparatorTextField.addKeyListener(new KeyListener() {
 			// Only 1 character in the text field
+			@Override
 			public void keyTyped(KeyEvent e) {
 				if(otherDecimalSeparatorTextField.getText().length() >= 1) {
 					e.consume();
