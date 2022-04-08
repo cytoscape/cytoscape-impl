@@ -172,8 +172,6 @@ public class PreviewTablePanel extends JPanel {
 	private long lastDialogTime;
 	private boolean updating;
 	
-	private final Object lock = new Object();
-
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	/**
@@ -1122,12 +1120,10 @@ public class PreviewTablePanel extends JPanel {
 	}
 
 	protected void disposeEditDialog() {
-		synchronized (lock) {
-			if (editDialog != null) {
-				editDialog.getContentPane().removeAll();
-				editDialog.dispose();
-				editDialog = null;
-			}
+		if (editDialog != null) {
+			editDialog.getContentPane().removeAll();
+			editDialog.dispose();
+			editDialog = null;
 		}
 	}
 
