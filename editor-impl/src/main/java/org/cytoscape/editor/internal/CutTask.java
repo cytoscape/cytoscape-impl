@@ -174,14 +174,14 @@ public class CutTask extends AbstractTask {
 
 			for (var element : objects) {
 				View<? extends CyIdentifiable> view = null;
-
-				if (element instanceof CyNode)
-					view = netView.getNodeView((CyNode) element);
-				else if (element instanceof CyEdge)
-					view = netView.getEdgeView((CyEdge) element);
+				if (element instanceof CyNode node) {
+					view = netView.getNodeView(node);
+				} else if (element instanceof CyEdge edge) {
+					view = netView.getEdgeView(edge);
+				}
 
 				if (view != null)
-					style.apply(netView.getModel().getRow(element), view);
+					style.apply(netView.getModel().getRow((CyIdentifiable)element), view);
 			}
 
 			netView.updateView();

@@ -5,7 +5,6 @@ import static java.util.stream.Collectors.toList;
 import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDTAndWait;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -61,13 +60,12 @@ public class AnnotationManagerImpl implements AnnotationManager {
 
 	@Override
 	public void addAnnotation(Annotation annotation) {
-		addAnnotations(Arrays.asList(annotation));
+		addAnnotations(List.of(annotation));
 	}
 
 	@Override
 	public void addAnnotations(Collection<? extends Annotation> annotations) {
 		var annotationsByView = groupByViewAndCanvasAndFlatten(annotations, false);
-		
 		if (annotationsByView.isEmpty())
 			return;
 		
@@ -93,15 +91,10 @@ public class AnnotationManagerImpl implements AnnotationManager {
 				var all = new ArrayList<DingAnnotation>();
 				
 				if (annotationsByCanvas.containsKey(CanvasID.FOREGROUND)) {
-					var foregroundAnnotations = annotationsByCanvas.get(CanvasID.FOREGROUND);
-//					re.getAnnotationCanvas(CanvasID.FOREGROUND).addAnnotations(foregroundAnnotations);
-//					re.getCyAnnotator().addAnnotations(annotations);
-					all.addAll(foregroundAnnotations);
+					all.addAll(annotationsByCanvas.get(CanvasID.FOREGROUND));
 				}
 				if (annotationsByCanvas.containsKey(CanvasID.BACKGROUND)) {
-					var backgroundAnnotations = annotationsByCanvas.get(CanvasID.BACKGROUND);
-//					re.getAnnotationCanvas(CanvasID.BACKGROUND).addAnnotations(backgroundAnnotations);
-					all.addAll(backgroundAnnotations);
+					all.addAll(annotationsByCanvas.get(CanvasID.BACKGROUND));
 				}
 				
 				re.getCyAnnotator().addAnnotations(all);
@@ -118,8 +111,8 @@ public class AnnotationManagerImpl implements AnnotationManager {
 	}
 	
 	@Override
-	public void removeAnnotation(final Annotation annotation) {
-		removeAnnotations(Arrays.asList(annotation));
+	public void removeAnnotation(Annotation annotation) {
+		removeAnnotations(List.of(annotation));
 	}
 
 	@Override
@@ -129,7 +122,6 @@ public class AnnotationManagerImpl implements AnnotationManager {
 		
 		// throws IllegalAnnotationStructureException
 		var annotationsByView = groupByViewAndCanvasAndFlatten(annotations, true);
-		
 		if (annotationsByView.isEmpty())
 			return;
 		
