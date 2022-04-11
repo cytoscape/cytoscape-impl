@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
@@ -103,7 +102,7 @@ public final class ClipboardManagerImpl {
 		networkView.updateView();
 	}
 
-	public Collection<CyIdentifiable> paste(CyNetworkView targetView, double x, double y) {
+	public Collection<Object> paste(CyNetworkView targetView, double x, double y) {
 		if (currentClipboard == null)
 			return null;
 

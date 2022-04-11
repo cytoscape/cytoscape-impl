@@ -4,12 +4,10 @@ import java.awt.geom.Point2D;
 import java.util.Collection;
 
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
@@ -44,8 +42,7 @@ public class PasteTask extends AbstractNetworkViewTask {
 	private final ClipboardManagerImpl clipMgr;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public PasteTask(CyNetworkView view, Point2D xformPt, ClipboardManagerImpl clipMgr,
-			CyServiceRegistrar serviceRegistrar) {
+	public PasteTask(CyNetworkView view, Point2D xformPt, ClipboardManagerImpl clipMgr, CyServiceRegistrar serviceRegistrar) {
 		super(view);
 		this.xformPt = xformPt;
 		this.clipMgr = clipMgr;
@@ -56,15 +53,13 @@ public class PasteTask extends AbstractNetworkViewTask {
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setTitle("Paste Task");
 		
-		final Collection<CyIdentifiable> pastedObjects;
+		double x = xformPt == null ? 0.0 : xformPt.getX();
+		double y = xformPt == null ? 0.0 : xformPt.getY();
 		
-		if (xformPt == null)
-			pastedObjects = clipMgr.paste(view, 0.0, 0.0);
-		else
-			pastedObjects = clipMgr.paste(view, xformPt.getX(), xformPt.getY());
-
+		Collection<Object> pastedObjects = clipMgr.paste(view, x, y);
+		
 		if (pastedObjects == null) {
-			tm.showMessage(TaskMonitor.Level.WARN, "Nothing to past");
+			tm.showMessage(TaskMonitor.Level.WARN, "Nothing to paste");
 			return;
 		}
 
@@ -75,17 +70,15 @@ public class PasteTask extends AbstractNetworkViewTask {
 		var vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
 		var vs = vmMgr.getVisualStyle(view);
 
-		for (var element : pastedObjects) {
-			View<? extends CyIdentifiable> elementView = null;
-			
-			if (element instanceof CyNode)
-				elementView = view.getNodeView((CyNode) element);
-			else if (element instanceof CyEdge)
-				elementView = view.getEdgeView((CyEdge) element);
-			else
-				continue;
 
-			vs.apply(view.getModel().getRow(element), elementView);
+		for (var element: pastedObjects) {
+			if (element instanceof CyNode node) {
+				var elementView = view.getNodeView(node);
+				vs.apply(view.getModel().getRow(node), elementView);
+			} else if (element instanceof CyEdge edge) {
+				var elementView = view.getEdgeView(edge);
+				vs.apply(view.getModel().getRow(edge), elementView);
+			}
 		}
 
 		view.updateView();

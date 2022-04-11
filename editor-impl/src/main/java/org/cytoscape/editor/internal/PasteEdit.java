@@ -6,11 +6,11 @@ import java.util.Collection;
 import java.util.List;
 
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.undo.AbstractCyEdit;
@@ -44,65 +44,75 @@ public class PasteEdit extends AbstractCyEdit {
 	private final CyNetworkView view;
 	private final Point2D xformPt;
 	private final ClipboardImpl clipboard;
-	private final Collection<CyIdentifiable> pastedObjects;
-	private final CyServiceRegistrar serviceRegistrar;
+	private final CyServiceRegistrar registrar;
+	
+	private Collection<Object> pastedObjects;
 
+	
 	public PasteEdit(
 			CyNetworkView view,
 			Point2D xformPt,
 			ClipboardManagerImpl clipMgr,
-			Collection<CyIdentifiable> pastedObjects,
-			final CyServiceRegistrar serviceRegistrar
+			Collection<Object> pastedObjects,
+			CyServiceRegistrar registrar
 	) {
 		super("Paste");
 		this.view = view;
 		this.xformPt = xformPt;
 		this.clipboard = clipMgr.getCurrentClipboard();
 		this.pastedObjects = pastedObjects;
-		this.serviceRegistrar = serviceRegistrar;
+		this.registrar = registrar;
 	}
 
 	@Override
 	public void undo() {
 		List<CyNode> nodeList = new ArrayList<>();
 		List<CyEdge> edgeList = new ArrayList<>();
+		List<Annotation> annotations = new ArrayList<>();
 		
-		for (CyIdentifiable object: pastedObjects) {
-			// Remove edges first
-			if (object instanceof CyEdge)
-				edgeList.add((CyEdge)object);
-			else if (object instanceof CyNode)
-				nodeList.add((CyNode)object);
+		for (var object: pastedObjects) {
+			if (object instanceof CyEdge edge)
+				edgeList.add(edge);
+			else if (object instanceof CyNode node)
+				nodeList.add(node);
+			else if (object instanceof Annotation ann)
+				annotations.add(ann);
 		}
 
+		// Remove edges first
 		view.getModel().removeEdges(edgeList);
 		view.getModel().removeNodes(nodeList);
+		
+		var annotatioManager = registrar.getService(AnnotationManager.class);
+		annotatioManager.removeAnnotations(annotations);
+		
 		view.updateView();
 	}
 
 	@Override
 	public void redo() {
-		Collection<CyIdentifiable> pastedObjects = null;
+		double x = xformPt == null ? 0.0 : xformPt.getX();
+		double y = xformPt == null ? 0.0 : xformPt.getY();
 		
-		if (this.xformPt == null)
-			pastedObjects = clipboard.paste(view, 0.0, 0.0);
-		else
-			pastedObjects = clipboard.paste(view, xformPt.getX(), xformPt.getY());
+		// This returns a NEW set of pasted objects, needs to replace the old set.
+		this.pastedObjects = clipboard.paste(view, x, y);
 		
 		// Apply visual style
-		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
+		var vmMgr = registrar.getService(VisualMappingManager.class);
+		var annotationManager = registrar.getService(AnnotationManager.class);
+		
 		VisualStyle vs = vmMgr.getVisualStyle(view);
 		
-		for (CyIdentifiable element: pastedObjects) {
-			View<? extends CyIdentifiable> elementView = null;
-			if (element instanceof CyNode)
-				elementView = view.getNodeView((CyNode)element);
-			else if (element instanceof CyEdge)
-				elementView = view.getEdgeView((CyEdge)element);
-			else
-				continue;
-
-			vs.apply(view.getModel().getRow(element), elementView);
+		for (var element: pastedObjects) {
+			if (element instanceof CyNode node) {
+				var elementView = view.getNodeView(node);
+				vs.apply(view.getModel().getRow(node), elementView);
+			} else if (element instanceof CyEdge edge) {
+				var elementView = view.getEdgeView(edge);
+				vs.apply(view.getModel().getRow(edge), elementView);
+			} else if (element instanceof Annotation ann) {
+				annotationManager.addAnnotation(ann);
+			}
 		}
 
 		view.updateView();

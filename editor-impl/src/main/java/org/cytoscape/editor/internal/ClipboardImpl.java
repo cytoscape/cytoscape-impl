@@ -233,8 +233,8 @@ public class ClipboardImpl {
 		return !nodes.isEmpty() || !edges.isEmpty() || !annotations.isEmpty();
 	}
 
-	public Collection<CyIdentifiable> paste(CyNetworkView targetView, double x, double y) {
-		var pastedObjects = new LinkedHashSet<CyIdentifiable>();
+	public Collection<Object> paste(CyNetworkView targetView, double x, double y) {
+		var pastedObjects = new LinkedHashSet<Object>();
 		var rowMap = new HashMap<CyRow, CyRow>();
 
 		// We need to do this in 4 passes.
@@ -342,8 +342,11 @@ public class ClipboardImpl {
 		// the nodes and edges don't show as selected.  We need to fix that now
 		for (var object : pastedObjects) {
 			// Special-case selected!!!
-			if (isSelected(targetView, object))
-				reselect(targetView, object);
+			if (object instanceof CyIdentifiable ele) {
+				if (isSelected(targetView, ele)) {
+					reselect(targetView, ele);
+				}
+			}
 		}
 		
 		// Pass 6: Paste annotations, except ArrowAnnotations
@@ -356,14 +359,19 @@ public class ClipboardImpl {
 				arrowAnnotations.add((ArrowAnnotation) a);
 			} else {
 				var na = pasteAnnotation(targetView, annotationMgr, a, xOffset, yOffset);
-				if (na != null)
+				if (na != null) {
 					newAnnotationMap.put(a, na);
+					pastedObjects.add(na);
+				}
 			}
 		}
 		
 		// Pass 7: Paste ArrowAnnotations
 		for (var a : arrowAnnotations) {
-			pasteArrowAnnotation(targetView, annotationMgr, a, newAnnotationMap, newNodeMap, xOffset, yOffset);
+			var na = pasteArrowAnnotation(targetView, annotationMgr, a, newAnnotationMap, newNodeMap, xOffset, yOffset);
+			if(na != null) {
+				pastedObjects.add(na);
+			}
 		}
 
 		return pastedObjects;
@@ -375,7 +383,7 @@ public class ClipboardImpl {
 			CyEdge edge,
 			Map<CyRow, CyRow> rowMap,
 			Map<CyNode, CyNode> newNodeMap,
-			Collection<CyIdentifiable> pastedObjects
+			Collection<Object> pastedObjects
 	) {
 		var sourceNetwork = sourceView.getModel();
 		var sourceRoot = ((CySubNetwork)sourceNetwork).getRootNetwork();
@@ -523,10 +531,8 @@ public class ClipboardImpl {
 			double yOffset
 	) {
 		var na = cloneAnnotation(targetView, a, xOffset, yOffset);
-		
 		if (na != null)
 			annotationMgr.addAnnotation(na);
-		
 		return na;
 	}
 	
@@ -708,35 +714,34 @@ public class ClipboardImpl {
 		if (type == null)
 			return null;
 		
-		if (type.equals("ARROW") || type.equals("org.cytoscape.view.presentation.annotations.ArrowAnnotation"))
-			return createAnnotation(ArrowAnnotation.class, targetView, argMap);
-
-		if (type.equals("SHAPE") || type.equals("org.cytoscape.view.presentation.annotations.ShapeAnnotation"))
-			return createAnnotation(ShapeAnnotation.class, targetView, argMap);
-
-		if (type.equals("TEXT") || type.equals("org.cytoscape.view.presentation.annotations.TextAnnotation"))
-			return createAnnotation(TextAnnotation.class, targetView, argMap);
-
-		if (type.equals("BOUNDEDTEXT") || type.equals("org.cytoscape.view.presentation.annotations.BoundedTextAnnotation"))
-			return createAnnotation(BoundedTextAnnotation.class, targetView, argMap);
-
-		if (type.equals("IMAGE") || type.equals("org.cytoscape.view.presentation.annotations.ImageAnnotation"))
-			return createAnnotation(ImageAnnotation.class, targetView, argMap);
-		
-		if (type.equals("GROUP") || type.equals("org.cytoscape.view.presentation.annotations.GroupAnnotation")) {
-			GroupAnnotation group = (GroupAnnotation) a;
-			
-			argMap.remove(GroupAnnotation.MEMBERS);
-			GroupAnnotation newGroup = (GroupAnnotation) createAnnotation(GroupAnnotation.class, targetView, argMap);
-			
-			for(var child : group.getMembers()) {
-				Annotation newChild = cloneAnnotation(targetView, child, xOffset, yOffset);
-				newGroup.addMember(newChild);
-			}
-			return newGroup;
+		switch(type) {
+			case "ARROW", "org.cytoscape.view.presentation.annotations.ArrowAnnotation":
+				return createAnnotation(ArrowAnnotation.class, targetView, argMap);
+				
+			case "SHAPE", "org.cytoscape.view.presentation.annotations.ShapeAnnotation":
+				return createAnnotation(ShapeAnnotation.class, targetView, argMap);
+				
+			case "TEXT", "org.cytoscape.view.presentation.annotations.TextAnnotation":
+				return createAnnotation(TextAnnotation.class, targetView, argMap);
+				
+			case "BOUNDEDTEXT", "org.cytoscape.view.presentation.annotations.BoundedTextAnnotation":
+				return createAnnotation(BoundedTextAnnotation.class, targetView, argMap);
+				
+			case "IMAGE", "org.cytoscape.view.presentation.annotations.ImageAnnotation":
+				return createAnnotation(ImageAnnotation.class, targetView, argMap);
+				
+			case "GROUP", "org.cytoscape.view.presentation.annotations.GroupAnnotation":
+				argMap.remove(GroupAnnotation.MEMBERS);
+				var newGroup = (GroupAnnotation) createAnnotation(GroupAnnotation.class, targetView, argMap);
+				for(var child : ((GroupAnnotation)a).getMembers()) {
+					Annotation newChild = cloneAnnotation(targetView, child, xOffset, yOffset);
+					newGroup.addMember(newChild);
+				}
+				return newGroup;
+				
+			default:
+				return null;
 		}
-		
-		return null;
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
