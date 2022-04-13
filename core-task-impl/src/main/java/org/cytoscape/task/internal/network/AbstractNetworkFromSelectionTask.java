@@ -1,5 +1,10 @@
 package org.cytoscape.task.internal.network;
 
+import static org.cytoscape.model.CyNetwork.DEFAULT_ATTRS;
+import static org.cytoscape.model.CyNetwork.LOCAL_ATTRS;
+import static org.cytoscape.model.CyNetwork.NAME;
+import static org.cytoscape.model.CyNetwork.SELECTED;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -24,6 +29,12 @@ import org.cytoscape.task.internal.view.CreateNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.table.CyTableViewManager;
+import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
 /*
@@ -59,6 +70,8 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 	protected final CyNetworkViewFactory viewFactory;
 	protected final CyNetworkNaming netNaming;
 	protected final CyGroupManager groupManager;
+	protected final CyTableViewManager tableViewManager;
+	protected final RenderingEngineManager renderingEngineManager;
 	protected final CyEventHelper eventHelper;
 	
 	protected CySubNetwork newNet;
@@ -73,6 +86,8 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		viewFactory = serviceRegistrar.getService(CyNetworkViewFactory.class);
 		netNaming = serviceRegistrar.getService(CyNetworkNaming.class);
 		groupManager = serviceRegistrar.getService(CyGroupManager.class);
+		tableViewManager = serviceRegistrar.getService(CyTableViewManager.class);
+		renderingEngineManager = serviceRegistrar.getService(RenderingEngineManager.class);
 		eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 	}
 
@@ -112,9 +127,9 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		newNet = rootNetManager.getRootNetwork(parentNetwork).addSubNetwork();
 		
 		//We need to cpy the columns to local tables, since copying them to default table will duplicate the virtual columns.
-		addColumns(parentNetwork.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS), newNet.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS));
-		addColumns(parentNetwork.getTable(CyEdge.class, CyNetwork.LOCAL_ATTRS), newNet.getTable(CyEdge.class, CyNetwork.LOCAL_ATTRS) );
-		addColumns(parentNetwork.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS), newNet.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS));
+		addColumns(parentNetwork.getTable(CyNode.class, LOCAL_ATTRS), newNet.getTable(CyNode.class, LOCAL_ATTRS));
+		addColumns(parentNetwork.getTable(CyEdge.class, LOCAL_ATTRS), newNet.getTable(CyEdge.class, LOCAL_ATTRS));
+		addColumns(parentNetwork.getTable(CyNetwork.class, LOCAL_ATTRS), newNet.getTable(CyNetwork.class, LOCAL_ATTRS));
 
 		tm.setProgress(0.3);
 		
@@ -122,7 +137,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 			newNet.addNode(node);
 			cloneRow(parentNetwork.getRow(node), newNet.getRow(node));
 			//Set rows and edges to not selected state to avoid conflicts with table browser
-			newNet.getRow(node).set(CyNetwork.SELECTED, false);
+			newNet.getRow(node).set(SELECTED, false);
 			
 			if (groupManager.isGroup(node, parentNetwork)) {
 				var group = groupManager.getGroup(node, parentNetwork);
@@ -136,18 +151,22 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 			newNet.addEdge(edge);
 			cloneRow(parentNetwork.getRow(edge), newNet.getRow(edge));
 			//Set rows and edges to not selected state to avoid conflicts with table browser
-			newNet.getRow(edge).set(CyNetwork.SELECTED, false);
+			newNet.getRow(edge).set(SELECTED, false);
 		}
 		
 		tm.setProgress(0.5);
 		
-		newNet.getRow(newNet).set(CyNetwork.NAME, getNetworkName());
+		newNet.getRow(newNet).set(NAME, getNetworkName());
 		DataUtils.saveParentNetworkSUID(newNet, parentNetwork.getSUID());
 
 		netManager.addNetwork(newNet, false);
 		tm.setProgress(0.6);
-
-		// create the view in a separate task
+		
+		// Copy the Table visual properties in a separate task
+		var copyTableVisualPropertiesTask = new CopyTableVisualPropertiesTask(newNet);
+		insertTasksAfterCurrentTask(copyTableVisualPropertiesTask);
+		
+		// Create the view in a separate task
 		var networks = new HashSet<CyNetwork>();
 		networks.add(newNet);
 		
@@ -187,20 +206,19 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 			}
 		});
 		*/
-		
 		tm.setProgress(1.0);
 	}
 
 	private void addColumns(CyTable parentTable, CyTable subTable) {
 		var colsToAdd = new ArrayList<CyColumn>();
-
-		for (var col :  parentTable.getColumns())
+		
+		for (var col : parentTable.getColumns())
 			if (subTable.getColumn(col.getName()) == null)
-				colsToAdd.add( col );
+				colsToAdd.add(col);
 
-		for (var col :  colsToAdd) {
+		for (var col : colsToAdd) {
 			var colInfo = col.getVirtualColumnInfo();
-			
+
 			if (colInfo.isVirtual())
 				addVirtualColumn(col, subTable);
 			else
@@ -208,7 +226,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		}
 	}
 
-	private void addVirtualColumn (CyColumn col, CyTable subTable){
+	private void addVirtualColumn(CyColumn col, CyTable subTable){
 		var colInfo = col.getVirtualColumnInfo();
 		var checkCol = subTable.getColumn(col.getName());
 		
@@ -235,6 +253,71 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		for (var column : from.getTable().getColumns()){
 			if (!column.getVirtualColumnInfo().isVirtual())
 				to.set(column.getName(), from.getRaw(column.getName()));
+		}
+	}
+	
+	private class CopyTableVisualPropertiesTask extends AbstractTask {
+		
+		private CySubNetwork newNet;
+
+		public CopyTableVisualPropertiesTask(CySubNetwork newNet) {
+			this.newNet = newNet;
+		}
+
+		@Override
+		public void run(TaskMonitor tm) throws Exception {
+			tm.setTitle("Copy Table Visual Properties");
+			tm.setProgress(0.0);
+			
+			eventHelper.flushPayloadEvents(); // To make sure the new table views are created before the next steps
+			tm.setProgress(0.1);
+			
+			// Copy the Table visual properties
+			copyVisualProperties(parentNetwork.getTable(CyNode.class, DEFAULT_ATTRS), newNet.getTable(CyNode.class, DEFAULT_ATTRS));
+			tm.setStatusMessage("Copying Node table's properties...");
+			tm.setProgress(0.6);
+			
+			copyVisualProperties(parentNetwork.getTable(CyEdge.class, DEFAULT_ATTRS), newNet.getTable(CyEdge.class, DEFAULT_ATTRS));
+			tm.setStatusMessage("Copying Edge table's properties...");
+			tm.setProgress(0.9);
+			
+			copyVisualProperties(parentNetwork.getTable(CyNetwork.class, DEFAULT_ATTRS), newNet.getTable(CyNetwork.class, DEFAULT_ATTRS));
+			tm.setStatusMessage("Copying Network table's properties...");
+			tm.setProgress(1.0);
+		}
+		
+		private void copyVisualProperties(CyTable parentTable, CyTable subTable) {
+			var parentTableView = tableViewManager.getTableView(parentTable);
+			var subTableView = tableViewManager.getTableView(subTable);
+
+			if (parentTableView != null && subTableView != null) {
+				var engines = renderingEngineManager.getRenderingEngines(parentTableView);
+				var lexicon = engines.isEmpty()
+						? renderingEngineManager.getDefaultVisualLexicon()
+						: engines.iterator().next().getVisualLexicon();
+				
+				for (var col : parentTable.getColumns()) {
+					var parentColView = parentTableView.getColumnView(col.getName());
+					var subColView = subTableView.getColumnView(col.getName());
+					
+					if (parentColView != null && subColView != null)
+						copyColumnVisualProperties(parentColView, subColView, lexicon);
+				}
+			}
+		}
+
+		private void copyColumnVisualProperties(View<CyColumn> parentColView, View<CyColumn> subColView, VisualLexicon lexicon) {
+			for (var vp : lexicon.getAllVisualProperties()) {
+				if (vp.getTargetDataType() == CyColumn.class && vp != BasicTableVisualLexicon.COLUMN_SELECTED
+						&& parentColView.isSet(vp)) {
+					var val = parentColView.getVisualProperty(vp);
+					
+					if (parentColView.isDirectlyLocked(vp))
+						subColView.setLockedValue(vp, val);
+					else
+						subColView.setVisualProperty(vp, val);
+				}
+			}
 		}
 	}
 }

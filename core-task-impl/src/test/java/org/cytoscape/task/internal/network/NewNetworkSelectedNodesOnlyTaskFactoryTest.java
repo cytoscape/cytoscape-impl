@@ -6,6 +6,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
+
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.event.CyEventHelper;
@@ -13,7 +15,6 @@ import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNode;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.internal.CyRootNetworkManagerImpl;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
@@ -23,11 +24,11 @@ import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.table.CyTableViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.Task;
-import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.undo.UndoSupport;
@@ -61,27 +62,30 @@ public class NewNetworkSelectedNodesOnlyTaskFactoryTest {
 	
 	@Test
 	public void testObserver() throws Exception {
-		NetworkViewTestSupport viewSupport = new NetworkViewTestSupport();
-		NetworkTestSupport networkSupport = new NetworkTestSupport();
+		var viewSupport = new NetworkViewTestSupport();
+		var networkSupport = new NetworkTestSupport();
 		
-		CyApplicationManager appMgr = mock(CyApplicationManager.class);
-		CyNetworkFactory networkFactory = networkSupport.getNetworkFactory();
-		UndoSupport undoSupport = mock(UndoSupport.class);
-		CyRootNetworkManager rootNetMgr = new CyRootNetworkManagerImpl();
-		CyNetworkViewFactory netViewFactory = viewSupport.getNetworkViewFactory();
-		CyNetworkManager netMgr = mock(CyNetworkManager.class);
-		CyNetworkViewManager netViewMgr = mock(CyNetworkViewManager.class);
-		CyNetworkNaming namingUtil = mock(CyNetworkNaming.class);
-		VisualMappingManager visMapMgr = mock(VisualMappingManager.class);
-		CyEventHelper eventHelper = mock(CyEventHelper.class);
-		CyGroupManager groupMgr = mock(CyGroupManager.class);
-		RenderingEngineManager renderingEngineMgr = mock(RenderingEngineManager.class);
+		var appMgr = mock(CyApplicationManager.class);
+		var networkFactory = networkSupport.getNetworkFactory();
+		var undoSupport = mock(UndoSupport.class);
+		var rootNetMgr = new CyRootNetworkManagerImpl();
+		var netViewFactory = viewSupport.getNetworkViewFactory();
+		var netMgr = mock(CyNetworkManager.class);
+		var netViewMgr = mock(CyNetworkViewManager.class);
+		var namingUtil = mock(CyNetworkNaming.class);
+		var visMapMgr = mock(VisualMappingManager.class);
+		var eventHelper = mock(CyEventHelper.class);
+		var groupMgr = mock(CyGroupManager.class);
+		var tableViewManager = mock(CyTableViewManager.class);
+		var renderingEngineMgr = mock(RenderingEngineManager.class);
 		
-		CyLayoutAlgorithm defLayout = mock(CyLayoutAlgorithm.class);
-		CyLayoutAlgorithmManager layoutMgr = mock(CyLayoutAlgorithmManager.class);
+		var defLayout = mock(CyLayoutAlgorithm.class);
+		var layoutMgr = mock(CyLayoutAlgorithmManager.class);
 		when(layoutMgr.getDefaultLayout()).thenReturn(defLayout);
 		
-		CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(renderingEngineMgr.getRenderingEngines(any(View.class))).thenReturn(Collections.emptyList());
+		
+		var serviceRegistrar = mock(CyServiceRegistrar.class);
 		when(serviceRegistrar.getService(CyApplicationManager.class)).thenReturn(appMgr);
 		when(serviceRegistrar.getService(CyRootNetworkManager.class)).thenReturn(rootNetMgr);
 		when(serviceRegistrar.getService(CyNetworkManager.class)).thenReturn(netMgr);
@@ -97,19 +101,20 @@ public class NewNetworkSelectedNodesOnlyTaskFactoryTest {
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
         when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
         when(serviceRegistrar.getService(CyLayoutAlgorithmManager.class)).thenReturn(layoutMgr);
+        when(serviceRegistrar.getService(CyTableViewManager.class)).thenReturn(tableViewManager);
 		
 		var factory = new NewNetworkSelectedNodesOnlyTaskFactoryImpl(serviceRegistrar);
 
-		CyNetwork network = networkFactory.createNetwork();
-		CyNode node = network.addNode();
+		var network = networkFactory.createNetwork();
+		var node = network.addNode();
 		network.getRow(node).set(CyNetwork.SELECTED, true);
 		
-		TaskObserver observer = mock(TaskObserver.class);
-		TaskMonitor taskMonitor = mock(TaskMonitor.class);
-		TaskIterator iterator = factory.createTaskIterator(network);
+		var observer = mock(TaskObserver.class);
+		var taskMonitor = mock(TaskMonitor.class);
+		var iterator = factory.createTaskIterator(network);
 		
 		while (iterator.hasNext()) {
-			Task t = iterator.next();
+			var t = iterator.next();
 			
 			t.run(taskMonitor);
 			
