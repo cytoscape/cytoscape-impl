@@ -36,7 +36,7 @@ public class ToggleTextWrapTask extends AbstractTableColumnTask {
 	
 	@ProvidesTitle
 	public String getTitle() {
-		return "Hide Column";
+		return "Toggle Text Wrap";
 	}
 	
 	public ToggleTextWrapTask(CyColumn column, TableBrowserMediator mediator) {
