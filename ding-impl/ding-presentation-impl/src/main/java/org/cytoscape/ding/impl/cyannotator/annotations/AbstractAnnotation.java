@@ -314,15 +314,17 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	}
 
 	@Override
-	public void changeCanvas(CanvasID canvasID) {
-		if (this.canvas == canvasID)
-			return;
+	public void changeCanvas(CanvasID canvas) {
+		if (!Objects.equals(canvas, this.canvas)) {
+			var oldValue = this.canvas;
 
-		this.canvas = canvasID;
-
-		for (var arrow : arrowList) {
-			if (arrow instanceof DingAnnotation)
-				((DingAnnotation) arrow).changeCanvas(canvasID);
+			this.canvas = canvas;
+			firePropertyChange("canvas", oldValue, canvas);
+	
+			for (var arrow : arrowList) {
+				if (arrow instanceof DingAnnotation)
+					((DingAnnotation) arrow).changeCanvas(canvas);
+			}
 		}
 	}
 

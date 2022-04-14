@@ -54,6 +54,7 @@ import org.cytoscape.ding.impl.cyannotator.tasks.RemoveSelectedAnnotationsTask;
 import org.cytoscape.ding.impl.cyannotator.tasks.ReorderAnnotationsTask;
 import org.cytoscape.ding.impl.cyannotator.tasks.ReorderSelectedAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.UngroupAnnotationsTask;
+import org.cytoscape.event.DebounceTimer;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
 import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
@@ -109,6 +110,8 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 	private boolean appStarted;
 	private boolean loadingSession;
 	private boolean ignoreSelectedPropChangeEvents;
+	
+	private final DebounceTimer updateOrderTimer = new DebounceTimer(100);
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	private final Object lock = new Object();
@@ -274,9 +277,10 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		var cyAnnotator = re != null ? re.getCyAnnotator() : null;
 		
 		var source = evt.getSource();
+		var propertyName = evt.getPropertyName();
 		
 		if (source.equals(cyAnnotator)) {
-			switch (evt.getPropertyName()) {
+			switch (propertyName) {
 				case CyAnnotator.PROP_ANNOTATIONS:
 					// First remove property listeners from deleted annotations and add them to the new ones
 					var oldList = mainPanel.getAllAnnotations();
@@ -289,13 +293,20 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 					break;
 				case CyAnnotator.PROP_REORDERED:
 					if (re != null && re.equals(mainPanel.getRenderingEngine()))
-						invokeOnEDT(() -> mainPanel.updateAnnotationsOrder());
+						updateOrderTimer.debounce(() -> {
+							invokeOnEDT(() -> mainPanel.updateAnnotationsOrder());
+						});
 					break;
 			}
 		} else if (source instanceof Annotation) {
-			if ("selected".equals(evt.getPropertyName()) && !ignoreSelectedPropChangeEvents) {
-				if (re != null && re.equals(mainPanel.getRenderingEngine()))
+			if (re != null && re.equals(mainPanel.getRenderingEngine())) {
+				if ("selected".equals(propertyName) && !ignoreSelectedPropChangeEvents) {
 					invokeOnEDT(() -> mainPanel.setSelected((Annotation) source, (boolean) evt.getNewValue()));
+				} else if ("canvas".equals(propertyName) && !ignoreSelectedPropChangeEvents) {
+					updateOrderTimer.debounce(() -> {
+						invokeOnEDT(() -> mainPanel.updateAnnotationsOrder());
+					});
+				}
 			}
 		}
 	}
@@ -513,6 +524,9 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 				if (a instanceof DingAnnotation) {
 					((DingAnnotation) a).removePropertyChangeListener("selected", this);
 					((DingAnnotation) a).addPropertyChangeListener("selected", this);
+					
+					((DingAnnotation) a).removePropertyChangeListener("canvas", this);
+					((DingAnnotation) a).addPropertyChangeListener("canvas", this);
 				}
 			});
 	}
@@ -520,8 +534,10 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 	private void removePropertyListeners(Collection<? extends Annotation> list) {
 		if (list != null)
 			list.forEach(a -> {
-				if (a instanceof DingAnnotation)
+				if (a instanceof DingAnnotation) {
 					((DingAnnotation) a).removePropertyChangeListener("selected", this);
+					((DingAnnotation) a).removePropertyChangeListener("canvas", this);
+				}
 			});
 	}
 	
