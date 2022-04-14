@@ -135,33 +135,28 @@ public class UpdateAnnotationTask extends AbstractTask implements ObservableTask
 
     tm.setStatusMessage("Can't find an annotation with UUID "+uuidOrName);
 
+	private void updateAnnotation(TaskMonitor tm, Annotation annotation) {
+		if (annotation instanceof ImageAnnotation) {
+			standardTunables.update(tm, annotation);
+			shapeTunables.update(tm, annotation);
+			imageTunables.update(tm, annotation);
+		} else if (annotation instanceof BoundedTextAnnotation) {
+			standardTunables.update(tm, annotation);
+			shapeTunables.update(tm, annotation);
+			textTunables.update(tm, annotation);
+		} else if (annotation instanceof TextAnnotation) {
+			standardTunables.update(tm, annotation);
+			textTunables.update(tm, annotation);
+		} else if (annotation instanceof ShapeAnnotation) {
+			standardTunables.update(tm, annotation);
+			shapeTunables.update(tm, annotation);
+		} else if (annotation instanceof GroupAnnotation) {
+			standardTunables.update(tm, annotation);
+		}
+
+		annotation.update();
 	}
 
-  private void updateAnnotation(TaskMonitor tm, Annotation annotation) {
-    
-		if (type.equals(ImageAnnotation.class)) {
-      standardTunables.update(tm, annotation);
-      shapeTunables.update(tm, annotation);
-      imageTunables.update(tm, annotation);
-    } else if (type.equals(BoundedTextAnnotation.class)) {
-      standardTunables.update(tm, annotation);
-      shapeTunables.update(tm, annotation);
-      textTunables.update(tm, annotation);
-    } else if (type.equals(TextAnnotation.class)) {
-      standardTunables.update(tm, annotation);
-      textTunables.update(tm, annotation);
-    } else if (type.equals(ShapeAnnotation.class)) {
-      standardTunables.update(tm, annotation);
-      shapeTunables.update(tm, annotation);
-    } else if (type.equals(GroupAnnotation.class)) {
-      
-      standardTunables.update(tm, annotation);
-      
-    }
-    
-    annotation.update();
-    
-  }
 
   @Override
   public List<Class<?>> getResultClasses() {
