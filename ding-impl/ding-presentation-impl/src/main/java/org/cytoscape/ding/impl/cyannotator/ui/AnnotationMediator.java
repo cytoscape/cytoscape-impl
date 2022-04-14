@@ -556,7 +556,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		var annotations = mainPanel.getSelectedAnnotations(tree, DingAnnotation.class);
 
 		if (node != null && !annotations.contains(node.getAnnotation()))
-			mainPanel.setSelected((Annotation) node.getAnnotation(), true);
+			mainPanel.setSelected(node.getAnnotation(), true);
 		
 		var taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
 		var dingRenderer = serviceRegistrar.getService(DingRenderer.class);

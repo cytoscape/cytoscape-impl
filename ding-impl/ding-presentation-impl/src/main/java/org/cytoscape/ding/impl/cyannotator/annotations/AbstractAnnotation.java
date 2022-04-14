@@ -216,6 +216,7 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 		return rotation;
 	}
 
+	@Override
 	public void setRotation(double rotation) {
 		if (this.rotation != rotation) {
 			var oldValue = this.rotation;
@@ -308,7 +309,7 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 
 	@Override
 	public void setCanvas(String name) {
-		CanvasID canvasID = CanvasID.fromArgName(name);
+		var canvasID = CanvasID.fromArgName(name);
 		changeCanvas(canvasID);
 		update(); // Update network attributes
 	}

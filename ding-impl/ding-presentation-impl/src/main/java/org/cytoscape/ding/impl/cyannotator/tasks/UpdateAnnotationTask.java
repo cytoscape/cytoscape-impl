@@ -48,92 +48,93 @@ import org.cytoscape.work.json.JSONResult;
 public class UpdateAnnotationTask extends AbstractTask implements ObservableTask {
 
 	private final AnnotationManager annotationManager;
-  private final CyNetworkViewManager viewManager;
-  private final Class<? extends Annotation> type;
-  private Annotation updatedAnnotation;
+	private final CyNetworkViewManager viewManager;
+	private final Class<? extends Annotation> type;
+	private Annotation updatedAnnotation;
 
-  @Tunable(context="nogui",
-           required=true,
-           description="The UUID or name of the annotation to be updated")
-  public String uuidOrName;
+	@Tunable(context = "nogui", required = true, description = "The UUID or name of the annotation to be updated")
+	public String uuidOrName;
 
-  // Standard annotation values
-  @ContainsTunables
-  public StandardAnnotationTunables standardTunables = null;
+	// Standard annotation values
+	@ContainsTunables
+	public StandardAnnotationTunables standardTunables;
 
-  // Text annotation values
-  @ContainsTunables
-  public TextAnnotationTunables textTunables = null;
+	// Text annotation values
+	@ContainsTunables
+	public TextAnnotationTunables textTunables;
 
-  // Shape annotation values
-  @ContainsTunables
-  public ShapeAnnotationTunables shapeTunables = null;
+	// Shape annotation values
+	@ContainsTunables
+	public ShapeAnnotationTunables shapeTunables;
 
-  // Image annotation values
-  @ContainsTunables
-  public ImageAnnotationTunables imageTunables = null;
-
-  // Arrow annotation values
-  // @ContainsTunables
-  // public ArrowAnnotationTunables arrowTunables = null;
+	// Image annotation values
+	@ContainsTunables
+	public ImageAnnotationTunables imageTunables;
 
 	public UpdateAnnotationTask(
-      final Class<? extends Annotation> type,
-			final AnnotationManager annotationManager,
-			final CyNetworkViewManager viewManager
-  ) {
-    this.annotationManager = annotationManager;
-    this.viewManager = viewManager;
-    this.type = type;
+			Class<? extends Annotation> type,
+			AnnotationManager annotationManager,
+			CyNetworkViewManager viewManager
+	) {
+		this.annotationManager = annotationManager;
+		this.viewManager = viewManager;
+		this.type = type;
+
 		if (type.equals(ImageAnnotation.class)) {
-       standardTunables = new StandardAnnotationTunables();
-       shapeTunables = new ShapeAnnotationTunables();
-       imageTunables = new ImageAnnotationTunables();
-     } else if (type.equals(BoundedTextAnnotation.class)) {
-       standardTunables = new StandardAnnotationTunables();
-       textTunables = new TextAnnotationTunables();
-       shapeTunables = new ShapeAnnotationTunables();
-     } else if (type.equals(TextAnnotation.class)) {
-       standardTunables = new StandardAnnotationTunables();
-       textTunables = new TextAnnotationTunables();
-     } else if (type.equals(ShapeAnnotation.class)) {
-       standardTunables = new StandardAnnotationTunables();
-       shapeTunables = new ShapeAnnotationTunables();
-     } else if (type.equals(ArrowAnnotation.class)) {
-     } else if (type.equals(GroupAnnotation.class)) {
-       standardTunables = new StandardAnnotationTunables();
-     }
-  }
+			standardTunables = new StandardAnnotationTunables();
+			shapeTunables = new ShapeAnnotationTunables();
+			imageTunables = new ImageAnnotationTunables();
+		} else if (type.equals(BoundedTextAnnotation.class)) {
+			standardTunables = new StandardAnnotationTunables();
+			textTunables = new TextAnnotationTunables();
+			shapeTunables = new ShapeAnnotationTunables();
+		} else if (type.equals(TextAnnotation.class)) {
+			standardTunables = new StandardAnnotationTunables();
+			textTunables = new TextAnnotationTunables();
+		} else if (type.equals(ShapeAnnotation.class)) {
+			standardTunables = new StandardAnnotationTunables();
+			shapeTunables = new ShapeAnnotationTunables();
+		} else if (type.equals(ArrowAnnotation.class)) {
+			// Ignore...
+		} else if (type.equals(GroupAnnotation.class)) {
+			standardTunables = new StandardAnnotationTunables();
+		}
+	}
 
 	@Override
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setTitle("Update Annotation");
 
-    // Get the UUID
-    UUID aUUID = null;
-    String name = null;
-    try {
-      aUUID = UUID.fromString(uuidOrName);
-    } catch (IllegalArgumentException e) {
-      name = uuidOrName;
-    }
+		// Get the UUID
+		UUID aUUID = null;
+		String name = null;
+		
+		try {
+			aUUID = UUID.fromString(uuidOrName);
+		} catch (IllegalArgumentException e) {
+			name = uuidOrName;
+		}
 
-    // Get a list of all annotations, looking for the one with our UUID
-    for (var view: viewManager.getNetworkViewSet()) {
-      for (var annotation: annotationManager.getAnnotations(view)) {
-        if ((aUUID != null && annotation.getUUID().equals(aUUID)) ||
-            (name != null && annotation.getName().equals(name))) {
-          try {
-			    updateAnnotation(tm, annotation);
-          } catch (Exception e) { e.printStackTrace(); }
-          updatedAnnotation = annotation;
-          return;
-        }
-      }
-    }
+		// Get a list of all annotations, looking for the one with our UUID
+		for (var view : viewManager.getNetworkViewSet()) {
+			for (var annotation : annotationManager.getAnnotations(view)) {
+				if ((aUUID != null && annotation.getUUID().equals(aUUID))
+						|| (name != null && annotation.getName().equals(name))) {
+					try {
+						updateAnnotation(tm, annotation);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					
+					updatedAnnotation = annotation;
+					
+					return;
+				}
+			}
+		}
 
-    tm.setStatusMessage("Can't find an annotation with UUID "+uuidOrName);
+		tm.setStatusMessage("Can't find an annotation with UUID " + uuidOrName);
+	}
 
 	private void updateAnnotation(TaskMonitor tm, Annotation annotation) {
 		if (annotation instanceof ImageAnnotation) {
@@ -157,37 +158,39 @@ public class UpdateAnnotationTask extends AbstractTask implements ObservableTask
 		annotation.update();
 	}
 
+	@Override
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(JSONResult.class, String.class, Annotation.class);
+	}
 
-  @Override
-  public List<Class<?>> getResultClasses() {
-    return Arrays.asList(JSONResult.class, String.class, Annotation.class);
-  }
-
-  @Override
+	@Override
 	@SuppressWarnings({ "unchecked" })
-  public <R> R getResults(Class<? extends R> type) {
-    if (type.equals(Annotation.class)) {
-      return (R)updatedAnnotation;
-    }
+	public <R> R getResults(Class<? extends R> type) {
+		if (type.equals(Annotation.class))
+			return (R) updatedAnnotation;
 
-    if (type.equals(String.class)) {
-      String result;
-      if (updatedAnnotation == null) {
-        result = "Nothing added";
-      } else
-        result = "Updated annotation "+updatedAnnotation.toString();
-      return (R)result;
-    }
+		if (type.equals(String.class)) {
+			final String result;
+			
+			if (updatedAnnotation == null)
+				result = "Nothing added";
+			else
+				result = "Updated annotation " + updatedAnnotation.toString();
+			
+			return (R) result;
+		}
 
-    if (type.equals(JSONResult.class)) {
-      JSONResult res = () -> {
-        if (updatedAnnotation == null) {
-          return "{}";
-        }
-        return AnnotationJsonConverter.toJson((DingAnnotation)updatedAnnotation);
-      };
-      return (R)res;
-    }
-    return null;
-  }
+		if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				if (updatedAnnotation == null)
+					return "{}";
+				
+				return AnnotationJsonConverter.toJson((DingAnnotation) updatedAnnotation);
+			};
+			
+			return (R) res;
+		}
+		
+		return null;
+	}
 }
