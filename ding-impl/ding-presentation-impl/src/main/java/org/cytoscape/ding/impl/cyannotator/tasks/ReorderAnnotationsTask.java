@@ -11,8 +11,6 @@ import org.cytoscape.ding.impl.cyannotator.AnnotationTree.Shift;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
-import org.cytoscape.view.presentation.annotations.Annotation;
-import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -48,7 +46,6 @@ public class ReorderAnnotationsTask extends AbstractTask {
 	
 	// negative means bring forward (up), positive means send backward (down) we only move one step at a time.
 	private final Shift shift;
-
 
 	public ReorderAnnotationsTask(
 			DRenderingEngine re,
@@ -86,13 +83,10 @@ public class ReorderAnnotationsTask extends AbstractTask {
 	}
 
 	private void changeCanvas() {
-		for (int i = annotations.size() - 1; i >= 0; i--) {
-			var da = annotations.get(i);
-			
-			// group annotations must stay on the foreground canvas
-			if (!(da instanceof GroupAnnotation && Annotation.BACKGROUND.equals(canvasName)))
-				da.changeCanvas(CanvasID.fromArgName(canvasName));
-		}
+		var id = CanvasID.fromArgName(canvasName);
+		
+		for (var da : annotations)
+			da.changeCanvas(id);
 		
 		// need to rebuild the tree AFTER changing the canvas
 		var cyAnnotator = re.getCyAnnotator();

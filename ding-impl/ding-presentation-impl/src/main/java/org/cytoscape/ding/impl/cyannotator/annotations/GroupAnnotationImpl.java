@@ -55,8 +55,12 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 	}
 
 	@Override
-	public void setCanvas(String cnvs) {
-		// do nothing, must be on the foreground canvas
+	public void changeCanvas(CanvasID canvas) {
+		// Group annotations must stay on the foreground canvas, so let's move our members instead
+		for (var a : getMembers()) {
+			if (a instanceof DingAnnotation)
+				((DingAnnotation) a).changeCanvas(canvas);
+		}
 	}
 
 	@Override
@@ -180,14 +184,6 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		
 		for (var a : annotations)
 			((AbstractAnnotation) a).saveBounds();
-	}
-
-	@Override
-	public void changeCanvas(CanvasID canvasId) {
-		for (var a : annotations)
-			a.changeCanvas(canvasId);
-		
-		super.changeCanvas(canvasId);
 	}
 
 	@Override
