@@ -1,18 +1,10 @@
 package org.cytoscape.view.model.internal.network;
 
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SELECTED;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_VISIBLE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_HEIGHT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_TITLE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_WIDTH;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SELECTED;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_VISIBLE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
 
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.model.CyNetworkViewFactoryConfig;
 import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewFactoryConfig;
 import org.cytoscape.view.model.CyNetworkViewFactoryProvider;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -41,6 +33,7 @@ public class CyNetworkViewFactoryProviderImpl implements CyNetworkViewFactoryPro
 			config.addNonClearableVisualProperty(NETWORK_TITLE);
 			config.addNonClearableVisualProperty(NETWORK_WIDTH);
 			config.addNonClearableVisualProperty(NETWORK_HEIGHT);
+			config.addNonClearableVisualProperty(EDGE_BEND); // CYTOSCAPE-12957
 		}
 		return config;
 	}
