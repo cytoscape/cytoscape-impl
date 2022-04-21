@@ -1,22 +1,7 @@
 package org.cytoscape.ding.impl;
 
-import static java.awt.event.KeyEvent.VK_BACK_SPACE;
-import static java.awt.event.KeyEvent.VK_DELETE;
-import static java.awt.event.KeyEvent.VK_DOWN;
-import static java.awt.event.KeyEvent.VK_ESCAPE;
-import static java.awt.event.KeyEvent.VK_LEFT;
-import static java.awt.event.KeyEvent.VK_RIGHT;
-import static java.awt.event.KeyEvent.VK_UP;
-import static org.cytoscape.ding.internal.util.ViewUtil.getResizeCursor;
-import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
-import static org.cytoscape.ding.internal.util.ViewUtil.isAdditiveSelect;
-import static org.cytoscape.ding.internal.util.ViewUtil.isControlOrMetaDown;
-import static org.cytoscape.ding.internal.util.ViewUtil.isDoubleLeftClick;
-import static org.cytoscape.ding.internal.util.ViewUtil.isDragSelectionKeyDown;
-import static org.cytoscape.ding.internal.util.ViewUtil.isLeftClick;
-import static org.cytoscape.ding.internal.util.ViewUtil.isLeftMouse;
-import static org.cytoscape.ding.internal.util.ViewUtil.isSingleLeftClick;
-import static org.cytoscape.ding.internal.util.ViewUtil.isSingleRightClick;
+import static java.awt.event.KeyEvent.*;
+import static org.cytoscape.ding.internal.util.ViewUtil.*;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -1320,17 +1305,25 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				re.getBendStore().moveSelectedHandles((float)deltaX, (float)deltaY);
 			} 
 			else { // If we are moving anchors of edges, no need to move nodes (bug #2360).
-				for(var node : selectedNodes) {
-					View<CyNode> mutableNode = snapshot.getMutableNodeView(node.getSUID());
-					if(mutableNode != null) {
-						NodeDetails nodeDetails = re.getNodeDetails();
-						double oldXPos = nodeDetails.getXPosition(mutableNode);
-						double oldYPos = nodeDetails.getYPosition(mutableNode);
-						// MKTODO Should setting VPs be done using NodeDetails as well??
-						mutableNode.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, oldXPos + deltaX);
-						mutableNode.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, oldYPos + deltaY);
-					}
-			    }
+				NodeDetails nodeDetails = re.getNodeDetails();
+				var networkView = snapshot.getMutableNetworkView();
+				var eventHelper = registrar.getService(CyEventHelper.class);
+				double dx = deltaX, dy = deltaY;
+				
+				networkView.batch(nv -> {
+					for(var node : selectedNodes) {
+						View<CyNode> mutableNode = snapshot.getMutableNodeView(node.getSUID());
+						if(mutableNode != null) {
+							double oldXPos = nodeDetails.getXPosition(mutableNode);
+							double oldYPos = nodeDetails.getYPosition(mutableNode);
+							mutableNode.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, oldXPos + dx);
+							mutableNode.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, oldYPos + dy);
+						}
+				    }
+				});
+				
+				// Fire the ViewChangedEvent immediately
+				eventHelper.flushPayloadEvents(networkView);
 			}
 			
 			if (!selectedNodes.isEmpty() || re.getBendStore().areHandlesSelected()) {

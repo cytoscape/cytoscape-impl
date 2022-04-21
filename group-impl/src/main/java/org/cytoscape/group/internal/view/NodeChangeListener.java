@@ -158,7 +158,7 @@ public class NodeChangeListener implements ViewChangedListener, GroupAboutToBeDe
 			}
 		
 		final CyEventHelper cyEventHelper = cyGroupManager.getService(CyEventHelper.class);
-		cyEventHelper.flushPayloadEvents(); // Do we need to update the view?
+		cyEventHelper.flushPayloadEvents(e.getSource()); // Do we need to update the view?
 	}
 
 	public void handleEvent(SessionLoadedEvent e) {
