@@ -1,6 +1,9 @@
 package org.cytoscape.ding.impl;
 
-import static org.cytoscape.graph.render.stateful.RenderDetailFlags.*;
+import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_EDGE_ANCHORS;
+import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_EDGE_ARROWS;
+import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_HIGH_DETAIL;
+import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_NODE_LABELS;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_POSITION;
 
 import java.awt.Font;
@@ -9,6 +12,7 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -485,31 +489,55 @@ public class NetworkPicker {
 		return returnVal;
 	}
 
-
-//	public HandleKey getHandleAt(Point2D pt) {
-//		double[] ptBuff = {pt.getX(), pt.getY()};
-//		re.getTransform().xformImageToNodeCoords(ptBuff);
-//		HandleKey handleKey = re.getBendStore().pickHandle((float)ptBuff[0], (float)ptBuff[1]);
-//		return handleKey;
-//	}
-//
-//	public List<HandleKey> getHandlesInRectangle(Rectangle r) {
-//		BendStore bendStore = re.getBendStore();
-//		if(getFlags().has(LOD_EDGE_ANCHORS)) {
-//			Rectangle2D area = re.getTransform().getNodeCoordinates(r);
-//			return bendStore.queryOverlap(area);
-//		}
-//		return Collections.emptyList();
-//	}
-//	
-//	public List<HandleKey> getHandlesInPath(GeneralPath path) {
-//		BendStore bendStore = re.getBendStore();
-//		if(getFlags().has(LOD_EDGE_ANCHORS)) {
-//			GeneralPath area = re.getTransform().pathInNodeCoords(path);
-//			return bendStore.queryOverlap(area);
-//		}
-//		return Collections.emptyList();
-//	}
+	public List<View<CyNode>> getNodesInPath(GeneralPath path) {
+		path = re.getTransform().pathInNodeCoords(path);
+		if(path == null)
+			return Collections.emptyList();
+		List<Long> nodesXSect = getNodesIntersectingPath(path);
+		return suidsToNodes(nodesXSect);
+	}
+	
+	public List<Long> getNodesIntersectingPath(GeneralPath path) {
+		CyNetworkViewSnapshot snapshot = re.getViewModelSnapshot();
+		Rectangle2D mbr = path.getBounds2D();
+		SpacialIndex2DEnumerator<Long> under = snapshot.getSpacialIndex2D()
+				.queryOverlap((float)mbr.getMinX(), (float)mbr.getMinY(), (float)mbr.getMaxX(), (float)mbr.getMaxY());
+		if(!under.hasNext())
+			return Collections.emptyList();
+		
+		List<Long> result = new ArrayList<>(under.size());
+		float[] extents = new float[4];
+		
+		if(treatNodeShapesAsRectangle()) {
+			while(under.hasNext()) {
+				Long suid = under.nextExtents(extents);
+				float x = extents[0];
+				float y = extents[1];
+				float w = extents[2] - x;
+				float h = extents[3] - y;
+				if(path.intersects(x, y, w, h)) {
+					result.add(suid);
+				}
+			}
+		} else {
+			while(under.hasNext()) {
+				Long suid = under.nextExtents(extents);
+				View<CyNode> nodeView = snapshot.getNodeView(suid);
+				GeneralPath nodeShape = new GeneralPath();
+				GraphGraphics.getNodeShape(nodeDetails.getShape(nodeView),
+						extents[0], extents[1],
+						extents[2], extents[3], nodeShape);
+				Area pathArea = new Area(path);
+				Area nodeArea = new Area(nodeShape);
+				pathArea.intersect(nodeArea);
+				if(!pathArea.isEmpty()) {
+					result.add(suid);
+				}
+			}
+		}
+		
+		return result;
+	}
 	
 	
 	// Annotations

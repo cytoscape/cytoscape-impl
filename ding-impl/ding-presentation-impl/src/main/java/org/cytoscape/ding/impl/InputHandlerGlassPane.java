@@ -3,6 +3,7 @@ package org.cytoscape.ding.impl;
 import static java.awt.event.KeyEvent.*;
 import static org.cytoscape.ding.internal.util.ViewUtil.*;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
@@ -21,6 +22,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -146,6 +148,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
         	new TooltipListener(),
         	new AddAnnotationListener(),
         	new SelectionClickAndDragListener(),
+        	new SelectionLassoListener(),
         	new SelectionRectangleListener(),
         	new PanListener() // panning only happens if no node/edge/annotation/handle is clicked, so it needs to go last
         );
@@ -258,6 +261,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	protected void paintComponent(Graphics g) {
 		maybe(AddEdgeListener.class).ifPresent(l -> l.drawAddingEdge(g));
 		maybe(SelectionRectangleListener.class).ifPresent(l -> l.drawSelectionRectangle(g));
+		maybe(SelectionLassoListener.class).ifPresent(l -> l.drawSelectionLasso(g));
 	}
 	
 	@Override
@@ -1200,7 +1204,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		public void mouseDragged(MouseEvent e) {
 			if (!hit || !isLeftMouse(e))
 				return;
-			if (get(SelectionRectangleListener.class).isDragging())
+			if (get(SelectionRectangleListener.class).isDragging() || maybe(SelectionLassoListener.class).map(l -> l.isDragging()).orElse(false))
 				return;
 
 			var labelSelectionManager = re.getLabelSelectionManager();
@@ -1429,6 +1433,75 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		}
 	}
 
+	
+	/**
+	 * MKTODO This listener is not finished and should not be enabled.
+	 * @author mkucera
+	 */
+	private class SelectionLassoListener extends MouseAdapter {
+		
+		private final Color lassoColor = UIManager.getColor("Focus.color");
+		private final BasicStroke dashedStroke = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{1}, 0);
+
+		private GeneralPath selectionLasso;
+		private Point start;
+		private Point current;
+		
+		@Override
+		public void mousePressed(MouseEvent e) {
+			if(e.isShiftDown() && isControlOrMetaDown(e)) { // Temporary
+				get(AddEdgeListener.class).reset();
+				selectionLasso = new GeneralPath();
+				selectionLasso.moveTo(e.getX(), e.getY());
+				start = e.getPoint();
+				e.consume();
+			}
+		}
+		
+		@Override
+		public void mouseDragged(MouseEvent e) {
+			if(selectionLasso != null) {
+				selectionLasso.lineTo(e.getX(), e.getY());
+				current = e.getPoint();
+				repaint();
+			}
+		}
+		
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			if(selectionLasso != null) {
+				selectionLasso.closePath();
+				
+				if(nodeSelectionEnabled()) {
+					var nodes = re.getPicker().getNodesInPath(selectionLasso);
+					if(!nodes.isEmpty())
+						select(nodes, CyNode.class, true);
+				}
+			}
+			selectionLasso = null;
+			repaint(); // repaint the glass pane
+		}
+		
+		public boolean isDragging() {
+			return selectionLasso != null;
+		}
+		
+		public void drawSelectionLasso(Graphics graphics) {
+			if(selectionLasso != null) {
+				Graphics2D g = (Graphics2D) graphics.create();
+				g.setColor(lassoColor);
+				GeneralPath path = new GeneralPath(selectionLasso);
+				//path.closePath();
+				g.draw(path);
+				
+				if(start != null && current != null) {
+					g.setStroke(dashedStroke);
+					g.drawLine(start.x, start.y, current.x, current.y);
+				}
+			}
+		}
+	}
+	
 	
 	private class SelectionRectangleListener extends MouseAdapter {
 		
