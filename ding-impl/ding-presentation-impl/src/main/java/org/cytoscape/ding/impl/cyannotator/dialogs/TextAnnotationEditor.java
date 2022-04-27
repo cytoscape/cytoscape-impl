@@ -69,7 +69,7 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 	
 	private static final String[] FONT_STYLES = { PLAIN, BOLD, ITALIC, BOLD_ITALIC };
 	private static final Font[] FONTS = GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts();
-	private static final Integer[] FONT_SIZES = { 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36 };
+	private static final Integer[] FONT_SIZES = { 10, 12, 14, 18, 24, 30, 36, 48, 60, 72 };
 	
 	private JTextField textField;
 	private JComboBox<Integer> fontSizeCombo;
