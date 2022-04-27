@@ -314,10 +314,10 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
       GraphicsUtilities.drawShape(g, getX(), getY(), getWidth(), getHeight(), getRotation(), this, false);
   }
 
-  private ShapeType getShapeFromString(String shapeName) {
-    for (var type : ShapeType.values()) {
-      if (type.shapeName().equals(shapeName))
-        return type;
+  private ShapeType getShapeFromString(String type) {
+    for (var st : ShapeType.values()) {
+      if (st.name().equals(type))
+        return st;
     }
     
     return ShapeType.RECTANGLE;
