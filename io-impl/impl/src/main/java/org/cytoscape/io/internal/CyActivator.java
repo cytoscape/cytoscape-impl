@@ -1,5 +1,9 @@
 package org.cytoscape.io.internal;
 
+import static org.cytoscape.work.ServiceProperties.*;
+
+import java.util.Properties;
+
 import org.cytoscape.filter.TransformerManager;
 import org.cytoscape.io.BasicCyFileFilter;
 import org.cytoscape.io.DataCategory;
@@ -60,6 +64,7 @@ import org.cytoscape.io.internal.write.graphics.BitmapWriterFactory;
 import org.cytoscape.io.internal.write.graphics.PDFWriterFactory;
 import org.cytoscape.io.internal.write.graphics.PSWriterFactory;
 import org.cytoscape.io.internal.write.graphics.SVGWriterFactory;
+import org.cytoscape.io.internal.write.graphics.command.ExportNetworkTaskFactory;
 import org.cytoscape.io.internal.write.nnf.NnfNetworkWriterFactory;
 import org.cytoscape.io.internal.write.properties.PropertiesWriterFactoryImpl;
 import org.cytoscape.io.internal.write.session.SessionWriterFactoryImpl;
@@ -94,6 +99,7 @@ import org.cytoscape.io.write.VizmapWriterManager;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
+import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
 
 /*
@@ -280,5 +286,18 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, sessionTableWriterFactory);
 		registerAllServices(bc, vizmapWriterFactory);
 		registerAllServices(bc, sessionWriterFactory);
+		
+		// Network image export commands
+		for(var format : ExportNetworkTaskFactory.Format.values()) {
+			var factory = new ExportNetworkTaskFactory(serviceRegistrar, format);
+			var props = new Properties();
+			String formatLower = format.name().toLowerCase();
+			props.setProperty(COMMAND, "export " + formatLower);
+			props.setProperty(COMMAND_NAMESPACE, "view");
+			props.setProperty(COMMAND_DESCRIPTION, "Export the current view to a " + format.name() + " file");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ \"file\": \"/Users/johndoe/Documents/MyNetwork." + formatLower + "\" }");
+			registerService(bc, factory, TaskFactory.class, props);
+		}
 	}
 }

@@ -59,10 +59,10 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 	
 	private static final int UNITS_PER_INCH = 72;
 	
-	private static final String PORTRAIT  = "Portrait";
-	private static final String LANDSCAPE = "Landscape";
+	public static final String PORTRAIT  = "Portrait";
+	public static final String LANDSCAPE = "Landscape";
 	
-	enum PreDefinedPageSize {
+	public static enum PreDefinedPageSize {
 		AUTO("Auto"),
 		CUSTOM("Custom"),
 		LETTER("Letter", PageSize.LETTER),
@@ -75,8 +75,8 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 		A4("A4", PageSize.A4),
 		A5("A5", PageSize.A5);
 		
-		final Rectangle size;
-		final String label;
+		public final Rectangle size;
+		public final String label;
 		
 		PreDefinedPageSize(String label, Rectangle size) {
 			this.size = size;
