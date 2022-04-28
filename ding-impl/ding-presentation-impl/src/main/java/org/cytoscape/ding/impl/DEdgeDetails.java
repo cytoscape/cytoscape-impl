@@ -257,6 +257,18 @@ public final class DEdgeDetails implements EdgeDetails {
 	}
 
 	@Override
+	public Paint getLabelBackgroundPaint(View<CyEdge> edgeView) {
+		Paint paint = edgeView.getVisualProperty(EDGE_LABEL_BACKGROUND_COLOR);
+		Integer trans = edgeView.getVisualProperty(EDGE_LABEL_BACKGROUND_TRANSPARENCY);
+		return DNodeDetails.getTransparentColor(paint, trans);
+	}
+	
+	@Override
+	public byte getLabelBackgroundShape(View<CyEdge> edgeView) {
+		return DNodeDetails.getLabelBackgroundShape(edgeView.getVisualProperty(EDGE_LABEL_BACKGROUND_SHAPE));
+	}
+	
+	@Override
 	public EdgeStacking getStacking(View<CyEdge> edgeView) {
 		return edgeView.getVisualProperty(DVisualLexicon.EDGE_STACKING);
 	}

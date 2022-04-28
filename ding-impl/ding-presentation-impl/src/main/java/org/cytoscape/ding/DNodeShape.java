@@ -29,8 +29,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.cytoscape.graph.render.immed.GraphGraphics;
-import org.cytoscape.view.model.DiscreteRange;
+import org.cytoscape.view.presentation.property.LabelBackgroundShapeVisualProperty;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
+import org.cytoscape.view.presentation.property.values.LabelBackgroundShape;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 
 /**
@@ -82,6 +83,14 @@ public class DNodeShape implements NodeShape {
 			return RECTANGLE;
 		else
 			return DEF_SHAPE_MAP.get(shape);
+	}
+	
+	public static final DNodeShape getDShape(final LabelBackgroundShape shape) {
+		if(shape == LabelBackgroundShapeVisualProperty.RECTANGLE)
+			return RECTANGLE;
+		if(shape == LabelBackgroundShapeVisualProperty.ROUND_RECTANGLE)
+			return ROUND_RECTANGLE;
+		return null;
 	}
 
 	private final Byte rendererShapeID;

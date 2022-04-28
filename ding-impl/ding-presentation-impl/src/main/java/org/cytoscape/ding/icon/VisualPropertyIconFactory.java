@@ -11,10 +11,12 @@ import org.cytoscape.ding.DNodeShape;
 import org.cytoscape.ding.impl.DLineType;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
+import org.cytoscape.view.presentation.property.LabelBackgroundShapeVisualProperty;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.EdgeStacking;
+import org.cytoscape.view.presentation.property.values.LabelBackgroundShape;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.presentation.property.values.ObjectPosition;
@@ -54,28 +56,34 @@ public final class VisualPropertyIconFactory {
 		
 		Icon icon = null;
 		
-		if (value instanceof Color) {
-			icon = new ColorIcon((Color) value, w, h, value.toString());
-		} else if (value instanceof NodeShape) {
+		if (value instanceof Color color) {
+			icon = new ColorIcon(color, w, h, value.toString());
+		} else if (value instanceof NodeShape shape) {
 			final DNodeShape dShape;
 			
-			if (NodeShapeVisualProperty.isDefaultShape((NodeShape) value))
-				dShape = DNodeShape.getDShape((NodeShape) value);
+			if (NodeShapeVisualProperty.isDefaultShape(shape))
+				dShape = DNodeShape.getDShape(shape);
 			else
-				dShape = (DNodeShape) value;
+				dShape = (DNodeShape) shape;
 			
 			icon = new NodeIcon(dShape.getShape(), w, h, dShape.getDisplayName());
-		} else if (value instanceof LineType) {
-			icon = new StrokeIcon(DLineType.getDLineType((LineType) value).getStroke(2f), w, h, value.toString());
-		} else if (value instanceof CyCustomGraphics) {
-			var name = ((CyCustomGraphics<?>) value).getDisplayName();
-			icon = new CustomGraphicsIcon(((CyCustomGraphics<?>) value), w, h, name);
-		} else if (value instanceof ObjectPosition) {
-			icon = new ObjectPositionIcon((ObjectPosition) value, w, h, "Label");
-		} else if (value instanceof Font) {
-			icon = new FontFaceIcon((Font) value, w, h, "");
-		} else if (value instanceof ArrowShape) {
-			final ArrowShape arrowShape = (ArrowShape) value;
+		} else if (value instanceof LabelBackgroundShape shape) {
+			DNodeShape dShape = DNodeShape.getDShape(shape);
+			if(dShape != null) {
+				icon = new NodeIcon(dShape.getShape(), w, h, dShape.getDisplayName());
+			} else {
+				icon = new TextIcon(LabelBackgroundShapeVisualProperty.NONE, w, h, "");
+			}
+		} else if (value instanceof LineType line) {
+			icon = new StrokeIcon(DLineType.getDLineType(line).getStroke(2f), w, h, value.toString());
+		} else if (value instanceof CyCustomGraphics<?> graphics) {
+			var name = graphics.getDisplayName();
+			icon = new CustomGraphicsIcon(graphics, w, h, name);
+		} else if (value instanceof ObjectPosition pos) {
+			icon = new ObjectPositionIcon(pos, w, h, "Label");
+		} else if (value instanceof Font font) {
+			icon = new FontFaceIcon(font, w, h, "");
+		} else if (value instanceof ArrowShape arrowShape) {
 			final DArrowShape dShape;
 			
 			if (ArrowShapeVisualProperty.isDefaultShape(arrowShape))
@@ -87,10 +95,10 @@ public final class VisualPropertyIconFactory {
 				icon = new TextIcon(value, w, h, ""); // No arrow
 			else
 				icon = new ArrowIcon(dShape.getShape(), w, h, dShape.getDisplayName());
-		} else if (value instanceof Bend) {
-			icon = new EdgeBendIcon((Bend) value, w, h, value.toString());
-		} else if (value instanceof EdgeStacking) {
-			icon = new EdgeStackingIcon((EdgeStacking) value, w, h, value.toString());
+		} else if (value instanceof Bend bend) {
+			icon = new EdgeBendIcon(bend, w, h, value.toString());
+		} else if (value instanceof EdgeStacking es) {
+			icon = new EdgeStackingIcon(es, w, h, value.toString());
 		} else {
 			// If not found, use return value of toString() as icon.
 			icon = new TextIcon(value, w, h, value.toString());

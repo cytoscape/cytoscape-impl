@@ -1,32 +1,5 @@
 package org.cytoscape.ding.impl;
 
-/*
- * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2021 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-import static org.cytoscape.ding.DVisualLexicon.NODE_LABEL_POSITION;
-import static org.cytoscape.ding.DVisualLexicon.NODE_LABEL_ROTATION;
-
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
 
 import java.awt.Color;
@@ -47,6 +20,7 @@ import javax.imageio.ImageIO;
 import org.cytoscape.cg.model.NullCustomGraphics;
 import org.cytoscape.ding.DNodeShape;
 import org.cytoscape.ding.DVisualLexicon;
+import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.CustomGraphicsInfo;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyNode;
@@ -60,7 +34,9 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.LabelBackgroundShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.Justification;
+import org.cytoscape.view.presentation.property.values.LabelBackgroundShape;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.ObjectPosition;
 import org.cytoscape.view.presentation.property.values.Position;
@@ -167,11 +143,6 @@ public class DNodeDetails implements NodeDetails {
 	}
 
 	@Override
-	public byte getShape(View<CyNode> nodeView) {
-		return DNodeShape.getDShape(nodeView.getVisualProperty(NODE_SHAPE)).getNativeShape();
-	}
-
-	@Override
 	public double getWidth(View<CyNode> nodeView) {
 		return nodeView.getVisualProperty(NODE_WIDTH);
 	}
@@ -245,6 +216,33 @@ public class DNodeDetails implements NodeDetails {
 		Paint paint = nodeView.getVisualProperty(NODE_LABEL_COLOR);
 		Integer trans = nodeView.getVisualProperty(NODE_LABEL_TRANSPARENCY);
 		return getTransparentColor(paint, trans);
+	}
+	
+	@Override
+	public Paint getLabelBackgroundPaint(View<CyNode> nodeView) {
+		Paint paint = nodeView.getVisualProperty(NODE_LABEL_BACKGROUND_COLOR);
+		Integer trans = nodeView.getVisualProperty(NODE_LABEL_BACKGROUND_TRANSPARENCY);
+		return getTransparentColor(paint, trans);
+	}
+	
+	@Override
+	public byte getLabelBackgroundShape(View<CyNode> nodeView) {
+		return getLabelBackgroundShape(nodeView.getVisualProperty(NODE_LABEL_BACKGROUND_SHAPE));
+	}
+	
+	public static byte getLabelBackgroundShape(LabelBackgroundShape lbs) {
+		if(lbs == LabelBackgroundShapeVisualProperty.RECTANGLE) {
+			return GraphGraphics.SHAPE_RECTANGLE;
+		} else if(lbs == LabelBackgroundShapeVisualProperty.ROUND_RECTANGLE) {
+			return GraphGraphics.SHAPE_ROUNDED_RECTANGLE;
+		} else {
+			return GraphGraphics.SHAPE_NONE;
+		}
+	}
+	
+	@Override
+	public byte getShape(View<CyNode> nodeView) {
+		return DNodeShape.getDShape(nodeView.getVisualProperty(NODE_SHAPE)).getNativeShape();
 	}
 
 	@Override
@@ -436,4 +434,5 @@ public class DNodeDetails implements NodeDetails {
 		
 		return null;
 	}
+
 }

@@ -252,6 +252,8 @@ public final class GraphRenderer {
 						final float offsetVectorY = edgeDetails.getLabelOffsetVectorY(edge);
 						final double theta = edgeDetails.getLabelRotation(edge)*.01745329252;
 						final Justification justify;
+						final Paint backgroundPaint = edgeDetails.getLabelBackgroundPaint(edge);
+						final byte backgroundShape = edgeDetails.getLabelBackgroundShape(edge);
 
 						if (text.indexOf('\n') >= 0)
 							justify = edgeDetails.getLabelJustify(edge);
@@ -366,7 +368,7 @@ public final class GraphRenderer {
 						final double textXCenter = edgeAnchorPointX - doubleBuff2[0] + offsetVectorX;
 						final double textYCenter = edgeAnchorPointY - doubleBuff2[1] + offsetVectorY;
 						renderText(grafx, labelInfo, (float) textXCenter, (float) textYCenter,
-								edgeAnchorPointX, edgeAnchorPointY, justify, paint, theta, flags.has(LOD_TEXT_AS_SHAPE));
+								edgeAnchorPointX, edgeAnchorPointY, justify, paint, backgroundPaint, backgroundShape, theta, flags.has(LOD_TEXT_AS_SHAPE));
 					}
 				}
 				
@@ -460,6 +462,8 @@ public final class GraphRenderer {
 						final double theta = nodeDetails.getLabelRotation(node)*.01745329252;
 						final double nodeLabelWidth = nodeDetails.getLabelWidth(node);
 						final Justification justify = text.indexOf('\n') >= 0 ? nodeDetails.getLabelJustify(node) : Justification.JUSTIFY_CENTER;
+						final Paint backgroundPaint = nodeDetails.getLabelBackgroundPaint(node);
+						final byte backgroundShape = nodeDetails.getLabelBackgroundShape(node);
 						
 						doubleBuff1[0] = floatBuff1[0];
 						doubleBuff1[1] = floatBuff1[1];
@@ -482,7 +486,7 @@ public final class GraphRenderer {
 						final double textYCenter = nodeAnchorPointY - doubleBuff2[1] + offsetVectorY;
 						
 						renderText(grafx, labelInfo, (float) textXCenter,(float) textYCenter, nodeAnchorPointX+offsetVectorX,
-                                	nodeAnchorPointY+offsetVectorY, justify, paint, theta, flags.has(LOD_TEXT_AS_SHAPE));
+                                	nodeAnchorPointY+offsetVectorY, justify, paint, backgroundPaint, backgroundShape, theta, flags.has(LOD_TEXT_AS_SHAPE));
 
 					}
 				}
@@ -498,7 +502,7 @@ public final class GraphRenderer {
 			final float textXCenter, final float textYCenter,
 			final double textXAnchor, final double textYAnchor,
 			final Justification textJustify,
-			final Paint paint, final double theta, final boolean textAsShape) {
+			final Paint paint, final Paint backgroundPaint, final byte backgroundShape, final double theta, final boolean textAsShape) {
 
 		double currHeight = measuredText.getTotalHeight() / -2.0d;
 		final double overallWidth = measuredText.getMaxLineWidth();
@@ -516,7 +520,7 @@ public final class GraphRenderer {
 			else
 				throw new IllegalStateException("textJustify value unrecognized");
 
-			grafx.drawTextFull(line, (float) xCenter, (float) yCenter, textXAnchor, textYAnchor, (float) theta, paint, textAsShape);
+			grafx.drawTextFull(line, (float) xCenter, (float) yCenter, textXAnchor, textYAnchor, (float) theta, paint, backgroundPaint, backgroundShape, textAsShape);
 			currHeight += line.getHeight();
 		}
 	}

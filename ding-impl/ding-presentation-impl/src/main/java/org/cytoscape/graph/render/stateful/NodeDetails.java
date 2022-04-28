@@ -203,6 +203,10 @@ public interface NodeDetails {
 	 * return null if this method is called by the rendering engine.
 	 */
 	Paint getLabelPaint(View<CyNode> node);
+	
+	Paint getLabelBackgroundPaint(View<CyNode> node);
+	
+	byte getLabelBackgroundShape(View<CyNode> node);
 
 	/**
 	 * By returning one of the ANCHOR_* constants, specifies where on a text

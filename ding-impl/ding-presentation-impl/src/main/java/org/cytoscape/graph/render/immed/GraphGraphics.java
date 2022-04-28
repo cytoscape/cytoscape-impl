@@ -105,6 +105,7 @@ public final class GraphGraphics {
 	private static final boolean debug = false;
 	
 	// Node shape constants
+	public static final byte SHAPE_NONE = -1;
 	public static final byte SHAPE_RECTANGLE = 0;
 	public static final byte SHAPE_DIAMOND = 1;
 	public static final byte SHAPE_ELLIPSE = 2;
@@ -191,7 +192,6 @@ public final class GraphGraphics {
 	private final FontRenderContext m_fontRenderContextFull = new FontRenderContext(null,true,true);
 	
 	private final GraphicsProvider graphicsProvider;
-	
 	private Graphics2D m_g2d;
 	private Graphics2D m_gMinimal; // We use mostly java.awt.Graphics methods.
 	private final AffineTransform m_currNativeXform = new AffineTransform();
@@ -1620,14 +1620,15 @@ public final class GraphGraphics {
 	public final void drawTextFull(LabelLineInfo labelLineInfo,
 			final float xCenter, final float yCenter,
 			final double xAnchor, final double yAnchor,
-			final float theta, final Paint paint, final boolean drawTextAsShape) {
-		
+			final float theta, final Paint paint, 
+			final Paint backgroundPaint, final byte backgroundShape, 
+			final boolean drawTextAsShape) {
 
 		if (theta != 0.0f) {
 			// m_g2d.rotate(theta, (double)xCenter-xAnchor, (double)yCenter-yAnchor);
 			m_g2d.rotate(theta, xAnchor, yAnchor);
 		}
-
+		
 		m_g2d.translate(xCenter, yCenter);
 		m_g2d.setPaint(paint);
 
@@ -1640,20 +1641,34 @@ public final class GraphGraphics {
 			GlyphVector glyphV = labelLineInfo.getGlyphVector();
 			Rectangle2D glyphBounds = glyphV.getLogicalBounds();
 			m_g2d.translate(-glyphBounds.getCenterX(), -glyphBounds.getCenterY());
+			drawLabelBackground(glyphBounds, backgroundPaint, backgroundShape);
 			m_g2d.fill(labelLineInfo.getShape());
 		} else {
 			// Note: A new Rectangle2D is being constructed by this method call.
 			// As far as I know this performance hit is unavoidable.
 			String text = labelLineInfo.getText();
 			Font font = labelLineInfo.getFont();
-			
 			Rectangle2D textBounds = font.getStringBounds(text, getFontRenderContextFull());
 			m_g2d.translate(-textBounds.getCenterX(), -textBounds.getCenterY());
+			drawLabelBackground(textBounds, backgroundPaint, backgroundShape);
 			m_g2d.setFont(font);
 			m_g2d.drawString(text, 0.0f, 0.0f);
 		}
 		
 		m_g2d.setTransform(m_currNativeXform);
+	}
+	
+	private void drawLabelBackground(Rectangle2D bounds, Paint paint, byte shape) {
+		if(shape >= 0) {
+			Graphics2D g_back = (Graphics2D) m_g2d.create();
+			float padding = 0.0f; 
+			Shape bgs = getShape(shape, 
+					(float)bounds.getMinX()-padding, (float)bounds.getMinY()-padding,
+					(float)bounds.getMaxX()+padding, (float)bounds.getMaxY()+padding);
+			g_back.setPaint(paint);
+			g_back.fill(bgs);
+			g_back.dispose();
+		}
 	}
 	
 

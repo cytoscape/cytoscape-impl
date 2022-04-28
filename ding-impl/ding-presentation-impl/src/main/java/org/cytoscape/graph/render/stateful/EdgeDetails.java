@@ -224,7 +224,11 @@ public interface EdgeDetails {
 	 * labelCount(edge) returns a value greater than zero.  It is an error to
 	 * return null if this method is called by the rendering engine.
 	 */
-	public Paint getLabelPaint(View<CyEdge> edgeView);
+	public Paint getLabelPaint(View<CyEdge> edge);
+	
+	Paint getLabelBackgroundPaint(View<CyEdge> edge);
+	
+	byte getLabelBackgroundShape(View<CyEdge> edge);
 
 	/**
 	 * By returning one of the NodeDetails.ANCHOR_* constants, specifies where
