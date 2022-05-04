@@ -4,6 +4,7 @@ import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.GraphicsEnvironment;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,13 +26,11 @@ public class IconManagerImpl implements IconManager {
 	public IconManagerImpl() {
 		try {
 			// Load the default font
-			defFont = Font.createFont(Font.TRUETYPE_FONT,
-					getClass().getResourceAsStream("/fonts/fontawesome-webfont.ttf"));
-		} catch (FontFormatException e) {
-			throw new RuntimeException();
-		} catch (IOException e) {
-			throw new RuntimeException();
-		}
+			InputStream stream = getClass().getResourceAsStream("/fonts/fontawesome-webfont.ttf");
+			defFont = Font.createFont(Font.TRUETYPE_FONT, stream);
+		} catch (FontFormatException | IOException e) {
+			throw new RuntimeException(e);
+		} 
 		
 		GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(defFont);
 	}

@@ -51,8 +51,14 @@ public class CyActivator extends AbstractCyActivator {
 		final FileUtilImpl fileUtil = new FileUtilImpl(serviceRegistrar);
 		registerService(bc, fileUtil, FileUtil.class, new Properties());
 
-		final IconManagerImpl iconManager = new IconManagerImpl();
-		registerService(bc, iconManager, IconManager.class, new Properties());
+		final IconManagerImpl iconManager;
+		try {
+			iconManager = new IconManagerImpl();
+			registerService(bc, iconManager, IconManager.class, new Properties());
+		} catch(Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
 
 		final CyColorPaletteChooserFactory paletteChooser = new CyColorPaletteChooserFactoryImpl(paletteProviderManager);
 		registerService(bc, paletteChooser, CyColorPaletteChooserFactory.class, new Properties());
