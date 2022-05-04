@@ -250,7 +250,10 @@ public final class GraphRenderer {
 						final Position edgeAnchor = edgeDetails.getLabelEdgeAnchor(edge);
 						final float offsetVectorX = edgeDetails.getLabelOffsetVectorX(edge);
 						final float offsetVectorY = edgeDetails.getLabelOffsetVectorY(edge);
-						final double theta = edgeDetails.getLabelRotation(edge)*.01745329252;
+            final double slope = (floatBuff3[1]-floatBuff4[1])/(floatBuff3[0]-floatBuff4[0]);
+            double rise = floatBuff4[1]-floatBuff3[1];
+            double run = floatBuff4[0]-floatBuff3[0];
+						final double theta = edgeDetails.getLabelRotation(edge, rise, run)*.01745329252;
 						final Justification justify;
 						final Paint backgroundPaint = edgeDetails.getLabelBackgroundPaint(edge);
 						final byte backgroundShape = edgeDetails.getLabelBackgroundShape(edge);

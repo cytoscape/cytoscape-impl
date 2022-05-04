@@ -299,6 +299,31 @@ public final class DEdgeDetails implements EdgeDetails {
 	}
 
 	@Override
+	public Double getLabelRotation(View<CyEdge> edgeView, double rise, double run) {
+		Double dAngle = edgeView.getVisualProperty(EDGE_LABEL_ROTATION);
+    if (!getLabelAutorotate(edgeView) || edgeView.isValueLocked(EDGE_LABEL_ROTATION))
+      return dAngle;
+
+    // Get the rotation
+    double rot = Math.atan2(rise, run);
+
+    // Bound it to avoid having the label upside-down
+    if (rot < -1.570796)
+      rot += 3.141593;
+    if (rot > 1.570796)
+      rot -= 3.141593;
+
+    // Return the value in degrees
+    return Math.toDegrees(rot);
+	}
+
+	@Override
+	public boolean getLabelAutorotate(View<CyEdge> edgeView) {
+		Boolean auto = edgeView.getVisualProperty(EDGE_LABEL_AUTOROTATE);
+		return auto;
+	}
+
+	@Override
 	public float getSourceArrowSize(View<CyEdge> edgeView) {
 		Double size = edgeView.getVisualProperty(EDGE_SOURCE_ARROW_SIZE);
 		return adjustArrowSize(edgeView, getSourceArrowShape(edgeView), size);

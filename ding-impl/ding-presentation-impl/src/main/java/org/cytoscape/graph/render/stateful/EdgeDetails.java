@@ -218,6 +218,20 @@ public interface EdgeDetails {
 	 */
 	default Double getLabelRotation(View<CyEdge> edge) { return 0d; }
 
+  /**
+   * Returns the angle (in degrees) to rotate the label, taking into
+   * account autorotateion, if it's set.
+	 * This method is only called by the rendering engine
+	 * if labelCount(edge) returns a value greater than zero. It is an error to
+	 * return null if this method is called by the rendering engine.
+	 */
+	default Double getLabelRotation(View<CyEdge> edge, double rise, double run) { return 0d; }
+
+  /**
+   * Returns 'true' if we want to autorotate edge labels.
+   */
+  default boolean getLabelAutorotate(View<CyEdge> edge) { return false; }
+
 	/**
 	 * Returns the paint of a text label. 
 	 * This method is only called by the rendering engine if
