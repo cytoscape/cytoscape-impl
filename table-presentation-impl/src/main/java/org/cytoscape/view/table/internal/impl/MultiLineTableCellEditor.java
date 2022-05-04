@@ -228,7 +228,7 @@ public class MultiLineTableCellEditor extends AbstractCellEditor implements Tabl
 				this.transferFocus();
 				return;
 			}
-			
+
 			if (evt.getKeyCode() != KeyEvent.VK_ENTER)
 				return;
 
@@ -242,19 +242,20 @@ public class MultiLineTableCellEditor extends AbstractCellEditor implements Tabl
 			}
 
 			// We want to move to the previous cell if Shift+Enter have been pressed:
-			if (modifiers == KeyEvent.VK_SHIFT) {
+			if (evt.isShiftDown()) {
 				stopCellEditing();
 				this.transferFocusBackward();
 				return;
 			}
 
 			// We want to insert a newline if Enter+Alt or Enter+Option (macOS) have been pressed:
-			if (modifiers == KeyEvent.VK_ALT || (isMac() && evt.isAltDown())) {
+			if (evt.isAltDown() || (isMac() && evt.isAltDown())) {
 				final int caretPosition = this.getCaretPosition();
 				final StringBuilder text = new StringBuilder(this.getText());
 				this.setText(text.insert(caretPosition, '\n').toString());
 				this.setCaretPosition(caretPosition + 1);
 			}
+
 		}
 	}
 }
