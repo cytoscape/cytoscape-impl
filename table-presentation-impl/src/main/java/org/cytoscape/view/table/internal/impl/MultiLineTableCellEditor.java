@@ -60,6 +60,7 @@ public class MultiLineTableCellEditor extends AbstractCellEditor implements Tabl
 	
 	private ResizableTextArea textArea;
 	private int lastRow = -1;
+	private int thisRow = -1;
 
 	public MultiLineTableCellEditor() {
 		textArea = new ResizableTextArea();
@@ -72,7 +73,8 @@ public class MultiLineTableCellEditor extends AbstractCellEditor implements Tabl
 
 	@Override
 	public Object getCellEditorValue() {
-		return textArea.getText().trim();
+		// return textArea.getText().trim();
+		return textArea.getText(); // We don't want to trim because we'll lose any intentional newlines
 	}
 
 	@Override
@@ -111,6 +113,7 @@ public class MultiLineTableCellEditor extends AbstractCellEditor implements Tabl
 	@Override
 	public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
 		lastRow = row;
+    thisRow = row;
 		
 		String text = value != null ? ((ValidatedObjectAndEditString) value).getEditString() : "";
 		textArea.setTable(table);
@@ -221,6 +224,21 @@ public class MultiLineTableCellEditor extends AbstractCellEditor implements Tabl
 			lastValueUserEntered = getCellEditorValue();
 		}
 
+    @Override
+    public void transferFocus() {
+      if ((thisRow+1) >= table.getRowCount()) {
+        return;
+      }
+      super.transferFocus();
+    }
+
+    @Override
+    public void transferFocusBackward() {
+      if ((thisRow-1) < 0)
+        return;
+      super.transferFocus();
+    }
+
 		@Override
 		public void keyPressed(final KeyEvent evt) {
 			if (evt.getKeyCode() == KeyEvent.VK_ESCAPE) {
@@ -249,7 +267,7 @@ public class MultiLineTableCellEditor extends AbstractCellEditor implements Tabl
 			}
 
 			// We want to insert a newline if Enter+Alt or Enter+Option (macOS) have been pressed:
-			if (evt.isAltDown() || (isMac() && evt.isAltDown())) {
+			if (evt.isAltDown()) {
 				final int caretPosition = this.getCaretPosition();
 				final StringBuilder text = new StringBuilder(this.getText());
 				this.setText(text.insert(caretPosition, '\n').toString());

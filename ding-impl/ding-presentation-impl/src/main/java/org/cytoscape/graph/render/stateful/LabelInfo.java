@@ -55,7 +55,7 @@ public class LabelInfo {
 		this.labelWidth = labelWidth;
 		this.measuredLines = new ArrayList<LabelLineInfo>();
 
-		String[] lines = rawLine.split("\n");
+		String[] lines = rawLine.split("\n", -1);
 		calculateRawBounds(lines); 
 		createMeasuredLines(lines);
 	}
@@ -168,7 +168,7 @@ public class LabelInfo {
 			}
 
 			// add the last line if there's anything there
-			if ( currentWidth > 0 ) {
+			if ( currentWidth >= 0 ) {
 				measuredLines.add(new LabelLineInfo(this, currentLine.toString(), currentWidth, wordHeight));
 				updateBounds(currentWidth,wordHeight);
 			}

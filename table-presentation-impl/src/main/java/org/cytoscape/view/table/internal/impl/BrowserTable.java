@@ -279,6 +279,9 @@ public class BrowserTable extends JTable
 
 	@Override
 	public boolean isCellEditable(int row, int column) {
+    if (row >= getRowCount() || row < 0)
+      return false;
+
 		if (super.isCellEditable(row, column)) {
 			var tableModel = getBrowserTableModel();
 			
