@@ -168,7 +168,7 @@ public class LabelInfo {
 			}
 
 			// add the last line if there's anything there
-			if ( currentWidth >= 0 ) {
+			if ( currentWidth > 0 ) {
 				measuredLines.add(new LabelLineInfo(this, currentLine.toString(), currentWidth, wordHeight));
 				updateBounds(currentWidth,wordHeight);
 			}
