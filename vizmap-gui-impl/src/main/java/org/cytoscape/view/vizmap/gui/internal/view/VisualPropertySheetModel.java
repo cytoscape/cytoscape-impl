@@ -17,7 +17,6 @@ public class VisualPropertySheetModel extends AbstractVizMapperModel {
 	private final VisualStyle style;
 	private final VisualLexicon lexicon;
 
-	// ==[ CONSTRUCTORS ]===============================================================================================
 	
 	public VisualPropertySheetModel(Class<? extends CyIdentifiable> targetDataType, VisualStyle style, VisualLexicon lexicon) {
 		if (targetDataType != CyNode.class && targetDataType != CyEdge.class && targetDataType != CyNetwork.class && targetDataType != CyColumn.class)
@@ -30,7 +29,6 @@ public class VisualPropertySheetModel extends AbstractVizMapperModel {
 		this.lexicon = lexicon;
 	}
 	
-	// ==[ PUBLIC METHODS ]=============================================================================================
 	
 	public Class<? extends CyIdentifiable> getTargetDataType() {
 		return targetDataType;
@@ -54,10 +52,8 @@ public class VisualPropertySheetModel extends AbstractVizMapperModel {
 	public String getTitle() {
 		if (targetDataType == CyNode.class) return "Node";
 		if (targetDataType == CyEdge.class) return "Edge";
-		if (targetDataType == CyColumn.class) return "Table";
+		if (targetDataType == CyColumn.class) return "Column";
 		return "Network";
 	}
-	
-	// ==[ PRIVATE METHODS ]============================================================================================
 	
 }

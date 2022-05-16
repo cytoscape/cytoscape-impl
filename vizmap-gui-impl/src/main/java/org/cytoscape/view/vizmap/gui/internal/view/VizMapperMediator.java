@@ -1,21 +1,12 @@
 package org.cytoscape.view.vizmap.gui.internal.view;
 
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_NETWORK_VIEW_CHANGED;
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_TABLE_CHANGED;
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_TABLE_VISUAL_STYLE_CHANGED;
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.CURRENT_VISUAL_STYLE_CHANGED;
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_ADDED;
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_NAME_CHANGED;
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_REMOVED;
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_SET_CHANGED;
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.VISUAL_STYLE_UPDATED;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.*;
 import static org.cytoscape.view.vizmap.gui.internal.view.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.view.vizmap.gui.internal.view.util.ViewUtil.invokeOnEDTAndWait;
 
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ItemEvent;
@@ -29,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -38,6 +30,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.swing.AbstractAction;
@@ -45,7 +38,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CyAction;
@@ -157,9 +149,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	
 	private VisualPropertySheetItem<?> curVpSheetItem;
 	private VizMapperProperty<?, ?, ?> curVizMapperProperty;
+	
+	// Remember what columns were selected so if the user moves between networks they don't have to select the column again.
 	private Map<Long, Long> selectedColumns;
-	private ActionListener tableChangeListener;
-	private ActionListener columnChangeListener;
+	private Consumer<CyColumn> columnChangeListener;
 	
 	// MKTODO Current network renderer
 	private String curRendererId;
@@ -270,8 +263,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 					var style = (VisualStyle) body;
 					
 					if (vmProxy.isTableStyle(style)) {
-						var currentColumn = vizMapperMainPanel.getColumnStylePnl().getColumnComboBox()
-								.getSelectedItem();
+						var currentColumn = vizMapperMainPanel.getColumnStylePnl().getSelectedColumn();
 						if (vmProxy.getVisualStyle(currentColumn) == style)
 							updateTableVisualPropertySheets(currentColumn.getTable(), false, false);
 					} else {
@@ -336,13 +328,13 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		if (NETWORK_SHEET_TYPES.contains(type)) {
 			return vmProxy.getCurrentVisualStyle();
 		} else {
-			var col = vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().getSelectedItem();
+			var col = vizMapperMainPanel.getColumnStylePnl().getSelectedColumn();
 			return vmProxy.getVisualStyle(col);
 		}
 	}
 	
 	public CyColumn getCurrentColumn() {
-		return vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().getSelectedItem();
+		return vizMapperMainPanel.getColumnStylePnl().getSelectedColumn();
 	}
 	
 	private CyTable getTable(Class<? extends CyIdentifiable> type) {
@@ -653,11 +645,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		var stylesBtn = vizMapperMainPanel.getStylesBtn();
 		stylesBtn.addPropertyChangeListener("selectedStyle", evt -> onSelectedVisualStyleChanged(evt));
 		
-		tableChangeListener = e -> onSelectedTableChanged();
-		vizMapperMainPanel.getColumnStylePnl().getTableComboBox().addActionListener(tableChangeListener);
-		
-		columnChangeListener = e -> onSelectedColumnChanged();
-		vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().addActionListener(columnChangeListener);
+		columnChangeListener = col -> onSelectedColumnChanged();
+		vizMapperMainPanel.getColumnStylePnl().addColumnSelectionListener(columnChangeListener);
 	}
 	
 	private void addViewListeners(VisualPropertySheet vpSheet) {
@@ -842,9 +831,12 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			table = null;
 		
 		Collection<CyTable> pubTables = null;
-		CyTable tableToUse = null;
-		Collection<CyColumn> columns = null;
+//		CyTable tableToUse = null;
+//		Collection<CyColumn> columns = null;
 		CyColumn columnToUse = null;
+		
+		Map<CyTable,List<CyColumn>> columnMap = new LinkedHashMap<>();
+		
 		final VisualStyle vs;
 		final boolean rebuild;
 		
@@ -852,15 +844,14 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			vs = servicesUtil.get(VisualStyleFactory.class).createVisualStyle("column-dummy");
 			rebuild = true;
 		} else {
-			tableToUse = table;
-			columns = tableToUse.getColumns();
-			columnToUse = getSelectedColumn(tableToUse);
-			
+//			tableToUse = table;
+//			columns = tableToUse.getColumns();
+			columnToUse = getSelectedColumn(table);
 			vs = vmProxy.getVisualStyle(columnToUse);
 			
 			if (vs == null) {
-				tableToUse = null;
-				columns = null;
+//				tableToUse = null;
+//				columns = null;
 				columnToUse = null;
 			} else {
 				pubTables = new LinkedHashSet<>();
@@ -875,13 +866,13 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				if (net != null) {
 					// The order is important for the UI (Nodes, Edges, Network; and DEFAULT tables first)
 					pubTables.add(netTableManager.getTable(net, CyNode.class, CyNetwork.DEFAULT_ATTRS));
-					pubTables.addAll(netTableManager.getTables(net, CyNode.class).values());
+//					pubTables.addAll(netTableManager.getTables(net, CyNode.class).values());
 					
 					pubTables.add(netTableManager.getTable(net, CyEdge.class, CyNetwork.DEFAULT_ATTRS));
-					pubTables.addAll(netTableManager.getTables(net, CyEdge.class).values());
+//					pubTables.addAll(netTableManager.getTables(net, CyEdge.class).values());
 					
-					pubTables.add(netTableManager.getTable(net, CyNetwork.class, CyNetwork.DEFAULT_ATTRS));
-					pubTables.addAll(netTableManager.getTables(net, CyNetwork.class).values());
+//					pubTables.add(netTableManager.getTable(net, CyNetwork.class, CyNetwork.DEFAULT_ATTRS));
+//					pubTables.addAll(netTableManager.getTables(net, CyNetwork.class).values());
 				}
 				
 				// Add unassigned tables
@@ -894,6 +885,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				pubTables = pubTables.stream()
 						.filter(t -> t.isPublic())
 						.collect(Collectors.toList());
+				
+				for(var pubTable : pubTables) {
+					columnMap.put(pubTable, new ArrayList<>(pubTable.getColumns()));
+				}
 			}
 			
 			rebuild = forceRebuild || shouldRebuildTableVisualPropertySheets(vs);
@@ -901,11 +896,9 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		
 		updateVisualPropertySheets(vs, TABLE_SHEET_TYPES, resetDefaultVisibleItems, rebuild);
 		
-		vizMapperMainPanel.getColumnStylePnl().getTableComboBox().removeActionListener(tableChangeListener);
-		vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().removeActionListener(columnChangeListener);
-		vizMapperMainPanel.updateColumns(pubTables, tableToUse, columns, columnToUse);
-		vizMapperMainPanel.getColumnStylePnl().getTableComboBox().addActionListener(tableChangeListener);
-		vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().addActionListener(columnChangeListener);
+		vizMapperMainPanel.getColumnStylePnl().removeColumnSelectionListener(columnChangeListener);
+		vizMapperMainPanel.updateColumns(columnMap, columnToUse);
+		vizMapperMainPanel.getColumnStylePnl().addColumnSelectionListener(columnChangeListener);
 	}
 	
 	private CyColumn getSelectedColumn(CyTable table) {
@@ -929,18 +922,13 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		return columns.iterator().next();
 	}
 	
-	private void onSelectedTableChanged() {
-		var table = (CyTable) vizMapperMainPanel.getColumnStylePnl().getTableComboBox().getSelectedItem();
-		
-		if (table != null)
-			servicesUtil.get(CyApplicationManager.class).setCurrentTable(table);
-	}
-	
 	private void onSelectedColumnChanged() {
 		ContinuousMappingEditorPanel.setTracer(new EditorValueRangeTracer(servicesUtil));
-		var col = vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().getSelectedItem();
-		selectedColumns.put(col.getTable().getSUID(), col.getSUID());
-		updateTableVisualPropertySheets(col.getTable(), false, true);
+		var col = vizMapperMainPanel.getColumnStylePnl().getSelectedColumn(); 
+		if(col != null) {
+			selectedColumns.put(col.getTable().getSUID(), col.getSUID());
+			updateTableVisualPropertySheets(col.getTable(), false, true);
+		}
 	}
 	
 	private void updateVisualPropertySheets(
@@ -1032,7 +1020,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	}
 	
 	private boolean shouldRebuildTableVisualPropertySheets(VisualStyle vs) {
-		var col = vizMapperMainPanel.getColumnStylePnl().getColumnComboBox().getSelectedItem();
+		var col = vizMapperMainPanel.getColumnStylePnl().getSelectedColumn();
 		var curStyle = vmProxy.getVisualStyle(col);
 		
 		return vs != null && !vs.equals(curStyle);

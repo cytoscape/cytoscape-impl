@@ -7,7 +7,8 @@ import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
@@ -75,7 +76,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	private final ServicesUtil servicesUtil;
 	
 	private VisualStylePanelProvider visualStylePanel;
-	private ColumnStylePanel columnStylePanel;
+	private ColumnStylePicker columnStylePanel;
 	private PropertySheetPanel propertySheetPanel;
 	
 	public VizMapperMainPanel(ServicesUtil servicesUtil) {
@@ -144,9 +145,9 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		return visualStylePanel;
 	}
 
-	ColumnStylePanel getColumnStylePnl() {
+	ColumnStylePicker getColumnStylePnl() {
 		if (columnStylePanel == null) {
-			columnStylePanel = new ColumnStylePanel(servicesUtil);
+			columnStylePanel = new ColumnStylePicker(servicesUtil);
 		}
 		
 		return columnStylePanel;
@@ -242,11 +243,11 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	}
 	
 	public void addTableOption(JMenuItem menuItem, double gravity, boolean insertSeparatorBefore, boolean insertSeparatorAfter) {
-		getColumnStylePnl().getOptionsBtn().addOption(menuItem, gravity, insertSeparatorBefore, insertSeparatorAfter);
+//		getColumnStylePnl().getOptionsBtn().addOption(menuItem, gravity, insertSeparatorBefore, insertSeparatorAfter);
 	}
 	
 	public void removeTableOption(JMenuItem menuItem) {
-		getColumnStylePnl().getOptionsBtn().removeOption(menuItem);
+//		getColumnStylePnl().getOptionsBtn().removeOption(menuItem);
 	}
 
 
@@ -254,8 +255,8 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		getPropertiesPnl().addContextMenuItem(menuItem, gravity, insertSeparatorBefore, insertSeparatorAfter);
 	}
 	
-	public void updateColumns(Collection<CyTable> tables, CyTable selTable, Collection<CyColumn> columns, CyColumn selColumn) {
-		getColumnStylePnl().updateColumns(tables, selTable, columns, selColumn);
+	public void updateColumns(Map<CyTable,List<CyColumn>> columnMap, CyColumn selectedCol) {
+		getColumnStylePnl().updateColumns(columnMap, selectedCol);
 	}
 	
 	private void init() {
@@ -276,11 +277,11 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			var type = sheet.getModel().getTargetDataType();
 			topPanel.removeAll();
 			
+			topPanel.add(getStylesPanelProvider().getComponent(), BorderLayout.NORTH);
+			
 			if (CyColumn.class.equals(type) || CyTable.class.equals(type))
 				topPanel.add(getColumnStylePnl().getComponent(), BorderLayout.CENTER);
-			else
-				topPanel.add(getStylesPanelProvider().getComponent(), BorderLayout.CENTER);
-			
+				
 			topPanel.revalidate();
 			topPanel.repaint();
 	    });
