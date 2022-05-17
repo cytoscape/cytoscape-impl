@@ -316,20 +316,12 @@ import org.osgi.framework.BundleContext;
  */
 
 public class CyActivator extends AbstractCyActivator {
-<<<<<<< HEAD
-
-	private static float LARGE_ICON_FONT_SIZE = 32f;
-	private static int LARGE_ICON_SIZE = 32;
-
-=======
-	
 	private static float LARGE_ICON_FONT_SIZE = 32.0f;
 	private static int LARGE_ICON_SIZE = 32;
-	
+
 	private static float SMALL_ICON_FONT_SIZE = 14.0f;
 	private static int SMALL_ICON_SIZE = 16;
-	
->>>>>>> 6d21c8a981ee2940603533c7ee594f18fe300794
+
 	private Font iconFont;
 
 	private CyServiceRegistrar serviceRegistrar;
@@ -1702,11 +1694,11 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			var factory = new ExportTableTaskFactoryImpl(serviceRegistrar);
-			
+
 			var icon = new TextIcon(IconUtil.FILE_EXPORT, iconFont.deriveFont(22.0f), 32, 31);
 			var iconId = "cy::Table:EXPORT_TABLE";
 			iconManager.addIcon(iconId, icon);
-			
+
 			var props = new Properties();
 			props.setProperty(ENABLE_FOR, "table");
 			props.setProperty(IN_NODE_TABLE_TOOL_BAR, "true");
@@ -1834,7 +1826,7 @@ public class CyActivator extends AbstractCyActivator {
 			var icon = new TextIcon(IconManager.ICON_TRASH_O, iconManager.getIconFont(SMALL_ICON_FONT_SIZE), SMALL_ICON_SIZE, SMALL_ICON_SIZE);
 			var iconId = "cy::DELETE_COLUMN_SMALL";
 			iconManager.addIcon(iconId, icon);
-			
+
 			var factory = new DeleteColumnTaskFactoryImpl(serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(TITLE, "Delete Column");
@@ -1848,7 +1840,7 @@ public class CyActivator extends AbstractCyActivator {
 			var icon = new TextIcon(IconManager.ICON_EDIT, iconManager.getIconFont(SMALL_ICON_FONT_SIZE), SMALL_ICON_SIZE, SMALL_ICON_SIZE);
 			var iconId = "cy::RENAME_COLUMN_SMALL";
 			iconManager.addIcon(iconId, icon);
-			
+
 			var factory = new RenameColumnTaskFactoryImpl(serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(TITLE, "Rename Column...");
