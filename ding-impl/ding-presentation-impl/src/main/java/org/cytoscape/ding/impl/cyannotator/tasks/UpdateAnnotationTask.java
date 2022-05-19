@@ -1,10 +1,13 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
@@ -47,11 +50,6 @@ import org.cytoscape.work.json.JSONResult;
 
 public class UpdateAnnotationTask extends AbstractTask implements ObservableTask {
 
-	private final AnnotationManager annotationManager;
-	private final CyNetworkViewManager viewManager;
-	private final Class<? extends Annotation> type;
-	private Annotation updatedAnnotation;
-
 	@Tunable(context = "nogui", required = true, description = "The UUID or name of the annotation to be updated")
 	public String uuidOrName;
 
@@ -70,15 +68,15 @@ public class UpdateAnnotationTask extends AbstractTask implements ObservableTask
 	// Image annotation values
 	@ContainsTunables
 	public ImageAnnotationTunables imageTunables;
-
-	public UpdateAnnotationTask(
-			Class<? extends Annotation> type,
-			AnnotationManager annotationManager,
-			CyNetworkViewManager viewManager
-	) {
-		this.annotationManager = annotationManager;
-		this.viewManager = viewManager;
+	
+	private Annotation updatedAnnotation;
+	
+	private final Class<? extends Annotation> type;
+	private final CyServiceRegistrar serviceRegistrar;
+	
+	public UpdateAnnotationTask(Class<? extends Annotation> type, CyServiceRegistrar serviceRegistrar) {
 		this.type = type;
+		this.serviceRegistrar = serviceRegistrar;
 
 		if (type.equals(ImageAnnotation.class)) {
 			standardTunables = new StandardAnnotationTunables();
@@ -114,26 +112,51 @@ public class UpdateAnnotationTask extends AbstractTask implements ObservableTask
 		} catch (IllegalArgumentException e) {
 			name = uuidOrName;
 		}
-
-		// Get a list of all annotations, looking for the one with our UUID
-		for (var view : viewManager.getNetworkViewSet()) {
-			for (var annotation : annotationManager.getAnnotations(view)) {
-				if ((aUUID != null && annotation.getUUID().equals(aUUID))
-						|| (name != null && annotation.getName().equals(name))) {
-					try {
-						updateAnnotation(tm, annotation);
-					} catch (Exception e) {
-						e.printStackTrace();
+		
+		var viewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
+		var annotationManager = serviceRegistrar.getService(AnnotationManager.class);
+		
+		Annotation annotation = null;
+		
+		if (aUUID != null) {
+			// Iterate over the set of all annotations, looking for the one with the same UUID
+			SEARCH:
+			for (var view : viewManager.getNetworkViewSet()) {
+				for (var a : annotationManager.getAnnotations(view)) {
+					if (a.getUUID().equals(aUUID)) {
+						annotation = a;
+						break SEARCH;
 					}
-					
-					updatedAnnotation = annotation;
-					
-					return;
+				}
+			}
+		} else if (name != null) {
+			// The UUID was not informed, so try to find the annotation by its name (look into the current view first)
+			var currView = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
+			// If there's no current view, we have to search in all views until one annotation is found
+			var viewSet = currView != null ? Collections.singleton(currView) : viewManager.getNetworkViewSet();
+			
+			SEARCH:
+			for (var view : viewSet) {
+				for (var a : annotationManager.getAnnotations(view)) {
+					if (name.equals(a.getName())) {
+						annotation = a;
+						break SEARCH;
+					}
 				}
 			}
 		}
-
-		tm.setStatusMessage("Can't find an annotation with UUID " + uuidOrName);
+		
+		if (annotation != null) {
+			try {
+				updateAnnotation(tm, annotation);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			updatedAnnotation = annotation;
+		} else {
+			tm.setStatusMessage("Can't find any annotation with UUID or name '" + uuidOrName + "'");
+		}
 	}
 
 	private void updateAnnotation(TaskMonitor tm, Annotation annotation) {
