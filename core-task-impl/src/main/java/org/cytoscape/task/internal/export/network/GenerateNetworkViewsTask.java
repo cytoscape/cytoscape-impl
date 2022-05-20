@@ -97,10 +97,13 @@ public class GenerateNetworkViewsTask extends AbstractTask implements Observable
 			serviceRegistrar.getService(CyNetworkManager.class).addNetwork(net, false);
 			final int numGraphObjects = net.getNodeCount() + net.getEdgeCount();
 			
-			if (numGraphObjects < viewThreshold)
+			if (numGraphObjects < viewThreshold) {
+        taskMonitor.showMessage(TaskMonitor.Level.INFO, "Creating view");
 				createNetworkView(net);
-			else
+      } else {
 				largeNetworks.add(net);
+        taskMonitor.showMessage(TaskMonitor.Level.WARN, "Network larger than view threshold");
+      }
 			
 			taskMonitor.setProgress((double)(++i)/numNets);
 		}
@@ -148,8 +151,17 @@ public class GenerateNetworkViewsTask extends AbstractTask implements Observable
 	private Object getStringResults() {
 		String strRes = "";
 		
-		for (CyNetworkView view: results)
-			strRes += (view.toString() + "\n");
+    strRes += "Networks: \n";
+    for (CyNetworkView view: results)
+      strRes += "  "+(view.getModel().toString() + "\n");
+    for (CyNetwork net: largeNetworks)
+      strRes += "  "+(net.toString() + "\n");
+
+    if (results != null && results.size() > 0) {
+      strRes += "Views: \n";
+      for (CyNetworkView view: results)
+        strRes += "  "+(view.toString() + "\n");
+    }
 		
 		return strRes.isEmpty() ? null : strRes.substring(0, strRes.length()-1);
 	}
@@ -212,7 +224,8 @@ public class GenerateNetworkViewsTask extends AbstractTask implements Observable
 		if (expectedType.equals(String.class))
 			return getStringResults();
 		else if (expectedType.equals(JSONResult.class)) {
-			JSONResult res = () -> {if (results == null && largeNetworks.isEmpty()) 
+			JSONResult res = () -> {
+      if ((results == null||results.size() == 0) && largeNetworks.isEmpty()) 
 				return "{}";
 			else {
 				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
@@ -236,7 +249,7 @@ public class GenerateNetworkViewsTask extends AbstractTask implements Observable
 		return Arrays.asList(List.class, String.class, JSONResult.class);
 	}
 	
-	public class ConfirmCreateNetworkViewsTask extends AbstractTask implements ObservableTask {
+	public class ConfirmCreateNetworkViewsTask extends AbstractTask /* implements ObservableTask */ {
 
 		@Tunable(
 				description = "Do you want to create a view for your large networks now?\nThis could take a long time.",
@@ -261,8 +274,8 @@ public class GenerateNetworkViewsTask extends AbstractTask implements Observable
 			for (CyNetwork net : networks) {
 				if (createNetworkViews)
 					createNetworkView(net);
-				else
-					results.add(nullNetViewFactory.createNetworkView(net));
+				// else
+				// 	results.add(nullNetViewFactory.createNetworkView(net));
 				
 				taskMonitor.setProgress((double)(++i)/numNets);
 			}
@@ -271,7 +284,7 @@ public class GenerateNetworkViewsTask extends AbstractTask implements Observable
 				setCurrentNetworkAndViewTask(networks.get(0));
 		}
 		
-		@Override
+		// @Override
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		public Object getResults(Class expectedType) {
 			if (expectedType.equals(String.class))
@@ -299,7 +312,7 @@ public class GenerateNetworkViewsTask extends AbstractTask implements Observable
 			return results;
 		}
 		
-		@Override
+		// @Override
 		public List<Class<?>> getResultClasses() {
 			return Arrays.asList(List.class, String.class, JSONResult.class);
 		}
