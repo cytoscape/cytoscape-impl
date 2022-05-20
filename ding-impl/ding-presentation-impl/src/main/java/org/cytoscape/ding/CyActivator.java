@@ -652,7 +652,7 @@ public class CyActivator extends AbstractCyActivator {
 
     {
 			// Annotation update shape
-			var factory = new UpdateAnnotationTaskFactory(ShapeAnnotation.class, annotationManager, netViewManager);
+			var factory = new UpdateAnnotationTaskFactory(ShapeAnnotation.class, serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "annotation");
 			props.setProperty(COMMAND, "update shape");
@@ -684,7 +684,7 @@ public class CyActivator extends AbstractCyActivator {
 
     {
 			// Annotation update text
-			var factory = new UpdateAnnotationTaskFactory(TextAnnotation.class, annotationManager, netViewManager);
+			var factory = new UpdateAnnotationTaskFactory(TextAnnotation.class, serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "annotation");
 			props.setProperty(COMMAND, "update text");
@@ -712,7 +712,7 @@ public class CyActivator extends AbstractCyActivator {
 
     {
 			// Annotation update bounded text
-			var factory = new UpdateAnnotationTaskFactory(BoundedTextAnnotation.class, annotationManager, netViewManager);
+			var factory = new UpdateAnnotationTaskFactory(BoundedTextAnnotation.class, serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "annotation");
 			props.setProperty(COMMAND, "update bounded text");
@@ -748,7 +748,7 @@ public class CyActivator extends AbstractCyActivator {
 
     {
 			// Annotation update image
-			var factory = new UpdateAnnotationTaskFactory(ImageAnnotation.class, annotationManager, netViewManager);
+			var factory = new UpdateAnnotationTaskFactory(ImageAnnotation.class, serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "annotation");
 			props.setProperty(COMMAND, "update image");
@@ -782,7 +782,7 @@ public class CyActivator extends AbstractCyActivator {
 
     {
 			// Annotation update image
-			var factory = new UpdateAnnotationTaskFactory(GroupAnnotation.class, annotationManager, netViewManager);
+			var factory = new UpdateAnnotationTaskFactory(GroupAnnotation.class, serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "annotation");
 			props.setProperty(COMMAND, "update group");

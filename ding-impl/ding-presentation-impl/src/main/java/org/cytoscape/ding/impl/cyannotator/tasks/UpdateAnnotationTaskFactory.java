@@ -1,9 +1,8 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.presentation.annotations.AnnotationManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.presentation.annotations.Annotation;
-import org.cytoscape.work.TaskFactory; 
+import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator; 
 
 /*
@@ -32,25 +31,21 @@ import org.cytoscape.work.TaskIterator;
 
 public class UpdateAnnotationTaskFactory implements TaskFactory {
 
-  private final AnnotationManager annotationManager;
-	private final CyNetworkViewManager viewManager;
 	private final Class<? extends Annotation> type;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public UpdateAnnotationTaskFactory (
-      final Class<? extends Annotation> type,
-			final AnnotationManager annotationManager,
-			final CyNetworkViewManager viewManager
-  ) {
-    this.type = type;
-    this.annotationManager = annotationManager;
-		this.viewManager = viewManager;
-  }
+	public UpdateAnnotationTaskFactory(Class<? extends Annotation> type, CyServiceRegistrar serviceRegistrar) {
+		this.type = type;
+		this.serviceRegistrar = serviceRegistrar;
+	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new UpdateAnnotationTask(type, annotationManager, viewManager));
-  }
+		return new TaskIterator(new UpdateAnnotationTask(type, serviceRegistrar));
+	}
 
-  @Override
-  public boolean isReady() { return true; }
+	@Override
+	public boolean isReady() {
+		return true;
+	}
 }
