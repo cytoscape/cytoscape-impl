@@ -21,7 +21,6 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
-import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.UIManager;
@@ -29,6 +28,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.TextAnnotationImpl;
+import org.cytoscape.ding.impl.cyannotator.utils.EnhancedSlider;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.swing.ColorButton;
@@ -78,7 +78,7 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 	private ColorButton textColorButton;
 	
 	private JPanel rotationPanel;
-	private JSlider rotationSlider;
+	private EnhancedSlider rotationSlider;
 	
 	private final boolean rotatable;
 
@@ -167,7 +167,7 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 			annotation.setTextColor(getTextColorButton().getColor());
 			
 			if (rotatable)
-				annotation.setRotation((double) getRotationSlider().getValue());
+				annotation.setRotation(getRotationSlider().getValue());
 		}
 	}
 	
@@ -362,7 +362,7 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 					.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addGroup(layout.createSequentialGroup()
 							.addComponent(rotationLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-							.addComponent(getRotationSlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getRotationSlider(), 140, 180, 220)
 					)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
@@ -379,7 +379,7 @@ public class TextAnnotationEditor extends AbstractAnnotationEditor<TextAnnotatio
 		return rotationPanel;
 	}
 	
-	private JSlider getRotationSlider() {
+	private EnhancedSlider getRotationSlider() {
 		if (rotationSlider == null) {
 			rotationSlider = createRotationSlider();
 		}

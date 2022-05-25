@@ -8,10 +8,10 @@ import java.util.Objects;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JSlider;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.ding.impl.cyannotator.utils.EnhancedSlider;
 import org.cytoscape.ding.impl.undo.AnnotationEdit;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.presentation.annotations.Annotation;
@@ -121,7 +121,7 @@ public abstract class AbstractAnnotationEditor<T extends Annotation> extends JPa
 	 * so the change is applied to the current annotation right away.
 	 */
 	protected void apply(boolean postUndo) {
-		
+		// Ignore here...
 	}
 	
 	protected void apply() {
@@ -129,7 +129,7 @@ public abstract class AbstractAnnotationEditor<T extends Annotation> extends JPa
 			applying = true;
 			
 			AnnotationEdit edit = null;
-			if(annotation instanceof AbstractAnnotation) {
+			if (annotation instanceof AbstractAnnotation) {
 				String label = factory == null ? "Edit Annotation" : "Edit " + factory.getName() + " Annotation";
 				var re = ((AbstractAnnotation) annotation).getRenderingEngine();
 				edit = new AnnotationEdit(label, re);
@@ -138,7 +138,7 @@ public abstract class AbstractAnnotationEditor<T extends Annotation> extends JPa
 			try {
 				apply(annotation);
 				
-				if(edit != null) {
+				if (edit != null) {
 					edit.post();
 				}
 			} finally {
@@ -167,14 +167,10 @@ public abstract class AbstractAnnotationEditor<T extends Annotation> extends JPa
 	/**
 	 * The the slider's ChangeEvent will call {@link #apply()} by default. 
 	 */
-	protected JSlider createRotationSlider() {
-		var slider = new JSlider(-180, 180, 0);
-		slider.setMajorTickSpacing(90);
-		slider.setMinorTickSpacing(45);
-		slider.setPaintTicks(true);
-		slider.setPaintLabels(true);
+	protected EnhancedSlider createRotationSlider() {
+		var slider = new EnhancedSlider(-180, 180, 0, 90, 45);
 		slider.addChangeListener(evt -> apply());
-
+		
 		return slider;
 	}
 }
