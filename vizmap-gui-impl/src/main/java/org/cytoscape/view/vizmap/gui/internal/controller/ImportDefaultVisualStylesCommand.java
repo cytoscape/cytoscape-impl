@@ -63,7 +63,7 @@ public class ImportDefaultVisualStylesCommand extends SimpleCommand {
 			public void allFinished(FinishStatus finishStatus) {
 				proxy.setIgnoreStyleEvents(false);
 				proxy.loadVisualStyles();
-				proxy.setCurrentVisualStyle(servicesUtil.get(VisualMappingManager.class).getDefaultVisualStyle());
+				proxy.setCurrentNetworkVisualStyle(servicesUtil.get(VisualMappingManager.class).getDefaultVisualStyle());
 			}
 		});
 	}

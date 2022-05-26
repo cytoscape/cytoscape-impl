@@ -1,13 +1,7 @@
 package org.cytoscape.view.vizmap.gui.internal;
 
 import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_NETWORK_AND_VIEW;
-import static org.cytoscape.work.ServiceProperties.EDGE_EDIT_MENU;
-import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
-import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
-import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
-import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
-import static org.cytoscape.work.ServiceProperties.TITLE;
+import static org.cytoscape.work.ServiceProperties.*;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -38,8 +32,6 @@ import org.cytoscape.view.vizmap.gui.internal.model.MappingFunctionFactoryProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.PropsProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
 import org.cytoscape.view.vizmap.gui.internal.task.ClearAllBendsForThisEdgeTaskFactory;
-import org.cytoscape.view.vizmap.gui.internal.task.ClearColumnStyleTask;
-import org.cytoscape.view.vizmap.gui.internal.task.ClearColumnStyleTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.CopyVisualStyleTask;
 import org.cytoscape.view.vizmap.gui.internal.task.CopyVisualStyleTaskFactory;
 import org.cytoscape.view.vizmap.gui.internal.task.CreateLegendTask;
@@ -260,18 +252,6 @@ public class CyActivator extends AbstractCyActivator {
 			registerAllServices(bc, factory, props);
 		}
 
-		// Table style tasks
-		// -------------------------------------------------------------------------------------------------------------
-		{
-			var factory = new ClearColumnStyleTaskFactory(servicesUtil);
-			var props = new Properties();
-			props.setProperty(ServicePropertiesUtil.SERVICE_TYPE, "vizmapUI");
-			props.setProperty(ServicePropertiesUtil.TITLE, ClearColumnStyleTask.TITLE + "...");
-			props.setProperty(ServicePropertiesUtil.MENU_ID, ServicePropertiesUtil.TABLE_MAIN_MENU);
-			props.setProperty(ServicePropertiesUtil.GRAVITY, "1.0");
-			registerAllServices(bc, factory, props);
-		}
-		
 		// Visual Styles Panel Context Menu
 		// -------------------------------------------------------------------------------------------------------------
 		// Edit sub-menu
@@ -362,8 +342,6 @@ public class CyActivator extends AbstractCyActivator {
 												vizMapperMenuMediator,
 												servicesUtil);
 		
-		var currentTableService = new CurrentTableService(servicesUtil, vizMapperMediator, attributeSetProxy, vizMapperProxy);
-		registerService(bc, currentTableService, CurrentTableService.class);
 		
 		
 		// Register Services
@@ -374,6 +352,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, propsProxy);
 		
 		registerAllServices(bc, vizMapperMediator);
+		registerService(bc, vizMapperMediator, VizMapperMediator.class); 
 		
 		// MKTODO the table mediator needs to register for some of these
 		registerServiceListener(bc, vizMapperMediator::onCyActionRegistered, vizMapperMediator::onCyActionUnregistered, CyAction.class);

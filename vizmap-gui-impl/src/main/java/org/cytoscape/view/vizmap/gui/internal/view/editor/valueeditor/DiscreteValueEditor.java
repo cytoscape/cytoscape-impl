@@ -34,14 +34,15 @@ import javax.swing.WindowConstants;
 
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.VisualPropertyValue;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyValueEditor;
-import org.cytoscape.view.vizmap.gui.internal.CurrentTableService;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.util.VisualPropertyUtil;
+import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMediator;
 import org.cytoscape.view.vizmap.gui.internal.view.cellrenderer.FontCellRenderer;
 import org.cytoscape.view.vizmap.gui.internal.view.cellrenderer.IconCellRenderer;
 import org.jdesktop.swingx.JXList;
@@ -149,7 +150,7 @@ public class DiscreteValueEditor<T> implements VisualPropertyValueEditor<T> {
 		if (vp == null)
 			return values;
 		
-		var lexicon = servicesUtil.get(CurrentTableService.class).getCurrentVisualLexicon(vp);
+		var lexicon = servicesUtil.get(VizMapperMediator.class).getCurrentVisualPropertySheetItem().getModel().getVisualLexicon();
 		
 		return (Set<T>) lexicon.getSupportedValueRange(vp);
 	}
@@ -316,8 +317,8 @@ public class DiscreteValueEditor<T> implements VisualPropertyValueEditor<T> {
 			
 			iconMap.clear();
 			
-			var currentTableService = servicesUtil.get(CurrentTableService.class);
-			var engine = currentTableService.getRenderingEngine(visualProperty);
+			// MKTODO how to get the rendering engine???
+			RenderingEngine<?> engine = null;
 			
 			// Current engine is not ready yet.
 			if (engine != null) {

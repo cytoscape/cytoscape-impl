@@ -292,7 +292,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		} else {
 			int rowCount = getPropSheetTbl().getRowCount();
 			int[] selectedRows = getPropSheetTbl().getSelectedRows();
-			vizMapPropertyBuilder.createMappingProperties(mapping, getPropSheetPnl(), mappingFactory);
+			vizMapPropertyBuilder.createMappingProperties(mapping, getPropSheetPnl(), mappingFactory, model.getTableType());
 			
 			if (selectedRows != null && selectedRows.length > 0 && getPropSheetTbl().getRowCount() == rowCount) {
 				// Keep the same rows selected
@@ -527,11 +527,11 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			if (mapping == null) {
 				// Create the properties for a new visual mapping
 				var vp = (VisualProperty<?>) model.getVisualProperty();
-				vizMapPropertyBuilder.buildProperty(vp, propSheetPnl);
+				vizMapPropertyBuilder.buildProperty(vp, model.getTableType(), propSheetPnl);
 			} else {
 				// There is already a visual mapping for this style's property
 				var mappingFactory = vizMapPropertyBuilder.getMappingFactory(mapping);
-				vizMapPropertyBuilder.buildProperty(mapping, propSheetPnl, mappingFactory);
+				vizMapPropertyBuilder.buildProperty(mapping, propSheetPnl, mappingFactory, model.getTableType());
 				updateMappingRowHeight();
 			}
 			

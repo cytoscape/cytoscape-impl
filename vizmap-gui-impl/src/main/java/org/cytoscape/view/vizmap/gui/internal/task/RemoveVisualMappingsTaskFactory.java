@@ -73,7 +73,7 @@ public class RemoveVisualMappingsTaskFactory extends AbstractTaskFactory {
 		if (gui instanceof VizMapperMainPanel) {
 			final VisualPropertySheet vpSheet = ((VizMapperMainPanel)gui).getSelectedVisualPropertySheet();
 			
-			if (vpSheet.getModel().getTargetDataType() != CyNetwork.class) {
+			if (vpSheet.getModel().getLexiconType() != CyNetwork.class) {
 				for (final VisualPropertySheetItem<?> item : vpSheet.getSelectedItems()) {
 					if (item.getModel().getVisualMappingFunction() != null)
 						return true;

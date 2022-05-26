@@ -97,7 +97,7 @@ public class PropertySheetPanel {
 		if (sheet == null)
 			return;
 		
-		var type = sheet.getModel().getTargetDataType();
+		var type = sheet.getModel().getLexiconType();
 		vpSheetMap.put(type, sheet);
 		
 		// Make sure the tabs are always in the correct order
@@ -105,13 +105,13 @@ public class PropertySheetPanel {
 		
 		var sheets = new ArrayList<VisualPropertySheet>(vpSheetMap.values());
 		sheets.sort((s1, s2) -> {
-			int o1 = tabOrder.get(s1.getModel().getTargetDataType());
-			int o2 = tabOrder.get(s2.getModel().getTargetDataType());
+			int o1 = tabOrder.get(s1.getModel().getLexiconType());
+			int o2 = tabOrder.get(s2.getModel().getLexiconType());
 			return Integer.compare(o1, o2);
 		});
 		
 		for (var s : sheets) {
-			var icon = s.getModel().getTargetDataType() == CyColumn.class ? tableIcon : null;
+			var icon = s.getModel().getLexiconType() == CyColumn.class ? tableIcon : null;
 			getPropertiesPn().addTab(s.getModel().getTitle(), icon, s);
 		}
 	}

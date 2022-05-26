@@ -16,7 +16,6 @@ import javax.swing.JOptionPane;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentRenderingEngineListener;
 import org.cytoscape.application.swing.CyColumnPresentationManager;
-import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -39,6 +38,7 @@ import org.cytoscape.view.vizmap.gui.editor.ListEditor;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyValueEditor;
+import org.cytoscape.view.vizmap.gui.internal.GraphObjectType;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.MappingFunctionFactoryProxy;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
@@ -121,16 +121,16 @@ public class EditorManagerImpl implements EditorManager {
 		final CyColumnPresentationManager presMgr = servicesUtil.get(CyColumnPresentationManager.class);
 		
 		// Create attribute (Column Name) editors
-		var nodeAttrEditor = new AttributeComboBoxPropertyEditor(CyNode.class, attrProxy, appMgr, netMgr, presMgr);
-		var edgeAttrEditor = new AttributeComboBoxPropertyEditor(CyEdge.class, attrProxy, appMgr, netMgr, presMgr);
-		var networkAttrEditor = new AttributeComboBoxPropertyEditor(CyNetwork.class, attrProxy, appMgr, netMgr, presMgr);
-		var columnAttrEditor = new AttributeComboBoxPropertyEditor(CyColumn.class, attrProxy, appMgr, netMgr, presMgr);
+		var nodeAttrEditor = new AttributeComboBoxPropertyEditor(GraphObjectType.node(), attrProxy, appMgr, netMgr, presMgr);
+		var edgeAttrEditor = new AttributeComboBoxPropertyEditor(GraphObjectType.edge(), attrProxy, appMgr, netMgr, presMgr);
+		var networkAttrEditor = new AttributeComboBoxPropertyEditor(GraphObjectType.network(), attrProxy, appMgr, netMgr, presMgr);
+//		var columnAttrEditor = new AttributeComboBoxPropertyEditor(CyColumn.class, attrProxy, appMgr, netMgr, presMgr);
 		
 		attrComboBoxEditors = new HashMap<>();
 		attrComboBoxEditors.put(nodeAttrEditor.getTargetObjectType(), nodeAttrEditor);
 		attrComboBoxEditors.put(edgeAttrEditor.getTargetObjectType(), edgeAttrEditor);
 		attrComboBoxEditors.put(networkAttrEditor.getTargetObjectType(), networkAttrEditor);
-		attrComboBoxEditors.put(columnAttrEditor.getTargetObjectType(), columnAttrEditor);
+//		attrComboBoxEditors.put(columnAttrEditor.getTargetObjectType(), columnAttrEditor);
 
 		// Create Mapping Type editor
 		mappingTypeEditor = new MappingTypeComboBoxPropertyEditor(mappingFactoryProxy);

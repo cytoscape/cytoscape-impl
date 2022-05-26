@@ -299,7 +299,7 @@ public class VisualPropertySheet extends JPanel{
 			toolBarPnl.add(getVpsBtn());
 			toolBarPnl.add(Box.createHorizontalGlue());
 			
-			if (model.getTargetDataType() != CyNetwork.class) {
+			if (model.getLexiconType() != CyNetwork.class) {
 				toolBarPnl.add(getExpandAllBtn());
 				toolBarPnl.add(getCollapseAllBtn());
 			}
@@ -319,13 +319,13 @@ public class VisualPropertySheet extends JPanel{
 			defLbl.setToolTipText("Default Value");
 			vpListHeaderPnl.add(defLbl);
 			
-			if (model.getTargetDataType() != CyNetwork.class) {
+			if (model.getLexiconType() != CyNetwork.class) {
 				final JLabel mapLbl = new HeaderLabel("Map.");
 				mapLbl.setToolTipText("Mapping");
 				vpListHeaderPnl.add(mapLbl);
 			}
 			
-			if (model.getTargetDataType() != CyColumn.class) {
+			if (model.getLexiconType() != CyColumn.class) {
 				final JLabel bypassLbl = new HeaderLabel("Byp.");
 				bypassLbl.setToolTipText("Bypass");
 				vpListHeaderPnl.add(bypassLbl);
@@ -339,8 +339,7 @@ public class VisualPropertySheet extends JPanel{
 	
 	private JScrollPane getVpListScr() {
 		if (vpListScr == null) {
-			vpListScr = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-					JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			vpListScr = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 			// Make redrawing the icons less expensive when scrolling
 			vpListScr.getVerticalScrollBar().setUnitIncrement(8);
 			// Try to fit sheet items to viewport's width when the scroll bar becomes visible
@@ -482,7 +481,7 @@ public class VisualPropertySheet extends JPanel{
 			final VisualLexiconNode curNode = queue.poll();
 			final VisualProperty<?> vp = curNode.getVisualProperty();
 			
-			if (vp.getTargetDataType() == model.getTargetDataType()) {
+			if (vp.getTargetDataType() == model.getLexiconType()) {
 				final Collection<VisualLexiconNode> children = curNode.getChildren();
 				nextNodes.addAll(children);
 				
@@ -567,7 +566,7 @@ public class VisualPropertySheet extends JPanel{
 	}
 	
 	private void updateCollapseExpandButtons() {
-		if (doNotUpdateCollapseExpandButtons || model.getTargetDataType() == CyNetwork.class)
+		if (doNotUpdateCollapseExpandButtons || model.getLexiconType() == CyNetwork.class)
 			return;
 		
 		boolean enableCollapse = false;

@@ -71,6 +71,9 @@ public class ApplyToColumnHandler extends AbstractApplyHandler<CyColumn> {
 	
 	@Override
 	public void apply(final CyRow row, final View<CyColumn> view) {
+		if(view == null)
+			return;
+		
 		if (updateDependencyMaps)
 			updateDependencyMaps();
 		

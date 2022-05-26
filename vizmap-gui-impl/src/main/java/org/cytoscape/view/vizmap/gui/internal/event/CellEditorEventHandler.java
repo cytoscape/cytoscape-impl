@@ -9,8 +9,10 @@ import java.util.TreeSet;
 import javax.swing.JOptionPane;
 import javax.swing.event.TableModelListener;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
@@ -18,7 +20,7 @@ import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.event.VizMapEventHandler;
-import org.cytoscape.view.vizmap.gui.internal.CurrentTableService;
+import org.cytoscape.view.vizmap.gui.internal.GraphObjectType;
 import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSet;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
@@ -108,21 +110,18 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		if (Objects.equals(newVal, oldVal))
 			return;
 		
-		var currentTableService = servicesUtil.get(CurrentTableService.class);
-
-		var vpSheetItem = currentTableService.getCurrentVisualPropertySheetItem();
+		var vpSheetItem = vizMapperMediator.getCurrentVisualPropertySheetItem();
 		var propSheetPnl = vpSheetItem != null ? vpSheetItem.getPropSheetPnl() : null;
-		
 		if (propSheetPnl == null)
 			return;
 		
-		var prop = currentTableService.getCurrentVizMapperProperty();
-		
+		VizMapperProperty<?,?,?> prop = vizMapperMediator.getCurrentVizMapperProperty();
 		if (prop == null)
 			return;
 		
 		var vp = vpSheetItem.getModel().getVisualProperty();
 		var mapping = vpSheetItem.getModel().getVisualMappingFunction();
+		GraphObjectType graphObjectType = vpSheetItem.getModel().getTableType();
 		
 		if (prop.getCellType() == CellType.DISCRETE && mapping instanceof DiscreteMapping) {
 			// Discrete mapping value changed:
@@ -160,8 +159,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 	
 				if (vp != null && controllingAttrName != null 
 						&& (newVal == null || newVal instanceof VisualMappingFunctionFactory)) {
-					newMapping = switchMappingType(prop, vp, (VisualMappingFunctionFactory) oldVal, 
-							(VisualMappingFunctionFactory) newVal, controllingAttrName.toString(), propSheetPnl);
+					newMapping = switchMappingType(prop, vp, graphObjectType, (VisualMappingFunctionFactory) oldVal, (VisualMappingFunctionFactory) newVal, controllingAttrName.toString(), propSheetPnl);
 					vpSheetItem.getModel().setVisualMappingFunction(newMapping);
 					
 					undoName = "Set Mapping Type";
@@ -186,7 +184,6 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private VisualMappingFunction<?, ?> switchColumn(final VisualMappingFunctionFactory factory,
 													 final AttributeComboBoxPropertyEditor editor,
 													 final VizMapperProperty<?, ?, ?> prop,
@@ -196,8 +193,12 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		final VisualProperty<?> vp = (VisualProperty<?>) prop.getKey();
 		VisualMappingFunction<?, ?> mapping = currentStyle.getVisualMappingFunction(vp);
 
-		var currentTableService = servicesUtil.get(CurrentTableService.class);
-		CyTable table = currentTableService.getCurrentTable((Class<? extends CyIdentifiable>)editor.getTargetObjectType());
+		// Ignore if not compatible.
+		var netTblMgr = servicesUtil.get(CyNetworkTableManager.class);
+		var appMgr = servicesUtil.get(CyApplicationManager.class);
+		var type = editor.getGraphObjectType();
+		
+		final CyTable table = netTblMgr.getTable(appMgr.getCurrentNetwork(), type.type(), CyNetwork.DEFAULT_ATTRS);
 		final CyColumn column = table.getColumn(columnName);
 		
 		if (column == null) {
@@ -223,7 +224,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 				return mapping;
 			}
 			
-			return switchMappingType(prop, vp, factory, factory, columnName, propertySheetPanel);
+			return switchMappingType(prop, vp, type, factory, factory, columnName, propertySheetPanel);
 		}
 		
 		return mapping;
@@ -231,6 +232,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 
 	private VisualMappingFunction<?, ?> switchMappingType(final VizMapperProperty<?, ?, ?> prop,
 														  final VisualProperty<?> vp,
+														  final GraphObjectType targetType,
 														  final VisualMappingFunctionFactory oldFactory,
 														  final VisualMappingFunctionFactory newFactory,
 														  final String controllingAttrName,
@@ -241,12 +243,17 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		VisualMappingFunction<?, ?> newMapping = mapping;
 		final Class<?> newMappingType = newFactory.getMappingFunctionType();
 		
-		if (mapping == null || mapping.getClass() != newMappingType 
-				|| !mapping.getMappingColumnName().equals(controllingAttrName)) {
+		if (mapping == null || mapping.getClass() != newMappingType || !mapping.getMappingColumnName().equals(controllingAttrName)) {
 
-			var currentTableService = servicesUtil.get(CurrentTableService.class);
-			final AttributeSet attrSet = currentTableService.getAttributeSet(vp);
+			final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
+			final CyNetwork currentNet = appMgr.getCurrentNetwork();
+			if (currentNet == null)
+				return newMapping;
+				
+			// Mapping does not exist. Need to create new one.
+			final AttributeSet attrSet = attrProxy.getAttributeSet(currentNet, targetType);
 			Class<?> attributeDataType = attrSet.getAttrMap().get(controllingAttrName);
+			
 
 			if (attributeDataType == null) {
 				JOptionPane.showMessageDialog(null, "The current table does not have the selected column (\""
@@ -276,7 +283,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 			
 			// Keep old mapping values if the new mapping has the same type
 			if (oldFactory != null && oldFactory.getMappingFunctionType() == newMappingType)
-				copyMappingValues(mapping, newMapping);
+				copyMappingValues(mapping, newMapping, targetType);
 		}
 
 		// Disable listeners to avoid unnecessary updates
@@ -286,7 +293,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		for (final TableModelListener tm : modelListeners)
 			model.removeTableModelListener(tm);
 
-		vizMapPropertyBuilder.createMappingProperties(newMapping, propertySheetPanel, newFactory);
+		vizMapPropertyBuilder.createMappingProperties(newMapping, propertySheetPanel, newFactory, targetType);
 		
 		// Restore listeners
 		for (final TableModelListener tm : modelListeners)
@@ -320,14 +327,11 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private void copyMappingValues(final VisualMappingFunction<?, ?> source, final VisualMappingFunction<?, ?> target) {
+	private void copyMappingValues(final VisualMappingFunction<?, ?> source, final VisualMappingFunction<?, ?> target, GraphObjectType graphObjecType) {
 		if (source instanceof ContinuousMapping && target instanceof ContinuousMapping) {
+			final CyNetwork curNet = servicesUtil.get(CyApplicationManager.class).getCurrentNetwork();
 			
-			final VisualProperty<?> vp = source.getVisualProperty();
-			var currentTableService = servicesUtil.get(CurrentTableService.class);
-			final CyTable dataTable = currentTableService.getCurrentTable(vp.getTargetDataType());
-			
-			if (dataTable != null) {
+			if (curNet != null) {
 				final ContinuousMapping cm1 = (ContinuousMapping<?, ?>) source;
 				final ContinuousMapping cm2 = (ContinuousMapping<?, ?>) target;
 				final List<ContinuousMappingPoint<?, ?>> points1 = cm1.getAllPoints();
@@ -345,6 +349,8 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 						return; // Do not copy!
 				}
 				
+				final VisualProperty<?> vp = source.getVisualProperty();
+				final CyTable dataTable = curNet.getTable(graphObjecType.type(), CyNetwork.DEFAULT_ATTRS);
 				final CyColumn col = dataTable.getColumn(target.getMappingColumnName());
 
 				if (col == null)

@@ -3,12 +3,11 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor;
 import java.awt.Color;
 import java.awt.Paint;
 
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
-import org.cytoscape.view.vizmap.gui.internal.CurrentTableService;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMediator;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 
 /*
@@ -47,11 +46,9 @@ public class GradientEditor extends AbstractContinuousMappingEditor<Double, Colo
 		if (value instanceof ContinuousMapping == false)
 			throw new IllegalArgumentException("Value should be ContinuousMapping: this is " + value);
 		
-
 		mapping = (ContinuousMapping<Double, Color>) value;
-		Class<? extends CyIdentifiable> type = (Class<? extends CyIdentifiable>) mapping.getVisualProperty().getTargetDataType();
 		
-		CyTable attr = servicesUtil.get(CurrentTableService.class).getCurrentTable(type);
+		CyTable attr = servicesUtil.get(VizMapperMediator.class).getCurrentMappingTable();
 		if(attr == null)
 			return;
 		

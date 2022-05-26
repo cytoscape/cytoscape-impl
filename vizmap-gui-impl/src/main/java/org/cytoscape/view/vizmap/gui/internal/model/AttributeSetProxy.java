@@ -49,6 +49,7 @@ import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
+import org.cytoscape.view.vizmap.gui.internal.GraphObjectType;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.puremvc.java.multicore.patterns.proxy.Proxy;
@@ -93,7 +94,7 @@ public class AttributeSetProxy extends Proxy
 		return currentMappingType;
 	}
 	
-	public AttributeSet getAttributeSet(final CyNetwork network, final Class<? extends CyIdentifiable> objectType) {
+	public AttributeSet getAttributeSet(final CyNetwork network, GraphObjectType objectType) {
 		Objects.requireNonNull(network);
 		Objects.requireNonNull(objectType);
 
@@ -101,12 +102,12 @@ public class AttributeSetProxy extends Proxy
 		if (attrSetMap == null)
 			throw new NullPointerException("No such network registered in this mamager: " + network);
 
-		AttributeSet attributeSet = attrSetMap.get(objectType);
+		AttributeSet attributeSet = attrSetMap.get(objectType.type());
 		
 		// Remove the attributes that don't make sense for the current mapping type
 		if (currentMappingType == ContinuousMapping.class) {
 			// Create another attribute set first
-			final AttributeSet newAttributeSet = new AttributeSet(objectType);
+			final AttributeSet newAttributeSet = new AttributeSet(objectType.type());
 			
 			// Add only the numeric attributes
 			for (final Map.Entry<String, Class<?>> entry : attributeSet.getAttrMap().entrySet()) {

@@ -42,12 +42,11 @@ import javax.swing.UIManager;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyColumnPresentationManager;
-import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.view.vizmap.gui.editor.ListEditor;
+import org.cytoscape.view.vizmap.gui.internal.GraphObjectType;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSet;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
 
@@ -59,7 +58,7 @@ import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
  */
 public final class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEditor implements ListEditor {
 
-	private final Class<? extends CyIdentifiable> graphObjectType;
+	private final GraphObjectType graphObjectType;
 	private final AttributeSetProxy attrProxy;
 	
 	private final CyNetworkManager networkManager;
@@ -67,7 +66,8 @@ public final class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEdi
 
 	private Map<String, Class<?>> currentColumnMap = new HashMap<>();
 
-	public AttributeComboBoxPropertyEditor(final Class<? extends CyIdentifiable> type,
+	// type needs to be a network object type, not CyColumn.class
+	public AttributeComboBoxPropertyEditor(final GraphObjectType type,
 										   final AttributeSetProxy attrProxy,
 										   final CyApplicationManager appManager,
 										   final CyNetworkManager networkManager,
@@ -77,46 +77,20 @@ public final class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEdi
 		this.networkManager = networkManager;
 		this.columnPresentationManager = columnPresentationManager;
 
-		final JComboBox comboBox = (JComboBox) editor;
+		JComboBox comboBox = (JComboBox) editor;
 		comboBox.setRenderer(new AttributeComboBoxCellRenderer());
 		comboBox.addActionListener(e -> {
-			if(type == CyColumn.class)
-				updateComboBox(appManager.getCurrentTable());
-			else
-				updateComboBox(appManager.getCurrentNetwork());
+			updateComboBox(appManager.getCurrentNetwork());
 		});
 	}
 
 	@Override
 	public Class<?> getTargetObjectType() {
-		return graphObjectType;
+		return graphObjectType.type();
 	}
 	
-	
-	private void updateComboBox(CyTable table) {
-		JComboBox box = (JComboBox) editor;
-		Object selected = box.getSelectedItem();
-		box.removeAllItems();
-		
-		if(table == null)
-			return;
-		
-		Collator collator = Collator.getInstance(Locale.getDefault()); // For locale-specific sorting
-		SortedSet<String> sortedName = new TreeSet<String>(collator);
-		
-		AttributeSet currentSet = attrProxy.getAttributeSet(table);
-		currentColumnMap = currentSet.getAttrMap();
-		
-		for (Entry<String, Class<?>> entry: currentSet.getAttrMap().entrySet()) {
-			if (columnIsAllowed(entry.getKey(), entry.getValue()))
-				sortedName.add(entry.getKey());
-		}
-		
-		for (String attrName : sortedName)
-			box.addItem(attrName);
-
-		// Add new name if not in the list.
-		box.setSelectedItem(selected);
+	public GraphObjectType getGraphObjectType() {
+		return graphObjectType;
 	}
 	
 	
@@ -191,7 +165,7 @@ public final class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEdi
 				this.setFocusable(true);
 				this.setToolTipText(
 						"<html>" +
-						"Column: " + value.toString() + "<br>" +
+						"Source Column: " + value.toString() + "<br>" +
 						"Data Type: " + currentColumnMap.get(valueString).getSimpleName() +
 						"</html>");
 			}

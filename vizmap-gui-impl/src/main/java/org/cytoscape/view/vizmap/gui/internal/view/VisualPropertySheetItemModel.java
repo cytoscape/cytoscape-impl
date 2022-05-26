@@ -12,11 +12,14 @@ import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.gui.internal.GraphObjectType;
 import org.cytoscape.view.vizmap.gui.internal.model.LockedValueState;
 
 public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 
 	private final VisualProperty<T> visualProperty;
+	private final GraphObjectType tableType;
+	private final Class<? extends CyIdentifiable> lexiconType;
 	private VisualPropertyDependency<T> dependency;
 	private final String title;
 	private final VisualStyle style;
@@ -31,6 +34,8 @@ public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 	// ==[ CONSTRUCTORS ]===============================================================================================
 
 	public VisualPropertySheetItemModel(final VisualProperty<T> visualProperty,
+										final GraphObjectType tableType,
+										final Class<? extends CyIdentifiable> lexiconType,
 										final VisualStyle style,
 										final RenderingEngine<?> engine,
 										final VisualLexicon lexicon) {
@@ -39,6 +44,8 @@ public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 		this.style = Objects.requireNonNull(style, "'style' must not be null");
 		this.engine = Objects.requireNonNull(engine);
 		this.lexicon = Objects.requireNonNull(lexicon, "'lexicon' must not be null");
+		this.tableType = Objects.requireNonNull(tableType);
+		this.lexiconType = Objects.requireNonNull(lexiconType);
 
 		defaultValue = style.getDefaultValue(visualProperty);
 		setVisualMappingFunction(style.getVisualMappingFunction(visualProperty));
@@ -48,6 +55,8 @@ public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 
 	public VisualPropertySheetItemModel(final VisualPropertyDependency<T> dependency,
 										final VisualStyle style,
+										final GraphObjectType tableType,
+										final Class<? extends CyIdentifiable> lexiconType,
 										final RenderingEngine<?> engine,
 										final VisualLexicon lexicon) {
 
@@ -56,6 +65,8 @@ public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 		this.style = Objects.requireNonNull(style, "'style' must not be null");
 		this.engine = Objects.requireNonNull(engine);
 		this.lexicon = Objects.requireNonNull(lexicon, "'lexicon' must not be null");
+		this.tableType = Objects.requireNonNull(tableType);
+		this.lexiconType = Objects.requireNonNull(lexiconType);
 
 		title = dependency.getDisplayName();
 	}
@@ -65,7 +76,15 @@ public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 	public VisualProperty<T> getVisualProperty() {
 		return visualProperty;
 	}
+	
+	public GraphObjectType getTableType() {
+		return tableType;
+	}
 
+	public Class<? extends CyIdentifiable> getLexiconType() {
+		return lexiconType;
+	}
+	
 	public VisualPropertyDependency<T> getVisualPropertyDependency() {
 		return dependency;
 	}

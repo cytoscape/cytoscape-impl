@@ -2,11 +2,7 @@ package org.cytoscape.view.vizmap.gui.internal.view;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
-import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE_O;
-import static org.cytoscape.util.swing.IconManager.ICON_EDIT;
-import static org.cytoscape.util.swing.IconManager.ICON_SHARE_ALT_SQUARE;
-import static org.cytoscape.util.swing.IconManager.ICON_SQUARE_O;
-import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
+import static org.cytoscape.util.swing.IconManager.*;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
 import static org.cytoscape.view.vizmap.gui.internal.view.util.ViewUtil.invokeOnEDT;
@@ -470,7 +466,7 @@ public class VisualStyleSelector extends JPanel {
 						@Override
 						public void allFinished(FinishStatus finishStatus) {
 							var vmProxy = getProxy();
-							update(vmProxy.getVisualStyles(), vmProxy.getCurrentVisualStyle());
+							update(vmProxy.getVisualStyles(), vmProxy.getCurrentNetworkVisualStyle());
 						}
 					});
 				}).start();
@@ -558,7 +554,7 @@ public class VisualStyleSelector extends JPanel {
 		
 		if (allStyles != null && previewNetView != null) {
 			var vmProxy = (VizMapperProxy) servicesUtil.getProxy(VizMapperProxy.NAME);
-			var engineFactory = vmProxy.getRenderingEngineFactory(previewNetView);
+			var engineFactory = vmProxy.getNetworkRenderingEngineFactory(previewNetView);
 			
 			for (var vs : allStyles) {
 				var p = new JPanel();

@@ -8,7 +8,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
@@ -35,6 +34,7 @@ import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.DefaultViewEditor;
 import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
 import org.cytoscape.view.vizmap.gui.VizMapGUI;
+import org.cytoscape.view.vizmap.gui.internal.ColumnSpec;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.view.VisualStylePanelProvider.VisualStyleDropDownButton;
 
@@ -255,8 +255,8 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		getPropertiesPnl().addContextMenuItem(menuItem, gravity, insertSeparatorBefore, insertSeparatorAfter);
 	}
 	
-	public void updateColumns(Map<CyTable,List<CyColumn>> columnMap, CyColumn selectedCol) {
-		getColumnStylePnl().updateColumns(columnMap, selectedCol);
+	public void updateColumns(List<ColumnSpec> columns, ColumnSpec selectedCol) {
+		getColumnStylePnl().updateColumns(columns, selectedCol);
 	}
 	
 	private void init() {
@@ -274,7 +274,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			if (sheet == null)
 				return;
 			
-			var type = sheet.getModel().getTargetDataType();
+			var type = sheet.getModel().getLexiconType();
 			topPanel.removeAll();
 			
 			topPanel.add(getStylesPanelProvider().getComponent(), BorderLayout.NORTH);

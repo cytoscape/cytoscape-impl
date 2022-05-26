@@ -1,8 +1,11 @@
 package org.cytoscape.view.vizmap.internal;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -11,6 +14,9 @@ import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.TableViewRenderer;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
@@ -29,18 +35,17 @@ public class TableVisualMappingManagerImpl implements TableVisualMappingManager,
 	
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
-	
-	private final Map<View<CyColumn>, VisualStyle> column2VisualStyleMap;
 	private final CyServiceRegistrar serviceRegistrar;
-	
 	private final Object lock = new Object();
+	
+	private final Map<View<CyColumn>, VisualStyle> column2VisualStyleMap = new WeakHashMap<>();
+	private final Map<VisualStyle,Map<String,VisualStyle>> associatedNodeStyles = new WeakHashMap<>();
+	private final Map<VisualStyle,Map<String,VisualStyle>> associatedEdgeStyles = new WeakHashMap<>();
 
 	
 	public TableVisualMappingManagerImpl(final VisualStyleFactory factory, final CyServiceRegistrar serviceRegistrar) {
 		if (serviceRegistrar == null)
 			throw new NullPointerException("'serviceRegistrar' cannot be null");
-
-		this.column2VisualStyleMap = new WeakHashMap<>();
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
@@ -72,9 +77,7 @@ public class TableVisualMappingManagerImpl implements TableVisualMappingManager,
 	
 	@Override
 	public void setVisualStyle(View<CyColumn> colView, VisualStyle vs) {
-		if (colView == null)
-			throw new NullPointerException("Column view is null.");
-
+		Objects.requireNonNull(colView, "Column view is null.");
 		boolean changed = false;
 
 		synchronized (lock) {
@@ -91,6 +94,52 @@ public class TableVisualMappingManagerImpl implements TableVisualMappingManager,
 			eventHelper.fireEvent(new ColumnVisualStyleSetEvent(this, vs, colView));
 		}
 	}
+	
+	
+	private Map<VisualStyle,Map<String,VisualStyle>> getAssociatedStyleMap(Class<? extends CyIdentifiable> tableType) {
+		if(tableType == CyNode.class)
+			return associatedNodeStyles;
+		else if(tableType == CyEdge.class)
+			return associatedEdgeStyles;
+		else
+			throw new IllegalArgumentException("tableType is not a supported type, got: " + tableType);
+	}
+	
+	
+	public void setAssociatedVisualStyle(VisualStyle networkVisualStyle, Class<? extends CyIdentifiable> tableType, String colName, VisualStyle columnVisualStyle) {
+		Objects.requireNonNull(networkVisualStyle, "networkVisualStyle is null");
+		Objects.requireNonNull(tableType, "tableType is null");
+		Objects.requireNonNull(colName, "colName is null");
+		
+		var styleMap = getAssociatedStyleMap(tableType);
+		boolean changed = false;
+
+		synchronized (lock) {
+			var networkAssociatedStyles = styleMap.computeIfAbsent(networkVisualStyle, k -> new HashMap<>());
+			
+			if (columnVisualStyle == null) {
+				changed = networkAssociatedStyles.remove(colName) != null;
+			} else {
+				var previousStyle = networkAssociatedStyles.put(colName, columnVisualStyle);
+				changed = !columnVisualStyle.equals(previousStyle);
+			}
+		}
+		
+		if (changed) {
+			CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+			eventHelper.fireEvent(new ColumnVisualStyleSetEvent(this, columnVisualStyle, null));  // MKTODO may need a new event
+		}
+	}
+	
+	
+	public Map<String,VisualStyle> getAssociatedColumnVisualStyles(VisualStyle networkVisualStyle, Class<? extends CyIdentifiable> tableType) {
+		var styleMap = getAssociatedStyleMap(tableType);
+		Map<String, VisualStyle> associatedStyles = styleMap.get(networkVisualStyle);
+		if(associatedStyles == null)
+			return Collections.emptyMap();
+		return Collections.unmodifiableMap(associatedStyles);
+	}
+	
 
 	@Override
 	public Set<VisualStyle> getAllVisualStyles() {
