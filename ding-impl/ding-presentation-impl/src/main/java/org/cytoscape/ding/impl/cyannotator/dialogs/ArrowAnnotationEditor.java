@@ -25,11 +25,11 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
-import javax.swing.JSlider;
 import javax.swing.LayoutStyle.ComponentPlacement;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl.ArrowType;
 import org.cytoscape.ding.impl.cyannotator.annotations.GraphicsUtilities;
+import org.cytoscape.ding.impl.cyannotator.utils.EnhancedSlider;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.swing.ColorButton;
@@ -70,7 +70,7 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 	private JLabel lineOpacityLabel;
 	
 	private ColorButton lineColorButton;
-	private JSlider lineOpacitySlider;
+	private EnhancedSlider lineOpacitySlider;
 	private JComboBox<Integer> lineWidthCombo;
 	private JPanel linePanel;
 	private JPanel arrowsPanel;
@@ -244,13 +244,9 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 		return lineColorButton;
 	}
 
-	private JSlider getLineOpacitySlider() {
+	private EnhancedSlider getLineOpacitySlider() {
 		if (lineOpacitySlider == null) {
-			lineOpacitySlider = new JSlider(0, 100, 100);
-			lineOpacitySlider.setMajorTickSpacing(100);
-			lineOpacitySlider.setMinorTickSpacing(25);
-			lineOpacitySlider.setPaintTicks(true);
-			lineOpacitySlider.setPaintLabels(true);
+			lineOpacitySlider = new EnhancedSlider(100);
 			lineOpacitySlider.addChangeListener(evt -> apply());
 		}
 		
@@ -310,7 +306,7 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 		private JComboBox<String> arrowTypeCombo;
 		private JCheckBox arrowColorCheck;
 		private ColorButton arrowColorButton;
-		private JSlider arrowOpacitySlider;
+		private EnhancedSlider arrowOpacitySlider;
 		private JComboBox<Integer> arrowSizeCombo;
 		private JComboBox<String> anchorTypeCombo;
 		
@@ -509,13 +505,9 @@ public class ArrowAnnotationEditor extends AbstractAnnotationEditor<ArrowAnnotat
 			return arrowColorButton;
 		}
 		
-		private JSlider getArrowOpacitySlider() {
+		private EnhancedSlider getArrowOpacitySlider() {
 			if (arrowOpacitySlider == null) {
-				arrowOpacitySlider = new JSlider(0, 100, 100);
-				arrowOpacitySlider.setMajorTickSpacing(100);
-				arrowOpacitySlider.setMinorTickSpacing(25);
-				arrowOpacitySlider.setPaintTicks(true);
-				arrowOpacitySlider.setPaintLabels(true);
+				arrowOpacitySlider = new EnhancedSlider(100);
 				arrowOpacitySlider.addChangeListener(evt -> ArrowAnnotationEditor.this.apply());
 			}
 			

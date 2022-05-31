@@ -315,9 +315,15 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
   }
 
   private ShapeType getShapeFromString(String type) {
+	// First look up by the enum name()...
     for (var st : ShapeType.values()) {
       if (st.name().equals(type))
         return st;
+    }
+    // Shape not found? Let's try the shapeName...
+    for (var st : ShapeType.values()) {
+    	if (st.shapeName().equalsIgnoreCase(type))
+    		return st;
     }
     
     return ShapeType.RECTANGLE;

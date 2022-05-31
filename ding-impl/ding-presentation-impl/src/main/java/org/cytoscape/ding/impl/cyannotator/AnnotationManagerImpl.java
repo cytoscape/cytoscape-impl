@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
@@ -66,6 +65,7 @@ public class AnnotationManagerImpl implements AnnotationManager {
 	@Override
 	public void addAnnotations(Collection<? extends Annotation> annotations) {
 		var annotationsByView = groupByViewAndCanvasAndFlatten(annotations, false);
+		
 		if (annotationsByView.isEmpty())
 			return;
 		
@@ -83,7 +83,7 @@ public class AnnotationManagerImpl implements AnnotationManager {
 		
 		invokeOnEDTAndWait(() -> {
 			annotationsByView.forEach((view, annotationsByCanvas) -> {
-				DRenderingEngine re = dingRenderer.getRenderingEngine(view);
+				var re = dingRenderer.getRenderingEngine(view);
 				
 				// We have to make sure the foreground annotations are added before the background annotations.
 				// Because group annotations must be on the foreground canvas, if we add annotations to the background
@@ -122,6 +122,7 @@ public class AnnotationManagerImpl implements AnnotationManager {
 		
 		// throws IllegalAnnotationStructureException
 		var annotationsByView = groupByViewAndCanvasAndFlatten(annotations, true);
+		
 		if (annotationsByView.isEmpty())
 			return;
 		

@@ -26,12 +26,12 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
-import javax.swing.JSlider;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.GraphicsUtilities;
 import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
+import org.cytoscape.ding.impl.cyannotator.utils.EnhancedSlider;
 import org.cytoscape.ding.impl.cyannotator.utils.ShapeIcon;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.color.BrewerType;
@@ -79,10 +79,10 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 	private JCheckBox fillColorCheck;
 	private ColorButton fillColorButton;
 	private ColorButton borderColorButton;
-	private JSlider fillOpacitySlider;
-	private JSlider borderOpacitySlider;
+	private EnhancedSlider fillOpacitySlider;
+	private EnhancedSlider borderOpacitySlider;
 	private JComboBox<Integer> borderWidthCombo;
-	private JSlider rotationSlider;
+	private EnhancedSlider rotationSlider;
 
 	private Shape customShape;
 
@@ -135,7 +135,7 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 				}
 			}
 
-			double rotation = (double) annotation.getRotation();
+			double rotation = annotation.getRotation();
 			getRotationSlider().setValue((int)rotation);
 		}
 		
@@ -158,7 +158,7 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 			annotation.setFillOpacity(getFillOpacitySlider().getValue());
 			annotation.setBorderColor(getBorderColorButton().getColor());
 			annotation.setBorderOpacity(getBorderOpacitySlider().getValue());
-			annotation.setRotation((double) getRotationSlider().getValue());
+			annotation.setRotation(getRotationSlider().getValue());
 		}
 	}
 
@@ -175,6 +175,10 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 		var scrollPane = new JScrollPane(getShapeList(), JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		var sep1 = new JSeparator();
 		var sep2 = new JSeparator();
+		
+		final int min = 160;
+		final int pref = 200;
+		final int max = 200;
 		
 		var layout = new GroupLayout(this);
 		setLayout(layout);
@@ -203,13 +207,13 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 										.addComponent(getFillColorCheck())
 										.addComponent(getFillColorButton())
 								)
-								.addComponent(getFillOpacitySlider(), 100, 140, 140)
+								.addComponent(getFillOpacitySlider(), min, pref, max)
 								.addComponent(sep1, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 								.addComponent(getBorderWidthCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 								.addComponent(getBorderColorButton())
-								.addComponent(getBorderOpacitySlider(), 100, 140, 140)
+								.addComponent(getBorderOpacitySlider(), min, pref, max)
 								.addComponent(sep2, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-								.addComponent(getRotationSlider(), 100, 140, 140)
+								.addComponent(getRotationSlider(), min, pref, max)
 						)
 				)
 				.addGap(0, 20, Short.MAX_VALUE)
@@ -343,26 +347,18 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 		return borderColorButton;
 	}
 	
-	private JSlider getFillOpacitySlider() {
+	private EnhancedSlider getFillOpacitySlider() {
 		if (fillOpacitySlider == null) {
-			fillOpacitySlider = new JSlider(0, 100, 100);
-			fillOpacitySlider.setMajorTickSpacing(100);
-			fillOpacitySlider.setMinorTickSpacing(25);
-			fillOpacitySlider.setPaintTicks(true);
-			fillOpacitySlider.setPaintLabels(true);
+			fillOpacitySlider = new EnhancedSlider(100);
 			fillOpacitySlider.addChangeListener(evt -> apply());
 		}
 		
 		return fillOpacitySlider;
 	}
 	
-	private JSlider getBorderOpacitySlider() {
+	private EnhancedSlider getBorderOpacitySlider() {
 		if (borderOpacitySlider == null) {
-			borderOpacitySlider = new JSlider(0, 100, 100);
-			borderOpacitySlider.setMajorTickSpacing(100);
-			borderOpacitySlider.setMinorTickSpacing(25);
-			borderOpacitySlider.setPaintTicks(true);
-			borderOpacitySlider.setPaintLabels(true);
+			borderOpacitySlider = new EnhancedSlider(100);
 			borderOpacitySlider.addChangeListener(evt -> apply());
 		}
 		
@@ -382,7 +378,7 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 		return borderWidthCombo;
 	}
 	
-	private JSlider getRotationSlider() {
+	private EnhancedSlider getRotationSlider() {
 		if (rotationSlider == null) {
 			rotationSlider = createRotationSlider();
 		}
