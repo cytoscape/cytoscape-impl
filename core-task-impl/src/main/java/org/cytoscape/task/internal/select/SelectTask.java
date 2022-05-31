@@ -30,23 +30,23 @@ import org.cytoscape.work.util.ListSingleSelection;
  * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 2.1 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
+ *
+ * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
 
 public class SelectTask extends AbstractSelectTask implements ObservableTask {
-	
+
 	private List<CyNode> selectedNodes;
 	private List<CyEdge> selectedEdges;
 
@@ -54,7 +54,7 @@ public class SelectTask extends AbstractSelectTask implements ObservableTask {
 	public NodeAndEdgeTunable nodesAndEdges;
 
 	// Options
-	@Tunable(description="First neighbors options", 
+	@Tunable(description="First neighbors options",
 	         longDescription="If this option is anything other than 'none', add nodes to the selection based "+
 					                 "on the value of the argument.  If 'incoming', add nodes to the selection that "+
 													 "have edges pointing to one of the selected nodes.  If 'output', add nodes to the selection that "+
@@ -63,17 +63,17 @@ public class SelectTask extends AbstractSelectTask implements ObservableTask {
 													 "Finally, if 'any', then add all first neighbors to the selection list.",
 					 exampleStringValue="none",
 					 context="nogui")
-	public ListSingleSelection<String> firstNeighbors = 
+	public ListSingleSelection<String> firstNeighbors =
 		new ListSingleSelection<>("none", "incoming", "outgoing", "undirected", "any");
 
-	@Tunable(description="Invert", 
+	@Tunable(description="Invert",
 	         longDescription="If this option is not 'none', then the selected nodes or edges (or both) will be "+
 					                 "deselected and all other nodes or edges will be selected",
 					 exampleStringValue="none",
 	         context="nogui")
 	public ListSingleSelection<String> invert = new ListSingleSelection<>("none", "nodes", "edges", "both");
 
-	@Tunable(description="Extend edge selection", 
+	@Tunable(description="Extend edge selection",
 	         longDescription="If 'true', then select any nodes adjacent to any selected edges.  This happens "+
 					                 "before any inversion",
 					 exampleStringValue="false",
@@ -87,16 +87,23 @@ public class SelectTask extends AbstractSelectTask implements ObservableTask {
 					 context="nogui")
 	public boolean adjacentEdges = false;
 
+	@Tunable(description="Select edges between selected nodes",
+					 longDescription="If 'true', then select edges between selected nodes.  This happens "+
+													 "before any inversion",
+					 exampleStringValue="false",
+					 context="nogui")
+	public boolean edgesBetweenSelectedNodes = false;
+
 	public SelectTask(CyServiceRegistrar serviceRegistrar) {
 		super(null, serviceRegistrar);
 		nodesAndEdges = new NodeAndEdgeTunable(serviceRegistrar);
 	}
-	
+
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setProgress(0.0);
 		network = nodesAndEdges.getNetwork();
-		
+
 		Set<CyNode> nodes = new HashSet<>();
 		Set<CyEdge> edges = new HashSet<>();
 
@@ -164,17 +171,25 @@ public class SelectTask extends AbstractSelectTask implements ObservableTask {
 			edgeCount = edges.size();
 		}
 
+		if (edgesBetweenSelectedNodes) {
+			for (CyNode node1 : nodes) {
+				   for (CyNode node2 : nodes)
+				       edges.addAll(network.getConnectingEdgeList(node1, node2, CyEdge.Type.ANY));
+			}
+			edgeCount = edges.size();
+		}
+
 		tm.setProgress(0.2);
 
 		// Finally, handle inversion
 		if (invert.getSelectedValue().equals("nodes") || invert.getSelectedValue().equals("both")) {
 			Set<CyNode> newNodes = new HashSet<>();
-			
+
 			for (CyNode node: network.getNodeList()) {
 				if (!nodes.contains(node))
 					newNodes.add(node);
 			}
-			
+
 			selectUtils.setSelectedNodes(network, newNodes, true);
 			selectUtils.setSelectedNodes(network, nodes, false);
 			tm.showMessage(TaskMonitor.Level.INFO, "Inverting node selection");
@@ -187,12 +202,12 @@ public class SelectTask extends AbstractSelectTask implements ObservableTask {
 
 		if (invert.getSelectedValue().equals("edges") || invert.getSelectedValue().equals("both")) {
 			Set<CyEdge> newEdges = new HashSet<>();
-			
+
 			for (CyEdge edge: network.getEdgeList()) {
 				if (!edges.contains(edge))
 					newEdges.add(edge);
 			}
-			
+
 			selectUtils.setSelectedEdges(network, newEdges, true);
 			selectUtils.setSelectedEdges(network, edges, false);
 			tm.showMessage(TaskMonitor.Level.INFO, "Inverting edge selection");
@@ -241,29 +256,29 @@ public class SelectTask extends AbstractSelectTask implements ObservableTask {
 				} else {
 					CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
 					String result = "{\"nodes\":";
-					
+
 					if (selectedNodes == null || selectedNodes.size() == 0)
 						result += "[]";
 					else
 						result += cyJSONUtil.cyIdentifiablesToJson(selectedNodes);
 
 					result += ", \"edges\":";
-					
+
 					if (selectedEdges == null || selectedEdges.size() == 0)
 						result += "[]";
 					else
 						result += cyJSONUtil.cyIdentifiablesToJson(selectedEdges);
-					
+
 					return result + "}";
 				}
 			};
-			
+
 			return res;
 		}
-		
+
 		return identifiables;
 	}
-	
+
 	@Override
 	public List<Class<?>> getResultClasses() {
 		return Arrays.asList(String.class, List.class, JSONResult.class);
