@@ -102,10 +102,17 @@ public class ColumnStylePicker {
 			jtable.getColumnModel().getColumn(0).setPreferredWidth(30);
 			
 			jtable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+			
 			jtable.getSelectionModel().addListSelectionListener(e -> {
+				if(e.getValueIsAdjusting())
+					return;
 				if(columnSelectionListeners.isEmpty())
 					return;
-				int row = e.getFirstIndex();
+				
+				int row = jtable.getSelectedRow();
+				if(row < 0)
+					return;
+				
 				ColumnSpec column = ((ColumnStyleTableModel) jtable.getModel()).getColumnSpec(row);
 				for(var listener : columnSelectionListeners) {
 					listener.accept(column);

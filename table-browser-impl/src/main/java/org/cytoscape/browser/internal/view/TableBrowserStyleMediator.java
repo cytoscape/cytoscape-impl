@@ -28,6 +28,7 @@ public class TableBrowserStyleMediator implements VisualStyleChangedListener, Co
 
 	@Override
 	public void handleEvent(ColumnVisualStyleSetEvent e) {
+		System.out.println("TableBrowserStyleMediator.handleEvent( ColumnVisualStyleSetEvent )");
 		CyColumnView view = (CyColumnView) e.getColumnView();
 		VisualStyle style = e.getVisualStyle();
 		updateColumn(view, style);
@@ -36,6 +37,7 @@ public class TableBrowserStyleMediator implements VisualStyleChangedListener, Co
 	
 	@Override
 	public void handleEvent(VisualStyleChangedEvent e) {
+		System.out.println("TableBrowserStyleMediator.handleEvent( VisualStyleChangedEvent )");
 		VisualStyle style = e.getSource();
 		Set<CyColumnView> columns = findColumnsWithStyle(style);
 		for(CyColumnView colView : columns) {

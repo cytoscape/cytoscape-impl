@@ -247,8 +247,19 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			case VISUAL_STYLE_UPDATED:  // MKTODO what if the current column visual style is updated????
 				if (body != null) {
 					var style = (VisualStyle) body;
-					if (style.equals(vmProxy.getCurrentNetworkVisualStyle()))
+					VisualStyle currNetStyle = vmProxy.getCurrentNetworkVisualStyle();
+					
+					if (style.equals(currNetStyle)) {
 						updateAllVisualPropertySheets(style, false);
+					} else {
+						// Check if its a column visual style associated with the current network style.
+						var tableVMM = servicesUtil.get(TableVisualMappingManager.class);
+						Set<VisualStyle> netStyles = tableVMM.getAssociatedNetworkVisualStyles(style);
+						if(netStyles.contains(currNetStyle)) {
+							updateVisualPropertySheets(style, TABLE_SHEET_TYPES, false, true);
+						}
+						break;
+					}
 					
 					invokeOnEDT(() -> vizMapperMainPanel.getStylesPanelProvider().update(style));
 				}
@@ -779,7 +790,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		}
 		
 		updateVisualPropertySheets(netVS, NETWORK_SHEET_TYPES, resetDefaultVisibleItems, rebuild);
-		updateVisualPropertySheets(colVS, TABLE_SHEET_TYPES, resetDefaultVisibleItems, rebuild);
+		updateVisualPropertySheets(colVS, TABLE_SHEET_TYPES, resetDefaultVisibleItems, true);
 		
 		vizMapperMainPanel.getColumnStylePnl().removeColumnSelectionListener(columnChangeListener);
 		vizMapperMainPanel.updateColumns(columns, selectedColumn);

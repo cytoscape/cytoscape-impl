@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -38,7 +39,10 @@ public class TableVisualMappingManagerImpl implements TableVisualMappingManager,
 	private final CyServiceRegistrar serviceRegistrar;
 	private final Object lock = new Object();
 	
+	// Styles for unassigned tables
 	private final Map<View<CyColumn>, VisualStyle> column2VisualStyleMap = new WeakHashMap<>();
+	
+	// Styles associated with default network tables
 	private final Map<VisualStyle,Map<String,VisualStyle>> associatedNodeStyles = new WeakHashMap<>();
 	private final Map<VisualStyle,Map<String,VisualStyle>> associatedEdgeStyles = new WeakHashMap<>();
 
@@ -140,6 +144,26 @@ public class TableVisualMappingManagerImpl implements TableVisualMappingManager,
 		return Collections.unmodifiableMap(associatedStyles);
 	}
 	
+
+	// MKTODO Maybe use a reverse map to store this instead of searching through all the values.
+	@Override
+	public Set<VisualStyle> getAssociatedNetworkVisualStyles(VisualStyle columnVisualStyle) {
+		Set<VisualStyle> networkStyles = new HashSet<>();
+		
+		synchronized (lock) {
+			for(var styleMap : List.of(associatedNodeStyles, associatedEdgeStyles)) {
+				for(var entry : styleMap.entrySet()) {
+					var netStyle = entry.getKey();
+					var colStyles = entry.getValue();
+					if(colStyles.values().contains(columnVisualStyle)) {
+						networkStyles.add(netStyle);
+					}
+				}
+			}
+		}
+		
+		return networkStyles;
+	}
 
 	@Override
 	public Set<VisualStyle> getAllVisualStyles() {
