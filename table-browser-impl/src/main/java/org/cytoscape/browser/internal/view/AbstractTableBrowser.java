@@ -643,7 +643,11 @@ public abstract class AbstractTableBrowser extends JPanel implements CytoPanelCo
 				c.setCurrentTable(getCurrentTable());
 				controls.add(c);
 				
-				c.setMaximumSize(c.getPreferredSize());
+				Dimension d = c.getPreferredSize();
+				
+				if(d != null) // MKTODO This can happen sometimes, not sure why, maybe a bug in swing?
+					c.setMaximumSize(d);
+				
 				add(c);
 				
 				var sep = ViewUtil.createToolBarSeparator();

@@ -103,7 +103,10 @@ public class VizMapPropertyBuilder {
 	 * Build the properties for a new Visual Mapping Function.
 	 * @param <V> data type of Visual Property.
 	 */
-	public <V> void buildProperty(VisualProperty<V> visualProperty, GraphObjectType tableType, PropertySheetPanel propertySheetPanel) {
+	public <V> void buildProperty(VisualProperty<V> visualProperty, 
+								  PropertySheetPanel propertySheetPanel, 
+								  GraphObjectType tableType) {
+		
 		if (visualProperty == null)
 			throw new IllegalArgumentException("'visualProperty' must not be null.");
 		if (propertySheetPanel == null)
@@ -136,9 +139,10 @@ public class VizMapPropertyBuilder {
 	 * @param <K> data type of attribute to be mapped.
 	 * @param <V> data type of Visual Property.
 	 */
-	public <K, V> void buildProperty(final VisualMappingFunction<K, V> visualMapping,
-									 final PropertySheetPanel propertySheetPanel,
-									 final VisualMappingFunctionFactory factory, GraphObjectType tableType) {
+	public <K, V> void buildProperty(VisualMappingFunction<K, V> visualMapping,
+									 PropertySheetPanel propertySheetPanel,
+									 VisualMappingFunctionFactory factory,
+									 GraphObjectType tableType) {
 		if (visualMapping == null)
 			throw new IllegalArgumentException("'visualMapping' must not be null.");
 		if (propertySheetPanel == null)
@@ -162,34 +166,32 @@ public class VizMapPropertyBuilder {
 		if (attrName == null)
 			columnProp.setValue(null);
 			
-		((PropertyRendererRegistry) propertySheetPanel.getTable().getRendererFactory()).registerRenderer(
-				columnProp, defaultTableCellRendererForColumn);
+		((PropertyRendererRegistry) propertySheetPanel.getTable().getRendererFactory()).registerRenderer(columnProp, defaultTableCellRendererForColumn);
 
 		mapTypeProp.setDisplayName(MAPPING_TYPE);
 		mapTypeProp.setValue(factory); // Set mapping type as string.
 		mapTypeProp.setInternalValue(visualMapping);
 		
-		((PropertyRendererRegistry) propertySheetPanel.getTable().getRendererFactory()).registerRenderer(
-				mapTypeProp, defaultTableCellRenderer);
+		((PropertyRendererRegistry) propertySheetPanel.getTable().getRendererFactory()).registerRenderer(mapTypeProp, defaultTableCellRenderer);
 
 		// TODO: Should refactor factory.
 
 		propertySheetPanel.addProperty(0, columnProp);
 		propertySheetPanel.addProperty(1, mapTypeProp);
 		
-		final PropertyEditorRegistry propEditorRegistry = 
-				(PropertyEditorRegistry) propertySheetPanel.getTable().getEditorFactory();
-		propEditorRegistry.registerEditor(columnProp, 
-				editorManager.getDataTableComboBoxEditor((Class<? extends CyIdentifiable>) vp.getTargetDataType()));
+		PropertyEditorRegistry propEditorRegistry = (PropertyEditorRegistry) propertySheetPanel.getTable().getEditorFactory();
+		propEditorRegistry.registerEditor(columnProp,  editorManager.getDataTableComboBoxEditor(tableType.type()));
 		propEditorRegistry.registerEditor(mapTypeProp, editorManager.getDefaultComboBoxEditor("mappingTypeEditor"));
 		
 		// Mapping Editor
 		createMappingProperties(visualMapping, propertySheetPanel, factory, tableType);
 	}
 
-	public <K, V> void createMappingProperties(final VisualMappingFunction<K, V> visualMapping,
-											   final PropertySheetPanel propertySheetPanel,
-											   final VisualMappingFunctionFactory factory, GraphObjectType tableType) {
+	public <K, V> void createMappingProperties(VisualMappingFunction<K, V> visualMapping,
+											   PropertySheetPanel propertySheetPanel,
+											   VisualMappingFunctionFactory factory, 
+											   GraphObjectType tableType) {
+		
 		String attrName = visualMapping.getMappingColumnName();
 		if (attrName == null)
 			return;

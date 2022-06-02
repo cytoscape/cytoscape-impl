@@ -527,7 +527,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			if (mapping == null) {
 				// Create the properties for a new visual mapping
 				var vp = (VisualProperty<?>) model.getVisualProperty();
-				vizMapPropertyBuilder.buildProperty(vp, model.getTableType(), propSheetPnl);
+				vizMapPropertyBuilder.buildProperty(vp, propSheetPnl, model.getTableType());
 			} else {
 				// There is already a visual mapping for this style's property
 				var mappingFactory = vizMapPropertyBuilder.getMappingFactory(mapping);

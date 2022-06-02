@@ -27,6 +27,7 @@ import org.cytoscape.view.model.table.CyTableView;
 import org.cytoscape.view.vizmap.TableVisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
+import org.cytoscape.view.vizmap.events.table.ColumnAssociatedVisualStyleSetEvent;
 import org.cytoscape.view.vizmap.events.table.ColumnVisualStyleSetEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,13 +89,13 @@ public class TableVisualMappingManagerImpl implements TableVisualMappingManager,
 			if (vs == null) {
 				changed = column2VisualStyleMap.remove(colView) != null;
 			} else {
-				final VisualStyle previousStyle = column2VisualStyleMap.put(colView, vs);
+				VisualStyle previousStyle = column2VisualStyleMap.put(colView, vs);
 				changed = !vs.equals(previousStyle);
 			}
 		}
 		
 		if (changed) {
-			CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+			var eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 			eventHelper.fireEvent(new ColumnVisualStyleSetEvent(this, vs, colView));
 		}
 	}
@@ -130,8 +131,8 @@ public class TableVisualMappingManagerImpl implements TableVisualMappingManager,
 		}
 		
 		if (changed) {
-			CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
-			eventHelper.fireEvent(new ColumnVisualStyleSetEvent(this, columnVisualStyle, null));  // MKTODO may need a new event
+			var eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+			eventHelper.fireEvent(new ColumnAssociatedVisualStyleSetEvent(this, networkVisualStyle, columnVisualStyle, colName, tableType));
 		}
 	}
 	
@@ -163,6 +164,30 @@ public class TableVisualMappingManagerImpl implements TableVisualMappingManager,
 		}
 		
 		return networkStyles;
+	}
+	
+	@Override
+	public Set<StyleAssociation> getAssociations(VisualStyle columnVisualStyle) {
+		Set<StyleAssociation> associations = new HashSet<>();
+		
+		synchronized (lock) {
+			for(var tableType : List.of(CyNode.class, CyEdge.class)) {
+				var networkMap = getAssociatedStyleMap(tableType);
+				for(var netEntry : networkMap.entrySet()) {
+					var netStyle = netEntry.getKey();
+					var colStyles = netEntry.getValue();
+					for(var colEntry : colStyles.entrySet()) {
+						var colName = colEntry.getKey();
+						var colStyle = colEntry.getValue();
+						if(colStyle.equals(columnVisualStyle)) {
+							associations.add(new StyleAssociation(netStyle, tableType, colName));
+						}
+					}
+				}
+			}
+		}
+		
+		return associations;
 	}
 
 	@Override

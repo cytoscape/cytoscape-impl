@@ -5,19 +5,7 @@ import static org.cytoscape.browser.internal.view.AbstractTableBrowser.ICON_HEIG
 import static org.cytoscape.browser.internal.view.AbstractTableBrowser.ICON_WIDTH;
 import static org.cytoscape.util.swing.IconManager.ICON_COG;
 import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
-import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
-import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
-import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
-import static org.cytoscape.work.ServiceProperties.IN_EDGE_TABLE_TOOL_BAR;
-import static org.cytoscape.work.ServiceProperties.IN_NETWORK_TABLE_TOOL_BAR;
-import static org.cytoscape.work.ServiceProperties.IN_NODE_TABLE_TOOL_BAR;
-import static org.cytoscape.work.ServiceProperties.IN_UNASSIGNED_TABLE_TOOL_BAR;
-import static org.cytoscape.work.ServiceProperties.LARGE_ICON_ID;
-import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
-import static org.cytoscape.work.ServiceProperties.SMALL_ICON_ID;
-import static org.cytoscape.work.ServiceProperties.TITLE;
-import static org.cytoscape.work.ServiceProperties.TOOLTIP;
-import static org.cytoscape.work.ServiceProperties.TOOL_BAR_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.*;
 
 import java.util.Arrays;
 import java.util.Properties;
@@ -57,8 +45,6 @@ import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.model.events.TableViewAddedListener;
-import org.cytoscape.view.vizmap.events.VisualStyleChangedListener;
-import org.cytoscape.view.vizmap.events.table.ColumnVisualStyleSetListener;
 import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
 
@@ -177,8 +163,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		
 		var styleMediator = new TableBrowserStyleMediator(serviceRegistrar);
-		registerService(bc, styleMediator, VisualStyleChangedListener.class);
-		registerService(bc, styleMediator, ColumnVisualStyleSetListener.class);
+		registerAllServices(bc, styleMediator);
 		
 		registerServiceListener(bc, mediator::addAction, mediator::removeAction, CyAction.class);
 		registerServiceListener(bc, mediator::addTaskFactory, mediator::removeTaskFactory, TaskFactory.class, TOOLBAR_FILTER);
