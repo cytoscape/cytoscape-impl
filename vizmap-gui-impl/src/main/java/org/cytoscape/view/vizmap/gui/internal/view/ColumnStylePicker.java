@@ -1,19 +1,22 @@
 package org.cytoscape.view.vizmap.gui.internal.view;
 
-import static org.cytoscape.util.swing.LookAndFeelUtil.createTitledBorder;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
+import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.LayoutStyle;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -33,25 +36,35 @@ import org.cytoscape.view.vizmap.gui.internal.view.util.IconUtil;
 
 @SuppressWarnings("serial")
 public class ColumnStylePicker {
+	
+	public static enum Action {
+		UPDATE,
+		CREATE,
+		DELETE
+	}
+	
+	public static final float ICON_FONT_SIZE = 22.0f;
 
 	private final ServicesUtil servicesUtil;
 	
 	private JPanel columnPanel;
 	private JTable jtable;
+	private JButton addButton;
+	private JButton deleteButton;
 	
-	private List<Consumer<ColumnSpec>> columnSelectionListeners = new ArrayList<>(2);
-	
+	private List<BiConsumer<ColumnSpec,Action>> columnSelectionListeners = new ArrayList<>(2);
+
 	
 	public ColumnStylePicker(ServicesUtil servicesUtil) {
 		this.servicesUtil = servicesUtil;
 	}
 	
 	
-	public void addColumnSelectionListener(Consumer<ColumnSpec> listener) {
+	public void addColumnSelectionListener(BiConsumer<ColumnSpec,Action> listener) {
 		columnSelectionListeners.add(listener);
 	}
 	
-	public void removeColumnSelectionListener(Consumer<ColumnSpec> listener) {
+	public void removeColumnSelectionListener(BiConsumer<ColumnSpec,Action> listener) {
 		columnSelectionListeners.remove(listener);
 	}
 	
@@ -64,9 +77,8 @@ public class ColumnStylePicker {
 	public JPanel getColumnPanel() {
 		if (columnPanel == null) {
 			columnPanel = new JPanel();
-			columnPanel.setOpaque(!isAquaLAF());
-			columnPanel.setBorder(createTitledBorder("Styled Columns"));
 			
+			JLabel title = new JLabel("Styled Columns");
 			JTable table = getJTable();
 			JScrollPane scrollPane = new JScrollPane(table);
 			
@@ -76,16 +88,77 @@ public class ColumnStylePicker {
 			layout.setAutoCreateGaps(!isAquaLAF());
 			
 			layout.setHorizontalGroup(layout.createParallelGroup()
+				.addGroup(layout.createSequentialGroup()
+					.addComponent(title)
+					.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(getAddButton())
+					.addGap(5)
+					.addComponent(getDeleteButton())
+				)
 				.addComponent(scrollPane)
 			);
 			
 			layout.setVerticalGroup(layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup()
+					.addComponent(title)
+					.addComponent(getAddButton())
+					.addComponent(getDeleteButton())
+				)
 				.addComponent(scrollPane, 300, 300, 300)
 			);
 		}
 		return columnPanel;
 	}
 	
+	
+	private JButton getAddButton() {
+		if (addButton == null) {
+			var iconManager = servicesUtil.get(IconManager.class);
+			addButton = new JButton(IconManager.ICON_PLUS);
+			addButton.setFont(iconManager.getIconFont(ICON_FONT_SIZE * 4/5));
+			addButton.setToolTipText("Add Column Style...");
+			addButton.setBorderPainted(false);
+			addButton.setContentAreaFilled(false);
+			addButton.setFocusPainted(false);
+			addButton.setBorder(BorderFactory.createEmptyBorder());
+			
+			addButton.addActionListener(e -> {
+				// MKTODO what if there are no unstyled columns???
+				var dialog = new ColumnStyleAddColumnPopup(servicesUtil);
+				var location = addButton.getLocationOnScreen();
+				dialog.setLocation(location.x + 15, location.y + 5 + addButton.getHeight());
+				dialog.setVisible(true);
+				
+				dialog.getAddButton().addActionListener(ev -> {
+					var colName = dialog.getColumnName();
+					var tableType = dialog.getTableType();
+					dialog.setVisible(false);
+					fireColumnStyleEvent(Action.CREATE, new ColumnSpec(tableType, colName));
+				});
+			});
+		}
+		
+		return addButton;
+	}
+	
+	private JButton getDeleteButton() {
+		if (deleteButton == null) {
+			var iconManager = servicesUtil.get(IconManager.class);
+			deleteButton = new JButton(IconManager.ICON_TRASH);
+			deleteButton.setFont(iconManager.getIconFont(ICON_FONT_SIZE * 4/5));
+			deleteButton.setToolTipText("Delete Selected Column Style...");
+			deleteButton.setBorderPainted(false);
+			deleteButton.setContentAreaFilled(false);
+			deleteButton.setFocusPainted(false);
+			deleteButton.setBorder(BorderFactory.createEmptyBorder());
+			
+			deleteButton.addActionListener(e -> {
+				fireColumnStyleEvent(Action.DELETE);
+			});
+		}
+		
+		return deleteButton;
+	}
 	
 	
 	private JTable getJTable() {
@@ -106,20 +179,25 @@ public class ColumnStylePicker {
 			jtable.getSelectionModel().addListSelectionListener(e -> {
 				if(e.getValueIsAdjusting())
 					return;
-				if(columnSelectionListeners.isEmpty())
-					return;
-				
-				int row = jtable.getSelectedRow();
-				if(row < 0)
-					return;
-				
-				ColumnSpec column = ((ColumnStyleTableModel) jtable.getModel()).getColumnSpec(row);
-				for(var listener : columnSelectionListeners) {
-					listener.accept(column);
-				}
+				fireColumnStyleEvent(Action.UPDATE);
 			});
 		}
 		return jtable;
+	}
+	
+	
+	private void fireColumnStyleEvent(Action action) {
+		int row = jtable.getSelectedRow();
+		if(row < 0)
+			return;
+		ColumnSpec column = ((ColumnStyleTableModel) jtable.getModel()).getColumnSpec(row);
+		fireColumnStyleEvent(action, column);
+	}
+	
+	private void fireColumnStyleEvent(Action action, ColumnSpec column) {
+		for(var listener : columnSelectionListeners) {
+			listener.accept(column, action);
+		}
 	}
 	
 	

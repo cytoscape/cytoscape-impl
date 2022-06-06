@@ -26,7 +26,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
@@ -84,6 +84,7 @@ import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
 import org.cytoscape.view.vizmap.gui.internal.util.NotificationNames;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicePropertiesUtil;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.cytoscape.view.vizmap.gui.internal.view.ColumnStylePicker.Action;
 import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheetItem.MessageType;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor.ContinuousMappingEditorPanel;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor.EditorValueRangeTracer;
@@ -147,7 +148,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	
 	// Remember what column was selected.
 	private ColumnSpec selectedColumn;
-	private Consumer<ColumnSpec> columnChangeListener;
+	private BiConsumer<ColumnSpec,ColumnStylePicker.Action> columnChangeListener;
 	
 	// MKTODO Current network renderer
 	private String curRendererId;
@@ -595,8 +596,9 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		var stylesBtn = vizMapperMainPanel.getStylesBtn();
 		stylesBtn.addPropertyChangeListener("selectedStyle", evt -> onSelectedVisualStyleChanged(evt));
 		
-		columnChangeListener = col -> onSelectedColumnChanged(col);
+		columnChangeListener = this::onSelectedColumnChanged;
 		vizMapperMainPanel.getColumnStylePnl().addColumnSelectionListener(columnChangeListener);
+//		vizMapperMainPanel.getColumnStylePnl().getAddButton(columnChangeListener);
 	}
 	
 	private void addViewListeners(VisualPropertySheet vpSheet) {
@@ -799,7 +801,6 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	
 	
 	private void initializeDefaultColumnStyles(VisualStyle netVS) {
-		System.out.println("VizMapperMediator.initializeDefaultColumnStyles()");
 		var tableVMM = servicesUtil.get(TableVisualMappingManager.class);
 		var visualStyleFactory = servicesUtil.get(VisualStyleFactory.class);
 		
@@ -819,41 +820,37 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		}
 	}
 	
-//	private CyColumn getSelectedColumn(CyTable table) {
-//		var columns = table.getColumns();
-//		// MKTODO what if the column isn't visible?
-//		var colSuid = selectedColumns.get(table.getSUID());
-//		
-//		if (colSuid == null) {
-//			for (var col : columns) {
-//				if (!"SUID".equals(col.getName()))
-//					return col;
-//			}
-//		} else {
-//			for (CyColumn col : columns) {
-//				if (colSuid.equals(col.getSUID()))
-//					return col;
-//			}
-//		}
-//		
-//		// table must have at least a primary key column
-//		return columns.iterator().next();
-//	}
 	
-	private void onSelectedColumnChanged(ColumnSpec col) {
-		ContinuousMappingEditorPanel.setTracer(new EditorValueRangeTracer(servicesUtil));
+	private void onSelectedColumnChanged(ColumnSpec col, ColumnStylePicker.Action action) {
+		if(col == null || action == null)
+			return;
 		
-		if(col != null) {
-			selectedColumn = col;
-			
-			var netVS = vmProxy.getCurrentNetworkVisualStyle();
-			var tableVMM = servicesUtil.get(TableVisualMappingManager.class);
-			var tableType = selectedColumn.tableType().type();
-			var colVS = tableVMM.getAssociatedColumnVisualStyle(netVS, tableType, selectedColumn.columnName());
-			
-			updateVisualPropertySheets(colVS, TABLE_SHEET_TYPES, false, true); 
+		ContinuousMappingEditorPanel.setTracer(new EditorValueRangeTracer(servicesUtil)); // MKTODO why?
+		
+		var netVS = vmProxy.getCurrentNetworkVisualStyle();
+		var tableVMM = servicesUtil.get(TableVisualMappingManager.class);
+		var tableType = col.tableType().type();
+		
+		selectedColumn = col;
+		
+		if(action == Action.CREATE) {
+			VisualStyle colVS = tableVMM.getAssociatedColumnVisualStyle(netVS, tableType, col.columnName());
+			if(colVS == null) {
+				var visualStyleFactory = servicesUtil.get(VisualStyleFactory.class);
+				colVS = visualStyleFactory.createVisualStyle(col.columnName());
+				tableVMM.setAssociatedVisualStyle(netVS, tableType, col.columnName(), colVS);
+				updateAllVisualPropertySheets(netVS, false);
+			}
+		} else if(action == Action.DELETE) {
+			tableVMM.setAssociatedVisualStyle(netVS, tableType, col.columnName(), null);
+			selectedColumn = new ColumnSpec(GraphObjectType.node(), CyNetwork.NAME);
+			updateAllVisualPropertySheets(netVS, false);
+		} else { // UPDATE
+			VisualStyle colVS = tableVMM.getAssociatedColumnVisualStyle(netVS, tableType, col.columnName());
+			updateVisualPropertySheets(colVS, TABLE_SHEET_TYPES, false, true);
 		}
 	}
+	
 	
 	private void updateVisualPropertySheets(
 			VisualStyle vs,
