@@ -4,6 +4,7 @@ import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.util.Objects;
 
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.values.ObjectPosition;
@@ -12,6 +13,7 @@ import org.cytoscape.view.presentation.property.values.ObjectPosition;
 public class LabelSelection {
 
 	private final View<CyNode> node; // node that associated with selected label.
+	private final View<CyEdge> edge; // edge that associated with selected label.
 	
 	private final ObjectPosition originalPosition;
 	private final double originalAngleDeg;
@@ -27,6 +29,7 @@ public class LabelSelection {
 	
 	public LabelSelection(
 			View<CyNode> node, 
+			View<CyEdge> edge, 
 			Shape shape, 
 			ObjectPosition originalPosition,
 			double labelAnchorX, 
@@ -34,6 +37,7 @@ public class LabelSelection {
 			double angleDegress
 	) {
 		this.node = node;
+		this.edge = edge;
 		this.shape = shape; // may be rotated
 		this.angleRad = Math.toRadians(angleDegress);
 		this.originalAngleDeg = angleDegress;
@@ -47,6 +51,10 @@ public class LabelSelection {
 	
 	public View<CyNode> getNode() {
 		return node;
+	}
+	
+	public View<CyEdge> getEdge() {
+		return edge;
 	}
 	
 	public Shape getShape() {
@@ -100,13 +108,19 @@ public class LabelSelection {
 	@Override
 	public boolean equals(Object other) {
 		if(other instanceof LabelSelection) {
-			return Objects.equals(((LabelSelection)other).node.getSUID(), node.getSUID());
+      if (node != null)
+        return Objects.equals(((LabelSelection)other).node.getSUID(), node.getSUID());
+      else
+        return Objects.equals(((LabelSelection)other).edge.getSUID(), edge.getSUID());
 		}
 		return false;
 	}
 	
 	@Override
 	public int hashCode() {
-		return node.getSUID().hashCode();
+    if (node != null)
+      return node.getSUID().hashCode();
+    else
+      return edge.getSUID().hashCode();
 	}
 }

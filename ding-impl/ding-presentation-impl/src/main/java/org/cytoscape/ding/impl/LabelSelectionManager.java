@@ -22,6 +22,7 @@ public class LabelSelectionManager {
 	private final SwingPropertyChangeSupport propChangeSupport = new SwingPropertyChangeSupport(this);
 	
 	private Set<LabelSelection> selectedNodeLabels = new HashSet<>();
+	private Set<LabelSelection> selectedEdgeLabels = new HashSet<>();
 	private LabelSelection primarySelection;
 	private Point currentDragPoint;
 	
@@ -31,22 +32,40 @@ public class LabelSelectionManager {
 	}
 	
 	public void add(LabelSelection sel) {
-		boolean changed = selectedNodeLabels.add(sel);
-		if(changed)
+		boolean changed = false;
+    if (sel.getNode() != null)
+      changed = selectedNodeLabels.add(sel);
+    else
+      changed = selectedEdgeLabels.add(sel);
+
+		if (changed)
 			fireSelectionChanged();
 	}
 	
 	public void remove(LabelSelection sel) {
-		boolean changed = selectedNodeLabels.remove(sel);
-		if(changed)
+		boolean changed = false;
+    if (sel.getNode() != null)
+      changed = selectedNodeLabels.remove(sel);
+    else
+      changed = selectedEdgeLabels.remove(sel);
+
+		if (changed)
 			fireSelectionChanged();
 	}
 	
 	public void clear() {
+    boolean changed = false;
 		if(!selectedNodeLabels.isEmpty()) {
 			selectedNodeLabels.clear();
-			fireSelectionChanged();
+      changed = true;
 		}
+		if(!selectedEdgeLabels.isEmpty()) {
+			selectedEdgeLabels.clear();
+      changed = true;
+    }
+
+    if (changed)
+			fireSelectionChanged();
 	}
 	
 	// The last clicked on label, used to make rotating consistent for all selected labels.
@@ -54,31 +73,40 @@ public class LabelSelectionManager {
 		this.primarySelection = sel;
 	}
 		
-	public Collection<LabelSelection> getSelectedLabels() {
+	public Collection<LabelSelection> getSelectedNodeLabels() {
 		return selectedNodeLabels;
+	}
+		
+	public Collection<LabelSelection> getSelectedEdgeLabels() {
+		return selectedEdgeLabels;
 	}
 	
 	public boolean isEmpty() {
-		return selectedNodeLabels.isEmpty();
+		return selectedNodeLabels.isEmpty() && selectedEdgeLabels.isEmpty();
 	}
 	
 	public boolean contains(LabelSelection sel) {
-		return selectedNodeLabels.contains(sel);
+    if (sel.getNode() != null)
+      return selectedNodeLabels.contains(sel);
+    else
+      return selectedEdgeLabels.contains(sel);
 	}
 	
 	public void setCurrentDragPoint(Point offset) {
 		this.currentDragPoint = offset;
 	}
 	
+
 	public void move(Point p) {
 		var transform = re.getTransform();
-		var nodePt = transform.getNodeCoordinates(p);
+		var nodePt = transform.getNodeCoordinates(p); // <-- FIXME
 		var offsetPt = transform.getNodeCoordinates(currentDragPoint);
 
 		double dx = nodePt.getX() - offsetPt.getX();
 		double dy = nodePt.getY() - offsetPt.getY();
-		
-		selectedNodeLabels.forEach(sl -> sl.translate(dx, dy));
+
+    selectedNodeLabels.forEach(sl -> sl.translate(dx, dy));
+    selectedEdgeLabels.forEach(sl -> sl.translate(dx, dy));
 		currentDragPoint = p;
 	}
 	
@@ -101,6 +129,7 @@ public class LabelSelectionManager {
 		double angle = angle2 - angle1;
 		
 		selectedNodeLabels.forEach(sl -> sl.rotate(angle));
+		selectedEdgeLabels.forEach(sl -> sl.rotate(angle));
 	}
 	
 	
@@ -118,6 +147,12 @@ public class LabelSelectionManager {
 			var transformedShape = transform.createTransformedShape(shape);
 			g.draw(transformedShape);
 		}
+
+		for(LabelSelection sel : selectedEdgeLabels) {
+			Shape shape = sel.getShape();
+			var transformedShape = transform.createTransformedShape(shape);
+			g.draw(transformedShape);
+    }
 	}
 
 	

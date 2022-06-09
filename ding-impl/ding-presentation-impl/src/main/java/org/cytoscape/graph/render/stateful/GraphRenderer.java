@@ -250,9 +250,9 @@ public final class GraphRenderer {
 						final Position edgeAnchor = edgeDetails.getLabelEdgeAnchor(edge);
 						final float offsetVectorX = edgeDetails.getLabelOffsetVectorX(edge);
 						final float offsetVectorY = edgeDetails.getLabelOffsetVectorY(edge);
-            final double slope = (floatBuff3[1]-floatBuff4[1])/(floatBuff3[0]-floatBuff4[0]);
-            double rise = floatBuff4[1]-floatBuff3[1];
-            double run = floatBuff4[0]-floatBuff3[0];
+            final double rise = floatBuff4[1]-floatBuff3[1];
+            final double run = floatBuff4[0]-floatBuff3[0];
+            final double slope = rise/run;
 						final double theta = edgeDetails.getLabelRotation(edge, rise, run)*.01745329252;
 						final Justification justify;
 						final Paint backgroundPaint = edgeDetails.getLabelBackgroundPaint(edge);
@@ -271,9 +271,13 @@ public final class GraphRenderer {
 						// Note that we reuse the position enum here.  West == source and East == target
 						// This is sort of safe since we don't provide an API for changing this
 						// in any case.
-						if (edgeAnchor == Position.WEST) {		edgeAnchorPointX = srcXAdj;   edgeAnchorPointY = srcYAdj;
-						} else if (edgeAnchor == Position.EAST) { edgeAnchorPointX = trgXAdj; edgeAnchorPointY = trgYAdj;
-						} else if (edgeAnchor == Position.CENTER) {
+						if (edgeAnchor == Position.WEST || edgeAnchor == Position.SOUTH_WEST || edgeAnchor == Position.NORTH_WEST) {
+              edgeAnchorPointX = srcXAdj; 
+              edgeAnchorPointY = srcYAdj;
+						} else if (edgeAnchor == Position.EAST || edgeAnchor == Position.SOUTH_EAST || edgeAnchor == Position.NORTH_EAST) { 
+              edgeAnchorPointX = trgXAdj; 
+              edgeAnchorPointY = trgYAdj;
+						} else if (edgeAnchor == Position.CENTER || edgeAnchor == Position.SOUTH || edgeAnchor == Position.NORTH) {
 							if (!GraphGraphics.getEdgePath(srcArrow, srcArrowSize, trgArrow,
 							              trgArrowSize, srcXAdj, srcYAdj, anchors,  trgXAdj, trgYAdj, path2d)) {
 								continue;
@@ -370,8 +374,9 @@ public final class GraphRenderer {
 
 						final double textXCenter = edgeAnchorPointX - doubleBuff2[0] + offsetVectorX;
 						final double textYCenter = edgeAnchorPointY - doubleBuff2[1] + offsetVectorY;
+
 						renderText(grafx, labelInfo, (float) textXCenter, (float) textYCenter,
-								edgeAnchorPointX, edgeAnchorPointY, justify, paint, backgroundPaint, backgroundShape, theta, flags.has(LOD_TEXT_AS_SHAPE));
+								edgeAnchorPointX+offsetVectorX, edgeAnchorPointY+offsetVectorY, justify, paint, backgroundPaint, backgroundShape, theta, flags.has(LOD_TEXT_AS_SHAPE));
 					}
 				}
 				
@@ -489,7 +494,7 @@ public final class GraphRenderer {
 						final double textYCenter = nodeAnchorPointY - doubleBuff2[1] + offsetVectorY;
 						
 						renderText(grafx, labelInfo, (float) textXCenter,(float) textYCenter, nodeAnchorPointX+offsetVectorX,
-                                	nodeAnchorPointY+offsetVectorY, justify, paint, backgroundPaint, backgroundShape, theta, flags.has(LOD_TEXT_AS_SHAPE));
+                       nodeAnchorPointY+offsetVectorY, justify, paint, backgroundPaint, backgroundShape, theta, flags.has(LOD_TEXT_AS_SHAPE));
 
 					}
 				}

@@ -381,7 +381,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			boolean allChanged = false;
 			boolean annotationsChanged = false;
 			boolean moved = false;
-			
+
 			if(code == VK_UP || code == VK_DOWN || code == VK_LEFT || code == VK_RIGHT) {
 				if(isControlOrMetaDown(e)) {
 					panCanvas(e);
@@ -536,23 +536,42 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		}
 		
 		
+    // TODO: add support for EDGE_LABEL_POSITION!!!
 		private boolean moveNodeLabels(KeyEvent k) {
 			var labelSelectionManager = re.getLabelSelectionManager();
-			var selectedLabels = labelSelectionManager.getSelectedLabels();
-			if(selectedLabels == null || selectedLabels.isEmpty())
+			var selectedNodeLabels = labelSelectionManager.getSelectedNodeLabels();
+			var selectedEdgeLabels = labelSelectionManager.getSelectedEdgeLabels();
+			if((selectedNodeLabels == null && selectedEdgeLabels == null) || (selectedNodeLabels.isEmpty() && selectedEdgeLabels.isEmpty()))
 				return false;
 			
 			if(labelEdit == null) {
-				labelEdit = new CompositeCyEdit<LabelEdit>("Move Labels", registrar, selectedLabels.size());
-				for(var selectedLabel : selectedLabels) {
+        int size = 0;
+        if (selectedNodeLabels != null && selectedNodeLabels.size() > 0)
+          size += selectedNodeLabels.size();
+        if (selectedEdgeLabels != null && selectedEdgeLabels.size() > 0)
+          size += selectedEdgeLabels.size();
+
+				labelEdit = new CompositeCyEdit<LabelEdit>("Move Labels", registrar, size);
+				for(var selectedLabel : selectedNodeLabels) {
 					View<CyNode> mutableNode = re.getViewModelSnapshot().getMutableNodeView(selectedLabel.getNode().getSUID());
 					Long suid = mutableNode.getModel().getSUID();
 					var edit = new LabelEdit(registrar, re, re.getViewModel(), suid, selectedLabel);
 					labelEdit.add(edit);
 				}
+				for(var selectedLabel : selectedEdgeLabels) {
+					View<CyEdge> mutableEdge = re.getViewModelSnapshot().getMutableEdgeView(selectedLabel.getEdge().getSUID());
+					Long suid = mutableEdge.getModel().getSUID();
+					var edit = new LabelEdit(registrar, re, re.getViewModel(), suid, selectedLabel);
+					labelEdit.add(edit);
+				}
 			}
 			
-			var pos = selectedLabels.iterator().next().getPosition();
+      ObjectPosition pos;
+      if (selectedNodeLabels != null) 
+        pos = selectedNodeLabels.iterator().next().getPosition();
+      else
+        pos = selectedEdgeLabels.iterator().next().getPosition();
+
 			Point start = re.getTransform().getImageCoordinates(pos.getOffsetX(), pos.getOffsetY());
 			int x = start.x;
 			int y = start.y;
@@ -568,13 +587,22 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			labelSelectionManager.setCurrentDragPoint(start);
 			labelSelectionManager.move(new Point(x, y));
 			
-			for(var selectedLabel : re.getLabelSelectionManager().getSelectedLabels()) {
+      // TODO: add support for EDGE_LABEL_POSITION!!!
+			for(var selectedLabel : re.getLabelSelectionManager().getSelectedNodeLabels()) {
 				View<CyNode> mutableNode = re.getViewModelSnapshot().getMutableNodeView(selectedLabel.getNode().getSUID());
 				ObjectPosition newPosition = selectedLabel.getPosition();
 				double newAngle = selectedLabel.getAngleDegrees();
 				mutableNode.setLockedValue(DVisualLexicon.NODE_LABEL_POSITION, newPosition);
 				mutableNode.setLockedValue(DVisualLexicon.NODE_LABEL_ROTATION, newAngle);
 			}
+
+			for(var selectedLabel : re.getLabelSelectionManager().getSelectedEdgeLabels()) {
+				View<CyEdge> mutableEdge = re.getViewModelSnapshot().getMutableEdgeView(selectedLabel.getEdge().getSUID());
+				ObjectPosition newPosition = selectedLabel.getPosition();
+				double newAngle = selectedLabel.getAngleDegrees();
+				mutableEdge.setLockedValue(DVisualLexicon.EDGE_LABEL_POSITION, newPosition);
+				mutableEdge.setLockedValue(DVisualLexicon.EDGE_LABEL_ROTATION, newAngle);
+      }
 			
 			return true;
 		}
@@ -966,6 +994,10 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			
 			if(labelSelectionEnabled()) {
 				LabelSelection selectedLabel = picker.getNodeLabelAt(e.getPoint());
+
+        // Not node label -- try for an edge label
+        if (selectedLabel == null)
+          selectedLabel = picker.getEdgeLabelAt(e.getPoint());
 				if(selectedLabel != null) {
 					var labelSelectionManager = re.getLabelSelectionManager();
 					labelSelectionManager.setCurrentDragPoint(e.getPoint());
@@ -981,6 +1013,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 					labelSelectionManager.setPrimary(selectedLabel);
 					return true;
 				}
+        selectedLabel = picker.getEdgeLabelAt(e.getPoint());
 			}
 			re.getLabelSelectionManager().clear();
 			
@@ -1136,7 +1169,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 
 			var labelSelectionManager = re.getLabelSelectionManager();
 			if(!labelSelectionManager.isEmpty()) {
-				var selectedLabels = labelSelectionManager.getSelectedLabels();
+				var selectedLabels = labelSelectionManager.getSelectedNodeLabels();
 				
 				for(var selectedLabel : selectedLabels) {
 					View<CyNode> mutableNode = re.getViewModelSnapshot().getMutableNodeView(selectedLabel.getNode().getSUID());
@@ -1151,6 +1184,22 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 					labelEdit.getChildren().forEach(LabelEdit::savePositionAndAngle);
 					labelEdit.post();
 				}
+
+				selectedLabels = labelSelectionManager.getSelectedEdgeLabels();
+				for(var selectedLabel : selectedLabels) {
+					View<CyEdge> mutableEdge = re.getViewModelSnapshot().getMutableEdgeView(selectedLabel.getEdge().getSUID());
+					ObjectPosition newPosition = selectedLabel.getPosition();
+					double newAngle = selectedLabel.getAngleDegrees();
+
+					mutableEdge.setLockedValue(DVisualLexicon.EDGE_LABEL_POSITION, newPosition);
+					mutableEdge.setLockedValue(DVisualLexicon.EDGE_LABEL_ROTATION, newAngle);
+				}
+				
+				if(labelEdit != null) {
+					labelEdit.getChildren().forEach(LabelEdit::savePositionAndAngle);
+					labelEdit.post();
+				}
+
 				// If moving a label then nothing else moves
 				mousePressedPoint = null;
 				e.consume();
@@ -1210,16 +1259,31 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			var labelSelectionManager = re.getLabelSelectionManager();
 			if(!labelSelectionManager.isEmpty()) {
 				if(labelEdit == null) {
-					var selectedLabels = labelSelectionManager.getSelectedLabels();
-					labelEdit = new CompositeCyEdit<LabelEdit>("Move Labels", registrar, selectedLabels.size());
+					var selectedLabels = labelSelectionManager.getSelectedNodeLabels();
+
+          if (selectedLabels != null && selectedLabels.size() > 0) {
+            labelEdit = new CompositeCyEdit<LabelEdit>("Move Labels", registrar, selectedLabels.size());
 					
-					for(var selectedLabel : selectedLabels) {
-						View<CyNode> mutableNode = re.getViewModelSnapshot().getMutableNodeView(selectedLabel.getNode().getSUID());
-						Long suid = mutableNode.getModel().getSUID();
-						var edit = new LabelEdit(registrar, re, re.getViewModel(), suid, selectedLabel);
-						labelEdit.add(edit);
-					}
-				}
+            for(var selectedLabel : selectedLabels) {
+              View<CyNode> mutableNode = re.getViewModelSnapshot().getMutableNodeView(selectedLabel.getNode().getSUID());
+              Long suid = mutableNode.getModel().getSUID();
+              var edit = new LabelEdit(registrar, re, re.getViewModel(), suid, selectedLabel);
+              labelEdit.add(edit);
+            }
+          } else {
+            selectedLabels = labelSelectionManager.getSelectedEdgeLabels();
+            if (selectedLabels != null && selectedLabels.size() > 0) {
+              labelEdit = new CompositeCyEdit<LabelEdit>("Move Labels", registrar, selectedLabels.size());
+            
+              for(var selectedLabel : selectedLabels) {
+                View<CyEdge> mutableEdge = re.getViewModelSnapshot().getMutableEdgeView(selectedLabel.getEdge().getSUID());
+                Long suid = mutableEdge.getModel().getSUID();
+                var edit = new LabelEdit(registrar, re, re.getViewModel(), suid, selectedLabel);
+                labelEdit.add(edit);
+              }
+            }
+          }
+        }
 				
 				if(isControlOrMetaDown(e)) {
 					labelSelectionManager.rotate(e.getPoint());

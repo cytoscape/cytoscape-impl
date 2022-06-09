@@ -3,6 +3,7 @@ package org.cytoscape.ding.impl.undo;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.LabelSelection;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
@@ -42,11 +43,19 @@ public class LabelEdit extends AbstractCyEdit {
 		this.nodeId = nodeId;
 		this.labelSelection = labelSelection;
 		
-		View<CyNode> mutableNode = re.getViewModelSnapshot().getMutableNodeView(labelSelection.getNode().getSUID());
-		if(mutableNode.isValueLocked(DVisualLexicon.NODE_LABEL_POSITION))
-			this.startPosition = labelSelection.getPosition();
-		if(mutableNode.isValueLocked(DVisualLexicon.NODE_LABEL_ROTATION))
-			this.startAngle = labelSelection.getAngleDegrees();
+    if (labelSelection.getNode() != null) {
+      View<CyNode> mutableNode = re.getViewModelSnapshot().getMutableNodeView(labelSelection.getNode().getSUID());
+      if(mutableNode.isValueLocked(DVisualLexicon.NODE_LABEL_POSITION))
+        this.startPosition = labelSelection.getPosition();
+      if(mutableNode.isValueLocked(DVisualLexicon.NODE_LABEL_ROTATION))
+        this.startAngle = labelSelection.getAngleDegrees();
+    } else if (labelSelection.getEdge() != null) {
+      View<CyEdge> mutableEdge = re.getViewModelSnapshot().getMutableEdgeView(labelSelection.getEdge().getSUID());
+      if(mutableEdge.isValueLocked(DVisualLexicon.EDGE_LABEL_POSITION))
+        this.startPosition = labelSelection.getPosition();
+      if(mutableEdge.isValueLocked(DVisualLexicon.EDGE_LABEL_ROTATION))
+        this.startAngle = labelSelection.getAngleDegrees();
+    }
 	}
 
 	private boolean isNetworkViewRegistered() {
