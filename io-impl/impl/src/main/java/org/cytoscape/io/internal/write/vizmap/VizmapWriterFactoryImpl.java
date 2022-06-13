@@ -32,6 +32,7 @@ import org.cytoscape.io.internal.util.vizmap.VisualStyleSerializer;
 import org.cytoscape.io.internal.write.AbstractCyWriterFactory;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.io.write.VizmapWriterFactory;
+import org.cytoscape.view.vizmap.StyleAssociation;
 import org.cytoscape.view.vizmap.VisualStyle;
 
 public class VizmapWriterFactoryImpl extends AbstractCyWriterFactory implements VizmapWriterFactory {
@@ -45,11 +46,16 @@ public class VizmapWriterFactoryImpl extends AbstractCyWriterFactory implements 
 
     @Override
     public CyWriter createWriter(OutputStream os, Set<VisualStyle> networkStyles) {
-        return new VizmapWriterImpl(os, visualStyleSerializer, networkStyles, null);
+        return new VizmapWriterImpl(os, visualStyleSerializer, networkStyles, null, null);
     }
     
     @Override
     public CyWriter createWriter(OutputStream os, Set<VisualStyle> networkStyles, Set<VisualStyle> tableStyles) {
-    	return new VizmapWriterImpl(os, visualStyleSerializer, networkStyles, tableStyles);
+    	return new VizmapWriterImpl(os, visualStyleSerializer, networkStyles, tableStyles, null);
+    }
+    
+    @Override
+    public CyWriter createWriter(OutputStream os, Set<VisualStyle> networkStyles, Set<VisualStyle> tableStyles, Set<StyleAssociation> columnStyleAssociations) {
+    	return new VizmapWriterImpl(os, visualStyleSerializer, networkStyles, tableStyles, columnStyleAssociations);
     }
 }

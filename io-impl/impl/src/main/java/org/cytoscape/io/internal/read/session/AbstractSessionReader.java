@@ -30,6 +30,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySession;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.table.CyTableViewMetadata;
+import org.cytoscape.view.vizmap.StyleAssociation;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
@@ -85,6 +86,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	protected final Set<CyTableViewMetadata> tableViews = new LinkedHashSet<>();
 	protected final Set<VisualStyle> networkStyles = new HashSet<>();
 	protected final Set<VisualStyle> tableStyles = new HashSet<>();
+	protected final Set<StyleAssociation> columnStyleAssociations = new HashSet<>();
 	protected final Map<CyNetworkView, String> visualStyleMap = new WeakHashMap<>();
 	protected final Set<CyTableMetadata> tableMetadata = new HashSet<>();
 	protected final Map<String, List<File>> appFileListMap = new HashMap<>();
@@ -132,6 +134,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 				
 				.tableViews(tableViews) 
 				.tableStyles(tableStyles)
+				.columnStyleAssociations(columnStyleAssociations)
 				
 				.properties(properties)
 				.visualStyles(networkStyles)

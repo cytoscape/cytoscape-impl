@@ -10,9 +10,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.UUID;
 
 import org.cytoscape.io.internal.util.vizmap.model.AttributeType;
 import org.cytoscape.io.internal.util.vizmap.model.Cell;
+import org.cytoscape.io.internal.util.vizmap.model.ColumnStyleAssociation;
 import org.cytoscape.io.internal.util.vizmap.model.Dependency;
 import org.cytoscape.io.internal.util.vizmap.model.DiscreteMappingEntry;
 import org.cytoscape.io.internal.util.vizmap.model.Edge;
@@ -32,6 +34,7 @@ import org.cytoscape.view.model.Visualizable;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
+import org.cytoscape.view.vizmap.StyleAssociation;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
@@ -91,10 +94,10 @@ public class VisualStyleSerializer {
 	 * @param styles The collection of VisualStyles that you wish to convert into a serializable object.
 	 * @return A Vizmap object that contains a representation of the collection of visual styles.
 	 */
-	public Vizmap createVizmap(Collection<VisualStyle> networkStyles, Collection<VisualStyle> tableStyles) {
+	public Vizmap createVizmap(Collection<VisualStyle> networkStyles, Collection<VisualStyle> tableStyles, Collection<StyleAssociation> columnStyleAssociations) {
 		final Vizmap vizmap = new Vizmap();
 		final RenderingEngineManager renderingEngineManager = serviceRegistrar.getService(RenderingEngineManager.class);
-			
+		
 		if (networkStyles != null) {
 			VisualLexicon lexicon = renderingEngineManager.getDefaultVisualLexicon();
 			
@@ -116,27 +119,58 @@ public class VisualStyleSerializer {
 				createDependencies(style, vsModel, lexicon);
 			}
 		}
-
+		
+		var idMap = new ColStyleIdMap();
+		VisualLexicon tableLexicon = renderingEngineManager.getDefaultTableVisualLexicon();
+		
 		if (tableStyles != null) {
-			VisualLexicon lexicon = renderingEngineManager.getDefaultTableVisualLexicon();
-			
 			for (VisualStyle style : tableStyles) {
-				var vsModel = new TableColumnStyle();
+				var id = idMap.getId(style);
+				var vsModel = createTableStyle(style, tableLexicon, id);
 				vizmap.getTableColumnStyle().add(vsModel);
-
-				vsModel.setName(style.getTitle());
-
-				vsModel.setCell(new Cell());
-
-				createVizmapProperties(style, lexicon, BasicTableVisualLexicon.CELL, vsModel.getCell().getVisualProperty());
+			}
+		}
+		
+		if(columnStyleAssociations != null) {
+			for(var styleAssociation : columnStyleAssociations) {
+				var style = styleAssociation.columnVisualStyle();
+				if(!idMap.contains(style)) {
+					var id = idMap.getId(style);
+					var vsModel = createTableStyle(style, tableLexicon, id);
+					vsModel.setAssociated(true); // Means the style is only associated.
+					vizmap.getTableColumnStyle().add(vsModel);
+				}
 				
-				// Create Dependencies
-				createDependencies(style, vsModel, lexicon);
+				var associationModel = new ColumnStyleAssociation();
+				vizmap.getColumnStyleAssociation().add(associationModel);
+				
+				associationModel.setColumnName(styleAssociation.colName());
+				associationModel.setNetworkStyleName(styleAssociation.networkVisualStyle().getTitle());
+				associationModel.setTableColumnStyleId(idMap.getId(style));
+				associationModel.setTableType(styleAssociation.tableType().getSimpleName());
 			}
 		}
 		
 		return vizmap;
 	}
+	
+	
+	private TableColumnStyle createTableStyle(VisualStyle style, VisualLexicon lexicon, String id) {
+		var vsModel = new TableColumnStyle();
+
+		vsModel.setName(style.getTitle());
+		vsModel.setId(id);
+		
+		vsModel.setCell(new Cell());
+
+		createVizmapProperties(style, lexicon, BasicTableVisualLexicon.CELL, vsModel.getCell().getVisualProperty());
+		
+		// Create Dependencies
+		createDependencies(style, vsModel, lexicon);
+		
+		return vsModel;
+	}
+	
 
 	/**
 	 * This method creates a collection of VisualStyle objects based on the provided Vizmap object.
@@ -181,8 +215,8 @@ public class VisualStyleSerializer {
 	 * @param vizmap A Vizmap object containing a representation of VisualStyles.
 	 * @return A collection of VisualStyle objects.
 	 */
-	public Set<VisualStyle> createTableVisualStyles(final Vizmap vizmap) {
-		final Set<VisualStyle> styles = new HashSet<>();
+	public Map<String,VisualStyle> createTableVisualStyles(final Vizmap vizmap) {
+		final Map<String,VisualStyle> styles = new HashMap<>();
 		
 		final RenderingEngineManager renderingEngineManager = serviceRegistrar.getService(RenderingEngineManager.class);
 		VisualLexicon lexicon = renderingEngineManager.getDefaultTableVisualLexicon();
@@ -203,12 +237,71 @@ public class VisualStyleSerializer {
 				
 				// Restore dependency
 				restoreDependencies(vs, vsModel);
-				styles.add(vs);
+				
+				// The "id" field was introduced in cytoscape 3.10. 
+				// Session files created with Cytoscape 3.9 won't have this field, in that case use a dummy UUID.
+				String id = vsModel.getId();
+				if(id == null) {
+					id = UUID.randomUUID().toString();
+				}
+				styles.put(id, vs);
 			}
 		}
 
 		return styles;
 	}
+	
+	
+	public Set<StyleAssociation> createStyleAssociations(final Vizmap vizmap, Set<VisualStyle> networkStyles, Map<String,VisualStyle> columnStyles) { 
+		final Set<StyleAssociation> associations = new HashSet<>();
+		
+		if (vizmap != null) {
+			for(var colAssociationModel : vizmap.getColumnStyleAssociation()) {
+				var colName = colAssociationModel.getColumnName();
+				
+				var colStyleId = colAssociationModel.getTableColumnStyleId();
+				var colStyle = columnStyles.get(colStyleId);
+				
+				var tableType = getTableType(colAssociationModel.getTableType());
+				
+				var netStyle = getNetworkStyle(networkStyles, colAssociationModel.getNetworkStyleName());
+				
+				if(colName != null && netStyle != null && tableType != null && colStyle != null) {
+					associations.add(new StyleAssociation(netStyle, tableType, colName, colStyle));
+				}
+			}
+			
+			// Remove columnStyles from the map that are not directly associated.
+			for(var tableStyleModel : vizmap.getTableColumnStyle()) {
+				if(Boolean.TRUE.equals(tableStyleModel.isAssociated())) {
+					columnStyles.remove(tableStyleModel.getId());
+				}
+			}
+			
+		}
+		
+		return associations;
+	}
+	
+	public Class<? extends CyIdentifiable> getTableType(String name) {
+		if(name == null)
+			return null;
+		if(name.equals("CyNode"))
+			return CyNode.class;
+		if(name.equals("CyEdge"))
+			return CyEdge.class;
+		return null;
+	}
+	
+	public VisualStyle getNetworkStyle(Collection<VisualStyle> styles, String name) {
+		for(var style : styles) {
+			if(style.getTitle().equals(name)) {
+				return style;
+			}
+		}
+		return null;
+	}
+	
 
 	/**
 	 * This method creates a collection of VisualStyle objects based on the provided Properties object.

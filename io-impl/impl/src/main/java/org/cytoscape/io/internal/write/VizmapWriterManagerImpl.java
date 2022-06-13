@@ -34,6 +34,7 @@ import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.io.write.VizmapWriterFactory;
 import org.cytoscape.io.write.VizmapWriterManager;
+import org.cytoscape.view.vizmap.StyleAssociation;
 import org.cytoscape.view.vizmap.VisualStyle;
 
 public class VizmapWriterManagerImpl extends AbstractWriterManager<VizmapWriterFactory> implements VizmapWriterManager {
@@ -44,24 +45,34 @@ public class VizmapWriterManagerImpl extends AbstractWriterManager<VizmapWriterF
 
 	@Override
 	public CyWriter getWriter(Set<VisualStyle> networkStyles, CyFileFilter filter, File file) throws Exception {
-		return getWriter(networkStyles, null, filter, new FileOutputStream(file));
+		return getWriter(networkStyles, null, null, filter, new FileOutputStream(file));
 	}
 
 	@Override
 	public CyWriter getWriter(Set<VisualStyle> networkStyles, CyFileFilter filter, OutputStream os) throws Exception {
-		return getWriter(networkStyles, null, filter, os);
+		return getWriter(networkStyles, null, null, filter, os);
 	}
 
 	@Override
 	public CyWriter getWriter(Set<VisualStyle> networkStyles, Set<VisualStyle> tableStyles, CyFileFilter filter, File file) throws Exception {
-		return getWriter(networkStyles, tableStyles, filter, new FileOutputStream(file));
+		return getWriter(networkStyles, tableStyles, null, filter, new FileOutputStream(file));
 	}
 	
 	@Override
 	public CyWriter getWriter(Set<VisualStyle> networkStyles, Set<VisualStyle> tableStyles, CyFileFilter filter, OutputStream os) throws Exception {
+		return getWriter(networkStyles, tableStyles, null, filter, os);
+	}
+
+	@Override
+	public CyWriter getWriter(Set<VisualStyle> networkStyles, Set<VisualStyle> tableStyles, Set<StyleAssociation> columnStyleAssociations, CyFileFilter filter, File file) throws Exception {
+		return getWriter(networkStyles, tableStyles, columnStyleAssociations, filter, new FileOutputStream(file));
+	}
+
+	@Override
+	public CyWriter getWriter(Set<VisualStyle> networkStyles, Set<VisualStyle> tableStyles, Set<StyleAssociation> columnStyleAssociations, CyFileFilter filter, OutputStream os) throws Exception {
 		VizmapWriterFactory vf = getMatchingFactory(filter);
         if (vf == null)
             throw new NullPointerException("Couldn't find matching factory for filter: " + filter);
-        return vf.createWriter(os, networkStyles, tableStyles);
+        return vf.createWriter(os, networkStyles, tableStyles, columnStyleAssociations);
 	}
 }

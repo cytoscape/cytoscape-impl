@@ -1,14 +1,6 @@
 package org.cytoscape.io.internal.read.session;
 
-import static org.cytoscape.io.internal.util.session.SessionUtil.APPS_FOLDER;
-import static org.cytoscape.io.internal.util.session.SessionUtil.CYTABLE_STATE_FILE;
-import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORKS_FOLDER;
-import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORK_VIEWS_FOLDER;
-import static org.cytoscape.io.internal.util.session.SessionUtil.PROPERTIES_FOLDER;
-import static org.cytoscape.io.internal.util.session.SessionUtil.TABLE_EXT;
-import static org.cytoscape.io.internal.util.session.SessionUtil.VERSION_EXT;
-import static org.cytoscape.io.internal.util.session.SessionUtil.VIZMAP_XML_FILE;
-import static org.cytoscape.io.internal.util.session.SessionUtil.XGMML_EXT;
+import static org.cytoscape.io.internal.util.session.SessionUtil.*;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -569,9 +561,12 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 		networkStyles.addAll(reader.getVisualStyles());
 		
 		var tableVisualStyles = reader.getTableVisualStyles();
-		
 		if (tableVisualStyles != null)
 			tableStyles.addAll(tableVisualStyles);
+		
+		var associations = reader.getColumnStyleAssociations();
+		if (associations != null)
+			columnStyleAssociations.addAll(associations);
 	}
 
 	private void extractProperties(InputStream is, String entryName) throws Exception {

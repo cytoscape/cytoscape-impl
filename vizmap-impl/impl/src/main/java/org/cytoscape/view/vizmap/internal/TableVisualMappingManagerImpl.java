@@ -24,6 +24,7 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.events.TableViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.TableViewAboutToBeDestroyedListener;
 import org.cytoscape.view.model.table.CyTableView;
+import org.cytoscape.view.vizmap.StyleAssociation;
 import org.cytoscape.view.vizmap.TableVisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
@@ -168,6 +169,18 @@ public class TableVisualMappingManagerImpl implements TableVisualMappingManager,
 	
 	@Override
 	public Set<StyleAssociation> getAssociations(VisualStyle columnVisualStyle) {
+		Objects.requireNonNull(columnVisualStyle);
+		return getStyleAssociations(columnVisualStyle);
+	}
+
+	
+	@Override
+	public Set<StyleAssociation> getAllStyleAssociations() {
+		return getStyleAssociations(null);
+	}
+	
+	
+	private Set<StyleAssociation> getStyleAssociations(VisualStyle columnVisualStyle) {
 		Set<StyleAssociation> associations = new HashSet<>();
 		
 		synchronized (lock) {
@@ -179,8 +192,8 @@ public class TableVisualMappingManagerImpl implements TableVisualMappingManager,
 					for(var colEntry : colStyles.entrySet()) {
 						var colName = colEntry.getKey();
 						var colStyle = colEntry.getValue();
-						if(colStyle.equals(columnVisualStyle)) {
-							associations.add(new StyleAssociation(netStyle, tableType, colName));
+						if(columnVisualStyle == null || colStyle.equals(columnVisualStyle)) {
+							associations.add(new StyleAssociation(netStyle, tableType, colName, colStyle));
 						}
 					}
 				}
@@ -194,6 +207,13 @@ public class TableVisualMappingManagerImpl implements TableVisualMappingManager,
 	public Set<VisualStyle> getAllVisualStyles() {
 		synchronized (lock) {
 			return new HashSet<>(column2VisualStyleMap.values());
+		}
+	}
+	
+	@Override
+	public Map<View<CyColumn>, VisualStyle> getAllVisualStylesMap() {
+		synchronized (lock) {
+			return new HashMap<>(column2VisualStyleMap);
 		}
 	}
 

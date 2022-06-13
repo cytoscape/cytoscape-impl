@@ -48,6 +48,7 @@ import org.cytoscape.session.CySession;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.vizmap.StyleAssociation;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
@@ -258,10 +259,11 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	private void zipVizmap() throws Exception {
 		Set<VisualStyle> networkStyles = session.getVisualStyles();
 		Set<VisualStyle> tableStyles = session.getTableStyles();
+		Set<StyleAssociation> styleAssociations = session.getColumnStyleAssociations();
 
 		zos.putNextEntry(new ZipEntry(sessionDir + VIZMAP_FILE));
 
-		CyWriter vizmapWriter = vizmapWriterMgr.getWriter(networkStyles, tableStyles, vizmapFilter, zos);
+		CyWriter vizmapWriter = vizmapWriterMgr.getWriter(networkStyles, tableStyles, styleAssociations, vizmapFilter, zos);
 		vizmapWriter.run(taskMonitor);
 
 		zos.closeEntry();

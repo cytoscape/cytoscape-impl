@@ -36,6 +36,7 @@ import javax.xml.bind.Marshaller;
 import org.cytoscape.io.internal.util.vizmap.VisualStyleSerializer;
 import org.cytoscape.io.internal.util.vizmap.model.Vizmap;
 import org.cytoscape.io.write.CyWriter;
+import org.cytoscape.view.vizmap.StyleAssociation;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
@@ -48,12 +49,20 @@ public class VizmapWriterImpl extends AbstractTask implements CyWriter {
 	private final VisualStyleSerializer visualStyleSerializer;
 	private final Set<VisualStyle> networkStyles;
 	private final Set<VisualStyle> tableStyles;
+	private final Set<StyleAssociation> columnStyleAssociations;
 
-	public VizmapWriterImpl(final OutputStream outputStream, final VisualStyleSerializer visualStyleSerializer, Set<VisualStyle> networkStyles, Set<VisualStyle> tableStyles) {
+	public VizmapWriterImpl(
+			OutputStream outputStream, 
+			VisualStyleSerializer visualStyleSerializer, 
+			Set<VisualStyle> networkStyles, 
+			Set<VisualStyle> tableStyles,
+			Set<StyleAssociation> columnStyleAssociations
+	) {
 		this.outputStream = outputStream;
 		this.visualStyleSerializer = visualStyleSerializer;
 		this.networkStyles = networkStyles;
 		this.tableStyles = tableStyles;
+		this.columnStyleAssociations = columnStyleAssociations;
 	}
 
 	@Override
@@ -70,7 +79,7 @@ public class VizmapWriterImpl extends AbstractTask implements CyWriter {
 		
 		taskMonitor.setProgress(0.2);
 		
-		Vizmap vizmap = visualStyleSerializer.createVizmap(networkStyles, tableStyles);
+		Vizmap vizmap = visualStyleSerializer.createVizmap(networkStyles, tableStyles, columnStyleAssociations);
 		vizmap.setId(vizmapDocId);
 		vizmap.setDocumentVersion(VIZMAP_VERSION);
 		

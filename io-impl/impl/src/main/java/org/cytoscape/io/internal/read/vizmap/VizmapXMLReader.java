@@ -25,6 +25,7 @@ package org.cytoscape.io.internal.read.vizmap;
  */
 
 import java.io.InputStream;
+import java.util.HashSet;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
@@ -56,7 +57,12 @@ public class VizmapXMLReader extends AbstractVizmapReader {
 		tm.setProgress(0.7);
         this.networkStyles = visualStyleSerializer.createNetworkVisualStyles(vizmap);
         tm.setProgress(0.8);
-        this.tableStyles = visualStyleSerializer.createTableVisualStyles(vizmap);
+        var tableStyleMap = visualStyleSerializer.createTableVisualStyles(vizmap);
+        
+        // This next method is side-effecting, it removes non-directly associated styles from tableStyleMap
+        this.columnStyleAssociations = visualStyleSerializer.createStyleAssociations(vizmap, networkStyles, tableStyleMap);
+        this.tableStyles = new HashSet<>(tableStyleMap.values());
+        
 		tm.setProgress(1.0);
     }
 }

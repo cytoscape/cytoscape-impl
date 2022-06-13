@@ -6,6 +6,7 @@
 			<xs:sequence>
 				<xs:element maxOccurs="unbounded" ref="visualStyle" />
 				<xs:element maxOccurs="unbounded" ref="tableColumnStyle" />
+				<xs:element maxOccurs="unbounded" ref="columnStyleAssociation" />
 			</xs:sequence>
 			<xs:attribute name="id" use="required" type="xs:NCName" />
 			<xs:attribute name="documentVersion" use="optional" default="3.1" type="xs:normalizedString"/>
@@ -27,6 +28,17 @@
 				<xs:element ref="cell" minOccurs="1" maxOccurs="1" />
 			</xs:all>
 			<xs:attribute name="name" use="required" type="xs:NCName" />
+			<xs:attribute name="id" use="optional" type="xs:NCName" />
+			<xs:attribute name="associated" use="optional" type="xs:boolean" />
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="columnStyleAssociation">
+		<xs:complexType>
+			<xs:attribute name="networkStyleName" use="required" type="xs:NCName" />
+			<xs:attribute name="tableColumnStyleName" use="required" type="xs:NCName" />
+			<xs:attribute name="tableColumnStyleId" use="required" type="xs:NCName" />
+			<xs:attribute name="tableType" use="required" type="xs:string" />
+			<xs:attribute name="columnName" use="required" type="xs:string" />
 		</xs:complexType>
 	</xs:element>
 	<xs:element name="cell">

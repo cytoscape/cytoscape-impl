@@ -147,6 +147,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		var styles = vmMgr.getAllVisualStyles();
 		var props = getAllProperties();
 		var tableStyles = tblVmMgr.getAllVisualStyles();
+		var styleAssociations = tblVmMgr.getAllStyleAssociations();
 		
 		// Build the session
 		var sess = new CySession.Builder()
@@ -158,6 +159,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 				.tableViews(tableViewMetadatas)
 				.visualStyles(styles)
 				.tableStyles(tableStyles)
+				.columnStyleAssociations(styleAssociations)
 				.viewVisualStyleMap(stylesMap)
 				.build();
 
@@ -357,6 +359,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 			restoreNetworkSelection(sess, selectedNetworks);
 			restoreVisualStyles(sess);
 			restoreTableViews(sess);
+			restoreColumnStyleAssociations(sess);
 			restoreCurrentVisualStyle();
 		}
 
@@ -577,6 +580,19 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 					}
 				}
 			}
+		}
+	}
+	
+	private void restoreColumnStyleAssociations(CySession sess) {
+		var tableVMM = serviceRegistrar.getService(TableVisualMappingManager.class);
+		
+		for(var association : sess.getColumnStyleAssociations()) {
+			var netStyle = association.networkVisualStyle();
+			var tableType = association.tableType();
+			var colName = association.colName();
+			var columnVisualStyle = association.columnVisualStyle();
+			
+			tableVMM.setAssociatedVisualStyle(netStyle, tableType, colName, columnVisualStyle);
 		}
 	}
 

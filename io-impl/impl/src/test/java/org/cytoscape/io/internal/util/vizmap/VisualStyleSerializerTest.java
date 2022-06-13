@@ -136,12 +136,12 @@ public class VisualStyleSerializerTest {
 
 	@Test
 	public void testVizmapNotNullForNullVS() throws Exception {
-		assertNotNull(serializer.createVizmap(null, null));
+		assertNotNull(serializer.createVizmap(null, null, null));
 	}
 
 	@Test
 	public void testVizmapNotNullForEmptyVS() throws Exception {
-		assertNotNull(serializer.createVizmap(new ArrayList<>(), new ArrayList<>()));
+		assertNotNull(serializer.createVizmap(new ArrayList<>(), new ArrayList<>(), new ArrayList<>()));
 	}
 
 	@Test

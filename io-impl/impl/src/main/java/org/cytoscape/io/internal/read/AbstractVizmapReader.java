@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.cytoscape.io.internal.util.vizmap.VisualStyleSerializer;
 import org.cytoscape.io.read.VizmapReader;
+import org.cytoscape.view.vizmap.StyleAssociation;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
 
@@ -39,6 +40,7 @@ public abstract class AbstractVizmapReader extends AbstractTask implements Vizma
     protected final VisualStyleSerializer visualStyleSerializer;
     protected Set<VisualStyle> networkStyles;
     protected Set<VisualStyle> tableStyles;
+    protected Set<StyleAssociation> columnStyleAssociations;
     
     public AbstractVizmapReader(InputStream inputStream, VisualStyleSerializer visualStyleSerializer) {
         if ( inputStream == null )
@@ -55,5 +57,10 @@ public abstract class AbstractVizmapReader extends AbstractTask implements Vizma
 	@Override
 	public Set<VisualStyle> getTableVisualStyles() {
 		return tableStyles;
+	}
+	
+	@Override
+	public Set<StyleAssociation> getColumnStyleAssociations() {
+		return columnStyleAssociations;
 	}
 }

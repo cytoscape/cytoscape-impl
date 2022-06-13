@@ -16,6 +16,7 @@ import java.beans.PropertyChangeEvent;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -790,6 +791,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		for(var entry : edgeColStyles.entrySet()) {
 			columns.add(new ColumnSpec(GraphObjectType.edge(), entry.getKey()));
 		}
+		
+		columns.sort(Comparator.naturalOrder());
 		
 		updateVisualPropertySheets(netVS, NETWORK_SHEET_TYPES, resetDefaultVisibleItems, rebuild);
 		updateVisualPropertySheets(colVS, TABLE_SHEET_TYPES, resetDefaultVisibleItems, true);
