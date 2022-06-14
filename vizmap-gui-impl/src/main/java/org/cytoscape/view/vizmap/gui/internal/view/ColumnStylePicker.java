@@ -104,7 +104,7 @@ public class ColumnStylePicker {
 					.addComponent(getAddButton())
 					.addComponent(getDeleteButton())
 				)
-				.addComponent(scrollPane, 300, 300, 300)
+				.addComponent(scrollPane, 50, 200, Short.MAX_VALUE)
 			);
 		}
 		return columnPanel;

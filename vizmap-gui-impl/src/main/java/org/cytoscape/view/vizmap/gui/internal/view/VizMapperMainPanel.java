@@ -20,13 +20,13 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JSplitPane;
 
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.presentation.RenderingEngine;
@@ -265,23 +265,26 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		setOpaque(!isAquaLAF());
 		
 		var topPanel = new JPanel(new BorderLayout());
+		topPanel.add(getStylesPanelProvider().getComponent(), BorderLayout.NORTH);
 		
-		topPanel.add(getStylesPanelProvider().getComponent(), BorderLayout.CENTER);
+		BiModalJSplitPane splitPane = new BiModalJSplitPane(JSplitPane.VERTICAL_SPLIT, null, null);
+		splitPane.setBottomComponent(getPropertiesPnl().getComponent());
+		splitPane.setOpaque(false);
 		
 		getPropertiesPnl().getPropertiesPn().addChangeListener(e -> {
 			var sheet = getPropertiesPnl().getSelectedVisualPropertySheet();
-			
 			if (sheet == null)
 				return;
 			
 			var type = sheet.getModel().getLexiconType();
-			topPanel.removeAll();
 			
-			topPanel.add(getStylesPanelProvider().getComponent(), BorderLayout.NORTH);
+			if (CyColumn.class.equals(type)) {
+				splitPane.setTopComponent(getColumnStylePnl().getComponent());
+			} else { 
+				splitPane.setTopComponent(null);
+			}
+			splitPane.update();
 			
-			if (CyColumn.class.equals(type) || CyTable.class.equals(type))
-				topPanel.add(getColumnStylePnl().getComponent(), BorderLayout.CENTER);
-				
 			topPanel.revalidate();
 			topPanel.repaint();
 	    });
@@ -293,12 +296,12 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
 				.addComponent(topPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(getPropertiesPnl().getComponent(), DEFAULT_SIZE, 280, Short.MAX_VALUE)
+				.addComponent(splitPane, DEFAULT_SIZE, 280, Short.MAX_VALUE)
 		);
 		layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING)
 				.addGroup(layout.createSequentialGroup()
 						.addComponent(topPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(getPropertiesPnl().getComponent(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(splitPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				)
 		);
 	}
