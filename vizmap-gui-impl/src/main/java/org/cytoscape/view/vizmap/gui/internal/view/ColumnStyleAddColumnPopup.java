@@ -19,8 +19,13 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyColumnComboBox;
 import org.cytoscape.application.swing.CyColumnPresentationManager;
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.vizmap.TableVisualMappingManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.internal.GraphObjectType;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 
@@ -91,33 +96,10 @@ public class ColumnStyleAddColumnPopup extends JDialog {
 		tableCombo = new JComboBox<>(new String[] {"Node", "Edge"});
 		colCombo = new CyColumnComboBox(presentationManager, List.of());
 
-		Runnable setColumns = () -> {
-			var network = servicesUtil.get(CyApplicationManager.class).getCurrentNetwork();
-			
-			colCombo.removeAllItems();
-			CyTable table = null;
-			
-			var tableName = tableCombo.getItemAt(tableCombo.getSelectedIndex());
-			if("Node".equals(tableName)) {
-				table = network.getDefaultNodeTable();
-			} else if("Edge".equals(tableName)) {
-				table = network.getDefaultEdgeTable();
-			}
-			
-			if(table != null) {
-				for(var col : table.getColumns()) {
-					// MKTODO filter out columns that already have a style.
-					if(!"SUID".equals(col.getName())) {
-						colCombo.addItem(col);
-					}
-				};
-			}
-		};
-		
 		final int comboWidth = 300;
 		
-		setColumns.run();
-		tableCombo.addActionListener(e -> setColumns.run());
+		updateColumns();
+		tableCombo.addActionListener(e -> updateColumns());
 		
 		addButton.addActionListener(e -> {
 			var col = colCombo.getItemAt(colCombo.getSelectedIndex());
@@ -139,7 +121,7 @@ public class ColumnStyleAddColumnPopup extends JDialog {
 				.addComponent(colCombo)
 			)
 			.addGap(5)
-			.addComponent(buttonPanel)
+			.addComponent(buttonPanel) 
 		);
 		
 		layout.setHorizontalGroup(layout.createParallelGroup()
@@ -157,4 +139,43 @@ public class ColumnStyleAddColumnPopup extends JDialog {
 		layout.linkSize(SwingConstants.HORIZONTAL, tableLabel, colLabel);
 		layout.linkSize(SwingConstants.HORIZONTAL, tableCombo, colCombo);
 	}
+	
+	
+	private void updateColumns() {
+		var appManager = servicesUtil.get(CyApplicationManager.class);
+		var tableVMM = servicesUtil.get(TableVisualMappingManager.class);
+		var vmm = servicesUtil.get(VisualMappingManager.class);
+		
+		var netStyle = vmm.getCurrentVisualStyle();
+		var network = appManager.getCurrentNetwork();
+		
+		var tableName = tableCombo.getItemAt(tableCombo.getSelectedIndex());
+		
+		CyTable table = null;
+		Class<? extends CyIdentifiable> tableType = null;
+		if("Node".equals(tableName)) {
+			table = network.getDefaultNodeTable();
+			tableType = CyNode.class;
+		} else if("Edge".equals(tableName)) {
+			table = network.getDefaultEdgeTable();
+			tableType = CyEdge.class;
+		}
+		
+		colCombo.removeAllItems();
+		
+		if(table != null) {
+			for(var col : table.getColumns()) {
+				if("SUID".equals(col.getName()) || "selected".equals(col.getName()))
+					continue;
+				
+				var existingStyle = tableVMM.getAssociatedColumnVisualStyle(netStyle, tableType, col.getName());
+				if(existingStyle != null)
+					continue;
+				
+				colCombo.addItem(col);
+			};
+		}
+	}
+	
+	
 }
