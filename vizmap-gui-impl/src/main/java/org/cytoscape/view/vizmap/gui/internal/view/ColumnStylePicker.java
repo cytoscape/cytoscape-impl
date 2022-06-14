@@ -204,8 +204,12 @@ public class ColumnStylePicker {
 	public void updateColumns(List<ColumnSpec> columns, ColumnSpec selectedCol) {
 		var model = new ColumnStyleTableModel(columns);
 		getJTable().setModel(model);
-		int row = model.getRowFor(selectedCol);
-		getJTable().getSelectionModel().setSelectionInterval(row, row);
+		if(selectedCol == null) {
+			getJTable().clearSelection();
+		} else {
+			int row = model.getRowFor(selectedCol);
+			getJTable().getSelectionModel().setSelectionInterval(row, row);
+		}
 	}
 	
 	

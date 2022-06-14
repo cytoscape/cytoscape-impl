@@ -246,7 +246,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 					updateAllVisualPropertySheets(vs, false);
 				});
 				break;
-			case VISUAL_STYLE_UPDATED:  // MKTODO what if the current column visual style is updated????
+			case VISUAL_STYLE_UPDATED:
 				if (body != null) {
 					var style = (VisualStyle) body;
 					VisualStyle currNetStyle = vmProxy.getCurrentNetworkVisualStyle();
@@ -774,12 +774,15 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	private void updateAllVisualPropertySheets(VisualStyle netVS, boolean resetDefaultVisibleItems) {
 		boolean rebuild = shouldRebuildVisualPropertySheets(netVS);
 	
-		// Make sure there are default VisualStyles for node and edge name, so that the column picker isn't empty.
-		initializeDefaultColumnStyles(netVS);
-				
 		var tableVMM = servicesUtil.get(TableVisualMappingManager.class);
-		var tableType = selectedColumn.tableType().type();
-		var colVS = tableVMM.getAssociatedColumnVisualStyle(netVS, tableType, selectedColumn.columnName());
+		
+		VisualStyle colVS;
+		if(selectedColumn == null) {
+			colVS = tableVMM.getDefaultVisualStyle();
+		} else {
+			var tableType = selectedColumn.tableType().type();
+			colVS = tableVMM.getAssociatedColumnVisualStyle(netVS, tableType, selectedColumn.columnName());
+		}
 		
 		var nodeColStyles = tableVMM.getAssociatedColumnVisualStyles(netVS, CyNode.class);
 		var edgeColStyles = tableVMM.getAssociatedColumnVisualStyles(netVS, CyEdge.class);
@@ -800,27 +803,6 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		vizMapperMainPanel.getColumnStylePnl().removeColumnSelectionListener(columnChangeListener);
 		vizMapperMainPanel.updateColumns(columns, selectedColumn);
 		vizMapperMainPanel.getColumnStylePnl().addColumnSelectionListener(columnChangeListener);
-	}
-	
-	
-	private void initializeDefaultColumnStyles(VisualStyle netVS) {
-		var tableVMM = servicesUtil.get(TableVisualMappingManager.class);
-		var visualStyleFactory = servicesUtil.get(VisualStyleFactory.class);
-		
-		VisualStyle nameColStyle = tableVMM.getAssociatedColumnVisualStyle(netVS, CyNode.class, CyNetwork.NAME);
-		if(nameColStyle == null) {
-			nameColStyle = visualStyleFactory.createVisualStyle(CyNetwork.NAME);
-			tableVMM.setAssociatedVisualStyle(netVS, CyNode.class, CyNetwork.NAME, nameColStyle);
-		}
-		nameColStyle = tableVMM.getAssociatedColumnVisualStyle(netVS, CyEdge.class, CyNetwork.NAME);
-		if(nameColStyle == null) {
-			nameColStyle = visualStyleFactory.createVisualStyle(CyNetwork.NAME);
-			tableVMM.setAssociatedVisualStyle(netVS, CyEdge.class, CyNetwork.NAME, nameColStyle);
-		}
-		
-		if(selectedColumn == null) {
-			selectedColumn = new ColumnSpec(GraphObjectType.node(), CyNetwork.NAME);
-		}
 	}
 	
 	
@@ -846,7 +828,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			}
 		} else if(action == Action.DELETE) {
 			tableVMM.setAssociatedVisualStyle(netVS, tableType, col.columnName(), null);
-			selectedColumn = new ColumnSpec(GraphObjectType.node(), CyNetwork.NAME);
+			selectedColumn = null;
 			updateAllVisualPropertySheets(netVS, false);
 		} else { // UPDATE
 			VisualStyle colVS = tableVMM.getAssociatedColumnVisualStyle(netVS, tableType, col.columnName());
@@ -962,8 +944,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				VisualPropertySheet vpSheet;
 				Set<VisualPropertySheetItem<?>> vpSheetItems;
 				
-				if (re == null) {
-					// MKTODO is it safe to pass null for the second arg??? Test this!
+				if (re == null || (sheetTypes == TABLE_SHEET_TYPES && selectedColumn == null)) {
 					var model = new VisualPropertySheetModel(lexiconType, null, style, null);
 					vpSheet = new VisualPropertySheet(model, servicesUtil);
 					vizMapperMainPanel.addVisualPropertySheet(vpSheet);
@@ -975,7 +956,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 					var lexicon = re.getVisualLexicon();
 					GraphObjectType tableType;
 					if(lexiconType == CyColumn.class) {
-						tableType = selectedColumn.tableType();
+						if(selectedColumn == null) // this shouldn't happen, being defensive
+							tableType = GraphObjectType.node();
+						else
+							tableType = selectedColumn.tableType();
 					} else {
 						tableType = GraphObjectType.of(lexiconType);
 					}

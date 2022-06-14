@@ -48,13 +48,20 @@ public class TableVisualMappingManagerImpl implements TableVisualMappingManager,
 	private final Map<VisualStyle,Map<String,VisualStyle>> associatedNodeStyles = new WeakHashMap<>();
 	private final Map<VisualStyle,Map<String,VisualStyle>> associatedEdgeStyles = new WeakHashMap<>();
 
+	private VisualStyle defaultStyle;
+	
 	
 	public TableVisualMappingManagerImpl(final VisualStyleFactory factory, final CyServiceRegistrar serviceRegistrar) {
 		if (serviceRegistrar == null)
 			throw new NullPointerException("'serviceRegistrar' cannot be null");
 		this.serviceRegistrar = serviceRegistrar;
+		this.defaultStyle = factory.createVisualStyle("default");
 	}
 
+	@Override
+	public VisualStyle getDefaultVisualStyle() {
+		return defaultStyle;
+	}
 	
 	@Override
 	public void handleEvent(TableViewAboutToBeDestroyedEvent e) {
