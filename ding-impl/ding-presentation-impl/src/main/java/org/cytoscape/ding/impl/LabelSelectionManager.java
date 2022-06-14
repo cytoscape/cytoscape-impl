@@ -99,7 +99,7 @@ public class LabelSelectionManager {
 
 	public void move(Point p) {
 		var transform = re.getTransform();
-		var nodePt = transform.getNodeCoordinates(p); // <-- FIXME
+		var nodePt = transform.getNodeCoordinates(p); 
 		var offsetPt = transform.getNodeCoordinates(currentDragPoint);
 
 		double dx = nodePt.getX() - offsetPt.getX();

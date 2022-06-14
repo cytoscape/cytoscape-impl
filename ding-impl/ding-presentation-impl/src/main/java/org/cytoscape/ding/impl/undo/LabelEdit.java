@@ -44,13 +44,13 @@ public class LabelEdit extends AbstractCyEdit {
 		this.labelSelection = labelSelection;
 		
     if (labelSelection.getNode() != null) {
-      View<CyNode> mutableNode = re.getViewModelSnapshot().getMutableNodeView(labelSelection.getNode().getSUID());
+      View<CyNode> mutableNode = getMutableNodeView();
       if(mutableNode.isValueLocked(DVisualLexicon.NODE_LABEL_POSITION))
         this.startPosition = labelSelection.getPosition();
       if(mutableNode.isValueLocked(DVisualLexicon.NODE_LABEL_ROTATION))
         this.startAngle = labelSelection.getAngleDegrees();
     } else if (labelSelection.getEdge() != null) {
-      View<CyEdge> mutableEdge = re.getViewModelSnapshot().getMutableEdgeView(labelSelection.getEdge().getSUID());
+      View<CyEdge> mutableEdge = getMutableEdgeView();
       if(mutableEdge.isValueLocked(DVisualLexicon.EDGE_LABEL_POSITION))
         this.startPosition = labelSelection.getPosition();
       if(mutableEdge.isValueLocked(DVisualLexicon.EDGE_LABEL_ROTATION))
@@ -72,6 +72,10 @@ public class LabelEdit extends AbstractCyEdit {
 	private View<CyNode> getMutableNodeView() {
 		return re.getViewModelSnapshot().getMutableNodeView(labelSelection.getNode().getSUID());
 	}
+	
+	private View<CyEdge> getMutableEdgeView() {
+		return re.getViewModelSnapshot().getMutableEdgeView(labelSelection.getEdge().getSUID());
+	}
 
 	public void savePositionAndAngle() {
 		this.endPosition = labelSelection.getPosition();
@@ -82,17 +86,31 @@ public class LabelEdit extends AbstractCyEdit {
 	public void undo() {
 		re.getLabelSelectionManager().clear();
 		if (isNetworkViewRegistered()) { // Make sure the network view still exists!
-			View<CyNode> node = getMutableNodeView();
+      if (labelSelection.getNode() != null) {
+        View<CyNode> node = getMutableNodeView();
 			
-			if(startPosition == null)
-				node.clearValueLock(DVisualLexicon.NODE_LABEL_POSITION);
-			else
-				node.setLockedValue(DVisualLexicon.NODE_LABEL_POSITION, startPosition);
+        if(startPosition == null)
+          node.clearValueLock(DVisualLexicon.NODE_LABEL_POSITION);
+        else
+          node.setLockedValue(DVisualLexicon.NODE_LABEL_POSITION, startPosition);
 			
-			if(startAngle == null)
-				node.clearValueLock(DVisualLexicon.NODE_LABEL_ROTATION);
-			else
-				node.setLockedValue(DVisualLexicon.NODE_LABEL_ROTATION, startAngle);
+        if(startAngle == null)
+          node.clearValueLock(DVisualLexicon.NODE_LABEL_ROTATION);
+        else
+          node.setLockedValue(DVisualLexicon.NODE_LABEL_ROTATION, startAngle);
+      } else if (labelSelection.getEdge() != null) {
+        View<CyEdge> edge = getMutableEdgeView();
+			
+        if(startPosition == null)
+          edge.clearValueLock(DVisualLexicon.EDGE_LABEL_POSITION);
+        else
+          edge.setLockedValue(DVisualLexicon.EDGE_LABEL_POSITION, startPosition);
+			
+        if(startAngle == null)
+          edge.clearValueLock(DVisualLexicon.EDGE_LABEL_ROTATION);
+        else
+          edge.setLockedValue(DVisualLexicon.EDGE_LABEL_ROTATION, startAngle);
+      }
 			
 			updateView();
 		}
@@ -102,9 +120,15 @@ public class LabelEdit extends AbstractCyEdit {
 	public void redo() {
 		re.getLabelSelectionManager().clear();
 		if (isNetworkViewRegistered()) {
-			View<CyNode> node = getMutableNodeView();
-			node.setLockedValue(DVisualLexicon.NODE_LABEL_POSITION, endPosition);
-			node.setLockedValue(DVisualLexicon.NODE_LABEL_ROTATION, endAngle);
+      if (labelSelection.getNode() != null) {
+        View<CyNode> node = getMutableNodeView();
+        node.setLockedValue(DVisualLexicon.NODE_LABEL_POSITION, endPosition);
+        node.setLockedValue(DVisualLexicon.NODE_LABEL_ROTATION, endAngle);
+      } else if (labelSelection.getEdge() != null) {
+        View<CyEdge> edge = getMutableEdgeView();
+        edge.setLockedValue(DVisualLexicon.EDGE_LABEL_POSITION, endPosition);
+        edge.setLockedValue(DVisualLexicon.EDGE_LABEL_ROTATION, endAngle);
+      }
 			updateView();
 		}
 	}

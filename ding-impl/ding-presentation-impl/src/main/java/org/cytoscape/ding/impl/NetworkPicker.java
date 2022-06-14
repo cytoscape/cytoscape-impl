@@ -323,13 +323,13 @@ public class NetworkPicker {
     doubleBuff1[1] = -0.5d * labelInfo.getTotalHeight(); 
     doubleBuff1[2] =  0.5d * labelInfo.getMaxLineWidth(); 
     doubleBuff1[3] =  0.5d * labelInfo.getTotalHeight(); 
-    GraphRenderer.computeAnchor(edgeAnchor, doubleBuff1, doubleBuff2);
-
-		double h = labelInfo.getTotalHeight();  // actual label text box height
-		double w = labelInfo.getMaxLineWidth();  // actual label text box width. 
+    GraphRenderer.computeAnchor(textAnchor, doubleBuff1, doubleBuff2);
 
 		final double textXCenter = edgeAnchorPointX - doubleBuff2[0] + offsetVectorX;
 		final double textYCenter = edgeAnchorPointY - doubleBuff2[1] + offsetVectorY;
+
+		double h = labelInfo.getTotalHeight();  // actual label text box height
+		double w = labelInfo.getMaxLineWidth();  // actual label text box width. 
 		
 		double xMin = textXCenter - (w/2);
 		double yMin = textYCenter - (h/2);
@@ -394,18 +394,16 @@ public class NetworkPicker {
 
 		final double textXCenter = nodeAnchorPointX - doubleBuff2[0] + offsetVectorX;
 		final double textYCenter = nodeAnchorPointY - doubleBuff2[1] + offsetVectorY;
-		
+
 		double h = labelInfo.getTotalHeight();  // actual label text box height
 		double w = labelInfo.getMaxLineWidth();  // actual label text box width. 
 		
 		double xMin = textXCenter - (w/2);
 		double yMin = textYCenter - (h/2);
-//		double xMax = textXCenter + (w/2);
-//		double yMax = textYCenter + (h/2); 
-		
+
 		double labelAnchorX = nodeAnchorPointX + offsetVectorX;
 		double labelAnchorY = nodeAnchorPointY + offsetVectorY;
-		
+
 		Shape shape = new Rectangle2D.Double(xMin, yMin, w, h);
 		if(degrees != 0.0) {
 			double angle = degrees * 0.01745329252;
