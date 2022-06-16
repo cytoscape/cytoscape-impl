@@ -1180,8 +1180,13 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 					ObjectPosition newPosition = selectedLabel.getPosition();
 					double newAngle = selectedLabel.getAngleDegrees();
 					
-					mutableNode.setLockedValue(DVisualLexicon.NODE_LABEL_POSITION, newPosition);
-					mutableNode.setLockedValue(DVisualLexicon.NODE_LABEL_ROTATION, newAngle);
+          // Don't override these if they are the same
+          ObjectPosition currentPosition = mutableNode.getVisualProperty(DVisualLexicon.NODE_LABEL_POSITION);
+          if (!newPosition.equals(currentPosition))
+            mutableNode.setLockedValue(DVisualLexicon.NODE_LABEL_POSITION, newPosition);
+          double currentAngle = mutableNode.getVisualProperty(DVisualLexicon.NODE_LABEL_ROTATION);
+          if (currentAngle != newAngle)
+            mutableNode.setLockedValue(DVisualLexicon.NODE_LABEL_ROTATION, newAngle);
 				}
 				
 				if(labelEdit != null) {
@@ -1196,8 +1201,13 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
           // System.out.println("newPosition="+newPosition);
 					double newAngle = selectedLabel.getAngleDegrees();
 
-					mutableEdge.setLockedValue(DVisualLexicon.EDGE_LABEL_POSITION, newPosition);
-					mutableEdge.setLockedValue(DVisualLexicon.EDGE_LABEL_ROTATION, newAngle);
+          // Don't override these if they are the same
+          ObjectPosition currentPosition = mutableEdge.getVisualProperty(DVisualLexicon.EDGE_LABEL_POSITION);
+          if (!newPosition.equals(currentPosition))
+					  mutableEdge.setLockedValue(DVisualLexicon.EDGE_LABEL_POSITION, newPosition);
+          double currentAngle = mutableEdge.getVisualProperty(DVisualLexicon.EDGE_LABEL_ROTATION);
+          if (currentAngle != newAngle)
+            mutableEdge.setLockedValue(DVisualLexicon.EDGE_LABEL_ROTATION, newAngle);
 				}
 				
 				if(labelEdit != null) {
