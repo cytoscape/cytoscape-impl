@@ -416,6 +416,7 @@ public final class GraphRenderer {
     if (determinant != 0) {
         xy[0] = (e*d - b*f)/determinant;
         xy[1] = (a*f - e*c)/determinant;
+        // xy[1] = Math.copySign(xy[1], yOffset); // Make sure the sign is consistent
         return;
     }
 
@@ -429,6 +430,13 @@ public final class GraphRenderer {
     //       b = Math.sqrt(1/(1+Math.pow((-1/slope),2.0)))
     //       c = Math.sin(angle)
     //       d = -1/slope * b
+    // However, we do want to recognize that yOffset < 0 should always be above the edge and
+    // yOffset > 0 should be below the edge
+    double deg = Math.toDegrees(lineAngle);
+    if (deg > 0 && deg < 90)
+      yOffset = -yOffset;
+    if (deg < -90 && deg > -180)
+      yOffset = -yOffset;
     double perpSlope = -1/slope;
     double a = Math.cos(lineAngle);
     double b = Math.sqrt(1/(1+Math.pow(perpSlope,2.0)));
@@ -437,6 +445,8 @@ public final class GraphRenderer {
 
     xy[0] = a*xOffset + b*yOffset;
     xy[1] = c*xOffset + d*yOffset;
+
+    // xy[1] = Math.copySign(xy[1], yOffset); // Make sure the sign is consistent
 
     return;
   }
