@@ -403,6 +403,13 @@ public final class GraphRenderer {
     //       c = Math.sin(angle)
     //       d = -1/slope * b
 
+    // Deal with our "flipping"
+    double deg = Math.toDegrees(lineAngle);
+    if (deg > 0 && deg < 90)
+      yOffset = -yOffset;
+    if (deg < -90 && deg > -180)
+      yOffset = -yOffset;
+
     double perpSlope = -1/slope;
     double a = Math.cos(lineAngle);
     double b = Math.sqrt(1/(1+Math.pow(perpSlope,2.0)));
