@@ -236,7 +236,7 @@ public final class GraphRenderer {
 				labelPm.start("Label");
 				
 				// Take care of label rendering.
-				if (flags.has(LOD_EDGE_LABELS)) {
+				if (flags.has(LOD_EDGE_LABELS) && !(stacking == EdgeStackingVisualProperty.HAYSTACK)) {
 					final int labelCount = edgeDetails.getLabelCount(edge);
 					for (int labelInx = 0; labelInx < labelCount; labelInx++) {
 						if(pm.isCancelled()) {
@@ -404,11 +404,11 @@ public final class GraphRenderer {
     //       d = -1/slope * b
 
     // Deal with our "flipping"
-    double deg = Math.toDegrees(lineAngle);
-    if (deg > 0 && deg < 90)
-      yOffset = -yOffset;
-    if (deg < -90 && deg > -180)
-      yOffset = -yOffset;
+    // double deg = Math.toDegrees(lineAngle);
+    // if (deg > 0 && deg < 90)
+    //   yOffset = -yOffset;
+    // if (deg < -90 && deg > -180)
+    //   yOffset = -yOffset;
 
     double perpSlope = -1/slope;
     double a = Math.cos(lineAngle);
@@ -423,7 +423,12 @@ public final class GraphRenderer {
     if (determinant != 0) {
         xy[0] = (e*d - b*f)/determinant;
         xy[1] = (a*f - e*c)/determinant;
-        // xy[1] = Math.copySign(xy[1], yOffset); // Make sure the sign is consistent
+        // Deal with our "flipping"
+        double deg = Math.toDegrees(lineAngle);
+        if (deg > 0 && deg < 90)
+          xy[1] = -xy[1];
+        if (deg < -90 && deg > -180)
+          xy[1] = -xy[1];
         return;
     }
 
@@ -444,6 +449,7 @@ public final class GraphRenderer {
       yOffset = -yOffset;
     if (deg < -90 && deg > -180)
       yOffset = -yOffset;
+
     double perpSlope = -1/slope;
     double a = Math.cos(lineAngle);
     double b = Math.sqrt(1/(1+Math.pow(perpSlope,2.0)));

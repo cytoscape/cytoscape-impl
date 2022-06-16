@@ -165,7 +165,7 @@ public class NetworkPicker {
       return null;
     }
 
-    if (renderDetailFlags.not(LOD_EDGE_ARROWS) || stacking == EdgeStackingVisualProperty.HAYSTACK) { // Not rendering arrows.
+    if (renderDetailFlags.not(LOD_EDGE_ARROWS) || stacking == EdgeStackingVisualProperty.HAYSTACK) { 
       trgArrow = srcArrow = ArrowShapeVisualProperty.NONE;
       trgArrowSize = srcArrowSize = 0.0f;
     } else { // Rendering edge arrows.
@@ -466,6 +466,10 @@ public class NetworkPicker {
     View<CyNode>[] nodes = new View[2];
 		while(edgeHits.hasNext()) {
 			View<CyEdge> edge = edgeHits.nextEdgeWithNodeExtents(sourceExtents, targetExtents, nodes);
+      EdgeStacking stacking = edgeDetails.getStacking(edge);
+      if (stacking == EdgeStackingVisualProperty.HAYSTACK) {
+        continue; // We don't do edge label selection for haystack edges
+      }
 
 			var labelSelection = getEdgeLabelShape(edge, labelProvider, sourceExtents, targetExtents, nodes);
 			if(labelSelection != null && labelSelection.getShape().contains(point)) {

@@ -130,6 +130,10 @@ public class LabelSelection {
 
       GraphRenderer.reverseOffset(newX, newY, edgeSlope, edgeAngle, xy2);
       // System.out.println("xy2 = "+xy2[0]+","+xy2[1]);
+
+      // GraphRenderer.updateOffset(xy2[0], xy2[1], edgeSlope, edgeAngle, xy1);
+      // System.out.println("xy1 = "+xy1[0]+","+xy1[1]+" should equal "+newX+","+newY);
+
       dx = xy2[0]-offsetX;
       dy = xy2[1]-offsetY;
     } 

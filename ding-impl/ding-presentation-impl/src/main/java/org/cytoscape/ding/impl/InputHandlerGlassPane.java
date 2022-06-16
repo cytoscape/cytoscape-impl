@@ -388,7 +388,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 					moved = allChanged = true;
 				} else {
 					if(labelSelectionEnabled() && !re.getLabelSelectionManager().isEmpty()) {
-						moved |= allChanged = moveNodeLabels(e);
+						moved |= allChanged = moveLabels(e);
 					} else {
 						if(nodeSelectionEnabled()) {
 							moved |= allChanged = moveNodesAndHandles(e);
@@ -536,8 +536,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		}
 		
 		
-    // TODO: add support for EDGE_LABEL_POSITION!!!
-		private boolean moveNodeLabels(KeyEvent k) {
+		private boolean moveLabels(KeyEvent k) {
 			var labelSelectionManager = re.getLabelSelectionManager();
 			var selectedNodeLabels = labelSelectionManager.getSelectedNodeLabels();
 			var selectedEdgeLabels = labelSelectionManager.getSelectedEdgeLabels();
