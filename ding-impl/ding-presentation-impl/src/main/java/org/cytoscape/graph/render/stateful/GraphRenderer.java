@@ -253,6 +253,7 @@ public final class GraphRenderer {
             final double rise = floatBuff4[1]-floatBuff3[1];
             final double run = floatBuff4[0]-floatBuff3[0];
             final double slope = rise/run;
+            final double lineAngle = Math.atan2(rise, run);
 						final double theta = edgeDetails.getLabelRotation(edge, rise, run)*.01745329252;
 						final Justification justify;
 						final Paint backgroundPaint = edgeDetails.getLabelBackgroundPaint(edge);
@@ -372,11 +373,16 @@ public final class GraphRenderer {
 						doubleBuff1[3] =  0.5d * labelInfo.getTotalHeight(); 
 						computeAnchor(textAnchor, doubleBuff1, doubleBuff2);
 
-						final double textXCenter = edgeAnchorPointX - doubleBuff2[0] + offsetVectorX;
-						final double textYCenter = edgeAnchorPointY - doubleBuff2[1] + offsetVectorY;
+            double[] offsetBuff = new double[2];
+            updateOffset(offsetVectorX, offsetVectorY, slope, lineAngle, offsetBuff);
+
+            // System.out.println("offsetVectorX,Y="+offsetVectorX+","+offsetVectorY+" offsetBuff="+offsetBuff[0]+","+offsetBuff[1]);
+
+						final double textXCenter = edgeAnchorPointX - doubleBuff2[0] + offsetBuff[0];
+						final double textYCenter = edgeAnchorPointY - doubleBuff2[1] + offsetBuff[1];
 
 						renderText(grafx, labelInfo, (float) textXCenter, (float) textYCenter,
-								edgeAnchorPointX+offsetVectorX, edgeAnchorPointY+offsetVectorY, justify, paint, backgroundPaint, backgroundShape, theta, flags.has(LOD_TEXT_AS_SHAPE));
+								edgeAnchorPointX, edgeAnchorPointY, justify, paint, backgroundPaint, backgroundShape, theta, flags.has(LOD_TEXT_AS_SHAPE));
 					}
 				}
 				
@@ -388,6 +394,52 @@ public final class GraphRenderer {
 		}
 	}
 
+  public static void reverseOffset(double xOffset, double yOffset, double slope, double lineAngle, double[] xy) {
+    // We have two equations and two unknowns:
+    // (1) a*xy[0]+b*xy[1] = e
+    // (2) c*xy[0]+d*xy[1] = f
+    // where a = Math.cos(angle)
+    //       b = Math.sqrt(1/(1+Math.pow((-1/slope),2.0)))
+    //       c = Math.sin(angle)
+    //       d = -1/slope * b
+
+    double perpSlope = -1/slope;
+    double a = Math.cos(lineAngle);
+    double b = Math.sqrt(1/(1+Math.pow(perpSlope,2.0)));
+    double c = Math.sin(lineAngle);
+    double d = perpSlope*b;
+    double e = xOffset;
+    double f = yOffset;
+
+    // Solve using Cramer's method
+    double determinant = a*d - b*c;
+    if (determinant != 0) {
+        xy[0] = (e*d - b*f)/determinant;
+        xy[1] = (a*f - e*c)/determinant;
+        return;
+    }
+
+    return;
+  }
+
+  public static void updateOffset(double xOffset, double yOffset, double slope, double lineAngle, double[] xy) {
+    // (1) a*xOffset+b*yOffset = xy[0]
+    // (2) c*xOffset+d*yOffset = xy[1]
+    // where a = Math.cos(angle)
+    //       b = Math.sqrt(1/(1+Math.pow((-1/slope),2.0)))
+    //       c = Math.sin(angle)
+    //       d = -1/slope * b
+    double perpSlope = -1/slope;
+    double a = Math.cos(lineAngle);
+    double b = Math.sqrt(1/(1+Math.pow(perpSlope,2.0)));
+    double c = Math.sin(lineAngle);
+    double d = perpSlope*b;
+
+    xy[0] = a*xOffset + b*yOffset;
+    xy[1] = c*xOffset + d*yOffset;
+
+    return;
+  }
 	
 	public static void renderNodes(ProgressMonitor pm, GraphGraphics grafx, CyNetworkViewSnapshot netView,
 			RenderDetailFlags flags, NodeDetails nodeDetails, Set<VisualPropertyDependency<?>> dependencies, 

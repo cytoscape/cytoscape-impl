@@ -132,6 +132,10 @@ public class NetworkPicker {
 	 */
 	public LabelSelection getEdgeLabelShape(View<CyEdge> edge, LabelInfoProvider labelProvider, float[] floatBuff1, float[] floatBuff2, View<CyNode>[] nodes) {
 
+    final String text = edgeDetails.getLabelText(edge);
+    if (text == null || text.length() == 0)
+      return null;
+
     final EdgeStacking stacking = edgeDetails.getStacking(edge);
 
     final CyNetworkViewSnapshot snapshot = re.getViewModelSnapshot();
@@ -194,7 +198,6 @@ public class NetworkPicker {
     // static method in GraphGraphics to avoid duplication....
 		final ObjectPosition originalPosition = edge.getVisualProperty(EDGE_LABEL_POSITION);
 
-    final String text = edgeDetails.getLabelText(edge);
 		final Font font = edgeDetails.getLabelFont(edge);
 		final Position textAnchor = edgeDetails.getLabelTextAnchor(edge);
 		final Position edgeAnchor = edgeDetails.getLabelEdgeAnchor(edge);
@@ -204,6 +207,7 @@ public class NetworkPicker {
     final double rise = floatBuff4[1]-floatBuff3[1];
     final double run = floatBuff4[0]-floatBuff3[0];
     final double slope = rise/run;
+    final double lineAngle = Math.atan2(rise, run);
     final double theta = edgeDetails.getLabelRotation(edge, rise, run)*.01745329252;
     final Justification justify;
 		final GeneralPath path2d = new GeneralPath();
@@ -325,8 +329,11 @@ public class NetworkPicker {
     doubleBuff1[3] =  0.5d * labelInfo.getTotalHeight(); 
     GraphRenderer.computeAnchor(textAnchor, doubleBuff1, doubleBuff2);
 
-		final double textXCenter = edgeAnchorPointX - doubleBuff2[0] + offsetVectorX;
-		final double textYCenter = edgeAnchorPointY - doubleBuff2[1] + offsetVectorY;
+    double[] offsetBuff = new double[2];
+    GraphRenderer.updateOffset(offsetVectorX, offsetVectorY, slope, lineAngle, offsetBuff);
+
+    final double textXCenter = edgeAnchorPointX - doubleBuff2[0] + offsetBuff[0];
+    final double textYCenter = edgeAnchorPointY - doubleBuff2[1] + offsetBuff[1];
 
 		double h = labelInfo.getTotalHeight();  // actual label text box height
 		double w = labelInfo.getMaxLineWidth();  // actual label text box width. 
@@ -334,8 +341,8 @@ public class NetworkPicker {
 		double xMin = textXCenter - (w/2);
 		double yMin = textYCenter - (h/2);
 
-		double labelAnchorX = edgeAnchorPointX + offsetVectorX;
-		double labelAnchorY = edgeAnchorPointY + offsetVectorY;
+		double labelAnchorX = edgeAnchorPointX + offsetBuff[0];
+		double labelAnchorY = edgeAnchorPointY + offsetBuff[1];
 
 		Shape shape = new Rectangle2D.Double(xMin, yMin, w, h);
 		if(degrees != 0.0) {
@@ -343,8 +350,11 @@ public class NetworkPicker {
 			var rotateTransform = AffineTransform.getRotateInstance(angle, labelAnchorX, labelAnchorY);
 			shape = rotateTransform.createTransformedShape(shape);
 		}
+
+    // System.out.println("LabelSelection: originalPosition="+originalPosition+", shape="+shape+", labelAnchor="+labelAnchorX+","+labelAnchorY);
+
 					
-		return new LabelSelection(null, edge, shape, originalPosition, labelAnchorX, labelAnchorY, degrees);
+		return new LabelSelection(edge, shape, originalPosition, labelAnchorX, labelAnchorY, degrees, slope, lineAngle);
   }
 
 	/**
@@ -411,7 +421,7 @@ public class NetworkPicker {
 			shape = rotateTransform.createTransformedShape(shape);
 		}
 		
-		return new LabelSelection(node, null, shape, originalPosition, labelAnchorX, labelAnchorY, degrees);
+		return new LabelSelection(node, shape, originalPosition, labelAnchorX, labelAnchorY, degrees);
 	}
 	
 	

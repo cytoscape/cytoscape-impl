@@ -567,11 +567,12 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			}
 			
       ObjectPosition pos;
-      if (selectedNodeLabels != null) 
+      if (selectedNodeLabels != null && !selectedNodeLabels.isEmpty()) 
         pos = selectedNodeLabels.iterator().next().getPosition();
       else
         pos = selectedEdgeLabels.iterator().next().getPosition();
 
+      // System.out.println("pos = "+pos);
 			Point start = re.getTransform().getImageCoordinates(pos.getOffsetX(), pos.getOffsetY());
 			int x = start.x;
 			int y = start.y;
@@ -585,9 +586,9 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			}
 			
 			labelSelectionManager.setCurrentDragPoint(start);
+      // System.out.println("Move to: "+x+","+y);
 			labelSelectionManager.move(new Point(x, y));
 			
-      // TODO: add support for EDGE_LABEL_POSITION!!!
 			for(var selectedLabel : re.getLabelSelectionManager().getSelectedNodeLabels()) {
 				View<CyNode> mutableNode = re.getViewModelSnapshot().getMutableNodeView(selectedLabel.getNode().getSUID());
 				ObjectPosition newPosition = selectedLabel.getPosition();
@@ -599,6 +600,10 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			for(var selectedLabel : re.getLabelSelectionManager().getSelectedEdgeLabels()) {
 				View<CyEdge> mutableEdge = re.getViewModelSnapshot().getMutableEdgeView(selectedLabel.getEdge().getSUID());
 				ObjectPosition newPosition = selectedLabel.getPosition();
+        // So, this is a bit tricky.  We want the resolved, translated position to be
+        // where our cursor currently is, so we need to essentially reverse the translation we're going to do
+        // later in GraphRenderer
+        // System.out.println("newPosition="+newPosition);
 				double newAngle = selectedLabel.getAngleDegrees();
 				mutableEdge.setLockedValue(DVisualLexicon.EDGE_LABEL_POSITION, newPosition);
 				mutableEdge.setLockedValue(DVisualLexicon.EDGE_LABEL_ROTATION, newAngle);
@@ -1013,7 +1018,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 					labelSelectionManager.setPrimary(selectedLabel);
 					return true;
 				}
-        selectedLabel = picker.getEdgeLabelAt(e.getPoint());
+        // selectedLabel = picker.getEdgeLabelAt(e.getPoint());
 			}
 			re.getLabelSelectionManager().clear();
 			
@@ -1189,6 +1194,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				for(var selectedLabel : selectedLabels) {
 					View<CyEdge> mutableEdge = re.getViewModelSnapshot().getMutableEdgeView(selectedLabel.getEdge().getSUID());
 					ObjectPosition newPosition = selectedLabel.getPosition();
+          // System.out.println("newPosition="+newPosition);
 					double newAngle = selectedLabel.getAngleDegrees();
 
 					mutableEdge.setLockedValue(DVisualLexicon.EDGE_LABEL_POSITION, newPosition);
