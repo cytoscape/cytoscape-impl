@@ -96,6 +96,14 @@ public class TableBrowserMediator implements SetCurrentNetworkListener, SetCurre
 				tb.getTableChooser().addActionListener(e -> {
 					((DefaultTableBrowser) tb).updateCurrentTable();
 					
+					// Nothing else to do if the selected table is not in the current (selected) CytoPanel component
+					// (this avoids "applicationManager.setCurrentTable => cytoPanel.setSelectedIndex" loops)
+					var cytoPanel = getTableCytoPanel();
+					var idx = cytoPanel.indexOfComponent(tb.getComponent());
+					
+					if (idx != cytoPanel.getSelectedIndex())
+						return;
+					
 					// Make sure the Application Manager has our current table
 					var applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
 					var table = tb.getCurrentTable();
@@ -149,8 +157,8 @@ public class TableBrowserMediator implements SetCurrentNetworkListener, SetCurre
 			
 			if (tb != null) {
 				invokeOnEDT(() -> {
+					// Just add the table--do NOT select the table here, or there can be UI/Manager event loops!
 					tb.addTable(table);
-					tb.selectTable(table);
 					
 					// Show the Unassigned Tables panel
 					if (tb.getObjectType() == null && tb.getTableChooser().getItemCount() == 1) {
@@ -158,8 +166,10 @@ public class TableBrowserMediator implements SetCurrentNetworkListener, SetCurre
 						
 						var appManager = serviceRegistrar.getService(CyApplicationManager.class);
 						
-						if (table.equals(appManager.getCurrentTable()))
+						if (table.equals(appManager.getCurrentTable())) {
 							selectTableBrowser(tb);
+							tb.selectTable(table);
+						}
 					}
 				});
 			}

@@ -291,7 +291,7 @@ public class TunableSlider extends JPanel {
 
 			// This can't be math.round!
 			// val = Math.round(min + (val - S_MIN) * (max - min) / (double) S_RANGE);
-			val = min + (val - S_MIN) * (max - min) / (double) S_RANGE;
+			val = min + (val - S_MIN) * (max - min) / S_RANGE;
 			
 			return (value instanceof Double ? (Number) new Double(val) : new Float((float) val));
 		}
@@ -346,7 +346,7 @@ public class TunableSlider extends JPanel {
 				getTextField().setForeground(errColor);
 				JOptionPane.showMessageDialog(
 						null,
-						"Value ("+val.doubleValue()+") is less than lower limit ("+format.format(min.doubleValue())+")"+newline+"Value will be set to default : "+value,
+						"Value ("+val.doubleValue()+") is less than lower limit ("+format.format(min.doubleValue())+")"+newline+"Value will be set to default: "+value,
 						"Alert",
 						JOptionPane.ERROR_MESSAGE);
 				setFieldValue();
@@ -358,7 +358,7 @@ public class TunableSlider extends JPanel {
 				getTextField().setForeground(errColor);
 				JOptionPane.showMessageDialog(
 						null,
-						"Value ("+val.doubleValue()+") is more than upper limit ("+format.format(max.doubleValue())+")"+newline+"Value will be set to default : "+value,
+						"Value ("+val.doubleValue()+") is more than upper limit ("+format.format(max.doubleValue())+")"+newline+"Value will be set to default: "+value,
 						"Alert",
 						JOptionPane.ERROR_MESSAGE);
 				setFieldValue();
@@ -373,7 +373,7 @@ public class TunableSlider extends JPanel {
 				getTextField().setForeground(errColor);
 				JOptionPane.showMessageDialog(
 						null,
-						"Value ("+val.longValue()+") is less than lower limit ("+min.longValue()+")"+newline+"Value will be set to default : "+value,
+						"Value ("+val.longValue()+") is less than lower limit ("+min.longValue()+")"+newline+"Value will be set to default: "+value,
 						"Alert",
 						JOptionPane.ERROR_MESSAGE);
 				setFieldValue();
@@ -385,7 +385,7 @@ public class TunableSlider extends JPanel {
 				getTextField().setForeground(errColor);
 				JOptionPane.showMessageDialog(
 						null,
-						"Value ("+val.longValue()+") is much than upper limit ("+max.longValue()+")"+newline+"Value will be set to default : "+value,
+						"Value ("+val.longValue()+") is more than upper limit ("+max.longValue()+")"+newline+"Value will be set to default : "+value,
 						"Alert",
 						JOptionPane.ERROR_MESSAGE);
 				setFieldValue();
@@ -406,11 +406,11 @@ public class TunableSlider extends JPanel {
 		if (value instanceof Integer) {
 			val = Math.min(val.intValue(), max.intValue());
 			val = Math.max(val.intValue(), min.intValue());
-			return (Number) val.intValue();
+			return val.intValue();
 		} else if (value instanceof Long) {
 			val = Math.min(val.longValue(), max.longValue());
 			val = Math.max(val.longValue(), min.longValue());
-			return (Number) val.longValue();
+			return val.longValue();
 		} else if (value instanceof Float) {
 			float min = this.min.floatValue();
 			float max = this.max.floatValue();

@@ -206,6 +206,7 @@ import org.cytoscape.task.internal.select.SelectConnectedNodesTaskFactoryImpl;
 import org.cytoscape.task.internal.select.SelectFirstNeighborsNodeViewTaskFactoryImpl;
 import org.cytoscape.task.internal.select.SelectFirstNeighborsTaskFactoryImpl;
 import org.cytoscape.task.internal.select.SelectFromFileListTaskFactoryImpl;
+import org.cytoscape.task.internal.select.SelectEdgesBetweenSelectedNodesTaskFactoryImpl;
 import org.cytoscape.task.internal.select.SelectTaskFactory;
 import org.cytoscape.task.internal.session.NewSessionTaskFactoryImpl;
 import org.cytoscape.task.internal.session.OpenSessionCommandTaskFactory;
@@ -272,6 +273,7 @@ import org.cytoscape.task.select.SelectConnectedNodesTaskFactory;
 import org.cytoscape.task.select.SelectFirstNeighborsNodeViewTaskFactory;
 import org.cytoscape.task.select.SelectFirstNeighborsTaskFactory;
 import org.cytoscape.task.select.SelectFromFileListTaskFactory;
+import org.cytoscape.task.select.SelectEdgesBetweenSelectedNodesTaskFactory;
 import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory;
 import org.cytoscape.task.visualize.ApplyVisualStyleTaskFactory;
 import org.cytoscape.task.write.ExportNetworkImageTaskFactory;
@@ -298,31 +300,30 @@ import org.osgi.framework.BundleContext;
  * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 2.1 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
+ *
+ * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
 
 public class CyActivator extends AbstractCyActivator {
-	
 	private static float LARGE_ICON_FONT_SIZE = 32.0f;
 	private static int LARGE_ICON_SIZE = 32;
-	
+
 	private static float SMALL_ICON_FONT_SIZE = 14.0f;
 	private static int SMALL_ICON_SIZE = 16;
-	
+
 	private Font iconFont;
-	
+
 	private CyServiceRegistrar serviceRegistrar;
 	private CyNetworkViewWriterManager netViewWriterManager;
 	private CyNetworkManager netManager;
@@ -331,7 +332,7 @@ public class CyActivator extends AbstractCyActivator {
 	private CyLayoutAlgorithmManager layoutAlgManager;
 	private TunableSetter tunableSetter;
 	private IconManager iconManager;
-	
+
 	@Override
 	public void start(BundleContext bc) {
 		serviceRegistrar = getService(bc, CyServiceRegistrar.class);
@@ -345,9 +346,9 @@ public class CyActivator extends AbstractCyActivator {
 
 		var groupManager = getService(bc, CyGroupManager.class);
 		var groupFactory = getService(bc, CyGroupFactory.class);
-		
+
 		iconFont = iconManager.getIconFont("cytoscape-3", LARGE_ICON_FONT_SIZE);
-		
+
 		{
 			var factory = new DynamicTaskFactoryProvisionerImpl(serviceRegistrar);
 			registerAllServices(bc, factory);
@@ -376,17 +377,17 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 	}
-	
+
 	private void createFilterTaskFactories(BundleContext bc) {
 		String createLongDescription;
-		
+
 		try {
 			InputStream in = getClass().getResourceAsStream("create_filter_long_description.md");
 			createLongDescription = new BufferedReader(new InputStreamReader(in)).lines().collect(Collectors.joining("\n"));
 		} catch (Exception e) {
 			createLongDescription = "Create a filter by suppling a name and a JSON filter expression.";
 		}
-		
+
 		// export and import commands are in filter2-impl
 		{
 			var props = new Properties();
@@ -463,11 +464,11 @@ public class CyActivator extends AbstractCyActivator {
 	private void createLayoutTaskFactories(BundleContext bc) {
 		{
 			var factory = new ApplyPreferredLayoutTaskFactoryImpl(serviceRegistrar);
-			
+
 			var icon = new TextIcon(APPLY_LAYOUT, iconFont, C1, LARGE_ICON_SIZE, LARGE_ICON_SIZE);
 			var iconId = "cy::APPLY_LAYOUT";
 			iconManager.addIcon(iconId, icon);
-			
+
 			var props = new Properties();
 			props.setProperty(PREFERRED_MENU, "Layout");
 			props.setProperty(ACCELERATOR, "fn5");
@@ -482,7 +483,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(TOOLTIP_IMAGE, getClass().getResource("/images/tooltips/apply-preferred-layout.gif").toString());
 			registerService(bc, factory, NetworkViewCollectionTaskFactory.class, props);
 			registerService(bc, factory, ApplyPreferredLayoutTaskFactory.class, props);
-			
+
 			// For commands
 			props = new Properties();
 			props.setProperty(COMMAND, "apply preferred");
@@ -546,7 +547,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(MENU_GRAVITY, "3.0");
 			registerService(bc, factory, NetworkCollectionTaskFactory.class, props);
 			registerService(bc, factory, CreateNetworkViewTaskFactory.class, props);
-			
+
 			// Commands
 			props = new Properties();
 			props.setProperty(ID, "createNetworkViewTaskFactory");
@@ -559,7 +560,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"network\":101,\"view\":400}");
 			registerService(bc, factory, TaskFactory.class, props);
-			
+
 			registerServiceListener(bc, factory::addNetworkViewRenderer, factory::removeNetworkViewRenderer, NetworkViewRenderer.class);
 		}
 		{
@@ -622,11 +623,11 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			var factory = new ZoomInTaskFactory(serviceRegistrar);
-			
+
 			var icon = new TextIcon(LAYERED_ZOOM_IN, iconFont, COLORS_3, LARGE_ICON_SIZE, LARGE_ICON_SIZE, 1);
 			var iconId = "cy::LAYERED_ZOOM_IN";
 			iconManager.addIcon(iconId, icon);
-			
+
 			var props = new Properties();
 			props.setProperty(PREFERRED_MENU, "View");
 			props.setProperty(TITLE, "Zoom In");
@@ -645,11 +646,11 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			var factory = new ZoomOutTaskFactory(serviceRegistrar);
-			
+
 			var icon = new TextIcon(LAYERED_ZOOM_OUT, iconFont, COLORS_3, LARGE_ICON_SIZE, LARGE_ICON_SIZE, 1);
 			var iconId = "cy::LAYERED_ZOOM_OUT";
 			iconManager.addIcon(iconId, icon);
-			
+
 			var props = new Properties();
 			props.setProperty(PREFERRED_MENU, "View");
 			props.setProperty(TITLE, "Zoom Out");
@@ -669,11 +670,11 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			var factory = new FitSelectedTaskFactory(serviceRegistrar);
-			
+
 			var icon = new TextIcon(LAYERED_ZOOM_SEL, iconFont, COLORS_3, LARGE_ICON_SIZE, LARGE_ICON_SIZE, 1);
 			var iconId = "cy::LAYERED_ZOOM_SELECTED";
 			iconManager.addIcon(iconId, icon);
-			
+
 			var props = new Properties();
 			props.setProperty(PREFERRED_MENU, "View");
 			props.setProperty(TITLE, "Fit Selected");
@@ -699,11 +700,11 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			var factory = new FitContentTaskFactory(serviceRegistrar);
-			
+
 			var icon = new TextIcon(LAYERED_ZOOM_FIT, iconFont, COLORS_3, LARGE_ICON_SIZE, LARGE_ICON_SIZE, 1);
 			var iconId = "cy::LAYERED_ZOOM_FIT";
 			iconManager.addIcon(iconId, icon);
-			
+
 			var props = new Properties();
 			props.setProperty(PREFERRED_MENU, "View");
 			props.setProperty(TITLE, "Fit Content");
@@ -791,7 +792,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "delete");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Delete nodes or edges from a network");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, 
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
 					"Deletes nodes and edges provided by the arguments, or if no "+
 					"nodes or edges are provides, the selected nodes and edges.  "+
 					"When deleting nodes, adjacent edges are also deleted.");
@@ -847,6 +848,19 @@ public class CyActivator extends AbstractCyActivator {
 			// props.setProperty(COMMAND_NAMESPACE, "node");
 			registerService(bc, factory, NetworkTaskFactory.class, props);
 			registerService(bc, factory, SelectConnectedNodesTaskFactory.class, props);
+		}
+		{
+			var factory = new SelectEdgesBetweenSelectedNodesTaskFactoryImpl(serviceRegistrar);
+			var props = new Properties();
+			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
+			props.setProperty(PREFERRED_MENU, "Select.Edges[3]");
+			props.setProperty(MENU_GRAVITY, "5");
+			props.setProperty(ACCELERATOR, "cmd alt b");
+			props.setProperty(TITLE, "Edges Between Selected Nodes");
+			// props.setProperty(COMMAND, "select by connected edges");
+			// props.setProperty(COMMAND_NAMESPACE, "node");
+			registerService(bc, factory, NetworkTaskFactory.class, props);
+			registerService(bc, factory, SelectEdgesBetweenSelectedNodesTaskFactory.class, props);
 		}
 		{
 			var factory = new SelectFirstNeighborsTaskFactoryImpl(CyEdge.Type.ANY, serviceRegistrar);
@@ -1016,11 +1030,11 @@ public class CyActivator extends AbstractCyActivator {
 		// SHOW / HIDE
 		{
 			var factory = new UnHideAllTaskFactoryImpl(serviceRegistrar);
-			
+
 			var icon = new TextIcon(LAYERED_SHOW_ALL, iconFont, COLORS_2A, LARGE_ICON_SIZE, LARGE_ICON_SIZE, 1);
 			var iconId = "cy::SHOW_ALL";
 			iconManager.addIcon(iconId, icon);
-			
+
 			var props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			props.setProperty(PREFERRED_MENU, "Select");
@@ -1038,11 +1052,11 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			var factory = new HideSelectedTaskFactoryImpl(serviceRegistrar);
-			
+
 			var icon = new TextIcon(LAYERED_HIDE_SELECTED, iconFont, COLORS_3, LARGE_ICON_SIZE, LARGE_ICON_SIZE, 1);
 			var iconId = "cy::HIDE_SELECTED";
 			iconManager.addIcon(iconId, icon);
-			
+
 			var props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_SELECTED_NODES_OR_EDGES);
 			props.setProperty(PREFERRED_MENU, "Select");
@@ -1176,7 +1190,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "add edge");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Add an edge between two nodes");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, 
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
 				"Add a new edge between two existing nodes in a network.  The names of the "+
 				"nodes must be specified and much match the value in the 'name' column "+
 				"for each node");
@@ -1190,7 +1204,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "add node");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Add a new node to a network");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, 
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
 				"Add a new node to an existing network.  The name of the "+
 				"node must be provided.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
@@ -1203,7 +1217,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "select");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Select nodes or edges in a network");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, 
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
 				"Select nodes and/or edges in a network.  This command provides options to invert the selection, "+
 				"add first neighbors, add adjacent edges of selected nodes, and add adjacent nodes of selected edges");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
@@ -1216,7 +1230,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "deselect");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Deselect nodes or edges in a network");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, 
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
 				"Deselect nodes and/or edges in a network.  A list of nodes and/or edges may be provided and "+
 				"those nodes and edges will be deselected.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
@@ -1229,7 +1243,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "hide");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Hide nodes or edges in a network");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, 
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
 				"Hide nodes and/or edges in a network.  A list of nodes and/or edges may be provided and "+
 				"those nodes and edges will be hidden in the view associated with the provided network."+
 				"Note that the network '''must''' have a view.  The SUIDs of the hidden nodes and/or edges "+
@@ -1244,7 +1258,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "show");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Show hidden nodes and edges");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, 
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
 				"Show nodes and/or edges in a network.  A list of nodes and/or edges may be provided and "+
 				"those nodes and edges will be unhidden in the view associated with the provided network."+
 				"Note that the network '''must''' have a view.  The SUIDs of the unhidden nodes and/or edges "+
@@ -1500,7 +1514,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_ACTION, "NEW");
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 			registerService(bc, factory, GroupNodesTaskFactory.class, props);
-			
+
 			// For commands
 			props = new Properties();
 			props.setProperty(COMMAND, "create");
@@ -1584,13 +1598,13 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(MENU_GRAVITY, "2.0");
 			registerService(bc, factory, NodeViewTaskFactory.class, props);
 			registerService(bc, factory, CollapseGroupTaskFactory.class, props);
-			
+
 			props = new Properties();
 			props.setProperty(COMMAND, "collapse");
-			props.setProperty(COMMAND_NAMESPACE, "group"); 
+			props.setProperty(COMMAND_NAMESPACE, "group");
 			props.setProperty(COMMAND_DESCRIPTION, "Collapse groups");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, "Replaces the representation of all of the nodes and edges in a group with a single node"); 
-			props.setProperty(COMMAND_SUPPORTS_JSON, "true"); 
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Replaces the representation of all of the nodes and edges in a group with a single node");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"groups\": [123,124]}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
@@ -1623,7 +1637,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Add nodes or edges to a group");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, "Adds the specified nodes and edges to the specified group"); 
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Adds the specified nodes and edges to the specified group");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1633,7 +1647,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "group");
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the groups in a network");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, "Lists the SUIDs of all of the groups in a network"); 
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Lists the SUIDs of all of the groups in a network");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"groups\": [123,124,126]}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
@@ -1644,7 +1658,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "group");
 			props.setProperty(COMMAND_DESCRIPTION, "Remove nodes or edges from a group");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, "Remove the selected nodes and edges from their current group"); 
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Remove the selected nodes and edges from their current group");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
@@ -1655,7 +1669,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "group");
 			props.setProperty(COMMAND_DESCRIPTION, "Rename a group");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, "Changes the name of the selected group or groups"); 
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Changes the name of the selected group or groups");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
@@ -1680,11 +1694,11 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			var factory = new ExportTableTaskFactoryImpl(serviceRegistrar);
-			
+
 			var icon = new TextIcon(IconUtil.FILE_EXPORT, iconFont.deriveFont(22.0f), 32, 31);
 			var iconId = "cy::Table:EXPORT_TABLE";
 			iconManager.addIcon(iconId, icon);
-			
+
 			var props = new Properties();
 			props.setProperty(ENABLE_FOR, "table");
 			props.setProperty(IN_NODE_TABLE_TOOL_BAR, "true");
@@ -1812,7 +1826,7 @@ public class CyActivator extends AbstractCyActivator {
 			var icon = new TextIcon(IconManager.ICON_TRASH_O, iconManager.getIconFont(SMALL_ICON_FONT_SIZE), SMALL_ICON_SIZE, SMALL_ICON_SIZE);
 			var iconId = "cy::DELETE_COLUMN_SMALL";
 			iconManager.addIcon(iconId, icon);
-			
+
 			var factory = new DeleteColumnTaskFactoryImpl(serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(TITLE, "Delete Column");
@@ -1826,7 +1840,7 @@ public class CyActivator extends AbstractCyActivator {
 			var icon = new TextIcon(IconManager.ICON_EDIT, iconManager.getIconFont(SMALL_ICON_FONT_SIZE), SMALL_ICON_SIZE, SMALL_ICON_SIZE);
 			var iconId = "cy::RENAME_COLUMN_SMALL";
 			iconManager.addIcon(iconId, icon);
-			
+
 			var factory = new RenameColumnTaskFactoryImpl(serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(TITLE, "Rename Column...");
@@ -1870,7 +1884,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "delete row");
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Delete a row from a table");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, 
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
 			                  "Deletes a row from a table."+
 			                  "Requires the table name or SUID and the row key.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
@@ -2096,13 +2110,13 @@ public class CyActivator extends AbstractCyActivator {
 			props2.setProperty(COMMAND_EXAMPLE_JSON, "{\"network\":101}");
 			registerService(bc, factory, TaskFactory.class, props2);
 		}
-		{ 
+		{
 			var factory = new LoadNetworkFileTaskFactoryImpl(serviceRegistrar);
-			
+
 			var icon = new TextIcon(LAYERED_IMPORT_NET, iconFont, COLORS_2B, LARGE_ICON_SIZE, LARGE_ICON_SIZE);
 			var iconId = "cy::IMPORT_NET";
 			iconManager.addIcon(iconId, icon);
-			
+
 			var props = new Properties();
 			props.setProperty(ID, "loadNetworkFileTaskFactory");
 			props.setProperty(PREFERRED_MENU, "File.Import[23.0]");
@@ -2153,7 +2167,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "load url");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Load a network file (e.g. XGMML) from a url");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, 
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
 					"Load a new network from a URL that points to a network file type "+
 					"(e.g. ``SIF``, ``XGMML``, etc.).  Use ``network import url`` "+
 					"to load networks from Excel or csv files.  This command will create a "+
@@ -2243,7 +2257,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "create");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Create a new network");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, 
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
 					"Create a new network from a list of nodes and edges in an existing source network. "+
 					"The SUID of the network and view are returned.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
@@ -2256,12 +2270,12 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "get");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Return a network");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, 
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
 					"Return a network from the name, SUID, "+
 					"or other identifier.  If the name or SUID "+
 					"doesn't exist, the current network is returned.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, 
+			props.setProperty(COMMAND_EXAMPLE_JSON,
 					"{\"shared name\": \"my network\", "+
 					"\"SUID\": 80, \"name\":\"my network\"}");
 			registerService(bc, factory, TaskFactory.class, props);
@@ -2331,7 +2345,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_MENU, "File");
 			props.setProperty(MENU_GRAVITY, "1.8");
 			props.setProperty(INSERT_SEPARATOR_AFTER, "true");
-			
+
 			props.setProperty(TITLE, "Close");
 			props.setProperty(COMMAND, "new");
 			props.setProperty(COMMAND_NAMESPACE, "session");
@@ -2344,11 +2358,11 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			var factory = new OpenSessionTaskFactoryImpl(serviceRegistrar);
-			
+
 			var icon = new TextIcon(LAYERED_OPEN_FILE, iconFont, COLORS_2B, LARGE_ICON_SIZE, LARGE_ICON_SIZE);
 			var iconId = "cy::OPEN_FILE";
 			iconManager.addIcon(iconId, icon);
-			
+
 			var props = new Properties();
 			props.setProperty(ID, "openSessionTaskFactory");
 			props.setProperty(PREFERRED_MENU, "File");
@@ -2380,11 +2394,11 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			var factory = new SaveSessionTaskFactoryImpl(serviceRegistrar);
-			
+
 			var icon = new TextIcon(LAYERED_SAVE, iconFont, COLORS_3, LARGE_ICON_SIZE, LARGE_ICON_SIZE, 1, 2);
 			var iconId = "cy::SAVE";
 			iconManager.addIcon(iconId, icon);
-			
+
 			var props = new Properties();
 			props.setProperty(PREFERRED_MENU, "File");
 			props.setProperty(ACCELERATOR, "cmd s");
@@ -2493,15 +2507,15 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, NetworkViewCollectionTaskFactory.class, props);
 		}
 	}
-	
+
 	private void createHelpTaskFactories(BundleContext bc) {
 		{
 			var factory = new HelpTaskFactory(serviceRegistrar);
-			
+
 			var icon = new TextIcon(LAYERED_HELP, iconFont, COLORS_2A, LARGE_ICON_SIZE, LARGE_ICON_SIZE, 1);
 			var iconId = "cy::HELP";
 			iconManager.addIcon(iconId, icon);
-			
+
 			var props = new Properties();
 			props.setProperty(ACCELERATOR, "cmd ?");
 			props.setProperty(LARGE_ICON_ID, iconId);

@@ -776,14 +776,16 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	}
 	
 	private void addTable(){
-		final CyTableManager tableMgr = serviceRegistrar.getService(CyTableManager.class);
+		var tableMgr = serviceRegistrar.getService(CyTableManager.class);
+		CyTable currentTable = null;
 		
 		if (byReader) {
-			if (this.reader != null && this.reader.getTables() != null) {
-				for (CyTable table : reader.getTables()) {
+			if (reader != null && reader.getTables() != null) {
+				for (var table : reader.getTables()) {
 					if (newTableName != null && !newTableName.isEmpty())
 						table.setTitle(newTableName);
 					
+					currentTable = table;
 					tableMgr.addTable(table);
 				}
 			} else {
@@ -801,9 +803,13 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			if (newTableName != null && !newTableName.isEmpty())
 				globalTable.setTitle(newTableName);
 			
+			currentTable = globalTable;
 			tableMgr.addTable(globalTable);
 			mappedTables.add(globalTable);
 		}
+		
+		if (currentTable != null && currentTable.isPublic())
+			serviceRegistrar.getService(CyApplicationManager.class).setCurrentTable(currentTable);
 	}
 
 	@Override

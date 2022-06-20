@@ -15,10 +15,10 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JSeparator;
-import javax.swing.JSlider;
 import javax.swing.LayoutStyle.ComponentPlacement;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
+import org.cytoscape.ding.impl.cyannotator.utils.EnhancedSlider;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.swing.ColorButton;
@@ -63,11 +63,11 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 	
 	private ColorButton borderColorButton;
 	private JComboBox<Integer> borderWidthCombo;
-	private JSlider borderOpacitySlider;
-	private JSlider opacitySlider;
-	private JSlider brightnessSlider;
-	private JSlider contrastSlider;
-	private JSlider rotationSlider;
+	private EnhancedSlider borderOpacitySlider;
+	private EnhancedSlider opacitySlider;
+	private EnhancedSlider brightnessSlider;
+	private EnhancedSlider contrastSlider;
+	private EnhancedSlider rotationSlider;
 
 	public ImageAnnotationEditor(AnnotationFactory<ImageAnnotation> factory, CyServiceRegistrar serviceRegistrar) {
 		super(factory, serviceRegistrar);
@@ -125,10 +125,10 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 			annotation.setBorderColor(getBorderColorButton().getColor());
 			annotation.setBorderWidth((int) getBorderWidthCombo().getSelectedItem());
 			annotation.setBorderOpacity(getBorderOpacitySlider().getValue());
-			annotation.setImageOpacity(getOpacitySlider().getValue()/100.0f);
+			annotation.setImageOpacity(getOpacitySlider().getValue() / 100.0f);
 			annotation.setImageBrightness(getBrightnessSlider().getValue());
 			annotation.setImageContrast(getContrastSlider().getValue());
-			annotation.setRotation((double) getRotationSlider().getValue());
+			annotation.setRotation(getRotationSlider().getValue());
 		}
 	}
 
@@ -143,6 +143,10 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 		rotationLabel = createRotationLabel();
 
 		var sep = new JSeparator();
+		
+		final int min = 160;
+		final int pref = 200;
+		final int max = 200;
 		
 		var layout = new GroupLayout(this);
 		setLayout(layout);
@@ -162,7 +166,7 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 								.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
 										.addComponent(getBorderWidthCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 										.addComponent(getBorderColorButton())
-										.addComponent(getBorderOpacitySlider(), 100, 140, 140)
+										.addComponent(getBorderOpacitySlider(), min, pref, max)
 								)
 						)
 						.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -175,10 +179,10 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 								)
 								.addPreferredGap(ComponentPlacement.RELATED)
 								.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
-										.addComponent(getOpacitySlider(), 100, 140, 140)
-										.addComponent(getBrightnessSlider(), 100, 140, 140)
-										.addComponent(getContrastSlider(), 100, 140, 140)
-										.addComponent(getRotationSlider(), 100, 140, 140)
+										.addComponent(getOpacitySlider(), min, pref, max)
+										.addComponent(getBrightnessSlider(), min, pref, max)
+										.addComponent(getContrastSlider(), min, pref, max)
+										.addComponent(getRotationSlider(), min, pref, max)
 								)
 						)
 				)
@@ -234,13 +238,9 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 		return borderColorButton;
 	}
 	
-	private JSlider getBorderOpacitySlider() {
+	private EnhancedSlider getBorderOpacitySlider() {
 		if (borderOpacitySlider == null) {
-			borderOpacitySlider = new JSlider(0, 100, 100);
-			borderOpacitySlider.setMajorTickSpacing(100);
-			borderOpacitySlider.setMinorTickSpacing(25);
-			borderOpacitySlider.setPaintTicks(true);
-			borderOpacitySlider.setPaintLabels(true);
+			borderOpacitySlider = new EnhancedSlider(100);
 			borderOpacitySlider.addChangeListener(evt -> apply());
 		}
 
@@ -260,46 +260,34 @@ public class ImageAnnotationEditor extends AbstractAnnotationEditor<ImageAnnotat
 		return borderWidthCombo;
 	}
 	
-	private JSlider getOpacitySlider() {
+	private EnhancedSlider getOpacitySlider() {
 		if (opacitySlider == null) {
-			opacitySlider = new JSlider(0, 100, 100);
-			opacitySlider.setMajorTickSpacing(100);
-			opacitySlider.setMinorTickSpacing(25);
-			opacitySlider.setPaintTicks(true);
-			opacitySlider.setPaintLabels(true);
+			opacitySlider = new EnhancedSlider(100);
 			opacitySlider.addChangeListener(evt -> apply());
 		}
 
 		return opacitySlider;
 	}
 	
-	private JSlider getBrightnessSlider() {
+	private EnhancedSlider getBrightnessSlider() {
 		if (brightnessSlider == null) {
-			brightnessSlider = new JSlider(-100, 100, 0);
-			brightnessSlider.setMajorTickSpacing(100);
-			brightnessSlider.setMinorTickSpacing(25);
-			brightnessSlider.setPaintTicks(true);
-			brightnessSlider.setPaintLabels(true);
+			brightnessSlider = new EnhancedSlider(-100, 100, 0, 100, 25);
 			brightnessSlider.addChangeListener(evt -> apply());
 		}
 
 		return brightnessSlider;
 	}
 
-	private JSlider getContrastSlider() {
+	private EnhancedSlider getContrastSlider() {
 		if (contrastSlider == null) {
-			contrastSlider = new JSlider(-100, 100, 0);
-			contrastSlider.setMajorTickSpacing(100);
-			contrastSlider.setMinorTickSpacing(25);
-			contrastSlider.setPaintTicks(true);
-			contrastSlider.setPaintLabels(true);
+			contrastSlider = new EnhancedSlider(-100, 100, 0, 100, 25);
 			contrastSlider.addChangeListener(evt -> apply());
 		}
 
 		return contrastSlider;
 	}
 	
-	private JSlider getRotationSlider() {
+	private EnhancedSlider getRotationSlider() {
 		if (rotationSlider == null) {
 			rotationSlider = createRotationSlider();
 		}
