@@ -223,7 +223,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	public void handleNotification(INotification notification) {
 		var id = notification.getName();
 		var body = notification.getBody();
-		
+
 		switch(id) {
 			case VISUAL_STYLE_SET_CHANGED:
 				updateVisualStyleList((SortedSet<VisualStyle>) body, true);
@@ -258,7 +258,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 						var tableVMM = servicesUtil.get(TableVisualMappingManager.class);
 						Set<VisualStyle> netStyles = tableVMM.getAssociatedNetworkVisualStyles(style);
 						if(netStyles.contains(currNetStyle)) {
-							updateVisualPropertySheets(style, TABLE_SHEET_TYPES, false, true);
+							updateVisualPropertySheets(style, TABLE_SHEET_TYPES, false, false);
 						}
 						break;
 					}
