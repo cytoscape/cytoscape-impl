@@ -57,6 +57,7 @@ import javax.swing.border.Border;
 import javax.swing.plaf.basic.BasicButtonUI;
 import javax.swing.table.TableCellEditor;
 
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.VisualProperty;
@@ -523,15 +524,16 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			propSheetPnl.getTable().setRendererFactory(new PropertyRendererRegistry());
 			
 			var mapping = model.getVisualMappingFunction();
-
+			boolean forColumn = model.getLexiconType() == CyColumn.class;
+			
 			if (mapping == null) {
 				// Create the properties for a new visual mapping
 				var vp = (VisualProperty<?>) model.getVisualProperty();
-				vizMapPropertyBuilder.buildProperty(vp, propSheetPnl, model.getTableType());
+				vizMapPropertyBuilder.buildProperty(vp, propSheetPnl, model.getTableType(), forColumn);
 			} else {
 				// There is already a visual mapping for this style's property
 				var mappingFactory = vizMapPropertyBuilder.getMappingFactory(mapping);
-				vizMapPropertyBuilder.buildProperty(mapping, propSheetPnl, mappingFactory, model.getTableType());
+				vizMapPropertyBuilder.buildProperty(mapping, propSheetPnl, mappingFactory, model.getTableType(), forColumn);
 				updateMappingRowHeight();
 			}
 			

@@ -78,6 +78,7 @@ import com.l2fprod.common.propertysheet.PropertySheetTable;
 public class VizMapPropertyBuilder {
 
 	public static final String COLUMN = "Column";
+	public static final String COLUMN_SOURCE = "Source Column";
 	public static final String MAPPING_TYPE = "Mapping Type";
 	public static final String GRAPHICAL_MAP_VIEW = "Graphical View";
 	
@@ -105,7 +106,8 @@ public class VizMapPropertyBuilder {
 	 */
 	public <V> void buildProperty(VisualProperty<V> visualProperty, 
 								  PropertySheetPanel propertySheetPanel, 
-								  GraphObjectType tableType) {
+								  GraphObjectType tableType,
+								  boolean forColumn) {
 		
 		if (visualProperty == null)
 			throw new IllegalArgumentException("'visualProperty' must not be null.");
@@ -116,7 +118,7 @@ public class VizMapPropertyBuilder {
 		var columnProp = new VizMapperProperty<>(CellType.VISUAL_PROPERTY_TYPE, visualProperty, String.class);
 
 		// Build Property object
-		columnProp.setDisplayName(COLUMN);
+		columnProp.setDisplayName(forColumn ? COLUMN_SOURCE : COLUMN);
 		((PropertyRendererRegistry) propertySheetPanel.getTable().getRendererFactory()).registerRenderer(
 				columnProp, defaultTableCellRendererForColumn);
 		
@@ -142,7 +144,8 @@ public class VizMapPropertyBuilder {
 	public <K, V> void buildProperty(VisualMappingFunction<K, V> visualMapping,
 									 PropertySheetPanel propertySheetPanel,
 									 VisualMappingFunctionFactory factory,
-									 GraphObjectType tableType) {
+									 GraphObjectType tableType,
+									 boolean forColumn) {
 		if (visualMapping == null)
 			throw new IllegalArgumentException("'visualMapping' must not be null.");
 		if (propertySheetPanel == null)
@@ -155,7 +158,7 @@ public class VizMapPropertyBuilder {
 				new VizMapperProperty<>(CellType.VISUAL_PROPERTY_TYPE, vp, String.class);
 
 		// Build Property object
-		columnProp.setDisplayName(COLUMN);
+		columnProp.setDisplayName(forColumn ? COLUMN_SOURCE : COLUMN);
 		columnProp.setValue(visualMapping.getMappingColumnName());
 		columnProp.setInternalValue(factory);
 
