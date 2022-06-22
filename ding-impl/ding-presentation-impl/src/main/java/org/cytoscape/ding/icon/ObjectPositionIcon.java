@@ -32,13 +32,12 @@ import java.awt.RenderingHints;
 import org.cytoscape.ding.ObjectPlacerGraphic;
 import org.cytoscape.view.presentation.property.values.ObjectPosition;
 
+@SuppressWarnings("serial")
 public class ObjectPositionIcon extends VisualPropertyIcon<ObjectPosition> {
-	
-	private static final long serialVersionUID = 6852491198236306710L;
 	
 	private Graphics2D g2d;
 
-	public ObjectPositionIcon(final ObjectPosition value, int width, int height, String name) {
+	public ObjectPositionIcon(ObjectPosition value, int width, int height, String name) {
 		super(value, width, height, name);
 	}
 
@@ -50,7 +49,7 @@ public class ObjectPositionIcon extends VisualPropertyIcon<ObjectPosition> {
 		g2d.translate(x,  y);
 		g2d.fillRect(0, 0, width, height);
 		
-		final ObjectPlacerGraphic lp = new ObjectPlacerGraphic(width, false, "LABEL");
+		var lp = new ObjectPlacerGraphic(width, false);
 		lp.setObjectPosition(value);
 		lp.applyPosition();
 		lp.paint(g2d);

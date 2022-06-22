@@ -1,13 +1,17 @@
 package org.cytoscape.ding.impl.editor;
 
+import java.beans.PropertyEditor;
+
 import org.cytoscape.ding.CyObjectPositionPropertyEditor;
 import org.cytoscape.ding.ObjectPositionCellRenderer;
+import org.cytoscape.ding.ObjectPositionValueEditor;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.values.ObjectPosition;
 import org.cytoscape.view.vizmap.gui.editor.AbstractVisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;
-import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
+import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor2;
 
 /*
  * #%L
@@ -33,16 +37,33 @@ import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
  * #L%
  */
 
-public class ObjectPositionEditor extends AbstractVisualPropertyEditor<ObjectPosition> {
+public class ObjectPositionVisualPropertyEditor extends AbstractVisualPropertyEditor<ObjectPosition>
+		implements VisualPropertyEditor2<ObjectPosition> {
 	
-	public ObjectPositionEditor(
-			final ValueEditor<ObjectPosition> valueEditor,
-			final ContinuousMappingCellRendererFactory cellRendererFactory,
-			final CyServiceRegistrar serviceRegistrar
+	public ObjectPositionVisualPropertyEditor(
+			ObjectPositionValueEditor valueEditor,
+			ContinuousMappingCellRendererFactory cellRendererFactory,
+			CyServiceRegistrar serviceRegistrar
 	) {
 		super(ObjectPosition.class, new CyObjectPositionPropertyEditor(valueEditor, serviceRegistrar),
 				ContinuousEditorType.DISCRETE, cellRendererFactory);
 
 		discreteTableCellRenderer = new ObjectPositionCellRenderer();
+	}
+	
+	@Override
+	public PropertyEditor getPropertyEditor() {
+		var pe = (CyObjectPositionPropertyEditor) super.getPropertyEditor();
+		pe.setVisualProperty(null);
+		
+		return pe;
+	}
+
+	@Override
+	public PropertyEditor getPropertyEditor(VisualProperty<ObjectPosition> vp) {
+		var pe = (CyObjectPositionPropertyEditor) super.getPropertyEditor();
+		pe.setVisualProperty(vp);
+
+		return pe;
 	}
 }
