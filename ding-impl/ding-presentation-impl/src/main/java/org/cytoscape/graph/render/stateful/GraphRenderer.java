@@ -263,8 +263,8 @@ public final class GraphRenderer {
             final double edgeAnchorPointX = doubleBuff1[2];
             final double edgeAnchorPointY = doubleBuff1[3];
 
-            System.out.println("textCenter = "+textXCenter+","+textYCenter);
-            System.out.println("edgeAnchorPoint = "+edgeAnchorPointX+","+edgeAnchorPointY);
+            // System.out.println("textCenter = "+textXCenter+","+textYCenter);
+            // System.out.println("edgeAnchorPoint = "+edgeAnchorPointX+","+edgeAnchorPointY);
 
             final Justification justify;
             if (text.indexOf('\n') >= 0)
@@ -294,8 +294,9 @@ public final class GraphRenderer {
     final Font font = edgeDetails.getLabelFont(edge, flags.has(OPT_PDF_FONT_HACK));
     final Position textAnchor = edgeDetails.getLabelTextAnchor(edge);
     final Position edgeAnchor = edgeDetails.getLabelEdgeAnchor(edge);
-    final float offsetVectorX = edgeDetails.getLabelOffsetVectorX(edge);
-    final float offsetVectorY = edgeDetails.getLabelOffsetVectorY(edge);
+    float offsetVectorX = edgeDetails.getLabelOffsetVectorX(edge);
+    float offsetVectorY = edgeDetails.getLabelOffsetVectorY(edge);
+		final float thickness = (float) edgeDetails.getWidth(edge);
     final double rise = floatBuff4[1]-floatBuff3[1];
     final double run = floatBuff4[0]-floatBuff3[0];
     final double slope = rise/run;
@@ -323,6 +324,14 @@ public final class GraphRenderer {
     // Note that we reuse the position enum here.  West == source and East == target
     // This is sort of safe since we don't provide an API for changing this
     // in any case.
+		// Handle above/below...
+		if (edgeAnchor == Position.NORTH || edgeAnchor == Position.NORTH_WEST || edgeAnchor == Position.NORTH_EAST) {
+			// We sort of "fake" this by adding the edge width to the offsetVectorY.  That way, any trigonometry only needs
+			// to get done once
+			offsetVectorY = offsetVectorY - thickness/2f;
+		} else if (edgeAnchor == Position.SOUTH || edgeAnchor == Position.SOUTH_WEST || edgeAnchor == Position.SOUTH_EAST) {
+			offsetVectorY = offsetVectorY + thickness/2f;
+		}
     if (edgeAnchor == Position.WEST || edgeAnchor == Position.SOUTH_WEST || edgeAnchor == Position.NORTH_WEST) {
       edgeAnchorPointX = srcXAdj; 
       edgeAnchorPointY = srcYAdj;
