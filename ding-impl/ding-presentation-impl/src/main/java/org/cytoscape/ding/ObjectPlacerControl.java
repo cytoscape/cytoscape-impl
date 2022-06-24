@@ -63,6 +63,7 @@ public class ObjectPlacerControl extends JPanel implements ActionListener, Prope
 	
 	private JLabel targetAnchorLabel;
 	private JLabel objAnchorLabel;
+	private JLabel justifyLabel;
 	
 	/** Usually a Node or an Edge */
 	private JComboBox<Position> targetAnchors;
@@ -158,7 +159,7 @@ public class ObjectPlacerControl extends JPanel implements ActionListener, Prope
 		});
 		objAnchors.addActionListener(this);
 
-		var justifyLabel = new JLabel("Label Justification:");
+		justifyLabel = new JLabel("Text Justification:");
 		justifyCombo = new JComboBox<>(Justification.values());
 		justifyCombo.setRenderer(new DefaultListCellRenderer() {
 			@Override
@@ -226,7 +227,7 @@ public class ObjectPlacerControl extends JPanel implements ActionListener, Prope
 						.addComponent(yoffsetBox)
 				)
 		);
-
+		
 		applyPosition();
 	}
 	
@@ -234,15 +235,16 @@ public class ObjectPlacerControl extends JPanel implements ActionListener, Prope
 		this.p = p;
 		this.vp = vp;
 		
-		updateLabels();
-		applyPosition();
-	}
-
-	private void updateLabels() {
+		// Update labels and other components
 		boolean isLabel = NODE_LABEL_POSITION.equals(vp) || EDGE_LABEL_POSITION.equals(vp);
 		
 		targetAnchorLabel.setText((EDGE_LABEL_POSITION.equals(vp) ? "Edge " : "Node ") + ANCHOR_POINTS + ":");
 		objAnchorLabel.setText((isLabel ? "Label " : "Object ") + ANCHOR_POINTS + ":");
+		
+		justifyLabel.setVisible(isLabel);
+		justifyCombo.setVisible(isLabel);
+		
+		applyPosition();
 	}
 
 	void applyPosition() {
