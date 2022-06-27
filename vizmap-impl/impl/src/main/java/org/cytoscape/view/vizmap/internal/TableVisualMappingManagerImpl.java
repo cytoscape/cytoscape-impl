@@ -71,7 +71,7 @@ public class TableVisualMappingManagerImpl implements TableVisualMappingManager,
 	public void handleEvent(TableViewAboutToBeDestroyedEvent e) {
 		CyTableView tableView = e.getTableView();
 		for(View<CyColumn> colView : tableView.getColumnViews()) {
-			setVisualStyle(colView, null);
+			clearStyle(colView);
 		}
 	}
 	
@@ -183,6 +183,20 @@ public class TableVisualMappingManagerImpl implements TableVisualMappingManager,
 		if (changed) {
 			var eventHelper = registrar.getService(CyEventHelper.class);
 			eventHelper.fireEvent(new ColumnVisualStyleSetEvent(this, columnStyle, colView));
+		}
+	}
+	
+	
+	private void clearStyle(View<CyColumn> colView) {
+		boolean changed = false;
+
+		synchronized (lock) {
+			changed = column2VisualStyleMap.remove(colView) != null;
+		}
+
+		if (changed) {
+			var eventHelper = registrar.getService(CyEventHelper.class);
+			eventHelper.fireEvent(new ColumnVisualStyleSetEvent(this, null, colView));
 		}
 	}
 
