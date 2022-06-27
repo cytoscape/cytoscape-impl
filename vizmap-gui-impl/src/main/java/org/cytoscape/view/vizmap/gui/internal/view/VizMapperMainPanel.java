@@ -259,6 +259,11 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		getColumnStylePnl().updateColumns(columns, selectedCol);
 	}
 	
+	public void updateColumnPickerWarnings() {
+		getColumnStylePnl().updateColumnPickerWarnings();
+	}
+	
+	
 	private void init() {
 		setMinimumSize(new Dimension(260, 240));
 		setPreferredSize(new Dimension(400, 385));

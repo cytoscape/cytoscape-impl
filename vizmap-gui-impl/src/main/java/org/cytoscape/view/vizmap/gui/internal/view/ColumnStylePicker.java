@@ -7,7 +7,6 @@ import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
-import java.util.function.Predicate;
 
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
@@ -25,9 +24,11 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyColumnPresentationManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -113,6 +114,10 @@ public class ColumnStylePicker {
 		return columnPanel;
 	}
 	
+	public void updateColumnPickerWarnings() {
+		((ColumnStyleTableModel)getJTable().getModel()).fireTableDataChanged();
+	}
+	
 	
 	private JButton getAddButton() {
 		if (addButton == null) {
@@ -171,7 +176,7 @@ public class ColumnStylePicker {
 			jtable = new JTable(model);
 			jtable.setAutoCreateColumnsFromModel(false);
 			jtable.setDefaultRenderer(GraphObjectType.class, new TableNameRenderer());
-			jtable.setDefaultRenderer(String.class, new ColumnNameRenderer(x -> true));
+			jtable.setDefaultRenderer(String.class, new ColumnNameRenderer());
 			
 			JTableHeader header = jtable.getTableHeader();
 			header.setReorderingAllowed(false);
@@ -265,15 +270,12 @@ public class ColumnStylePicker {
 
 		private final CyColumnPresentationManager columnPresentationManager;
 		
-		private final Predicate<String> showWarn;
-		
 		private final JPanel panel;
 		private final DefaultTableCellRenderer colLabel;
 		private final DefaultTableCellRenderer warnLabel;
 		
-		private ColumnNameRenderer(Predicate<String> showWarn) {
+		private ColumnNameRenderer() {
 			this.columnPresentationManager = servicesUtil.get(CyColumnPresentationManager.class);
-			this.showWarn = showWarn == null ? (x -> false) : showWarn;
 			
 			var iconManager = servicesUtil.get(IconManager.class);
 			var iconFont = iconManager.getIconFont(14.0f);
@@ -297,7 +299,11 @@ public class ColumnStylePicker {
 			
 			if (value instanceof String column) {
 				columnPresentationManager.setLabel(column, colLabel);
-				warnLabel.setVisible(showWarn.test(column));
+				if(jtable.getModel().getValueAt(row, 0) instanceof GraphObjectType tableType) {
+					warnLabel.setVisible(showWarning(tableType, column));
+				} else {
+					warnLabel.setVisible(false);
+				}
 			} else  {
 				colLabel.setText("-- None --");
 				colLabel.setIcon(null);
@@ -306,6 +312,17 @@ public class ColumnStylePicker {
 			
 			warnLabel.setForeground(LookAndFeelUtil.getWarnColor());
 			return panel;
+		}
+		
+		
+		private boolean showWarning(GraphObjectType tableType, String colName) {
+			var appManager = servicesUtil.get(CyApplicationManager.class);
+			var netTableManger = servicesUtil.get(CyNetworkTableManager.class);
+			var network = appManager.getCurrentNetwork();
+			var table = netTableManger.getTable(network, tableType.type(), CyNetwork.DEFAULT_ATTRS);
+			if(table == null)
+				return false;
+			return table.getColumn(colName) == null;
 		}
 	}
 	

@@ -284,6 +284,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 					}
 					
 					updateItemsStatus();
+					updateColumnPickerWarnings();
 				}
 				break;
 			case VISUAL_STYLE_NAME_CHANGED:
@@ -309,7 +310,9 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	
 	public CyTable getCurrentMappingTable(GraphObjectType type) {
 		var curNet = vmProxy.getCurrentNetwork();
-		if (type.type() == CyNode.class) {
+		if (type == null) {
+			return null;
+		} else if (type.type() == CyNode.class) {
 			return curNet == null ? null : curNet.getDefaultNodeTable();
 		} else if (type.type() == CyEdge.class) {
 			return curNet == null ? null : curNet.getDefaultEdgeTable();
@@ -805,6 +808,9 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		vizMapperMainPanel.getColumnStylePnl().addColumnSelectionListener(columnChangeListener);
 	}
 	
+	private void updateColumnPickerWarnings() {
+		vizMapperMainPanel.updateColumnPickerWarnings();
+	}
 	
 	private void onSelectedColumnChanged(ColumnSpec col, ColumnStylePicker.Action action) {
 		if(col == null || action == null)
