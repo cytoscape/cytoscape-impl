@@ -1,5 +1,13 @@
 package org.cytoscape.ding.icon;
 
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+
+import org.cytoscape.ding.ObjectPlacerGraphic;
+import org.cytoscape.view.presentation.property.values.ObjectPosition;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -24,14 +32,6 @@ package org.cytoscape.ding.icon;
  * #L%
  */
 
-import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-
-import org.cytoscape.ding.ObjectPlacerGraphic;
-import org.cytoscape.view.presentation.property.values.ObjectPosition;
-
 @SuppressWarnings("serial")
 public class ObjectPositionIcon extends VisualPropertyIcon<ObjectPosition> {
 	
@@ -49,8 +49,7 @@ public class ObjectPositionIcon extends VisualPropertyIcon<ObjectPosition> {
 		g2d.translate(x,  y);
 		g2d.fillRect(0, 0, width, height);
 		
-		var lp = new ObjectPlacerGraphic(width, false);
-		lp.setObjectPosition(value);
+		var lp = new ObjectPlacerGraphic(value, width, height, false);
 		lp.applyPosition();
 		lp.paint(g2d);
 		g2d.translate(-x,  -y);

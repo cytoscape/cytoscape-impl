@@ -5,7 +5,6 @@ import static javax.swing.GroupLayout.Alignment.LEADING;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dialog.ModalityType;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -63,18 +62,11 @@ public class ObjectPositionValueEditor implements VisualPropertyValueEditor<Obje
 	private ObjectPlacerGraphic graphic;
 	private ObjectPlacerControl control;
 	
-	private boolean initialized;
-	
 	// ==[ PUBLIC METHODS ]=============================================================================================
 
 	@Override
 	public <S extends ObjectPosition> ObjectPosition showEditor(Component parent, S initialValue, VisualProperty<S> vp) {
-		if (!initialized) {
-			init(parent);
-			initialized = true;
-		}
-		
-		ObjectPosition pos;
+		final ObjectPosition pos;
 
 		if (initialValue == null) {
 			oldValue = null;
@@ -84,7 +76,7 @@ public class ObjectPositionValueEditor implements VisualPropertyValueEditor<Obje
 			pos = new ObjectPosition(initialValue);
 		}
 		
-		update(pos, (ObjectPositionVisualProperty) vp);
+		dialog = createDialog(parent, pos, (ObjectPositionVisualProperty) vp);
 		
 		if (parent != null)
 			dialog.setLocationRelativeTo(parent);
@@ -110,11 +102,10 @@ public class ObjectPositionValueEditor implements VisualPropertyValueEditor<Obje
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	@SuppressWarnings("serial")
-	private void init(Component parent) {
+	private JDialog createDialog(Component parent, ObjectPosition pos, ObjectPositionVisualProperty vp) {
 		var owner = parent != null ? SwingUtilities.getWindowAncestor(parent) : null;
-		dialog = new JDialog(owner, ModalityType.APPLICATION_MODAL);
-		dialog.setMinimumSize(new Dimension(400, 600));
-		dialog.setTitle(TITLE);
+		var dialog = new JDialog(owner, ModalityType.APPLICATION_MODAL);
+		dialog.setTitle(vp != null ? vp.getDisplayName() : TITLE);
 		dialog.setResizable(false);
 		
 		dialog.addWindowListener(new WindowAdapter() {
@@ -125,11 +116,11 @@ public class ObjectPositionValueEditor implements VisualPropertyValueEditor<Obje
 		});
 
 		// Set up and connect the gui components.
-		graphic = new ObjectPlacerGraphic(null, true);
+		graphic = new ObjectPlacerGraphic(pos, vp, true);
+		control = new ObjectPlacerControl(pos, vp);
 		
-		control = new ObjectPlacerControl();
-		control.addPropertyChangeListener(graphic);
 		graphic.addPropertyChangeListener(control);
+		control.addPropertyChangeListener(graphic);
 
 		var graphicPanel = new JPanel();
 		graphicPanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
@@ -170,17 +161,16 @@ public class ObjectPositionValueEditor implements VisualPropertyValueEditor<Obje
 				.addComponent(control)
 				.addComponent(buttonPanel)
 		);
-	}
-	
-	private void update(ObjectPosition pos, ObjectPositionVisualProperty vp) {
-		dialog.setTitle(vp != null ? vp.getDisplayName() : TITLE);
 		
-		control.update(pos, vp);
-		graphic.update(pos, vp);
+		return dialog;
 	}
 	
 	private void cancel() {
 		canceled = true;
-		dialog.dispose();
+		
+		if (dialog != null) {
+			dialog.dispose();
+			dialog = null;
+		}
 	}
 }

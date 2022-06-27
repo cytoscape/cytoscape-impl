@@ -50,13 +50,18 @@ import org.cytoscape.view.presentation.property.values.Position;
  * #L%
  */
 
+/**
+ * A GUI for placing an object (e.g. a label) relative to a node.
+ */
 @SuppressWarnings("serial")
 public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListener {
 
 	protected static final String OBJECT_POSITION_CHANGED = "OBJECT_POSITION_CHANGED";
 
-	// dimensions of panel
-	private static final int DEFAULT_WINDOW_SIZE = 500;
+	// Default dimensions of panel
+	private static final int DEF_PANEL_SIZE = 500;
+	private static final int DEF_EDGE_PANEL_WIDTH = 600;
+	private static final int DEF_EDGE_PANEL_HEIGHT = 400;
 	
 	// "Snap" distance
 	private static final double GRAVITY_DISTANCE = 10;
@@ -64,70 +69,78 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 	// Color scheme for GUI
 	private final Color BG_COLOR = UIManager.getColor("TextField.background");
 	
-	private final Color LABEL_BOX_FG_COLOR = UIManager.getColor("CyColor.complement(-2)");
+	private final Color OBJ_BOX_FG_COLOR = UIManager.getColor("CyColor.complement(-2)");
 	// Same color, but transparent
-	private final Color LABEL_BOX_BG_COLOR =
-			new Color(LABEL_BOX_FG_COLOR.getRed(), LABEL_BOX_FG_COLOR.getGreen(), LABEL_BOX_FG_COLOR.getBlue(), 30);
+	private final Color OBJ_BOX_BG_COLOR =
+			new Color(OBJ_BOX_FG_COLOR.getRed(), OBJ_BOX_FG_COLOR.getGreen(), OBJ_BOX_FG_COLOR.getBlue(), 30);
 	
-	private final Color NODE_BOX_FG_COLOR = UIManager.getColor("CyColor.complement(+1)");
+	private final Color TGT_BOX_FG_COLOR = UIManager.getColor("CyColor.complement(+1)");
 	// Same color, but transparent
-	private final Color NODE_BOX_BG_COLOR =
-			new Color(NODE_BOX_FG_COLOR.getRed(), NODE_BOX_FG_COLOR.getGreen(), NODE_BOX_FG_COLOR.getBlue(), 30);
+	private final Color TGT_BOX_BG_COLOR =
+			new Color(TGT_BOX_FG_COLOR.getRed(), TGT_BOX_FG_COLOR.getGreen(), TGT_BOX_FG_COLOR.getBlue(), 30);
+	
+	/** The color of the source and target nodes (EDGE_LABEL_POSITION only)  */
+	private final Color NODES_BG_COLOR = UIManager.getColor("CyColor.complement(+2)");
 	
 	private final Color POINT_HIGHLIGHT_COLOR = UIManager.getColor("CyColor.primary(+2)");
 	
-	private int center;
-	private float offsetRatio;
+	/** The width of the target box (node/edge) */
+	private int tw;
+	/** The height of the target box (node/edge) */
+	private int th;
 
-	// dimensions for node box
-	private int nxy;
+	/** x values of target (node/edge) points */
+	private int[] txPoints;
+	/** y values of target (node/edge) points */
+	private int[] tyPoints;
 
-	// locations of target (node/edge) points
-	private int[] tgtPoints;
+	/** The width of the object box (e.g. label, custom graphics) */
+	private int ow;
+	/** The height of the object box (e.g. label, custom graphics) */
+	private int oh;
 
-	// dimensions for label box
-	private int lx;
-	private int ly;
-
-	// locations for object (e.g. label, graphics) points
+	/** x values of the object (e.g. label, graphics) points */
 	private int[] oxPoints;
+	/** y values of the object (e.g. label, graphics) points */
 	private int[] oyPoints;
 
-	// diameter of a point
+	/** Diameter of a point */
 	private int dot;
+	/** Diameter of source/target nodes (EDGE_LABEL_POSITION only) */
+	private int nd;
 
-	// x/y positions for label box, initially offset
+	/** x value for the object box position */
 	private int xPos;
+	/** y value for the object box position */
 	private int yPos;
 
-	// indices of the closest points
-	private int bestLabelX = 1;
-	private int bestLabelY = 1;
-	private int bestNodeX = 1;
-	private int bestNodeY = 1;
+	// Indices of the closest points
+	private int bestObjX = 1;
+	private int bestObjY = 1;
+	private int bestTgtX = 1;
+	private int bestTgtY = 1;
 
-	// mouse drag state
+	// Mouse drag state
 	private boolean beenDragged;
 	private boolean canOffsetDrag;
 
-	// click offset
+	// Click offset
 	private int xClickOffset;
 	private int yClickOffset;
 
-	// the x and y offsets for the label rendering
+	// The x and y offsets for the label rendering
 	private int xOffset;
 	private int yOffset;
+	
+	private float offsetRatio;
 
-	// default text justify rule
+	/** Default text justification rule */
 	private Justification justify;
 	
-	// used to determine the render level of detail
-	private boolean renderDetail;
-
-	// strings for the graphic
+	// Strings for the graphic
 	private String click = "(click and drag)";
 
-	// font metrics for strings
+	// Font metrics for strings
 	private int labelLen;
 	private int clickLen;
 	private int ascent;
@@ -136,68 +149,81 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 	private final Stroke detailStroke = new BasicStroke(detailStrokeWidth);
 	private final Stroke lowStroke = new BasicStroke(lowStrokeWidth);
 
-	private Integer graphicSize;
-	
-	private ObjectPosition p;
-	private ObjectPositionVisualProperty vp;
-	
-	/**
-	 * A GUI for placing an object (e.g. a label) relative to a node.
-	 * 
-	 * @param graphicSize number of pixels square the that graphic should be
-	 * @param fullDetail whether or not to render at full detail
-	 */
-	public ObjectPlacerGraphic(Integer graphicSize, boolean fullDetail) {
-		this.p = new ObjectPosition();
-		renderDetail = fullDetail;
+	private ObjectPosition op;
+	private final ObjectPositionVisualProperty vp;
+	/** Used to determine the render level of detail */
+	private final boolean fullDetail;
 
-		this.graphicSize = graphicSize;
-		
-		if (graphicSize == null)
-			initSize(DEFAULT_WINDOW_SIZE);
-		else
-			initSize(graphicSize);
+	private final Integer prefWidth;
+	private final Integer prefHeight;
+	
+	public ObjectPlacerGraphic(
+			ObjectPosition op,
+			ObjectPositionVisualProperty vp,
+			Integer width,
+			Integer height,
+			boolean fullDetail
+	) {
+		this.op = op;
+		this.vp = vp;
+		this.fullDetail = fullDetail;
 
 		setBackground(BG_COLOR);
 
 		addMouseListener(new MouseClickHandler());
 		addMouseMotionListener(new MouseDragHandler());
 
+		if (width == null)
+			width = EDGE_LABEL_POSITION.equals(vp) ? DEF_EDGE_PANEL_WIDTH : DEF_PANEL_SIZE;
+		if (height == null)
+			height = EDGE_LABEL_POSITION.equals(vp) ? DEF_EDGE_PANEL_HEIGHT : DEF_PANEL_SIZE;
+		
+		this.prefWidth = width;
+		this.prefHeight = height;
+		
+		initSize(width, height);
 		applyPosition();
-		repaint();
 	}
 	
-	public void setObjectPosition(ObjectPosition op) {
-		this.p = op;
+	public ObjectPlacerGraphic(ObjectPosition op, ObjectPositionVisualProperty vp, boolean fullDetail) {
+		this(op, vp, null, null, fullDetail);
 	}
 	
+	public ObjectPlacerGraphic(ObjectPosition value, int width, int height, boolean fullDetail) {
+		this(value, null, width, height, fullDetail);
+	}
+	
+	// ==[ PUBLIC METHODS ]=============================================================================================
+
 	/**
 	 * Applies the new ObjectPosition to the graphic.
 	 */
 	public void applyPosition() {
-		xOffset = (int) (p.getOffsetX() * offsetRatio);
-		yOffset = (int) (p.getOffsetY() * offsetRatio);
-		justify = p.getJustify();
+		xOffset = (int) (op.getOffsetX() * offsetRatio);
+		yOffset = (int) (op.getOffsetY() * offsetRatio);
+		justify = op.getJustify();
 
-		var nodeAnchor = p.getTargetAnchor();
+		var nodeAnchor = op.getTargetAnchor();
 
 		if (nodeAnchor != NONE) {
-			bestNodeX = nodeAnchor.ordinal() % 3;
-			bestNodeY = nodeAnchor.ordinal() / 3;
+			bestTgtX = nodeAnchor.ordinal() % 3;
+			bestTgtY = nodeAnchor.ordinal() / 3;
 		}
 
-		var labelAnchor = p.getAnchor();
+		var labelAnchor = op.getAnchor();
 
 		if (labelAnchor != NONE) {
-			bestLabelX = labelAnchor.ordinal() % 3;
-			bestLabelY = labelAnchor.ordinal() / 3;
+			bestObjX = labelAnchor.ordinal() % 3;
+			bestObjY = labelAnchor.ordinal() / 3;
 		}
 
-		if ((nodeAnchor != NONE || labelAnchor != NONE) && tgtPoints != null && oxPoints != null && oyPoints != null) {
-			if (tgtPoints.length > bestNodeX && oxPoints.length > bestLabelX)
-				xPos = tgtPoints[bestNodeX] - oxPoints[bestLabelX];
-			if (tgtPoints.length > bestNodeY && oyPoints.length > bestLabelY)
-				yPos = tgtPoints[bestNodeY] - oyPoints[bestLabelY];
+		if ((nodeAnchor != NONE || labelAnchor != NONE)
+				&& txPoints != null && tyPoints != null
+				&& oxPoints != null && oyPoints != null) {
+			if (txPoints.length > bestTgtX && oxPoints.length > bestObjX)
+				xPos = txPoints[bestTgtX] - oxPoints[bestObjX];
+			if (tyPoints.length > bestTgtY && oyPoints.length > bestObjY)
+				yPos = tyPoints[bestTgtY] - oyPoints[bestObjY];
 		}
 	}
 
@@ -212,8 +238,13 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 		var objLabel = isNodeLabel || isEdgeLabel ? "LABEL" : "OBJECT";
 		var targetLabel = isEdgeLabel ? "EDGE" : "NODE";
 		
-		int w = graphicSize != null ? graphicSize : getSize().width;
-		int h = graphicSize != null ? graphicSize : getSize().height;
+		int w = getWidth();
+		int h = getHeight();
+		
+		if (w <= 0)
+			w = prefWidth;
+		if (h <= 0)
+			h = prefHeight;
 		
 		var g = (Graphics2D) gin;
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -230,83 +261,95 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 		g.setColor(UIManager.getColor("Table.background"));
 		g.fillRect(0, 0, w, h);
 
-		// draw the node box
-		int x = center - (nxy / 2);
-		int y = center - (nxy / 2);
+		// draw the target shape
+		g.setColor(TGT_BOX_BG_COLOR);
+		
+		var xc = w / 2; // x of center point
+		var yc = h / 2; // y of center point
+		int x = xc - (tw / 2);
+		int y = yc - (th / 2);
+		
+		if (isEdgeLabel) {
+			// draw as an edge, from the source node's center to the target's center
+			g.fillRect(x - nd / 2, y, tw + nd, th);
+			
+			// also draw the source and target nodes
+			g.setColor(NODES_BG_COLOR);
+			
+			var yn = yc - (nd / 2);
+			g.fillOval(x - nd, yn, nd, nd); // source node
+			g.fillOval(x + tw, yn, nd, nd); // target node
+		} else {
+			// draw as a node
+			g.fillOval(x, y, tw, th);
+		}
 
-		g.setColor(NODE_BOX_BG_COLOR);
-		g.fillOval(x, y, nxy, nxy);
+		g.setStroke(fullDetail ? detailStroke : lowStroke);
+		g.setColor(TGT_BOX_FG_COLOR);
+		
+		if (!isEdgeLabel)
+			g.drawRect(x, y, tw, th);
 
-		if (renderDetail)
-			g.setStroke(detailStroke);
-		else
-			g.setStroke(lowStroke);
-
-		g.setColor(NODE_BOX_FG_COLOR);
-		g.drawLine(x, y, x + nxy, y);
-		g.drawLine(x + nxy, y, x + nxy, y + nxy);
-		g.drawLine(x + nxy, y + nxy, x, y + nxy);
-		g.drawLine(x, y + nxy, x, y);
-
-		if (renderDetail) {
-			g.drawString(targetLabel, center - (nxy / 12), center - (nxy / 6));
+		if (fullDetail) {
+			g.drawString(targetLabel, xc - (tw / 12), yc - (th / 6));
 
 			// draw the node box points
-			for (int i = 0; i < tgtPoints.length; i++) {
-				for (int j = 0; j < tgtPoints.length; j++) {
-					if ((i == bestNodeX) && (j == bestNodeY) && !beenDragged)
+			for (int i = 0; i < txPoints.length; i++) {
+				for (int j = 0; j < tyPoints.length; j++) {
+					if (i == bestTgtX && j == bestTgtY && !beenDragged)
 						g.setColor(POINT_HIGHLIGHT_COLOR);
 					else
-						g.setColor(NODE_BOX_FG_COLOR);
+						g.setColor(TGT_BOX_FG_COLOR);
 					
-					g.fillOval(tgtPoints[i] - (dot / 2), tgtPoints[j] - (dot / 2), dot, dot);
+					g.fillOval(txPoints[i] - (dot / 2), tyPoints[j] - (dot / 2), dot, dot);
 				}
 			}
 		}
 
 		// draw the label box
-		g.setColor(LABEL_BOX_BG_COLOR);
-		g.fillRect(xOffset + xPos, yOffset + yPos, lx, ly);
-
-		g.setColor(LABEL_BOX_FG_COLOR);
-		g.drawLine(xOffset + xPos, yOffset + yPos, xOffset + xPos + lx, yOffset + yPos);
-		g.drawLine(xOffset + xPos + lx, yOffset + yPos, xOffset + xPos + lx, yOffset + yPos + ly);
-		g.drawLine(xOffset + xPos + lx, yOffset + yPos + ly, xOffset + xPos, yOffset + yPos + ly);
-		g.drawLine(xOffset + xPos, yOffset + yPos + ly, xOffset + xPos, yOffset + yPos);
-
+		g.setColor(OBJ_BOX_BG_COLOR);
+		g.fillRect(xOffset + xPos, yOffset + yPos, ow, oh);
+		g.setColor(OBJ_BOX_FG_COLOR);
+		g.drawRect(xOffset + xPos, yOffset + yPos, ow, oh);
+		
 		// draw the string in the justified location
-		if (renderDetail) {
-			int vspace = (ly - ascent - ascent) / 3;
+		if (fullDetail) {
+			int vspace = (oh - ascent - ascent) / 3;
 
 			if (justify == Justification.JUSTIFY_LEFT) {
 				g.drawString(objLabel, xOffset + xPos + detailStrokeWidth, yOffset + yPos + vspace + ascent);
 				g.drawString(click, xOffset + xPos + detailStrokeWidth, yOffset + yPos + (2 * (vspace + ascent)));
 			} else if (justify == Justification.JUSTIFY_RIGHT) {
-				g.drawString(objLabel, xOffset + xPos + (lx - labelLen), yOffset + yPos + vspace + ascent);
-				g.drawString(click, xOffset + xPos + (lx - clickLen), yOffset + yPos + (2 * (vspace + ascent)));
+				g.drawString(objLabel, xOffset + xPos + (ow - labelLen), yOffset + yPos + vspace + ascent);
+				g.drawString(click, xOffset + xPos + (ow - clickLen), yOffset + yPos + (2 * (vspace + ascent)));
 			} else { // center
-				g.drawString(objLabel, (xOffset + xPos + ((lx - labelLen) / 2)) - detailStrokeWidth, yOffset + yPos
+				g.drawString(objLabel, (xOffset + xPos + ((ow - labelLen) / 2)) - detailStrokeWidth, yOffset + yPos
 						+ vspace + ascent);
-				g.drawString(click, (xOffset + xPos + ((lx - clickLen) / 2)) - detailStrokeWidth, yOffset + yPos
+				g.drawString(click, (xOffset + xPos + ((ow - clickLen) / 2)) - detailStrokeWidth, yOffset + yPos
 						+ (2 * (vspace + ascent)));
 			}
 		}
 
-		if (renderDetail) {
+		if (fullDetail) {
 			// draw the label box points
-			g.setColor(LABEL_BOX_FG_COLOR);
+			g.setColor(OBJ_BOX_FG_COLOR);
 
-			for (int i = 0; i < oxPoints.length; i++)
+			for (int i = 0; i < oxPoints.length; i++) {
 				for (int j = 0; j < oyPoints.length; j++) {
-					if ((i == bestLabelX) && (j == bestLabelY) && !beenDragged)
+					if (i == bestObjX && j == bestObjY && !beenDragged)
 						g.setColor(POINT_HIGHLIGHT_COLOR);
 
-					g.fillOval((xPos + xOffset + oxPoints[i]) - (dot / 2), (yPos + yOffset + oyPoints[j]) - (dot / 2),
-							dot, dot);
+					g.fillOval(
+							(xPos + xOffset + oxPoints[i]) - (dot / 2),
+							(yPos + yOffset + oyPoints[j]) - (dot / 2),
+							dot,
+							dot
+					);
 
-					if ((i == bestLabelX) && (j == bestLabelY))
-						g.setColor(LABEL_BOX_FG_COLOR);
+					if (i == bestObjX && j == bestObjY)
+						g.setColor(OBJ_BOX_FG_COLOR);
 				}
+			}
 		}
 	}
 	
@@ -318,49 +361,51 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 		var type = e.getPropertyName();
 
 		if (type.equals(ObjectPlacerGraphic.OBJECT_POSITION_CHANGED)) {
-			p = (ObjectPosition) e.getNewValue();
+			op = (ObjectPosition) e.getNewValue();
 			applyPosition();
 			repaint();
 		}
 	}
 	
-	void update(ObjectPosition p, ObjectPositionVisualProperty vp) {
-		this.p = p;
-		this.vp = vp;
-		
-		applyPosition();
-		repaint();
-	}
+	// ==[ PRIVATE METHODS ]============================================================================================
 	
-	private void initSize(int size) {
+	private void initSize(int w, int h) {
 		// dimensions of panel
-		setMinimumSize(new Dimension(size, size));
-		setPreferredSize(new Dimension(size, size));
+		setMinimumSize(new Dimension(w, h));
+		setPreferredSize(new Dimension(w, h));
 		
-		center = size / 2;
+		// center point (x, y)
+		var xc = w / 2;
+		var yc = h / 2;
+		
+		offsetRatio = (float) w / DEF_PANEL_SIZE;
 
-		offsetRatio = (float) size / DEFAULT_WINDOW_SIZE;
-
-		// dimensions for node box
-		nxy = (int) (0.3 * size);
-
-		// locations of node points
-		tgtPoints = new int[]{ center - (nxy / 2), center, center + (nxy / 2) };
+		// dimensions for target (node/edge) box
+		if (EDGE_LABEL_POSITION.equals(vp)) {
+			tw = (int) (0.7 * w);
+			th = (int) Math.max(60, h / 6.0);
+			
+			nd = Math.max(100, w - tw);
+		} else {
+			tw = th = (int) (0.3 * Math.min(w, h));
+		}
+			
+		// coordinates of target (node/edge) points
+		txPoints = new int[]{ xc - (tw / 2), xc, xc + (tw / 2) };
+		tyPoints = new int[]{ yc - (th / 2), yc, yc + (th / 2) };
 
 		// dimensions for object box
-		lx = (int) (0.4 * size);
-		ly = (int) (0.1 * size);
+		ow = (int) (0.4 * w);
+		oh = (int) (0.1 * h);
 
-		// locations for label points
-		int[] tlxpoints = { 0, lx / 2, lx };
-		int[] tlypoints = { 0, ly / 2, ly };
-		oxPoints = tlxpoints;
-		oyPoints = tlypoints;
+		// locations for object (e.g. label) points
+		oxPoints = new int[]{ 0, ow / 2, ow };
+		oyPoints = new int[]{ 0, oh / 2, oh };
 
 		// diameter of a point
-		dot = (int) (0.02 * size);
+		dot = (int) (0.02 * ((w + h) / 2.0));
 
-		// x/y positions for label box, initially offset
+		// x/y positions for object box, initially offset
 		xPos = dot;
 		yPos = dot;
 	}
@@ -373,7 +418,9 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 
 		return null;
 	}
-
+	
+	// ==[ CLASSES ]====================================================================================================
+	
 	private class MouseClickHandler extends MouseAdapter {
 		
 		/**
@@ -387,8 +434,8 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 			int y = e.getY();
 
 			// click+drag within box
-			if ((x >= (xPos + xOffset)) && (x <= (xPos + xOffset + lx))
-					&& (y >= (yPos + yOffset)) && (y <= (yPos + yOffset + ly))) {
+			if ((x >= (xPos + xOffset)) && (x <= (xPos + xOffset + ow))
+					&& (y >= (yPos + yOffset)) && (y <= (yPos + yOffset + oh))) {
 				canOffsetDrag = true;
 				xClickOffset = x - xPos;
 				yClickOffset = y - yPos;
@@ -414,37 +461,38 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 				double offY = 0;
 
 				// loop over each point in the node box
-				for (int i = 0; i < tgtPoints.length; i++) {
-					for (int j = 0; j < tgtPoints.length; j++) {
-						Point nodePoint = new Point(tgtPoints[i] - (dot / 2),
-								tgtPoints[j] - (dot / 2));
+				for (int i = 0; i < txPoints.length; i++) {
+					for (int j = 0; j < tyPoints.length; j++) {
+						var tp = new Point(
+								txPoints[i] - (dot / 2),
+								tyPoints[j] - (dot / 2)
+						);
 
 						// loop over each point in the label box
 						for (int a = 0; a < oxPoints.length; a++) {
 							for (int b = 0; b < oyPoints.length; b++) {
-								Point labelPoint = new Point(
+								var op = new Point(
 										(xPos + oxPoints[a]) - (dot / 2),
-										(yPos + oyPoints[b]) - (dot / 2));
-
-								double dist = labelPoint
-										.distance(nodePoint);
+										(yPos + oyPoints[b]) - (dot / 2)
+								);
+								double dist = op.distance(tp);
 
 								if (dist < best) {
 									best = dist;
-									bestLabelX = a;
-									bestLabelY = b;
-									bestNodeX = i;
-									bestNodeY = j;
-									offX = labelPoint.getX() - nodePoint.getX();
-									offY = labelPoint.getY() - nodePoint.getY();
+									bestObjX = a;
+									bestObjY = b;
+									bestTgtX = i;
+									bestTgtY = j;
+									offX = op.getX() - tp.getX();
+									offY = op.getY() - tp.getY();
 								}
 							}
 						}
 					}
 				}
 
-				xPos = tgtPoints[bestNodeX] - oxPoints[bestLabelX];
-				yPos = tgtPoints[bestNodeY] - oyPoints[bestLabelY];
+				xPos = txPoints[bestTgtX] - oxPoints[bestObjX];
+				yPos = tyPoints[bestTgtY] - oyPoints[bestObjY];
 
 				if (Math.sqrt(offX * offX + offY * offY) > (GRAVITY_DISTANCE + (dot / 2))) {
 					xOffset = (int) offX;
@@ -454,11 +502,11 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 					yOffset = 0;
 				}
 
-				p.setOffsetX(xOffset);
-				p.setOffsetY(yOffset);
-				p.setAnchor(parsePosition(bestLabelX + (3 * bestLabelY)));
-				p.setTargetAnchor(parsePosition(bestNodeX + (3 * bestNodeY)));
-				firePropertyChange(ObjectPlacerGraphic.OBJECT_POSITION_CHANGED, null, p);
+				op.setOffsetX(xOffset);
+				op.setOffsetY(yOffset);
+				op.setAnchor(parsePosition(bestObjX + (3 * bestObjY)));
+				op.setTargetAnchor(parsePosition(bestTgtX + (3 * bestTgtY)));
+				firePropertyChange(ObjectPlacerGraphic.OBJECT_POSITION_CHANGED, null, op);
 
 				repaint();
 				beenDragged = false;
