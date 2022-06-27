@@ -2,10 +2,12 @@ package org.cytoscape.view.vizmap.gui.internal.view;
 
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
@@ -21,13 +23,14 @@ import javax.swing.ListSelectionModel;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
 
 import org.cytoscape.application.swing.CyColumnPresentationManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.vizmap.gui.internal.ColumnSpec;
 import org.cytoscape.view.vizmap.gui.internal.GraphObjectType;
@@ -164,11 +167,11 @@ public class ColumnStylePicker {
 	private JTable getJTable() {
 		if(jtable == null) {
 			var model = new ColumnStyleTableModel();
-			var renderer = new ColumnStyleColumnRenderer();
 			
 			jtable = new JTable(model);
-			jtable.setDefaultRenderer(String.class, renderer);
-			jtable.setDefaultRenderer(GraphObjectType.class, renderer);
+			jtable.setAutoCreateColumnsFromModel(false);
+			jtable.setDefaultRenderer(GraphObjectType.class, new TableNameRenderer());
+			jtable.setDefaultRenderer(String.class, new ColumnNameRenderer(x -> true));
 			
 			JTableHeader header = jtable.getTableHeader();
 			header.setReorderingAllowed(false);
@@ -222,18 +225,12 @@ public class ColumnStylePicker {
 	}
 	
 	
-	public class ColumnStyleColumnRenderer extends DefaultTableCellRenderer {
+	public class TableNameRenderer extends DefaultTableCellRenderer {
 
-		final CyNetworkTableManager netTableManager;
-		final CyColumnPresentationManager columnPresentationManager;
-		final Icon nodeTableIcon, edgeTableIcon, netTableIcon, globalTableIcon;
+		private final Icon nodeTableIcon, edgeTableIcon, netTableIcon;
 		
-		private ColumnStyleColumnRenderer() {
-			netTableManager = servicesUtil.get(CyNetworkTableManager.class);
-			columnPresentationManager = servicesUtil.get(CyColumnPresentationManager.class);
-			
+		private TableNameRenderer() {
 			var iconManager = servicesUtil.get(IconManager.class);
-			globalTableIcon = new TextIcon(IconManager.ICON_TABLE, iconManager.getIconFont(14.0f), 16, 16);
 			var iconFont = iconManager.getIconFont(IconUtil.CY_FONT_NAME, 14.0f);
 			nodeTableIcon = new TextIcon(IconUtil.NODE_TABLE, iconFont, 16, 16);
 			edgeTableIcon = new TextIcon(IconUtil.EDGE_TABLE, iconFont, 16, 16);
@@ -255,13 +252,60 @@ public class ColumnStylePicker {
 					setText("Network");
 					setIcon(netTableIcon);
 				}
-			} else if (value instanceof String column) {
-				columnPresentationManager.setLabel(column, this);
 			} else  {
 				setText("-- None --");
 				setIcon(null);
 			}
 			return this;
+		}
+	}
+	
+	
+	public class ColumnNameRenderer implements TableCellRenderer {
+
+		private final CyColumnPresentationManager columnPresentationManager;
+		
+		private final Predicate<String> showWarn;
+		
+		private final JPanel panel;
+		private final DefaultTableCellRenderer colLabel;
+		private final DefaultTableCellRenderer warnLabel;
+		
+		private ColumnNameRenderer(Predicate<String> showWarn) {
+			this.columnPresentationManager = servicesUtil.get(CyColumnPresentationManager.class);
+			this.showWarn = showWarn == null ? (x -> false) : showWarn;
+			
+			var iconManager = servicesUtil.get(IconManager.class);
+			var iconFont = iconManager.getIconFont(14.0f);
+			Icon warnIcon = new TextIcon(IconManager.ICON_WARNING, iconFont, 16, 16);
+
+			colLabel = new DefaultTableCellRenderer();
+			warnLabel = new DefaultTableCellRenderer();
+			warnLabel.setIcon(warnIcon);
+			
+			panel = new JPanel();
+			panel.setOpaque(false);
+			panel.setLayout(new BorderLayout());
+			panel.add(colLabel, BorderLayout.CENTER);
+			panel.add(warnLabel, BorderLayout.EAST);
+		}
+		
+		@Override
+		public Component getTableCellRendererComponent(JTable jtable, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+			colLabel.getTableCellRendererComponent(jtable, null, isSelected, hasFocus, row, col);
+			warnLabel.getTableCellRendererComponent(jtable, null, isSelected, false, row, col);
+			
+			if (value instanceof String column) {
+				columnPresentationManager.setLabel(column, colLabel);
+				warnLabel.setVisible(showWarn.test(column));
+			} else  {
+				colLabel.setText("-- None --");
+				colLabel.setIcon(null);
+				warnLabel.setVisible(false);
+			}
+			
+			warnLabel.setForeground(LookAndFeelUtil.getWarnColor());
+			return panel;
 		}
 	}
 	
