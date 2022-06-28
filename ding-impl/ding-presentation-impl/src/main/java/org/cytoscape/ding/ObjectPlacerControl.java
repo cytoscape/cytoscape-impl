@@ -78,59 +78,42 @@ public class ObjectPlacerControl extends JPanel implements ActionListener, Prope
 	private boolean ignoreEvents;
 
 	private ObjectPosition p;
-	private ObjectPositionVisualProperty vp;
 
 	public ObjectPlacerControl(ObjectPosition p, ObjectPositionVisualProperty vp) {
 		this.p = p;
-		this.vp = vp;
 		
-		var positions = new ArrayList<>(Arrays.asList(Position.values()));
-		positions.remove(NONE); // The renderer cannot handle NONE!
-		positions.sort(new Comparator<Position>() {
+		var objPositions = new ArrayList<>(Arrays.asList(Position.values()));
+		objPositions.remove(NONE); // The renderer cannot handle NONE!
+		objPositions.sort(new Comparator<Position>() {
 			@Override
 			public int compare(Position p1, Position p2) {
 				return p1.getName().compareTo(p2.getName());
 			}
 		});
+		
+		var tgtPositions = new ArrayList<>(objPositions);
+		
+		if (EDGE_LABEL_POSITION.equals(vp)) {
+			tgtPositions.sort(new Comparator<Position>() {
+				@Override
+				public int compare(Position p1, Position p2) {
+					var txt1 = getTargetPositionText(vp, p1);
+					var txt2 = getTargetPositionText(vp, p2);
+					
+					return txt1.compareTo(txt2);
+				}
+			});
+		}
 
-		targetAnchorLabel = new JLabel("Node " + ANCHOR_POINTS + ":");
-		targetAnchors = new JComboBox<>(positions.toArray(new Position[positions.size()]));
+		targetAnchorLabel = new JLabel();
+		targetAnchors = new JComboBox<>(tgtPositions.toArray(new Position[tgtPositions.size()]));
 		targetAnchors.setRenderer(new DefaultListCellRenderer() {
 			@Override
 			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
 					boolean cellHasFocus) {
 				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-				var name = NONE_LABEL;
 				
-				if (value instanceof Position) {
-					var pos = (Position) value;
-					
-					if (pos != NONE)
-						name = pos.getName();
-					
-					if (EDGE_LABEL_POSITION.equals(vp)) {
-						switch (pos) {
-							case WEST:
-							case NORTH_WEST:
-							case SOUTH_WEST:
-								name += " (Source)";
-								break;
-							case EAST:
-							case NORTH_EAST:
-							case SOUTH_EAST:
-								name += " (Target)";
-								break;
-							case CENTER:
-							case NORTH:
-							case SOUTH:
-								name += " (Edge)";
-								break;
-							case NONE: // same as null or 'not selected'
-								break;
-						}
-					}
-				}
-				
+				var name = value instanceof Position ? getTargetPositionText(vp, (Position) value) : NONE_LABEL;
 				setText(name);
 				
 				return this;
@@ -138,8 +121,8 @@ public class ObjectPlacerControl extends JPanel implements ActionListener, Prope
 		});
 		targetAnchors.addActionListener(this);
 
-		objAnchorLabel = new JLabel("Object " + ANCHOR_POINTS + ":");
-		objAnchors = new JComboBox<>(positions.toArray(new Position[positions.size()]));
+		objAnchorLabel = new JLabel();
+		objAnchors = new JComboBox<>(objPositions.toArray(new Position[objPositions.size()]));
 		objAnchors.setRenderer(new DefaultListCellRenderer() {
 			@Override
 			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
@@ -230,7 +213,16 @@ public class ObjectPlacerControl extends JPanel implements ActionListener, Prope
 				)
 		);
 		
-		update();
+		// Update labels and other components
+		boolean isLabel = NODE_LABEL_POSITION.equals(vp) || EDGE_LABEL_POSITION.equals(vp);
+		
+		targetAnchorLabel.setText((EDGE_LABEL_POSITION.equals(vp) ? "Edge " : "Node ") + ANCHOR_POINTS + ":");
+		objAnchorLabel.setText((isLabel ? "Label " : "Object ") + ANCHOR_POINTS + ":");
+		
+		justifyLabel.setVisible(isLabel);
+		justifyCombo.setVisible(isLabel);
+		
+		applyPosition();
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================
@@ -288,19 +280,6 @@ public class ObjectPlacerControl extends JPanel implements ActionListener, Prope
 	
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
-	private void update() {
-		// Update labels and other components
-		boolean isLabel = NODE_LABEL_POSITION.equals(vp) || EDGE_LABEL_POSITION.equals(vp);
-		
-		targetAnchorLabel.setText((EDGE_LABEL_POSITION.equals(vp) ? "Edge " : "Node ") + ANCHOR_POINTS + ":");
-		objAnchorLabel.setText((isLabel ? "Label " : "Object ") + ANCHOR_POINTS + ":");
-		
-		justifyLabel.setVisible(isLabel);
-		justifyCombo.setVisible(isLabel);
-		
-		applyPosition();
-	}
-
 	private void applyPosition() {
 		ignoreEvents = true; // so that we don't pay attention to events generated from these calls
 
@@ -336,5 +315,31 @@ public class ObjectPlacerControl extends JPanel implements ActionListener, Prope
 			jtf.setText("0");
 			return 0.0;
 		}
+	}
+	
+	private static String getTargetPositionText(ObjectPositionVisualProperty vp, Position pos) {
+		String txt = NONE_LABEL;
+		
+		if (pos != null && pos != Position.NONE) {
+			if (EDGE_LABEL_POSITION.equals(vp)) {
+				var sn = pos.getShortName().toUpperCase();
+				
+				if (pos == Position.CENTER || pos == Position.NORTH || pos == Position.SOUTH)
+					txt = "Middle";
+				else if (sn.endsWith("W"))
+					txt = "Source";
+				else if (sn.endsWith("E"))
+					txt = "Target";
+				
+				if (sn.startsWith("N"))
+					txt += " (above)";
+				else if (sn.startsWith("S"))
+					txt += " (below)";
+			} else {
+				txt = pos.getName();
+			}
+		}
+		
+		return txt;
 	}
 }
