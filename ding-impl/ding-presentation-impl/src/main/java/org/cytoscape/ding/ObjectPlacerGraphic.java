@@ -3,6 +3,9 @@ package org.cytoscape.ding;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_POSITION;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_POSITION;
 import static org.cytoscape.view.presentation.property.values.Position.NONE;
+import static org.jdesktop.swingx.color.ColorUtil.setAlpha;
+import static org.jdesktop.swingx.color.ColorUtil.setBrightness;
+import static org.jdesktop.swingx.color.ColorUtil.setSaturation;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -71,18 +74,20 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 	// Color scheme for GUI
 	private final Color BG_COLOR = UIManager.getColor("TextField.background");
 	
-	private final Color OBJ_BOX_FG_COLOR = UIManager.getColor("CyColor.complement(-2)");
-	// Same color, but transparent
-	private final Color OBJ_BOX_BG_COLOR =
-			new Color(OBJ_BOX_FG_COLOR.getRed(), OBJ_BOX_FG_COLOR.getGreen(), OBJ_BOX_FG_COLOR.getBlue(), 30);
+	private final Color OBJ_FG_COLOR = UIManager.getColor("CyColor.complement(-2)");
+	private final Color OBJ_BG_COLOR = setAlpha(OBJ_FG_COLOR, 20);
+	private final Color OBJ_BORDER_COLOR = setAlpha(OBJ_FG_COLOR, 150);
+	private final Color OBJ_INFO_COLOR = setAlpha(OBJ_FG_COLOR, 150);
 	
-	private final Color TGT_BOX_FG_COLOR = UIManager.getColor("CyColor.complement(+1)");
-	// Same color, but transparent
-	private final Color TGT_BOX_BG_COLOR =
-			new Color(TGT_BOX_FG_COLOR.getRed(), TGT_BOX_FG_COLOR.getGreen(), TGT_BOX_FG_COLOR.getBlue(), 30);
+	private final Color TGT_FG_COLOR = UIManager.getColor("CyColor.complement(+1)");
+	private final Color TGT_BG_COLOR = setAlpha(UIManager.getColor("CyColor.complement(+1)"), 50);
+	private final Color TGT_BORDER_COLOR = setAlpha(UIManager.getColor("CyColor.complement(+1)"), 125);
 	
 	/** The color of the source and target nodes (EDGE_LABEL_POSITION only)  */
-	private final Color NODES_BG_COLOR = UIManager.getColor("CyColor.complement(+2)");
+	private final Color NODES_BG_COLOR = setSaturation(
+			setBrightness(UIManager.getColor("CyColor.complement(+2)"), 0.8f),
+			0.25f
+	);
 	
 	private final Color POINT_HIGHLIGHT_COLOR = UIManager.getColor("CyColor.primary(+2)");
 	
@@ -190,10 +195,6 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 		this(op, vp, null, null, fullDetail);
 	}
 	
-	public ObjectPlacerGraphic(ObjectPosition value, int width, int height, boolean fullDetail) {
-		this(value, null, width, height, fullDetail);
-	}
-	
 	// ==[ PUBLIC METHODS ]=============================================================================================
 
 	/**
@@ -260,7 +261,7 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 		g2.fillRect(0, 0, w, h);
 
 		// draw the target shape
-		g2.setColor(TGT_BOX_BG_COLOR);
+		g2.setColor(TGT_BG_COLOR);
 		
 		var xc = w / 2; // x of center point
 		var yc = h / 2; // y of center point
@@ -275,18 +276,19 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 			g2.setColor(NODES_BG_COLOR);
 			
 			var yn = yc - (nd / 2);
-			g2.fillOval(x - nd, yn, nd, nd); // source node
-			g2.fillOval(x + tw, yn, nd, nd); // target node
+			g2.fillArc(x - nd, yn, nd, nd, -90, 180); // source node
+			g2.fillArc(x + tw, yn, nd, nd, -90, -180); // target node
 		} else {
 			// draw as a node
 			g2.fillOval(x, y, tw, th);
 		}
 
 		g2.setStroke(fullDetail ? detailStroke : lowStroke);
-		g2.setColor(TGT_BOX_FG_COLOR);
 		
-		if (!isEdgeLabel)
+		if (!isEdgeLabel) { // it looks better if we do not draw the border when the target is an edge
+			g2.setColor(TGT_BORDER_COLOR);
 			g2.drawRect(x, y, tw, th);
+		}
 
 		if (fullDetail) {
 			// calculate the dimensions of the texts, if they haven't been calculated yet
@@ -296,6 +298,7 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 				txtWidths.put(tgtTxt, tgtTxtWidth = fm.stringWidth(tgtTxt));
 			
 			// draw the target's text
+			g2.setColor(TGT_FG_COLOR);
 			g2.drawString(tgtTxt, xc - (tgtTxtWidth / 2), yc - (th / 5));
 
 			// draw the node box points
@@ -304,7 +307,7 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 					if (i == bestTgtX && j == bestTgtY && !beenDragged)
 						g2.setColor(POINT_HIGHLIGHT_COLOR);
 					else
-						g2.setColor(TGT_BOX_FG_COLOR);
+						g2.setColor(TGT_FG_COLOR);
 					
 					g2.fillOval(txPoints[i] - (dot / 2), tyPoints[j] - (dot / 2), dot, dot);
 				}
@@ -312,9 +315,9 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 		}
 
 		// draw the label box
-		g2.setColor(OBJ_BOX_BG_COLOR);
+		g2.setColor(OBJ_BG_COLOR);
 		g2.fillRect(xOffset + xPos, yOffset + yPos, ow, oh);
-		g2.setColor(OBJ_BOX_FG_COLOR);
+		g2.setColor(OBJ_BORDER_COLOR);
 		g2.drawRect(xOffset + xPos, yOffset + yPos, ow, oh);
 		
 		// draw the string in the justified location
@@ -334,12 +337,15 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 			int yClickTxt = yOffset + yPos + oh - txtHeight + ascent - detailStrokeWidth;
 
 			// draw the object's texts
+			g2.setColor(OBJ_FG_COLOR);
+			
 			if (justify == Justification.JUSTIFY_LEFT) {
 				g2.drawString(
 						objTxt,
 						xOffset + xPos + detailStrokeWidth,
 						yObjTxt
 				);
+				g2.setColor(OBJ_INFO_COLOR);
 				g2.drawString(
 						clickTxt,
 						xOffset + xPos + detailStrokeWidth,
@@ -351,6 +357,7 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 						xOffset + xPos + (ow - objTxtWidth) - detailStrokeWidth,
 						yObjTxt
 				);
+				g2.setColor(OBJ_INFO_COLOR);
 				g2.drawString(
 						clickTxt,
 						xOffset + xPos + (ow - clickTxtWidth),
@@ -362,6 +369,7 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 						(xOffset + xPos + ((ow - objTxtWidth) / 2)),
 						yObjTxt
 				);
+				g2.setColor(OBJ_INFO_COLOR);
 				g2.drawString(
 						clickTxt,
 						(xOffset + xPos + ((ow - clickTxtWidth) / 2)),
@@ -372,7 +380,7 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 
 		if (fullDetail) {
 			// draw the label box points
-			g2.setColor(OBJ_BOX_FG_COLOR);
+			g2.setColor(OBJ_FG_COLOR);
 
 			for (int i = 0; i < oxPoints.length; i++) {
 				for (int j = 0; j < oyPoints.length; j++) {
@@ -387,7 +395,7 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 					);
 
 					if (i == bestObjX && j == bestObjY)
-						g2.setColor(OBJ_BOX_FG_COLOR);
+						g2.setColor(OBJ_FG_COLOR);
 				}
 			}
 		}
@@ -423,9 +431,9 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 		// dimensions for target (node/edge) box
 		if (EDGE_LABEL_POSITION.equals(vp)) {
 			tw = (int) (0.7 * w);
-			th = (int) Math.max(60, h / 6.0);
+			th = (int) (h / 6.0);
 			
-			nd = Math.max(100, w - tw);
+			nd = w - tw;
 		} else {
 			tw = th = (int) (0.3 * Math.min(w, h));
 		}

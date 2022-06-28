@@ -6,6 +6,7 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 
 import org.cytoscape.ding.ObjectPlacerGraphic;
+import org.cytoscape.view.presentation.property.ObjectPositionVisualProperty;
 import org.cytoscape.view.presentation.property.values.ObjectPosition;
 
 /*
@@ -35,23 +36,31 @@ import org.cytoscape.view.presentation.property.values.ObjectPosition;
 @SuppressWarnings("serial")
 public class ObjectPositionIcon extends VisualPropertyIcon<ObjectPosition> {
 	
-	private Graphics2D g2d;
+	private final ObjectPlacerGraphic lp;
+	private final ObjectPositionVisualProperty vp;
 
-	public ObjectPositionIcon(ObjectPosition value, int width, int height, String name) {
-		super(value, width, height, name);
+	public ObjectPositionIcon(
+			ObjectPosition op,
+			ObjectPositionVisualProperty vp,
+			int width,
+			int height,
+			String name
+	) {
+		super(op, width, height, name);
+		this.vp = vp;
+		this.lp = new ObjectPlacerGraphic(op, vp, width, height, false);
 	}
 
 	@Override
 	public void paintIcon(Component c, Graphics g, int x, int y) {
-		g2d = (Graphics2D) g;
-		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		var g2 = (Graphics2D) g;
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
-		g2d.translate(x,  y);
-		g2d.fillRect(0, 0, width, height);
+		g2.translate(x,  y);
+		g2.fillRect(0, 0, width, height);
 		
-		var lp = new ObjectPlacerGraphic(value, width, height, false);
 		lp.applyPosition();
-		lp.paint(g2d);
-		g2d.translate(-x,  -y);
+		lp.paint(g2);
+		g2.translate(-x,  -y);
 	}
 }

@@ -793,7 +793,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 	@Override
 	public <V> Icon createIcon(VisualProperty<V> vp, V value, int w, int h) {
-		return VisualPropertyIconFactory.createIcon(value, w, h);
+		return VisualPropertyIconFactory.createIcon(value, vp, w, h);
 	}
 
 	/**
