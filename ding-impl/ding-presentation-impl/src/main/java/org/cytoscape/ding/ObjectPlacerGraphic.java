@@ -17,6 +17,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.JPanel;
 import javax.swing.UIManager;
@@ -137,13 +139,12 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 	/** Default text justification rule */
 	private Justification justify;
 	
-	// Strings for the graphic
-	private String click = "(click and drag)";
+	/** Instructions text */
+	private String clickTxt = "(click and drag)";
 
 	// Font metrics for strings
-	private int labelLen;
-	private int clickLen;
-	private int ascent;
+	private Map<String, Integer> txtWidths = new HashMap<>();
+	private int txtHeight = -1;
 	private int detailStrokeWidth = 3;
 	private int lowStrokeWidth = 1;
 	private final Stroke detailStroke = new BasicStroke(detailStrokeWidth);
@@ -231,12 +232,20 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 	 * The method that handles the rendering of placement gui.
 	 */
 	@Override
-	public void paint(Graphics gin) {
+	public void paint(Graphics g) {
+		var g2 = (Graphics2D) g;
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		
+		var fm = g2.getFontMetrics();
+		
+		if (txtHeight <= 0)
+			txtHeight = fm.getHeight();
+		
 		var isNodeLabel = NODE_LABEL_POSITION.equals(vp);
 		var isEdgeLabel = EDGE_LABEL_POSITION.equals(vp);
 		
-		var objLabel = isNodeLabel || isEdgeLabel ? "LABEL" : "OBJECT";
-		var targetLabel = isEdgeLabel ? "EDGE" : "NODE";
+		var tgtTxt = isEdgeLabel ? "EDGE" : "NODE";
+		var objTxt = isNodeLabel || isEdgeLabel ? "LABEL" : "OBJECT";
 		
 		int w = getWidth();
 		int h = getHeight();
@@ -246,23 +255,12 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 		if (h <= 0)
 			h = prefHeight;
 		
-		var g = (Graphics2D) gin;
-		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-		// calculate the font
-		if (labelLen <= 0) {
-			var fm = g.getFontMetrics();
-			labelLen = fm.stringWidth(objLabel);
-			clickLen = fm.stringWidth(click);
-			ascent = fm.getMaxAscent();
-		}
-
 		// clear the screen
-		g.setColor(UIManager.getColor("Table.background"));
-		g.fillRect(0, 0, w, h);
+		g2.setColor(UIManager.getColor("Table.background"));
+		g2.fillRect(0, 0, w, h);
 
 		// draw the target shape
-		g.setColor(TGT_BOX_BG_COLOR);
+		g2.setColor(TGT_BOX_BG_COLOR);
 		
 		var xc = w / 2; // x of center point
 		var yc = h / 2; // y of center point
@@ -271,75 +269,117 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 		
 		if (isEdgeLabel) {
 			// draw as an edge, from the source node's center to the target's center
-			g.fillRect(x - nd / 2, y, tw + nd, th);
+			g2.fillRect(x - nd / 2, y, tw + nd, th);
 			
 			// also draw the source and target nodes
-			g.setColor(NODES_BG_COLOR);
+			g2.setColor(NODES_BG_COLOR);
 			
 			var yn = yc - (nd / 2);
-			g.fillOval(x - nd, yn, nd, nd); // source node
-			g.fillOval(x + tw, yn, nd, nd); // target node
+			g2.fillOval(x - nd, yn, nd, nd); // source node
+			g2.fillOval(x + tw, yn, nd, nd); // target node
 		} else {
 			// draw as a node
-			g.fillOval(x, y, tw, th);
+			g2.fillOval(x, y, tw, th);
 		}
 
-		g.setStroke(fullDetail ? detailStroke : lowStroke);
-		g.setColor(TGT_BOX_FG_COLOR);
+		g2.setStroke(fullDetail ? detailStroke : lowStroke);
+		g2.setColor(TGT_BOX_FG_COLOR);
 		
 		if (!isEdgeLabel)
-			g.drawRect(x, y, tw, th);
+			g2.drawRect(x, y, tw, th);
 
 		if (fullDetail) {
-			g.drawString(targetLabel, xc - (tw / 12), yc - (th / 6));
+			// calculate the dimensions of the texts, if they haven't been calculated yet
+			int tgtTxtWidth = txtWidths.get(tgtTxt) == null ? -1 : (int) txtWidths.get(tgtTxt);
+			
+			if (tgtTxtWidth <= 0)
+				txtWidths.put(tgtTxt, tgtTxtWidth = fm.stringWidth(tgtTxt));
+			
+			// draw the target's text
+			g2.drawString(tgtTxt, xc - (tgtTxtWidth / 2), yc - (th / 5));
 
 			// draw the node box points
 			for (int i = 0; i < txPoints.length; i++) {
 				for (int j = 0; j < tyPoints.length; j++) {
 					if (i == bestTgtX && j == bestTgtY && !beenDragged)
-						g.setColor(POINT_HIGHLIGHT_COLOR);
+						g2.setColor(POINT_HIGHLIGHT_COLOR);
 					else
-						g.setColor(TGT_BOX_FG_COLOR);
+						g2.setColor(TGT_BOX_FG_COLOR);
 					
-					g.fillOval(txPoints[i] - (dot / 2), tyPoints[j] - (dot / 2), dot, dot);
+					g2.fillOval(txPoints[i] - (dot / 2), tyPoints[j] - (dot / 2), dot, dot);
 				}
 			}
 		}
 
 		// draw the label box
-		g.setColor(OBJ_BOX_BG_COLOR);
-		g.fillRect(xOffset + xPos, yOffset + yPos, ow, oh);
-		g.setColor(OBJ_BOX_FG_COLOR);
-		g.drawRect(xOffset + xPos, yOffset + yPos, ow, oh);
+		g2.setColor(OBJ_BOX_BG_COLOR);
+		g2.fillRect(xOffset + xPos, yOffset + yPos, ow, oh);
+		g2.setColor(OBJ_BOX_FG_COLOR);
+		g2.drawRect(xOffset + xPos, yOffset + yPos, ow, oh);
 		
 		// draw the string in the justified location
 		if (fullDetail) {
-			int vspace = (oh - ascent - ascent) / 3;
+			// calculate the dimensions of the texts, if they haven't been calculated yet
+			int ascent = fm.getMaxAscent();
+			int descent = fm.getMaxDescent();
+			int objTxtWidth = txtWidths.get(objTxt) == null ? -1 : (int) txtWidths.get(objTxt);
+			int clickTxtWidth = txtWidths.get(clickTxt) == null ? -1 : (int) txtWidths.get(clickTxt);
+			
+			if (objTxtWidth <= 0)
+				txtWidths.put(objTxt, objTxtWidth = fm.stringWidth(objTxt));
+			if (clickTxtWidth <= 0)
+				txtWidths.put(clickTxt, clickTxtWidth = fm.stringWidth(clickTxt));
 
+			int yObjTxt = yOffset + yPos + txtHeight - descent + detailStrokeWidth;
+			int yClickTxt = yOffset + yPos + oh - txtHeight + ascent - detailStrokeWidth;
+
+			// draw the object's texts
 			if (justify == Justification.JUSTIFY_LEFT) {
-				g.drawString(objLabel, xOffset + xPos + detailStrokeWidth, yOffset + yPos + vspace + ascent);
-				g.drawString(click, xOffset + xPos + detailStrokeWidth, yOffset + yPos + (2 * (vspace + ascent)));
+				g2.drawString(
+						objTxt,
+						xOffset + xPos + detailStrokeWidth,
+						yObjTxt
+				);
+				g2.drawString(
+						clickTxt,
+						xOffset + xPos + detailStrokeWidth,
+						yClickTxt
+				);
 			} else if (justify == Justification.JUSTIFY_RIGHT) {
-				g.drawString(objLabel, xOffset + xPos + (ow - labelLen), yOffset + yPos + vspace + ascent);
-				g.drawString(click, xOffset + xPos + (ow - clickLen), yOffset + yPos + (2 * (vspace + ascent)));
-			} else { // center
-				g.drawString(objLabel, (xOffset + xPos + ((ow - labelLen) / 2)) - detailStrokeWidth, yOffset + yPos
-						+ vspace + ascent);
-				g.drawString(click, (xOffset + xPos + ((ow - clickLen) / 2)) - detailStrokeWidth, yOffset + yPos
-						+ (2 * (vspace + ascent)));
+				g2.drawString(
+						objTxt,
+						xOffset + xPos + (ow - objTxtWidth) - detailStrokeWidth,
+						yObjTxt
+				);
+				g2.drawString(
+						clickTxt,
+						xOffset + xPos + (ow - clickTxtWidth),
+						yClickTxt
+				);
+			} else { // JUSTIFY_CENTER
+				g2.drawString(
+						objTxt,
+						(xOffset + xPos + ((ow - objTxtWidth) / 2)),
+						yObjTxt
+				);
+				g2.drawString(
+						clickTxt,
+						(xOffset + xPos + ((ow - clickTxtWidth) / 2)),
+						yClickTxt
+				);
 			}
 		}
 
 		if (fullDetail) {
 			// draw the label box points
-			g.setColor(OBJ_BOX_FG_COLOR);
+			g2.setColor(OBJ_BOX_FG_COLOR);
 
 			for (int i = 0; i < oxPoints.length; i++) {
 				for (int j = 0; j < oyPoints.length; j++) {
 					if (i == bestObjX && j == bestObjY && !beenDragged)
-						g.setColor(POINT_HIGHLIGHT_COLOR);
+						g2.setColor(POINT_HIGHLIGHT_COLOR);
 
-					g.fillOval(
+					g2.fillOval(
 							(xPos + xOffset + oxPoints[i]) - (dot / 2),
 							(yPos + yOffset + oyPoints[j]) - (dot / 2),
 							dot,
@@ -347,7 +387,7 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 					);
 
 					if (i == bestObjX && j == bestObjY)
-						g.setColor(OBJ_BOX_FG_COLOR);
+						g2.setColor(OBJ_BOX_FG_COLOR);
 				}
 			}
 		}
@@ -395,8 +435,8 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 		tyPoints = new int[]{ yc - (th / 2), yc, yc + (th / 2) };
 
 		// dimensions for object box
-		ow = (int) (0.4 * w);
-		oh = (int) (0.1 * h);
+		ow = (int) (0.4 * ((w + h) / 2));
+		oh = (int) (0.1 * ((w + h) / 2));
 
 		// locations for object (e.g. label) points
 		oxPoints = new int[]{ 0, ow / 2, ow };
