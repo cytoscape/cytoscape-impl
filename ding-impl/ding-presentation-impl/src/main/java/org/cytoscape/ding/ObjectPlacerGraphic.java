@@ -9,7 +9,9 @@ import static org.jdesktop.swingx.color.ColorUtil.setSaturation;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -18,6 +20,7 @@ import java.awt.Stroke;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.awt.font.TextAttribute;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
@@ -68,20 +71,23 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 	private static final int DEF_EDGE_PANEL_WIDTH = 600;
 	private static final int DEF_EDGE_PANEL_HEIGHT = 400;
 	
-	// "Snap" distance
+	private static final float TGT_FONT_SIZE = 32.0f;
+	
+	/** "Snap" distance */
 	private static final double GRAVITY_DISTANCE = 10;
 	
 	// Color scheme for GUI
-	private final Color BG_COLOR = UIManager.getColor("TextField.background");
+	private final Color BG_COLOR = UIManager.getColor("Table.background");
 	
 	private final Color OBJ_FG_COLOR = UIManager.getColor("CyColor.complement(-2)");
 	private final Color OBJ_BG_COLOR = setAlpha(OBJ_FG_COLOR, 20);
 	private final Color OBJ_BORDER_COLOR = setAlpha(OBJ_FG_COLOR, 150);
 	private final Color OBJ_INFO_COLOR = setAlpha(OBJ_FG_COLOR, 150);
 	
-	private final Color TGT_FG_COLOR = UIManager.getColor("CyColor.complement(+1)");
+	private final Color TGT_FG_COLOR = UIManager.getColor("Table.background");
 	private final Color TGT_BG_COLOR = setAlpha(UIManager.getColor("CyColor.complement(+1)"), 50);
 	private final Color TGT_BORDER_COLOR = setAlpha(UIManager.getColor("CyColor.complement(+1)"), 125);
+	private final Color TGT_POINT_COLOR = UIManager.getColor("CyColor.complement(+1)");
 	
 	/** The color of the source and target nodes (EDGE_LABEL_POSITION only)  */
 	private final Color NODES_BG_COLOR = setSaturation(
@@ -128,8 +134,8 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 	private int bestTgtY = 1;
 
 	// Mouse drag state
-	private boolean beenDragged;
-	private boolean canOffsetDrag;
+	private boolean canDrag;
+	private boolean isDragging;
 
 	// Click offset
 	private int xClickOffset;
@@ -146,6 +152,9 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 	
 	/** Instructions text */
 	private String clickTxt = "(click and drag)";
+	
+	/** Larger, bolder font for the target text ("NODE", "EDGE") */
+	private Font f2;
 
 	// Font metrics for strings
 	private Map<String, Integer> txtWidths = new HashMap<>();
@@ -237,16 +246,26 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 		var g2 = (Graphics2D) g;
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
-		var fm = g2.getFontMetrics();
+		var f1 = g2.getFont();
+		
+		if (f2 == null)
+			f2 = createTargetFont(f1);
+		
+		var fm1 = g2.getFontMetrics();
+		var fm2 = g2.getFontMetrics(f2);
 		
 		if (txtHeight <= 0)
-			txtHeight = fm.getHeight();
+			txtHeight = fm1.getHeight();
 		
 		var isNodeLabel = NODE_LABEL_POSITION.equals(vp);
 		var isEdgeLabel = EDGE_LABEL_POSITION.equals(vp);
+		var isCGLabel = vp.getIdString().startsWith("NODE_CUSTOMGRAPHICS_POSITION");
 		
 		var tgtTxt = isEdgeLabel ? "EDGE" : "NODE";
-		var objTxt = isNodeLabel || isEdgeLabel ? "LABEL" : "OBJECT";
+		var objTxt = "OBJECT";
+		
+		if (isNodeLabel || isEdgeLabel) objTxt =  "LABEL";
+		else if (isCGLabel) objTxt =  "IMAGE/CHART";
 		
 		int w = getWidth();
 		int h = getHeight();
@@ -257,7 +276,7 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 			h = prefHeight;
 		
 		// clear the screen
-		g2.setColor(UIManager.getColor("Table.background"));
+		g2.setColor(BG_COLOR);
 		g2.fillRect(0, 0, w, h);
 
 		// draw the target shape
@@ -291,23 +310,27 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 		}
 
 		if (fullDetail) {
+			g2.setFont(f2);
+			
 			// calculate the dimensions of the texts, if they haven't been calculated yet
 			int tgtTxtWidth = txtWidths.get(tgtTxt) == null ? -1 : (int) txtWidths.get(tgtTxt);
 			
 			if (tgtTxtWidth <= 0)
-				txtWidths.put(tgtTxt, tgtTxtWidth = fm.stringWidth(tgtTxt));
+				txtWidths.put(tgtTxt, tgtTxtWidth = fm2.stringWidth(tgtTxt));
 			
 			// draw the target's text
 			g2.setColor(TGT_FG_COLOR);
-			g2.drawString(tgtTxt, xc - (tgtTxtWidth / 2), yc - (th / 5));
+			g2.drawString(tgtTxt, xc - (tgtTxtWidth / 2), yc + fm2.getMaxAscent() / 2 - fm2.getMaxDescent() / 2);
+			
+			g2.setFont(f1);
 
 			// draw the node box points
 			for (int i = 0; i < txPoints.length; i++) {
 				for (int j = 0; j < tyPoints.length; j++) {
-					if (i == bestTgtX && j == bestTgtY && !beenDragged)
+					if (i == bestTgtX && j == bestTgtY && !isDragging)
 						g2.setColor(POINT_HIGHLIGHT_COLOR);
 					else
-						g2.setColor(TGT_FG_COLOR);
+						g2.setColor(TGT_POINT_COLOR);
 					
 					g2.fillOval(txPoints[i] - (dot / 2), tyPoints[j] - (dot / 2), dot, dot);
 				}
@@ -323,15 +346,15 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 		// draw the string in the justified location
 		if (fullDetail) {
 			// calculate the dimensions of the texts, if they haven't been calculated yet
-			int ascent = fm.getMaxAscent();
-			int descent = fm.getMaxDescent();
+			int ascent = fm1.getMaxAscent();
+			int descent = fm1.getMaxDescent();
 			int objTxtWidth = txtWidths.get(objTxt) == null ? -1 : (int) txtWidths.get(objTxt);
 			int clickTxtWidth = txtWidths.get(clickTxt) == null ? -1 : (int) txtWidths.get(clickTxt);
 			
 			if (objTxtWidth <= 0)
-				txtWidths.put(objTxt, objTxtWidth = fm.stringWidth(objTxt));
+				txtWidths.put(objTxt, objTxtWidth = fm1.stringWidth(objTxt));
 			if (clickTxtWidth <= 0)
-				txtWidths.put(clickTxt, clickTxtWidth = fm.stringWidth(clickTxt));
+				txtWidths.put(clickTxt, clickTxtWidth = fm1.stringWidth(clickTxt));
 
 			int yObjTxt = yOffset + yPos + txtHeight - descent + detailStrokeWidth;
 			int yClickTxt = yOffset + yPos + oh - txtHeight + ascent - detailStrokeWidth;
@@ -384,7 +407,7 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 
 			for (int i = 0; i < oxPoints.length; i++) {
 				for (int j = 0; j < oyPoints.length; j++) {
-					if (i == bestObjX && j == bestObjY && !beenDragged)
+					if (i == bestObjX && j == bestObjY && !isDragging)
 						g2.setColor(POINT_HIGHLIGHT_COLOR);
 
 					g2.fillOval(
@@ -467,14 +490,36 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 		return null;
 	}
 	
+	private boolean isInsideObjectBox(int x, int y) {
+		return (
+				x >= (xPos + xOffset) &&
+				x <= (xPos + xOffset + ow) &&
+				y >= (yPos + yOffset) &&
+				y <= (yPos + yOffset + oh)
+		);
+	}
+	
+	private void updateCursor(int x, int y) {
+		if (canDrag || isDragging)
+			setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+		else if (isInsideObjectBox(x, y))
+			setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		else
+			setCursor(Cursor.getDefaultCursor());
+	}
+	
+	/** Create a derived FONT that is larger, bold and has a larger spacing between characters. */
+	private Font createTargetFont(Font f) {
+		return f.deriveFont(Font.BOLD, TGT_FONT_SIZE).deriveFont(Map.of(TextAttribute.TRACKING, 0.2));
+	}
+	
 	// ==[ CLASSES ]====================================================================================================
 	
 	private class MouseClickHandler extends MouseAdapter {
 		
 		/**
-		 * Only allows dragging if we're in the label box. Also sets the offset
-		 * from where the click is and where the box is, so the box doesn't
-		 * appear to jump around too much.
+		 * Only allows dragging if we're in the label box. Also sets the offset from
+		 * where the click is and where the box is, so the box doesn't appear to jump around too much.
 		 */
 		@Override
 		public void mousePressed(MouseEvent e) {
@@ -482,11 +527,11 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 			int y = e.getY();
 
 			// click+drag within box
-			if ((x >= (xPos + xOffset)) && (x <= (xPos + xOffset + ow))
-					&& (y >= (yPos + yOffset)) && (y <= (yPos + yOffset + oh))) {
-				canOffsetDrag = true;
+			if (isInsideObjectBox(x, y)) {
+				canDrag = true;
 				xClickOffset = x - xPos;
 				yClickOffset = y - yPos;
+				setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
 			}
 		}
 
@@ -495,8 +540,7 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 		 */
 		@Override
 		public void mouseReleased(MouseEvent e) {
-			if (beenDragged) {
-
+			if (isDragging) {
 				int x = e.getX();
 				int y = e.getY();
 
@@ -557,13 +601,20 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 				firePropertyChange(ObjectPlacerGraphic.OBJECT_POSITION_CHANGED, null, op);
 
 				repaint();
-				beenDragged = false;
-				canOffsetDrag = false;
+				isDragging = false;
+				canDrag = false;
+				updateCursor(x, y);
 			}
 		}
 	}
 	
 	private class MouseDragHandler extends MouseMotionAdapter {
+		
+		@Override
+		public void mouseMoved(MouseEvent e) {
+			if (!canDrag && !isDragging)
+				updateCursor(e.getX(), e.getY());
+		}
 		
 		/**
 		 * Handles redrawing for dragging.
@@ -571,11 +622,11 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 		@Override
 		public void mouseDragged(MouseEvent e) {
 			// dragging within normal box
-			if (canOffsetDrag) {
+			if (canDrag) {
 				xPos = e.getX() - xClickOffset;
 				yPos = e.getY() - yClickOffset;
 
-				beenDragged = true;
+				isDragging = true;
 				repaint();
 			}
 		}
