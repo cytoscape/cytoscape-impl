@@ -12,6 +12,7 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -65,6 +66,11 @@ import org.cytoscape.view.presentation.property.values.Position;
 public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListener {
 
 	protected static final String OBJECT_POSITION_CHANGED = "OBJECT_POSITION_CHANGED";
+	
+	private static final String SOURCE_NODE_TXT = "SOURCE";
+	private static final String TARGET_NODE_TXT = "TARGET";
+	/** Instructions text */
+	private static final String CLICK_TXT = "(click and drag)";
 
 	// Default dimensions of panel
 	private static final int DEF_PANEL_SIZE = 500;
@@ -72,6 +78,7 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 	private static final int DEF_EDGE_PANEL_HEIGHT = 400;
 	
 	private static final float TGT_FONT_SIZE = 32.0f;
+	private static final float NODES_FONT_SIZE = 18.0f;
 	
 	/** "Snap" distance */
 	private static final double GRAVITY_DISTANCE = 10;
@@ -84,7 +91,7 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 	private final Color OBJ_BORDER_COLOR = setAlpha(OBJ_FG_COLOR, 150);
 	private final Color OBJ_INFO_COLOR = setAlpha(OBJ_FG_COLOR, 150);
 	
-	private final Color TGT_FG_COLOR = UIManager.getColor("Table.background");
+	private final Color TGT_FG_COLOR = setAlpha(BG_COLOR, 200);
 	private final Color TGT_BG_COLOR = setAlpha(UIManager.getColor("CyColor.complement(+1)"), 50);
 	private final Color TGT_BORDER_COLOR = setAlpha(UIManager.getColor("CyColor.complement(+1)"), 125);
 	private final Color TGT_POINT_COLOR = UIManager.getColor("CyColor.complement(+1)");
@@ -94,6 +101,7 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 			setBrightness(UIManager.getColor("CyColor.complement(+2)"), 0.8f),
 			0.25f
 	);
+	private final Color NODES_FG_COLOR = setAlpha(UIManager.getColor("Table.background"), 150);
 	
 	private final Color POINT_HIGHLIGHT_COLOR = UIManager.getColor("CyColor.primary(+2)");
 	
@@ -150,12 +158,6 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 	/** Default text justification rule */
 	private Justification justify;
 	
-	/** Instructions text */
-	private String clickTxt = "(click and drag)";
-	
-	/** Larger, bolder font for the target text ("NODE", "EDGE") */
-	private Font f2;
-
 	// Font metrics for strings
 	private Map<String, Integer> txtWidths = new HashMap<>();
 	private int txtHeight = -1;
@@ -247,12 +249,12 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
 		var f1 = g2.getFont();
-		
-		if (f2 == null)
-			f2 = createTargetFont(f1);
+		var f2 = fullDetail ? createTargetFont(f1) : null;
+		var f3 = fullDetail ? createSrcTgtNodesFont(f1) : null;
 		
 		var fm1 = g2.getFontMetrics();
-		var fm2 = g2.getFontMetrics(f2);
+		var fm2 = f2 != null ? g2.getFontMetrics(f2) : null;
+		var fm3 = f3 != null ? g2.getFontMetrics(f3) : null;
 		
 		if (txtHeight <= 0)
 			txtHeight = fm1.getHeight();
@@ -297,6 +299,22 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 			var yn = yc - (nd / 2);
 			g2.fillArc(x - nd, yn, nd, nd, -90, 180); // source node
 			g2.fillArc(x + tw, yn, nd, nd, -90, -180); // target node
+			
+			if (fullDetail) {
+				// draw the SOURCE/TARGET (NODES) text
+				int snTxtWidth = getTextWidth(fm3, SOURCE_NODE_TXT);
+				int hpad = 10;
+				
+				int sty = yc + fm3.getMaxAscent() / 2 - fm3.getMaxDescent() / 2;
+				
+				g2.setFont(f3);
+				g2.setColor(NODES_FG_COLOR);
+				
+				g2.drawString(SOURCE_NODE_TXT, nd / 2 - snTxtWidth - hpad, sty);
+				g2.drawString(TARGET_NODE_TXT, x + tw + hpad, sty);
+
+				g2.setFont(f1);
+			}
 		} else {
 			// draw as a node
 			g2.fillOval(x, y, tw, th);
@@ -312,11 +330,7 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 		if (fullDetail) {
 			g2.setFont(f2);
 			
-			// calculate the dimensions of the texts, if they haven't been calculated yet
-			int tgtTxtWidth = txtWidths.get(tgtTxt) == null ? -1 : (int) txtWidths.get(tgtTxt);
-			
-			if (tgtTxtWidth <= 0)
-				txtWidths.put(tgtTxt, tgtTxtWidth = fm2.stringWidth(tgtTxt));
+			int tgtTxtWidth = getTextWidth(fm2, tgtTxt);
 			
 			// draw the target's text
 			g2.setColor(TGT_FG_COLOR);
@@ -348,14 +362,9 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 			// calculate the dimensions of the texts, if they haven't been calculated yet
 			int ascent = fm1.getMaxAscent();
 			int descent = fm1.getMaxDescent();
-			int objTxtWidth = txtWidths.get(objTxt) == null ? -1 : (int) txtWidths.get(objTxt);
-			int clickTxtWidth = txtWidths.get(clickTxt) == null ? -1 : (int) txtWidths.get(clickTxt);
+			int objTxtWidth = getTextWidth(fm1, objTxt);
+			int clickTxtWidth = getTextWidth(fm1, CLICK_TXT);
 			
-			if (objTxtWidth <= 0)
-				txtWidths.put(objTxt, objTxtWidth = fm1.stringWidth(objTxt));
-			if (clickTxtWidth <= 0)
-				txtWidths.put(clickTxt, clickTxtWidth = fm1.stringWidth(clickTxt));
-
 			int yObjTxt = yOffset + yPos + txtHeight - descent + detailStrokeWidth;
 			int yClickTxt = yOffset + yPos + oh - txtHeight + ascent - detailStrokeWidth;
 
@@ -370,7 +379,7 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 				);
 				g2.setColor(OBJ_INFO_COLOR);
 				g2.drawString(
-						clickTxt,
+						CLICK_TXT,
 						xOffset + xPos + detailStrokeWidth,
 						yClickTxt
 				);
@@ -382,7 +391,7 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 				);
 				g2.setColor(OBJ_INFO_COLOR);
 				g2.drawString(
-						clickTxt,
+						CLICK_TXT,
 						xOffset + xPos + (ow - clickTxtWidth),
 						yClickTxt
 				);
@@ -394,7 +403,7 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 				);
 				g2.setColor(OBJ_INFO_COLOR);
 				g2.drawString(
-						clickTxt,
+						CLICK_TXT,
 						(xOffset + xPos + ((ow - clickTxtWidth) / 2)),
 						yClickTxt
 				);
@@ -423,7 +432,7 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 			}
 		}
 	}
-	
+
 	/**
 	 * Handles all property changes that the panel listens for.
 	 */
@@ -511,6 +520,23 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 	/** Create a derived FONT that is larger, bold and has a larger spacing between characters. */
 	private Font createTargetFont(Font f) {
 		return f.deriveFont(Font.BOLD, TGT_FONT_SIZE).deriveFont(Map.of(TextAttribute.TRACKING, 0.2));
+	}
+	
+	/** Create a derived FONT that is larger and bold for the SOURCE and TARGET labels (edge label position only). */
+	private Font createSrcTgtNodesFont(Font f) {
+		return f.deriveFont(Font.BOLD, NODES_FONT_SIZE);
+	}
+	
+	/**
+	 * Calculate the dimensions of the text and cache it, if it hasn't been calculated yet.
+	 */
+	private int getTextWidth(FontMetrics fm, String txt) {
+		int w = txtWidths.get(txt) == null ? -1 : (int) txtWidths.get(txt);
+		
+		if (w <= 0)
+			txtWidths.put(txt, w = fm.stringWidth(txt));
+		
+		return w;
 	}
 	
 	// ==[ CLASSES ]====================================================================================================
