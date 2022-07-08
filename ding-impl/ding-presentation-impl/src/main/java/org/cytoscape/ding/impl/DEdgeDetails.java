@@ -55,7 +55,10 @@ import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.EdgeStacking;
 import org.cytoscape.view.presentation.property.values.Handle;
+import org.cytoscape.view.presentation.property.values.Justification;
 import org.cytoscape.view.presentation.property.values.LineType;
+import org.cytoscape.view.presentation.property.values.ObjectPosition;
+import org.cytoscape.view.presentation.property.values.Position;
 
 
 public final class DEdgeDetails implements EdgeDetails {
@@ -322,6 +325,37 @@ public final class DEdgeDetails implements EdgeDetails {
 		Boolean auto = edgeView.getVisualProperty(EDGE_LABEL_AUTOROTATE);
 		return auto;
 	}
+
+	@Override
+	public Position getLabelTextAnchor(View<CyEdge> edgeView) {
+		ObjectPosition pos = edgeView.getVisualProperty(EDGE_LABEL_POSITION);
+		return pos == null ? null : pos.getAnchor();
+	}
+
+	@Override
+	public Position getLabelEdgeAnchor(View<CyEdge> edgeView) {
+		ObjectPosition pos = edgeView.getVisualProperty(EDGE_LABEL_POSITION);
+		return pos == null ? null : pos.getTargetAnchor();
+	}
+
+	@Override
+	public float getLabelOffsetVectorX(View<CyEdge> edgeView) {
+		ObjectPosition pos = edgeView.getVisualProperty(EDGE_LABEL_POSITION);
+		return pos == null ? 0.0f : (float) pos.getOffsetX();
+	}
+
+	@Override
+	public float getLabelOffsetVectorY(View<CyEdge> edgeView) {
+		ObjectPosition pos = edgeView.getVisualProperty(EDGE_LABEL_POSITION);
+		return pos == null ? 0.0f : (float) pos.getOffsetY();
+	}
+
+	@Override
+	public Justification getLabelJustify(View<CyEdge> edgeView) {
+		ObjectPosition pos = edgeView.getVisualProperty(EDGE_LABEL_POSITION);
+		return pos == null ? null : pos.getJustify();
+	}
+	
 
 	@Override
 	public float getSourceArrowSize(View<CyEdge> edgeView) {

@@ -1,15 +1,12 @@
 package org.cytoscape.ding;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.values.ObjectPosition;
-import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 
 import com.l2fprod.common.beans.editor.AbstractPropertyEditor;
 import com.l2fprod.common.swing.ComponentFactory;
@@ -44,19 +41,19 @@ public class CyObjectPositionPropertyEditor extends	AbstractPropertyEditor {
 	private ObjectPositionCellRenderer label;
 	private JButton button;
 	private ObjectPosition position;
-	
 	private ObjectPosition oldPosition;
 	
-	private final ValueEditor<ObjectPosition> valueEditor;
+	private VisualProperty<ObjectPosition> visualProperty;
+	
+	private final ObjectPositionValueEditor valueEditor;
 		
 	/**
 	 * Creates a new CyLabelPositionLabelEditor object.
 	 */
-	public CyObjectPositionPropertyEditor(final ValueEditor<ObjectPosition> valueEditor,
-			final CyServiceRegistrar serviceRegistrar) {
+	public CyObjectPositionPropertyEditor(ObjectPositionValueEditor valueEditor, CyServiceRegistrar serviceRegistrar) {
 		this.valueEditor = valueEditor;
 		
-		final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+		var iconManager = serviceRegistrar.getService(IconManager.class);
 					
 		editor = new JPanel(new PercentLayout(PercentLayout.HORIZONTAL, 0));
 		((JPanel) editor).setOpaque(false);
@@ -67,24 +64,16 @@ public class CyObjectPositionPropertyEditor extends	AbstractPropertyEditor {
 		((JPanel) editor).add(button = ComponentFactory.Helper.getFactory().createMiniButton());
 		button.setText(IconManager.ICON_ELLIPSIS_H);
 		button.setFont(iconManager.getIconFont(13.0f));
-		button.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				editObjectPosition();
-			}
-		});
+		button.addActionListener(e -> editObjectPosition());
 		
 		((JPanel) editor).add(button = ComponentFactory.Helper.getFactory().createMiniButton());
 		button.setText(IconManager.ICON_REMOVE);
 		button.setFont(iconManager.getIconFont(13.0f));
-		button.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				ObjectPosition old = position;
-				label.setValue(null);
-				position = null;
-				firePropertyChange(old, null);
-			}
+		button.addActionListener(e -> {
+			var old = position;
+			label.setValue(null);
+			position = null;
+			firePropertyChange(old, null);
 		});
 	}
 
@@ -98,10 +87,14 @@ public class CyObjectPositionPropertyEditor extends	AbstractPropertyEditor {
 		position = (ObjectPosition) value;
 		label.setValue(value);
 	}
+	
+	public void setVisualProperty(VisualProperty<ObjectPosition> visualProperty) {
+		this.visualProperty = visualProperty;
+	}
 
 	private void editObjectPosition() {
 		//TODO: set correct parent
-		final ObjectPosition newVal = valueEditor.showEditor(null, position);
+		var newVal = valueEditor.showEditor(null, position, visualProperty);
 
 		if (newVal != null) {
 			setValue(newVal);

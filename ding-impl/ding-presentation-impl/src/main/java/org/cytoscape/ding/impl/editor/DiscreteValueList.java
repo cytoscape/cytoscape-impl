@@ -133,7 +133,7 @@ public class DiscreteValueList<T> extends JXList {
 					Icon icon = null;
 					
 					if (val instanceof CyCustomGraphics)
-						icon = VisualPropertyIconFactory.createIcon(val, getIconWidth(), getIconHeight());
+						icon = VisualPropertyIconFactory.createIcon(val, vp, getIconWidth(), getIconHeight());
 					else if (vp != null)
 						icon = engine.createIcon(vp, val, getIconWidth(), getIconHeight());
 					

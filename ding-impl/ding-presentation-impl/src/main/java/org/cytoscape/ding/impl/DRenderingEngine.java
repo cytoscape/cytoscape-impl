@@ -541,7 +541,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 				Iterable<View<CyNode>> nodeIterable = justSelectedNodes ? selectedNodes : netViewSnapshot.getNodeViewsIterable();
 				
 				for(View<CyNode> node : nodeIterable) {
-					var label = picker.getLabelShape(node, labelCache);
+					var label = picker.getNodeLabelShape(node, labelCache);
 					if(label != null) {
 						var bounds = label.getShape().getBounds2D();
 						if(bounds.getMinX() < extents[0])
@@ -793,7 +793,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 	@Override
 	public <V> Icon createIcon(VisualProperty<V> vp, V value, int w, int h) {
-		return VisualPropertyIconFactory.createIcon(value, w, h);
+		return VisualPropertyIconFactory.createIcon(value, vp, w, h);
 	}
 
 	/**

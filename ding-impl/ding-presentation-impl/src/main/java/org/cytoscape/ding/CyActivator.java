@@ -68,7 +68,7 @@ import org.cytoscape.ding.impl.cyannotator.tasks.UpdateAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.ui.AnnotationMediator;
 import org.cytoscape.ding.impl.editor.EdgeBendEditor;
 import org.cytoscape.ding.impl.editor.EdgeBendValueEditor;
-import org.cytoscape.ding.impl.editor.ObjectPositionEditor;
+import org.cytoscape.ding.impl.editor.ObjectPositionVisualPropertyEditor;
 import org.cytoscape.property.PropertyUpdatedListener;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -94,8 +94,8 @@ import org.cytoscape.view.presentation.property.values.BendFactory;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
 import org.cytoscape.view.vizmap.VisualPropertyDependencyFactory;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;
-import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor;
+import org.cytoscape.view.vizmap.gui.editor.VisualPropertyValueEditor;
 import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
 
@@ -157,8 +157,8 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Object Position Editor
 		var objectPositionValueEditor = new ObjectPositionValueEditor();
-		var objectPositionEditor =
-				new ObjectPositionEditor(objectPositionValueEditor, continuousMappingCellRendererFactory, serviceRegistrar);
+		var objectPositionEditor = new ObjectPositionVisualPropertyEditor(objectPositionValueEditor,
+				continuousMappingCellRendererFactory, serviceRegistrar);
 
 		var netViewFactoryProvider = getService(bc, CyNetworkViewFactoryProvider.class);
 		var netViewManager = getService(bc, CyNetworkViewManager.class);
@@ -204,7 +204,7 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			var props = new Properties();
 			props.setProperty(ID, "objectPositionValueEditor");
-			registerService(bc, objectPositionValueEditor, ValueEditor.class, props);
+			registerService(bc, objectPositionValueEditor, VisualPropertyValueEditor.class, props);
 		}
 		{
 			var props = new Properties();

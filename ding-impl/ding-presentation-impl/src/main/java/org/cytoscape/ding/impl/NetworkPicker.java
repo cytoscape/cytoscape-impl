@@ -4,7 +4,9 @@ import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_EDGE_ANC
 import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_EDGE_ARROWS;
 import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_HIGH_DETAIL;
 import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_NODE_LABELS;
+import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_EDGE_LABELS;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_POSITION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_POSITION;
 
 import java.awt.Font;
 import java.awt.Point;
@@ -15,11 +17,13 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
+import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
@@ -44,6 +48,7 @@ import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.EdgeStacking;
 import org.cytoscape.view.presentation.property.values.Handle;
+import org.cytoscape.view.presentation.property.values.Justification;
 import org.cytoscape.view.presentation.property.values.ObjectPosition;
 import org.cytoscape.view.presentation.property.values.Position;
 
@@ -119,9 +124,113 @@ public class NetworkPicker {
 
 	
 	/**
+	 * Returns a rectangular shape that contains the label, the shape may be rotated.  This is
+   * a bit different than the node selection.  Here is the approach
+   * 1) Get the source and target nodes
+   * 2) Get the corresponding node views in this network
+   * 3) Calculate modpoint between the source and target nodes -- that becomes x and y
+	 */
+	public LabelSelection getEdgeLabelShape(View<CyEdge> edge, LabelInfoProvider labelProvider, float[] floatBuff1, float[] floatBuff2, View<CyNode>[] nodes) {
+
+    final String text = edgeDetails.getLabelText(edge);
+    if (text == null || text.length() == 0)
+      return null;
+
+    final EdgeStacking stacking = edgeDetails.getStacking(edge);
+
+    final CyNetworkViewSnapshot snapshot = re.getViewModelSnapshot();
+    final SnapshotEdgeInfo edgeInfo = snapshot.getEdgeInfo(edge);
+
+    final View<CyNode> sourceNode = nodes[0];
+    final View<CyNode> targetNode = nodes[1];
+    
+    final var spacialIndex = snapshot.getSpacialIndex2D();
+
+    final byte srcShape = nodeDetails.getShape(sourceNode);
+    final byte trgShape = nodeDetails.getShape(targetNode);
+
+		final float[] floatBuff3 = new float[2];
+		final float[] floatBuff4 = new float[2];
+		final float[] floatBuff5 = new float[8];
+
+    // Compute arrows.
+    final ArrowShape srcArrow;
+    final ArrowShape trgArrow;
+    final float srcArrowSize;
+    final float trgArrowSize;
+
+    // Somewhat obvious, but if we have no edge labels, don't attempt to calculate anything
+    if (!renderDetailFlags.has(LOD_EDGE_LABELS)) {
+      return null;
+    }
+
+    if (renderDetailFlags.not(LOD_EDGE_ARROWS) || stacking == EdgeStackingVisualProperty.HAYSTACK) { 
+      trgArrow = srcArrow = ArrowShapeVisualProperty.NONE;
+      trgArrowSize = srcArrowSize = 0.0f;
+    } else { // Rendering edge arrows.
+      srcArrow = edgeDetails.getSourceArrowShape(edge);
+      trgArrow = edgeDetails.getTargetArrowShape(edge);
+      srcArrowSize  = ((srcArrow == ArrowShapeVisualProperty.NONE) ? 0.0f : edgeDetails.getSourceArrowSize(edge));
+      trgArrowSize  = ((trgArrow == ArrowShapeVisualProperty.NONE) ? 0.0f : edgeDetails.getTargetArrowSize(edge));
+    }
+
+    // Compute the anchors to use when rendering edge.
+    final EdgeAnchors anchors = renderDetailFlags.not(LOD_EDGE_ANCHORS) ? null : edgeDetails.getAnchors(snapshot, edge);
+
+    if(stacking == EdgeStackingVisualProperty.HAYSTACK) {
+      return null;
+    } else /* auto bend */ {
+      GraphRenderer.computeEdgeEndpoints(floatBuff1, srcShape, srcArrow, srcArrowSize, anchors, floatBuff2, 
+                                         trgShape,  trgArrow, trgArrowSize, floatBuff3, floatBuff4);
+    }
+
+		final double degrees = edgeDetails.getLabelRotation(edge);
+    final double rise = floatBuff4[1]-floatBuff3[1];
+    final double run = floatBuff4[0]-floatBuff3[0];
+    final double slope = rise/run;
+    final double lineAngle = Math.atan2(rise, run);
+    final double theta = edgeDetails.getLabelRotation(edge, rise, run)*.01745329252;
+    final double edgeLabelWidth = edgeDetails.getLabelWidth(edge);
+		final Font font = edgeDetails.getLabelFont(edge);
+    final double[] doubleBuff1 = new double[4];
+    final double[] offsetBuff = new double[2];
+		var frc = new FontRenderContext(null, false, false);
+
+    LabelInfo labelInfo = labelProvider.getLabelInfo(text, font, edgeLabelWidth, frc);
+
+    GraphRenderer.getEdgeLabelPosition(edge, edgeDetails, renderDetailFlags, labelInfo, floatBuff3, floatBuff4, anchors, offsetBuff, doubleBuff1);
+
+		final ObjectPosition originalPosition = edge.getVisualProperty(EDGE_LABEL_POSITION);
+		double h = labelInfo.getTotalHeight();  // actual label text box height
+		double w = labelInfo.getMaxLineWidth();  // actual label text box width. 
+		
+    double textXCenter = doubleBuff1[0];
+    double textYCenter = doubleBuff1[1];
+    double edgeAnchorPointX = doubleBuff1[2];
+    double edgeAnchorPointY = doubleBuff1[3];
+		double xMin = textXCenter - (w/2);
+		double yMin = textYCenter - (h/2);
+
+		double labelAnchorX = edgeAnchorPointX + offsetBuff[0];
+		double labelAnchorY = edgeAnchorPointY + offsetBuff[1];
+
+		Shape shape = new Rectangle2D.Double(xMin, yMin, w, h);
+		if(degrees != 0.0) {
+			double angle = degrees * 0.01745329252;
+			var rotateTransform = AffineTransform.getRotateInstance(angle, textXCenter, textYCenter);
+			shape = rotateTransform.createTransformedShape(shape);
+		}
+
+    // System.out.println("LabelSelection: originalPosition="+originalPosition+", shape="+shape+", labelAnchor="+labelAnchorX+","+labelAnchorY);
+
+					
+		return new LabelSelection(edge, shape, originalPosition, labelAnchorX, labelAnchorY, degrees, slope, lineAngle);
+  }
+
+	/**
 	 * Returns a rectangular shape that contains the label, the shape may be rotated.
 	 */
-	public LabelSelection getLabelShape(View<CyNode> node, LabelInfoProvider labelProvider) {
+	public LabelSelection getNodeLabelShape(View<CyNode> node, LabelInfoProvider labelProvider) {
 		String text = nodeDetails.getLabelText(node);
 		if(text == null || text.isBlank())
 			return null;
@@ -165,18 +274,16 @@ public class NetworkPicker {
 
 		final double textXCenter = nodeAnchorPointX - doubleBuff2[0] + offsetVectorX;
 		final double textYCenter = nodeAnchorPointY - doubleBuff2[1] + offsetVectorY;
-		
+
 		double h = labelInfo.getTotalHeight();  // actual label text box height
 		double w = labelInfo.getMaxLineWidth();  // actual label text box width. 
 		
 		double xMin = textXCenter - (w/2);
 		double yMin = textYCenter - (h/2);
-//		double xMax = textXCenter + (w/2);
-//		double yMax = textYCenter + (h/2); 
-		
+
 		double labelAnchorX = nodeAnchorPointX + offsetVectorX;
 		double labelAnchorY = nodeAnchorPointY + offsetVectorY;
-		
+
 		Shape shape = new Rectangle2D.Double(xMin, yMin, w, h);
 		if(degrees != 0.0) {
 			double angle = degrees * 0.01745329252;
@@ -205,11 +312,40 @@ public class NetworkPicker {
 			Long suid = nodeHits.next();
 			View<CyNode> node = snapshot.getNodeView(suid);
 			
-			var labelSelection = getLabelShape(node, labelProvider);
+			var labelSelection = getNodeLabelShape(node, labelProvider);
 			if(labelSelection != null && labelSelection.getShape().contains(point)) {
 				return labelSelection;
 			}
 		}
+		return null;
+	}
+
+	public LabelSelection getEdgeLabelAt(Point2D mousePoint) {
+		if(!renderDetailFlags.has(LOD_EDGE_LABELS))
+			return null;
+		Point2D point = re.getTransform().getNodeCoordinates(mousePoint);
+		CyNetworkViewSnapshot snapshot = re.getViewModelSnapshot();
+
+		Rectangle2D.Float area = re.getTransform().getNetworkVisibleAreaNodeCoords();
+		EdgeSpacialIndex2DEnumerator edgeHits = snapshot.getSpacialIndex2D().queryOverlapEdges(area.x, area.y, area.x + area.width, area.y + area.height, null);
+
+		LabelInfoProvider labelProvider = re.getGraphLOD().isLabelCacheEnabled() ? re.getLabelCache() : LabelInfoProvider.NO_CACHE;
+
+    float[] sourceExtents = new float[4];
+    float[] targetExtents = new float[4];
+    View<CyNode>[] nodes = new View[2];
+		while(edgeHits.hasNext()) {
+			View<CyEdge> edge = edgeHits.nextEdgeWithNodeExtents(sourceExtents, targetExtents, nodes);
+      EdgeStacking stacking = edgeDetails.getStacking(edge);
+      if (stacking == EdgeStackingVisualProperty.HAYSTACK) {
+        continue; // We don't do edge label selection for haystack edges
+      }
+
+			var labelSelection = getEdgeLabelShape(edge, labelProvider, sourceExtents, targetExtents, nodes);
+			if(labelSelection != null && labelSelection.getShape().contains(point)) {
+				return labelSelection;
+			}
+    }
 		return null;
 	}
 	
@@ -621,4 +757,8 @@ public class NetworkPicker {
 		}
 		return anns;
 	}
+
+  class FalseBooleanSupplier implements BooleanSupplier {
+    public boolean getAsBoolean() { return false; }
+  }
 }

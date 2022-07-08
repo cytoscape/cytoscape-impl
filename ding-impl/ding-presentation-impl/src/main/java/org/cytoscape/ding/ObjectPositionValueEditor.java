@@ -1,5 +1,29 @@
 package org.cytoscape.ding;
 
+import static javax.swing.GroupLayout.Alignment.LEADING;
+
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dialog.ModalityType;
+import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+
+import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+
+import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.property.ObjectPositionVisualProperty;
+import org.cytoscape.view.presentation.property.values.ObjectPosition;
+import org.cytoscape.view.vizmap.gui.editor.VisualPropertyValueEditor;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -24,36 +48,13 @@ package org.cytoscape.ding;
  * #L%
  */
 
-import static javax.swing.GroupLayout.Alignment.LEADING;
-
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dialog.ModalityType;
-import java.awt.Dimension;
-import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-
-import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.GroupLayout;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-
-import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
-import org.cytoscape.view.presentation.property.values.ObjectPosition;
-
 /**
  * Swing implementation of Object Position editor.
  */
-public class ObjectPositionValueEditor implements ValueEditor<ObjectPosition> {
+public class ObjectPositionValueEditor implements VisualPropertyValueEditor<ObjectPosition> {
 
-	private String label;
+	private static final String TITLE = "Position";
+	
 	private ObjectPosition oldValue;
 	private boolean canceled;
 	
@@ -61,83 +62,11 @@ public class ObjectPositionValueEditor implements ValueEditor<ObjectPosition> {
 	private ObjectPlacerGraphic graphic;
 	private ObjectPlacerControl control;
 	
-	private boolean initialized;
-	
-	public ObjectPositionValueEditor() {
-		this.label = "OBJECT";
-	}
-
-	@SuppressWarnings("serial")
-	private void init(final Component parent) {
-		final Window owner = parent != null ? SwingUtilities.getWindowAncestor(parent) : null;
-		dialog = new JDialog(owner, ModalityType.APPLICATION_MODAL);
-		dialog.setMinimumSize(new Dimension(400, 600));
-		dialog.setTitle("Position");
-		dialog.setResizable(false);
-		
-		dialog.addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent e) {
-				cancel();
-			}
-		});
-
-		// Set up and connect the gui components.
-		graphic = new ObjectPlacerGraphic(null, true, label);
-		
-		control = new ObjectPlacerControl();
-		control.addPropertyChangeListener(graphic);
-		graphic.addPropertyChangeListener(control);
-
-		final JPanel graphicPanel = new JPanel();
-		graphicPanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
-		graphicPanel.setLayout(new BorderLayout());
-		graphicPanel.add(graphic);
-		
-		final JButton okButton = new JButton(new AbstractAction("OK") {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				dialog.dispose();
-			}
-		});
-		okButton.addActionListener(control);
-
-		final JButton cancelButton = new JButton(new AbstractAction("Cancel") {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				cancel();
-			}
-		});
-
-		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(okButton, cancelButton);
-		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(dialog.getRootPane(), okButton.getAction(), cancelButton.getAction());
-		dialog.getRootPane().setDefaultButton(okButton);
-
-		final GroupLayout layout = new GroupLayout(dialog.getContentPane());
-		dialog.getContentPane().setLayout(layout);
-		layout.setAutoCreateContainerGaps(true);
-		layout.setAutoCreateGaps(true);
-		
-		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
-				.addComponent(graphicPanel)
-				.addComponent(control)
-				.addComponent(buttonPanel)
-		);
-		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addComponent(graphicPanel)
-				.addComponent(control)
-				.addComponent(buttonPanel)
-		);
-	}
+	// ==[ PUBLIC METHODS ]=============================================================================================
 
 	@Override
-	public <S extends ObjectPosition> ObjectPosition showEditor(final Component parent, final S initialValue) {
-		if (!initialized) {
-			init(parent);
-			initialized = true;
-		}
-		
-		ObjectPosition pos;
+	public <S extends ObjectPosition> ObjectPosition showEditor(Component parent, S initialValue, VisualProperty<S> vp) {
+		final ObjectPosition pos;
 
 		if (initialValue == null) {
 			oldValue = null;
@@ -146,9 +75,8 @@ public class ObjectPositionValueEditor implements ValueEditor<ObjectPosition> {
 			oldValue = initialValue;
 			pos = new ObjectPosition(initialValue);
 		}
-
-		control.setPosition(pos);
-		graphic.setPosition(pos);
+		
+		dialog = createDialog(parent, pos, (ObjectPositionVisualProperty) vp);
 		
 		if (parent != null)
 			dialog.setLocationRelativeTo(parent);
@@ -165,14 +93,84 @@ public class ObjectPositionValueEditor implements ValueEditor<ObjectPosition> {
 			return control.getPosition();
 		}
 	}
-
+	
 	@Override
 	public Class<ObjectPosition> getValueType() {
 		return ObjectPosition.class;
 	}
 	
+	// ==[ PRIVATE METHODS ]============================================================================================
+	
+	@SuppressWarnings("serial")
+	private JDialog createDialog(Component parent, ObjectPosition pos, ObjectPositionVisualProperty vp) {
+		var owner = parent != null ? SwingUtilities.getWindowAncestor(parent) : null;
+		var dialog = new JDialog(owner, ModalityType.APPLICATION_MODAL);
+		dialog.setTitle(vp != null ? vp.getDisplayName() : TITLE);
+		dialog.setResizable(false);
+		
+		dialog.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				cancel();
+			}
+		});
+
+		// Set up and connect the gui components.
+		graphic = new ObjectPlacerGraphic(pos, vp, true);
+		control = new ObjectPlacerControl(pos, vp);
+		
+		graphic.addPropertyChangeListener(control);
+		control.addPropertyChangeListener(graphic);
+
+		var graphicPanel = new JPanel();
+		graphicPanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
+		graphicPanel.setLayout(new BorderLayout());
+		graphicPanel.add(graphic);
+		
+		var okButton = new JButton(new AbstractAction("OK") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				dialog.dispose();
+			}
+		});
+		okButton.addActionListener(control);
+
+		var cancelButton = new JButton(new AbstractAction("Cancel") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				cancel();
+			}
+		});
+
+		var buttonPanel = LookAndFeelUtil.createOkCancelPanel(okButton, cancelButton);
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(dialog.getRootPane(), okButton.getAction(), cancelButton.getAction());
+		dialog.getRootPane().setDefaultButton(okButton);
+
+		var layout = new GroupLayout(dialog.getContentPane());
+		dialog.getContentPane().setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
+				.addComponent(graphicPanel)
+				.addComponent(control)
+				.addComponent(buttonPanel)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(graphicPanel)
+				.addComponent(control)
+				.addComponent(buttonPanel)
+		);
+		
+		return dialog;
+	}
+	
 	private void cancel() {
 		canceled = true;
-		dialog.dispose();
+		
+		if (dialog != null) {
+			dialog.dispose();
+			dialog = null;
+		}
 	}
 }

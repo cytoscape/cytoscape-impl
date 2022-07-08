@@ -2,6 +2,34 @@ package org.cytoscape.ding;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.Alignment.LEADING;
+import static javax.swing.GroupLayout.Alignment.TRAILING;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_POSITION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_POSITION;
+import static org.cytoscape.view.presentation.property.values.Position.NONE;
+
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
+import org.cytoscape.view.presentation.property.ObjectPositionVisualProperty;
+import org.cytoscape.view.presentation.property.values.Justification;
+import org.cytoscape.view.presentation.property.values.ObjectPosition;
+import org.cytoscape.view.presentation.property.values.Position;
 
 /*
  * #%L
@@ -27,86 +55,135 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
  * #L%
  */
 
-import static javax.swing.GroupLayout.Alignment.LEADING;
-import static javax.swing.GroupLayout.Alignment.TRAILING;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Collection;
-
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-
-import org.cytoscape.view.presentation.property.values.Justification;
-import org.cytoscape.view.presentation.property.values.ObjectPosition;
-import org.cytoscape.view.presentation.property.values.Position;
-import static org.cytoscape.view.presentation.property.values.Position.NONE;
-
-
-public class ObjectPlacerControl extends JPanel implements ActionListener,
-		PropertyChangeListener {
+@SuppressWarnings("serial")
+public class ObjectPlacerControl extends JPanel implements ActionListener, PropertyChangeListener {
 	
-	private static final long serialVersionUID = 3875032897986523443L;
+	private static final String ANCHOR_POINTS = "Anchor Points";
+	private static final String NONE_LABEL = "-- select --";
 	
-	private ObjectPosition lp;
+	private JLabel targetAnchorLabel;
+	private JLabel objAnchorLabel;
+	private JLabel justifyLabel;
 	
-	private JComboBox<String> justifyCombo;
+	/** Usually a Node or an Edge */
+	private JComboBox<Position> targetAnchors;
+	/** Usually a Label or a Custom Graphics */
+	private JComboBox<Position> objAnchors;
+	
+	private JComboBox<Justification> justifyCombo;
+	
 	private JTextField xoffsetBox;
 	private JTextField yoffsetBox;
-	private JComboBox<String> nodeAnchors;
-	private JComboBox<String> objAnchors;
+	
 	private boolean ignoreEvents;
 
-	public ObjectPlacerControl() {
-		super();
+	private ObjectPosition p;
+
+	public ObjectPlacerControl(ObjectPosition p, ObjectPositionVisualProperty vp) {
+		this.p = p;
 		
-		lp = new ObjectPosition();
-		final Collection<String> points = Position.getDisplayNames();
+		var objPositions = new ArrayList<>(Arrays.asList(Position.values()));
+		objPositions.remove(NONE); // The renderer cannot handle NONE!
+		objPositions.sort(new Comparator<Position>() {
+			@Override
+			public int compare(Position p1, Position p2) {
+				return p1.getName().compareTo(p2.getName());
+			}
+		});
+		
+		var tgtPositions = new ArrayList<>(objPositions);
+		
+		if (EDGE_LABEL_POSITION.equals(vp)) {
+			tgtPositions.sort(new Comparator<Position>() {
+				@Override
+				public int compare(Position p1, Position p2) {
+					var txt1 = getTargetPositionText(vp, p1);
+					var txt2 = getTargetPositionText(vp, p2);
+					
+					return txt1.compareTo(txt2);
+				}
+			});
+		}
 
-		final JLabel nodeAnchorLabel = new JLabel("Node Anchor Points:");
-		nodeAnchors = new JComboBox<>(points.toArray(new String[points.size()]));
-		nodeAnchors.addActionListener(this);
+		targetAnchorLabel = new JLabel();
+		targetAnchors = new JComboBox<>(tgtPositions.toArray(new Position[tgtPositions.size()]));
+		targetAnchors.setRenderer(new DefaultListCellRenderer() {
+			@Override
+			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+					boolean cellHasFocus) {
+				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				
+				var name = value instanceof Position ? getTargetPositionText(vp, (Position) value) : NONE_LABEL;
+				setText(name);
+				
+				return this;
+			}
+		});
+		targetAnchors.addActionListener(this);
 
-		final JLabel objAnchorLabel = new JLabel("Object Anchor Points:");
-		objAnchors = new JComboBox<>(points.toArray(new String[points.size()]));
+		objAnchorLabel = new JLabel();
+		objAnchors = new JComboBox<>(objPositions.toArray(new Position[objPositions.size()]));
+		objAnchors.setRenderer(new DefaultListCellRenderer() {
+			@Override
+			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+					boolean cellHasFocus) {
+				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				var name = NONE_LABEL;
+				
+				if (value instanceof Position) {
+					var pos = (Position) value;
+					
+					if (pos != NONE)
+						name = pos.getName();
+				}
+				
+				setText(name);
+				
+				return this;
+			}
+		});
 		objAnchors.addActionListener(this);
 
-		final JLabel justifyLabel = new JLabel("Label Justification:");
-		final String[] justifyTypes = Justification.getNames();
-		justifyCombo = new JComboBox<>(justifyTypes);
+		justifyLabel = new JLabel("Text Justification:");
+		justifyCombo = new JComboBox<>(Justification.values());
+		justifyCombo.setRenderer(new DefaultListCellRenderer() {
+			@Override
+			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+					boolean cellHasFocus) {
+				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				var name = value instanceof Justification ? ((Justification) value).getName() :  NONE_LABEL;
+				setText(name);
+				
+				return this;
+			}
+		});
 		justifyCombo.addActionListener(this);
 
-		final JLabel xoffsetLabel = new JLabel("X Offset Value (can be negative):");
+		var xoffsetLabel = new JLabel("X Offset Value (can be negative):");
 		xoffsetBox = new JTextField("0", 8);
 		xoffsetBox.setHorizontalAlignment(JTextField.RIGHT);
 		xoffsetBox.addActionListener(this);
 
-		final JLabel yoffsetLabel = new JLabel("Y Offset Value (can be negative):");
+		var yoffsetLabel = new JLabel("Y Offset Value (can be negative):");
 		yoffsetBox = new JTextField("0", 8);
 		yoffsetBox.setHorizontalAlignment(JTextField.RIGHT);
 		yoffsetBox.addActionListener(this);
 		
-		final GroupLayout layout = new GroupLayout(this);
-		this.setLayout(layout);
+		var layout = new GroupLayout(this);
+		setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(true);
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
 				.addGroup(layout.createParallelGroup(TRAILING, true)
-						.addComponent(nodeAnchorLabel)
+						.addComponent(targetAnchorLabel)
 						.addComponent(objAnchorLabel)
 						.addComponent(justifyLabel)
 						.addComponent(xoffsetLabel)
 						.addComponent(yoffsetLabel)
 				)
 				.addGroup(layout.createParallelGroup(LEADING, true)
-						.addComponent(nodeAnchors)
+						.addComponent(targetAnchors)
 						.addComponent(objAnchors)
 						.addComponent(justifyCombo)
 						.addComponent(xoffsetBox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -115,8 +192,8 @@ public class ObjectPlacerControl extends JPanel implements ActionListener,
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
-						.addComponent(nodeAnchorLabel)
-						.addComponent(nodeAnchors)
+						.addComponent(targetAnchorLabel)
+						.addComponent(targetAnchors)
 				)
 				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 						.addComponent(objAnchorLabel)
@@ -135,77 +212,98 @@ public class ObjectPlacerControl extends JPanel implements ActionListener,
 						.addComponent(yoffsetBox)
 				)
 		);
-
+		
+		// Update labels and other components
+		boolean isLabel = NODE_LABEL_POSITION.equals(vp) || EDGE_LABEL_POSITION.equals(vp);
+		
+		targetAnchorLabel.setText((EDGE_LABEL_POSITION.equals(vp) ? "Edge " : "Node ") + ANCHOR_POINTS + ":");
+		objAnchorLabel.setText((isLabel ? "Label " : "Object ") + ANCHOR_POINTS + ":");
+		
+		justifyLabel.setVisible(isLabel);
+		justifyCombo.setVisible(isLabel);
+		
 		applyPosition();
 	}
 	
-	void setPosition(ObjectPosition p) {
-		this.lp = p;
-		this.applyPosition();
-	}
-
-	void applyPosition() {
-		ignoreEvents = true; // so that we don't pay attention to events generated from these calls
-
-		Position nodeAnchor = lp.getTargetAnchor();
-		Position labelAnchor = lp.getAnchor();
-
-		if (nodeAnchor.equals(NONE))
-			nodeAnchors.setSelectedIndex(-1);
-		else
-			nodeAnchors.setSelectedItem(nodeAnchor.getName());
-		
-		if (labelAnchor.equals(NONE))
-			objAnchors.setSelectedIndex(-1);
-		else
-			objAnchors.setSelectedItem(labelAnchor.getName());
-
-		justifyCombo.setSelectedItem(lp.getJustify().getName());
-		xoffsetBox.setText(Integer.valueOf((int)lp.getOffsetX()).toString());
-		yoffsetBox.setText(Integer.valueOf((int) lp.getOffsetY()).toString());
-		ignoreEvents = false;
-		repaint();
-	}
-
+	// ==[ PUBLIC METHODS ]=============================================================================================
+	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		// ignore events that are generated by setting values to match the graphic
 		if (ignoreEvents)
 			return;
 
-		Object source = e.getSource();
+		var source = e.getSource();
 		boolean changed = false;
 
-		if (source == nodeAnchors) {
-			lp.setTargetAnchor(Position.parse(nodeAnchors.getSelectedItem()
-					.toString()));
+		if (source == targetAnchors) {
+			p.setTargetAnchor((Position) targetAnchors.getSelectedItem());
 			changed = true;
 		}
 
 		if (source == objAnchors) {
-			lp.setAnchor(Position.parse(objAnchors.getSelectedItem()
-					.toString()));
+			p.setAnchor((Position) objAnchors.getSelectedItem());
 			changed = true;
 		}
 
 		if (source == justifyCombo) {
-			lp.setJustify(Justification.parse(justifyCombo.getSelectedItem()
-					.toString()));
+			p.setJustify((Justification) justifyCombo.getSelectedItem());
 			changed = true;
 		}
 
 		// handle both at the same time since people might forget to press enter
-		if ((getOffset(xoffsetBox) != lp.getOffsetX())
-				|| (getOffset(yoffsetBox) != lp.getOffsetY())) {
-			lp.setOffsetX(getOffset(xoffsetBox));
-			lp.setOffsetY(getOffset(yoffsetBox));
+		if ((getOffset(xoffsetBox) != p.getOffsetX()) || (getOffset(yoffsetBox) != p.getOffsetY())) {
+			p.setOffsetX(getOffset(xoffsetBox));
+			p.setOffsetY(getOffset(yoffsetBox));
 			changed = true;
 		}
 
 		if (!changed)
 			return; // nothing we care about has changed
 
-		firePropertyChange(ObjectPlacerGraphic.OBJECT_POSITION_CHANGED, null, lp);
+		firePropertyChange(ObjectPlacerGraphic.OBJECT_POSITION_CHANGED, null, p);
+	}
+	
+	@Override
+	public void propertyChange(PropertyChangeEvent e) {
+		var type = e.getPropertyName();
+
+		if (type.equals(ObjectPlacerGraphic.OBJECT_POSITION_CHANGED) && e.getNewValue() instanceof ObjectPosition) {
+			p = (ObjectPosition) e.getNewValue();
+			applyPosition();
+		}
+	}
+	
+	public ObjectPosition getPosition() {
+		return p;
+	}
+	
+	// ==[ PRIVATE METHODS ]============================================================================================
+	
+	private void applyPosition() {
+		ignoreEvents = true; // so that we don't pay attention to events generated from these calls
+
+		var nodeAnchor = p.getTargetAnchor();
+		var labelAnchor = p.getAnchor();
+
+		if (nodeAnchor.equals(NONE))
+			targetAnchors.setSelectedIndex(-1);
+		else
+			targetAnchors.setSelectedItem(nodeAnchor);
+
+		if (labelAnchor.equals(NONE))
+			objAnchors.setSelectedIndex(-1);
+		else
+			objAnchors.setSelectedItem(labelAnchor);
+
+		justifyCombo.setSelectedItem(p.getJustify());
+		
+		xoffsetBox.setText(Integer.valueOf((int) p.getOffsetX()).toString());
+		yoffsetBox.setText(Integer.valueOf((int) p.getOffsetY()).toString());
+		
+		ignoreEvents = false;
+
+		repaint();
 	}
 
 	private double getOffset(JTextField jtf) {
@@ -218,19 +316,30 @@ public class ObjectPlacerControl extends JPanel implements ActionListener,
 			return 0.0;
 		}
 	}
-
-	@Override
-	public void propertyChange(PropertyChangeEvent e) {
-		String type = e.getPropertyName();
-
-		if (type.equals(ObjectPlacerGraphic.OBJECT_POSITION_CHANGED)
-				&& e.getNewValue() instanceof ObjectPosition) {
-			lp = (ObjectPosition) e.getNewValue();
-			applyPosition();
-		}
-	}
 	
-	public ObjectPosition getPosition() {
-		return this.lp;
+	private static String getTargetPositionText(ObjectPositionVisualProperty vp, Position pos) {
+		String txt = NONE_LABEL;
+		
+		if (pos != null && pos != Position.NONE) {
+			if (EDGE_LABEL_POSITION.equals(vp)) {
+				var sn = pos.getShortName().toUpperCase();
+				
+				if (pos == Position.CENTER || pos == Position.NORTH || pos == Position.SOUTH)
+					txt = "Middle";
+				else if (sn.endsWith("W"))
+					txt = "Source";
+				else if (sn.endsWith("E"))
+					txt = "Target";
+				
+				if (sn.startsWith("N"))
+					txt += " (above)";
+				else if (sn.startsWith("S"))
+					txt += " (below)";
+			} else {
+				txt = pos.getName();
+			}
+		}
+		
+		return txt;
 	}
 }

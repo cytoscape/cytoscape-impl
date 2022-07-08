@@ -9,10 +9,12 @@ import org.cytoscape.cg.util.CustomGraphicsIcon;
 import org.cytoscape.ding.DArrowShape;
 import org.cytoscape.ding.DNodeShape;
 import org.cytoscape.ding.impl.DLineType;
+import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.LabelBackgroundShapeVisualProperty;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
+import org.cytoscape.view.presentation.property.ObjectPositionVisualProperty;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.EdgeStacking;
@@ -51,6 +53,10 @@ import org.cytoscape.view.presentation.property.values.ObjectPosition;
 public final class VisualPropertyIconFactory {	
 	
 	public static <V> Icon createIcon(V value, int w, int h) {
+		return createIcon(value, null, w, h);
+	}
+	
+	public static <V> Icon createIcon(V value, VisualProperty<V> vp, int w, int h) {
 		if (value == null)
 			return null;
 		
@@ -68,19 +74,19 @@ public final class VisualPropertyIconFactory {
 			
 			icon = new NodeIcon(dShape.getShape(), w, h, dShape.getDisplayName());
 		} else if (value instanceof LabelBackgroundShape shape) {
-			DNodeShape dShape = DNodeShape.getDShape(shape);
-			if(dShape != null) {
+			var dShape = DNodeShape.getDShape(shape);
+			
+			if (dShape != null)
 				icon = new NodeIcon(dShape.getShape(), w, h, dShape.getDisplayName());
-			} else {
+			else
 				icon = new TextIcon(LabelBackgroundShapeVisualProperty.NONE, w, h, "");
-			}
 		} else if (value instanceof LineType line) {
 			icon = new StrokeIcon(DLineType.getDLineType(line).getStroke(2f), w, h, value.toString());
 		} else if (value instanceof CyCustomGraphics<?> graphics) {
 			var name = graphics.getDisplayName();
 			icon = new CustomGraphicsIcon(graphics, w, h, name);
-		} else if (value instanceof ObjectPosition pos) {
-			icon = new ObjectPositionIcon(pos, w, h, "Label");
+		} else if (value instanceof ObjectPosition op) {
+			icon = new ObjectPositionIcon(op, (ObjectPositionVisualProperty) vp, w, h, "Label");
 		} else if (value instanceof Font font) {
 			icon = new FontFaceIcon(font, w, h, "");
 		} else if (value instanceof ArrowShape arrowShape) {
