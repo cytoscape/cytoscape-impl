@@ -2,17 +2,18 @@ package org.cytoscape.view.vizmap.gui.internal.view;
 
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
+import java.awt.event.ActionEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.util.List;
 
+import javax.swing.AbstractAction;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -54,7 +55,6 @@ public class ColumnStyleAddColumnPopup extends JDialog {
 		});
 	}
 	
-	
 	public JButton getAddButton() {
 		if(addButton == null) {
 			addButton = new JButton("Add");
@@ -64,12 +64,15 @@ public class ColumnStyleAddColumnPopup extends JDialog {
 	
 	public JButton getCancelButton() {
 		if(cancelButton == null) {
-			cancelButton = new JButton("Cancel");
-			cancelButton.addActionListener(e -> setVisible(false));
+			cancelButton = new JButton(new AbstractAction("Cancel") {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					setVisible(false);
+				}
+			});
 		}
 		return cancelButton;
 	}
-	
 	
 	public GraphObjectType getTableType() {
 		var tabName = tableCombo.getItemAt(tableCombo.getSelectedIndex());
@@ -83,13 +86,12 @@ public class ColumnStyleAddColumnPopup extends JDialog {
 		return colCombo.getItemAt(colCombo.getSelectedIndex()).getName();
 	}
 	
-	
 	private void initComponents() {
-		JLabel tableLabel = new JLabel("Table:");
-		JLabel colLabel = new JLabel("Column:");
-		JButton addButton = getAddButton();
-		JButton cancelButton = getCancelButton();
-		JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(addButton, cancelButton);
+		var tableLabel = new JLabel("Table:");
+		var colLabel = new JLabel("Column:");
+		var addButton = getAddButton();
+		var cancelButton = getCancelButton();
+		var buttonPanel = LookAndFeelUtil.createOkCancelPanel(addButton, cancelButton);
 		
 		var presentationManager = servicesUtil.get(CyColumnPresentationManager.class);
 		
@@ -138,8 +140,10 @@ public class ColumnStyleAddColumnPopup extends JDialog {
 		
 		layout.linkSize(SwingConstants.HORIZONTAL, tableLabel, colLabel);
 		layout.linkSize(SwingConstants.HORIZONTAL, tableCombo, colCombo);
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), addButton.getAction(), cancelButton.getAction());
+		getRootPane().setDefaultButton(addButton);
 	}
-	
 	
 	private void updateColumns() {
 		var appManager = servicesUtil.get(CyApplicationManager.class);
