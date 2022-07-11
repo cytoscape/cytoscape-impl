@@ -287,7 +287,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, vizmapWriterFactory);
 		registerAllServices(bc, sessionWriterFactory);
 		
-		// Network image export commands
+		// Network image export commands, eg 'view export png'
 		for(var format : ExportNetworkTaskFactory.Format.values()) {
 			var factory = new ExportNetworkTaskFactory(serviceRegistrar, format);
 			var props = new Properties();

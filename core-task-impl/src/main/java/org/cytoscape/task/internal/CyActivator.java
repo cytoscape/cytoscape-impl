@@ -203,10 +203,10 @@ import org.cytoscape.task.internal.select.SelectAllEdgesTaskFactoryImpl;
 import org.cytoscape.task.internal.select.SelectAllNodesTaskFactoryImpl;
 import org.cytoscape.task.internal.select.SelectAllTaskFactoryImpl;
 import org.cytoscape.task.internal.select.SelectConnectedNodesTaskFactoryImpl;
+import org.cytoscape.task.internal.select.SelectEdgesBetweenSelectedNodesTaskFactoryImpl;
 import org.cytoscape.task.internal.select.SelectFirstNeighborsNodeViewTaskFactoryImpl;
 import org.cytoscape.task.internal.select.SelectFirstNeighborsTaskFactoryImpl;
 import org.cytoscape.task.internal.select.SelectFromFileListTaskFactoryImpl;
-import org.cytoscape.task.internal.select.SelectEdgesBetweenSelectedNodesTaskFactoryImpl;
 import org.cytoscape.task.internal.select.SelectTaskFactory;
 import org.cytoscape.task.internal.session.NewSessionTaskFactoryImpl;
 import org.cytoscape.task.internal.session.OpenSessionCommandTaskFactory;
@@ -270,10 +270,10 @@ import org.cytoscape.task.select.SelectAllEdgesTaskFactory;
 import org.cytoscape.task.select.SelectAllNodesTaskFactory;
 import org.cytoscape.task.select.SelectAllTaskFactory;
 import org.cytoscape.task.select.SelectConnectedNodesTaskFactory;
+import org.cytoscape.task.select.SelectEdgesBetweenSelectedNodesTaskFactory;
 import org.cytoscape.task.select.SelectFirstNeighborsNodeViewTaskFactory;
 import org.cytoscape.task.select.SelectFirstNeighborsTaskFactory;
 import org.cytoscape.task.select.SelectFromFileListTaskFactory;
-import org.cytoscape.task.select.SelectEdgesBetweenSelectedNodesTaskFactory;
 import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory;
 import org.cytoscape.task.visualize.ApplyVisualStyleTaskFactory;
 import org.cytoscape.task.write.ExportNetworkImageTaskFactory;
@@ -600,6 +600,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "view");
 			props.setProperty(COMMAND_DESCRIPTION, "Export the current view to a graphics file");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, """
+					*** This command is DEPRECATED. Use the 'view export png', 'view export jpg' and 'view export pdf' commands instead. *** 
 					Exports the current view to a graphics file and returns the path to the saved file.
 					PNG and JPEG formats have options for scaling, while other formats only have the option 'exportTextAsFont'.
 				    To speed up image export for large networks use the option 'highDetail=false'.
