@@ -931,12 +931,13 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		return rebuild;
 	}
 	
-//	private boolean shouldRebuildTableVisualPropertySheets(VisualStyle vs) {
-//		var col = vizMapperMainPanel.getColumnStylePnl().getSelectedColumn();
-//		var curStyle = vmProxy.getVisualStyle(col);
-//		
-//		return vs != null && !vs.equals(curStyle);
-//	}
+	
+	public VisualLexicon getCurrentVisualLexicon(VisualProperty<?> vp) {
+		Class<? extends CyIdentifiable> type = vp.getTargetDataType();
+		var re = vmProxy.getRenderingEngine(type);
+		return re.getVisualLexicon();
+	}
+	
 	
 	private void createVisualPropertySheets(VisualStyle style, List<Class<? extends CyIdentifiable>> sheetTypes, boolean resetDefaultVisibleItems) {
 		invokeOnEDT(() -> {

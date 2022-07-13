@@ -33,6 +33,7 @@ import javax.swing.SortOrder;
 import javax.swing.WindowConstants;
 
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
@@ -150,8 +151,7 @@ public class DiscreteValueEditor<T> implements VisualPropertyValueEditor<T> {
 		if (vp == null)
 			return values;
 		
-		var lexicon = servicesUtil.get(VizMapperMediator.class).getCurrentVisualPropertySheetItem().getModel().getVisualLexicon();
-		
+		VisualLexicon lexicon = servicesUtil.get(VizMapperMediator.class).getCurrentVisualLexicon(vp);
 		return (Set<T>) lexicon.getSupportedValueRange(vp);
 	}
 
