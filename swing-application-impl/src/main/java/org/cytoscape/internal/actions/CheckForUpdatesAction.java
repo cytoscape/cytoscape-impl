@@ -70,7 +70,7 @@ public class CheckForUpdatesAction extends AbstractCyAction implements CyStartLi
 
     @Override
     public void handleEvent(CyStartEvent cyStartEvent) {
-        final GetLatestVersionTask task = new GetLatestVersionTask();
+        final GetLatestVersionTask task = new GetLatestVersionTask(serviceRegistrar, thisVersion);
         runTask(task, new TaskObserver() {
             @Override
             public void taskFinished(ObservableTask task) {
