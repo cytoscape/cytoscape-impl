@@ -81,13 +81,15 @@ public class GetLatestVersionTask extends AbstractTask {
     @Override
     public void run(TaskMonitor tm) throws Exception {
         tm.setTitle("Get Latest Cytoscape Version");
-        String share = props.getProperty("installoptions.shareStatistics");
-        if (share != null && !Boolean.parseBoolean(share))
-          return;
-
 
         // Create the user agent string
         String user_agent = "Cytoscape v"+thisVersion+" Java "+java_version+" "+os+" "+os_version;
+
+        String share = props.getProperty("installoptions.shareStatistics");
+        if (share != null && !Boolean.parseBoolean(share)) {
+          user_agent = "Cytoscape v"+thisVersion;
+        }
+
 
         // Don't throw an exception here (e.g. connection problem)! We don't want to block the UI
         // with a modal error dialog when Cytoscape is starting up, specially when this is simply checking
@@ -131,6 +133,7 @@ public class GetLatestVersionTask extends AbstractTask {
               break;
             }
           }
+          System.out.println("UserAgent = "+user_agent);
           System.out.println("latestVersion = "+latestVersion);
         } catch (UnknownHostException e) {
             Logger.getLogger(CyUserLog.NAME).warn("Cannot find host (please check your Internet connection).", e);
