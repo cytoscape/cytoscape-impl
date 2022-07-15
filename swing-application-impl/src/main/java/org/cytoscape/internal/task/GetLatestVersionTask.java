@@ -2,6 +2,7 @@ package org.cytoscape.internal.task;
 
 import org.apache.log4j.Logger;
 import org.cytoscape.application.CyUserLog;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
@@ -14,6 +15,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
 import java.io.InputStreamReader;
+import java.util.Properties;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -66,15 +68,23 @@ public class GetLatestVersionTask extends AbstractTask {
     private static final String os_version = System.getProperty("os.version");
     private static final String os_arch = System.getProperty("os.arch");
     private static final String java_version = System.getProperty("java.version");
+    private final Properties props;
 
     public GetLatestVersionTask(final CyServiceRegistrar registrar, final String thisVersion) {
       this.registrar = registrar;
       this.thisVersion = thisVersion;
+      final CyProperty<Properties> cyProps =
+          registrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+      props = cyProps.getProperties();
     }
 
     @Override
     public void run(TaskMonitor tm) throws Exception {
         tm.setTitle("Get Latest Cytoscape Version");
+        String share = props.getProperty("installoptions.shareStatistics");
+        if (share != null && !Boolean.parseBoolean(share))
+          return;
+
 
         // Create the user agent string
         String user_agent = "Cytoscape v"+thisVersion+" Java "+java_version+" "+os+" "+os_version;
