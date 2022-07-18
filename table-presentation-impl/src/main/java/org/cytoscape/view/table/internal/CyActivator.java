@@ -1,13 +1,6 @@
 package org.cytoscape.view.table.internal;
 
-import static org.cytoscape.work.ServiceProperties.INSERT_TOOLBAR_SEPARATOR_BEFORE;
-import static org.cytoscape.work.ServiceProperties.IN_EDGE_TABLE_TOOL_BAR;
-import static org.cytoscape.work.ServiceProperties.IN_NETWORK_TABLE_TOOL_BAR;
-import static org.cytoscape.work.ServiceProperties.IN_NODE_TABLE_TOOL_BAR;
-import static org.cytoscape.work.ServiceProperties.IN_UNASSIGNED_TABLE_TOOL_BAR;
-import static org.cytoscape.work.ServiceProperties.LARGE_ICON_ID;
-import static org.cytoscape.work.ServiceProperties.TOOLTIP;
-import static org.cytoscape.work.ServiceProperties.TOOL_BAR_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.*;
 
 import java.awt.Font;
 import java.util.Properties;
@@ -86,9 +79,10 @@ public class CyActivator extends AbstractCyActivator {
 			var factory = new EquationEditorDialogFactory(registrar);
 			registerService(bc, factory, EquationEditorDialogFactory.class);
 		}
+		
+		// Function builder toolbar button
 		{
 			Font iconFont = null;
-			
 			try {
 				iconFont = Font.createFont(Font.TRUETYPE_FONT, getClass().getResourceAsStream("/fonts/jsMath-cmti10.ttf"));
 				iconFont = iconFont.deriveFont(18.0f);
@@ -111,7 +105,6 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(IN_UNASSIGNED_TABLE_TOOL_BAR, "true");
 			props.setProperty(TOOL_BAR_GRAVITY, "0.005");
 			props.setProperty(INSERT_TOOLBAR_SEPARATOR_BEFORE, "true");
-//			props.setProperty(INSERT_TOOLBAR_SEPARATOR_AFTER, "true");
 			registerService(bc, factory, TableTaskFactory.class, props);
 		}
 	}

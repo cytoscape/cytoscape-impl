@@ -2,16 +2,7 @@ package org.cytoscape.view.table.internal.impl;
 
 import static org.cytoscape.util.swing.LookAndFeelUtil.getSmallFontSize;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isMac;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_EDITABLE;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_GRAVITY;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_SELECTED;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_VISIBLE;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_WIDTH;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.ROW_HEIGHT;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.ROW_SELECTED;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_GRID_VISIBLE;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_ROW_HEIGHT;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_VIEW_MODE;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.*;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.ALL;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.AUTO;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.SELECTED;
@@ -92,6 +83,8 @@ import org.cytoscape.view.model.events.AboutToRemoveColumnViewEvent;
 import org.cytoscape.view.model.events.AboutToRemoveColumnViewListener;
 import org.cytoscape.view.model.events.AddedColumnViewEvent;
 import org.cytoscape.view.model.events.AddedColumnViewListener;
+import org.cytoscape.view.model.events.TableViewChangedEvent;
+import org.cytoscape.view.model.events.ViewChangeRecord;
 import org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode;
 import org.cytoscape.view.table.internal.util.TableBrowserUtil;
 import org.cytoscape.view.table.internal.util.ValidatedObjectAndEditString;
@@ -322,7 +315,6 @@ public class BrowserTable extends JTable
 		// remember the table row, because tableModel will disappear if
 		// user click on open space on canvas, so we have to remember it before it is gone
 		var tableModel = getBrowserTableModel();
-		
 		if (tableModel == null)
 			return false;
 		
@@ -408,12 +400,37 @@ public class BrowserTable extends JTable
 			add(editorComp);
 			editorComp.validate();
 
+			fireToolbarUpdateEvent();
+			
 			return true;
 		}
 
 		return false;
 	}
+	
+	// This event will get picked up by the ToolBarEnableUpdater.
+	@SuppressWarnings("unchecked")
+	private void fireToolbarUpdateEvent() {
+		var tableView  = getBrowserTableModel().getTableView();
+		var eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		var payload = new ViewChangeRecord<>(tableView, CELL, null);
+		eventHelper.addEventPayload(tableView, payload, TableViewChangedEvent.class);
+		eventHelper.flushPayloadEvents(tableView);
+	}
 
+	@Override
+	public void editingCanceled(ChangeEvent e) {
+		super.editingCanceled(e);
+		fireToolbarUpdateEvent();
+	}
+	
+	@Override
+	public void editingStopped(ChangeEvent e) {
+		super.editingStopped(e);
+		fireToolbarUpdateEvent();
+	}
+	
+	
 	@Override
 	public void columnAdded(TableColumnModelEvent e) {
 		super.columnAdded(e);

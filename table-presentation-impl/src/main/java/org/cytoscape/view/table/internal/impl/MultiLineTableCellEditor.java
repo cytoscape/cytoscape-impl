@@ -1,6 +1,5 @@
 package org.cytoscape.view.table.internal.impl;
 
-import static org.cytoscape.util.swing.LookAndFeelUtil.isMac;
 import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
 import java.awt.Component;
@@ -113,7 +112,7 @@ public class MultiLineTableCellEditor extends AbstractCellEditor implements Tabl
 	@Override
 	public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
 		lastRow = row;
-    thisRow = row;
+		thisRow = row;
 		
 		String text = value != null ? ((ValidatedObjectAndEditString) value).getEditString() : "";
 		textArea.setTable(table);
@@ -224,20 +223,20 @@ public class MultiLineTableCellEditor extends AbstractCellEditor implements Tabl
 			lastValueUserEntered = getCellEditorValue();
 		}
 
-    @Override
-    public void transferFocus() {
-      if ((thisRow+1) >= table.getRowCount()) {
-        return;
-      }
-      super.transferFocus();
-    }
+		@Override
+		public void transferFocus() {
+			if ((thisRow + 1) >= table.getRowCount()) {
+				return;
+			}
+			super.transferFocus();
+		}
 
-    @Override
-    public void transferFocusBackward() {
-      if ((thisRow-1) < 0)
-        return;
-      super.transferFocus();
-    }
+		@Override
+		public void transferFocusBackward() {
+			if ((thisRow - 1) < 0)
+				return;
+			super.transferFocus();
+		}
 
 		@Override
 		public void keyPressed(final KeyEvent evt) {
