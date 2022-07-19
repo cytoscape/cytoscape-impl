@@ -100,6 +100,8 @@ public class EquationEditorMediator {
 	private final CyColumn column;
 	private final int currentRowIndex;
 	
+	private boolean successfulApply = false;
+	
 	
 	private EquationEditorMediator(CyColumn column, BrowserTable browserTable, EquationEditorPanel builderPanel, CyServiceRegistrar registrar) {
 		this.browserTable = browserTable;
@@ -109,7 +111,7 @@ public class EquationEditorMediator {
 		this.currentRowIndex = browserTable.convertRowIndexToModel(browserTable.getSelectedRow());
 	}
 	
-	public static void openEquationEditorDialog(BrowserTable browserTable, String equation, CyServiceRegistrar registrar) {
+	public static String openEquationEditorDialog(BrowserTable browserTable, String equation, CyServiceRegistrar registrar) {
 		JFrame parent = registrar.getService(CySwingApplication.class).getJFrame();
 		JDialog dialog = new JDialog(parent);
 		
@@ -137,6 +139,10 @@ public class EquationEditorMediator {
 		builderPanel.getSyntaxPanel().setText(equation);
 		
 		dialog.setVisible(true);
+		
+		// If the equation was successfully applied then we don't need to cache it 
+		// in the EquationEditorDialogFactory because it was written to the table cell(s).
+		return mediator.successfulApply ? null : builderPanel.getSyntaxPanel().getText();
 	}
 	
 	private static class RequestFocusListener implements AncestorListener {
@@ -378,22 +384,14 @@ public class EquationEditorMediator {
 		return equation;
 	}
 	
-	private void handleApply(boolean insert) {
-		Equation equation = compileEquation(column);
-		if(equation != null) {
-			Collection<CyRow> rows = getRowsForApply();
-			applyToRows(equation, column, rows, insert);
-		}
-		
-	}
 	
 	private Equation compileEquation(CyColumn col) {
-		BrowserTableModel tableModel = browserTable.getBrowserTableModel();
-		CyTable attribs = tableModel.getDataTable();
-		String equationText = getEquationText();
-		EquationCompiler compiler = registrar.getService(EquationCompiler.class);
+		var tableModel = browserTable.getBrowserTableModel();
+		var attribs = tableModel.getDataTable();
+		var equationText = getEquationText();
+		var compiler = registrar.getService(EquationCompiler.class);
 		
-		String attribName = col.getName();
+		var attribName = col.getName();
 		var attrNameToTypeMap = TableBrowserUtil.getAttNameToTypeMap(attribs, attribName);
 		boolean success = compiler.compile(equationText, attrNameToTypeMap);
 		
@@ -406,6 +404,21 @@ public class EquationEditorMediator {
 		
 		return compiler.getEquation();
 	}
+	
+	
+	private void handleApply(boolean insert) {
+		successfulApply = false;
+		
+		Equation equation = compileEquation(column);
+		
+		if(equation != null) {
+			Collection<CyRow> rows = getRowsForApply();
+			applyToRows(equation, column, rows, insert);
+			
+			successfulApply = true;
+		} 
+	}
+	
 	
 	private Collection<CyRow> getRowsForApply() {
 		BrowserTableModel tableModel = browserTable.getBrowserTableModel();

@@ -66,6 +66,7 @@ public class SyntaxAreaPanel extends JPanel {
 	private JPanel topPanel;
 	private RSyntaxTextArea textArea;
 	private JScrollPane syntaxAreaScrollPane;
+	private JButton clearButton;
 	private JButton undoButton;
 	private JButton redoButton;
 	
@@ -114,6 +115,7 @@ public class SyntaxAreaPanel extends JPanel {
 		
 		getUndoButton().addActionListener(e -> undo());
 		getRedoButton().addActionListener(e -> redo());
+		getClearButton().addActionListener(e -> clear());
 		
 		getSyntaxTextArea().addCaretListener(e -> clearResultLabel());
 		getSyntaxTextArea().getDocument().addDocumentListener((DocumentListenerAdapter)(e) -> {
@@ -241,6 +243,10 @@ public class SyntaxAreaPanel extends JPanel {
 		getSyntaxTextArea().redoLastAction();
 	}
 	
+	public void clear() {
+		getSyntaxTextArea().setText("");
+	}
+	
 	
 	private JPanel getTopPanel() {
 		if(topPanel == null) {
@@ -251,6 +257,8 @@ public class SyntaxAreaPanel extends JPanel {
 			topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.X_AXIS));
 			topPanel.add(label);
 			topPanel.add(Box.createHorizontalGlue());
+			
+			topPanel.add(getClearButton());
 			topPanel.add(getUndoButton());
 			topPanel.add(getRedoButton());
 		}
@@ -269,6 +277,14 @@ public class SyntaxAreaPanel extends JPanel {
 			textArea = SyntaxAreaFactory.createEquationTextArea(registrar);
 		}
 		return textArea;
+	}
+	
+	public JButton getClearButton() {
+		if(clearButton == null) {
+			clearButton = createIconButton(IconManager.ICON_TRASH, "Clear");
+			clearButton.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 10));
+		}
+		return clearButton;
 	}
 	
 	public JButton getUndoButton() {
