@@ -214,7 +214,7 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 					// In this case, the decimal separator does not depend on the Locale
 					// It is the dot
 					decimalSeparator = '.';
-				} catch (InvalidFormatException e) {
+				} catch (Exception e) {
 					e.printStackTrace();
 					throw new IllegalArgumentException("Could not read Excel file.  Maybe the file is broken?");
 				} finally {

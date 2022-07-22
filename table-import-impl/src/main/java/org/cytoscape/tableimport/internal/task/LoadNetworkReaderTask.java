@@ -257,7 +257,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 					|| fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) && workbook == null) {
 				try {
 					workbook = WorkbookFactory.create(new FileInputStream(tempFile));
-				} catch (InvalidFormatException e) {
+				} catch (Exception e) {
 					//e.printStackTrace();
 					throw new IllegalArgumentException("Could not read Excel file.  Maybe the file is broken?" , e);
 				} finally {

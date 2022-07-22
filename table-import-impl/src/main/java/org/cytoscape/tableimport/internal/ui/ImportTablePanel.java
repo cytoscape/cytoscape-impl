@@ -1218,7 +1218,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		if (isSpreadsheetFile() && workbook == null) {
 			try {
 				workbook = WorkbookFactory.create(tempIs);
-			} catch (InvalidFormatException e) {
+			} catch (Exception e) {
 				tempIs.close();
 				throw new IllegalArgumentException("Could not read Excel file.  Maybe the file is broken?", e);
 			}

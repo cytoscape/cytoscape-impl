@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
@@ -111,8 +112,8 @@ public class ExcelNetworkSheetReader extends NetworkTableReader {
 		for (short i = 0; i < mapping.getColumnCount(); i++) {
 			cell = row.getCell(i);
 
-			if (cell == null || cell.getCellType() == Cell.CELL_TYPE_ERROR || 
-					(cell.getCellType() == Cell.CELL_TYPE_FORMULA && cell.getCachedFormulaResultType() == Cell.CELL_TYPE_ERROR)) {
+			if (cell == null || cell.getCellType() == CellType.ERROR || 
+					(cell.getCellType() == CellType.FORMULA && cell.getCachedFormulaResultType() == CellType.ERROR)) {
 				cells[i] = null;
 			} 
 			else {

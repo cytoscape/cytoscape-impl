@@ -128,7 +128,7 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 				workbook == null) {
 			try {
 				workbook = WorkbookFactory.create(is);
-			} catch (InvalidFormatException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 				throw new IllegalArgumentException("Could not read Excel file.  Maybe the file is broken?");
 			} finally {

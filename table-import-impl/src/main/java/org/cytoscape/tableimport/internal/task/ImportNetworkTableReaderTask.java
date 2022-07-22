@@ -114,7 +114,7 @@ public class ImportNetworkTableReaderTask extends AbstractTask implements CyNetw
 				|| fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) && workbook == null) {
 			try {
 				workbook = WorkbookFactory.create(is);
-			} catch (InvalidFormatException e) {
+			} catch (Exception e) {
 				throw new IllegalArgumentException("Could not read Excel file.  Maybe the file is broken?" , e);
 			} finally {
 				if (is != null)
