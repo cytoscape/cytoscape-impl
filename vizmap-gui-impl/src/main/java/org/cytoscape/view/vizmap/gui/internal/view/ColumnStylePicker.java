@@ -78,7 +78,7 @@ public class ColumnStylePicker {
 	}
 	
 	
-	public JPanel getColumnPanel() {
+	private JPanel getColumnPanel() {
 		if (columnPanel == null) {
 			columnPanel = new JPanel();
 			
@@ -113,11 +113,6 @@ public class ColumnStylePicker {
 		}
 		return columnPanel;
 	}
-	
-	public void updateColumnPickerWarnings() {
-		((ColumnStyleTableModel)getJTable().getModel()).fireTableDataChanged();
-	}
-	
 	
 	private JButton getAddButton() {
 		if (addButton == null) {
@@ -206,6 +201,20 @@ public class ColumnStylePicker {
 		for(var listener : columnSelectionListeners) {
 			listener.accept(column, action);
 		}
+	}
+	
+	
+	public void updateColumnPickerWarnings() {
+		int[] sel = getJTable().getSelectedRows();
+		
+		((ColumnStyleTableModel)getJTable().getModel()).fireTableDataChanged();
+		
+		var savedListeners = columnSelectionListeners;
+		columnSelectionListeners = List.of();
+		for(int row : sel) {
+			getJTable().addRowSelectionInterval(row, row);
+		}
+		columnSelectionListeners = savedListeners;
 	}
 	
 	
@@ -319,6 +328,8 @@ public class ColumnStylePicker {
 			var appManager = servicesUtil.get(CyApplicationManager.class);
 			var netTableManger = servicesUtil.get(CyNetworkTableManager.class);
 			var network = appManager.getCurrentNetwork();
+			if(network == null)
+				return false;
 			var table = netTableManger.getTable(network, tableType.type(), CyNetwork.DEFAULT_ATTRS);
 			if(table == null)
 				return false;

@@ -812,6 +812,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		vizMapperMainPanel.updateColumnPickerWarnings();
 	}
 	
+	
+	/**
+	 * Fires when the user clicks on a column in the ColumnStylePicker at the top of the Column tab.
+	 */
 	private void onSelectedColumnChanged(ColumnSpec col, ColumnStylePicker.Action action) {
 		if(col == null || action == null)
 			return;
