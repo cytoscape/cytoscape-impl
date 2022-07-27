@@ -152,6 +152,8 @@ public class DiscreteValueEditor<T> implements VisualPropertyValueEditor<T> {
 			return values;
 		
 		VisualLexicon lexicon = servicesUtil.get(VizMapperMediator.class).getCurrentVisualLexicon(vp);
+		if(lexicon == null)
+			return Set.of();
 		return (Set<T>) lexicon.getSupportedValueRange(vp);
 	}
 

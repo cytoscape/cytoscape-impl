@@ -939,6 +939,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	public VisualLexicon getCurrentVisualLexicon(VisualProperty<?> vp) {
 		Class<? extends CyIdentifiable> type = vp.getTargetDataType();
 		var re = vmProxy.getRenderingEngine(type);
+		if(re == null)
+			return null;
 		return re.getVisualLexicon();
 	}
 	

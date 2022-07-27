@@ -839,7 +839,20 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		
 		netMgr.reset();
 
-		// Destroy styles
+		// Destroy table styles. Must be done before destroying network styles because style associations refer to them.
+		var tvmMgr = serviceRegistrar.getService(TableVisualMappingManager.class);
+
+		for (var colView : tvmMgr.getAllVisualStylesMap().keySet()) {
+			tvmMgr.setVisualStyle(colView, null);
+		}
+		for (var association : tvmMgr.getAllStyleAssociations()) {
+			var netStyle = association.networkVisualStyle();
+			var colName = association.colName();
+			var tableType = association.tableType();
+			tvmMgr.setAssociatedVisualStyle(netStyle, tableType, colName, null);
+		}
+				
+		// Destroy network styles
 		logger.debug("Removing current visual styles...");
 		var vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
 		var defaultStyle = vmMgr.getDefaultVisualStyle();
@@ -849,7 +862,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 			if (!vs.equals(defaultStyle))
 				vmMgr.removeVisualStyle(vs);
 		}
-
+		
 		// Destroy tables
 		var tblMgr = serviceRegistrar.getService(CyTableManager.class);
 		tblMgr.reset();
