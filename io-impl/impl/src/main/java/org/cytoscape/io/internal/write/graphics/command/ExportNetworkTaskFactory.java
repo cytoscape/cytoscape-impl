@@ -11,8 +11,13 @@ public class ExportNetworkTaskFactory extends AbstractTaskFactory {
 		JPG,
 		PDF, 
 		SVG, 
-		PS
+		PS;
+		
+		public boolean isPDF() { return this == PDF; }
+		public boolean hasAllGraphicsDetails() { return this == PNG || this == JPG; }
+		public String nameLower() { return name().toLowerCase(); }
 	}
+	
 
 	private final CyServiceRegistrar registrar;
 	private final Format format;

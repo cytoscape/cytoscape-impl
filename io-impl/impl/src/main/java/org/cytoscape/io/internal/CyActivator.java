@@ -291,12 +291,19 @@ public class CyActivator extends AbstractCyActivator {
 		for(var format : ExportNetworkTaskFactory.Format.values()) {
 			var factory = new ExportNetworkTaskFactory(serviceRegistrar, format);
 			var props = new Properties();
-			String formatLower = format.name().toLowerCase();
-			props.setProperty(COMMAND, "export " + formatLower);
+			props.setProperty(COMMAND, "export" + " " + format.nameLower()); // "export" shows up in file search, don't change this
 			props.setProperty(COMMAND_NAMESPACE, "view");
 			props.setProperty(COMMAND_DESCRIPTION, "Export the current view to a " + format.name() + " file");
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
+					"Exports the current view to a graphics file and returns the path to the saved file. " +
+					(format.hasAllGraphicsDetails() ?
+						"To speed up image export for large networks use the option 'allGraphicsDetails=false'. " : "") +
+					(format.isPDF() ?
+						"For the PDF format, exporting text as font does not work for two-byte characters such as Chinese or Japanese. " +
+						"To avoid corrupted texts in the exported PDF, please set 'exportTextAsFont=false' " +
+						"when exporting networks including those non-English characters." : ""));
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{ \"file\": \"/Users/johndoe/Documents/MyNetwork." + formatLower + "\" }");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ \"file\": \"/Users/johndoe/Documents/MyNetwork." + format.nameLower() + "\" }");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 	}

@@ -68,4 +68,8 @@ public class ExportNetworkTunables {
 		return outputFile;
 	}
 	
+	public String getOutPath() {
+		return outputFile == null ? null : outputFile.getAbsolutePath();
+	}
+	
 }

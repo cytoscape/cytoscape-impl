@@ -3,14 +3,17 @@ package org.cytoscape.io.internal.write.graphics.command;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.json.JSONResult;
 
 /**
  * The Tasks in this package are just for use as commands. 
@@ -26,7 +29,7 @@ import org.cytoscape.work.TaskMonitor;
  * The solution was to move the tunables into separate XXXTunable classes that can be shared
  * by the command tasks and the Writers.
  */
-public abstract class AbstractExportNetworkImageTask extends AbstractTask {
+public abstract class AbstractExportNetworkImageTask extends AbstractTask implements ObservableTask {
 	
 	@ContainsTunables
 	public ExportNetworkTunables tunables;
@@ -56,4 +59,25 @@ public abstract class AbstractExportNetworkImageTask extends AbstractTask {
 		insertTasksAfterCurrentTask(writeTask, closeTask);
 	}
 	
+	
+	@Override
+	public List<Class<?>> getResultClasses() {
+		return List.of(String.class, JSONResult.class);
+	}
+	
+	
+	@Override
+	public <R> R getResults(Class<? extends R> type) {
+		var outPath = tunables.getOutPath();
+		
+		if(type == String.class) {
+			return outPath == null ? null : type.cast("Output File: " + outPath);
+		}
+		if(type == JSONResult.class) {
+			JSONResult res = () -> "{ \"file\": \"" + outPath + "\" }";
+			return type.cast(res);
+		}
+		
+		return null;
+	}
 }
