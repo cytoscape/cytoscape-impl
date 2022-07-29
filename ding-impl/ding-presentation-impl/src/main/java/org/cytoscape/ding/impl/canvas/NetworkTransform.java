@@ -29,6 +29,7 @@ public class NetworkTransform {
 	
 	// This transform is used to convert from window (ie mouse or image) coordinates to node coordinates.
 	private final AffineTransform windowXform = new AffineTransform();
+	
 	// This transform is used when painting, and it incorporates the dpiScaleFactor to render at higher resolution.
 	private final AffineTransform paintXform = new AffineTransform();
 	
@@ -157,6 +158,14 @@ public class NetworkTransform {
 		}
 	}
 	
+	public void setScaleFactorAndCenter(double scaleFactor, double x, double y) {
+		if(this.x != x || this.y != y || this.scaleFactor != scaleFactor) {
+			this.x = x;
+			this.y = y;
+			this.scaleFactor = scaleFactor;
+			updateTransform(); // Fires one event
+		}
+	}
 	
 	private void updateTransform() {
 		windowXform.setToTranslation(0.5d * width, 0.5d * height);

@@ -647,11 +647,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		
 		@Override
 		public void mouseWheelMoved(MouseWheelEvent e) {
-			// Clear the label selection if it is enabled
-			// if (labelSelectionEnabled()) 
-			// 	get(SelectionClickAndDragListener.class).resetLabelSelection();
-			
-			re.zoom(e.getWheelRotation());
+			re.zoomToPointer(e.getWheelRotation(), e.getX(), e.getY());
 			re.updateView(UpdateType.ALL_FULL);
 		}
 	}

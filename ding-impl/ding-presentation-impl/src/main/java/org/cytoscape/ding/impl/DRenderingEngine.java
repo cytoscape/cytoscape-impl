@@ -582,25 +582,54 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 	
 	
-	public void zoom(int ticks) {
+	public void zoomToCenter(int ticks) {
+		int centerX = getTransform().getWidth()  / 2;
+		int centerY = getTransform().getHeight() / 2;
+		zoomToPointer(ticks, centerX, centerY);
+	}
+	
+	public void zoomToPointer(int ticks, int imageX, int imageY) {
 		if(getViewModelSnapshot().isValueLocked(BasicVisualLexicon.NETWORK_SCALE_FACTOR))
 			return;
 		
-		double factor;
-		if (ticks < 0)
-			factor = 1.1; // scroll up, zoom in
-		else if (ticks > 0)
-			factor = 0.9; // scroll down, zoom out
-		else
+		double factor = mouseWheelTicksToZoomFactor(ticks);
+		if (factor == 1.0)
 			return;
 		
-		double scaleFactor = renderComponent.getTransform().getScaleFactor() * factor;
-		setZoom(scaleFactor);
+		var currentTransform = getTransform();
+		double newScaleFactor = currentTransform.getScaleFactor() * factor;
 		
+		// mouse point before zooming in node coords
+		var zoomPoint1 = currentTransform.getNodeCoordinates(imageX, imageY);
+		
+		// mouse point after zooming in node coords (no side effects)
+		var scaledTransform = new NetworkTransform(currentTransform);
+		scaledTransform.setScaleFactor(newScaleFactor);
+		var zoomPoint2 = scaledTransform.getNodeCoordinates(imageX, imageY); 
+		
+		// amount we have to pan the network to move the zoom point to where the mouse is
+		var dx = zoomPoint1.getX() - zoomPoint2.getX(); 
+		var dy = zoomPoint1.getY() - zoomPoint2.getY();
+		
+		// compute where the new center should be after the zoom
+		var newCenterX = scaledTransform.getCenterX() + dx;
+		var newCenterY = scaledTransform.getCenterY() + dy;
+		
+		// update the renderComponent (zoom and pan at the same time)
+		renderComponent.setScaleFactorAndCenter(newScaleFactor, newCenterX, newCenterY);
+		
+		// update the view model
 		getViewModel().batch(netView -> {
-			netView.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, scaleFactor);
+			netView.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, newScaleFactor);
+			netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, newCenterX);
+			netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, newCenterY);
 		}, false);
-		
+	}
+	
+	private static double mouseWheelTicksToZoomFactor(int ticks) {
+		final int maxSpeed = 3;
+		ticks = Math.max(-maxSpeed, Math.min(maxSpeed, ticks)); // clamp
+		return 1.0 - (ticks * 0.1); 
 	}
 	
 	
@@ -609,6 +638,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 	
 	public class Panner {
+		private Panner() {}
+		
 		private boolean panned = false;
 		
 		public void continuePan(double dx, double dy) {

@@ -172,6 +172,12 @@ public abstract class RenderComponent extends JComponent {
 		fastCanvas.getTransform().setScaleFactor(scaleFactor);
 	}
 	
+	public void setScaleFactorAndCenter(double scaleFactor, double x, double y) {
+		slowCanvas.getTransform().setScaleFactorAndCenter(scaleFactor, x, y);
+		fastCanvas.getTransform().setScaleFactorAndCenter(scaleFactor, x, y);
+	}
+	
+	
 	public void updateView(UpdateType updateType) {
 		// Run this on the EDT so there is no race condition with paint()
 		// Fast painting and slow painting don't happen concurrently.

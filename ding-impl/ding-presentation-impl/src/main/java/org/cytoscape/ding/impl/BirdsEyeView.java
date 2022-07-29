@@ -12,7 +12,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.print.Printable;
 import java.util.Arrays;
-import java.util.Properties;
 
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -217,7 +216,8 @@ public final class BirdsEyeView implements RenderingEngine<CyNetwork>, ContentCh
 		
 		@Override 
 		public void mouseWheelMoved(MouseWheelEvent e) {
-			re.getInputHandlerGlassPane().processMouseWheelEvent(e);
+			re.zoomToCenter(e.getWheelRotation());
+			re.updateView(UpdateType.ALL_FULL);
 		}
 	}
 	
