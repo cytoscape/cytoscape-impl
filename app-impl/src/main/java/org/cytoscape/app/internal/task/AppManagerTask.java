@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.WebApp;
@@ -22,7 +23,7 @@ import org.cytoscape.work.json.JSONResult;
 
 public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 	final CyServiceRegistrar serviceRegistrar;
-	final static String APP_STORE = "file:///Users/yxin/git/cytoscape/js4cytoscape/packages/js4cytoscape/index_v5.html";
+	private static final String APP_MANAGER_DIR = "appManager/index_v5.html";
 	private String url = null;
 
 	@Tunable (description="App name", context="nogui")
@@ -38,12 +39,14 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		final CyApplicationConfiguration applicationCfg = serviceRegistrar.getService(CyApplicationConfiguration.class);
+		String APP_MANAGER = "file:///" + (applicationCfg.getConfigurationDirectoryLocation()).toString() + "/" + APP_MANAGER_DIR;
 		WebApp webApp = null;
 		if (app != null) {
 			webApp = getWebApp(app);
-			url = APP_STORE+"apps/"+app;
+			url = APP_MANAGER+"apps/"+app;
 		} else {
-			url = APP_STORE;
+			url = APP_MANAGER;
 		}
 
 		// Do we have access to the CyBrowser?
