@@ -6,6 +6,11 @@ import static org.cytoscape.work.ServiceProperties.COMMAND_EXAMPLE_JSON;
 import static org.cytoscape.work.ServiceProperties.COMMAND_LONG_DESCRIPTION;
 import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
 import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
+import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
+import static org.cytoscape.work.ServiceProperties.IN_TOOL_BAR;
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+import static org.cytoscape.work.ServiceProperties.TITLE;
 
 import java.util.HashMap;
 import java.util.Properties;
@@ -32,6 +37,7 @@ import org.cytoscape.app.internal.net.server.LocalhostServerSocketFactory;
 import org.cytoscape.app.internal.net.server.OriginOptionsBeforeResponse;
 import org.cytoscape.app.internal.net.server.ScreenOriginsBeforeResponse;
 import org.cytoscape.app.internal.task.AppStoreTaskFactory;
+import org.cytoscape.app.internal.task.AppManagerTaskFactory;
 import org.cytoscape.app.internal.task.DisableTaskFactory;
 import org.cytoscape.app.internal.task.EnableTaskFactory;
 import org.cytoscape.app.internal.task.InformationTaskFactory;
@@ -158,16 +164,16 @@ import org.osgi.service.startlevel.StartLevel;
  * Copyright (C) 2008 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 2.1 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
+ *
+ * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
@@ -219,7 +225,7 @@ public class CyActivator extends AbstractCyActivator {
 		VisualMappingFunctionFactory vmfFactoryP = getService(bc ,VisualMappingFunctionFactory.class, "(mapping.type=passthrough)");
 
 		DataSourceManager dataSourceManager = getService(bc, DataSourceManager.class);
-		
+
 		// Start of core-task services
 
 		LoadVizmapFileTaskFactory loadVizmapFileTaskFactory = getService(bc, LoadVizmapFileTaskFactory.class);
@@ -290,13 +296,13 @@ public class CyActivator extends AbstractCyActivator {
 		// Command execution services
 		CommandExecutorTaskFactory cyCommandExecutorTaskFactory = getService(bc, CommandExecutorTaskFactory.class);
 		AvailableCommands availableCommands = getService(bc, AvailableCommands.class);
-		
+
 		CySwingAppAdapter cyAppAdapter = new CyAppAdapterImpl(
 				 applicationConfig,
 				 applicationManager,
                  eventHelper,
-                 groupAggregationManager, 
-                 groupFactory, 
+                 groupAggregationManager,
+                 groupFactory,
                  groupManager,
                  layoutAlgorithmManager,
                  networkFactory,
@@ -318,19 +324,19 @@ public class CyActivator extends AbstractCyActivator {
                  tableManager,
                  tableReaderManager,
                  tableWriterManager,
-                 cyVersion, 
+                 cyVersion,
                  dialogTaskManager,
                  panelTaskManager,
                  presentationWriterManager,
                  renderingEngineManager,
                  taskManager,
-                 undoSupport, 
+                 undoSupport,
                  tunablePropSerializerFactory,
-                 vmfFactoryC, 
-                 vmfFactoryD, 
-                 vmfFactoryP, 
+                 vmfFactoryC,
+                 vmfFactoryD,
+                 vmfFactoryP,
                  visualMappingManager,
-                 visualStyleFactory, 
+                 visualStyleFactory,
                  dataSourceManager,
                  // from core-task-api
                  loadVizmapFileTaskFactory,
@@ -385,37 +391,37 @@ public class CyActivator extends AbstractCyActivator {
                  groupNodesTaskFactory,
                  unGroupTaskFactory,
                  collapseGroupTaskFactory,
-                 expandGroupTaskFactory,	
+                 expandGroupTaskFactory,
                  unGroupNodesTaskFactory,
                  cyCommandExecutorTaskFactory,
                  availableCommands
         );
-		
+
 		registerService(bc, cyAppAdapter, CyAppAdapter.class);
 		registerService(bc, cyAppAdapter, CySwingAppAdapter.class);
-		
+
 		WebQuerier webQuerier = new WebQuerier(serviceRegistrar);
 		registerService(bc, webQuerier, WebQuerier.class);
-		
+
 		StartLevel startLevel = getService(bc, StartLevel.class);
-		
+
 		// Instantiate new manager
 		final AppManager appManager = new AppManager(cyAppAdapter, applicationConfig, cyVersion, eventHelper,
 				webQuerier, startLevel, bc);
 		registerService(bc, appManager, AppManager.class);
 		bc.addFrameworkListener(appManager);
-		
+
 		final DownloadSitesManager downloadSitesManager = new DownloadSitesManager(cyProperty);
-		
+
 		final UpdateManager updateManager = new UpdateManager(appManager, downloadSitesManager);
 		registerService(bc, updateManager, AppsFinishedStartingListener.class);
-		
+
 		AppManagerMediator appManagerMediator = new AppManagerMediator(appManager, downloadSitesManager, updateManager, serviceRegistrar);
 		registerService(bc, appManagerMediator, CyShutdownListener.class);
-		
+
 		final AppConflictHandlerFactory appConflictHandlerFactory = new AppConflictHandlerFactory();
 		registerService(bc,appConflictHandlerFactory,GUITunableHandlerFactory.class);
-		
+
 		// Actions
 		{
 			AppManagerAction action = new AppManagerAction(appManagerMediator);
@@ -430,7 +436,7 @@ public class CyActivator extends AbstractCyActivator {
 					appManagerMediator, serviceRegistrar);
 			registerService(bc, action, CyAction.class);
 		}
-		
+
 		// Start local server that reports app installation status to the app store when requested,
 		// also able to install an app when told by the app store
 		final AppGetResponder appGetResponder = new AppGetResponder(appManager, cyVersion);
@@ -447,7 +453,7 @@ public class CyActivator extends AbstractCyActivator {
 		YFilesChecker checker = new YFilesChecker(appManager, serviceRegistrar, openBrowser);
 		bc.addBundleListener(checker);
 		registerAllServices(bc, checker, new Properties());
-		
+
 		// Task Factories
 		{
 			AppStoreTaskFactory factory = new AppStoreTaskFactory(appManager, serviceRegistrar);
@@ -458,6 +464,15 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Open the app store page for an app.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+		{
+			AppManagerTaskFactory factory = new AppManagerTaskFactory(appManager, serviceRegistrar);
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_MENU, "Apps.App Manager");
+			props.setProperty(TITLE, "App Manager");
+			props.setProperty(MENU_GRAVITY, "1.0");
+			props.setProperty(IN_MENU_BAR, "true");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -490,7 +505,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Get app information");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Get information about an app.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, 
+			props.setProperty(COMMAND_EXAMPLE_JSON,
 					"{\"appName\": \"appname\""+
                     ", \"description\": \"App description\""+
                     ", \"version\": \"1.2.2\"}"
@@ -516,16 +531,16 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "List the available apps");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Return a list of the available apps in the app store");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, 
+			props.setProperty(COMMAND_EXAMPLE_JSON,
 				    "[{\"appName\":\"name\", "+
 				    "\"description\":\"descriptions\", "+
 				    "\"details\":\"app details\"}]"
 			);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
-		
+
 		final String DESCRIPTION_WARNING = "\nThe `description` field will be null if the App store has not been accessed from Cytoscape.";
-		
+
 		{
 			ListAppsTaskFactory factory = new ListAppsTaskFactory(appManager, AppStatus.DISABLED);
 			Properties props = new Properties();
@@ -535,7 +550,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_LONG_DESCRIPTION,
 					"Return a list of the disabled apps in the current installation." + DESCRIPTION_WARNING);
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, 
+			props.setProperty(COMMAND_EXAMPLE_JSON,
 				    "[{ \"appName\": \"appname\","+
 				    "\"version\": \"1.1.0\","+
 				    "\"description\": \"descriptions\","+
@@ -552,7 +567,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_LONG_DESCRIPTION,
 					"Return a list of the installed apps in the current installation." + DESCRIPTION_WARNING);
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, 
+			props.setProperty(COMMAND_EXAMPLE_JSON,
 				    "[{\"appName\": \"appname\","+
 				    "\"version\": \"1.1.0\","+
 				    "\"description\": \"descriptions\","+
@@ -569,7 +584,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_LONG_DESCRIPTION,
 					"Return a list of the uninstalled apps in the current installation." + DESCRIPTION_WARNING);
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, 
+			props.setProperty(COMMAND_EXAMPLE_JSON,
 				    "[{ \"appName\": \"appname\","+
 				    "\"version\": \"1.1.0\","+
 				    "\"description\": \"descriptions\","+
@@ -586,7 +601,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_LONG_DESCRIPTION,
 					"Return a list of the apps that have updates in the app store.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, 
+			props.setProperty(COMMAND_EXAMPLE_JSON,
 				    "[{ \"appName\": \"appname\","+
 				    "\"version\": \"1.1.10\","+
 				    "\"information\": \"app information\"}]"
@@ -644,7 +659,7 @@ public class CyActivator extends AbstractCyActivator {
 		YFilesChecker(AppManager manager, CyServiceRegistrar serviceRegistrar, OpenBrowser openBrowser) {
 			this.manager = manager;
 			this.serviceRegistrar = serviceRegistrar;
-			
+
 			for (String s : yFilesLayouts) {
 				actionMap.put(s, new YFilesAction("Install yFiles ".concat(s), openBrowser));
 			}
@@ -666,7 +681,7 @@ public class CyActivator extends AbstractCyActivator {
 		@Override
 		public void bundleChanged(BundleEvent bundleEvent) {
 			final String bundleName = bundleEvent.getBundle().getSymbolicName();
-			
+
 			if (bundleName.toLowerCase().contains(YFILES_TAG) && bundleEvent.getType() == BundleEvent.STARTED) {
 				for (CyAction action : actionMap.values()) {
 					serviceRegistrar.unregisterAllServices(action);
@@ -675,4 +690,3 @@ public class CyActivator extends AbstractCyActivator {
 		}
 	}
 }
-
