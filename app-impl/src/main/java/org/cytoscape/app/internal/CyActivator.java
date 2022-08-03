@@ -469,7 +469,7 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			AppManagerTaskFactory factory = new AppManagerTaskFactory(appManager, serviceRegistrar);
 			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, "Apps.App Manager");
+			props.setProperty(PREFERRED_MENU, "Apps");
 			props.setProperty(TITLE, "App Manager");
 			props.setProperty(MENU_GRAVITY, "1.0");
 			props.setProperty(IN_MENU_BAR, "true");
