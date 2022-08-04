@@ -14,7 +14,7 @@ public class InstallAppsFromFileTask extends AbstractTask {
 	final Collection<File> appFiles;
 	final AppManager appManager;
 	final boolean promptToReplace;
-	
+
 	public InstallAppsFromFileTask(final Collection<File> appFiles, final AppManager appManager, final boolean promptToReplace) {
 		this.appFiles = appFiles;
 		this.appManager = appManager;
@@ -25,7 +25,7 @@ public class InstallAppsFromFileTask extends AbstractTask {
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setTitle("Install from File");
 		taskMonitor.setTitle("");
-		
+
 		List<App> apps = new ArrayList<App>();
 		for(File appFile: appFiles) {
 			App app = appManager.getAppParser().parseApp(appFile);

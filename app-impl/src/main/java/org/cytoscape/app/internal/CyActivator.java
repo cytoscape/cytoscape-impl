@@ -38,6 +38,7 @@ import org.cytoscape.app.internal.net.server.OriginOptionsBeforeResponse;
 import org.cytoscape.app.internal.net.server.ScreenOriginsBeforeResponse;
 import org.cytoscape.app.internal.task.AppStoreTaskFactory;
 import org.cytoscape.app.internal.task.AppManagerTaskFactory;
+import org.cytoscape.app.internal.task.ManagerInstallAppsFromFileTaskFactory;
 import org.cytoscape.app.internal.task.DisableTaskFactory;
 import org.cytoscape.app.internal.task.EnableTaskFactory;
 import org.cytoscape.app.internal.task.InformationTaskFactory;
@@ -472,6 +473,15 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_MENU, "Apps");
 			props.setProperty(TITLE, "App Manager");
 			props.setProperty(MENU_GRAVITY, "1.0");
+			props.setProperty(IN_MENU_BAR, "true");
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+		{
+			ManagerInstallAppsFromFileTaskFactory factory = new ManagerInstallAppsFromFileTaskFactory(appManager, taskManager, serviceRegistrar);
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_MENU, "Apps");
+			props.setProperty(TITLE, "Install Apps From File");
+			props.setProperty(MENU_GRAVITY, "0.9");
 			props.setProperty(IN_MENU_BAR, "true");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
