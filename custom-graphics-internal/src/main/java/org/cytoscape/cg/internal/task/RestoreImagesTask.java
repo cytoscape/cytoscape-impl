@@ -52,7 +52,6 @@ public class RestoreImagesTask implements Task {
 	
 	// For image I/O, PNG is used as bitmap image format.
 	private static final String PNG_EXT = ".png";
-	private static final String SVG_EXT = ".svg";
 
 	// Default vectors
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
@@ -136,7 +135,7 @@ public class RestoreImagesTask implements Task {
 			var validFiles = new HashSet<File>();
 			
 			for (var file : imageFiles) {
-				if (!isSupportedImageFile(file))
+				if (!manager.isSupportedImageFile(file))
 					continue;
 
 				var fileName = file.getName();
@@ -244,21 +243,11 @@ public class RestoreImagesTask implements Task {
 	@Override
 	public void cancel() {
 	}
-
-	private boolean isSupportedImageFile(File file) {
-		return isPNG(file) || isSVG(file);
-	}
 	
-	private boolean isPNG(File file) {
+	private static boolean isPNG(File file) {
 		var name = file.getName().toLowerCase();
 		
 		return name.endsWith(PNG_EXT);
-	}
-	
-	private boolean isSVG(File file) {
-		var name = file.getName().toLowerCase();
-		
-		return name.endsWith(SVG_EXT);
 	}
 	
 	private final class LoadPNGImageTask implements Callable<BufferedImage> {
