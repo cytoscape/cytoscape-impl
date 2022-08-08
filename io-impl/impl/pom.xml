@@ -33,6 +33,7 @@
 						<Export-Package>!${bundle.namespace}.*</Export-Package>
 						<Private-Package>${bundle.namespace}.*</Private-Package>
 						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
+						<Embed-Dependency>gson</Embed-Dependency>
 					</instructions>
 				</configuration>
 			</plugin>
