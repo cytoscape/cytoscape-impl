@@ -606,7 +606,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		var stylesBtn = vizMapperMainPanel.getStylesBtn();
 		stylesBtn.addPropertyChangeListener("selectedStyle", evt -> onSelectedVisualStyleChanged(evt));
 		
-		columnChangeListener = this::onSelectedColumnChanged;
+		columnChangeListener = this::onColumnStylePickerAction;
 		vizMapperMainPanel.getColumnStylePnl().addColumnSelectionListener(columnChangeListener);
 //		vizMapperMainPanel.getColumnStylePnl().getAddButton(columnChangeListener);
 	}
@@ -785,14 +785,6 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	
 		var tableVMM = servicesUtil.get(TableVisualMappingManager.class);
 		
-		VisualStyle colVS;
-		if(selectedColumn == null) {
-			colVS = tableVMM.getDefaultVisualStyle();
-		} else {
-			var tableType = selectedColumn.tableType().type();
-			colVS = tableVMM.getAssociatedColumnVisualStyle(netVS, tableType, selectedColumn.columnName());
-		}
-		
 		var nodeColStyles = tableVMM.getAssociatedColumnVisualStyles(netVS, CyNode.class);
 		var edgeColStyles = tableVMM.getAssociatedColumnVisualStyles(netVS, CyEdge.class);
 		
@@ -805,6 +797,16 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		}
 		
 		columns.sort(Comparator.naturalOrder());
+		
+		if(selectedColumn == null && !columns.isEmpty()) {
+			selectedColumn = columns.get(0);
+		}
+
+		VisualStyle colVS = null;
+		if(selectedColumn != null) {
+			var tableType = selectedColumn.tableType().type();
+			colVS = tableVMM.getAssociatedColumnVisualStyle(netVS, tableType, selectedColumn.columnName());
+		}
 		
 		updateVisualPropertySheets(netVS, NETWORK_SHEET_TYPES, resetDefaultVisibleItems, rebuild);
 		updateVisualPropertySheets(colVS, TABLE_SHEET_TYPES, resetDefaultVisibleItems, true);
@@ -822,7 +824,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	/**
 	 * Fires when the user clicks on a column in the ColumnStylePicker at the top of the Column tab.
 	 */
-	private void onSelectedColumnChanged(ColumnSpec col, ColumnStylePicker.Action action) {
+	private void onColumnStylePickerAction(ColumnSpec col, ColumnStylePicker.Action action) {
 		if(col == null || action == null)
 			return;
 		
@@ -832,25 +834,30 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		var tableVMM = servicesUtil.get(TableVisualMappingManager.class);
 		var tableType = col.tableType().type();
 		
-		selectedColumn = col;
-		
 		if(action == Action.CREATE) {
+			selectedColumn = col;
 			VisualStyle colVS = tableVMM.getAssociatedColumnVisualStyle(netVS, tableType, col.columnName());
 			if(colVS == null) {
 				var visualStyleFactory = servicesUtil.get(VisualStyleFactory.class);
 				colVS = visualStyleFactory.createVisualStyle(col.columnName());
-				tableVMM.setAssociatedVisualStyle(netVS, tableType, col.columnName(), colVS);
+				tableVMM.setAssociatedVisualStyle(netVS, tableType, col.columnName(), colVS); // Fires event that calls updateColumnAssociation
 			}
 		} else if(action == Action.DELETE) {
-			tableVMM.setAssociatedVisualStyle(netVS, tableType, col.columnName(), null);
+			selectedColumn = null;
+			tableVMM.setAssociatedVisualStyle(netVS, tableType, col.columnName(), null); // Fires event that calls updateColumnAssociation
+		} else { // SELECT
+			selectedColumn = col;
+			VisualStyle colVS = tableVMM.getAssociatedColumnVisualStyle(netVS, tableType, col.columnName());
+			updateVisualPropertySheets(colVS, TABLE_SHEET_TYPES, false, true);
 		}
 	}
 	
 	
 	private void updateColumnAssociation(StyleAssociation association) {
-		updateAllVisualPropertySheets(association.networkVisualStyle(), false);
-		var colVS = association.columnVisualStyle();
-		updateVisualPropertySheets(colVS, TABLE_SHEET_TYPES, false, true);
+		var netVS = association.networkVisualStyle();
+		if(netVS == vmProxy.getCurrentNetworkVisualStyle()) {
+			updateAllVisualPropertySheets(netVS, false);
+		}
 	}
 	
 	private void updateVisualPropertySheets(
