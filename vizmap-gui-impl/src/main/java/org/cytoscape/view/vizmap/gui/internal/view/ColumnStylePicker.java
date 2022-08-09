@@ -155,9 +155,7 @@ public class ColumnStylePicker {
 			deleteButton.setFocusPainted(false);
 			deleteButton.setBorder(BorderFactory.createEmptyBorder());
 			
-			deleteButton.addActionListener(e -> {
-				fireColumnStyleEvent(Action.DELETE);
-			});
+			deleteButton.addActionListener(e -> fireColumnStyleEvent(Action.DELETE));
 		}
 		
 		return deleteButton;

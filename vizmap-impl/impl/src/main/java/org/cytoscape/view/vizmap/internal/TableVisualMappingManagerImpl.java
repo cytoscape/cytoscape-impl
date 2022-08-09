@@ -279,7 +279,8 @@ public class TableVisualMappingManagerImpl implements TableVisualMappingManager,
 		
 		if (changed) {
 			var eventHelper = registrar.getService(CyEventHelper.class);
-			eventHelper.fireEvent(new ColumnAssociatedVisualStyleSetEvent(this, networkVisualStyle, columnVisualStyle, colName, tableType));
+			var association = new StyleAssociation(networkVisualStyle, tableType, colName, columnVisualStyle);
+			eventHelper.fireEvent(new ColumnAssociatedVisualStyleSetEvent(this, association));
 		}
 	}
 	
