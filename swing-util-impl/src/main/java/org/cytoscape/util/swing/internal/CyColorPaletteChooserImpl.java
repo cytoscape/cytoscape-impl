@@ -17,8 +17,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.ScrollPaneConstants;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.colorchooser.AbstractColorChooserPanel;
@@ -224,9 +222,7 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 		if (initialColor != null)
 			model.setSelectedColor(initialColor);
 
-    JScrollPane colorPane = new JScrollPane(colorChooser, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
-		colorsTab.add(colorPane, BorderLayout.CENTER);
+		colorsTab.add(colorChooser, BorderLayout.CENTER);
 
 		var cbPanel = new JPanel();
 		cbPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));

@@ -15,9 +15,6 @@ import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.json.JSONResult;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-
 /**
  * The Tasks in this package are just for use as commands. 
  * 
@@ -74,13 +71,10 @@ public abstract class AbstractExportNetworkImageTask extends AbstractTask implem
 		var outPath = tunables.getOutPath();
 		
 		if(type == String.class) {
-			String res = outPath == null ? null : "Output File: " + outPath;
-			return type.cast(res);		
-		} else if(type == JSONResult.class) {
-			JsonObject jsonObj = new JsonObject();
-			jsonObj.addProperty("file", outPath);
-			String json = new Gson().toJson(jsonObj);
-			JSONResult res = () -> json;
+			return outPath == null ? null : type.cast("Output File: " + outPath);
+		}
+		if(type == JSONResult.class) {
+			JSONResult res = () -> "{ \"file\": \"" + outPath + "\" }";
 			return type.cast(res);
 		}
 		

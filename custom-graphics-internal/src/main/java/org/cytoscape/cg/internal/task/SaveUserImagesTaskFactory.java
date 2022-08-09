@@ -6,7 +6,6 @@ import org.cytoscape.cg.model.CustomGraphicsManager;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-@Deprecated
 public class SaveUserImagesTaskFactory extends AbstractTaskFactory {
 
 	private final File location;

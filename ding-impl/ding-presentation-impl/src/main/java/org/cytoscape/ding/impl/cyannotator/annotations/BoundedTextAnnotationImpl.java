@@ -7,10 +7,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.font.FontRenderContext;
-import java.awt.font.LineMetrics;
 import java.util.Map;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
@@ -49,7 +47,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	private static final int HPAD = 4;
 	private static final int VPAD = 4;
 	
-	private String[] text = new String[]{DEF_TEXT};
+	private String text;
 	private boolean shapeIsFit;
 	protected float fontSize;
 	protected float savedFontSize;
@@ -64,6 +62,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		super(re, 100, 100, usedForPreviews);
 		this.font = new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float) initialFontSize;
+		this.text = DEF_TEXT;
 		super.setSize(getTextWidth() + HPAD, getTextHeight() + VPAD);
 	}
 
@@ -71,11 +70,12 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		super(re, width, height, false);
 		this.font = new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float) initialFontSize;
+		this.text = DEF_TEXT;
 	}
 
 	public BoundedTextAnnotationImpl(BoundedTextAnnotationImpl c) {
 		super(c, 100, 100, false);
-		this.text = TextAnnotationImpl.splitString(c.getText());
+		this.text = c.getText();
 		this.textColor = c.getTextColor();
 		this.fontSize = (float) c.getFontSize();
 		this.font = c.getFont();
@@ -97,7 +97,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 			double zoom
 	) {
 		super(re, x, y, rotation, shapeType, width, height, fillColor, edgeColor, edgeThickness);
-		this.text = TextAnnotationImpl.splitString(text);
+		this.text = text;
 		this.font = new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float) initialFontSize;
 	}
@@ -112,14 +112,14 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 			font = font.deriveFont(font.getSize2D() / (float) zoom);
 
 		this.textColor = (Color) ViewUtils.getColor(argMap, COLOR, Color.BLACK);
-		text = TextAnnotationImpl.splitString(ViewUtils.getString(argMap, TEXT, ""));
+		this.text = ViewUtils.getString(argMap, TEXT, "");
 		this.fontSize = font.getSize();
 
 		if (argMap.containsKey(NAME)) {
 			this.name = ViewUtils.getString(argMap, NAME, "");
 		} else {
-      if (name == null && text != null && !text[0].trim().isEmpty())
-        name = text[0].trim();
+			if (text != null && !text.trim().isEmpty())
+				name = text.trim();
 		}
 
 		if (!argMap.containsKey(BoundedTextAnnotation.WIDTH)) {
@@ -148,7 +148,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	public Map<String,String> getArgMap() {
 		var argMap = super.getArgMap();
 		argMap.put(TYPE, BoundedTextAnnotation.class.getName());
-		argMap.put(TEXT, TextAnnotationImpl.joinString(text));
+		argMap.put(TEXT, this.text);
 		argMap.put(COLOR, ViewUtils.convertColor((Paint) this.textColor));
 		argMap.put(FONTFAMILY, this.font.getFamily());
 		argMap.put(FONTSIZE, Integer.toString(this.font.getSize()));
@@ -222,44 +222,31 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		var originalComposite = g2.getComposite();
 		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
 
-		float halfWidth = (float) (getWidth() - getTextWidth()) / 2;
-		float halfHeight = (float) (getHeight() - getTextHeight() / 2); // Note, this is + because we start at the baseline
+		int halfWidth = (int) (getWidth() - getTextWidth()) / 2;
+		int halfHeight = (int) (getHeight() + getTextHeight() / 2) / 2; // Note, this is + because we start at the baseline
 		var currentTransform = g2.getTransform();
-
 		
-    float yValue = (float)(getY()+getHeight()/2-getTextHeight()/2);
 		if (rotation != 0) {
 			g2.rotate(Math.toRadians(rotation), (int) (getX() + getWidth() / 2), (int) (getY() + getHeight() / 2));
 			g2.setClip(getBounds());
-      // g2.drawString(text, (int) getX() + halfWidth, (int) getY() + halfHeight);
-      for (String t: text) {
-        LineMetrics metrics = font.getLineMetrics(t, new FontRenderContext(null, true, true));
-        float ascent = metrics.getAscent();
-        g2.drawString(t, (float) getX()+halfWidth, yValue + ascent);
-        yValue += metrics.getHeight();
-      }
+			g2.drawString(text, (int) getX() + halfWidth, (int) getY() + halfHeight);
 			g2.setTransform(currentTransform);
 		} else {
 			g2.setClip(getBounds());
-      for (String t: text) {
-        LineMetrics metrics = font.getLineMetrics(t, new FontRenderContext(null, true, true));
-        float ascent = metrics.getAscent();
-        g2.drawString(t, (float) getX()+halfWidth, yValue + ascent);
-        yValue += metrics.getHeight();
-      }
+			g2.drawString(text, (int) getX() + halfWidth, (int) getY() + halfHeight);
 		}
+
 		g2.setComposite(originalComposite);
 	}
 
 	@Override
 	public void setText(String text) {
-    String[] lines = TextAnnotationImpl.splitString(text);
-		if (!Objects.equals(lines, this.text)) {
-			var oldValue = TextAnnotationImpl.joinString(this.text);
-			this.text = lines;
+		if (!Objects.equals(text, this.text)) {
+			var oldValue = this.text;
+			this.text = text;
 
 			if (updateNameFromText)
-				name = text != null ? this.text[0].trim() : "";
+				name = text != null ? text.trim() : "";
 
 			if (shapeIsFit)
 				fitShapeToText();
@@ -272,7 +259,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	@Override
 	public String getText() {
-		return TextAnnotationImpl.joinString(text);
+		return this.text;
 	}
 
 	@Override
@@ -382,7 +369,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	@Override
 	protected String getDefaultName() {
-		return text != null ? text[0] : DEF_TEXT;
+		return text != null ? text : DEF_TEXT;
 	}
 
 	private void updateBounds() {
@@ -398,24 +385,11 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	}
 
 	double getTextWidth() {
-		if (text == null) 
-			return 0.0;
-		
-    // We need to find the longest text string
-    double width = 0.0;
-    for (String t: text) 
-      width = Math.max(width,font.getStringBounds(t, new FontRenderContext(null, true, true)).getWidth());
-    return width;
+		return font.getStringBounds(text, new FontRenderContext(null, true, true)).getWidth();
 	}
 
 	double getTextHeight() {
-		if (text == null) 
-			return 0.0;
-		
-    double height = 0.0;
-    for (String t: text) 
-		  height += font.getStringBounds(t, new FontRenderContext(null, true, true)).getHeight();
-    return height;
+		return font.getStringBounds(text, new FontRenderContext(null, true, true)).getHeight();
 	}
 
 	Font getArgFont(Map<String, String> argMap) {

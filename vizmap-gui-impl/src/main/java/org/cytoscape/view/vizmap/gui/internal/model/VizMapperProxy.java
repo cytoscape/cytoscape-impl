@@ -52,8 +52,6 @@ import org.cytoscape.view.vizmap.events.VisualStyleAddedEvent;
 import org.cytoscape.view.vizmap.events.VisualStyleAddedListener;
 import org.cytoscape.view.vizmap.events.VisualStyleChangedEvent;
 import org.cytoscape.view.vizmap.events.VisualStyleChangedListener;
-import org.cytoscape.view.vizmap.events.table.ColumnAssociatedVisualStyleSetEvent;
-import org.cytoscape.view.vizmap.events.table.ColumnAssociatedVisualStyleSetListener;
 import org.cytoscape.view.vizmap.gui.internal.VisualStyleSet;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
@@ -88,7 +86,7 @@ public class VizMapperProxy extends Proxy
 							implements VisualStyleAddedListener, VisualStyleAboutToBeRemovedListener,
 							  		   VisualStyleChangedListener, SetCurrentVisualStyleListener,
 							  		   SetCurrentNetworkListener, SetCurrentNetworkViewListener, 
-							  		   ColumnAssociatedVisualStyleSetListener, SessionAboutToBeLoadedListener, 
+							  		   /*ColumnVisualStyleSetListener, */ SessionAboutToBeLoadedListener, 
 							  		   SessionLoadedListener, CyStartListener {
 
 	public static final String NAME = "VisualStyleProxy";
@@ -443,12 +441,6 @@ public class VizMapperProxy extends Proxy
 			sendNotification(CURRENT_VISUAL_STYLE_CHANGED, e.getVisualStyle());
 	}
 	
-	@Override
-	public void handleEvent(ColumnAssociatedVisualStyleSetEvent e) {
-		if (cytoscapeStarted && !loadingSession) {
-			sendNotification(TABLE_ASSOCIATED_VISUAL_STYLE_UPDATED, e.getAssociation());
-		}
-	}
 	
 	@Override
 	public void handleEvent(final SetCurrentNetworkEvent e) {

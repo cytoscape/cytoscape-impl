@@ -6,11 +6,9 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.font.FontRenderContext;
-import java.awt.font.LineMetrics;
 import java.awt.geom.Rectangle2D;
 import java.util.Map;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
@@ -47,10 +45,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	
 	protected static final Font DEF_FONT = new Font("Arial", Font.PLAIN, 12);
 
-  // public static final String splitPattern = "[^" + Pattern.quote("\\")+"]"+Pattern.quote("\\n");
-  public static final String splitPattern = "(?<!\\\\)"+Pattern.quote("\\n");
-
-	private String[] text = new String[]{DEF_TEXT};
+	private String text = DEF_TEXT;
 	private Font font = DEF_FONT;
 	private float fontSize = DEF_FONT.getSize();
 	private Color textColor = Color.BLACK;
@@ -67,7 +62,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	public TextAnnotationImpl(TextAnnotationImpl c, boolean usedForPreviews) {
 		super(c, usedForPreviews);
 		
-		text = splitString(c.getText());
+		text = c.getText();
 		textColor = c.getTextColor();
 		fontSize = (float) c.getFontSize();
 		
@@ -88,17 +83,17 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	) {
 		super(re, x, y, rotation);
 
-		this.text = splitString(text);
+		this.text = text;
 		setSize(getAnnotationWidth(), getAnnotationHeight());
 	}
 
 	public TextAnnotationImpl(DRenderingEngine re, Map<String,String> argMap) {
 		super(re, argMap);
 		
-		if (name == null && text != null && !text[0].trim().isEmpty())
-			name = text[0].trim();
+		if (name == null && text != null && !text.trim().isEmpty())
+			name = text.trim();
 		
-		text = splitString(ViewUtils.getString(argMap, TEXT, ""));
+		text = ViewUtils.getString(argMap, TEXT, "");
 		
 		textColor = (Color) ViewUtils.getColor(argMap, COLOR, Color.BLACK);
 		
@@ -116,7 +111,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	public Map<String,String> getArgMap() {
 		var argMap = super.getArgMap();
 		argMap.put(TYPE, TextAnnotation.class.getName());
-		argMap.put(TEXT, joinString(text));
+		argMap.put(TEXT, text);
 		argMap.put(COLOR, ViewUtils.convertColor(textColor));
 		argMap.put(FONTFAMILY, font.getFamily());
 		argMap.put(FONTSIZE, Integer.toString(font.getSize()));
@@ -171,13 +166,12 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 
 	@Override
 	public void setText(String text) {
-    String[] lines = splitString(text);
-		if (!Objects.equals(lines, this.text)) {
-			var oldValue = joinString(this.text);
-			this.text = lines;
+		if (!Objects.equals(text, this.text)) {
+			var oldValue = this.text;
+			this.text = text;
 			
 			if (updateNameFromText)
-				name = text != null ? this.text[0].trim() : "";
+				name = text != null ? text.trim() : "";
 			
 			if (!usedForPreviews)
 				setSize(getAnnotationWidth(), getAnnotationHeight());
@@ -189,7 +183,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 
 	@Override
 	public String getText() {
-		return joinString(text);
+		return text;
 	}
 
 	@Override
@@ -350,26 +344,16 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		var originalComposite = g2.getComposite();
 		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
 
+		float ascent = font.getLineMetrics(text, new FontRenderContext(null, true, true)).getAscent();
 		var currentTransform = g2.getTransform();
-    float yValue = (float)getY();
 		if (rotation != 0) {
 			g2.rotate(Math.toRadians(rotation), (int) (getX() + getWidth() / 2), (int) (getY() + getHeight() / 2));
 			g2.setClip(getBounds());
-      for (String t: text) {
-        LineMetrics metrics = font.getLineMetrics(t, new FontRenderContext(null, true, true));
-        float ascent = metrics.getAscent();
-        g2.drawString(t, (float) getX(), yValue + ascent);
-        yValue += metrics.getHeight();
-      }
+			g2.drawString(text, (float) getX(), (float) getY() + ascent);
 			g2.setTransform(currentTransform);
 		} else {
 			g2.setClip(getBounds());
-      for (String t: text) {
-        LineMetrics metrics = font.getLineMetrics(t, new FontRenderContext(null, true, true));
-        float ascent = metrics.getAscent();
-        g2.drawString(t, (float) getX(), yValue + ascent);
-        yValue += metrics.getHeight();
-      }
+			g2.drawString(text, (float) getX(), (float) getY() + ascent);
 		}
 
 		g2.setComposite(originalComposite);
@@ -378,7 +362,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	
 	@Override
 	protected String getDefaultName() {
-		return text != null ? text[0] : DEF_TEXT;
+		return text != null ? text : DEF_TEXT;
 	}
 
 	private double getAnnotationWidth() {
@@ -393,36 +377,13 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		if (text == null) 
 			return 0.0;
 		
-    // We need to find the longest text string
-    double width = 0.0;
-    for (String t: text) 
-      width = Math.max(width,font.getStringBounds(t, new FontRenderContext(null, true, true)).getWidth());
-    return width;
+		return font.getStringBounds(text, new FontRenderContext(null, true, true)).getWidth();
 	}
 
 	double getTextHeight() {
 		if (text == null) 
 			return 0.0;
 		
-    double height = 0.0;
-    for (String t: text) 
-		  height += font.getStringBounds(t, new FontRenderContext(null, true, true)).getHeight();
-    return height;
+		return font.getStringBounds(text, new FontRenderContext(null, true, true)).getHeight();
 	}
-
-  /**
-   * Split string with possible newlines into separate lines.  This scans for actual newlines
-   * as well as '\n' characters
-   */
-  static protected String[] splitString(String str) {
-    String[] res = str.split("\n");   // First, try splitting on real newlines
-    if (res.length > 1) return res;
-
-    // OK, now split on "\n" characters, but allow escaping
-    return str.split(splitPattern);
-  }
-
-  static protected String joinString(String[] lines) {
-    return String.join("\\n", lines);
-  }
 }

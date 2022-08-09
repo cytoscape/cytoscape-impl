@@ -50,11 +50,6 @@ public class UpdateTask extends AbstractAppTask implements ObservableTask {
 		updateList = new ArrayList<>();
 
 		Set<Update> updates = updateManager.getUpdates();
-    if (updates.size() == 0) {
-      error = "All apps are current: nothing to update";
-      taskMonitor.showMessage(TaskMonitor.Level.ERROR, error);
-      return;
-    }
 		if (app.equals("all")) {
 			updateList.addAll(updates);
 		} else {
@@ -71,7 +66,7 @@ public class UpdateTask extends AbstractAppTask implements ObservableTask {
 		}
 
 		taskMonitor.setTitle("Updating apps");
-		insertTasksAfterCurrentTask(new InstallUpdatesTask(updateList, appManager));
+		insertTasksAfterCurrentTask(new InstallUpdatesTask(updates, appManager));
 	}
 
 	@Override
@@ -84,9 +79,8 @@ public class UpdateTask extends AbstractAppTask implements ObservableTask {
 	public <R> R getResults(Class<? extends R> type) {
 		if (type.equals(JSONResult.class)) {
 			JSONResult res = () -> {
-        if (error != null) {
+        if (error != null)
           return "{\"error\": \""+(R)error+"\"}" ;
-        }
 				String str = "[";
 				int count = updateList.size();
 				int index = 0;
@@ -94,7 +88,7 @@ public class UpdateTask extends AbstractAppTask implements ObservableTask {
 					App appObject = update.getApp();
 					str += "{\"appName\": \""+appObject.getAppName()+"\"";
 					str += ",\"version\": \""+appObject.getVersion()+"\"}";
-					if (index < updateList.size()-1)
+					if (index < updateList.size())
 						str += ",";
 					index++;
 				}

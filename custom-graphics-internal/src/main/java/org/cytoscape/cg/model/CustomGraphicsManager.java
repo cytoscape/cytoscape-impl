@@ -1,6 +1,5 @@
 package org.cytoscape.cg.model;
 
-import java.io.File;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Map;
@@ -58,6 +57,4 @@ public interface CustomGraphicsManager {
 	
 	void addMissingImageCustomGraphics(MissingImageCustomGraphics<?> cg);
 	Collection<MissingImageCustomGraphics<?>> reloadMissingImageCustomGraphics();
-	
-	boolean isSupportedImageFile(File file);
 }
