@@ -48,7 +48,7 @@ public class ManagerInstallAppsFromFileTask extends AbstractTask {
 		Collection<FileChooserFilter> fileChooserFilters = new LinkedList<FileChooserFilter>();
 		fileChooserFilters.add(fileChooserFilter);
     JDialog wrapper = new JDialog((Window)null);
-    wrapper.setVisible(true);
+    wrapper.setVisible(false);
 		final File[] files = fileUtil.getFiles(wrapper, "Choose file(s)", FileUtil.LOAD, FileUtil.LAST_DIRECTORY,
 				"Install", true, fileChooserFilters);
 
