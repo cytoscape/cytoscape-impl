@@ -58,7 +58,8 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 			// Yes, use it!
 			Map<String, Object> args = new HashMap<>();
 			args.put("url",url);
-			args.put("id","AppStore");
+			args.put("id","App Manager");
+			args.put("title","App Manager");
 			TaskIterator ti = commandTF.createTaskIterator("cybrowser","show",args, null);
 			taskManager.execute(ti);
 		} else {
