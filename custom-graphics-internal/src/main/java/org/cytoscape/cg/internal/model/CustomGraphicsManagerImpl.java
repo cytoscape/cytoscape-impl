@@ -19,7 +19,7 @@ import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.events.CyStartEvent;
 import org.cytoscape.application.events.CyStartListener;
 import org.cytoscape.cg.internal.image.MissingImageCustomGraphics;
-import org.cytoscape.cg.internal.task.RestoreImagesTaskFactory;
+import org.cytoscape.cg.internal.task.RestoreImagesTask;
 import org.cytoscape.cg.internal.task.SaveGraphicsToSessionTaskFactory;
 import org.cytoscape.cg.model.AbstractURLImageCustomGraphics;
 import org.cytoscape.cg.model.CGComparator;
@@ -49,6 +49,7 @@ import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
@@ -208,7 +209,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 		else
 			return null;
 	}
-
+	
 	@Override
 	public Collection<CyCustomGraphics> getAllCustomGraphics() {
 		return getAllCustomGraphics(false);
@@ -294,28 +295,8 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 
 	@Override
 	public void handleEvent(CyStartEvent e) {
-		// Restore Custom Graphics from the directory.
-		var taskFactory = new RestoreImagesTaskFactory(defaultImageURLs, imageHomeDirectory, serviceRegistrar);
-		serviceRegistrar.getService(DialogTaskManager.class).execute(taskFactory.createTaskIterator());
+		restoreImages();
 	}
-
-//	@Override
-//	public void handleEvent(CyShutdownEvent e) {
-//		// Persist images
-//		logger.info("Start Saving images to: " + imageHomeDirectory);
-//
-//		// Create Task
-//		var factory = new SaveUserImagesTaskFactory(imageHomeDirectory, this);
-//
-//		try {
-//			// FIXME how this section can wait until everything is done?
-//			serviceRegistrar.getService(DialogTaskManager.class).execute(factory.createTaskIterator());
-//		} catch (Exception e1) {
-//			logger.error("Could not save images to disk.", e1);
-//		}
-//
-//		logger.info("========== Image saving process finished =============");
-//	}
 
 	@Override
 	public void handleEvent(SessionAboutToBeSavedEvent e) {
@@ -333,6 +314,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	public void handleEvent(SessionAboutToBeLoadedEvent e) {
 		// Since version 3.10, the current images are removed before the new ones are restored!
 		removeAllCustomGraphics();
+		IDGenerator.getIDGenerator().initCounter(0L);
 		
 		// Delete the actual image files from the TEMP folder
 		var dir = new File(System.getProperty(TEMP_DIR));
@@ -342,6 +324,9 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 			if (isSupportedImageFile(f))
 				f.delete();
 		}
+		
+		// But we still have to restore the sample images
+		restoreImages();
 	}
 
 	@Override
@@ -357,11 +342,11 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 				
 				if (files != null && files.size() != 0) {
 					// get parent directory
-					var parent = files.get(0).getParentFile();
-					var taskFactory = new RestoreImagesTaskFactory(new HashSet<>(), parent, serviceRegistrar);
-					var taskIterator = taskFactory.createTaskIterator();
+					var imagesDir = files.get(0).getParentFile();
 					
+					var taskIterator = new TaskIterator(new RestoreImagesTask(new HashSet<>(), imagesDir, serviceRegistrar));
 					taskIterator.append(new ReloadMissingImagesTask(sess.getNetworkViews()));
+					
 					serviceRegistrar.getService(DialogTaskManager.class).execute(taskIterator);
 				}
 			}
@@ -404,6 +389,12 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 		var name = file.getName().toLowerCase();
 		
 		return file.isFile() && (name.endsWith(PNG_EXT) || name.endsWith(SVG_EXT));
+	}
+	
+	private void restoreImages() {
+		// Restore Custom Graphics from the directory.
+		var taskIterator = new TaskIterator(new RestoreImagesTask(defaultImageURLs, imageHomeDirectory, serviceRegistrar));
+		serviceRegistrar.getService(DialogTaskManager.class).execute(taskIterator);
 	}
 	
 	private class ReloadMissingImagesTask implements Task {
