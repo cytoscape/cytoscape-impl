@@ -481,7 +481,7 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "Apps");
 			props.setProperty(TITLE, "Install Apps From File");
-			props.setProperty(MENU_GRAVITY, "0.9");
+			props.setProperty(MENU_GRAVITY, "1.1");
 			props.setProperty(IN_MENU_BAR, "true");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
