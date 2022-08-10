@@ -20,6 +20,10 @@ import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @deprecated The concept of user images was removed in version 3.10 (they are now "session" images only)
+ */
+@Deprecated
 public class SaveUserImagesTask implements Task {
 
 	private final File location;

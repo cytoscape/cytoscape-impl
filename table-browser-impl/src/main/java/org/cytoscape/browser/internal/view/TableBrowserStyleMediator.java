@@ -90,9 +90,10 @@ public class TableBrowserStyleMediator implements
 	
 	@Override
 	public void handleEvent(ColumnAssociatedVisualStyleSetEvent e) {
-		Set<CyColumnView> columns = findColumnsWithAssociatedStyle(e.getNetworkVisualStyle(), e.getColumnName(), e.getTableType());
+		var association = e.getAssociation();
+		Set<CyColumnView> columns = findColumnsWithAssociatedStyle(association.networkVisualStyle(), association.colName(), association.tableType());
 		for(CyColumnView colView : columns) {
-			updateColumn(colView, e.getColumnVisualStyle());
+			updateColumn(colView, association.columnVisualStyle());
 		}
 	}
 	

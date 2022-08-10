@@ -38,6 +38,7 @@ public class DisableTask extends AbstractAppTask implements ObservableTask {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		if (app == null) {
+			error = "App name not provided";
 			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "App name not provided");
 			return;
 		}

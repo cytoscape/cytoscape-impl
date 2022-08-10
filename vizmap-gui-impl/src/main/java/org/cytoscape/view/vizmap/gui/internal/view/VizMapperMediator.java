@@ -61,6 +61,7 @@ import org.cytoscape.view.model.events.UpdateNetworkPresentationListener;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.DefaultVisualizableVisualProperty;
 import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
+import org.cytoscape.view.vizmap.StyleAssociation;
 import org.cytoscape.view.vizmap.TableVisualMappingManager;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
@@ -216,7 +217,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 							 CURRENT_VISUAL_STYLE_CHANGED,
 							 VISUAL_STYLE_UPDATED,
 							 CURRENT_NETWORK_VIEW_CHANGED,
-							 VISUAL_STYLE_NAME_CHANGED};
+							 VISUAL_STYLE_NAME_CHANGED,
+							 TABLE_ASSOCIATED_VISUAL_STYLE_UPDATED};
 	}
 	
 	@Override
@@ -292,6 +294,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 					vizMapperMainPanel.getStylesBtn().update();
 					vizMapperMainPanel.getStylesPanelProvider().update((VisualStyle) body);
 				});
+				break;
+			case TABLE_ASSOCIATED_VISUAL_STYLE_UPDATED:
+				var association = (StyleAssociation) body;
+				updateColumnAssociation(association);
 				break;
 		}
 	}
@@ -834,18 +840,18 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				var visualStyleFactory = servicesUtil.get(VisualStyleFactory.class);
 				colVS = visualStyleFactory.createVisualStyle(col.columnName());
 				tableVMM.setAssociatedVisualStyle(netVS, tableType, col.columnName(), colVS);
-				updateAllVisualPropertySheets(netVS, false);
 			}
 		} else if(action == Action.DELETE) {
 			tableVMM.setAssociatedVisualStyle(netVS, tableType, col.columnName(), null);
-			selectedColumn = null;
-			updateAllVisualPropertySheets(netVS, false);
-		} else { // UPDATE
-			VisualStyle colVS = tableVMM.getAssociatedColumnVisualStyle(netVS, tableType, col.columnName());
-			updateVisualPropertySheets(colVS, TABLE_SHEET_TYPES, false, true);
 		}
 	}
 	
+	
+	private void updateColumnAssociation(StyleAssociation association) {
+		updateAllVisualPropertySheets(association.networkVisualStyle(), false);
+		var colVS = association.columnVisualStyle();
+		updateVisualPropertySheets(colVS, TABLE_SHEET_TYPES, false, true);
+	}
 	
 	private void updateVisualPropertySheets(
 			VisualStyle vs,
