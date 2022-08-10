@@ -438,23 +438,6 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, action, CyAction.class);
 		}
 
-		// Start local server that reports app installation status to the app store when requested,
-		// also able to install an app when told by the app store
-		final AppGetResponder appGetResponder = new AppGetResponder(appManager, cyVersion);
-		final CyHttpd httpd = (new CyHttpdFactoryImpl()).createHttpd(new LocalhostServerSocketFactory(2607));
-		httpd.addBeforeResponse(new ScreenOriginsBeforeResponse(WebQuerier.DEFAULT_APP_STORE_URL));
-		httpd.addBeforeResponse(new OriginOptionsBeforeResponse("x-csrftoken"));
-		httpd.addAfterResponse(new AddAllowOriginHeader());
-		httpd.addResponder(appGetResponder.new StatusResponder());
-		httpd.addResponder(appGetResponder.new InstallResponder());
-		httpd.start();
-
-        // Special case: handle yFiles app options
-		final OpenBrowser openBrowser = getService(bc, OpenBrowser.class);
-		YFilesChecker checker = new YFilesChecker(appManager, serviceRegistrar, openBrowser);
-		bc.addBundleListener(checker);
-		registerAllServices(bc, checker, new Properties());
-
 		// Task Factories
 		{
 			AppStoreTaskFactory factory = new AppStoreTaskFactory(appManager, serviceRegistrar);
