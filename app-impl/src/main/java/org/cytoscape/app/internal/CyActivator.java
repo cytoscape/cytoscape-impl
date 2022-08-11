@@ -20,10 +20,6 @@ import java.util.stream.Collectors;
 import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.app.event.AppsFinishedStartingEvent;
 import org.cytoscape.app.event.AppsFinishedStartingListener;
-import org.cytoscape.app.internal.action.AppManagerAction;
-import org.cytoscape.app.internal.action.CitationsAction;
-import org.cytoscape.app.internal.action.UpdateNotificationAction;
-import org.cytoscape.app.internal.action.YFilesAction;
 import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.App.AppStatus;
 import org.cytoscape.app.internal.manager.AppManager;
@@ -416,20 +412,6 @@ public class CyActivator extends AbstractCyActivator {
 		final AppConflictHandlerFactory appConflictHandlerFactory = new AppConflictHandlerFactory();
 		registerService(bc,appConflictHandlerFactory,GUITunableHandlerFactory.class);
 
-		// Actions
-		{
-			AppManagerAction action = new AppManagerAction(appManagerMediator);
-			registerService(bc, action, CyAction.class);
-		}
-		{
-			CitationsAction action = new CitationsAction(webQuerier, appManager, serviceRegistrar);
-			registerService(bc, action, CyAction.class);
-		}
-		{
-			UpdateNotificationAction action = new UpdateNotificationAction(appManager, updateManager,
-					appManagerMediator, serviceRegistrar);
-			registerService(bc, action, CyAction.class);
-		}
 
 		// Task Factories
 		{
@@ -645,10 +627,6 @@ public class CyActivator extends AbstractCyActivator {
 		YFilesChecker(AppManager manager, CyServiceRegistrar serviceRegistrar, OpenBrowser openBrowser) {
 			this.manager = manager;
 			this.serviceRegistrar = serviceRegistrar;
-
-			for (String s : yFilesLayouts) {
-				actionMap.put(s, new YFilesAction("Install yFiles ".concat(s), openBrowser));
-			}
 		}
 
 		@Override

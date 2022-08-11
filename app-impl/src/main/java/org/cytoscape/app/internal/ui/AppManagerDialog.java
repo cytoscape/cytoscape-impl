@@ -34,16 +34,16 @@ import org.cytoscape.work.swing.DialogTaskManager;
  * Copyright (C) 2008 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 2.1 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
+ *
+ * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
@@ -55,11 +55,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
 @SuppressWarnings("serial")
 public class AppManagerDialog extends JDialog {
 
-	private CheckForUpdatesPanel checkForUpdatesPanel;
-	private CurrentlyInstalledAppsPanel currentlyInstalledAppsPanel;
-	private InstallAppsPanel installAppsPanel;
 	private JTabbedPane mainTabbedPane;
-	private NetworkErrorPanel networkErrorPanel;
 
 	private ManageDownloadSitesDialog manageDownloadSitesDialog;
 	private DownloadSitesManager downloadSitesManager;
@@ -82,8 +78,6 @@ public class AppManagerDialog extends JDialog {
 		this.updateManager = updateManager;
 		this.serviceRegistrar = serviceRegistrar;
 
-		initComponents();
-
 		// Create new manage download sites dialog
 		manageDownloadSitesDialog = new ManageDownloadSitesDialog(parent, downloadSitesManager);
 		manageDownloadSitesDialog.setLocationRelativeTo(this);
@@ -91,31 +85,17 @@ public class AppManagerDialog extends JDialog {
 		setLocationRelativeTo(parent);
 		appManager.setAppManagerDialog(this);
 	}
-   
+
 	private void initComponents() {
     	setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("App Manager");
-    	
-        networkErrorPanel = new NetworkErrorPanel(serviceRegistrar.getService(IconManager.class));
-        networkErrorPanel.setVisible(false);
+
 
 		final FileUtil fileUtil = serviceRegistrar.getService(FileUtil.class);
 		final DialogTaskManager taskManager = serviceRegistrar.getService(DialogTaskManager.class);
 		final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
 
-		installAppsPanel = new InstallAppsPanel(appManager, downloadSitesManager, fileUtil, iconManager, taskManager, this);
-		installAppsPanel.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
-
-		currentlyInstalledAppsPanel = new CurrentlyInstalledAppsPanel(appManager);
-		currentlyInstalledAppsPanel.setOpaque(!LookAndFeelUtil.isAquaLAF());
-
-		checkForUpdatesPanel = new CheckForUpdatesPanel(appManager, downloadSitesManager, updateManager, taskManager, this);
-		checkForUpdatesPanel.setOpaque(!LookAndFeelUtil.isAquaLAF());
-
 		mainTabbedPane = new JTabbedPane();
-		mainTabbedPane.addTab("Install Apps", installAppsPanel);
-		mainTabbedPane.addTab("Currently Installed", currentlyInstalledAppsPanel);
-		mainTabbedPane.addTab("Check for Updates", checkForUpdatesPanel);
 
 		final JButton closeButton = new JButton(new AbstractAction("Close") {
 			@Override
@@ -123,30 +103,20 @@ public class AppManagerDialog extends JDialog {
 				dispose();
 			}
 		});
-        
+
 		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(null, closeButton, "App_Manager");
 
 		final GroupLayout layout = new GroupLayout(getContentPane());
 		getContentPane().setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(true);
-		
-		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
-				.addComponent(networkErrorPanel)
-        		.addComponent(mainTabbedPane, DEFAULT_SIZE, 640, Short.MAX_VALUE)
-        		.addComponent(buttonPanel)
-		);
-		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addComponent(networkErrorPanel)
-				.addComponent(mainTabbedPane, DEFAULT_SIZE, 490, Short.MAX_VALUE)
-				.addComponent(buttonPanel)
-		);
-        
+
+
         LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), null, closeButton.getAction());
-        
+
         pack();
     }
-    
+
 	public void changeTab(int index) {
 		mainTabbedPane.setSelectedIndex(index);
 	}
@@ -162,8 +132,6 @@ public class AppManagerDialog extends JDialog {
 		if (!SwingUtilities.isEventDispatchThread()) {
 			SwingUtilities.invokeLater(() -> showNetworkError(errorMessage));
 		} else {
-			networkErrorPanel.addMessage(errorMessage);
-			networkErrorPanel.setVisible(true);
 		}
 	}
 
@@ -171,8 +139,6 @@ public class AppManagerDialog extends JDialog {
 		if (!SwingUtilities.isEventDispatchThread()) {
 			SwingUtilities.invokeLater(() -> hideNetworkError());
 		} else {
-			networkErrorPanel.clearMessages();
-			networkErrorPanel.setVisible(false);
 		}
 	}
 }
