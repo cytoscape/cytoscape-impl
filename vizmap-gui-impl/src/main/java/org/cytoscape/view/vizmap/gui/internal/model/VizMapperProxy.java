@@ -11,8 +11,11 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import javax.swing.JPanel;
+
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.NetworkViewRenderer;
+import org.cytoscape.application.TableViewRenderer;
 import org.cytoscape.application.events.CyStartEvent;
 import org.cytoscape.application.events.CyStartListener;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
@@ -24,6 +27,7 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
@@ -35,6 +39,7 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.model.table.CyTableViewFactory;
 import org.cytoscape.view.model.table.CyTableViewManager;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
@@ -98,6 +103,7 @@ public class VizMapperProxy extends Proxy
 	private final ServicesUtil servicesUtil;
 	
 	private VisualStyle originalDefaultVisualStyle;
+	private RenderingEngine<CyTable> dummyTableRenderingEngine;
 
 	private volatile boolean cytoscapeStarted;
 	private volatile boolean loadingSession;
@@ -189,6 +195,21 @@ public class VizMapperProxy extends Proxy
 	}
 	
 	
+	public RenderingEngine<CyTable> getDummyTableRenderingEngine() {
+		if(dummyTableRenderingEngine == null) {
+			var tableViewRenderer = servicesUtil.get(CyApplicationManager.class).getDefaultTableViewRenderer();
+			var factory = tableViewRenderer.getRenderingEngineFactory(TableViewRenderer.DEFAULT_CONTEXT);
+			
+			var tableFactory = servicesUtil.get(CyTableFactory.class);
+			var table = tableFactory.createTable("dummy_table", "pk", Long.class, false, false);
+			var tableView = servicesUtil.get(CyTableViewFactory.class).createTableView(table);
+			
+			dummyTableRenderingEngine = factory.createRenderingEngine(new JPanel(), tableView);
+		}
+		return dummyTableRenderingEngine;
+	}
+	
+	
 	// This just returns the network visual style
 	public VisualStyle getCurrentNetworkVisualStyle() {
 		synchronized (lock) {
@@ -243,9 +264,9 @@ public class VizMapperProxy extends Proxy
 	 * @param tableType When the lexiconType is CyColumn.class, then we must specify which network table engine is required.
 	 */
 	public RenderingEngine<?> getRenderingEngine(Class<? extends CyIdentifiable> lexiconType) {
-		if (lexiconType == CyNode.class || lexiconType == CyEdge.class || lexiconType == CyNetwork.class)
+		if (lexiconType == CyNode.class || lexiconType == CyEdge.class || lexiconType == CyNetwork.class) {
 			return getCurrentNetworkRenderingEngine();
-		else { // CyColumn.class
+		} else { // CyColumn.class
 			var engineManager = servicesUtil.get(RenderingEngineManager.class);
 			var tableViewManager = servicesUtil.get(CyTableViewManager.class);
 			
@@ -263,12 +284,9 @@ public class VizMapperProxy extends Proxy
 	}
 	
 	public RenderingEngineFactory<CyNetwork> getCurrentNetworkRenderingEngineFactory() {
-		final NetworkViewRenderer nvRenderer =
-				servicesUtil.get(CyApplicationManager.class).getCurrentNetworkViewRenderer();
-		
+		var nvRenderer = servicesUtil.get(CyApplicationManager.class).getCurrentNetworkViewRenderer();
 		if (nvRenderer != null)
 			return nvRenderer.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT);
-		
 		return servicesUtil.get(RenderingEngineFactory.class);
 	}
 	
@@ -284,21 +302,61 @@ public class VizMapperProxy extends Proxy
 		return getNetworkViewRenderer(netView).getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT);
 	}
 	
+	public VisualLexicon getCurrentLexicon(Class<? extends CyIdentifiable> lexiconType) {
+		if(lexiconType == CyNode.class || lexiconType == CyEdge.class || lexiconType == CyNetwork.class) {
+			return getCurrentNetworkVisualLexicon();
+		} else {
+			return getCurrentTableVisualLexicon();
+		}
+	}
+	
+	
 	public VisualLexicon getCurrentNetworkVisualLexicon() {
 		VisualLexicon lexicon = null;
-		final RenderingEngineFactory<CyNetwork> curRenderingEngineFactory = getCurrentNetworkRenderingEngineFactory();
 		
-		if (curRenderingEngineFactory != null)
-			lexicon = curRenderingEngineFactory.getVisualLexicon();
+		var factory = getCurrentNetworkRenderingEngineFactory();
+		if (factory != null) {
+			lexicon = factory.getVisualLexicon();
+		}
 		
 		if (lexicon == null) {
-			final RenderingEngine<CyNetwork> engine = getCurrentNetworkRenderingEngine();
-			lexicon = engine != null ? 
-					engine.getVisualLexicon() : servicesUtil.get(RenderingEngineManager.class).getDefaultVisualLexicon();
+			var engine = getCurrentNetworkRenderingEngine();
+			if(engine != null) {
+				lexicon = engine.getVisualLexicon();
+			}
+		}
+		
+		if (lexicon == null) {
+			lexicon = servicesUtil.get(RenderingEngineManager.class).getDefaultVisualLexicon();
 		}
 		
 		return lexicon;
 	}
+	
+	
+	public VisualLexicon getCurrentTableVisualLexicon() {
+		var defaultTableLexicon = servicesUtil.get(RenderingEngineManager.class).getDefaultTableVisualLexicon();
+		
+		var currNet = servicesUtil.get(CyApplicationManager.class).getCurrentNetwork();
+		if(currNet == null) {
+			return defaultTableLexicon;
+		}
+		
+		// We assume the node/edge tables have the same renderer.
+		var nodeTable = currNet.getDefaultNodeTable();
+		var tableView = servicesUtil.get(CyTableViewManager.class).getTableView(nodeTable);
+		if(tableView == null) {
+			return defaultTableLexicon;
+		}
+		
+		var engines = servicesUtil.get(RenderingEngineManager.class).getRenderingEngines(tableView);
+		if(engines == null || engines.isEmpty()) {
+			return defaultTableLexicon;
+		}
+		
+		return engines.iterator().next().getVisualLexicon();
+	}
+	
 	
 	public Set<View<CyNode>> getSelectedNodeViews(final CyNetworkView netView) {
 		final Set<View<CyNode>> views = new HashSet<>();
