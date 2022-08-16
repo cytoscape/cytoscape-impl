@@ -23,7 +23,7 @@ import org.cytoscape.work.json.JSONResult;
 
 public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 	final CyServiceRegistrar serviceRegistrar;
-	private static final String APP_MANAGER_DIR = "appManager/index_v5.html";
+	private static final String APP_MANAGER_DIR = "appManager/appmanager.html";
 	private String url = null;
 
 	@Tunable (description="App name", context="nogui")

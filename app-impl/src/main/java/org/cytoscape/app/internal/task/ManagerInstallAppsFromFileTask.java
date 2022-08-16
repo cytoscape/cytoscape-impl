@@ -12,7 +12,7 @@ import java.util.Arrays;
 import javax.swing.JFrame;
 import java.awt.Window;
 import javax.swing.JDialog;
-
+import javax.swing.SwingUtilities;
 
 import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.AppManager;
@@ -41,23 +41,25 @@ public class ManagerInstallAppsFromFileTask extends AbstractTask {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-    final FileUtil fileUtil = serviceRegistrar.getService(FileUtil.class);
-    FileChooserFilter fileChooserFilter = new FileChooserFilter(
-				"Jar, Zip, and Karaf Kar Files (*.jar, *.zip, *.kar)", new String[] { "jar", "zip", "kar" });
+		SwingUtilities.invokeLater(() -> {
+			final FileUtil fileUtil = serviceRegistrar.getService(FileUtil.class);
+	    FileChooserFilter fileChooserFilter = new FileChooserFilter(
+					"Jar, Zip, and Karaf Kar Files (*.jar, *.zip, *.kar)", new String[] { "jar", "zip", "kar" });
 
-		Collection<FileChooserFilter> fileChooserFilters = new LinkedList<FileChooserFilter>();
-		fileChooserFilters.add(fileChooserFilter);
-    JDialog wrapper = new JDialog((Window)null);
-    wrapper.setVisible(false);
-		final File[] files = fileUtil.getFiles(wrapper, "Choose file(s)", FileUtil.LOAD, FileUtil.LAST_DIRECTORY,
-				"Install", true, fileChooserFilters);
+			Collection<FileChooserFilter> fileChooserFilters = new LinkedList<FileChooserFilter>();
+			fileChooserFilters.add(fileChooserFilter);
+	    JDialog wrapper = new JDialog((Window)null);
+	    wrapper.setVisible(false);
+			final File[] files = fileUtil.getFiles(wrapper, "Choose file(s)", FileUtil.LOAD, FileUtil.LAST_DIRECTORY,
+					"Install", true, fileChooserFilters);
 
-		if (files != null) {
-			TaskIterator ti = new TaskIterator();
-			ti.append(new InstallAppsFromFileTask(Arrays.asList(files), appManager, true));
-			ti.append(new ShowInstalledAppsTask(wrapper));
-			taskManager.setExecutionContext(wrapper);
-			taskManager.execute(ti);
-	   }
+			if (files != null) {
+				TaskIterator ti = new TaskIterator();
+				ti.append(new InstallAppsFromFileTask(Arrays.asList(files), appManager, true));
+				ti.append(new ShowInstalledAppsTask(wrapper));
+				taskManager.setExecutionContext(wrapper);
+				taskManager.execute(ti);
+		   }
+		 });
   }
 }
