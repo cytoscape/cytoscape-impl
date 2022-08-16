@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.cytoscape.app.CyAppAdapter;
+import org.cytoscape.app.internal.action.UpdateNotificationAction;
 import org.cytoscape.app.event.AppsFinishedStartingEvent;
 import org.cytoscape.app.event.AppsFinishedStartingListener;
 import org.cytoscape.app.internal.manager.App;
@@ -411,7 +412,12 @@ public class CyActivator extends AbstractCyActivator {
 
 		final AppConflictHandlerFactory appConflictHandlerFactory = new AppConflictHandlerFactory();
 		registerService(bc,appConflictHandlerFactory,GUITunableHandlerFactory.class);
-
+		
+		{
+				UpdateNotificationAction action = new UpdateNotificationAction(appManager, updateManager,
+						appManagerMediator, serviceRegistrar);
+				registerService(bc, action, CyAction.class);
+			}
 
 		// Task Factories
 		{

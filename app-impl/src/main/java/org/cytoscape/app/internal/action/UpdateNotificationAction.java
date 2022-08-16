@@ -1,5 +1,10 @@
 package org.cytoscape.app.internal.action;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -12,6 +17,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
+import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.UpdateManager;
 import org.cytoscape.app.internal.ui.AppManagerMediator;
@@ -20,6 +26,9 @@ import org.cytoscape.event.DebounceTimer;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
+import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskManager;
 
 /*
  * #%L
@@ -30,16 +39,16 @@ import org.cytoscape.util.swing.TextIcon;
  * Copyright (C) 2008 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 2.1 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
+ *
+ * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
@@ -47,13 +56,15 @@ import org.cytoscape.util.swing.TextIcon;
 
 @SuppressWarnings("serial")
 public class UpdateNotificationAction extends AbstractCyAction {
-
+	final CyServiceRegistrar serviceRegistrar;
 	private final BadgeIcon icon;
 
 	private final DebounceTimer debounceTimer = new DebounceTimer(2000);
-	
+
 	private final UpdateManager updateManager;
 	private final AppManagerMediator appManagerMediator;
+	private static final String APP_MANAGER_DIR = "appManager/appmanager.html";
+	private String url = null;
 
 	public UpdateNotificationAction(
 			AppManager appManager,
@@ -64,6 +75,7 @@ public class UpdateNotificationAction extends AbstractCyAction {
 		super("App Updates");
 		this.updateManager = updateManager;
 		this.appManagerMediator = appManagerMediator;
+		this.serviceRegistrar = serviceRegistrar;
 
 		icon = new BadgeIcon(serviceRegistrar.getService(IconManager.class));
 
@@ -79,13 +91,24 @@ public class UpdateNotificationAction extends AbstractCyAction {
 
 	@Override
 	public void actionPerformed(ActionEvent evt) {
-		appManagerMediator.showAppManager(true, evt);
+		final CyApplicationConfiguration applicationCfg = serviceRegistrar.getService(CyApplicationConfiguration.class);
+		String APP_MANAGER = "file:///" + (applicationCfg.getConfigurationDirectoryLocation()).toString() + "/" + APP_MANAGER_DIR;
+		url = APP_MANAGER;
+
+			CommandExecutorTaskFactory commandTF = serviceRegistrar.getService(CommandExecutorTaskFactory.class);
+			TaskManager<?,?> taskManager = serviceRegistrar.getService(TaskManager.class);
+			Map<String, Object> args = new HashMap<>();
+			args.put("url",url);
+			args.put("id","App Manager");
+			args.put("title","App Manager");
+			TaskIterator ti = commandTF.createTaskIterator("cybrowser","show",args, null);
+			taskManager.execute(ti);
 	}
 
 	@Override
 	public void updateEnableState() {
 		setEnabled(false); // to force the component to repaint later if 'count' changes
-	
+
 		final int count = updateManager.getUpdateCount();
 		final String text;
 
@@ -104,7 +127,7 @@ public class UpdateNotificationAction extends AbstractCyAction {
 		debounceTimer.debounce(() -> {
 			if (checkForUpdates)
 				updateManager.checkForUpdates();
-	
+
 			SwingUtilities.invokeLater(() -> updateEnableState());
 		});
 	}
@@ -155,27 +178,27 @@ public class UpdateNotificationAction extends AbstractCyAction {
 			g2d.fillOval(Math.round(bx), Math.round(by), Math.round(d), Math.round(d));
 			g2d.setColor(BADGE_COLOR);
 			g2d.fillOval(Math.round(bx + BADGE_BORDER_WIDTH), Math.round(by + BADGE_BORDER_WIDTH), Math.round(di), Math.round(di));
-			
+
 			// Draw badge count text inside the circle.
 			String text = count > 99 ? IconManager.ICON_ELLIPSIS_H : "" + count; // just draw ELLIPSIS char if more than 2 digits
-			
+
 			float hr = (float) Math.sqrt((di * di) / 2.0f); // height of square inside internal circle (Pythagoras)
 			float th = hr; // text height
 			float tw = 0; // text width
 			Font textFont = count > 99 ? iconManager.getIconFont(h)
 					: UIManager.getFont("Label.font").deriveFont(Font.BOLD);
 			textFont = getFont(textFont, th, g2d);
-			
+
 			g2d.setFont(textFont);
 			g2d.setColor(BADGE_TEXT_COLOR);
-			
+
 			FontMetrics fm = g2d.getFontMetrics();
 			th = fm.getHeight();
 			tw = fm.stringWidth(text);
-			
+
 			float tx = bx + (d - hr) / 2.0f;
 			tx += (hr - tw) / 2.0f;
-			
+
 			float ty = by + (d - hr) / 2.0f;
 			ty += ((hr - th) / 2.0f) + fm.getAscent();
 
@@ -190,7 +213,7 @@ public class UpdateNotificationAction extends AbstractCyAction {
 		public void setCount(int count) {
 			this.count = count;
 		}
-		
+
 		private static Font getFont(Font f, float height, Graphics g) {
 			float size = height;
 			Boolean up = null;
@@ -198,7 +221,7 @@ public class UpdateNotificationAction extends AbstractCyAction {
 			while (true) {
 				Font font = f.deriveFont(size);
 				int testHeight = g.getFontMetrics(font).getHeight();
-				
+
 				if (testHeight < height && up != Boolean.FALSE) {
 					size++;
 					up = Boolean.TRUE;
