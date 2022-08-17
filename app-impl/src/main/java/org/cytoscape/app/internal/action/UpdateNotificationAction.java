@@ -18,6 +18,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.cytoscape.application.CyApplicationConfiguration;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.application.swing.CytoPanel;
+import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.UpdateManager;
 import org.cytoscape.app.internal.ui.AppManagerMediator;
@@ -63,8 +67,10 @@ public class UpdateNotificationAction extends AbstractCyAction {
 
 	private final UpdateManager updateManager;
 	private final AppManagerMediator appManagerMediator;
-	private static final String APP_MANAGER_DIR = "appManager/appmanager.html";
+	private static final String APP_MANAGER_DIR = "appManager/appmanager_v2.html";
 	private String url = null;
+	private final CytoPanel cytoPanelWest;
+
 
 	public UpdateNotificationAction(
 			AppManager appManager,
@@ -78,6 +84,8 @@ public class UpdateNotificationAction extends AbstractCyAction {
 		this.serviceRegistrar = serviceRegistrar;
 
 		icon = new BadgeIcon(serviceRegistrar.getService(IconManager.class));
+		CySwingApplication swingApplication = serviceRegistrar.getService(CySwingApplication.class);
+		cytoPanelWest = swingApplication.getCytoPanel(CytoPanelName.WEST);
 
 		putValue(LARGE_ICON_KEY, icon);
 		putValue(SHORT_DESCRIPTION, "App Updates");
@@ -101,8 +109,15 @@ public class UpdateNotificationAction extends AbstractCyAction {
 			args.put("url",url);
 			args.put("id","App Manager");
 			args.put("title","App Manager");
+			args.put("panel","WEST");
 			TaskIterator ti = commandTF.createTaskIterator("cybrowser","show",args, null);
 			taskManager.execute(ti);
+
+			if (cytoPanelWest.getState() == CytoPanelState.HIDE) {
+				cytoPanelWest.setState(CytoPanelState.DOCK);
+			}
+			int index = cytoPanelWest.getCytoPanelComponentCount();
+			cytoPanelWest.setSelectedIndex(index - 1);
 	}
 
 	@Override

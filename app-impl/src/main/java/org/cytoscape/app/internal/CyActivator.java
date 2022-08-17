@@ -412,7 +412,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		final AppConflictHandlerFactory appConflictHandlerFactory = new AppConflictHandlerFactory();
 		registerService(bc,appConflictHandlerFactory,GUITunableHandlerFactory.class);
-		
+
 		{
 				UpdateNotificationAction action = new UpdateNotificationAction(appManager, updateManager,
 						appManagerMediator, serviceRegistrar);
@@ -432,7 +432,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			AppManagerTaskFactory factory = new AppManagerTaskFactory(appManager, serviceRegistrar);
+			AppManagerTaskFactory factory = new AppManagerTaskFactory(appManager, serviceRegistrar, swingApplication);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "Apps");
 			props.setProperty(TITLE, "App Manager");
