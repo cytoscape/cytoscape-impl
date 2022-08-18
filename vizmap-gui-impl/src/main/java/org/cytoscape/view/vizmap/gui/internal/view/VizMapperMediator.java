@@ -77,6 +77,7 @@ import org.cytoscape.view.vizmap.gui.internal.ColumnSpec;
 import org.cytoscape.view.vizmap.gui.internal.GraphObjectType;
 import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
 import org.cytoscape.view.vizmap.gui.internal.action.GenerateDiscreteValuesAction;
+import org.cytoscape.view.vizmap.gui.internal.controller.CopyContinuousMappingCommand;
 import org.cytoscape.view.vizmap.gui.internal.controller.RemoveVisualMappingsCommand;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.LockedValueState;
@@ -711,6 +712,12 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 					curVpSheetItem = vpSheetItem;
 					removeVisualMapping(vpSheetItem);
 				});
+				if(vpSheetItem.isNodeColumnColor()) {
+					vpSheetItem.getCopyNodeColorMappingBtn().addActionListener(evt -> {
+						curVpSheetItem = vpSheetItem;
+						copyNodeColumnColorMappingToTable(vpSheetItem);
+					});
+				}				
 				vpSheetItem.getPropSheetTbl().addPropertyChangeListener("editingVizMapperProperty", evt -> {
 					curVpSheetItem = vpSheetItem; // Save the current editor (the one the user is interacting with)
 					curVizMapperProperty = (VizMapperProperty<?, ?, ?>) evt.getNewValue();
@@ -756,6 +763,22 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		
 		var body = new RemoveVisualMappingsCommand.Body(model.getVisualStyle(), Set.of(vm));
 		sendNotification(NotificationNames.REMOVE_VISUAL_MAPPINGS, body);
+	}
+	
+	
+	protected void copyNodeColumnColorMappingToTable(VisualPropertySheetItem<?> vpSheetItem) {
+		var model = vpSheetItem.getModel();
+		if(model == null)
+			return;
+		
+		var sourceStyle = vmProxy.getCurrentNetworkVisualStyle();
+		var sourceVP = BasicVisualLexicon.NODE_FILL_COLOR;
+		
+		var targetStyle = model.getVisualStyle();
+		var targetVP = BasicTableVisualLexicon.CELL_BACKGROUND_PAINT;
+		
+		var body = new CopyContinuousMappingCommand.Body(sourceStyle, sourceVP, targetStyle, targetVP);
+		sendNotification(NotificationNames.COPY_CONTINUOUS_MAPPING, body);
 	}
 
 	

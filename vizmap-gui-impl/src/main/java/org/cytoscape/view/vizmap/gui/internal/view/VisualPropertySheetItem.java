@@ -61,6 +61,7 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
 import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
 import org.cytoscape.view.vizmap.gui.internal.model.LockedValueState;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
@@ -137,6 +138,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	private JLabel msgIconLbl;
 	private PropertySheetTable propSheetTbl;
 	private JButton removeMappingBtn;
+	private JButton copyNodeColorMappingBtn;
 	
 	private final Icon disabledBtnIcon;
 	
@@ -485,6 +487,11 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		return topPnl;
 	}
 	
+	public boolean isNodeColumnColor() {
+		return model.getVisualProperty() == BasicTableVisualLexicon.CELL_BACKGROUND_PAINT
+			&& model.getTableType().isNode();
+	}
+	
 	protected JPanel getMappingPnl() {
 		if (mappingPnl == null) {
 			mappingPnl = new JPanel();
@@ -497,8 +504,14 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			var bottomPnl = new JPanel();
 			bottomPnl.setLayout(new BoxLayout(bottomPnl, BoxLayout.X_AXIS));
 			bottomPnl.add(Box.createHorizontalGlue());
+			if(isNodeColumnColor()) {
+				bottomPnl.add(getCopyNodeColorMappingBtn());
+				bottomPnl.add(Box.createHorizontalStrut(5));
+			}
 			bottomPnl.add(getRemoveMappingBtn());
 			bottomPnl.add(Box.createRigidArea(new Dimension(0, PROP_SHEET_ROW_HEIGHT)));
+			
+			
 			bottomPnl.setBorder(BorderFactory.createEmptyBorder(0, 4, 4, 4));
 			
 			mappingPnl.add(bottomPnl, BorderLayout.SOUTH);
@@ -675,9 +688,25 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			removeMappingBtn.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
 			updateRemoveMappingBtn();
 		}
-		
 		return removeMappingBtn;
 	}
+	
+	protected JButton getCopyNodeColorMappingBtn() {
+		if (copyNodeColorMappingBtn == null) {
+			var iconManager = servicesUtil.get(IconManager.class);
+			
+			copyNodeColorMappingBtn = new JButton(IconManager.ICON_COPY);
+			copyNodeColorMappingBtn.setToolTipText("Copy Node Color Mapping");
+			copyNodeColorMappingBtn.setBorderPainted(false);
+			copyNodeColorMappingBtn.setContentAreaFilled(false);
+			copyNodeColorMappingBtn.setOpaque(false);
+			copyNodeColorMappingBtn.setFocusable(false);
+			copyNodeColorMappingBtn.setFont(iconManager.getIconFont(16.0f));
+			copyNodeColorMappingBtn.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+		}
+		return copyNodeColorMappingBtn;
+	}
+	
 	
 	private JLabel getTitleLbl() {
 		if (titleLbl == null) {

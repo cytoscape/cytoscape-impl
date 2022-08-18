@@ -37,6 +37,16 @@ public record GraphObjectType(Class<? extends CyIdentifiable> type) implements C
 		return of(CyNetwork.class);
 	}
 
+	
+	public boolean isNode() {
+		return this.type == CyNode.class;
+	}
+	
+	public boolean isEdge() {
+		return this.type == CyEdge.class;
+	}
+	
+	
 
 	@Override
 	public int compareTo(GraphObjectType that) {
