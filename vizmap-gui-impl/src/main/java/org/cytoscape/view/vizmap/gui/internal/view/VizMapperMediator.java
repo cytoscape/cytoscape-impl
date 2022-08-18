@@ -77,6 +77,7 @@ import org.cytoscape.view.vizmap.gui.internal.ColumnSpec;
 import org.cytoscape.view.vizmap.gui.internal.GraphObjectType;
 import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
 import org.cytoscape.view.vizmap.gui.internal.action.GenerateDiscreteValuesAction;
+import org.cytoscape.view.vizmap.gui.internal.controller.RemoveVisualMappingsCommand;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.LockedValueState;
 import org.cytoscape.view.vizmap.gui.internal.model.LockedValuesVO;
@@ -743,12 +744,21 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		});
 	}
 
+	
 	protected void removeVisualMapping(VisualPropertySheetItem<?> vpSheetItem) {
-		var vm = vpSheetItem.getModel().getVisualMappingFunction();
-		if (vm != null)
-			sendNotification(NotificationNames.REMOVE_VISUAL_MAPPINGS, Collections.singleton(vm));
+		var model = vpSheetItem.getModel();
+		if(model == null)
+			return;
+		
+		var vm = model.getVisualMappingFunction();
+		if(vm == null)
+			return;
+		
+		var body = new RemoveVisualMappingsCommand.Body(model.getVisualStyle(), Set.of(vm));
+		sendNotification(NotificationNames.REMOVE_VISUAL_MAPPINGS, body);
 	}
 
+	
 	private void updateVisualStyleList(SortedSet<VisualStyle> styles, boolean resetDefaultVisibleItems) {
 		attrProxy.setCurrentMappingType(null);
 		mappingFactoryProxy.setCurrentColumnName(null);

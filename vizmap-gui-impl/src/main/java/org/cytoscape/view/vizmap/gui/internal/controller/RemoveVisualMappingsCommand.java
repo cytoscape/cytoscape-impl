@@ -4,7 +4,6 @@ import java.util.Set;
 
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.view.vizmap.gui.internal.model.VizMapperProxy;
 import org.cytoscape.view.vizmap.gui.internal.task.RemoveVisualMappingsTask;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.work.TaskIterator;
@@ -23,16 +22,16 @@ public class RemoveVisualMappingsCommand extends SimpleCommand {
 		this.servicesUtil = servicesUtil;
 	}
 
+	public static record Body(VisualStyle style, Set<VisualMappingFunction<?, ?>> mappingFunctions) {}
+	
+	
 	@Override
-	@SuppressWarnings("unchecked")
 	public void execute(INotification notification) {
-		var set = (Set<VisualMappingFunction<?, ?>>) notification.getBody();
+		var body = (Body) notification.getBody();
 		
-		var proxy = (VizMapperProxy) getFacade().retrieveProxy(VizMapperProxy.NAME);
-		var style = proxy.getCurrentNetworkVisualStyle();
+		var task = new RemoveVisualMappingsTask(body.mappingFunctions(), body.style(), servicesUtil);
 		
-		var iterator = new TaskIterator(new RemoveVisualMappingsTask(set, style, servicesUtil));
 		var taskManager = servicesUtil.get(DialogTaskManager.class);
-		taskManager.execute(iterator);
+		taskManager.execute(new TaskIterator(task));
 	}
 }
