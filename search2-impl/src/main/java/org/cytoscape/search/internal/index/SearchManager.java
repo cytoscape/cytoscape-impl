@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
@@ -203,20 +204,25 @@ public class SearchManager implements
 		Long suid = table.getSUID();
 		return executorService.submit(() -> {
 			Index index = tableIndexMap.remove(suid);
-			if(index != null) {
-				try {
-					var writer = index.getWriter();
-					writer.deleteAll();
-					writer.commit();
-					writer.close();
-					
-					deleteFolder(index.getPath().toFile());
-				} catch (IOException e) {
-					logger.error("Error deleting table index: " + suid, e); // TODO handle exception
-				}
+			try {
+				deleteIndex(index);
+			} catch (IOException e) {
+				logger.error("Error deleting table index: " + suid, e); // TODO handle exception
 			}
 		});
 	}
+	
+	
+	private static void deleteIndex(Index index) throws IOException {
+		if(index == null)
+			return;
+		var writer = index.getWriter();
+		writer.deleteAll();
+		writer.commit();
+		writer.close();
+		deleteFolder(index.getPath().toFile());
+	}
+	
 	
 	private static void deleteFolder(File folder) {
 		var files = folder.listFiles();
@@ -230,6 +236,22 @@ public class SearchManager implements
 			}
 		}
 		folder.delete();
+	}
+	
+	
+	public void disposeAll() throws Exception {
+		var future = executorService.submit(() -> {
+			for(Index index : tableIndexMap.values()) {
+				try {
+					deleteIndex(index);
+				} catch (IOException e) {
+					logger.error("Error deleting table index", e); // TODO handle exception
+				}
+			}
+		});
+		future.get(5, TimeUnit.MINUTES);
+		tableIndexMap.clear();
+		executorService.shutdownNow();
 	}
 	
 	

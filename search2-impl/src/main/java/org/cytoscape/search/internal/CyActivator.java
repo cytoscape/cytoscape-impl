@@ -55,6 +55,8 @@ public class CyActivator extends AbstractCyActivator {
 	
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
+	private SearchManager searchManager;
+	
 	
 	@Override
 	public void start(BundleContext bc) {
@@ -62,16 +64,20 @@ public class CyActivator extends AbstractCyActivator {
 		
 		Path baseDir;
 		try {
-			// Karaf will create this folder under ~/CytoscapeConfiguration/3/karaf_data/tmp
-			baseDir = Files.createTempDirectory("search2_impl_");
+			// This folder is created under the path given by the java.io.tmpdir system property.
+			baseDir = Files.createTempDirectory("org.cytoscape.search.search2_impl_");
+			// The shutDown() method has to delete all the files in the folder for this to work.
+			baseDir.toFile().deleteOnExit();
+			
 			System.out.println("Search index folder: " + baseDir);
 		} catch (IOException e) {
 			logger.error("Could not start search2-impl bundle. Cannot create temp folder for index files.", e);
 			return;
 		}
 		
-		var searchManager = new SearchManager(registrar, baseDir);
+		searchManager = new SearchManager(registrar, baseDir);
 		registerAllServices(bc, searchManager);
+		registerService(bc, searchManager, SearchManager.class);
 		
 		// Network search
 		var searchBox = new NetworkSearchBox(registrar, searchManager);
@@ -97,6 +103,18 @@ public class CyActivator extends AbstractCyActivator {
 			var debugPanel = new DebugSearchProgressPanel();
 			searchManager.addProgressViewer(debugPanel);
 			registerService(bc, debugPanel, CytoPanelComponent.class);
+		}
+	}
+	
+	@Override
+	public void shutDown() {
+		if(searchManager != null) {
+			System.out.println("Shutting down search2_impl");
+			try {
+				searchManager.disposeAll();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }
