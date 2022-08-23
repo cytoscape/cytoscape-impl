@@ -360,19 +360,42 @@ public class EquationEditorMediator {
 		// MKTODO need to figure out exactly how to reference column names
 		CyColumn col = builderPanel.getAttributePanel().getSelectedValue();
 		if(col != null) {
-			String ref = getAttributeReference(col);
+			String ref = createAttributeReferenceString(col);
 			syntaxPanel.insertText(offset, ref, null);
 			return;
 		}
 	}
 	
-	public static String getAttributeReference(CyColumn column) {
+	public static String createAttributeReferenceString(CyColumn column) {
 		String name = column.getName();
-		boolean simple = name.chars().allMatch(Character::isAlphabetic);
-		if(simple)
+		
+		boolean simple = name.chars().allMatch(ch -> 
+			Character.isLetter((char)ch) || Character.isDigit((char)ch) || (char)ch == '_'
+		);
+		
+		if(simple) {
 			return "$" + name;
-		else
-			return "${" + name + "}";
+		} else {
+			var sb = new StringBuilder("${");
+			escapeAttributeName(sb, name);
+			sb.append("}");
+			return sb.toString();
+		}
+	}
+	
+	private static void escapeAttributeName(StringBuilder sb, String name) {
+		// escape '}' and ':' but not '::'
+		for(int i = 0; i < name.length(); i++) {
+			char c = name.charAt(i);
+			if(c == ':' && i < name.length()-1 && name.charAt(i+1) == ':') {
+				i++;
+				sb.append("::");
+			} else if(c == ':' || c == '}' || c == '\\') {
+				sb.append("\\").append(c);
+			} else {
+				sb.append(c);
+			}
+		}
 	}
 	
 	

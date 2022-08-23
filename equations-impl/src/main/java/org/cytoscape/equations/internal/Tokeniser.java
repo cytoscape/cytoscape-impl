@@ -141,7 +141,7 @@ public class Tokeniser {
 
 		if (identifierInBraces || Character.isLetter(ch)) {
 			ungetChar(nextCh);
-			return identifierInBraces ? parseIdentifier() : parseSimpleIdentifier();
+			return identifierInBraces ? parseIdentifierInBraces() : parseSimpleIdentifier();
 		}
 
 		errorMsg = "unexpected input character '" + Character.toString(ch) + "'";
@@ -383,15 +383,13 @@ public class Tokeniser {
 	 *  input character will be included in the identifier this also allows for embedding
 	 *  backslashes by doubling them.
 	 */
-	private Token parseIdentifier() {
+	private Token parseIdentifierInBraces() {
 		final int INITIAL_CAPACITY = 20;
 		final StringBuilder builder = new StringBuilder(INITIAL_CAPACITY);
 
 		boolean escaped = false;
 		int ch;
-		while ((ch = getChar()) != -1 &&
-		       (((char)ch != '}' && (char)ch != ',' && (char)ch != '(' && (char)ch != ')') || escaped))
-		{
+		while ((ch = getChar()) != -1 && (((char)ch != '}') || escaped)) {
 			if (escaped) {
 				escaped = false;
 				builder.append((char)ch);
@@ -433,8 +431,9 @@ public class Tokeniser {
 		final StringBuilder builder = new StringBuilder(INITIAL_CAPACITY);
 
 		int ch;
-		while ((ch = getChar()) != -1 && (Character.isLetter((char)ch) || Character.isDigit((char)ch) || (char)ch == '_'))
+		while ((ch = getChar()) != -1 && (Character.isLetter((char)ch) || Character.isDigit((char)ch) || (char)ch == '_')) {
 			builder.append((char)ch);
+		}
 		ungetChar(ch);
 
 		currentIdent = builder.toString();

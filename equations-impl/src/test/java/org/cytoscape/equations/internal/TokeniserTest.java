@@ -26,23 +26,14 @@ package org.cytoscape.equations.internal;
 
 
 import java.util.ArrayList;
-import junit.framework.*;
+
+import junit.framework.TestCase;
 
 
 public class TokeniserTest extends TestCase {
-	// Stores the expected token's string representation and position.
-	static class TokenStringRepAndPosition {
-		private final String stringRep;
-		private final int position;
 
-		TokenStringRepAndPosition(final String stringRep, final int position) {
-			this.stringRep = stringRep;
-			this.position  = position;
-		}
+	static record TokenStringRepAndPosition(String stringRep, int position) {}
 
-		String getStringRep() { return this.stringRep; }
-		int getPosition() { return position; }
-	}
 
 	public void testScanner1() throws Exception {
 		final Tokeniser tokeniser = new Tokeniser("AND(1.0 >= $(BOB), OR($(JOE) = $(tiny), $(x) > LOG(1.3e17)))");
@@ -94,8 +85,8 @@ public class TokeniserTest extends TestCase {
 
 		assertEquals(expectedTokens.length, actualTokens.length);
 		for (int i = 0; i < expectedTokens.length; ++i) {
-			assertEquals(expectedTokens[i].getStringRep(), actualTokens[i].getStringRep());
-			assertEquals(expectedTokens[i].getPosition(), actualTokens[i].getPosition());
+			assertEquals(expectedTokens[i].stringRep(), actualTokens[i].stringRep());
+			assertEquals(expectedTokens[i].position(), actualTokens[i].position());
 		}
 	}
 
@@ -152,8 +143,8 @@ public class TokeniserTest extends TestCase {
 
 		assertEquals(expectedTokens.length, actualTokens.length);
 		for (int i = 0; i < expectedTokens.length; ++i) {
-			assertEquals(expectedTokens[i].getStringRep(), actualTokens[i].getStringRep());
-			assertEquals(expectedTokens[i].getPosition(), actualTokens[i].getPosition());
+			assertEquals(expectedTokens[i].stringRep(), actualTokens[i].stringRep());
+			assertEquals(expectedTokens[i].position(), actualTokens[i].position());
 		}
 	}
 
@@ -178,8 +169,8 @@ public class TokeniserTest extends TestCase {
 
 		assertEquals(expectedTokens.length, actualTokens.length);
 		for (int i = 0; i < expectedTokens.length; ++i) {
-			assertEquals(expectedTokens[i].getStringRep(), actualTokens[i].getStringRep());
-			assertEquals(expectedTokens[i].getPosition(), actualTokens[i].getPosition());
+			assertEquals(expectedTokens[i].stringRep(), actualTokens[i].stringRep());
+			assertEquals(expectedTokens[i].position(), actualTokens[i].position());
 		}
 	}
 
@@ -208,8 +199,8 @@ public class TokeniserTest extends TestCase {
 
 		assertEquals(expectedTokens.length, actualTokens.length);
 		for (int i = 0; i < expectedTokens.length; ++i) {
-			assertEquals(expectedTokens[i].getStringRep(), actualTokens[i].getStringRep());
-			assertEquals(expectedTokens[i].getPosition(), actualTokens[i].getPosition());
+			assertEquals(expectedTokens[i].stringRep(), actualTokens[i].stringRep());
+			assertEquals(expectedTokens[i].position(), actualTokens[i].position());
 		}
 	}
 
@@ -232,8 +223,9 @@ public class TokeniserTest extends TestCase {
 
 		assertEquals(expectedTokens.length, actualTokens.length);
 		for (int i = 0; i < expectedTokens.length; ++i) {
-			assertEquals(expectedTokens[i].getStringRep(), actualTokens[i].getStringRep());
-			assertEquals(expectedTokens[i].getPosition(), actualTokens[i].getPosition());
+			assertEquals(expectedTokens[i].stringRep(), actualTokens[i].stringRep());
+			assertEquals(expectedTokens[i].position(), actualTokens[i].position());
 		}
 	}
+	
 }

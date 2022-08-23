@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.cytoscape.equations.EquationParser;
 import org.cytoscape.event.CyEventHelper;
@@ -47,17 +48,27 @@ public class AttribParserTest {
 	@Before
 	public void init() {
 		eventHelper = new DummyCyEventHelper();
-		
 		serviceRegistrar = mock(CyServiceRegistrar.class);
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
-		
 		parser = new EquationParserImpl(serviceRegistrar);
 	}
+	
 
 	@Test
-	public void testSimpleExpr() throws Exception {
+	public void testEscapedIdents() throws Exception {
+		// Need to escape colon, backslash and closing brace, because these have special meaning, but thats it.
 		var types = new HashMap<String, Class<?>>();
-		types.put("BOB", Double.class);
+		types.put("NS::name1 (1,2)", Long.class);
+		types.put("NS::name2 \\ {1:2}", Long.class);
+		assertTrue(parser.parse("=${NS::name1 (1,2)}", types));
+		assertTrue(parser.parse("=${NS::name1 \\(1\\,2\\)}", types));
+		assertTrue(parser.parse("=${NS::name2 \\\\ {1\\:2\\}}", types));
+	}
+	
+	
+	@Test
+	public void testSimpleExpr() throws Exception {
+		var types = Map.<String,Class<?>>of("BOB", Double.class);
 		assertTrue(parser.parse("=42 - 12 + 3 * (4 - 2) + ${BOB:12}", types));
 	}
 	
@@ -169,4 +180,5 @@ public class AttribParserTest {
 		types.put("x", Long.class);
 		assertTrue(parser.parse("=$x + 2.0", types));
 	}
+	
 }

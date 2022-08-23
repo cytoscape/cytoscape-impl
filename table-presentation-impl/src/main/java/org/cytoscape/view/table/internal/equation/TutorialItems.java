@@ -171,7 +171,7 @@ public class TutorialItems {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<html>");
 		
-		String name = EquationEditorMediator.getAttributeReference(col);
+		String name = EquationEditorMediator.createAttributeReferenceString(col);
 		sb.append("<b>").append(name).append("</b>&nbsp;&nbsp;&nbsp;<a href=\"\">insert</a><br><br>");
 		
 		if(col.isPrimaryKey() && "SUID".equals(col.getName())) {
