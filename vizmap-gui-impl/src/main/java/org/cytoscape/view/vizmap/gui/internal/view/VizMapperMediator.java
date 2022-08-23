@@ -16,7 +16,6 @@ import java.beans.PropertyChangeEvent;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -829,7 +828,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			columns.add(new ColumnSpec(GraphObjectType.edge(), entry.getKey()));
 		}
 		
-		columns.sort(Comparator.naturalOrder());
+		columns.sort(ColumnSpec.comparingName());
 		
 		if(selectedColumn == null && !columns.isEmpty()) {
 			selectedColumn = columns.get(0);
