@@ -59,7 +59,6 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		if (useCybrowser == true && cyBrowser != null && cyBrowser.getStatus() == App.AppStatus.INSTALLED) {
 			CommandExecutorTaskFactory commandTF = serviceRegistrar.getService(CommandExecutorTaskFactory.class);
 			TaskManager<?,?> taskManager = serviceRegistrar.getService(TaskManager.class);
-			// Yes, use it!
 			Map<String, Object> args = new HashMap<>();
 			args.put("url",url);
 			args.put("id","App Manager");
@@ -67,12 +66,6 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 			args.put("panel","WEST");
 			TaskIterator ti = commandTF.createTaskIterator("cybrowser","show",args, null);
 			taskManager.execute(ti);
-			
-			if (cytoPanelWest.getState() == CytoPanelState.HIDE) {
-				cytoPanelWest.setState(CytoPanelState.DOCK);
-			}
-			int index = cytoPanelWest.getCytoPanelComponentCount();
-			cytoPanelWest.setSelectedIndex(index - 1);
 		} else {
 			OpenBrowser openBrowser = serviceRegistrar.getService(OpenBrowser.class);
 			openBrowser.openURL(url);

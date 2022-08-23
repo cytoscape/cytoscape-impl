@@ -112,12 +112,6 @@ public class UpdateNotificationAction extends AbstractCyAction {
 			args.put("panel","WEST");
 			TaskIterator ti = commandTF.createTaskIterator("cybrowser","show",args, null);
 			taskManager.execute(ti);
-
-			if (cytoPanelWest.getState() == CytoPanelState.HIDE) {
-				cytoPanelWest.setState(CytoPanelState.DOCK);
-			}
-			int index = cytoPanelWest.getCytoPanelComponentCount();
-			cytoPanelWest.setSelectedIndex(index - 1);
 	}
 
 	@Override
