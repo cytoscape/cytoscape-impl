@@ -57,8 +57,10 @@ public class CyActivator extends AbstractCyActivator {
 
 		CyProperty<Properties> props = (CyProperty<Properties>) getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 
+		var loadHandler = new SessionLoadHandler(registrar, loadSession);
+		
 		StartupConfig sc = new StartupConfig(props.getProperties(), streamUtil, loadSession, networkFileLoader,
-				networkURLLoader, visualStylesLoader, registrar);
+				networkURLLoader, visualStylesLoader, registrar, loadHandler);
 		registerService(bc, sc, AppsFinishedStartingListener.class);
 
 		Parser p = new Parser(args.getArgs(), cyShutdown, cyVersion, sc, props.getProperties());

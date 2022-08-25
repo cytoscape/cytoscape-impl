@@ -14,7 +14,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>gui-cmdline-parser-impl</artifactId>
-  <version>3.10.0-SNAPSHOT</version>
+	<version>3.10.0-SNAPSHOT</version>
 
 	<name>Cytoscape GUI Command Line Parser Impl (${project.artifactId})</name>
 
@@ -47,6 +47,8 @@
 						<Export-Package>!${bundle.namespace}.*</Export-Package>
 						<Private-Package>${bundle.namespace}.*</Private-Package>
 						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
+						<Embed-Dependency>install4j-runtime</Embed-Dependency>
+						<Import-Package>!com.sun.javafx.stage,!com.sun.management,!org.eclipse.swt.widgets,!sun.font,!sun.misc,*</Import-Package>
 					</instructions>
 				</configuration>
 			</plugin>
@@ -76,7 +78,13 @@
 			<name>Cytoscape Releases</name>
 			<url>http://nrnb-nexus.ucsd.edu/repository/cytoscape_releases/</url>
 		</repository>
+
+		<repository>
+			<id>ej-technologies</id>
+			<url>https://maven.ej-technologies.com/repository</url>
+		</repository>
 	</repositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
@@ -108,6 +116,13 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>app-api</artifactId>
 		</dependency>
+
+		<dependency>
+			<groupId>com.install4j</groupId>
+			<artifactId>install4j-runtime</artifactId>
+			<version>10.0</version>
+		</dependency>
+
 	</dependencies>
 
 
