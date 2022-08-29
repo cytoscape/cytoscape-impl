@@ -45,7 +45,13 @@ public class ApplyToColumnHandler extends AbstractApplyHandler<CyColumn> {
 
 	protected void applyMappedValue(View<CyColumn> view, VisualProperty<?> vp, VisualMappingFunction<?, ?> mapping) {
 		if(isCellVP(vp)) {
-			((CyColumnView)view).setCellVisualProperty(vp, mapping::getMappedValue);
+			var currStyle = style;
+			((CyColumnView)view).setCellVisualProperty(vp, row -> {
+				var val = mapping.getMappedValue(row);
+				if(val == null) 
+					val = currStyle.getDefaultValue(vp);
+				return val;
+			});
 		}
 		
 		// MKTODO I have no idea how to handle dependencies in this context.
