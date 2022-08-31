@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.io.*;
+import java.nio.charset.Charset;
 
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -45,6 +47,18 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		StringBuilder contentBuilder = new StringBuilder();
+		try {
+		    BufferedReader in = new BufferedReader(new InputStreamReader(AppManagerTask.class.getClassLoader().getResourceAsStream("/appmanager_v2.html"), Charset.forName("UTF-8").newDecoder()));
+		    String str;
+		    while ((str = in.readLine()) != null) {
+		        contentBuilder.append(str);
+		    }
+		    in.close();
+		} catch (IOException e) {
+		}
+		String content = contentBuilder.toString();
+
 		final CyApplicationConfiguration applicationCfg = serviceRegistrar.getService(CyApplicationConfiguration.class);
 		String APP_MANAGER = "file:///" + (applicationCfg.getConfigurationDirectoryLocation()).toString() + "/" + APP_MANAGER_DIR;
 		WebApp webApp = null;
@@ -60,7 +74,8 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 			CommandExecutorTaskFactory commandTF = serviceRegistrar.getService(CommandExecutorTaskFactory.class);
 			TaskManager<?,?> taskManager = serviceRegistrar.getService(TaskManager.class);
 			Map<String, Object> args = new HashMap<>();
-			args.put("url",url);
+			//args.put("url",url);
+			args.put("text", content);
 			args.put("id","App Manager");
 			args.put("title","App Manager");
 			args.put("panel","WEST");
