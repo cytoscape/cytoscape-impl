@@ -19,7 +19,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.cg.model.BitmapCustomGraphics;
 import org.cytoscape.cg.model.CustomGraphicsManager;
 import org.cytoscape.cg.model.SVGCustomGraphics;
-import org.cytoscape.cg.util.CustomGraphicsBrowser;
 import org.cytoscape.cg.util.ImageCustomGraphicsSelector;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
@@ -124,7 +123,7 @@ public class LoadImageDialog extends AbstractAnnotationDialog<ImageAnnotationImp
 				if (file.getParentFile().isDirectory())
 					lastDirectory = file.getParentFile();
 			} else {
-				var cg = getImageSelector().getSelectedValue();
+				var cg = getImageSelector().getSelectedImage();
 				annotation = createAnnotation(cg);
 			}
 			
@@ -182,8 +181,7 @@ public class LoadImageDialog extends AbstractAnnotationDialog<ImageAnnotationImp
 	
 	private ImageCustomGraphicsSelector getImageSelector() {
 		if (imageSelector == null) {
-			var cgBrowser = new CustomGraphicsBrowser(serviceRegistrar);
-			imageSelector = new ImageCustomGraphicsSelector(cgBrowser, serviceRegistrar);
+			imageSelector = new ImageCustomGraphicsSelector(serviceRegistrar);
 			imageSelector.addActionListener(evt -> getApplyButton().doClick());
 		}
 		
