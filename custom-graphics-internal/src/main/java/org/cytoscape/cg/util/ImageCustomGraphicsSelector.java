@@ -13,7 +13,6 @@ import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 import java.awt.AWTEvent;
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Graphics;
@@ -50,7 +49,6 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.TreeSet;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
@@ -68,7 +66,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
-import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListModel;
@@ -144,7 +141,7 @@ public class ImageCustomGraphicsSelector extends JPanel {
 	private int selectionHead;
 	private int selectionTail;
 	
-	private TreeSet<CyCustomGraphics> allImages;
+	private List<CyCustomGraphics> allImages;
 	private CyCustomGraphics selectedImage;
 	
 	private final CyServiceRegistrar serviceRegistrar;
@@ -160,7 +157,7 @@ public class ImageCustomGraphicsSelector extends JPanel {
 		
 		this.serviceRegistrar = serviceRegistrar;
 		
-		allImages = new TreeSet<>(new CGComparator());
+		allImages = new ArrayList<>();
 		
 		BG_COLOR = UIManager.getColor("Table.background");
 		FG_COLOR = UIManager.getColor("Table.foreground");
@@ -261,6 +258,8 @@ public class ImageCustomGraphicsSelector extends JPanel {
 				if (cg instanceof NullCustomGraphics == false)
 					allImages.add(cg);
 			}
+			
+			allImages.sort(new CGComparator());
 		}
 		
 		getImageGrid().update(allImages);
@@ -1250,16 +1249,7 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			}
 			
 			editNameEnd(item);
-			
-			// TODO
-//			var task = new RenameVisualStyleTask(item.getImage(), serviceRegistrar);
-//			var map = new HashMap<String, Object>();
-//			map.put("vsName", newValue);
-//			var taskIterator = serviceRegistrar.getService(TunableSetter.class).createTaskIterator(new TaskIterator(task), map);
-//			
-//			new Thread(() -> {
-//				serviceRegistrar.getService(DialogTaskManager.class).execute(taskIterator);
-//			}).start();
+			item.getImage().setDisplayName(newValue);
 		}
 		
 		void editNameCancel(ImagePanel item, String oldValue) {
@@ -1542,7 +1532,6 @@ public class ImageCustomGraphicsSelector extends JPanel {
 	
 	private class URLDropTarget extends DropTarget {
 
-		private Component target;
 		private Border originalBorder;
 		private final Border dropBorder = BorderFactory.createLineBorder(UIManager.getColor("Focus.color"), 2);
 		
@@ -1559,43 +1548,49 @@ public class ImageCustomGraphicsSelector extends JPanel {
 		@Override
 		@SuppressWarnings("unchecked")
 		public void drop(DropTargetDropEvent dtde) {
-			dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
-			var trans = dtde.getTransferable();
-			boolean gotData = false;
-			
-			AbstractURLImageCustomGraphics<?> lastCG = null;
-			
 			try {
-				if (trans.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
-					var fileList = (List<File>) trans.getTransferData(DataFlavor.javaFileListFlavor);
-
-					for (var file : fileList)
-						lastCG = addCustomGraphics(file.toURI().toURL().toString());
-					
-					gotData = true;
-				} else if (trans.isDataFlavorSupported(urlFlavor)) {
-					var url = (URL) trans.getTransferData(urlFlavor);
-					// Add image
-					lastCG = addCustomGraphics(url.toString());
-					gotData = true;
-				} else if (trans.isDataFlavorSupported(DataFlavor.stringFlavor)) {
-					var s = (String) trans.getTransferData(DataFlavor.stringFlavor);
-
-					var url = new URL(s);
-					lastCG = addCustomGraphics(url.toString());
-					gotData = true;
+				dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
+				var trans = dtde.getTransferable();
+				boolean gotData = false;
+				
+				AbstractURLImageCustomGraphics<?> lastCG = null;
+				
+				try {
+					if (trans.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+						var fileList = (List<File>) trans.getTransferData(DataFlavor.javaFileListFlavor);
+	
+						for (var file : fileList)
+							lastCG = addCustomGraphics(file.toURI().toURL().toString());
+						
+						gotData = true;
+					} else if (trans.isDataFlavorSupported(urlFlavor)) {
+						var url = (URL) trans.getTransferData(urlFlavor);
+						// Add image
+						lastCG = addCustomGraphics(url.toString());
+						gotData = true;
+					} else if (trans.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+						var s = (String) trans.getTransferData(DataFlavor.stringFlavor);
+	
+						var url = new URL(s);
+						lastCG = addCustomGraphics(url.toString());
+						gotData = true;
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				} finally {
+					dtde.dropComplete(gotData);
+				}
+				
+				// Select and scroll to the last added image
+				if (lastCG != null) {
+					var manager = serviceRegistrar.getService(CustomGraphicsManager.class);
+					update(manager.getAllCustomGraphics(), lastCG);
+					getImageGrid().setSelectedValue(lastCG, true);
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error("Error drag-and-dropping image(s): ", e);
 			} finally {
-				dtde.dropComplete(gotData);
-			}
-			
-			// Select and scroll to the last added image
-			if (lastCG != null) {
-				var manager = serviceRegistrar.getService(CustomGraphicsManager.class);
-				update(manager.getAllCustomGraphics(), lastCG);
-				getImageGrid().setSelectedValue(lastCG, true);
+				resetBorder();
 			}
 		}
 		
@@ -1603,15 +1598,12 @@ public class ImageCustomGraphicsSelector extends JPanel {
 		public synchronized void dragEnter(DropTargetDragEvent dtde) {
 			super.dragEnter(dtde);
 
-			target = dtde.getDropTargetContext().getComponent();
+			var c = getComponent();
 
-			if (target instanceof JViewport) // In this case, we want the scroll pane
-				target = target.getParent();
-
-			if (target instanceof JComponent) {
+			if (c instanceof JComponent) {
 				try {
-					originalBorder = ((JComponent) target).getBorder();
-					((JComponent) target).setBorder(dropBorder);
+					originalBorder = ((JComponent) c).getBorder();
+					((JComponent) c).setBorder(dropBorder);
 				} catch (Exception e) {
 					// Just ignore, some components do not support setBorder()...
 				}
@@ -1621,10 +1613,15 @@ public class ImageCustomGraphicsSelector extends JPanel {
 		@Override
 		public synchronized void dragExit(DropTargetEvent dte) {
 			super.dragExit(dte);
+			resetBorder();
+		}
 
-			if (target instanceof JComponent) {
+		private void resetBorder() {
+			var c = getComponent();
+			
+			if (c instanceof JComponent) {
 				try {
-					((JComponent) target).setBorder(originalBorder);
+					((JComponent) c).setBorder(originalBorder);
 				} catch (Exception e) {
 					// Just ignore...
 				}
