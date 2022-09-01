@@ -58,6 +58,7 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		} catch (IOException e) {
 		}
 		String content = contentBuilder.toString();
+		System.out.println(content);
 
 		final CyApplicationConfiguration applicationCfg = serviceRegistrar.getService(CyApplicationConfiguration.class);
 		String APP_MANAGER = "file:///" + (applicationCfg.getConfigurationDirectoryLocation()).toString() + "/" + APP_MANAGER_DIR;

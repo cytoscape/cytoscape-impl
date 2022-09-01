@@ -9,16 +9,16 @@ package org.cytoscape.filter.internal;
  * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 2.1 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
+ *
+ * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
@@ -51,7 +51,7 @@ import org.cytoscape.work.TaskManager;
 import org.osgi.framework.BundleContext;
 
 public class CyActivator extends AbstractCyActivator {
-	
+
 	public void start(BundleContext bc) {
 
 		CySwingApplication cySwingApplicationServiceRef = getService(bc,CySwingApplication.class);
@@ -63,7 +63,7 @@ public class CyActivator extends AbstractCyActivator {
 		TaskManager taskManagerServiceRef = getService(bc,TaskManager.class);
 		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,CyApplicationConfiguration.class);
 		CyVersion cytoscapeVersionService = getService(bc,CyVersion.class);
-		
+
 		// Singleton of QuickFind
 		final QuickFind quickFind = new QuickFindImpl();
 
@@ -76,18 +76,18 @@ public class CyActivator extends AbstractCyActivator {
 		ServicesUtil.taskManagerServiceRef = taskManagerServiceRef;
 		ServicesUtil.cytoscapeVersionService = cytoscapeVersionService;
 		ServicesUtil.cyApplicationConfigurationServiceRef = cyApplicationConfigurationServiceRef;
-		
+
 		final FilterReader filterReader = new FilterReader(quickFind);
 		final FilterWriter filterWriter = new FilterWriter();
 		FilterModelLocator filtersModelLocator = new FilterModelLocator();
-		
+
 		FilterApp filterApp = new FilterApp(filterReader, filterWriter, filtersModelLocator);
 		QuickFindApp quickFindApp = new QuickFindApp(quickFind, cyApplicationManagerServiceRef, cyNetworkManagerServiceRef);
-		
+
 		FilterMainPanel filterMainPanel = new FilterMainPanel(quickFind, filtersModelLocator,cyApplicationManagerServiceRef,cyNetworkManagerServiceRef,cyEventHelperServiceRef,taskManagerServiceRef);
 		FilterCytoPanelComponent filterCytoPanelComponent = new FilterCytoPanelComponent(filterMainPanel);
 		FilterMenuItemAction filterAction = new FilterMenuItemAction(cySwingApplicationServiceRef,filterMainPanel);
-				
+
 		registerAllServices(bc,filterCytoPanelComponent, new Properties());
 		registerAllServices(bc,filterMainPanel, new Properties());
 		registerService(bc,filterAction,CyAction.class, new Properties());
@@ -95,4 +95,3 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc,filterApp, new Properties());
 	}
 }
-
