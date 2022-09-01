@@ -6,9 +6,11 @@ import static org.cytoscape.cg.internal.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.cg.internal.util.ViewUtil.styleToolBarButton;
 import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE_O;
 import static org.cytoscape.util.swing.IconManager.ICON_EDIT;
+import static org.cytoscape.util.swing.IconManager.ICON_PLUS;
 import static org.cytoscape.util.swing.IconManager.ICON_SQUARE_O;
 import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
 import java.awt.AWTEvent;
 import java.awt.BasicStroke;
@@ -353,29 +355,27 @@ public class ImageCustomGraphicsSelector extends JPanel {
     }
 	
 	private void init() {
-		setOpaque(!isAquaLAF());
-		
 		var layout = new GroupLayout(this);
 		setLayout(layout);
 		layout.setAutoCreateGaps(false);
 		layout.setAutoCreateContainerGaps(false);
 		
-		int btnSize = getEditBtn().getPreferredSize().height;
-		
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER)
 				.addGroup(layout.createSequentialGroup()
-						.addGap(0, 0, Short.MAX_VALUE)
-						.addComponent(getToolBarPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(getEditBtn(), btnSize, btnSize, btnSize)
 						.addContainerGap()
+						.addComponent(getEditBtn())
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addComponent(getToolBarPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addGap(0, 0, Short.MAX_VALUE)
 				)
 				.addComponent(getGridScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(getAddBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addContainerGap()
 				.addGroup(layout.createParallelGroup(Alignment.CENTER)
+						.addComponent(getEditBtn())
 						.addComponent(getToolBarPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(getEditBtn(), btnSize, btnSize, btnSize)
 				)
 				.addPreferredGap(ComponentPlacement.RELATED)
 				.addComponent(getGridScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -439,13 +439,9 @@ public class ImageCustomGraphicsSelector extends JPanel {
 	public JButton getAddBtn() {
 		if (addBtn == null) {
 			var iconFont = serviceRegistrar.getService(IconManager.class).getIconFont(18.0f);
-			var icon = new TextIcon(IconManager.ICON_PLUS, iconFont, 18, 18);
+			var icon = new TextIcon(ICON_PLUS, iconFont, 18, 18);
 			
 			addBtn = new JButton("Add Images", icon);
-			
-			if (LookAndFeelUtil.isAquaLAF())
-				addBtn.putClientProperty("JButton.buttonType", "gradient");
-			
 			addBtn.addActionListener(evt -> addButtonActionPerformed(evt));
 		}
 		
@@ -454,8 +450,14 @@ public class ImageCustomGraphicsSelector extends JPanel {
 	
 	JToggleButton getEditBtn() {
 		if (editBtn == null) {
-			editBtn = createToolBarToggleButton(ICON_EDIT, "Edit...", 16.0f);
+			var iconFont = serviceRegistrar.getService(IconManager.class).getIconFont(18.0f);
+			var icon = new TextIcon(ICON_EDIT, iconFont, 18, 18);
+			
+			editBtn = new JToggleButton("Edit", icon, isEditMode());
 			editBtn.addActionListener(evt -> setEditMode(editBtn.isSelected()));
+			
+			if (isAquaLAF())
+				editBtn.putClientProperty("JButton.buttonType", "textured");
 		}
 		
 		return editBtn;
@@ -464,7 +466,6 @@ public class ImageCustomGraphicsSelector extends JPanel {
 	JPanel getToolBarPanel() {
 		if (toolBarPanel == null) {
 			toolBarPanel = new JPanel();
-			toolBarPanel.setOpaque(!isAquaLAF());
 			
 			var layout = new GroupLayout(toolBarPanel);
 			toolBarPanel.setLayout(layout);
@@ -475,7 +476,7 @@ public class ImageCustomGraphicsSelector extends JPanel {
 					.addContainerGap()
 					.addComponent(getSelectAllBtn())
 					.addComponent(getSelectNoneBtn())
-					.addPreferredGap(ComponentPlacement.RELATED)
+					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addComponent(getRemoveImagesBtn())
 					.addContainerGap()
 			);
@@ -611,7 +612,6 @@ public class ImageCustomGraphicsSelector extends JPanel {
 		btn.setToolTipText(tooltipText);
 		
 		styleToolBarButton(btn, serviceRegistrar.getService(IconManager.class).getIconFont(size), 2, 0);
-		btn.setOpaque(!isAquaLAF());
 		
 		return btn;
 	}
@@ -621,7 +621,6 @@ public class ImageCustomGraphicsSelector extends JPanel {
 		btn.setToolTipText(tooltipText);
 		
 		styleToolBarButton(btn, serviceRegistrar.getService(IconManager.class).getIconFont(size), 2, 0);
-		btn.setOpaque(!isAquaLAF());
 		
 		return btn;
 	}
@@ -1457,7 +1456,7 @@ public class ImageCustomGraphicsSelector extends JPanel {
 				nameTextField.setBackground(BG_COLOR);
 				nameTextField.setEditable(false);
 				nameTextField.setFocusable(false);
-				LookAndFeelUtil.makeSmall(nameTextField);
+				makeSmall(nameTextField);
 			}
 			
 			return nameTextField;

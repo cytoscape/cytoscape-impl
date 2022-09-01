@@ -41,25 +41,17 @@ public class CustomGraphicsManagerDialog extends JDialog {
 		
 		this.serviceRegistrar = serviceRegistrar;
 		
-		initComponents();
-
+		init();
 		pack();
 		setLocationRelativeTo(owner);
 	}
 
-	private void initComponents() {
+	private void init() {
 		setTitle("Image Manager");
 		setMinimumSize(new Dimension(400, 400));
 		setPreferredSize(new Dimension(600, 600));
 		
-		closeButton = new JButton(new AbstractAction("Close") {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				dispose();
-			}
-		});
-		
-		var bottomPnl = LookAndFeelUtil.createOkCancelPanel(null, closeButton);
+		var bottomPnl = LookAndFeelUtil.createOkCancelPanel(null, getCloseButton());
 		
 		var layout = new GroupLayout(getContentPane());
 		getContentPane().setLayout(layout);
@@ -75,7 +67,7 @@ public class CustomGraphicsManagerDialog extends JDialog {
 				.addComponent(bottomPnl)
 		);
 		
-		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), null, closeButton.getAction());
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), null, getCloseButton().getAction());
 
 		pack();
 	}
@@ -87,5 +79,18 @@ public class CustomGraphicsManagerDialog extends JDialog {
 		}
 		
 		return imageSelector;
+	}
+	
+	private JButton getCloseButton() {
+		if (closeButton == null) {
+			closeButton = new JButton(new AbstractAction("Close") {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					dispose();
+				}
+			});
+		}
+		
+		return closeButton;
 	}
 }

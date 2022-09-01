@@ -28,6 +28,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -214,6 +215,10 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 	
 	private ImageCustomGraphicsSelector createImageSelector() {
 		var imageSelector = new ImageCustomGraphicsSelector(serviceRegistrar);
+		
+		if (isAquaLAF())
+			imageSelector.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
+		
 		imageSelector.update(oldCustomGraphics);
 		imageSelector.addActionListener(evt -> apply());
 		
