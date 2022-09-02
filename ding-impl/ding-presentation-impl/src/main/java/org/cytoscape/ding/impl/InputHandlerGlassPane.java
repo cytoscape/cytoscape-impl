@@ -1550,12 +1550,26 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				
 				if(nodeSelectionEnabled()) {
 					var nodes = re.getPicker().getNodesInPath(selectionLasso);
-					if(!nodes.isEmpty())
-						select(nodes, CyNode.class, true);
+					var edges = List.<View<CyEdge>>of();
+					
+					if(edgeSelectionEnabled()) {
+						edges = new ArrayList<>();
+						var netView = re.getViewModelSnapshot();
+						
+						for(var nv1 : nodes) {
+							for(var nv2 : nodes) {
+								edges.addAll(DEdgeDetails.getConnectingEdgeList(netView, nv1, nv2));
+							}
+						}
+					}
+					
+					select(nodes, CyNode.class, true);
+					select(edges, CyEdge.class, true);
 				}
 			}
-			selectionLasso = null;
+			
 			repaint(); // repaint the glass pane
+			selectionLasso = null;
 		}
 		
 		public boolean isDragging() {
