@@ -67,6 +67,7 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 	private final CyServiceRegistrar serviceRegistrar;
 	
 	private JDialog dialog;
+	private ImageCustomGraphicsSelector imageSelector;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
@@ -141,7 +142,7 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 		getGroupTpn().removeAll();
 		
 		// Update the "Images" tab and add it again (right now it's supported by both CyNode and CyColumn targets)
-		var imageSelector = createImageSelector();
+		imageSelector = createImageSelector();
 		getGroupTpn().addTab("Images", imageSelector);
 		
 		Component newSelectedComp = imageSelector; // Start with this tab being the selected one
@@ -214,15 +215,14 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 	}
 	
 	private ImageCustomGraphicsSelector createImageSelector() {
-		var imageSelector = new ImageCustomGraphicsSelector(serviceRegistrar);
+		var comp = new ImageCustomGraphicsSelector(oldCustomGraphics, serviceRegistrar);
 		
 		if (isAquaLAF())
-			imageSelector.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
+			comp.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
 		
-		imageSelector.update(oldCustomGraphics);
-		imageSelector.addActionListener(evt -> apply());
+		comp.addActionListener(evt -> apply());
 		
-		return imageSelector;
+		return comp;
 	}
 	
 	private CustomGraphics2Panel getCG2Pnl(String group) {

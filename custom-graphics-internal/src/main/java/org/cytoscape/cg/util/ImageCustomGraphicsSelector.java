@@ -135,7 +135,7 @@ public class ImageCustomGraphicsSelector extends JPanel {
 	private final int minColumns = 1;
 	private final int maxColumns = 0; // 0 means any number of columns
 	
-	private int cols;
+	
 	private boolean editMode;
 	private boolean editingName;
 	private boolean selectionIsAdjusting;
@@ -146,15 +146,26 @@ public class ImageCustomGraphicsSelector extends JPanel {
 	private List<CyCustomGraphics> allImages;
 	private CyCustomGraphics selectedImage;
 	
+	private boolean ready;
+	
 	private final CyServiceRegistrar serviceRegistrar;
 	
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
-	public ImageCustomGraphicsSelector(CyServiceRegistrar serviceRegistrar) {
-		this(false, serviceRegistrar);
+	
+	public ImageCustomGraphicsSelector(CyCustomGraphics selectedImage, CyServiceRegistrar serviceRegistrar) {
+		this(selectedImage, false, serviceRegistrar);
 	}
 	
 	public ImageCustomGraphicsSelector(boolean editMode, CyServiceRegistrar serviceRegistrar) {
+		this(null, editMode, serviceRegistrar);
+	}
+	
+	public ImageCustomGraphicsSelector(
+			CyCustomGraphics selectedImage,
+			boolean editMode,
+			CyServiceRegistrar serviceRegistrar
+	) {
 		super(true);
 		
 		this.serviceRegistrar = serviceRegistrar;
@@ -177,7 +188,13 @@ public class ImageCustomGraphicsSelector extends JPanel {
 		if (editMode)
 			getEditBtn().setVisible(false);
 		
-		update(serviceRegistrar.getService(CustomGraphicsManager.class).getAllCustomGraphics(), null);
+		update(serviceRegistrar.getService(CustomGraphicsManager.class).getAllCustomGraphics(), selectedImage);
+	}
+	
+	@Override
+	public void addNotify() {
+		super.addNotify();
+		ready = true;
 	}
 	
 	/**
@@ -399,7 +416,7 @@ public class ImageCustomGraphicsSelector extends JPanel {
 				@Override
 				public void componentResized(ComponentEvent evt) {
 					debouncer.debounce(() -> {
-						invokeOnEDT(() -> getImageGrid().update());
+						invokeOnEDT(() -> getImageGrid().update(false));
 					});
 				}
 			});
@@ -616,14 +633,14 @@ public class ImageCustomGraphicsSelector extends JPanel {
 		return btn;
 	}
 	
-	private JToggleButton createToolBarToggleButton(String iconText, String tooltipText, float size) {
-		var btn = new SimpleToolBarToggleButton(iconText);
-		btn.setToolTipText(tooltipText);
-		
-		styleToolBarButton(btn, serviceRegistrar.getService(IconManager.class).getIconFont(size), 2, 0);
-		
-		return btn;
-	}
+//	private JToggleButton createToolBarToggleButton(String iconText, String tooltipText, float size) {
+//		var btn = new SimpleToolBarToggleButton(iconText);
+//		btn.setToolTipText(tooltipText);
+//		
+//		styleToolBarButton(btn, serviceRegistrar.getService(IconManager.class).getIconFont(size), 2, 0);
+//		
+//		return btn;
+//	}
 	
 	public void setDirty(CyCustomGraphics image) {
 		getImageGrid().setDirty(image);
@@ -672,6 +689,13 @@ public class ImageCustomGraphicsSelector extends JPanel {
 		private ListSelectionModel selectionModel;
 		private ListSelectionListener selectionListener;
 		
+		private int cols;
+		private int rows;
+		private int cellWidth;
+		private int cellHeight;
+
+		private boolean autoScroll = true;
+		
 		ImageGrid(Collection<CyCustomGraphics> data) {
 			this.dataModel = new ImageGridModel(data);
 			this.selectionModel = createSelectionModel();
@@ -684,8 +708,6 @@ public class ImageCustomGraphicsSelector extends JPanel {
 				revalidate();
 				repaint();
 			});
-			
-			update();
 		}
 		
 		@Override
@@ -909,7 +931,7 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			
 			try {
 				deselectAll();
-				update();
+				update(true);
 			} finally {
 				selectionIsAdjusting = false;
 			}
@@ -947,13 +969,90 @@ public class ImageCustomGraphicsSelector extends JPanel {
 	     * in the list's {@code ListUI}. It returns {@code null} if the list has
 	     * no {@code ListUI}.
 	     *
-	     * @param index0 the first index in the range
-	     * @param index1 the second index in the range
+	     * @param index1 the first index in the range
+	     * @param index2 the second index in the range
 	     * @return the bounding rectangle for the range of cells, or {@code null}
 	     */
-	    Rectangle getCellBounds(int index0, int index1) {
-	        // TODO
-	        return null;
+	    Rectangle getCellBounds(int index1, int index2) {
+	    	// Adapted from javax.swing.plaf.basic.BasicListUI...
+	    	int minIndex = Math.min(index1, index2);
+	        int maxIndex = Math.max(index1, index2);
+
+	        if (minIndex >= getModel().getSize())
+	            return null;
+
+	        var minBounds = getCellBounds(minIndex);
+
+	        if (minBounds == null)
+	            return null;
+	        if (minIndex == maxIndex)
+	            return minBounds;
+	        
+	        var maxBounds = getCellBounds(maxIndex);
+
+	        if (maxBounds != null) {
+                int minRow = convertModelToRow(minIndex);
+                int maxRow = convertModelToRow(maxIndex);
+
+                if (minRow != maxRow) {
+                    minBounds.x = 0;
+                    minBounds.width = getWidth();
+                }
+	            
+	            minBounds.add(maxBounds);
+	        }
+	        
+	        return minBounds;
+	    }
+	    
+		/**
+		 * Gets the bounds of the specified model index, returning the resulting bounds,
+		 * or null if <code>index</code> is not valid.
+		 */
+	    private Rectangle getCellBounds(int index) {
+	        int row = convertModelToRow(index);
+	        int column = convertModelToColumn(index);
+
+	        if (row == -1 || column == -1)
+	            return null;
+
+	        var insets = getInsets();
+	        int x = insets.left + column * cellWidth;
+	        int w = cellWidth;
+	        int y = insets.top + cellHeight * row;
+	        int h = cellHeight;
+	        
+	        return new Rectangle(x, y, w, h);
+	    }
+	    
+	    /**
+	     * Returns the row that the model index <code>index</code> will be displayed in.
+	     */
+	    private int convertModelToRow(int index) {
+	        int size = getModel().getSize();
+
+	        if ((index < 0) || (index >= size))
+	            return -1;
+
+			if (cols > 1 && rows > 0)
+				return index / cols;
+			
+			return index;
+	    }
+
+	    /**
+	     * Returns the column that the model index <code>index</code> will be displayed in.
+	     */
+	    private int convertModelToColumn(int index) {
+	        int size = getModel().getSize();
+
+			if ((index < 0) || (index >= size))
+				return -1;
+
+			if (rows > 0 && cols > 1)
+				return index % cols;
+			
+			return 0;
 	    }
 		
 		void addListSelectionListener(ListSelectionListener listener) {
@@ -978,7 +1077,7 @@ public class ImageCustomGraphicsSelector extends JPanel {
 	    }
 		
 		protected void fireSelectionValueChanged(int firstIndex, int lastIndex, boolean isAdjusting) {
-			Object[] listeners = listenerList.getListenerList();
+			var listeners = listenerList.getListenerList();
 			ListSelectionEvent e = null;
 
 			for (int i = listeners.length - 2; i >= 0; i -= 2) {
@@ -1007,12 +1106,27 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			}
 		}
 		
-		void update() {
+		void update(boolean recreateItems) {
 			removeAll();
 			
 			var dm = getModel();
 			
 			if (dm.getSize() > 0) {
+				if (recreateItems) {
+					vsPanelMap.clear();
+				
+					// First create the items (panels), but do not add them to the grid yet
+					for (int i = 0; i < dm.getSize(); i++) {
+						var cg = dm.getElementAt(i);
+						var itemPnl = getItem(cg);
+						
+						if (itemPnl == null)
+							itemPnl = createItem(cg);
+						
+						vsPanelMap.put(cg, itemPnl);
+					}
+				}
+				
 				var size = this.getParent() != null ? this.getParent().getSize() : null;
 				
 				if (size != null) {
@@ -1023,18 +1137,17 @@ public class ImageCustomGraphicsSelector extends JPanel {
 					cols = minColumns;
 				}
 				
-				var rows = calculateRows(dm.getSize(), cols);
+				rows = calculateRows(dm.getSize(), cols);
+
+				// To avoid quickly showing the grid in an intermediate state (usually with only one column),
+				// do not create the layout or add the items when the whole component is not ready yet
+				if (!ready)
+					return;
+				
 				setLayout(new GridLayout(rows, cols));
 				
-				for (int i = 0; i < dm.getSize(); i++) {
-					var vs = dm.getElementAt(i);
-					var itemPnl = getItem(vs);
-					
-					if (itemPnl == null)
-						itemPnl = createItem(vs);
-					
+				for (var itemPnl : vsPanelMap.values())
 					add(itemPnl);
-				}
 				
 				var diff = (cols * rows) - dm.getSize();
 					
@@ -1054,11 +1167,21 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			
 			revalidate();
 			repaint();
+			
+			var panel = vsPanelMap.isEmpty() ? null : vsPanelMap.values().iterator().next();
+			var size = panel != null ? panel.getSize() : null;
+			
+			cellWidth = size != null ? size.width : 0;
+			cellHeight = size != null ? size.height : 0;
+			
+			// Do this only once to guarantee the grid scrolls to the first selected image
+			if (autoScroll && cellWidth > 0 && cellHeight > 0 && getMinSelectionIndex() >= 0) {
+				ensureIndexIsVisible(getMinSelectionIndex());
+				autoScroll = false;
+			}
 		}
 		
-		void update(Collection<CyCustomGraphics> data) {
-			vsPanelMap.clear();
-			
+		void update(Collection<CyCustomGraphics> data) {			
 			// Save current selection
 			var selectedImages = isEditMode() ? getSelectedImageList() : new ArrayList<CyCustomGraphics>();
 			
@@ -1077,7 +1200,6 @@ public class ImageCustomGraphicsSelector extends JPanel {
 		
 		private ImagePanel createItem(CyCustomGraphics image) {
 			var item = new ImagePanel(image);
-			vsPanelMap.put(image, item);
 			
 			// Events
 			item.addMouseListener(new MouseAdapter() {
@@ -1552,39 +1674,36 @@ public class ImageCustomGraphicsSelector extends JPanel {
 				var trans = dtde.getTransferable();
 				boolean gotData = false;
 				
-				AbstractURLImageCustomGraphics<?> lastCG = null;
-				
 				try {
 					if (trans.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
 						var fileList = (List<File>) trans.getTransferData(DataFlavor.javaFileListFlavor);
-	
-						for (var file : fileList)
-							lastCG = addCustomGraphics(file.toURI().toURL().toString());
+						processFiles(fileList.toArray(new File[fileList.size()]));
+					} else {
+						AbstractURLImageCustomGraphics<?> lastCG = null;
 						
-						gotData = true;
-					} else if (trans.isDataFlavorSupported(urlFlavor)) {
-						var url = (URL) trans.getTransferData(urlFlavor);
-						// Add image
-						lastCG = addCustomGraphics(url.toString());
-						gotData = true;
-					} else if (trans.isDataFlavorSupported(DataFlavor.stringFlavor)) {
-						var s = (String) trans.getTransferData(DataFlavor.stringFlavor);
-	
-						var url = new URL(s);
-						lastCG = addCustomGraphics(url.toString());
-						gotData = true;
+						if (trans.isDataFlavorSupported(urlFlavor)) {
+							var url = (URL) trans.getTransferData(urlFlavor);
+							// Add image
+							lastCG = addCustomGraphics(url.toString());
+							gotData = true;
+						} else if (trans.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+							var s = (String) trans.getTransferData(DataFlavor.stringFlavor);
+		
+							var url = new URL(s);
+							lastCG = addCustomGraphics(url.toString());
+							gotData = true;
+						}
+						
+						// Select and scroll to the last added image
+						if (lastCG != null) {
+							var manager = serviceRegistrar.getService(CustomGraphicsManager.class);
+							update(manager.getAllCustomGraphics(), lastCG);
+						}
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
 				} finally {
 					dtde.dropComplete(gotData);
-				}
-				
-				// Select and scroll to the last added image
-				if (lastCG != null) {
-					var manager = serviceRegistrar.getService(CustomGraphicsManager.class);
-					update(manager.getAllCustomGraphics(), lastCG);
-					getImageGrid().setSelectedValue(lastCG, true);
 				}
 			} catch (Exception e) {
 				logger.error("Error drag-and-dropping image(s): ", e);
