@@ -1,4 +1,3 @@
-<!-- Additional JavaScript -->
 <script type="text/javascript">
 window.addEventListener('load', function() {
     if(window.navigator.userAgent.includes('CyBrowser')){
@@ -16,6 +15,7 @@ window.addEventListener('load', function() {
     }
 });
 
+// const coreApps = []
 const coreApps = ["BioPAX Reader",  "Biomart Web Service Client", "CX Support",
                   "Core Apps", "CyNDEx-2", "CyCL", "Diffusion", "FileTransfer",
                   "ID Mapper", "JSON Support", "Network Merge", "NetworkAnalyzer",
@@ -37,6 +37,7 @@ function getUpdatesAppsCyB() {
 function renderInstalledApps(res) {
     // alert(res);
         array = JSON.parse(res);
+        console.log(array.length + " enabled apps");
         array = array.sort(function(a,b){return a.appName.localeCompare(b.appName)});
         array.forEach(app => {
             var aname=app['appName'];
@@ -46,12 +47,12 @@ function renderInstalledApps(res) {
             var aver=app['version'];
             var astat=app['status'];
             if (aname.length > 0 && !coreApps.includes(aname)){
-                arow = '<tr><td style=" background-color: #EEEEEE; width:25px;height:25px; cursor:pointer;"><img src="https://raw.githubusercontent.com/cytoscape/cytoscape-impl/feature/app-manager/app-impl/src/main/resources/img/trash.png" height="18px" style="float:left;margin:0px 0 2px 3px;" onclick="uninstallAndRemove(&quot;'+aname+'&quot;)" title="Uninstall app"></td>';
+                arow = '<tr><td style=" background-color: #EEEEEE; width:25px;height:25px; cursor:pointer;"><img src="img/trash.png" height="18px" style="float:left;margin:0px 0 2px 3px;" onclick="uninstallAndRemove(&quot;'+aname+'&quot;)" title="Uninstall app"></td>';
                 arow += '<td style=" background-color: #EEEEEE; width:25px;height:25px; cursor:pointer;"><input type="checkbox" id="'+anamevar+'" name="enablecheck" tabindex="0"  checked ' +
                     'onchange="toggleStatus(this, &quot;'+aname+'&quot;);" title="Toggle enabled status"></td>';
-                arow += '<td style=" background-color: #EEEEEE; width:25px;height:25px;"><img src="https://raw.githubusercontent.com/cytoscape/cytoscape-impl/feature/app-manager/app-impl/src/main/resources/img/update1.png" height="18px" style="float:left;margin:0px 0 0 3px;" title="No update available"</td>';
+                arow += '<td style=" background-color: #EEEEEE; width:25px;height:25px;"><img src="img/update1.png" height="18px" style="float:left;margin:0px 0 0 3px;" title="No update available"</td>';
                 arow += '<td>&nbsp;&nbsp;<a onClick="openAppStore(&quot;'+anamevar+'&quot;);" class="app" title="Visit App Store page">'+aname+'</a> (v'+aver+') </td></tr>';
-                document.getElementById('enabledApps').innerHTML += arow;
+                document.getElementById('appTable').innerHTML += arow;
             }
         });
 }
@@ -59,6 +60,7 @@ function renderInstalledApps(res) {
 function renderDisabledApps(res) {
     // alert(res);
         array = JSON.parse(res);
+        console.log(array.length + " disabled apps");
         array = array.sort(function(a,b){return a.appName.localeCompare(b.appName)});
         array.forEach(app => {
             var aname=app['appName'];
@@ -68,14 +70,32 @@ function renderDisabledApps(res) {
             var aver=app['version'];
             var astat=app['status'];
             if (aname.length > 0 && !coreApps.includes(aname)){
-                arow = '<tr><td style="background-color: #EEEEEE; width:25px;height:25px; cursor:pointer;"><img src="https://raw.githubusercontent.com/cytoscape/cytoscape-impl/feature/app-manager/app-impl/src/main/resources/img/trash.png" height="18px" style="float:left;margin:0px 0 2px 3px;" onclick="uninstallAndRemove(&quot;'+aname+'&quot;)" title="Uninstall app"></td>';
+                arow = '<tr><td style="background-color: #EEEEEE; width:25px;height:25px; cursor:pointer;"><img src="img/trash.png" height="18px" style="float:left;margin:0px 0 2px 3px;" onclick="uninstallAndRemove(&quot;'+aname+'&quot;)" title="Uninstall app"></td>';
                 arow += '<td style="background-color: #EEEEEE; width:25px;height:25px; cursor:pointer;"><input type="checkbox" id="'+anamevar+'" tabindex="0" ' +
                     'onchange="toggleStatus(this, &quot;'+aname+'&quot;);" title="Toggle enabled status"></td>';
-                arow += '<td style=" background-color: #EEEEEE; width:25px;height:25px;"><img src="https://raw.githubusercontent.com/cytoscape/cytoscape-impl/feature/app-manager/app-impl/src/main/resources/img/update1.png" height="18px" style="float:left;margin:0px 0 0 3px;" title="No update available"></td>';
+                arow += '<td style=" background-color: #EEEEEE; width:25px;height:25px;"><img src="img/update1.png" height="18px" style="float:left;margin:0px 0 0 3px;" title="No update available"></td>';
                 arow += '<td>&nbsp;&nbsp;<a onClick="openAppStore(&quot;'+anamevar+'&quot;);" class="app" title="Visit App Store page">'+aname+'</a> (v'+aver+') </td></tr>';
-                document.getElementById('disabledApps').innerHTML += arow;
+                document.getElementById('appTable').innerHTML += arow;
             }
         });
+        sortData();
+}
+function sortData() {
+        // Read table body node.
+        var tableData = document.getElementById('appTable');
+
+        // Read table row nodes.
+        var rowData = tableData.getElementsByTagName('tr');
+
+        for(var i = 1; i < rowData.length - 1; i++) {
+            for(var j = 1; j < rowData.length - i; j++) {
+                //Swap row nodes if short condition matches
+                if(rowData.item(j).innerText.toLowerCase() > rowData.item(j+1).innerText.toLowerCase()) {
+                    // console.log(rowData.item(j).innerText + " > " + rowData.item(j+1).innerText);
+                    tableData.insertBefore(rowData.item(j+1).parentNode,rowData.item(j).parentNode);
+                }
+            }
+        }
 }
 
 function toggleStatus(checkbox, app) {
@@ -89,15 +109,8 @@ function toggleStatus(checkbox, app) {
 function uninstallAndRemove(app) {
     uninstallAppCyB(app);
     // and remove from table
-    var table = document.getElementById("enabledApps");
+    var table = document.getElementById("appTable");
     for (var i = 1, row; row = table.rows[i]; i++) {
-        aname = getAnameByRow(row);
-        if (aname ==  app) {
-            row.remove();
-        }
-    }
-    var table = document.getElementById("disabledApps");
-    for (var i = 0, row; row = table.rows[i]; i++) {
         aname = getAnameByRow(row);
         if (aname ==  app) {
             row.remove();
@@ -110,15 +123,8 @@ function getAnameByRow(row){
     return (aname);
 }
 function getRowByAname(app){
-    var table = document.getElementById("enabledApps");
+    var table = document.getElementById("appTable");
     for (var i = 1, row; row = table.rows[i]; i++) {
-        aname = getAnameByRow(row);
-        if (aname ==  app) {
-            return(row);
-        }
-    }
-    var table = document.getElementById("disabledApps");
-    for (var i = 0, row; row = table.rows[i]; i++) {
         aname = getAnameByRow(row);
         if (aname ==  app) {
             return(row);
@@ -129,17 +135,8 @@ function getRowByAname(app){
 }
 
 function enableAllApps() {
-    var table = document.getElementById("enabledApps");
+    var table = document.getElementById("appTable");
     for (var i = 1, row; row = table.rows[i]; i++) {
-        var aname = getAnameByRow(row);
-        var anamevar = aname.replace(/\W/g,"");
-        if (!document.getElementById(anamevar).checked){
-            document.getElementById(anamevar).checked = true;
-            enableAppCyB(aname);
-        }
-    }
-    var table = document.getElementById("disabledApps");
-    for (var i = 0, row; row = table.rows[i]; i++) {
         var aname = getAnameByRow(row);
         var anamevar = aname.replace(/\W/g,"");
         if (!document.getElementById(anamevar).checked){
@@ -149,17 +146,8 @@ function enableAllApps() {
     }
 }
 function disableAllApps() {
-    var table = document.getElementById("enabledApps");
+    var table = document.getElementById("appTable");
     for (var i = 1, row; row = table.rows[i]; i++) {
-        var aname = getAnameByRow(row);
-        var anamevar = aname.replace(/\W/g,"");
-        if (document.getElementById(anamevar).checked){
-            document.getElementById(anamevar).checked = false;
-            disableAppCyB(aname);
-        }
-    }
-    var table = document.getElementById("disabledApps");
-    for (var i = 0, row; row = table.rows[i]; i++) {
         var aname = getAnameByRow(row);
         var anamevar = aname.replace(/\W/g,"");
         if (document.getElementById(anamevar).checked){
@@ -169,14 +157,8 @@ function disableAllApps() {
     }
 }
 function uninstallAllApps() {
-    var table = document.getElementById("enabledApps");
+    var table = document.getElementById("appTable");
     for (var i = 1, row; row = table.rows[i]; i++) {
-        var aname = getAnameByRow(row);
-        uninstallAppCyB(aname);
-        row.remove();
-    }
-    var table = document.getElementById("disabledApps");
-    for (var i = 0, row; row = table.rows[i]; i++) {
         var aname = getAnameByRow(row);
         uninstallAppCyB(aname);
         row.remove();
@@ -235,18 +217,14 @@ function updateAppAndIcon(app) {
  function updateAllApps() {
     cybrowser.executeCyCommand('apps update app="all"');
     //and clear all green arrows
-    var table = document.getElementById("enabledApps");
-    for (var i = 0, row; row = table.rows[i]; i++) {
-        updateAppRow(row);
-    }
-    var table = document.getElementById("disabledApps");
+    var table = document.getElementById("appTable");
     for (var i = 0, row; row = table.rows[i]; i++) {
         updateAppRow(row);
     }
 }
 
 function updateAppRow(row) {
-    row.cells[2].children[0].src = "https://raw.githubusercontent.com/cytoscape/cytoscape-impl/feature/app-manager/app-impl/src/main/resources/img/update1.png";
+    row.cells[2].children[0].src = "img/update1.png";
     row.cells[2].children[0].title = "No update available";
     row.cells[2].children[0].style.cursor = "default";
     row.cells[2].children[0].removeAttribute('onclick');
@@ -264,6 +242,7 @@ function renderUpdatesApps(res) {
     //res = '[{"appName": "WikiPathways","version":"3.3.7","new version":"3.3.10"}]'
     res = res.replace(/},]/,"}]"); //bug: https://cytoscape.atlassian.net/browse/CYTOSCAPE-12992
     array = JSON.parse(res);
+    console.log(array.length + " apps with updates");
         array.forEach(app => {
             var aname=app['appName'];
             if (typeof aname == 'undefined') { aname = "";} //resolve null
@@ -271,7 +250,7 @@ function renderUpdatesApps(res) {
             var anamevar = aname.replace(/\W/g,"");
             var newversion = app['new version'];
             var row = getRowByAname(aname);
-            row.cells[2].children[0].src = "https://raw.githubusercontent.com/cytoscape/cytoscape-impl/feature/app-manager/app-impl/src/main/resources/img/update2.png";
+            row.cells[2].children[0].src = "img/update2.png";
             row.cells[2].children[0].title = "Update app";
             row.cells[2].children[0].style.cursor = "pointer";
             row.cells[2].children[0].setAttribute('onclick', 'updateAppAndIcon("'+aname+'")');
@@ -279,3 +258,5 @@ function renderUpdatesApps(res) {
         });
 }
     </script>
+  </body>
+</html>

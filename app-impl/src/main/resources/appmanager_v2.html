@@ -12,7 +12,7 @@
     text-align: center;
       }
   body {
-    font-size: 1rem;
+    font-size: 0.8rem;
     font-family: Helvetica, Arial, sans-serif;
     /* margin: 0px; */
     /* background-color: #EEE; */
@@ -24,7 +24,7 @@
   a.app{
     text-decoration: none;
     cursor: pointer;
-    font-size: 1.1rem;
+    font-size: 0.9rem;
     color: black;
     vertical-align: top;
   }
@@ -44,7 +44,7 @@ right: 0;
 overflow: visible;
 box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
 text-align: right;
-width: 140px;
+width: 125px;
 /* direction: rtl; */
 z-index: 2;
 }
@@ -54,6 +54,7 @@ color: #000000;
 padding: 5px;
 text-decoration: none;
 background-color: white;
+font-size: 0.9rem;
 }
 .dropdown-content a:hover {
 color: #FFFFFF;
@@ -74,7 +75,7 @@ display: none;
         <div style="background-color: #FFF; height: 50px;">
           <div class="dropdown" style="float: right;">
             <button class="hamburger" onclick="toggleMenu()">
-              <img src="data:image/png;base64,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" alt="menu" style="background-color: white; height: 30px;">
+              <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACMAAAAjCAIAAACRuyQOAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAMRJREFUeNrsl8ENwyAMAJOq7ygjdAEkBsgDRmKCjMA2+YIEA2SENhPkCS/q8k+wlILUyifxszjbgCX6lFLXhDusZVmGYajniDEyxj4m0EzTVM+0bVsI4da1gkxkItN3p9E5z0wx7JE5i4AJ65xLx8zzjEkZwo52eGXKNQkhMKZiGMqElP3O3ZNS9gistVe7xznHpDyO41WT1vrvXq5Sal1XTOnnfS6bQFM8bWDf96s1GWNolpOJTGRqNWG991U18FN7CzAA8BNw+MF51koAAAAASUVORK5CYII=" alt="menu" style="background-color: white; height: 35px; margin-top: -3px;">
             </button>
             <div class="dropdown-content" id="ddc">
                 <a onclick="updateAllApps()">Update all apps</a>
@@ -95,14 +96,13 @@ display: none;
           </p>
         </div>
         <div class="tables" style=" float: both;">
-          <table id ="enabledApps">
+          <table id ="appTable">
             <tr>
                 <th style="font-size: 0.8em; font-weight: bold;" title="Delete">Del.</th>
                 <th style="font-size: 0.8em; font-weight: bold;" title="Enable/Disable">Enb.</th>
                 <th style="font-size: 0.8em; font-weight: bold;" title="Update">Upd.</th>
             </tr>
           </table>
-          <table id ="disabledApps"></table>
         </div>
     </div>
   </body>
