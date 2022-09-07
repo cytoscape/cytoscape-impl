@@ -11,6 +11,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 import org.cytoscape.application.CyApplicationConfiguration;
+import org.cytoscape.cg.internal.util.ViewUtil;
 import org.cytoscape.cg.model.BitmapCustomGraphics;
 import org.cytoscape.cg.model.BitmapLayer;
 import org.cytoscape.cg.model.CustomGraphicsManager;
@@ -105,7 +106,7 @@ public class BitmapCustomGraphicsFactory extends AbstractURLImageCustomGraphicsF
 	@Override
 	protected BitmapCustomGraphics createMissingImageCustomGraphics(String entryStr, long id, String sourceURL) {
 		try {
-			var cg = new MissingBitmapCustomGraphics(entryStr, id, sourceURL, this);
+			var cg = new MissingBitmapCustomGraphics(entryStr, id, ViewUtil.getShortName(sourceURL), this);
 			manager.addMissingImageCustomGraphics(cg);
 			
 			return cg;

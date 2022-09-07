@@ -25,9 +25,10 @@ import org.slf4j.Logger;
 public class ViewUtil {
 
 	public static String getShortName(String pathName) {
-		var p = new File(pathName);
+		if (pathName == null)
+			return null;
 		
-		return p.getName();
+		return new File(pathName).getName();
 	}
 	
 	public static ImageIcon resizeIcon(ImageIcon icon, int width, int height) {

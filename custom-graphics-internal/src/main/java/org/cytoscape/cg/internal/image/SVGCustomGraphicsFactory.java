@@ -6,6 +6,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 import org.cytoscape.application.CyApplicationConfiguration;
+import org.cytoscape.cg.internal.util.ViewUtil;
 import org.cytoscape.cg.model.CustomGraphicsManager;
 import org.cytoscape.cg.model.SVGCustomGraphics;
 import org.cytoscape.cg.model.SVGLayer;
@@ -58,7 +59,7 @@ public class SVGCustomGraphicsFactory extends AbstractURLImageCustomGraphicsFact
 				var file = new File(dir, name);
 				url = file.toURI().toURL();
 			} else {
-				name = input;
+				name = ViewUtil.getShortName(input);
 				url = new URL(input);
 			}
 

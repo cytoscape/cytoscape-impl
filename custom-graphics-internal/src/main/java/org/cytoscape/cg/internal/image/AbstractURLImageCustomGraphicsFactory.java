@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.cytoscape.application.CyUserLog;
+import org.cytoscape.cg.internal.util.ViewUtil;
 import org.cytoscape.cg.model.CustomGraphicsManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
@@ -46,6 +47,7 @@ public abstract class AbstractURLImageCustomGraphicsFactory<T extends CustomGrap
 	 * </ul>
 	 */
 	@Override
+	@SuppressWarnings("unchecked")
 	public CyCustomGraphics<T> parseSerializableString(String entryStr) {
 		// Check this is URL or not
 		if (entryStr == null)
@@ -53,15 +55,16 @@ public abstract class AbstractURLImageCustomGraphicsFactory<T extends CustomGrap
 		if (!validate(entryStr))
 			return null;
 	
-		var imageName = entry[0];
+		var imageId = entry[0];
 		var sourceURL = entry[1];
+		var imageName = ViewUtil.getShortName(sourceURL);
 		
 		// Try using the URL first
 		if (sourceURL != null) {
 			try {
 				var url = new URL(sourceURL);
 				var cg = manager.getCustomGraphicsBySourceURL(url);
-				cg.setDisplayName(entry[1]);
+				cg.setDisplayName(imageName);
 				
 				return cg;
 			} catch (Exception e) {
@@ -69,7 +72,7 @@ public abstract class AbstractURLImageCustomGraphicsFactory<T extends CustomGrap
 			}
 		}
 		
-		var id = Long.parseLong(imageName);
+		var id = Long.parseLong(imageId);
 		var cg = manager.getCustomGraphicsByID(id);
 		
 		// Can't find image, maybe because it has not been added to the manager yet,
@@ -78,7 +81,7 @@ public abstract class AbstractURLImageCustomGraphicsFactory<T extends CustomGrap
 		if (cg == null)
 			cg = createMissingImageCustomGraphics(entryStr, id, sourceURL);
 		
-		cg.setDisplayName(entry[1]);
+		cg.setDisplayName(imageName);
 		
 		return cg;
 	}

@@ -1,6 +1,8 @@
 package org.cytoscape.cg.model;
 
+import java.text.Collator;
 import java.util.Comparator;
+import java.util.Locale;
 
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 
@@ -31,6 +33,8 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 @SuppressWarnings("rawtypes")
 public class CGComparator implements Comparator<CyCustomGraphics> {
 	
+	private final Collator collator = Collator.getInstance(Locale.getDefault());
+	
 	@Override
 	public int compare(CyCustomGraphics o1, CyCustomGraphics o2) {
 		var class1 = o1.getClass().getCanonicalName();
@@ -39,11 +43,6 @@ public class CGComparator implements Comparator<CyCustomGraphics> {
 		if (!class1.equals(class2))
 			return class1.compareTo(class2);
 
-		return o1.getDisplayName().compareTo(o2.getDisplayName());
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		return false;
+		return collator.compare(o1.getDisplayName(), o2.getDisplayName());
 	}
 }

@@ -281,7 +281,7 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			allImages.sort(new CGComparator());
 		}
 		
-		getImageGrid().update(allImages);
+		getImageGrid().update();
 		update(selectedValue);
 		update(true);
 	}
@@ -572,7 +572,7 @@ public class ImageCustomGraphicsSelector extends JPanel {
 	
 	private void processFiles(File[] files) {
 		var manager = serviceRegistrar.getService(CustomGraphicsManager.class);
-		AbstractURLImageCustomGraphics<?> lastCG = null;
+		var newImages = new ArrayList<CyCustomGraphics>();
 		
 		for (var file : files) {
 			BufferedImage img = null;
@@ -592,16 +592,17 @@ public class ImageCustomGraphicsSelector extends JPanel {
 
 			try {
 				var url = file.toURI().toURL();
+				var name = ViewUtil.getShortName(file.toString());
 				AbstractURLImageCustomGraphics<?> cg = null;
 				
 				if (svg != null)
-					cg = new SVGCustomGraphics(manager.getNextAvailableID(), file.toString(), url, svg);
+					cg = new SVGCustomGraphics(manager.getNextAvailableID(), name, url, svg);
 				else if (img != null)
-					cg = new BitmapCustomGraphics(manager.getNextAvailableID(), file.toString(), url, img);
+					cg = new BitmapCustomGraphics(manager.getNextAvailableID(), name, url, img);
 
 				if (cg != null) {
+					newImages.add(cg);
 					manager.addCustomGraphics(cg, url);
-					lastCG = cg;
 				}
 			} catch (Exception e) {
 				logger.error("Could not create custom graphics: " + file, e);
@@ -609,8 +610,17 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			}
 		}
 		
-		if (lastCG != null)
-			update(manager.getAllCustomGraphics(), lastCG);
+		if (!newImages.isEmpty()) {
+			update(manager.getAllCustomGraphics(), null);
+			
+			if (isEditMode())
+				getImageGrid().setSelectedList(newImages);
+			else
+				getImageGrid().setSelectedValue(newImages.get(0), false);
+			
+			// Scroll to the first selected item
+			getImageGrid().ensureIndexIsVisible(getImageGrid().getMinSelectionIndex());
+		}
 	}
 	
 	private int calculateColumns(int itemWidth, int gridWidth) {
@@ -763,8 +773,8 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			var dm = getModel();
 			
 			if (index > -1 && index < dm.getSize()) {
-				var vs = dm.getElementAt(index);
-				var item = getItem(vs);
+				var cg = dm.getElementAt(index);
+				var item = getItem(cg);
 				
 				if (item != null)
 					item.requestFocusInWindow();
@@ -888,8 +898,8 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			var sm = getSelectionModel();
 			sm.clearSelection();
 			
-			for (var vs : images) {
-				int idx = indexOf(vs);
+			for (var cg : images) {
+				int idx = indexOf(cg);
 				
 				if (idx >= 0)
 					sm.addSelectionInterval(idx, idx);
@@ -1017,7 +1027,7 @@ public class ImageCustomGraphicsSelector extends JPanel {
 	            return null;
 
 	        var insets = getInsets();
-	        int x = insets.left + column * cellWidth;
+	        int x = insets.left + column * cellWidth; // TODO cellWidth/height always 0 after importing images (????)
 	        int w = cellWidth;
 	        int y = insets.top + cellHeight * row;
 	        int h = cellHeight;
@@ -1168,11 +1178,9 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			revalidate();
 			repaint();
 			
-			var panel = vsPanelMap.isEmpty() ? null : vsPanelMap.values().iterator().next();
-			var size = panel != null ? panel.getSize() : null;
-			
-			cellWidth = size != null ? size.width : 0;
-			cellHeight = size != null ? size.height : 0;
+			// The cell size variables must be update here, otherwise the scrollRectToVisible() method won't work
+			cellWidth = getWidth() / cols;
+			cellHeight = getHeight() / rows;
 			
 			// Do this only once to guarantee the grid scrolls to the first selected image
 			if (autoScroll && cellWidth > 0 && cellHeight > 0 && getMinSelectionIndex() >= 0) {
@@ -1181,7 +1189,7 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			}
 		}
 		
-		void update(Collection<CyCustomGraphics> data) {			
+		void update() {			
 			// Save current selection
 			var selectedImages = isEditMode() ? getSelectedImageList() : new ArrayList<CyCustomGraphics>();
 			
@@ -1435,9 +1443,9 @@ public class ImageCustomGraphicsSelector extends JPanel {
 					if (focusedItem != null)
 						setSelectedValue(focusedItem.getImage(), false);
 				} else if (dm.getSize() > 0) {
-					var vs = focusedItem != null ? focusedItem.getImage() : dm.getElementAt(0);
+					var cg = focusedItem != null ? focusedItem.getImage() : dm.getElementAt(0);
 					int size = dm.getSize();
-					int idx = indexOf(vs);
+					int idx = indexOf(cg);
 					int newIdx = idx;
 					
 					if (cmd.equals(VK_RIGHT)) {
@@ -1752,9 +1760,10 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			try {
 				var url = new URL(urlStr);
 				var id = manager.getNextAvailableID();
+				var name = ViewUtil.getShortName(urlStr);
 				var cg = urlStr.toLowerCase().endsWith(".svg")
-						? new SVGCustomGraphics(id, urlStr, url)
-						: new BitmapCustomGraphics(id, urlStr, url);
+						? new SVGCustomGraphics(id, name, url)
+						: new BitmapCustomGraphics(id, name, url);
 				
 				if (cg != null)
 					manager.addCustomGraphics(cg, url);
