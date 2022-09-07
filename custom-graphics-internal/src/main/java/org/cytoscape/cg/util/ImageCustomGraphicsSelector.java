@@ -2,7 +2,6 @@ package org.cytoscape.cg.util;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
-import static org.cytoscape.cg.internal.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.cg.internal.util.ViewUtil.styleToolBarButton;
 import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE_O;
 import static org.cytoscape.util.swing.IconManager.ICON_EDIT;
@@ -135,7 +134,6 @@ public class ImageCustomGraphicsSelector extends JPanel {
 	private final int minColumns = 1;
 	private final int maxColumns = 0; // 0 means any number of columns
 	
-	
 	private boolean editMode;
 	private boolean editingName;
 	private boolean selectionIsAdjusting;
@@ -146,12 +144,12 @@ public class ImageCustomGraphicsSelector extends JPanel {
 	private List<CyCustomGraphics> allImages;
 	private CyCustomGraphics selectedImage;
 	
+	private DebounceTimer resizeDebouncer = new DebounceTimer();
 	private boolean ready;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
-	
 	
 	public ImageCustomGraphicsSelector(CyCustomGraphics selectedImage, CyServiceRegistrar serviceRegistrar) {
 		this(selectedImage, false, serviceRegistrar);
@@ -410,17 +408,15 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			gridScrollPane.setBackground(BG_COLOR);
 			gridScrollPane.getViewport().setBackground(BG_COLOR);
 			
-			var debouncer = new DebounceTimer();
-			
 			gridScrollPane.getViewport().addComponentListener(new ComponentAdapter() {
 				@Override
 				public void componentResized(ComponentEvent evt) {
-					debouncer.debounce(() -> {
-						invokeOnEDT(() -> getImageGrid().update(false));
+					resizeDebouncer.debounce(() -> {
+						getImageGrid().update(false);
 					});
 				}
 			});
-			gridScrollPane.getViewport().addMouseListener(new MouseAdapter() {
+			gridScrollPane.getViewport().getView().addMouseListener(new MouseAdapter() {
 				@Override
 				public void mousePressed(MouseEvent evt) {
 					if (isEditMode() && !evt.isShiftDown()) // Deselect all items
@@ -760,8 +756,9 @@ public class ImageCustomGraphicsSelector extends JPanel {
 		int indexOf(CyCustomGraphics image) {
 			int i, c;
 			var dm = getModel();
+			var total = dm.getSize();
 			
-			for (i = 0, c = dm.getSize(); i < c; i++) {
+			for (i = 0, c = total; i < c; i++) {
 				if (image.equals(dm.getElementAt(i)))
 					return i;
 			}
@@ -817,11 +814,11 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			var selectedItems = new ArrayList<CyCustomGraphics>();
 
 			if (selectedIndices.length > 0) {
-				int size = dm.getSize();
+				int total = dm.getSize();
 				
-				if (selectedIndices[0] < size) {
+				if (selectedIndices[0] < total) {
 					for (int i : selectedIndices) {
-						if (i >= size)
+						if (i >= total)
 							break;
 						
 						selectedItems.add(dm.getElementAt(i));
@@ -1120,13 +1117,14 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			removeAll();
 			
 			var dm = getModel();
+			int total = dm.getSize();
 			
-			if (dm.getSize() > 0) {
+			if (total > 0) {
 				if (recreateItems) {
 					vsPanelMap.clear();
 				
 					// First create the items (panels), but do not add them to the grid yet
-					for (int i = 0; i < dm.getSize(); i++) {
+					for (int i = 0; i < total; i++) {
 						var cg = dm.getElementAt(i);
 						var itemPnl = getItem(cg);
 						
@@ -1137,17 +1135,16 @@ public class ImageCustomGraphicsSelector extends JPanel {
 					}
 				}
 				
-				var size = this.getParent() != null ? this.getParent().getSize() : null;
+				int gridWidth = getWidth();
 				
-				if (size != null) {
+				if (gridWidth > 0) {
 					var itemWidth = IMAGE_WIDTH + 2 * ITEM_BORDER_WIDTH + 2 * ITEM_MARGIN + 2 * ITEM_PAD;
-					var width = size != null ? size.width : itemWidth;
-					cols = width <= 0 ? minColumns : calculateColumns(itemWidth, width);
+					cols = Math.max(minColumns, calculateColumns(itemWidth, gridWidth));
 				} else {
 					cols = minColumns;
 				}
 				
-				rows = calculateRows(dm.getSize(), cols);
+				rows = calculateRows(total, cols);
 
 				// To avoid quickly showing the grid in an intermediate state (usually with only one column),
 				// do not create the layout or add the items when the whole component is not ready yet
@@ -1158,25 +1155,9 @@ public class ImageCustomGraphicsSelector extends JPanel {
 				
 				for (var itemPnl : vsPanelMap.values())
 					add(itemPnl);
-				
-				var diff = (cols * rows) - dm.getSize();
-					
-				for (int i = 0; i < diff; i++) {
-					var fillPnl = new JPanel();
-					fillPnl.setBackground(BG_COLOR);
-					fillPnl.addMouseListener(new MouseAdapter() {
-						@Override
-						public void mousePressed(MouseEvent evt) {
-							if (isEditMode() && !evt.isShiftDown()) // Deselect all items
-								deselectAll();
-						}
-					});
-					add(fillPnl);
-				}
 			}
 			
 			revalidate();
-			repaint();
 			
 			// The cell size variables must be update here, otherwise the scrollRectToVisible() method won't work
 			cellWidth = getWidth() / cols;
