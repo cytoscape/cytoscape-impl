@@ -62,8 +62,10 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
@@ -455,7 +457,7 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			var icon = new TextIcon(ICON_PLUS, iconFont, 18, 18);
 			
 			addBtn = new JButton("Add Images", icon);
-			addBtn.addActionListener(evt -> addButtonActionPerformed(evt));
+			addBtn.addActionListener(evt -> addImages());
 		}
 		
 		return addBtn;
@@ -524,13 +526,13 @@ public class ImageCustomGraphicsSelector extends JPanel {
 	JButton getRemoveImagesBtn() {
 		if (removeImagesBtn == null) {
 			removeImagesBtn = createToolBarButton(ICON_TRASH_O, "Remove Selected Images", 18.0f);
-			removeImagesBtn.addActionListener(evt -> deleteButtonActionPerformed(evt));
+			removeImagesBtn.addActionListener(evt -> removeSelectedImages());
 		}
 		
 		return removeImagesBtn;
 	}
 	
-	private void addButtonActionPerformed(ActionEvent evt) {
+	private void addImages() {
 		// Add a directory
 		var chooser = new JFileChooser();
 		
@@ -544,7 +546,7 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			processFiles(chooser.getSelectedFiles());
 	}
 	
-	private void deleteButtonActionPerformed(ActionEvent evt) {
+	private void removeSelectedImages() {
 		var toBeRemoved = imageGrid.getSelectedValuesList();
 		
 		if (!toBeRemoved.isEmpty()) {
@@ -1264,8 +1266,28 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			}
 			
 			item.repaint();
+			
+			if (evt.isPopupTrigger())
+				showContextMenu(evt, item);
 		}
 		
+		private void showContextMenu(MouseEvent me, ImagePanel item) {
+			var popup = new JPopupMenu();
+			var iconManager = serviceRegistrar.getService(IconManager.class);
+			
+			{
+				var iconFont = iconManager.getIconFont(18.0f);
+				var icon = new TextIcon(ICON_TRASH_O, iconFont, 18, 18);
+				var mi = new JMenuItem("Remove " + (isEditMode() ? "Selected Images" : "Image"), icon);
+				mi.addActionListener(evt -> removeSelectedImages());
+				mi.setEnabled(!getImageGrid().getSelectionModel().isSelectionEmpty());
+				
+				popup.add(mi);
+			}
+			
+			popup.show(item, me.getX(), me.getY());
+		}
+
 		private void toggleSelection(ImagePanel item) {
 			var index = indexOf(item.image);
 			
