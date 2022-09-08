@@ -15,30 +15,27 @@ import org.cytoscape.application.CyUserLog;
 import org.cytoscape.cg.internal.util.ImageUtil;
 import org.cytoscape.cg.model.CustomGraphicsManager;
 import org.cytoscape.cg.model.SVGCustomGraphics;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * @deprecated The concept of user images was removed in version 3.10 (they are now "session" images only)
- */
-@Deprecated
 public class SaveUserImagesTask implements Task {
-
-	private final File location;
-	private final CustomGraphicsManager manager;
 
 	private static final int TIMEOUT = 1000;
 	private static final int NUM_THREADS = 4;
 
 	private static final String METADATA_FILE = "image_metadata.props";
 	
+	private final File location;
+	private final CyServiceRegistrar serviceRegistrar;
+
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
-	public SaveUserImagesTask(File location, CustomGraphicsManager manager) {
+	public SaveUserImagesTask(File location, CyServiceRegistrar serviceRegistrar) {
 		this.location = location;
-		this.manager = manager;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
@@ -51,12 +48,13 @@ public class SaveUserImagesTask implements Task {
 		var files = location.listFiles();
 
 		if (files != null) {
-			for (File old : files)
+			for (var old : files)
 				old.delete();
 		}
 
 		long startTime = System.currentTimeMillis();
 		var exService = Executors.newFixedThreadPool(NUM_THREADS);
+		var manager = serviceRegistrar.getService(CustomGraphicsManager.class);
 
 		for (var cg : manager.getAllPersistantCustomGraphics()) {
 			if (cg instanceof SVGCustomGraphics) {
@@ -104,6 +102,7 @@ public class SaveUserImagesTask implements Task {
 
 	@Override
 	public void cancel() {
+		// Cannot cancel this task...
 	}
 
 	private final class SavePNGImageTask implements Callable<String> {

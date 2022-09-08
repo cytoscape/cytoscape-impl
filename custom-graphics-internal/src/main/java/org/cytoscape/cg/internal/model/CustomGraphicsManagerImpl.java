@@ -71,12 +71,11 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 
 	// URL to hash code map. For images associated with URL.
 	protected final Map<URL, Long> sourceMap = new ConcurrentHashMap<>(16, 0.75f, 2);
-	
-	private final Set<MissingImageCustomGraphics<?>> missingImageCustomGraphicsSet = new HashSet<>();
 
 	// Null Object
 	private final File imageHomeDirectory;
-	private final Map<Long, Boolean> isUsedCustomGraphics;
+	private final Set<MissingImageCustomGraphics<?>> missingImageCustomGraphicsSet;
+	private final Set<Long> usedCustomGraphicsSet;
 	private final Map<String, CyCustomGraphicsFactory> factoryMap;
 	private final Map<CyCustomGraphicsFactory, Map<?, ?>> factoryPropsMap;
 	
@@ -91,12 +90,14 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	public CustomGraphicsManagerImpl(Set<URL> defaultImageURLs, CyServiceRegistrar serviceRegistrar) {
 		this.defaultImageURLs = defaultImageURLs;
 		this.serviceRegistrar = serviceRegistrar;
-		this.isUsedCustomGraphics = new HashMap<>();
-		this.factoryMap = new HashMap<>();
-		this.factoryPropsMap = new HashMap<>();
+		
+		missingImageCustomGraphicsSet = new HashSet<>();
+		usedCustomGraphicsSet = new HashSet<>();
+		factoryMap = new HashMap<>();
+		factoryPropsMap = new HashMap<>();
 
 		var config = serviceRegistrar.getService(CyApplicationConfiguration.class);
-		this.imageHomeDirectory = new File(config.getConfigurationDirectoryLocation(), IMAGE_DIR_NAME);
+		imageHomeDirectory = new File(config.getConfigurationDirectoryLocation(), IMAGE_DIR_NAME);
 
 		instance = this;
 	}
@@ -182,7 +183,6 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 			sourceMap.put(source, graphics.getIdentifier());
 
 		graphicsMap.put(graphics.getIdentifier(), graphics);
-		isUsedCustomGraphics.put(graphics.getIdentifier(), false);
 	}
 
 	@Override
@@ -191,7 +191,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 		
 		if (cg != null && cg != NullCustomGraphics.getNullObject()) {
 			graphicsMap.remove(id);
-			isUsedCustomGraphics.remove(id);
+			usedCustomGraphicsSet.remove(id);
 		}
 	}
 
@@ -250,7 +250,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	public void removeAllCustomGraphics() {
 		this.graphicsMap.clear();
 		this.sourceMap.clear();
-		this.isUsedCustomGraphics.clear();
+		this.usedCustomGraphicsSet.clear();
 	}
 
 	@Override
@@ -272,11 +272,8 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	}
 
 	@Override
-	public boolean isUsedInCurrentSession(final CyCustomGraphics graphics) {
-		if (graphics == null || !isUsedCustomGraphics.containsKey(graphics.getIdentifier()))
-			return false;
-
-		return isUsedCustomGraphics.get(graphics.getIdentifier());
+	public boolean isUsedInCurrentSession(CyCustomGraphics graphics) {
+		return graphics != null && usedCustomGraphicsSet.contains(graphics.getIdentifier());
 	}
 
 	@Override
@@ -284,15 +281,12 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 		if (isUsed == null || graphics == null)
 			return;
 
-		if (!isUsedCustomGraphics.containsKey(graphics.getIdentifier())) {
-			// Just ignore.
-			return;
-		}
-
-		isUsedCustomGraphics.put(graphics.getIdentifier(), isUsed);
+		if (isUsed)
+			usedCustomGraphicsSet.add(graphics.getIdentifier());
+		else
+			usedCustomGraphicsSet.remove(graphics.getIdentifier());
 	}
 	
-
 	@Override
 	public void handleEvent(CyStartEvent e) {
 		restoreImages();
@@ -300,7 +294,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 
 	@Override
 	public void handleEvent(SessionAboutToBeSavedEvent e) {
-		var factory = new SaveGraphicsToSessionTaskFactory(imageHomeDirectory, e);
+		var factory = new SaveGraphicsToSessionTaskFactory(imageHomeDirectory, e, serviceRegistrar);
 
 		try {
 			// Make sure this task is executed synchronously in the current thread!
