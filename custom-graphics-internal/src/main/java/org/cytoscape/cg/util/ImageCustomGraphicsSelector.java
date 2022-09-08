@@ -153,6 +153,10 @@ public class ImageCustomGraphicsSelector extends JPanel {
 	
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
+	public ImageCustomGraphicsSelector(CyServiceRegistrar serviceRegistrar) {
+		this(false, serviceRegistrar);
+	}
+	
 	public ImageCustomGraphicsSelector(CyCustomGraphics selectedImage, CyServiceRegistrar serviceRegistrar) {
 		this(selectedImage, false, serviceRegistrar);
 	}
@@ -405,6 +409,7 @@ public class ImageCustomGraphicsSelector extends JPanel {
 	JScrollPane getGridScrollPane() {
 		if (gridScrollPane == null) {
 			gridScrollPane = new JScrollPane(getImageGrid());
+			gridScrollPane.setPreferredSize(new Dimension(480, 300));
 			gridScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 			gridScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 			gridScrollPane.setBackground(BG_COLOR);
