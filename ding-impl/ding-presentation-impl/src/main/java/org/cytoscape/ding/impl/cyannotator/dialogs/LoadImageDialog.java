@@ -1,5 +1,7 @@
 package org.cytoscape.ding.impl.cyannotator.dialogs;
 
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
@@ -10,9 +12,11 @@ import java.io.InputStreamReader;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JTabbedPane;
+import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
 
 import org.apache.commons.io.FilenameUtils;
@@ -182,7 +186,10 @@ public class LoadImageDialog extends AbstractAnnotationDialog<ImageAnnotationImp
 	private ImageCustomGraphicsSelector getImageSelector() {
 		if (imageSelector == null) {
 			imageSelector = new ImageCustomGraphicsSelector(serviceRegistrar);
-			imageSelector.addActionListener(evt -> getApplyButton().doClick());
+			imageSelector.addActionListener(evt -> getApplyButton().doClick());	
+			
+			if (isAquaLAF())
+				imageSelector.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
 		}
 		
 		return imageSelector;

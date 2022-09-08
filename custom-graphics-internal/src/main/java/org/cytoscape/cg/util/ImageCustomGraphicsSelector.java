@@ -1206,8 +1206,14 @@ public class ImageCustomGraphicsSelector extends JPanel {
 				}
 				@Override
 				public void mousePressed(MouseEvent evt) {
-					if (isEnabled())
-						onMousePressedItem(evt, item);
+					if (isEnabled()) {
+						if (!isEditMode() && !evt.isPopupTrigger() && evt.getClickCount() == 2) {
+							setSelectedValue(item.getImage(), false);
+							ImageCustomGraphicsSelector.this.fireActionEvent();
+						} else {
+							onMousePressedItem(evt, item);
+						}
+					}
 				}
 			});
 			item.getNameTextField().addMouseListener(new MouseAdapter() {
