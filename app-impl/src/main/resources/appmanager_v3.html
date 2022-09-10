@@ -17,10 +17,10 @@
     /* margin: 0px; */
     /* background-color: #EEE; */
   }
-  .tables {
-    background-color: #FFF;
-    min-height: 100%;
-  }
+  .app-table {
+  background-color: #FFFFFF;
+  min-height: 100%;
+}
   a.app{
     text-decoration: none;
     cursor: pointer;
@@ -68,6 +68,36 @@ display: none;
     border: none;
     cursor: pointer;
 }
+.table-header {
+  background-color: #eee;
+  color: #000;
+  padding: 5 5 5 18;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 0.8rem;
+}
+.active, .collapsible:hover {
+  background-color: #ccc;
+  cursor: pointer;
+}
+.core-table {
+  background-color: #FFFFFF;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.2s ease-out;
+}
+.collapsible:after {
+  content: '\02795'; /* Unicode character for "plus" sign (+) */
+  font-size: 13px;
+  color: #333;
+  float: right;
+  margin-left: 5px;
+}
+.active:after {
+  content: "\2796"; /* Unicode character for "minus" sign (-) */
+}
   </style>
 
 <body>
@@ -78,10 +108,12 @@ display: none;
               <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACMAAAAjCAIAAACRuyQOAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAMRJREFUeNrsl8ENwyAMAJOq7ygjdAEkBsgDRmKCjMA2+YIEA2SENhPkCS/q8k+wlILUyifxszjbgCX6lFLXhDusZVmGYajniDEyxj4m0EzTVM+0bVsI4da1gkxkItN3p9E5z0wx7JE5i4AJ65xLx8zzjEkZwo52eGXKNQkhMKZiGMqElP3O3ZNS9gistVe7xznHpDyO41WT1vrvXq5Sal1XTOnnfS6bQFM8bWDf96s1GWNolpOJTGRqNWG991U18FN7CzAA8BNw+MF51koAAAAASUVORK5CYII=" alt="menu" style="background-color: white; height: 35px; margin-top: -3px;">
             </button>
             <div class="dropdown-content" id="ddc">
+                <a onclick="openAppStore()">Browse all apps</a>
                 <a onclick="updateAllApps()">Update all apps</a>
                 <a onclick="enableAllApps()">Enable all apps</a>
                 <a onclick="disableAllApps()">Disable all apps</a>
                 <a onclick="uninstallAllApps()">Uninstall all apps</a>
+                <a onclick="window.location.reload(true)">Refresh manager</a>
             </div>
           </div>
 
@@ -95,13 +127,14 @@ display: none;
 
           </p>
         </div>
-        <div class="tables" style=" float: both;">
+        <button type="button" class="table-header" title="User-managed apps">Installed apps</button>
+        <div class="app-table" style=" float: both;">
           <table id ="appTable">
-            <tr>
-                <th style="font-size: 0.8em; font-weight: bold;" title="Delete">Del.</th>
-                <th style="font-size: 0.8em; font-weight: bold;" title="Enable/Disable">Enb.</th>
-                <th style="font-size: 0.8em; font-weight: bold;" title="Update">Upd.</th>
-            </tr>
+          </table>
+        </div>
+        <button type="button" class="table-header collapsible" title="Pre-installed apps critical to Cytoscape functionality">Default core apps</button>
+        <div class="core-table" >
+          <table id ="coreTable">
           </table>
         </div>
     </div>

@@ -37,22 +37,42 @@ function getUpdatesAppsCyB() {
 function renderInstalledApps(res) {
     // alert(res);
         array = JSON.parse(res);
-        console.log(array.length + " enabled apps");
         array = array.sort(function(a,b){return a.appName.localeCompare(b.appName)});
-        array.forEach(app => {
+        arrayUser = array.filter(function(a){return !coreApps.includes(a['appName'])});
+        console.log(arrayUser.length + " enabled apps");
+        arrayUser.forEach(app => {
             var aname=app['appName'];
             if (typeof aname == 'undefined') { aname = "";} //resolve null
             aname = aname.replace(/\"/g,"");
             var anamevar = aname.replace(/\W/g,"");
             var aver=app['version'];
             var astat=app['status'];
-            if (aname.length > 0 && !coreApps.includes(aname)){
+            if (aname.length > 0){
                 arow = '<tr><td style=" background-color: #EEEEEE; width:25px;height:25px; cursor:pointer;"><img src="img/trash.png" height="18px" style="float:left;margin:0px 0 2px 3px;" onclick="uninstallAndRemove(&quot;'+aname+'&quot;)" title="Uninstall app"></td>';
-                arow += '<td style=" background-color: #EEEEEE; width:25px;height:25px; cursor:pointer;"><input type="checkbox" id="'+anamevar+'" name="enablecheck" tabindex="0"  checked ' +
+                arow += '<td style=" background-color: #EEEEEE; width:25px;height:25px; cursor:pointer;"><input type="checkbox" id="'+anamevar+'" tabindex="0"  checked ' +
                     'onchange="toggleStatus(this, &quot;'+aname+'&quot;);" title="Toggle enabled status"></td>';
                 arow += '<td style=" background-color: #EEEEEE; width:25px;height:25px;"><img src="img/update1.png" height="18px" style="float:left;margin:0px 0 0 3px;" title="No update available"</td>';
                 arow += '<td>&nbsp;&nbsp;<a onClick="openAppStore(&quot;'+anamevar+'&quot;);" class="app" title="Visit App Store page">'+aname+'</a> (v'+aver+') </td></tr>';
                 document.getElementById('appTable').innerHTML += arow;
+            }
+        });
+        // Core Apps
+        arrayCore = array.filter(function(a){return coreApps.includes(a['appName'])});
+        console.log(arrayCore.length + " core apps");
+        arrayCore.forEach(app => {
+            var aname=app['appName'];
+            if (typeof aname == 'undefined') { aname = "";} //resolve null
+            aname = aname.replace(/\"/g,"");
+            var anamevar = aname.replace(/\W/g,"");
+            var aver=app['version'];
+            var astat=app['status'];
+            if (aname.length > 0){
+                arow = '<tr><td style=" background-color: #EEDDDD; width:25px;height:25px; "><img src="img/trash.png" height="18px" style="float:left;margin:0px 0 2px 3px;" title="Cannot uninstall a core app"></td>';
+                arow += '<td style=" background-color: #EEDDDD; width:25px;height:25px;"><input type="checkbox" id="'+anamevar+'" tabindex="0"  checked disabled' +
+                    ' title="Cannot disable a core app"></td>';
+                arow += '<td style=" background-color: #EEEEEE; width:25px;height:25px;"><img src="img/update1.png" height="18px" style="float:left;margin:0px 0 0 3px;" title="No update available"</td>';
+                arow += '<td>&nbsp;&nbsp;<a onClick="openAppStore(&quot;'+anamevar+'&quot;);" class="app" title="Visit App Store page">'+aname+'</a> (v'+aver+') </td></tr>';
+                document.getElementById('coreTable').innerHTML += arow;
             }
         });
 }
@@ -87,8 +107,8 @@ function sortData() {
         // Read table row nodes.
         var rowData = tableData.getElementsByTagName('tr');
 
-        for(var i = 1; i < rowData.length - 1; i++) {
-            for(var j = 1; j < rowData.length - i; j++) {
+        for(var i = 0; i < rowData.length - 1; i++) {
+            for(var j = 0; j < rowData.length - i; j++) {
                 //Swap row nodes if short condition matches
                 if(rowData.item(j).innerText.toLowerCase() > rowData.item(j+1).innerText.toLowerCase()) {
                     // console.log(rowData.item(j).innerText + " > " + rowData.item(j+1).innerText);
@@ -110,7 +130,7 @@ function uninstallAndRemove(app) {
     uninstallAppCyB(app);
     // and remove from table
     var table = document.getElementById("appTable");
-    for (var i = 1, row; row = table.rows[i]; i++) {
+    for (var i = 0, row; row = table.rows[i]; i++) {
         aname = getAnameByRow(row);
         if (aname ==  app) {
             row.remove();
@@ -124,19 +144,27 @@ function getAnameByRow(row){
 }
 function getRowByAname(app){
     var table = document.getElementById("appTable");
-    for (var i = 1, row; row = table.rows[i]; i++) {
+    for (var i = 0, row; row = table.rows[i]; i++) {
         aname = getAnameByRow(row);
         if (aname ==  app) {
             return(row);
         }
     }
+    var table = document.getElementById("coreTable");
+    for (var i = 0, row; row = table.rows[i]; i++) {
+        aname = getAnameByRow(row);
+        if (aname ==  app) {
+            return(row);
+        }
+    }
+
     var aname = row.cells[3].textContent.replace(/\(.*\)/g,"").trim();
     return (row);
 }
 
 function enableAllApps() {
     var table = document.getElementById("appTable");
-    for (var i = 1, row; row = table.rows[i]; i++) {
+    for (var i = 0, row; row = table.rows[i]; i++) {
         var aname = getAnameByRow(row);
         var anamevar = aname.replace(/\W/g,"");
         if (!document.getElementById(anamevar).checked){
@@ -147,7 +175,7 @@ function enableAllApps() {
 }
 function disableAllApps() {
     var table = document.getElementById("appTable");
-    for (var i = 1, row; row = table.rows[i]; i++) {
+    for (var i = 0, row; row = table.rows[i]; i++) {
         var aname = getAnameByRow(row);
         var anamevar = aname.replace(/\W/g,"");
         if (document.getElementById(anamevar).checked){
@@ -158,7 +186,7 @@ function disableAllApps() {
 }
 function uninstallAllApps() {
     var table = document.getElementById("appTable");
-    for (var i = 1, row; row = table.rows[i]; i++) {
+    for (var i = 0, row; row = table.rows[i]; i++) {
         var aname = getAnameByRow(row);
         uninstallAppCyB(aname);
         row.remove();
@@ -185,6 +213,32 @@ function toggleMenu(){
     } else {
         btn.style.display = "";
     }
+}
+
+var coll = document.getElementsByClassName("collapsible");
+
+for (var i = 0; i < coll.length; i++) {
+  coll[i].addEventListener("click", function() {
+    this.classList.toggle("active");
+    var content = this.nextElementSibling;
+    if (content.style.maxHeight){
+      content.style.maxHeight = null;
+    } else {
+      content.style.maxHeight = content.scrollHeight + "px";
+    }
+  });
+}
+
+function expandCoreTable(){
+  for (var i = 0, c; c = coll[i]; i++) {
+    if (!c.classList.value.includes("active")){
+        c.classList.add("active");
+    }
+    var content = c.nextElementSibling;
+      if (content.style.maxHeight == ""){
+        content.style.maxHeight = content.scrollHeight + "px";
+      }
+  }
 }
 /***************************
 // FUNCTIONS FOR ONLINE ONLY
@@ -218,6 +272,10 @@ function updateAppAndIcon(app) {
     cybrowser.executeCyCommand('apps update app="all"');
     //and clear all green arrows
     var table = document.getElementById("appTable");
+    for (var i = 0, row; row = table.rows[i]; i++) {
+        updateAppRow(row);
+    }
+    var table = document.getElementById("coreTable");
     for (var i = 0, row; row = table.rows[i]; i++) {
         updateAppRow(row);
     }
@@ -255,6 +313,7 @@ function renderUpdatesApps(res) {
             row.cells[2].children[0].style.cursor = "pointer";
             row.cells[2].children[0].setAttribute('onclick', 'updateAppAndIcon("'+aname+'")');
             row.cells[2].children[0].setAttribute('newversion', newversion);
+            if (coreApps.includes(aname)){ expandCoreTable();}
         });
 }
     </script>
