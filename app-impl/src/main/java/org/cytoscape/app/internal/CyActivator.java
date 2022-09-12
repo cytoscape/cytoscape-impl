@@ -10,6 +10,8 @@ import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
 import static org.cytoscape.work.ServiceProperties.IN_TOOL_BAR;
 import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
 import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
 import static org.cytoscape.work.ServiceProperties.TITLE;
 
 import java.util.HashMap;
@@ -434,19 +436,17 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			AppManagerTaskFactory factory = new AppManagerTaskFactory(appManager, serviceRegistrar, swingApplication);
 			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, "Apps");
-			props.setProperty(TITLE, "App Manager");
-			props.setProperty(MENU_GRAVITY, "1.0");
-			props.setProperty(IN_MENU_BAR, "true");
+			props.setProperty(PREFERRED_MENU, "Apps.App Manager");
+			props.setProperty(TITLE, "Show App Manager");
+			props.setProperty(MENU_GRAVITY, "0.1");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
 			ManagerInstallAppsFromFileTaskFactory factory = new ManagerInstallAppsFromFileTaskFactory(appManager, taskManager, serviceRegistrar);
 			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, "Apps");
+			props.setProperty(PREFERRED_MENU, "Apps.App Manager");
 			props.setProperty(TITLE, "Install Apps From File");
-			props.setProperty(MENU_GRAVITY, "1.1");
-			props.setProperty(IN_MENU_BAR, "true");
+			props.setProperty(MENU_GRAVITY, "0.2");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
