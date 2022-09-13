@@ -2,6 +2,7 @@ package org.cytoscape.cg.util;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.Alignment.CENTER;
 import static org.cytoscape.cg.internal.util.ViewUtil.styleToolBarButton;
 import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE_O;
 import static org.cytoscape.util.swing.IconManager.ICON_EDIT;
@@ -16,6 +17,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
@@ -55,9 +57,11 @@ import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractListModel;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -698,6 +702,10 @@ public class ImageCustomGraphicsSelector extends JPanel {
 		
 		private final LinkedHashMap<CyCustomGraphics, ImagePanel> vsPanelMap = new LinkedHashMap<>();
 		
+		private final JPanel filler = new JPanel();
+		private final JLabel dropIconLabel = new JLabel();
+		private final JLabel dropLabel = new JLabel("Drag image files here");
+		
 		private ListModel<CyCustomGraphics> dataModel;
 		private ListSelectionModel selectionModel;
 		private ListSelectionListener selectionListener;
@@ -714,6 +722,53 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			this.selectionModel = createSelectionModel();
 			this.setOpaque(true);
 			this.setBackground(BG_COLOR);
+			
+			var fg = UIManager.getColor("Label.disabledForeground");
+			fg = new Color(fg.getRed(), fg.getGreen(), fg.getBlue(), 120);
+			
+			dropIconLabel.setIcon(
+					new ImageIcon(getClass().getClassLoader().getResource("/images/drop-img-file-56.png")));
+			dropIconLabel.setForeground(fg);
+			
+			dropLabel.setFont(dropLabel.getFont().deriveFont(18.0f).deriveFont(Font.BOLD));
+			dropLabel.setForeground(fg);
+			
+			filler.setAlignmentX(LEFT_ALIGNMENT);
+			filler.setMaximumSize(new Dimension(Short.MAX_VALUE, Short.MAX_VALUE));
+			filler.setBackground(getBackground());
+			filler.setBorder(
+					BorderFactory.createCompoundBorder(
+							BorderFactory.createEmptyBorder(3, 3, 3, 3),
+							BorderFactory.createDashedBorder(fg, 2, 2, 2, true)
+					)
+			);
+			filler.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mousePressed(MouseEvent e) {
+					if (!e.isPopupTrigger())
+						deselectAll();
+				}
+			});
+			
+			var layout = new GroupLayout(filler);
+			filler.setLayout(layout);
+			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(false);
+			
+			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addGap(0, 0, Short.MAX_VALUE)
+					.addGroup(layout.createParallelGroup(CENTER, true)
+							.addComponent(dropIconLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(dropLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
+					.addGap(0, 0, Short.MAX_VALUE)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addGap(0, 0, Short.MAX_VALUE)
+					.addComponent(dropIconLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(dropLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGap(0, 0, Short.MAX_VALUE)
+			);
 			
 			setKeyBindings();
 			
@@ -1121,12 +1176,12 @@ public class ImageCustomGraphicsSelector extends JPanel {
 		}
 		
 		void update(boolean recreateItems) {
-			removeAll();
-			
 			var dm = getModel();
 			int total = dm.getSize();
 			
 			if (total > 0) {
+				removeAll();
+				
 				if (recreateItems) {
 					vsPanelMap.clear();
 				
@@ -1162,19 +1217,28 @@ public class ImageCustomGraphicsSelector extends JPanel {
 				
 				for (var itemPnl : vsPanelMap.values())
 					add(itemPnl);
-			}
-			
-			revalidate();
-			
-			// The cell size variables must be update here, otherwise the scrollRectToVisible() method won't work
-			cellWidth = getWidth() / cols;
-			cellHeight = getHeight() / rows;
-			
-			// Do this only once to guarantee the grid scrolls to the first selected image
-			if (autoScroll && cellWidth > 0 && cellHeight > 0 && getMinSelectionIndex() >= 0) {
-				ensureIndexIsVisible(getMinSelectionIndex());
-				repaint();
-				autoScroll = false;
+				
+				revalidate();
+				
+				// The cell size variables must be update here, otherwise the scrollRectToVisible() method won't work
+				cellWidth = getWidth() / cols;
+				cellHeight = getHeight() / rows;
+				
+				// Do this only once to guarantee the grid scrolls to the first selected image
+				if (autoScroll && cellWidth > 0 && cellHeight > 0 && getMinSelectionIndex() >= 0) {
+					ensureIndexIsVisible(getMinSelectionIndex());
+					repaint();
+					autoScroll = false;
+				}
+			} else if (getComponentCount() == 0 || getComponent(0) != filler) {
+				// No images -- show only the drag info... 
+				removeAll();
+				setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+				add(filler);
+				revalidate();
+				
+				cellWidth = 0;
+				cellHeight = 0;
 			}
 		}
 		
