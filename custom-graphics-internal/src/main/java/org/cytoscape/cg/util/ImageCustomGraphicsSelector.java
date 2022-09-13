@@ -1173,6 +1173,7 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			// Do this only once to guarantee the grid scrolls to the first selected image
 			if (autoScroll && cellWidth > 0 && cellHeight > 0 && getMinSelectionIndex() >= 0) {
 				ensureIndexIsVisible(getMinSelectionIndex());
+				repaint();
 				autoScroll = false;
 			}
 		}
