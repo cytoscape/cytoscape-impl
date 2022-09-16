@@ -6,6 +6,7 @@ import java.util.List;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.util.Map;
+import java.util.Properties;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -35,6 +36,9 @@ import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
+import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
+import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
+import org.cytoscape.property.CyProperty;
 
 /*
  * #%L
@@ -69,8 +73,6 @@ public class UpdateNotificationAction extends AbstractCyAction {
 
 	private final UpdateManager updateManager;
 	private final AppManagerMediator appManagerMediator;
-	private static final String APP_MANAGER_DIR = "appManager/appmanager_v3.html";
-	private String url = null;
 	private final CytoPanel cytoPanelWest;
 
 
@@ -101,6 +103,15 @@ public class UpdateNotificationAction extends AbstractCyAction {
 
 	@Override
 	public void actionPerformed(ActionEvent evt) {
+
+		final CyProperty<Properties> cyProps =
+						serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+		final Properties props = cyProps.getProperties();
+		String appStoreUrl = props.getProperty("appStoreDownloadSiteUrl1");
+		if (appStoreUrl == null) {
+			appStoreUrl = "https://apps.cytoscape.org/";
+		}
+
 		StringBuilder contentBuilder = new StringBuilder();
 		try {
 		    BufferedReader in = new BufferedReader(new InputStreamReader(UpdateNotificationAction.class.getClassLoader().getResourceAsStream("/appmanager_v3.html"), Charset.forName("UTF-8").newDecoder()));
@@ -328,7 +339,7 @@ public class UpdateNotificationAction extends AbstractCyAction {
 		contentBuilder.append("  }\n");
 		contentBuilder.append("}\n");
 		contentBuilder.append("function openAppStore(app=null){\n");
-		contentBuilder.append("    appUrl = \"https://apps.cytoscape.org/\"\n");
+		contentBuilder.append("    appUrl =\"" + appStoreUrl + "\"\n");
 		contentBuilder.append("    if (app != null){\n");
 		contentBuilder.append("        appUrl += \"apps/\"+app\n");
 		contentBuilder.append("    }\n");
@@ -336,7 +347,7 @@ public class UpdateNotificationAction extends AbstractCyAction {
 		contentBuilder.append("}\n");
 		contentBuilder.append("function searchAppStore(){\n");
 		contentBuilder.append("    var query = document.getElementById(\"search\").value\n");
-		contentBuilder.append("    qUrl = \"https://apps.cytoscape.org/\"\n");
+		contentBuilder.append("    qUrl = \"" + appStoreUrl + "\"\n");
 		contentBuilder.append("    if (query != null){\n");
 		contentBuilder.append("        qUrl += \"search?q=\"+query\n");
 		contentBuilder.append("    }\n");

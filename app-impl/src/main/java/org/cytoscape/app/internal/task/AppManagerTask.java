@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.io.*;
 import java.nio.charset.Charset;
+import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -28,12 +29,13 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
+import org.cytoscape.property.CyProperty;
+
 
 public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 	final CyServiceRegistrar serviceRegistrar;
 	private final CytoPanel cytoPanelWest;
 	//private static final String APP_MANAGER_DIR = "appManager/appmanager_v3.html";
-	private String APP_STORE = "https://apps.cytoscape.org/";
 	private DownloadSitesManager downloadSitesManager;
 
 	@Tunable (description="App name", context="nogui")
@@ -51,6 +53,16 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
+
+		final CyProperty<Properties> cyProps =
+						serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+		final Properties props = cyProps.getProperties();
+		String appStoreUrl = props.getProperty("appStoreDownloadSiteUrl1");
+		if (appStoreUrl == null) {
+			appStoreUrl = "https://apps.cytoscape.org/";
+		}
+		appManager.getWebQuerier().setCurrentAppStoreUrl(appStoreUrl);
+
 		StringBuilder contentBuilder = new StringBuilder();
 		try {
 		    BufferedReader in = new BufferedReader(new InputStreamReader(AppManagerTask.class.getClassLoader().getResourceAsStream("/appmanager_v3.html"), Charset.forName("UTF-8").newDecoder()));
@@ -278,7 +290,7 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		contentBuilder.append("  }\n");
 		contentBuilder.append("}\n");
 		contentBuilder.append("function openAppStore(app=null){\n");
-		contentBuilder.append("    appUrl = \"https://apps.cytoscape.org/\"\n");
+		contentBuilder.append("    appUrl =\"" + appStoreUrl + "\"\n");
 		contentBuilder.append("    if (app != null){\n");
 		contentBuilder.append("        appUrl += \"apps/\"+app\n");
 		contentBuilder.append("    }\n");
@@ -286,7 +298,7 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		contentBuilder.append("}\n");
 		contentBuilder.append("function searchAppStore(){\n");
 		contentBuilder.append("    var query = document.getElementById(\"search\").value\n");
-		contentBuilder.append("    qUrl = \"https://apps.cytoscape.org/\"\n");
+		contentBuilder.append("    qUrl = \"" + appStoreUrl + "\"\n");
 		contentBuilder.append("    if (query != null){\n");
 		contentBuilder.append("        qUrl += \"search?q=\"+query\n");
 		contentBuilder.append("    }\n");
@@ -355,7 +367,10 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		//} else {
 		//	url = APP_MANAGER;
 		//}
-		System.out.println(downloadSitesManager.getDownloadSites());
+		//for (DownloadSite downloadSite : downloadSitesManager.getDownloadSites()) {
+		//	System.out.println(downloadSite.getSiteUrl());
+		//}
+
 
 		App cyBrowser = getApp("cybrowser");
 		if (useCybrowser == true && cyBrowser != null && cyBrowser.getStatus() == App.AppStatus.INSTALLED) {
@@ -371,7 +386,7 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 			taskManager.execute(ti);
 		} else {
 			OpenBrowser openBrowser = serviceRegistrar.getService(OpenBrowser.class);
-			openBrowser.openURL(APP_STORE);
+			openBrowser.openURL(appStoreUrl);
 		}
 	}
 
@@ -383,13 +398,20 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 	@SuppressWarnings({ "unchecked" })
 	@Override
 	public <R> R getResults(Class<? extends R> type) {
+		final CyProperty<Properties> cyProps =
+						serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+		final Properties props = cyProps.getProperties();
+		String appStoreUrl = props.getProperty("appStoreDownloadSiteUrl1");
+		if (appStoreUrl == null) {
+			appStoreUrl = "https://apps.cytoscape.org/";
+		}
 		if (type.equals(JSONResult.class)) {
 			JSONResult res = () -> {
 				return "{}";
 			};
 			return (R)res;
 		} else if (type.equals(String.class)) {
-			String res = "Opened url: "+url;
+			String res = "Opened url: "+appStoreUrl;
 			return (R)res;
 		}
 		return null;
