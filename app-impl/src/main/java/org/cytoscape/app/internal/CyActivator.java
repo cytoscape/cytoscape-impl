@@ -18,9 +18,12 @@ import java.util.HashMap;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.Map;
 
 import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.app.internal.action.UpdateNotificationAction;
+import org.cytoscape.app.internal.action.CitationsAction;
+import org.cytoscape.app.internal.action.YFilesAction;
 import org.cytoscape.app.event.AppsFinishedStartingEvent;
 import org.cytoscape.app.event.AppsFinishedStartingListener;
 import org.cytoscape.app.internal.manager.App;
@@ -137,6 +140,7 @@ import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.properties.TunablePropertySerializerFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -421,6 +425,16 @@ public class CyActivator extends AbstractCyActivator {
 				registerService(bc, action, CyAction.class);
 			}
 
+		{
+			CitationsAction action = new CitationsAction(webQuerier, appManager, serviceRegistrar);
+			registerService(bc, action, CyAction.class);
+		}
+
+
+			final OpenBrowser openBrowser = getService(bc, OpenBrowser.class);
+			YFilesChecker checker = new YFilesChecker(appManager, serviceRegistrar, openBrowser);
+			bc.addBundleListener(checker);
+			registerAllServices(bc, checker, new Properties());
 		// Task Factories
 		{
 			AppStoreTaskFactory factory = new AppStoreTaskFactory(appManager, serviceRegistrar);
@@ -434,7 +448,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			AppManagerTaskFactory factory = new AppManagerTaskFactory(appManager, serviceRegistrar, swingApplication);
+			AppManagerTaskFactory factory = new AppManagerTaskFactory(appManager, serviceRegistrar, swingApplication, downloadSitesManager);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "Apps");
 			props.setProperty(TITLE, "App Manager");
@@ -618,6 +632,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
+		//Code here
 	}
 
 	private class YFilesChecker implements BundleListener, AppsFinishedStartingListener {

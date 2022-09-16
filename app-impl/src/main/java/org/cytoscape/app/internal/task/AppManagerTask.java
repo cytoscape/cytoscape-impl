@@ -16,6 +16,8 @@ import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.WebApp;
 import org.cytoscape.app.internal.net.WebQuerier;
+import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
+import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.OpenBrowser;
@@ -30,8 +32,9 @@ import org.cytoscape.work.json.JSONResult;
 public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 	final CyServiceRegistrar serviceRegistrar;
 	private final CytoPanel cytoPanelWest;
-	private static final String APP_MANAGER_DIR = "appManager/appmanager_v3.html";
-	private String url = null;
+	//private static final String APP_MANAGER_DIR = "appManager/appmanager_v3.html";
+	private String APP_STORE = "https://apps.cytoscape.org/";
+	private DownloadSitesManager downloadSitesManager;
 
 	@Tunable (description="App name", context="nogui")
 	public String app;
@@ -39,10 +42,11 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 	@Tunable (description="Use CyBrowser if installed", context="nogui")
 	public boolean useCybrowser = true;
 
-	public AppManagerTask(final AppManager appManager, CyServiceRegistrar serviceRegistrar, CySwingApplication swingApplication) {
+	public AppManagerTask(final AppManager appManager, CyServiceRegistrar serviceRegistrar, CySwingApplication swingApplication, DownloadSitesManager downloadSitesManager) {
 		super(appManager);
 		cytoPanelWest = swingApplication.getCytoPanel(CytoPanelName.WEST);
 		this.serviceRegistrar = serviceRegistrar;
+		this.downloadSitesManager = downloadSitesManager;
 	}
 
 	@Override
@@ -351,6 +355,7 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		//} else {
 		//	url = APP_MANAGER;
 		//}
+		System.out.println(downloadSitesManager.getDownloadSites());
 
 		App cyBrowser = getApp("cybrowser");
 		if (useCybrowser == true && cyBrowser != null && cyBrowser.getStatus() == App.AppStatus.INSTALLED) {
@@ -366,7 +371,7 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 			taskManager.execute(ti);
 		} else {
 			OpenBrowser openBrowser = serviceRegistrar.getService(OpenBrowser.class);
-			openBrowser.openURL(url);
+			openBrowser.openURL(APP_STORE);
 		}
 	}
 
