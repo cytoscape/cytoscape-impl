@@ -56,10 +56,15 @@ public class ListAppsTask extends AbstractAppTask implements ObservableTask {
 				int count = statusAppList.size();
 				int index = 0;
 				for (App app: statusAppList) {
-					
 					stringBuilder.append("{\"appName\": "+jsonQuote(app.getAppName())+",");
 					stringBuilder.append("\"version\": "+jsonQuote(app.getVersion())+",");
-					stringBuilder.append("\"description\": "+jsonQuote(app.getDescription())+",");
+					
+          // If we want to get the description, we need to pull it from
+          // the webApp instance since we don't preserve it anywhere
+          WebApp wApp = getWebApp(app.getAppName());
+          if (wApp != null) {
+            stringBuilder.append("\"description\": "+jsonQuote(wApp.getDescription())+",");
+          }
 					stringBuilder.append("\"status\": "+jsonQuote(app.getReadableStatus())+"}");
 					index++;
 					if (index < count)
