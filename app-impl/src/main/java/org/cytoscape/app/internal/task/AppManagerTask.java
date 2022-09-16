@@ -65,7 +65,7 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 
 		StringBuilder contentBuilder = new StringBuilder();
 		try {
-		    BufferedReader in = new BufferedReader(new InputStreamReader(AppManagerTask.class.getClassLoader().getResourceAsStream("/appmanager_v3.html"), Charset.forName("UTF-8").newDecoder()));
+		    BufferedReader in = new BufferedReader(new InputStreamReader(AppManagerTask.class.getClassLoader().getResourceAsStream("/appmanager.html"), Charset.forName("UTF-8").newDecoder()));
 		    String str;
 		    while ((str = in.readLine()) != null) {
 		        contentBuilder.append(str);
@@ -299,7 +299,7 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		contentBuilder.append("function searchAppStore(){\n");
 		contentBuilder.append("    var query = document.getElementById(\"search\").value\n");
 		contentBuilder.append("    qUrl = \"" + appStoreUrl + "\"\n");
-		contentBuilder.append("    if (query != null){\n");
+		contentBuilder.append("    if (query != \"\"){\n");
 		contentBuilder.append("        qUrl += \"search?q=\"+query\n");
 		contentBuilder.append("    }\n");
 		contentBuilder.append("    cybrowser.executeCyCommand('cybrowser dialog url=\"'+qUrl+'\" id=\"AppStore\" title=\"App Store\" ');\n");

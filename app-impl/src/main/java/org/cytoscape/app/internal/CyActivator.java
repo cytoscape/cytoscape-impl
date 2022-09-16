@@ -450,20 +450,17 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			AppManagerTaskFactory factory = new AppManagerTaskFactory(appManager, serviceRegistrar, swingApplication, downloadSitesManager);
 			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, "Apps");
-			props.setProperty(TITLE, "App Manager");
+			props.setProperty(PREFERRED_MENU, "Apps.App Manager");
+			props.setProperty(TITLE, "Show App Manager");
 			props.setProperty(MENU_GRAVITY, "0.1");
-			props.setProperty(IN_MENU_BAR, "true");
-			props.setProperty(INSERT_SEPARATOR_AFTER, "true");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
 			ManagerInstallAppsFromFileTaskFactory factory = new ManagerInstallAppsFromFileTaskFactory(appManager, taskManager, serviceRegistrar);
 			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, "Apps");
-			props.setProperty(TITLE, "Install Apps From File...");
-			props.setProperty(MENU_GRAVITY, "1000");
-			props.setProperty(IN_MENU_BAR, "true");
+			props.setProperty(PREFERRED_MENU, "Apps.App Manager");
+			props.setProperty(TITLE, "Install Apps From File");
+			props.setProperty(MENU_GRAVITY, "0.2");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
