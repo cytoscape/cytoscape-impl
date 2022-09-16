@@ -30,6 +30,7 @@ import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.App.AppStatus;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.UpdateManager;
+import org.cytoscape.app.internal.manager.LaunchManager;
 import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.app.internal.task.AppStoreTaskFactory;
 import org.cytoscape.app.internal.task.AppManagerTaskFactory;
@@ -430,7 +431,6 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, action, CyAction.class);
 		}
 
-
 			final OpenBrowser openBrowser = getService(bc, OpenBrowser.class);
 			YFilesChecker checker = new YFilesChecker(appManager, serviceRegistrar, openBrowser);
 			bc.addBundleListener(checker);
@@ -629,7 +629,8 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
-		//Code here
+		final LaunchManager launchManager = new LaunchManager(appManager, downloadSitesManager, serviceRegistrar, swingApplication);
+		registerService(bc, launchManager, AppsFinishedStartingListener.class);
 	}
 
 	private class YFilesChecker implements BundleListener, AppsFinishedStartingListener {
