@@ -47,12 +47,16 @@ function renderInstalledApps(res) {
             var anamevar = aname.replace(/\W/g,"");
             var aver=app['version'];
             var astat=app['status'];
+            var adesc=app['description'];
+            if (adesc == null){
+                adesc='Visit App Store page';
+            }
             if (aname.length > 0){
                 arow = '<tr><td style=" background-color: #EEEEEE; width:25px;height:25px; cursor:pointer;"><img src="img/trash.png" height="18px" style="float:left;margin:0px 0 2px 3px;" onclick="uninstallAndRemove(&quot;'+aname+'&quot;)" title="Uninstall app"></td>';
                 arow += '<td style=" background-color: #EEEEEE; width:25px;height:25px; cursor:pointer;"><input type="checkbox" id="'+anamevar+'" tabindex="0"  checked ' +
                     'onchange="toggleStatus(this, &quot;'+aname+'&quot;);" title="Toggle enabled status"></td>';
                 arow += '<td style=" background-color: #EEEEEE; width:25px;height:25px;"><img src="img/update1.png" height="18px" style="float:left;margin:0px 0 0 3px;" title="No update available"</td>';
-                arow += '<td>&nbsp;&nbsp;<a onClick="openAppStore(&quot;'+anamevar+'&quot;);" class="app" title="Visit App Store page">'+aname+'</a> (v'+aver+') </td></tr>';
+                arow += '<td>&nbsp;&nbsp;<a onClick="openAppStore(&quot;'+anamevar+'&quot;);" class="app" title="'+adesc+'">'+aname+'</a> (v'+aver+') </td></tr>';
                 document.getElementById('appTable').innerHTML += arow;
             }
         });
@@ -66,12 +70,16 @@ function renderInstalledApps(res) {
             var anamevar = aname.replace(/\W/g,"");
             var aver=app['version'];
             var astat=app['status'];
+            var adesc=app['description'];
+            if (adesc == null){
+                adesc='Visit App Store page';
+            }
             if (aname.length > 0){
                 arow = '<tr><td style=" background-color: #EEDDDD; width:25px;height:25px; "><img src="img/trash.png" height="18px" style="float:left;margin:0px 0 2px 3px;" title="Cannot uninstall a core app"></td>';
                 arow += '<td style=" background-color: #EEDDDD; width:25px;height:25px;"><input type="checkbox" id="'+anamevar+'" tabindex="0"  checked disabled' +
                     ' title="Cannot disable a core app"></td>';
                 arow += '<td style=" background-color: #EEEEEE; width:25px;height:25px;"><img src="img/update1.png" height="18px" style="float:left;margin:0px 0 0 3px;" title="No update available"</td>';
-                arow += '<td>&nbsp;&nbsp;<a onClick="openAppStore(&quot;'+anamevar+'&quot;);" class="app" title="Visit App Store page">'+aname+'</a> (v'+aver+') </td></tr>';
+                arow += '<td>&nbsp;&nbsp;<a onClick="openAppStore(&quot;'+anamevar+'&quot;);" class="app" title="'+adesc+'">'+aname+'</a> (v'+aver+') </td></tr>';
                 document.getElementById('coreTable').innerHTML += arow;
             }
         });
@@ -89,12 +97,16 @@ function renderDisabledApps(res) {
             var anamevar = aname.replace(/\W/g,"");
             var aver=app['version'];
             var astat=app['status'];
+            var adesc=app['description'];
+            if (adesc == null){
+                adesc='Visit App Store page';
+            }
             if (aname.length > 0 && !coreApps.includes(aname)){
                 arow = '<tr><td style="background-color: #EEEEEE; width:25px;height:25px; cursor:pointer;"><img src="img/trash.png" height="18px" style="float:left;margin:0px 0 2px 3px;" onclick="uninstallAndRemove(&quot;'+aname+'&quot;)" title="Uninstall app"></td>';
                 arow += '<td style="background-color: #EEEEEE; width:25px;height:25px; cursor:pointer;"><input type="checkbox" id="'+anamevar+'" tabindex="0" ' +
                     'onchange="toggleStatus(this, &quot;'+aname+'&quot;);" title="Toggle enabled status"></td>';
                 arow += '<td style=" background-color: #EEEEEE; width:25px;height:25px;"><img src="img/update1.png" height="18px" style="float:left;margin:0px 0 0 3px;" title="No update available"></td>';
-                arow += '<td>&nbsp;&nbsp;<a onClick="openAppStore(&quot;'+anamevar+'&quot;);" class="app" title="Visit App Store page">'+aname+'</a> (v'+aver+') </td></tr>';
+                arow += '<td>&nbsp;&nbsp;<a onClick="openAppStore(&quot;'+anamevar+'&quot;);" class="app" title="'+adesc+'">'+aname+'</a> (v'+aver+') </td></tr>';
                 document.getElementById('appTable').innerHTML += arow;
             }
         });
@@ -107,7 +119,7 @@ function sortData() {
         // Read table row nodes.
         var rowData = tableData.getElementsByTagName('tr');
 
-        for(var i = 0; i < rowData.length - 1; i++) {
+        for(var i = 1; i < rowData.length - 1; i++) {
             for(var j = 0; j < rowData.length - i; j++) {
                 //Swap row nodes if short condition matches
                 if(rowData.item(j).innerText.toLowerCase() > rowData.item(j+1).innerText.toLowerCase()) {
@@ -254,7 +266,7 @@ function openAppStore(app=null){
 function searchAppStore(){
     var query = document.getElementById("search").value
     qUrl = "https://apps.cytoscape.org/"
-    if (query != null){
+    if (query != ""){
         qUrl += "search?q="+query
     }
     cybrowser.executeCyCommand('cybrowser dialog url="'+qUrl+'" id="AppStore" title="App Store" ');
@@ -266,6 +278,9 @@ function updateAppAndIcon(app) {
     //and swap update1.png icon back in for row
     var row = getRowByAname(app);
     updateAppRow(row);
+    if (app == "CyREST"){
+        alert("Please restart Cytoscape to complete the update of CyREST.")
+    }
 }
 
  function updateAllApps() {
@@ -309,7 +324,11 @@ function renderUpdatesApps(res) {
             var newversion = app['new version'];
             var row = getRowByAname(aname);
             row.cells[2].children[0].src = "img/update2.png";
-            row.cells[2].children[0].title = "Update app";
+            if (aname == 'CyREST'){
+                row.cells[2].children[0].title = "Update app. Restart will be required!";
+            } else {
+                row.cells[2].children[0].title = "Update app";
+            }
             row.cells[2].children[0].style.cursor = "pointer";
             row.cells[2].children[0].setAttribute('onclick', 'updateAppAndIcon("'+aname+'")');
             row.cells[2].children[0].setAttribute('newversion', newversion);
