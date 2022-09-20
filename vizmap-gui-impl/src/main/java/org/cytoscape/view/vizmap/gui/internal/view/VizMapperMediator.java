@@ -16,7 +16,6 @@ import java.beans.PropertyChangeEvent;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -77,6 +76,8 @@ import org.cytoscape.view.vizmap.gui.internal.ColumnSpec;
 import org.cytoscape.view.vizmap.gui.internal.GraphObjectType;
 import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
 import org.cytoscape.view.vizmap.gui.internal.action.GenerateDiscreteValuesAction;
+import org.cytoscape.view.vizmap.gui.internal.controller.CopyContinuousMappingCommand;
+import org.cytoscape.view.vizmap.gui.internal.controller.RemoveVisualMappingsCommand;
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.LockedValueState;
 import org.cytoscape.view.vizmap.gui.internal.model.LockedValuesVO;
@@ -260,7 +261,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 						var tableVMM = servicesUtil.get(TableVisualMappingManager.class);
 						Set<VisualStyle> netStyles = tableVMM.getAssociatedNetworkVisualStyles(style);
 						if(netStyles.contains(currNetStyle)) {
-							updateVisualPropertySheets(style, TABLE_SHEET_TYPES, false, false);
+							updateVisualPropertySheets(style, TABLE_SHEET_TYPES, false, true);
 						}
 						break;
 					}
@@ -606,7 +607,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		var stylesBtn = vizMapperMainPanel.getStylesBtn();
 		stylesBtn.addPropertyChangeListener("selectedStyle", evt -> onSelectedVisualStyleChanged(evt));
 		
-		columnChangeListener = this::onSelectedColumnChanged;
+		columnChangeListener = this::onColumnStylePickerAction;
 		vizMapperMainPanel.getColumnStylePnl().addColumnSelectionListener(columnChangeListener);
 //		vizMapperMainPanel.getColumnStylePnl().getAddButton(columnChangeListener);
 	}
@@ -710,6 +711,12 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 					curVpSheetItem = vpSheetItem;
 					removeVisualMapping(vpSheetItem);
 				});
+				if(vpSheetItem.isNodeColumnColor()) {
+					vpSheetItem.getCopyNodeColorMappingBtn().addActionListener(evt -> {
+						curVpSheetItem = vpSheetItem;
+						copyNodeColumnColorMappingToTable(vpSheetItem);
+					});
+				}				
 				vpSheetItem.getPropSheetTbl().addPropertyChangeListener("editingVizMapperProperty", evt -> {
 					curVpSheetItem = vpSheetItem; // Save the current editor (the one the user is interacting with)
 					curVizMapperProperty = (VizMapperProperty<?, ?, ?>) evt.getNewValue();
@@ -743,12 +750,37 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		});
 	}
 
+	
 	protected void removeVisualMapping(VisualPropertySheetItem<?> vpSheetItem) {
-		var vm = vpSheetItem.getModel().getVisualMappingFunction();
-		if (vm != null)
-			sendNotification(NotificationNames.REMOVE_VISUAL_MAPPINGS, Collections.singleton(vm));
+		var model = vpSheetItem.getModel();
+		if(model == null)
+			return;
+		
+		var vm = model.getVisualMappingFunction();
+		if(vm == null)
+			return;
+		
+		var body = new RemoveVisualMappingsCommand.Body(model.getVisualStyle(), Set.of(vm));
+		sendNotification(NotificationNames.REMOVE_VISUAL_MAPPINGS, body);
+	}
+	
+	
+	protected void copyNodeColumnColorMappingToTable(VisualPropertySheetItem<?> vpSheetItem) {
+		var model = vpSheetItem.getModel();
+		if(model == null)
+			return;
+		
+		var sourceStyle = vmProxy.getCurrentNetworkVisualStyle();
+		var sourceVP = BasicVisualLexicon.NODE_FILL_COLOR;
+		
+		var targetStyle = model.getVisualStyle();
+		var targetVP = BasicTableVisualLexicon.CELL_BACKGROUND_PAINT;
+		
+		var body = new CopyContinuousMappingCommand.Body(sourceStyle, sourceVP, targetStyle, targetVP);
+		sendNotification(NotificationNames.COPY_CONTINUOUS_MAPPING, body);
 	}
 
+	
 	private void updateVisualStyleList(SortedSet<VisualStyle> styles, boolean resetDefaultVisibleItems) {
 		attrProxy.setCurrentMappingType(null);
 		mappingFactoryProxy.setCurrentColumnName(null);
@@ -785,14 +817,6 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	
 		var tableVMM = servicesUtil.get(TableVisualMappingManager.class);
 		
-		VisualStyle colVS;
-		if(selectedColumn == null) {
-			colVS = tableVMM.getDefaultVisualStyle();
-		} else {
-			var tableType = selectedColumn.tableType().type();
-			colVS = tableVMM.getAssociatedColumnVisualStyle(netVS, tableType, selectedColumn.columnName());
-		}
-		
 		var nodeColStyles = tableVMM.getAssociatedColumnVisualStyles(netVS, CyNode.class);
 		var edgeColStyles = tableVMM.getAssociatedColumnVisualStyles(netVS, CyEdge.class);
 		
@@ -804,7 +828,17 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			columns.add(new ColumnSpec(GraphObjectType.edge(), entry.getKey()));
 		}
 		
-		columns.sort(Comparator.naturalOrder());
+		columns.sort(ColumnSpec.comparingName());
+		
+		if(selectedColumn == null && !columns.isEmpty()) {
+			selectedColumn = columns.get(0);
+		}
+
+		VisualStyle colVS = null;
+		if(selectedColumn != null) {
+			var tableType = selectedColumn.tableType().type();
+			colVS = tableVMM.getAssociatedColumnVisualStyle(netVS, tableType, selectedColumn.columnName());
+		}
 		
 		updateVisualPropertySheets(netVS, NETWORK_SHEET_TYPES, resetDefaultVisibleItems, rebuild);
 		updateVisualPropertySheets(colVS, TABLE_SHEET_TYPES, resetDefaultVisibleItems, true);
@@ -822,7 +856,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	/**
 	 * Fires when the user clicks on a column in the ColumnStylePicker at the top of the Column tab.
 	 */
-	private void onSelectedColumnChanged(ColumnSpec col, ColumnStylePicker.Action action) {
+	private void onColumnStylePickerAction(ColumnSpec col, ColumnStylePicker.Action action) {
 		if(col == null || action == null)
 			return;
 		
@@ -832,25 +866,30 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		var tableVMM = servicesUtil.get(TableVisualMappingManager.class);
 		var tableType = col.tableType().type();
 		
-		selectedColumn = col;
-		
 		if(action == Action.CREATE) {
+			selectedColumn = col;
 			VisualStyle colVS = tableVMM.getAssociatedColumnVisualStyle(netVS, tableType, col.columnName());
 			if(colVS == null) {
 				var visualStyleFactory = servicesUtil.get(VisualStyleFactory.class);
 				colVS = visualStyleFactory.createVisualStyle(col.columnName());
-				tableVMM.setAssociatedVisualStyle(netVS, tableType, col.columnName(), colVS);
+				tableVMM.setAssociatedVisualStyle(netVS, tableType, col.columnName(), colVS); // Fires event that calls updateColumnAssociation
 			}
 		} else if(action == Action.DELETE) {
-			tableVMM.setAssociatedVisualStyle(netVS, tableType, col.columnName(), null);
+			selectedColumn = null;
+			tableVMM.setAssociatedVisualStyle(netVS, tableType, col.columnName(), null); // Fires event that calls updateColumnAssociation
+		} else { // SELECT
+			selectedColumn = col;
+			VisualStyle colVS = tableVMM.getAssociatedColumnVisualStyle(netVS, tableType, col.columnName());
+			updateVisualPropertySheets(colVS, TABLE_SHEET_TYPES, false, true);
 		}
 	}
 	
 	
 	private void updateColumnAssociation(StyleAssociation association) {
-		updateAllVisualPropertySheets(association.networkVisualStyle(), false);
-		var colVS = association.columnVisualStyle();
-		updateVisualPropertySheets(colVS, TABLE_SHEET_TYPES, false, true);
+		var netVS = association.networkVisualStyle();
+		if(netVS == vmProxy.getCurrentNetworkVisualStyle()) {
+			updateAllVisualPropertySheets(netVS, false);
+		}
 	}
 	
 	private void updateVisualPropertySheets(
@@ -958,38 +997,27 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			
 			for (var lexiconType : sheetTypes) {
 				// Create Visual Property Sheet
-				var re = vmProxy.getRenderingEngine(lexiconType);
 				
 				VisualPropertySheet vpSheet;
 				Set<VisualPropertySheetItem<?>> vpSheetItems;
 				
-				if (re == null || (sheetTypes == TABLE_SHEET_TYPES && selectedColumn == null)) {
-					var model = new VisualPropertySheetModel(lexiconType, null, style, null);
-					vpSheet = new VisualPropertySheet(model, servicesUtil);
-					vizMapperMainPanel.addVisualPropertySheet(vpSheet);
-					
-					vpSheetItems = Collections.emptySet();
-					vpSheet.setItems(vpSheetItems);
-					
+				var lexicon = vmProxy.getCurrentLexicon(lexiconType);
+				GraphObjectType tableType;
+				if(lexiconType == CyColumn.class) {
+					if(selectedColumn == null) // this shouldn't happen, being defensive
+						tableType = GraphObjectType.node();
+					else
+						tableType = selectedColumn.tableType();
 				} else {
-					var lexicon = re.getVisualLexicon();
-					GraphObjectType tableType;
-					if(lexiconType == CyColumn.class) {
-						if(selectedColumn == null) // this shouldn't happen, being defensive
-							tableType = GraphObjectType.node();
-						else
-							tableType = selectedColumn.tableType();
-					} else {
-						tableType = GraphObjectType.of(lexiconType);
-					}
-					
-					var model = new VisualPropertySheetModel(lexiconType, tableType, style, lexicon);
-					vpSheet = new VisualPropertySheet(model, servicesUtil);
-					vizMapperMainPanel.addVisualPropertySheet(vpSheet);
-					
-					vpSheetItems = createVisualPropertySheetItems(lexiconType, tableType, lexicon, style);
-					vpSheet.setItems(vpSheetItems);
+					tableType = GraphObjectType.of(lexiconType);
 				}
+				
+				var model = new VisualPropertySheetModel(lexiconType, tableType, style, lexicon);
+				vpSheet = new VisualPropertySheet(model, servicesUtil);
+				vizMapperMainPanel.addVisualPropertySheet(vpSheet);
+				
+				vpSheetItems = createVisualPropertySheetItems(lexiconType, tableType, lexicon, style);
+				vpSheet.setItems(vpSheetItems);
 				
 				// Add event listeners to the new components
 				addViewListeners(vpSheet);
@@ -1050,7 +1078,19 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			return items;
 		
 		var vpList = lexicon.getAllDescendants(getRootVP(lexiconType));
+		
 		var engine = vmProxy.getRenderingEngine(lexiconType);
+		if(engine == null) {
+			// This is kind of hackey. 
+			// In the case where we can't get a real rendering engine, we have to use a backup "dummy" engine.
+			// For networks we can use the engine that vizMapperMainPanel uses to create the thumbnails in the style picker popup.
+			// For tables we have to use the "dummy" engine provided by the vmProxy.
+			if(lexiconType == CyNode.class || lexiconType == CyEdge.class || lexiconType == CyNetwork.class) {
+				engine = vizMapperMainPanel.getRenderingEngine();
+			} else {
+				engine = vmProxy.getDummyTableRenderingEngine();
+			}
+		}
 		
 		for (var vp : vpList) {
 			if (vp.getTargetDataType() != lexiconType || vp instanceof DefaultVisualizableVisualProperty)

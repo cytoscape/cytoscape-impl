@@ -458,12 +458,16 @@ public final class DEdgeDetails implements EdgeDetails {
 	}
 	
 	
-	// MKTODO this may need to be optimized
-	private List<View<CyEdge>> getConnectingEdgeList(CyNetworkViewSnapshot netView, long sourceSuid, long targetSuid) {
+	public static List<View<CyEdge>> getConnectingEdgeList(CyNetworkViewSnapshot netView, View<CyNode> source, View<CyNode> target) {
+		return getConnectingEdgeList(netView, source.getSUID(), target.getSUID());
+	}
+	
+	public static List<View<CyEdge>> getConnectingEdgeList(CyNetworkViewSnapshot netView, long sourceSuid, long targetSuid) {
+		// MKTODO this may need to be optimized
 		List<View<CyEdge>> connectingEdges = new ArrayList<>();
-		Iterable<View<CyEdge>> adjacentEdgeIterable = netView.getAdjacentEdgeIterable(sourceSuid);
-		for(View<CyEdge> edge : adjacentEdgeIterable) {
-			SnapshotEdgeInfo edgeInfo = netView.getEdgeInfo(edge);
+		var adjacentEdgeIterable = netView.getAdjacentEdgeIterable(sourceSuid);
+		for(var edge : adjacentEdgeIterable) {
+			var edgeInfo = netView.getEdgeInfo(edge);
 			long otherNode = sourceSuid ^ edgeInfo.getSourceViewSUID() ^ edgeInfo.getTargetViewSUID();
 			if(targetSuid == otherNode) {
 				connectingEdges.add(edge);

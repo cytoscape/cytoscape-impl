@@ -48,6 +48,9 @@ import org.osgi.framework.BundleContext;
 
 public class CyActivator extends AbstractCyActivator {
 
+	public static final String FUNCTION_ICON_LARGE_ID = "cy::FN_BUILDER";
+	public static final String FUNCTION_ICON_SMALL_ID = "cy::FN_BUILDER_SMALL";
+	
 	@Override
 	public void start(BundleContext bc) {
 		var registrar = getService(bc, CyServiceRegistrar.class);
@@ -85,19 +88,20 @@ public class CyActivator extends AbstractCyActivator {
 			Font iconFont = null;
 			try {
 				iconFont = Font.createFont(Font.TRUETYPE_FONT, getClass().getResourceAsStream("/fonts/jsMath-cmti10.ttf"));
-				iconFont = iconFont.deriveFont(18.0f);
 			} catch (Exception e) {
 				throw new RuntimeException("Error loading font", e);
 			}
 			
-			var icon = new TextIcon("f(x)", iconFont, 32, 31);
-			var iconId = "cy::FN_BUILDER";
-			iconManager.addIcon(iconId, icon);
+			var iconLarge = new TextIcon("f(x)", iconFont.deriveFont(18.0f), 32, 31);
+			iconManager.addIcon(FUNCTION_ICON_LARGE_ID, iconLarge);
+			
+			var iconSmall = new TextIcon("f(x)", iconFont.deriveFont(10.0f), 16, 16);
+			iconManager.addIcon(FUNCTION_ICON_SMALL_ID, iconSmall);
 			
 			var factory = new EquationEditorTaskFactory(registrar);
 			var props = new Properties();
 			props.setProperty("task", "equationEditor");
-			props.setProperty(LARGE_ICON_ID, iconId);
+			props.setProperty(LARGE_ICON_ID, FUNCTION_ICON_LARGE_ID);
 			props.setProperty(TOOLTIP, "Function Builder...");
 			props.setProperty(IN_NODE_TABLE_TOOL_BAR, "true");
 			props.setProperty(IN_EDGE_TABLE_TOOL_BAR, "true");

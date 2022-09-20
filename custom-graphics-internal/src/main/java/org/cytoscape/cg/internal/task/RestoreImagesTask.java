@@ -57,12 +57,11 @@ public class RestoreImagesTask implements Task {
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	public RestoreImagesTask(Set<URL> defaultImageURLs, File imageLocation, CyServiceRegistrar serviceRegistrar) {
-		this.serviceRegistrar = serviceRegistrar;
-
-		// For loading images in parallel.
-		this.imageLoaderService = Executors.newFixedThreadPool(NUM_THREADS);
 		this.imageHomeDirectory = imageLocation;
 		this.defaultImageURLs = defaultImageURLs;
+		this.serviceRegistrar = serviceRegistrar;
+
+		this.imageLoaderService = Executors.newFixedThreadPool(NUM_THREADS); // For loading images in parallel
 	}
 
 	@Override

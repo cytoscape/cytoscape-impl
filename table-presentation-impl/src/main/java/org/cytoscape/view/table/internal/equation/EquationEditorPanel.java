@@ -44,9 +44,9 @@ public class EquationEditorPanel extends JPanel {
 	private final BrowserTable browserTable;
 	
 	private SyntaxAreaPanel syntaxPanel;
-	private ItemListPanel<String> tutorialPanel;
-	private ItemListPanel<FunctionInfo> functionPanel;
+	private ItemTreePanel<FunctionInfo> functionPanel;
 	private ItemListPanel<CyColumn> attributePanel;
+	private ItemListPanel<String> tutorialPanel;
 	private InfoPanel infoPanel;
 	
 	// Maybe these should be part of the dialog?
@@ -109,9 +109,9 @@ public class EquationEditorPanel extends JPanel {
 		return tutorialPanel;
 	}
 	
-	public ItemListPanel<FunctionInfo> getFunctionPanel() {
+	public ItemTreePanel<FunctionInfo> getFunctionPanel() {
 		if(functionPanel == null) {
-			functionPanel = new ItemListPanel<>("Functions");
+			functionPanel = new ItemTreePanel<>("Functions");
 		}
 		return functionPanel;
 	}

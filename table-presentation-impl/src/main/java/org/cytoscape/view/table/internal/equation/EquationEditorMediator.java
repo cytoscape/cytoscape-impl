@@ -5,10 +5,8 @@ import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsFirst;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -26,10 +24,14 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
+import javax.swing.JTree;
 import javax.swing.WindowConstants;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.HyperlinkEvent.EventType;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
 
 import org.cytoscape.application.swing.CyColumnPresentationManager;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -42,6 +44,8 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.view.table.internal.CyActivator;
 import org.cytoscape.view.table.internal.impl.BrowserTable;
 import org.cytoscape.view.table.internal.impl.BrowserTableModel;
 import org.cytoscape.view.table.internal.util.TableBrowserUtil;
@@ -197,9 +201,8 @@ public class EquationEditorMediator {
 	}
 	
 	
-	private void initializeFunctionListContents() {
+	private SortedMap<String,SortedMap<String,Function>> getFunctionsByCategory() {
 		EquationParser equationParser = registrar.getService(EquationParser.class);
-		
 		SortedMap<String,SortedMap<String,Function>> categories = new TreeMap<>();
 		
 		for(Function f : equationParser.getRegisteredFunctions()) {
@@ -208,38 +211,8 @@ public class EquationEditorMediator {
 				functions.put(f.getName(), f);
 			}
 		}
-		
-		ItemListPanel<FunctionInfo> functionPanel = builderPanel.getFunctionPanel();
-		
-		List<String> topCategories = Arrays.asList("Numeric", "Text", "List", "Logic", "Network");
-		
-		// First put the top categories at the top
-		for(String categoryName : topCategories) {
-			var functions = categories.remove(categoryName);
-			if(functions != null) {
-				functionPanel.addElement(FunctionInfo.category(categoryName));
-				
-				for(var functionEntry : functions.entrySet()) {
-					Function f = functionEntry.getValue();
-					functionPanel.addElement(FunctionInfo.function(f));
-				}
-			}
-		}
-		
-		// Now add the rest
-		for(var categoryEntry : categories.entrySet()) {
-			String categoryName = categoryEntry.getKey();
-			var functions = categoryEntry.getValue();
-			
-			functionPanel.addElement(FunctionInfo.category(categoryName));
-			
-			for(var functionEntry : functions.entrySet()) {
-				Function f = functionEntry.getValue();
-				functionPanel.addElement(FunctionInfo.function(f));
-			}
-		}
+		return categories;
 	}
-	
 	
 	private static String[] getCategoriesFor(Function f) {
 		String categoryList = f.getCategoryName();
@@ -254,56 +227,85 @@ public class EquationEditorMediator {
 	}
 	
 	
+	private void initializeFunctionListContents() {
+		SortedMap<String,SortedMap<String,Function>> categories = getFunctionsByCategory();
+		
+		var top = new DefaultMutableTreeNode("Functions");
+		
+		List<String> topCategories = Arrays.asList("Numeric", "Text", "List", "Logic", "Network");
+		
+		// First put the top categories at the top
+		for(String categoryName : topCategories) {
+			var functions = categories.remove(categoryName);
+			if(functions != null) {
+				var categoryNode = new DefaultMutableTreeNode(FunctionInfo.category(categoryName));
+				top.add(categoryNode);
+				
+				for(var functionEntry : functions.entrySet()) {
+					Function f = functionEntry.getValue();
+					categoryNode.add(new DefaultMutableTreeNode(FunctionInfo.function(f)));
+				}
+			}
+		}
+		
+		// Now add the rest
+		for(var categoryEntry : categories.entrySet()) {
+			String categoryName = categoryEntry.getKey();
+			var functions = categoryEntry.getValue();
+			
+			var categoryNode = new DefaultMutableTreeNode(FunctionInfo.category(categoryName));
+			top.add(categoryNode);
+			
+			for(var functionEntry : functions.entrySet()) {
+				Function f = functionEntry.getValue();
+				categoryNode.add(new DefaultMutableTreeNode(FunctionInfo.function(f)));
+			}
+		}
+		
+		ItemTreePanel<FunctionInfo> functionPanel = builderPanel.getFunctionPanel();
+		DefaultTreeModel model = new DefaultTreeModel(top);
+		model.setAsksAllowsChildren(false);
+		functionPanel.getTree().setModel(model);
+	}
+	
+	
 	@SuppressWarnings("serial")
 	private void initializeFunctionListComponents() {
-		ItemListPanel<FunctionInfo> functionPanel = builderPanel.getFunctionPanel();
-		JList<FunctionInfo> list = functionPanel.getList();
+		ItemTreePanel<FunctionInfo> functionPanel = builderPanel.getFunctionPanel();
+		JTree tree = functionPanel.getTree();
 		
-		list.setCellRenderer(new DefaultListCellRenderer() {
-			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-				
-				FunctionInfo functionInfo = (FunctionInfo) value;
-				if(functionInfo.isCategoryHeader()) {
-					Font font = getFont();
-					Font bold = font.deriveFont(Font.BOLD);
-					setFont(bold);
-					setText(functionInfo.getName());
-					setBackground(slightlyDarker(getBackground()));
-				} else {
-					setText("  " + functionInfo.getName());
-				}
+		var iconManager = registrar.getService(IconManager.class);
+		var funcIcon = iconManager.getIcon(CyActivator.FUNCTION_ICON_SMALL_ID);
+
+		tree.setCellRenderer(new DefaultTreeCellRenderer() {
+			{ setLeafIcon(funcIcon); }
+			public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+				super.getTreeCellRendererComponent(tree, value, false, expanded, leaf, row, hasFocus);
+				var node = (DefaultMutableTreeNode) value;
+				var functionInfo = (FunctionInfo) node.getUserObject();
+				setText(functionInfo.getName());
 				return this;
-			};
+			}
 		});
 		
-		list.addMouseListener(new ListInsertListener());
-		
-		list.addListSelectionListener(e -> {
-			FunctionInfo functionInfo = list.getSelectedValue();
-			if(functionInfo != null) {
+		tree.addTreeSelectionListener(e -> {
+			var node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+			if(node != null) {
 				builderPanel.getAttributePanel().clearSelection();
 				builderPanel.getTutorialPanel().clearSelection();
-				if(functionInfo.isCategoryHeader()) {
-					builderPanel.getInfoPanel().setText("");
-				} else {
-					Function f = functionInfo.getFunction();
+				
+				var functionInfo = (FunctionInfo) node.getUserObject();
+			    if (node.isLeaf()) {
+			    	Function f = functionInfo.getFunction();
 					String docs = TutorialItems.getFunctionDocs(f);
 					builderPanel.getInfoPanel().setText(docs);
-				}
+			    } else {
+			    	builderPanel.getInfoPanel().setText("");
+			    }
 			}
 		});
 	}
 	
-
-	private static Color slightlyDarker(Color color) {
-		double f = 0.9;
-		return new Color(
-			Math.max((int) (color.getRed()   * f), 0), 
-			Math.max((int) (color.getGreen() * f), 0),
-			Math.max((int) (color.getBlue()  * f), 0)
-		);
-	}
 
 	@SuppressWarnings("serial")
 	private void initializeAttributeList() {
@@ -351,28 +353,51 @@ public class EquationEditorMediator {
 		if(offset < 0)
 			return;
 		
+		// Its important to clear the selection of other panels when selecting in a panel.
 		FunctionInfo function = builderPanel.getFunctionPanel().getSelectedValue();
 		if(function != null && !function.isCategoryHeader()) {
 			syntaxPanel.insertText(offset, function.getName() + "(", ")");
 			return;
 		}
 		
-		// MKTODO need to figure out exactly how to reference column names
 		CyColumn col = builderPanel.getAttributePanel().getSelectedValue();
 		if(col != null) {
-			String ref = getAttributeReference(col);
+			String ref = createAttributeReferenceString(col);
 			syntaxPanel.insertText(offset, ref, null);
 			return;
 		}
 	}
 	
-	public static String getAttributeReference(CyColumn column) {
+	public static String createAttributeReferenceString(CyColumn column) {
 		String name = column.getName();
-		boolean simple = name.chars().allMatch(Character::isAlphabetic);
-		if(simple)
+		
+		boolean simple = name.chars().allMatch(ch -> 
+			Character.isLetter((char)ch) || Character.isDigit((char)ch) || (char)ch == '_'
+		);
+		
+		if(simple) {
 			return "$" + name;
-		else
-			return "${" + name + "}";
+		} else {
+			var sb = new StringBuilder("${");
+			escapeAttributeName(sb, name);
+			sb.append("}");
+			return sb.toString();
+		}
+	}
+	
+	private static void escapeAttributeName(StringBuilder sb, String name) {
+		// escape '}' and ':' but not '::'
+		for(int i = 0; i < name.length(); i++) {
+			char c = name.charAt(i);
+			if(c == ':' && i < name.length()-1 && name.charAt(i+1) == ':') {
+				i++;
+				sb.append("::");
+			} else if(c == ':' || c == '}' || c == '\\') {
+				sb.append("\\").append(c);
+			} else {
+				sb.append(c);
+			}
+		}
 	}
 	
 	

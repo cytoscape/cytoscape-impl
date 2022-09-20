@@ -1,10 +1,8 @@
 package org.cytoscape.view.table.internal.equation;
 
-import java.util.Collection;
-
-import javax.swing.DefaultListModel;
-import javax.swing.JList;
-import javax.swing.ListSelectionModel;
+import javax.swing.JTree;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeSelectionModel;
 
 /*
  * #%L
@@ -31,41 +29,38 @@ import javax.swing.ListSelectionModel;
  */
 
 @SuppressWarnings("serial")
-public class ItemListPanel<T> extends ItemPanel {
+public class ItemTreePanel<T> extends ItemPanel {
 
-	private JList<T> list;
+	private JTree tree;
 	
-	public ItemListPanel(String title) {
+	public ItemTreePanel(String title) {
 		super(title);
 	}
 	
-	public void addElements(Collection<T> items) {
-		((DefaultListModel<T>)getList().getModel()).addAll(items);
-	}
-	
-	public void addElement(T element) {
-		((DefaultListModel<T>)getList().getModel()).addElement(element);
-	}
-	
 	public void clearSelection() {
-		getList().clearSelection();
+		tree.getSelectionModel().clearSelection();
 	}
 	
+	@SuppressWarnings("unchecked")
 	public T getSelectedValue() {
-		return getList().getSelectedValue();
-	}
-
-	public JList<T> getList() {
-		if(list == null) {
-			list = new JList<>(new DefaultListModel<>());
-			list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		}
-		return list;
+		var node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+		if(node == null)
+			return null;
+		return (T) node.getUserObject();
 	}
 	
-	@Override
-	public JList<T> getContent() {
-		return getList();
+	public JTree getTree() {
+		if(tree == null) {
+			tree = new JTree();
+			tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+			tree.setRootVisible(false); 
+			tree.setShowsRootHandles(true);
+		}
+		return tree;
 	}
 
+	@Override
+	public JTree getContent() {
+		return getTree();
+	}
 }

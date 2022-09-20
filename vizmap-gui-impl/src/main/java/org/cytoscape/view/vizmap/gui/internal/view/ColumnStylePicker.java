@@ -42,7 +42,7 @@ import org.cytoscape.view.vizmap.gui.internal.view.util.IconUtil;
 public class ColumnStylePicker {
 	
 	public static enum Action {
-		UPDATE,
+		SELECT,
 		CREATE,
 		DELETE
 	}
@@ -127,6 +127,10 @@ public class ColumnStylePicker {
 			
 			addButton.addActionListener(e -> {
 				// MKTODO what if there are no unstyled columns???
+				var network = servicesUtil.get(CyApplicationManager.class).getCurrentNetwork();
+				if(network == null)
+					return;
+				
 				var dialog = new ColumnStyleAddColumnPopup(servicesUtil);
 				var location = addButton.getLocationOnScreen();
 				dialog.setLocation(location.x + 15, location.y + 5 + addButton.getHeight());
@@ -180,7 +184,7 @@ public class ColumnStylePicker {
 			jtable.getSelectionModel().addListSelectionListener(e -> {
 				if(e.getValueIsAdjusting())
 					return;
-				fireColumnStyleEvent(Action.UPDATE);
+				fireColumnStyleEvent(Action.SELECT);
 			});
 		}
 		return jtable;
@@ -219,12 +223,15 @@ public class ColumnStylePicker {
 	public void updateColumns(List<ColumnSpec> columns, ColumnSpec selectedCol) {
 		var model = new ColumnStyleTableModel(columns);
 		getJTable().setModel(model);
+		
+		if(columns.isEmpty()) {
+			return;
+		} 
 		if(selectedCol == null) {
-			getJTable().clearSelection();
-		} else {
-			int row = model.getRowFor(selectedCol);
-			getJTable().getSelectionModel().setSelectionInterval(row, row);
+			selectedCol = columns.get(0);
 		}
+		int row = model.getRowFor(selectedCol);
+		getJTable().getSelectionModel().setSelectionInterval(row, row);
 	}
 	
 	

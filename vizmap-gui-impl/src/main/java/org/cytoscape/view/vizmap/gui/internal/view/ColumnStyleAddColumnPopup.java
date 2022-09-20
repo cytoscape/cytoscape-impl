@@ -4,6 +4,8 @@ import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.GroupLayout;
@@ -21,6 +23,7 @@ import org.cytoscape.application.swing.CyColumnPresentationManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -41,9 +44,8 @@ public class ColumnStyleAddColumnPopup extends JDialog {
 	
 	public ColumnStyleAddColumnPopup(ServicesUtil servicesUtil) {
 		this.servicesUtil = servicesUtil;
-		
-		initComponents();
 		setTitle("Add Column Style");
+		initComponents();
 		pack();
 		
 		addWindowFocusListener(new WindowFocusListener() {
@@ -73,10 +75,7 @@ public class ColumnStyleAddColumnPopup extends JDialog {
 	
 	public GraphObjectType getTableType() {
 		var tabName = tableCombo.getItemAt(tableCombo.getSelectedIndex());
-		if("Node".equals(tabName))
-			return GraphObjectType.node();
-		else
-			return GraphObjectType.edge();
+		return "Node".equals(tabName) ? GraphObjectType.node() : GraphObjectType.edge();
 	}
 	
 	public String getColumnName() {
@@ -164,17 +163,26 @@ public class ColumnStyleAddColumnPopup extends JDialog {
 		colCombo.removeAllItems();
 		
 		if(table != null) {
-			for(var col : table.getColumns()) {
-				if("SUID".equals(col.getName()) || "selected".equals(col.getName()))
+			List<CyColumn> columns = new ArrayList<>(table.getColumns());
+			columns.sort(comparingName());
+			
+			for(var col : columns) {
+				String name = col.getName();
+				if(CyNetwork.SUID.equals(name) || CyNetwork.SELECTED.equals(name))
 					continue;
 				
-				var existingStyle = tableVMM.getAssociatedColumnVisualStyle(netStyle, tableType, col.getName());
+				var existingStyle = tableVMM.getAssociatedColumnVisualStyle(netStyle, tableType, name);
 				if(existingStyle != null)
 					continue;
 				
 				colCombo.addItem(col);
 			};
 		}
+	}
+	
+	// Sorts the same as ColumnSpec
+	private static Comparator<CyColumn> comparingName() {
+		return (a, b) -> a.getName().compareToIgnoreCase(b.getName());
 	}
 	
 	

@@ -42,6 +42,8 @@ public final class NotificationNames {
 	/** Body: {@link org.cytoscape.view.vizmap.gui.internal.model.LockedValuesVO} */
 	public static final String REMOVE_LOCKED_VALUES = "REMOVE_LOCKED_VALUES";
 	
+	public static final String COPY_CONTINUOUS_MAPPING = "COPY_CONTINUOUS_MAPPING";
+	
 	// --- DATA UPDATED Events ---
 	
 	/** Body: SortedSet<VisualStyle> */

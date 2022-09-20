@@ -1,11 +1,6 @@
 package org.cytoscape.view.vizmap.gui.internal.controller;
 
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.LOAD_DEFAULT_VISUAL_STYLES;
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.LOAD_VISUAL_STYLES;
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.REMOVE_LOCKED_VALUES;
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.REMOVE_VISUAL_MAPPINGS;
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.SET_LOCKED_VALUES;
-import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.STARTUP;
+import static org.cytoscape.view.vizmap.gui.internal.util.NotificationNames.*;
 
 import org.cytoscape.view.vizmap.gui.internal.model.AttributeSetProxy;
 import org.cytoscape.view.vizmap.gui.internal.model.MappingFunctionFactoryProxy;
@@ -88,6 +83,7 @@ public class StartupCommand extends SimpleCommand {
 		getFacade().registerCommand(REMOVE_VISUAL_MAPPINGS, new RemoveVisualMappingsCommand(servicesUtil));
 		getFacade().registerCommand(REMOVE_LOCKED_VALUES, new RemoveLockedValuesCommand(servicesUtil));
 		getFacade().registerCommand(SET_LOCKED_VALUES, new SetLockedValuesCommand(servicesUtil));
+		getFacade().registerCommand(COPY_CONTINUOUS_MAPPING, new CopyContinuousMappingCommand(servicesUtil));
 
 		// Remove the STARTUP command because it is not called more than once
 		getFacade().removeCommand(STARTUP);

@@ -42,7 +42,7 @@ public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 
 		this.visualProperty = Objects.requireNonNull(visualProperty, "'visualProperty' must not be null");
 		this.style = Objects.requireNonNull(style, "'style' must not be null");
-		this.engine = Objects.requireNonNull(engine);
+		this.engine = engine; // can be null if no current network
 		this.lexicon = Objects.requireNonNull(lexicon, "'lexicon' must not be null");
 		this.tableType = Objects.requireNonNull(tableType);
 		this.lexiconType = Objects.requireNonNull(lexiconType);
@@ -63,7 +63,7 @@ public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 		this.dependency = Objects.requireNonNull(dependency, "'dependency' must not be null");
 		this.visualProperty = dependency.getParentVisualProperty();
 		this.style = Objects.requireNonNull(style, "'style' must not be null");
-		this.engine = Objects.requireNonNull(engine);
+		this.engine = engine; // can be null if no current network
 		this.lexicon = Objects.requireNonNull(lexicon, "'lexicon' must not be null");
 		this.tableType = Objects.requireNonNull(tableType);
 		this.lexiconType = Objects.requireNonNull(lexiconType);

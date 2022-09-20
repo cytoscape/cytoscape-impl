@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -66,12 +67,13 @@ public class StartupConfig implements AppsFinishedStartingListener {
 	private LoadVizmapFileTaskFactory visualStylesLoader;
 	
 	private final CyServiceRegistrar registrar;
+	private final SessionLoadHandler sessionLoadHandler;
 	
 	private File sessionName;
-	private ArrayList<File> networkFiles;
-	private ArrayList<URL> networkURLs;
-	private ArrayList<File> vizmapFiles;
-	private ArrayList<TaskIterator> taskIteratorList;
+	private List<File> networkFiles = new ArrayList<>();
+	private List<URL> networkURLs = new ArrayList<>();
+	private List<File> vizmapFiles = new ArrayList<>();
+	private List<TaskIterator> taskIteratorList = new ArrayList<>();
 
 	public StartupConfig(
 			Properties globalProps,
@@ -80,7 +82,8 @@ public class StartupConfig implements AppsFinishedStartingListener {
 			LoadNetworkFileTaskFactory networkFileLoader,
 			LoadNetworkURLTaskFactory networkURLLoader,
 			LoadVizmapFileTaskFactory visualStylesLoader,
-			CyServiceRegistrar registrar
+			CyServiceRegistrar registrar,
+			SessionLoadHandler sessionLoadHandler
 	) {
 		this.globalProps = globalProps;
 		this.streamUtil = streamUtil;
@@ -89,10 +92,7 @@ public class StartupConfig implements AppsFinishedStartingListener {
 		this.networkURLLoader = networkURLLoader;
 		this.visualStylesLoader = visualStylesLoader;
 		this.registrar = registrar;
-		networkFiles= new ArrayList<>();
-		networkURLs = new ArrayList<>();
-		vizmapFiles = new ArrayList<>();
-		taskIteratorList = new ArrayList<>();
+		this.sessionLoadHandler = sessionLoadHandler;
 	}
 
 	@Override
@@ -229,30 +229,34 @@ public class StartupConfig implements AppsFinishedStartingListener {
 		// no need to do this in a task since it's so fast
 		//globalProps.putAll(localProps);
 		
-		CyProperty<Properties> commandline = new SimpleCyProperty<>("commandline", localProps,
-				Properties.class, CyProperty.SavePolicy.DO_NOT_SAVE);
+		CyProperty<Properties> commandline = new SimpleCyProperty<>("commandline", localProps, Properties.class, CyProperty.SavePolicy.DO_NOT_SAVE);
 		Properties cmdlnProps = new Properties();
 		cmdlnProps.setProperty("cyPropertyName", "commandline.props");
 		registrar.registerService(commandline, CyProperty.class, cmdlnProps);
 		
 		// Only proceed if we've specified tasks for execution on the command line.
-		if (!taskStart)
-			return;
-
-		// Since we've set command line args we presumably
-		// don't want to see the welcome screen, so we disable it here.
-		globalProps.setProperty("tempHideWelcomeScreen", "true");
-
-		if (sessionName != null) {
-			taskIteratorList.add(loadSession.createTaskIterator(sessionName));
-		} else {
-			for (File network : networkFiles)
-				taskIteratorList.add(networkFileLoader.createTaskIterator(network));
-			for (URL network : networkURLs)
-				taskIteratorList.add(networkURLLoader.loadCyNetworks(network));
-			for (File vizmap : vizmapFiles)
-				taskIteratorList.add(visualStylesLoader.createTaskIterator(vizmap));
+		if(taskStart) {
+			// Since we've set command line args we presumably don't want to see the welcome screen, so we disable it here.
+			globalProps.setProperty("tempHideWelcomeScreen", "true");
+	
+			if (sessionName != null) {
+				taskIteratorList.add(loadSession.createTaskIterator(sessionName));
+			} else {
+				for (File network : networkFiles)
+					taskIteratorList.add(networkFileLoader.createTaskIterator(network));
+				for (URL network : networkURLs)
+					taskIteratorList.add(networkURLLoader.loadCyNetworks(network));
+				for (File vizmap : vizmapFiles)
+					taskIteratorList.add(visualStylesLoader.createTaskIterator(vizmap));
+			}
 		}
+		
+		// After all the other tasks are complete, start listening for session file double-click.
+		taskIteratorList.add(new TaskIterator(new AbstractTask() {
+			@Override public void run(TaskMonitor tm) {
+				sessionLoadHandler.startListeningForSessionFileOpen();		
+			}
+		}));
 	}
 	
 	private class DummyTask extends AbstractTask{

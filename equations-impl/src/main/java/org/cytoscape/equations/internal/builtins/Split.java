@@ -27,7 +27,7 @@ public class Split extends AbstractFunction {
 	@Override
 	public String getCategoryName() { return Categories.TEXT; }
 
-	public String getFunctionSummary() { return "Splits a text string into substrings around matches of a delimiter."; }
+	public String getFunctionSummary() { return "Splits a text string into substrings around matches of a delimiter. Returns a list of strings."; }
 
 	public Class<?> getReturnType() { return StringList.class; }
 	
