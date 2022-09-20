@@ -49,16 +49,16 @@ import org.xml.sax.SAXException;
  * Copyright (C) 2008 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 2.1 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
+ *
+ * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
@@ -68,7 +68,7 @@ import org.xml.sax.SAXException;
 public class CitationsDialog extends JDialog {
 
 	private final JTextPane textPane;
-	
+
 	private final WebQuerier webQuerier;
 	private final AppManager appManager;
 	private final CyServiceRegistrar serviceRegistrar;
@@ -89,7 +89,7 @@ public class CitationsDialog extends JDialog {
 		textPane.addHyperlinkListener(evt -> {
 			if (!evt.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED))
 				return;
-			
+
 			serviceRegistrar.getService(OpenBrowser.class).openURL(evt.getURL().toString());
 		});
 
@@ -114,7 +114,7 @@ public class CitationsDialog extends JDialog {
 			taskMgr.execute(new TaskIterator(new RetrieveTask(webQuerier, textPane, appManager)));
 			pack();
 		}
-		
+
 		super.setVisible(b);
 	}
 }
@@ -207,7 +207,7 @@ class Article {
  * Retrieves article summaries from PubMed and stores them in {@code Article} instances.
  */
 class PubMedParser {
-	
+
   static final String REQUEST_URL_BASE = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=";
 
   /**
@@ -355,7 +355,7 @@ class RetrieveTask implements Task {
     final Map<String,String> pmids = new HashMap<>();
     final Set<WebApp> allApps = webQuerier.getAllApps();
     webQuerier.checkWebAppInstallStatus(allApps, appManager);
-    
+
     for (final WebApp app : allApps) {
       if (app.getCorrespondingApp() == null
        || app.getCorrespondingApp().getStatus() != App.AppStatus.INSTALLED)
