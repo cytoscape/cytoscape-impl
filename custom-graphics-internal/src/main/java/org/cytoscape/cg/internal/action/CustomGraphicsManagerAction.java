@@ -11,27 +11,20 @@ import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.cg.internal.ui.CustomGraphicsManagerDialog;
 import org.cytoscape.cg.model.CustomGraphicsManager;
-import org.cytoscape.cg.util.CustomGraphicsBrowser;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
 @SuppressWarnings("serial")
 public class CustomGraphicsManagerAction extends AbstractCyAction {
 	
 	private final CustomGraphicsManager cgManager;
-	private final CustomGraphicsBrowser browser;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public CustomGraphicsManagerAction(
-			final CustomGraphicsManager cgManager,
-	        final CustomGraphicsBrowser browser,
-	        final CyServiceRegistrar serviceRegistrar
-	) {
+	public CustomGraphicsManagerAction(CustomGraphicsManager cgManager, CyServiceRegistrar serviceRegistrar) {
 		super("Open Image Manager");
 		setPreferredMenu("View");
 		setMenuGravity(10.0f);
 		
 		this.cgManager = cgManager;
-		this.browser = browser;
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
@@ -50,7 +43,8 @@ public class CustomGraphicsManagerAction extends AbstractCyAction {
 		if (owner == null)
 			owner = swingApplication.getJFrame();
 
-		var dialog = new CustomGraphicsManagerDialog(owner, cgManager, browser, serviceRegistrar);
+		var dialog = new CustomGraphicsManagerDialog(owner, cgManager, serviceRegistrar);
+		dialog.setLocationRelativeTo(owner);
 		dialog.setVisible(true);
 	}
 }

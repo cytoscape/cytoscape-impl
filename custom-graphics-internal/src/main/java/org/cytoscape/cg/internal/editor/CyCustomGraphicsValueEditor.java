@@ -1,6 +1,9 @@
 package org.cytoscape.cg.internal.editor;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static org.cytoscape.util.swing.LookAndFeelUtil.createOkCancelPanel;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+import static org.cytoscape.util.swing.LookAndFeelUtil.setDefaultOkCancelKeyStrokes;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -25,6 +28,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -32,12 +36,10 @@ import org.cytoscape.cg.internal.charts.AbstractChart;
 import org.cytoscape.cg.internal.charts.AbstractChartEditor;
 import org.cytoscape.cg.model.CustomGraphics2Manager;
 import org.cytoscape.cg.model.NullCustomGraphics;
-import org.cytoscape.cg.util.CustomGraphicsBrowser;
 import org.cytoscape.cg.util.ImageCustomGraphicsSelector;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
@@ -52,7 +54,6 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 	
 	private JTabbedPane groupTpn;
 	private JPanel bottomPnl;
-	private ImageCustomGraphicsSelector imageSelector;
 	private Map<String/*group*/, CustomGraphics2Panel> cg2PnlMap;
 	private JButton removeBtn;
 	private JButton cancelBtn;
@@ -63,15 +64,14 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 	
 	private boolean initialized;
 
-	private final CustomGraphicsBrowser browser;
 	private final CyServiceRegistrar serviceRegistrar;
 	
 	private JDialog dialog;
+	private ImageCustomGraphicsSelector imageSelector;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public CyCustomGraphicsValueEditor(CustomGraphicsBrowser browser, CyServiceRegistrar serviceRegistrar) {
-		this.browser = browser;
+	public CyCustomGraphicsValueEditor(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 		cg2PnlMap = new HashMap<>();
 	}
@@ -109,8 +109,8 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 		var owner = parent != null ? SwingUtilities.getWindowAncestor(parent) : null;
 		dialog = new JDialog(owner, ModalityType.APPLICATION_MODAL);
 		dialog.setMinimumSize(new Dimension(400, 600));
+		dialog.setPreferredSize(new Dimension(600, 600));
 		dialog.setTitle("Graphics");
-		dialog.setResizable(false);
 		
 		dialog.addWindowListener(new WindowAdapter() {
 			@Override
@@ -133,8 +133,7 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 				.addComponent(getBottomPnl())
 		);
 		
-		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(dialog.getRootPane(), getApplyBtn().getAction(),
-				getCancelBtn().getAction());
+		setDefaultOkCancelKeyStrokes(dialog.getRootPane(), getApplyBtn().getAction(), getCancelBtn().getAction());
 		dialog.getRootPane().setDefaultButton(getApplyBtn());
 	}
 	
@@ -143,10 +142,10 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 		getGroupTpn().removeAll();
 		
 		// Update the "Images" tab and add it again (right now it's supported by both CyNode and CyColumn targets)
-		getImageSelector().update(oldCustomGraphics);
-		getGroupTpn().addTab("Images", getImageSelector());
+		imageSelector = createImageSelector();
+		getGroupTpn().addTab("Images", imageSelector);
 		
-		Component newSelectedComp = getImageSelector(); // Start with this tab being the selected one
+		Component newSelectedComp = imageSelector; // Start with this tab being the selected one
 		
 		// Add the other tabs -- they edit CyCustomGraphics2 that are supported by the current target type
 		var oldCg2 = oldCustomGraphics instanceof CyCustomGraphics2 ? (CyCustomGraphics2) oldCustomGraphics : null;
@@ -192,7 +191,7 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 		var c = getGroupTpn().getSelectedComponent();
 		
 		if (c instanceof ImageCustomGraphicsSelector)
-			newCustomGraphics = ((ImageCustomGraphicsSelector) c).getSelectedValue();
+			newCustomGraphics = ((ImageCustomGraphicsSelector) c).getSelectedImage();
 		else if (c instanceof CustomGraphics2Panel)
 			newCustomGraphics = ((CustomGraphics2Panel) c).getCustomGraphics2();
 
@@ -209,19 +208,21 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 	
 	private JPanel getBottomPnl() {
 		if (bottomPnl == null) {
-			bottomPnl = LookAndFeelUtil.createOkCancelPanel(getApplyBtn(), getCancelBtn(), getRemoveBtn());
+			bottomPnl = createOkCancelPanel(getApplyBtn(), getCancelBtn(), getRemoveBtn());
 		}
 		
 		return bottomPnl;
 	}
 	
-	private ImageCustomGraphicsSelector getImageSelector() {
-		if (imageSelector == null) {
-			imageSelector = new ImageCustomGraphicsSelector(browser, serviceRegistrar);
-			imageSelector.addActionListener(evt -> apply());
-		}
+	private ImageCustomGraphicsSelector createImageSelector() {
+		var comp = new ImageCustomGraphicsSelector(oldCustomGraphics, serviceRegistrar);
 		
-		return imageSelector;
+		if (isAquaLAF())
+			comp.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
+		
+		comp.addActionListener(evt -> apply());
+		
+		return comp;
 	}
 	
 	private CustomGraphics2Panel getCG2Pnl(String group) {
@@ -229,7 +230,7 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 		
 		if (cg2Pnl == null) {
 			cg2Pnl = new CustomGraphics2Panel(group);
-			cg2Pnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
+			cg2Pnl.setOpaque(!isAquaLAF()); // Transparent if Aqua
 			cg2PnlMap.put(group, cg2Pnl);
 		}
 		
@@ -433,8 +434,8 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 				this.factory = factory;
 				this.targetType = targetType;
 				this.setBorder(BorderFactory.createEmptyBorder());
-				this.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
-				this.getViewport().setOpaque(!LookAndFeelUtil.isAquaLAF());
+				this.setOpaque(!isAquaLAF()); // Transparent if Aqua
+				this.getViewport().setOpaque(!isAquaLAF());
 			}
 			
 			void update(CyCustomGraphics2 initialCg2) {

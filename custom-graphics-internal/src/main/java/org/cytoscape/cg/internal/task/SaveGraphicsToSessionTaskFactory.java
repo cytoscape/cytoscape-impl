@@ -2,6 +2,7 @@ package org.cytoscape.cg.internal.task;
 
 import java.io.File;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
@@ -9,18 +10,24 @@ import org.cytoscape.work.TaskIterator;
 public class SaveGraphicsToSessionTaskFactory extends AbstractTaskFactory {
 
 	private final File location;
+	private final SessionAboutToBeSavedEvent event;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	private final SessionAboutToBeSavedEvent e;
-
-	public SaveGraphicsToSessionTaskFactory(File location, SessionAboutToBeSavedEvent e) {
+	public SaveGraphicsToSessionTaskFactory(
+			File location,
+			SessionAboutToBeSavedEvent event,
+			CyServiceRegistrar serviceRegistrar
+	) {
 		this.location = location;
-		this.e = e;
+		this.event = event;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		// Since version 3.10, this should no longer save session images to the CytoscapeConfiguration directory!
-//		return new TaskIterator(new SaveUserImagesTask(location, manager), new SaveGraphicsToSessionTask(location, e));
-		return new TaskIterator(new SaveGraphicsToSessionTask(location, e));
+		return new TaskIterator(
+				new SaveUserImagesTask(location, serviceRegistrar),
+				new SaveGraphicsToSessionTask(location, event)
+		);
 	}
 }

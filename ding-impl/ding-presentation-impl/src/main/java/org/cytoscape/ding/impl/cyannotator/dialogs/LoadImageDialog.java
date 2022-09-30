@@ -1,5 +1,7 @@
 package org.cytoscape.ding.impl.cyannotator.dialogs;
 
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
@@ -10,16 +12,17 @@ import java.io.InputStreamReader;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JTabbedPane;
+import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
 
 import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.cg.model.BitmapCustomGraphics;
 import org.cytoscape.cg.model.CustomGraphicsManager;
 import org.cytoscape.cg.model.SVGCustomGraphics;
-import org.cytoscape.cg.util.CustomGraphicsBrowser;
 import org.cytoscape.cg.util.ImageCustomGraphicsSelector;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
@@ -124,7 +127,7 @@ public class LoadImageDialog extends AbstractAnnotationDialog<ImageAnnotationImp
 				if (file.getParentFile().isDirectory())
 					lastDirectory = file.getParentFile();
 			} else {
-				var cg = getImageSelector().getSelectedValue();
+				var cg = getImageSelector().getSelectedImage();
 				annotation = createAnnotation(cg);
 			}
 			
@@ -182,9 +185,11 @@ public class LoadImageDialog extends AbstractAnnotationDialog<ImageAnnotationImp
 	
 	private ImageCustomGraphicsSelector getImageSelector() {
 		if (imageSelector == null) {
-			var cgBrowser = new CustomGraphicsBrowser(serviceRegistrar);
-			imageSelector = new ImageCustomGraphicsSelector(cgBrowser, serviceRegistrar);
-			imageSelector.addActionListener(evt -> getApplyButton().doClick());
+			imageSelector = new ImageCustomGraphicsSelector(serviceRegistrar);
+			imageSelector.addActionListener(evt -> getApplyButton().doClick());	
+			
+			if (isAquaLAF())
+				imageSelector.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
 		}
 		
 		return imageSelector;

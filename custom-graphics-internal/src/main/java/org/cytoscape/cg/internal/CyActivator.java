@@ -31,7 +31,6 @@ import org.cytoscape.cg.model.CustomGraphics2Manager;
 import org.cytoscape.cg.model.CustomGraphicsManager;
 import org.cytoscape.cg.model.CustomGraphicsRange;
 import org.cytoscape.cg.model.CustomGraphicsTranslator;
-import org.cytoscape.cg.util.CustomGraphicsBrowser;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.AbstractCyActivator;
@@ -48,7 +47,6 @@ public class CyActivator extends AbstractCyActivator {
 	
 	private CustomGraphicsManager cgManager;
 	private CustomGraphics2Manager cg2Manager;
-	private CustomGraphicsBrowser cgBrowser;
 	
 	@Override
 	public void start(BundleContext bc) {
@@ -63,15 +61,12 @@ public class CyActivator extends AbstractCyActivator {
 	private void startCustomGraphicsMgr(BundleContext bc, CyServiceRegistrar serviceRegistrar) {
 		ColorScheme.setServiceRegistrar(serviceRegistrar);
 		
-		cgBrowser = new CustomGraphicsBrowser(serviceRegistrar);
-		registerAllServices(bc, cgBrowser);
-		
 		cgManager = new CustomGraphicsManagerImpl(getdefaultImageURLs(bc), serviceRegistrar);
 		registerAllServices(bc, cgManager);
 		
 		CustomGraphicsRange.setManager(cgManager);
 		
-		var cgManagerAction = new CustomGraphicsManagerAction(cgManager, cgBrowser, serviceRegistrar);
+		var cgManagerAction = new CustomGraphicsManagerAction(cgManager, serviceRegistrar);
 		registerService(bc, cgManagerAction, CyAction.class);
 
 		// Create and register our built-in factories.
@@ -156,7 +151,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, cgTranslator, ValueTranslator.class);
 		
 		// Custom Graphics Editors
-		var cgValueEditor = new CyCustomGraphicsValueEditor(cgBrowser, serviceRegistrar);
+		var cgValueEditor = new CyCustomGraphicsValueEditor(serviceRegistrar);
 		registerAllServices(bc, cgValueEditor);
 
 		var cmCellRendererFactory = getService(bc, ContinuousMappingCellRendererFactory.class);
