@@ -4,7 +4,6 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -46,7 +45,6 @@ public class RestoreImagesTask implements Task {
 	private static final String METADATA_FILE = "image_metadata.props";
 
 	private File imageHomeDirectory;
-	private final Set<URL> defaultImageURLs;
 
 	private final CyServiceRegistrar serviceRegistrar;
 	
@@ -56,9 +54,8 @@ public class RestoreImagesTask implements Task {
 	// Default vectors
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
-	public RestoreImagesTask(Set<URL> defaultImageURLs, File imageLocation, CyServiceRegistrar serviceRegistrar) {
+	public RestoreImagesTask(File imageLocation, CyServiceRegistrar serviceRegistrar) {
 		this.imageHomeDirectory = imageLocation;
-		this.defaultImageURLs = defaultImageURLs;
 		this.serviceRegistrar = serviceRegistrar;
 
 		this.imageLoaderService = Executors.newFixedThreadPool(NUM_THREADS); // For loading images in parallel
@@ -74,7 +71,7 @@ public class RestoreImagesTask implements Task {
 
 		var manager = serviceRegistrar.getService(CustomGraphicsManager.class);
 		restoreImages(manager);
-		restoreSampleImages(manager);
+//		restoreSampleImages(manager); // Sample images removed in version 3.10
 
 		long endTime = System.currentTimeMillis();
 		double sec = (endTime - startTime) / (1000.0);
@@ -83,28 +80,28 @@ public class RestoreImagesTask implements Task {
 		serviceRegistrar.getService(CyEventHelper.class).fireEvent(new CustomGraphicsLibraryUpdatedEvent(manager));
 	}
 	
-	private void restoreSampleImages(CustomGraphicsManager manager) throws IOException {
-		// Filter by display name
-		var allGraphics = manager.getAllCustomGraphics();
-		var names = new HashSet<String>();
-
-		for (var cg : allGraphics)
-			names.add(cg.getDisplayName());
-		
-		for (var url : defaultImageURLs) {
-			var parts = url.getFile().split("/");
-			var displayName = parts[parts.length - 1];
-
-			if (manager.getCustomGraphicsBySourceURL(url) == null && !names.contains(displayName)) {
-				var cg = new BitmapCustomGraphics(manager.getNextAvailableID(), displayName, url);
-
-				if (cg != null) {
-					manager.addCustomGraphics(cg, url);
-					cg.setDisplayName(displayName);
-				}
-			}
-		}
-	}
+//	private void restoreSampleImages(CustomGraphicsManager manager) throws IOException {
+//		// Filter by display name
+//		var allGraphics = manager.getAllCustomGraphics();
+//		var names = new HashSet<String>();
+//
+//		for (var cg : allGraphics)
+//			names.add(cg.getDisplayName());
+//		
+//		for (var url : defaultImageURLs) {
+//			var parts = url.getFile().split("/");
+//			var displayName = parts[parts.length - 1];
+//
+//			if (manager.getCustomGraphicsBySourceURL(url) == null && !names.contains(displayName)) {
+//				var cg = new BitmapCustomGraphics(manager.getNextAvailableID(), displayName, url);
+//
+//				if (cg != null) {
+//					manager.addCustomGraphics(cg, url);
+//					cg.setDisplayName(displayName);
+//				}
+//			}
+//		}
+//	}
 
 	private void restoreImages(CustomGraphicsManager manager) {
 		var cs = new ExecutorCompletionService(imageLoaderService);

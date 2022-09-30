@@ -3,10 +3,7 @@ package org.cytoscape.cg.internal;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 
-import java.net.URL;
-import java.util.HashSet;
 import java.util.Properties;
-import java.util.Set;
 
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.cg.internal.action.CustomGraphicsManagerAction;
@@ -61,7 +58,7 @@ public class CyActivator extends AbstractCyActivator {
 	private void startCustomGraphicsMgr(BundleContext bc, CyServiceRegistrar serviceRegistrar) {
 		ColorScheme.setServiceRegistrar(serviceRegistrar);
 		
-		cgManager = new CustomGraphicsManagerImpl(getdefaultImageURLs(bc), serviceRegistrar);
+		cgManager = new CustomGraphicsManagerImpl(serviceRegistrar);
 		registerAllServices(bc, cgManager);
 		
 		CustomGraphicsRange.setManager(cgManager);
@@ -161,16 +158,17 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, cgVisualPropertyEditor, VisualPropertyEditor.class);
 	}
 	
-	/**
-	 * Get list of default images from resource.
-	 */
-	private Set<URL> getdefaultImageURLs(BundleContext bc) {
-		var e = bc.getBundle().findEntries("images/sampleCustomGraphics", "*.png", true);
-		var defaultImageUrls = new HashSet<URL>();
-		
-		while (e.hasMoreElements())
-			defaultImageUrls.add(e.nextElement());
-		
-		return defaultImageUrls;
-	}
+// Sample images removed in version 3.10
+//	/**
+//	 * Get list of default images from resource.
+//	 */
+//	private Set<URL> getdefaultImageURLs(BundleContext bc) {
+//		var e = bc.getBundle().findEntries("images/sampleCustomGraphics", "*.png", true);
+//		var defaultImageUrls = new HashSet<URL>();
+//		
+//		while (e.hasMoreElements())
+//			defaultImageUrls.add(e.nextElement());
+//		
+//		return defaultImageUrls;
+//	}
 }

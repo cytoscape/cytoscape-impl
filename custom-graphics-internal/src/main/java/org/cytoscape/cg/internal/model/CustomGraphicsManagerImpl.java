@@ -79,7 +79,6 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	private final Map<String, CyCustomGraphicsFactory> factoryMap;
 	private final Map<CyCustomGraphicsFactory, Map<?, ?>> factoryPropsMap;
 	
-	private final Set<URL> defaultImageURLs;
 	private final CyServiceRegistrar serviceRegistrar;
 
 	private static CustomGraphicsManager instance;
@@ -87,8 +86,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	/**
 	 * Creates an image pool object and restore existing images from user resource directory.
 	 */
-	public CustomGraphicsManagerImpl(Set<URL> defaultImageURLs, CyServiceRegistrar serviceRegistrar) {
-		this.defaultImageURLs = defaultImageURLs;
+	public CustomGraphicsManagerImpl(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 		
 		missingImageCustomGraphicsSet = new HashSet<>();
@@ -338,7 +336,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 					// get parent directory
 					var imagesDir = files.get(0).getParentFile();
 					
-					var taskIterator = new TaskIterator(new RestoreImagesTask(new HashSet<>(), imagesDir, serviceRegistrar));
+					var taskIterator = new TaskIterator(new RestoreImagesTask(imagesDir, serviceRegistrar));
 					taskIterator.append(new ReloadMissingImagesTask(sess.getNetworkViews()));
 					
 					serviceRegistrar.getService(DialogTaskManager.class).execute(taskIterator);
@@ -387,7 +385,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	
 	private void restoreImages() {
 		// Restore Custom Graphics from the directory.
-		var taskIterator = new TaskIterator(new RestoreImagesTask(defaultImageURLs, imageHomeDirectory, serviceRegistrar));
+		var taskIterator = new TaskIterator(new RestoreImagesTask(imageHomeDirectory, serviceRegistrar));
 		serviceRegistrar.getService(DialogTaskManager.class).execute(taskIterator);
 	}
 	
