@@ -795,7 +795,7 @@ public class ImageCustomGraphicsSelector extends JPanel {
 
 		@Override
 		public boolean getScrollableTracksViewportWidth() {
-			return cols > 0;
+			return true;
 		}
 
 		@Override
