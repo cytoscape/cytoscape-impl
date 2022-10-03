@@ -132,7 +132,7 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 	private List<KeyValue> keyVals;
 
 	// Node ID's
-	private Map<String, CyNode> nodeIDMap;
+	private Map<Integer, CyNode> nodeIDMap;
 	private List<Integer> nodes;
 	private List<Integer> sources;
 	private List<Integer> targets;
@@ -295,7 +295,7 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 	 * on a node that was skipped, then that edge will be skipped as well.
 	 */
 	protected void createGraph(TaskMonitor taskMonitor) {
-		nodeIDMap = new HashMap<String, CyNode>(nodes.size());
+		nodeIDMap = new HashMap<>(nodes.size());
 		Map<Object, CyNode> nMap = getNodeMap();
 
 		Map<Integer, Integer> gml_id2order = new HashMap<Integer, Integer>(nodes.size());
@@ -340,7 +340,7 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 
 			setAttributes(node, network, nodeAttributes.get(idx));
 
-			nodeIDMap.put(label, node);
+			nodeIDMap.put(nodes.get(idx), node);
 			gml_id2order.put(nodes.get(idx), idx);
 			nodeRootIndexPairs.get(idx).value = node.getSUID();
 		}
@@ -376,8 +376,8 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 					duplicateCount += 1;
 				}
 
-				final CyNode node1 = nodeIDMap.get(sourceName);
-				final CyNode node2 = nodeIDMap.get(targetName);
+				final CyNode node1 = nodeIDMap.get(sources.get(idx));
+				final CyNode node2 = nodeIDMap.get(targets.get(idx));
 				CyEdge edge = network.addEdge(node1, node2,
 						isDirected.booleanValue());
 
