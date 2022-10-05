@@ -448,7 +448,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			AppManagerTaskFactory factory = new AppManagerTaskFactory(appManager, serviceRegistrar, swingApplication, downloadSitesManager);
+			AppManagerTaskFactory factory = new AppManagerTaskFactory(appManager, serviceRegistrar, swingApplication, downloadSitesManager, true);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "Apps.App Manager");
 			props.setProperty(TITLE, "Show App Manager");
@@ -629,7 +629,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
-		final LaunchManager launchManager = new LaunchManager(appManager, downloadSitesManager, serviceRegistrar, swingApplication);
+		final LaunchManager launchManager = new LaunchManager(appManager, downloadSitesManager, serviceRegistrar, swingApplication, false);
 		registerService(bc, launchManager, AppsFinishedStartingListener.class);
 	}
 

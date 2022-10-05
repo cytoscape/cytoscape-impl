@@ -433,6 +433,7 @@ public class UpdateNotificationAction extends AbstractCyAction {
 			args.put("id","App Manager");
 			args.put("title","App Manager");
 			args.put("panel","WEST");
+			args.put("focus", true);
 			TaskIterator ti = commandTF.createTaskIterator("cybrowser","show",args, null);
 			taskManager.execute(ti);
 	}

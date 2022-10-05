@@ -44,11 +44,14 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 	@Tunable (description="Use CyBrowser if installed", context="nogui")
 	public boolean useCybrowser = true;
 
-	public AppManagerTask(final AppManager appManager, CyServiceRegistrar serviceRegistrar, CySwingApplication swingApplication, DownloadSitesManager downloadSitesManager) {
+	public Boolean focus = true;
+
+	public AppManagerTask(final AppManager appManager, CyServiceRegistrar serviceRegistrar, CySwingApplication swingApplication, DownloadSitesManager downloadSitesManager, Boolean focus) {
 		super(appManager);
 		cytoPanelWest = swingApplication.getCytoPanel(CytoPanelName.WEST);
 		this.serviceRegistrar = serviceRegistrar;
 		this.downloadSitesManager = downloadSitesManager;
+		this.focus = focus;
 	}
 
 	@Override
@@ -401,6 +404,7 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 			args.put("id","App Manager");
 			args.put("title","App Manager");
 			args.put("panel","WEST");
+			args.put("focus", focus);
 			TaskIterator ti = commandTF.createTaskIterator("cybrowser","show",args, null);
 			taskManager.execute(ti);
 		} else {
