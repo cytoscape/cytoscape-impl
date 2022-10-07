@@ -88,22 +88,22 @@ public class GenerateNetworkViewsTask extends AbstractTask implements Observable
 		for (CyNetwork net : networks) {
 			// Use original name if exists
 			String networkName = net.getRow(net).get(CyNetwork.NAME, String.class);
-			
-			if (networkName == null || networkName.trim().length() == 0) 
+
+			if (networkName == null || networkName.trim().length() == 0)
 				networkName = (name != null) ? name : "? (Name is missing)";
-			
+
 			net.getRow(net).set(CyNetwork.NAME, networkNaming.getSuggestedNetworkTitle(networkName));
-			
+
 			serviceRegistrar.getService(CyNetworkManager.class).addNetwork(net, false);
 			final int numGraphObjects = net.getNodeCount() + net.getEdgeCount();
-			
+
 			if (numGraphObjects < viewThreshold) {
-        taskMonitor.showMessage(TaskMonitor.Level.INFO, "Creating view");
+				taskMonitor.showMessage(TaskMonitor.Level.INFO, "Creating view");
 				createNetworkView(net);
-      } else {
+			} else {
 				largeNetworks.add(net);
-        taskMonitor.showMessage(TaskMonitor.Level.WARN, "Network larger than view threshold");
-      }
+				taskMonitor.showMessage(TaskMonitor.Level.WARN, "Network larger than view threshold");
+			}
 			
 			taskMonitor.setProgress((double)(++i)/numNets);
 		}
@@ -151,17 +151,17 @@ public class GenerateNetworkViewsTask extends AbstractTask implements Observable
 	private Object getStringResults() {
 		String strRes = "";
 		
-    strRes += "Networks: \n";
-    for (CyNetworkView view: results)
-      strRes += "  "+(view.getModel().toString() + "\n");
-    for (CyNetwork net: largeNetworks)
-      strRes += "  "+(net.toString() + "\n");
+		strRes += "Networks: \n";
+		for (CyNetworkView view : results)
+			strRes += "  " + (view.getModel().toString() + "\n");
+		for (CyNetwork net : largeNetworks)
+			strRes += "  " + (net.toString() + "\n");
 
-    if (results != null && results.size() > 0) {
-      strRes += "Views: \n";
-      for (CyNetworkView view: results)
-        strRes += "  "+(view.toString() + "\n");
-    }
+		if (results != null && results.size() > 0) {
+			strRes += "Views: \n";
+			for (CyNetworkView view : results)
+				strRes += "  " + (view.toString() + "\n");
+		}
 		
 		return strRes.isEmpty() ? null : strRes.substring(0, strRes.length()-1);
 	}
