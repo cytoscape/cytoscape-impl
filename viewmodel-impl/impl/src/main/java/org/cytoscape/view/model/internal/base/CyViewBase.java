@@ -45,32 +45,38 @@ public abstract class CyViewBase<M> implements View<M> {
 	@Override
 	public <T, V extends T> void setVisualProperty(VisualProperty<? extends T> vp, V value) {
 		ViewLock lock = getLock();
-		synchronized (lock) {
+		lock.writeLock().lock();
+		try {
 			boolean changed = getVPStore().setVisualProperty(suid, vp, value);
 			if(changed) {
 				if(lock.isUpdateDirty()) {
 					setDirty();
 				}
-				boolean locked = getVPStore().isValueLocked(suid, vp);
-				if(!locked) {
+				boolean valueLocked = getVPStore().isValueLocked(suid, vp);
+				if(!valueLocked) {
 					// If the value is overridden by a lock then the value returned 
 					// by getVisualProperty() won't visibly change by setting the VP here.
 					fireViewChangedEvent(vp, value, false);
 				}
 			}
+		} finally {
+			lock.writeLock().unlock();
 		}
 	}
 	
 	@Override
 	public void batch(Consumer<View<M>> viewConsumer, boolean setDirty) {
 		ViewLock lock = getLock();
-		synchronized (lock) {
+		lock.writeLock().lock();
+		try {
 			lock.enterBatch(() ->
 				viewConsumer.accept(this)
 			);
 			if(setDirty && lock.isUpdateDirty()) {
 				setDirty();
 			}
+		} finally {
+			lock.writeLock().unlock();
 		}
 	}
 	
@@ -93,7 +99,8 @@ public abstract class CyViewBase<M> implements View<M> {
 	@Override
 	public <T, V extends T> void setLockedValue(VisualProperty<? extends T> vp, V value) {
 		ViewLock lock = getLock();
-		synchronized (lock) {
+		lock.writeLock().lock();
+		try {
 			boolean changed = getVPStore().setLockedValue(suid, vp, value);
 			if(changed) {
 				if(lock.isUpdateDirty())
@@ -111,6 +118,8 @@ public abstract class CyViewBase<M> implements View<M> {
 					});
 				}
 			}
+		} finally {
+			lock.writeLock().unlock();
 		}
 	}
 
@@ -132,10 +141,15 @@ public abstract class CyViewBase<M> implements View<M> {
 	@Override
 	public void clearVisualProperties() {
 		Set<VisualProperty<?>> clearableVPs = getVPStore().getClearableVisualProperties(suid);
-		synchronized (getLock()) {
-			for(VisualProperty<?> vp : clearableVPs) {
+		
+		ViewLock lock = getLock();
+		lock.writeLock().lock();
+		try {
+			for(var vp : clearableVPs) {
 				setVisualProperty(vp, null);
 			}
+		} finally {
+			lock.writeLock().unlock();
 		}
 	}
 	

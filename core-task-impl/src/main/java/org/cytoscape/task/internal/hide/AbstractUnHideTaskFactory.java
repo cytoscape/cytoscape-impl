@@ -77,9 +77,9 @@ public abstract class AbstractUnHideTaskFactory extends AbstractNetworkViewTaskF
 		// fast path
 		if (networkView.supportsSnapshots()) {
 			var snapshot = networkView.createSnapshot();
-			
-			if (snapshot.isTrackedNodeKey("HIDDEN_NODES"))
+			if (snapshot != null && snapshot.isTrackedNodeKey("HIDDEN_NODES")) {
 				return snapshot.getTrackedNodeCount("HIDDEN_NODES") > 0;
+			}
 		}
 		
 		// slow path
@@ -92,9 +92,9 @@ public abstract class AbstractUnHideTaskFactory extends AbstractNetworkViewTaskF
 		// fast path
 		if (networkView.supportsSnapshots()) {
 			var snapshot = networkView.createSnapshot();
-			
-			if (snapshot.isTrackedEdgeKey("HIDDEN_EDGES"))
+			if (snapshot != null && snapshot.isTrackedEdgeKey("HIDDEN_EDGES")) {
 				return snapshot.getTrackedEdgeCount("HIDDEN_EDGES") > 0;
+			}
 		}
 
 		// Maybe bail out, checking all edges for visibility doesn't scale for large networks

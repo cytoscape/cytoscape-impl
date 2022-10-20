@@ -35,6 +35,18 @@ public class NetworkImageFactoryImpl implements NetworkImageFactory {
 		
 		// Create snapshot and transform
 		CyNetworkViewSnapshot snapshot = networkView.createSnapshot();
+		if(snapshot == null) {
+			// Try one more time
+			try {
+				Thread.sleep(200);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			snapshot = networkView.createSnapshot();
+			if(snapshot == null) {
+				throw new RuntimeException("Cannot create a snapshot");
+			}
+		}
 		
 		NetworkTransform transform = fitContent
 			? createTransformFitContent(snapshot, width, height)

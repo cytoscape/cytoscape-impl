@@ -216,6 +216,9 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 	}
 
 	private void updateColumnSliders() {
+		if(network == null)
+			return;
+		
 		for (ColumnFilterController controller : columnViews.values()) {
 			ColumnFilter filter = controller.getFilter();
 			

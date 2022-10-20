@@ -288,10 +288,18 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	 * EDT will take care of that.
 	 */
 	private void timerCheckModelAndAnimate() {
-		boolean modelDirty = viewModel.dirty(true);
+		boolean modelDirty = viewModel.dirty(false);
 		if(modelDirty) {
-			updateAnimationState();
+			var snapshot = viewModel.createSnapshot();
+			if(snapshot == null)
+				return; // Should happen very infrequently, try again on the next frame.
+			
+			viewModelSnapshot = snapshot;
+			
 			updateModel();
+			updateAnimationState();
+			
+			viewModel.dirty(true); // Clear the dirty flag
 		}
 		
 		boolean paintEdges = advanceAnimatedEdges();
@@ -307,6 +315,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 	
 	private void updateAnimationState() { // call only when model is dirty
+		if(viewModelSnapshot == null)
+			return;
 		Collection<View<CyEdge>> animatedEdges = viewModelSnapshot.getTrackedEdges(DingNetworkViewFactory.ANIMATED_EDGES);
 		edgeDetails.updateAnimatedEdges(animatedEdges);
 		this.animateEdges = !animatedEdges.isEmpty();
@@ -339,8 +349,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 	
 	private void updateModel() {
-		// create a new snapshot, this should be very fast
-		viewModelSnapshot = viewModel.createSnapshot();
+		if(viewModelSnapshot == null)
+			return;
 		
 		// Check for important changes between snapshots
 		Paint backgroundPaint = viewModelSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT);

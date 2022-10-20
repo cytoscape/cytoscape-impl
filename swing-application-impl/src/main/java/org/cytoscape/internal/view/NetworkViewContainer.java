@@ -2,7 +2,9 @@ package org.cytoscape.internal.view;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
-import static javax.swing.GroupLayout.Alignment.*;
+import static javax.swing.GroupLayout.Alignment.CENTER;
+import static javax.swing.GroupLayout.Alignment.LEADING;
+import static javax.swing.GroupLayout.Alignment.TRAILING;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 import static org.cytoscape.internal.view.util.ViewUtil.styleToolBarButton;
 import static org.cytoscape.util.swing.IconManager.*;
@@ -295,7 +297,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			if (view.supportsSnapshots()) {
 				var snapshot = view.createSnapshot();
 				
-				if (snapshot.isTrackedNodeKey(HIDDEN_NODES) && snapshot.isTrackedEdgeKey(HIDDEN_EDGES)) {
+				if (snapshot != null && snapshot.isTrackedNodeKey(HIDDEN_NODES) && snapshot.isTrackedEdgeKey(HIDDEN_EDGES)) {
 					// fast
 					hn = snapshot.getTrackedNodeCount(HIDDEN_NODES);
 					he = snapshot.getTrackedEdgeCount(HIDDEN_EDGES);
