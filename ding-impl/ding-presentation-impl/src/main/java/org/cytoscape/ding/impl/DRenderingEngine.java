@@ -290,15 +290,11 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private void timerCheckModelAndAnimate() {
 		boolean modelDirty = viewModel.dirty(false);
 		if(modelDirty) {
-			var snapshot = viewModel.createSnapshot();
-			if(snapshot == null)
-				return; // Should happen very infrequently, try again on the next frame.
-			
-			viewModelSnapshot = snapshot;
-			
-			updateModel();
+			boolean updated = updateModel();
+			if(!updated) {
+				return; // If the snapshot couldn't be updated, then don't clear the dirty flag.
+			}
 			updateAnimationState();
-			
 			viewModel.dirty(true); // Clear the dirty flag
 		}
 		
@@ -348,9 +344,12 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			eventFireTimer.debounce(() -> eventHelper.fireEvent(new UpdateNetworkPresentationEvent(getViewModel())));
 	}
 	
-	private void updateModel() {
-		if(viewModelSnapshot == null)
-			return;
+	private boolean updateModel() {
+		var snapshot = viewModel.createSnapshot();
+		if(snapshot == null)
+			return false; // Should happen very infrequently, try again on the next frame.
+		
+		viewModelSnapshot = snapshot;
 		
 		// Check for important changes between snapshots
 		Paint backgroundPaint = viewModelSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT);
@@ -367,6 +366,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		double scaleFactor = viewModelSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
 		renderComponent.setScaleFactor(scaleFactor);
+		
+		return true;
 	}
 	
 	public Color getBackgroundColor() {
@@ -587,8 +588,11 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 	@Override
 	public void handleUpdateView() {
-		updateModel();
-		updateView(UpdateType.ALL_FULL);
+		// This is a hack to set the dirty flag, because we don't have an API to do that without setting a VP.
+		// Just setting the dirty flag allows this method to be non-blocking.
+		Boolean val = viewModel.getVisualProperty(DVisualLexicon.DUMMY);
+		val = val == null ? Boolean.FALSE : val;
+		viewModel.setVisualProperty(DVisualLexicon.DUMMY, !val);
 	}
 	
 	

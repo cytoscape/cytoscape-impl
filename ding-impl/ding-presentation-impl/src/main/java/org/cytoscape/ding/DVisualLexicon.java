@@ -271,6 +271,11 @@ public class DVisualLexicon extends BasicVisualLexicon {
 			"Marquee Dash Dot", "MARQUEE_DASH_DOT", 
 			new AnimatedDashDotStroke(1.0f, 0.0f));
 	
+	
+	public static final VisualProperty<Boolean> DUMMY = new BooleanVisualProperty(
+			Boolean.FALSE, "Ding Dummy VP", "", CyNetwork.class);
+	
+	
 	static {
 		CG.add(NODE_CUSTOMGRAPHICS_1);
 		CG.add(NODE_CUSTOMGRAPHICS_2);
