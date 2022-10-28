@@ -76,7 +76,7 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 			this.filter = filter;
 			
 			DegreeRange degreeRange = modelMonitor.getDegreeRange();
-			DegreeRange.Pair pair = degreeRange.getRange(filter.getEdgeType());
+			DegreeRange.Range pair = degreeRange.getRange(filter.getEdgeType());
 			
 			Number lowValue;
 			Number highValue;
@@ -117,7 +117,7 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 			Object criterion = filter.getCriterion();
 			if (criterion instanceof Number[]) {
 				DegreeRange degreeRange = modelMonitor.getDegreeRange();
-				DegreeRange.Pair pair = degreeRange.getRange(filter.getEdgeType());
+				DegreeRange.Range pair = degreeRange.getRange(filter.getEdgeType());
 				Number[] range = (Number[]) criterion;
 				chooserController.reset(range[0].intValue(), range[1].intValue(), pair.getLow(), pair.getHigh());
 			}
@@ -143,7 +143,7 @@ public class DegreeFilterViewFactory implements TransformerViewFactory {
 
 		@Override
 		public void setDegreeBounds(DegreeRange range) {
-			DegreeRange.Pair pair = range.getRange(filter.getEdgeType());
+			DegreeRange.Range pair = range.getRange(filter.getEdgeType());
 			int min = pair.getLow();
 			int max = pair.getHigh();
 			int low  = chooserController.getLow().intValue();

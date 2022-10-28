@@ -1,6 +1,7 @@
 package org.cytoscape.filter.internal.filters.degree;
 
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyEdge.Type;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 
@@ -12,49 +13,60 @@ public class DegreeRange {
 	
 	private boolean updated = false;
 	
-	private final PairImpl incoming = new PairImpl();
-	private final PairImpl outgoing = new PairImpl();
-
+	private final RangeImpl incoming = new RangeImpl();
+	private final RangeImpl outgoing = new RangeImpl();
+	private final RangeImpl any = new RangeImpl();
 	
-	public interface Pair {
+	public interface Range {
 		int getLow();
 		int getHigh();
 	}
 	
-	private static class PairImpl implements Pair {
-		int low = Integer.MAX_VALUE;
+	private static class RangeImpl implements Range {
+		int low  = Integer.MAX_VALUE;
 		int high = Integer.MIN_VALUE;
-		public int getLow() { return low == Integer.MAX_VALUE ? 0 : low; }
-		public int getHigh() { return high == Integer.MIN_VALUE ? 0 : high; }
+		
+		public int getLow() { 
+			return low == Integer.MAX_VALUE ? 0 : low; 
+		}
+		public int getHigh() { 
+			return high == Integer.MIN_VALUE ? 0 : high; 
+		}
+		
+		void update(int degree) {
+			this.low  = Integer.min(this.low,  degree);
+			this.high = Integer.max(this.high, degree);
+		}
 	}
 
 	public void update(CyNetwork network, CyEdge edge) {
-		update(incoming, network, edge.getSource(), CyEdge.Type.INCOMING);
-		update(outgoing, network, edge.getSource(), CyEdge.Type.OUTGOING);
-		update(incoming, network, edge.getTarget(), CyEdge.Type.INCOMING);
-		update(outgoing, network, edge.getTarget(), CyEdge.Type.OUTGOING);
-	}
-	
-	public void update(CyNetwork network) {
-		for(CyNode node : network.getNodeList()) {
-			update(incoming, network, node, CyEdge.Type.INCOMING);
-			update(outgoing, network, node, CyEdge.Type.OUTGOING);
-		}
-	}
-	
-	private void update(PairImpl pair, CyNetwork network, CyNode node, CyEdge.Type type) {
-		int degree = computeDegree(network, node, type);
-		pair.low = Integer.min(pair.low, degree);
-		pair.high = Integer.max(pair.high, degree);
+		update(network, edge.getSource());
+		update(network, edge.getTarget());
 		updated = true;
 	}
 	
-	private static int computeDegree(CyNetwork network, CyNode node, CyEdge.Type type) {
-		int degree = 0;
-		for(@SuppressWarnings("unused") CyEdge edge : network.getAdjacentEdgeIterable(node, type)) {
-			degree++;
+	public void update(CyNetwork network) {
+		for(var node : network.getNodeList()) {
+			update(network, node);
 		}
-		return degree;
+		updated = true;
+	}
+	
+	private void update(CyNetwork network, CyNode node) {
+		int inDegree = 0, outDegree = 0;
+		long nodeSuid = node.getSUID();
+		
+		for(var edge : network.getAdjacentEdgeIterable(node, Type.ANY)) {
+			var targetSuid = edge.getTarget().getSUID();
+			if(nodeSuid == targetSuid)
+				inDegree++;
+			else
+				outDegree++;
+		}
+		
+		incoming.update(inDegree);
+		outgoing.update(outDegree);
+		any.update(inDegree + outDegree);
 	}
 	
 	
@@ -62,26 +74,19 @@ public class DegreeRange {
 		return updated;
 	}
 	
-	public Pair getInRange() {
+	public Range getInRange() {
 		return incoming;
 	}
 	
-	public Pair getOutRange() {
+	public Range getOutRange() {
 		return outgoing;
 	}
 	
-	public Pair getAnyRange() {
-		return new Pair() {
-			public int getLow() {
-				return incoming.low + outgoing.low;
-			}
-			public int getHigh() {
-				return incoming.high + outgoing.high;
-			}
-		};
+	public Range getAnyRange() {
+		return any;
 	}
 	
-	public Pair getRange(CyEdge.Type type) {
+	public Range getRange(CyEdge.Type type) {
 		switch(type) {
 			case ANY:      return getAnyRange();
 			case INCOMING: return getInRange();
