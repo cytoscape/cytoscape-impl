@@ -393,9 +393,9 @@ public class UpdateNotificationAction extends AbstractCyAction {
 		contentBuilder.append("    var newversion = row.cells[2].children[0].getAttribute('newversion');\n");
 		contentBuilder.append("    if (newversion != null){\n");
 		contentBuilder.append("        newversion = \"(v\"+newversion+\")\";\n");
-		contentBuilder.append("        appinfo = row.cells[3].textContent;\n");
+		contentBuilder.append("        appinfo = row.cells[3].children[0].nextSibling.textContent;\n");
 		contentBuilder.append("        newappinfo = appinfo.replace(/\\(.*\\)/,newversion);\n");
-		contentBuilder.append("        row.cells[3].textContent = newappinfo;\n");
+		contentBuilder.append("        row.cells[3].children[0].nextSibling.textContent = newappinfo;\n");
 		contentBuilder.append("    }\n");
 		contentBuilder.append("}\n");
 		contentBuilder.append("function renderUpdatesApps(res) {\n");
