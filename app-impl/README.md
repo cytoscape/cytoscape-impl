@@ -10,7 +10,7 @@ Since the old App Manager GUI is completely deleted. Users cannot use GUI to man
 
 # How to Sync with js4cytoscape and Update App Manager Web Page
 -----------------
-In Cytoscape 3.10, the entire App Manager web pgae is embedded in Cytosacpe Java code. If you want to update the App Manager web page, you need to update two repositories simultaneously for better maintanice. The two repositories are js4yctosacpe repo (https://github.com/cytoscape/js4cytoscape) and cytoscape-impl repo (https://github.com/cytoscape/cytoscape-impl).
+In Cytoscape 3.10, the entire App Manager web pgae is embedded in Cytosacpe Java code. If you want to update the App Manager web page, you need to update two repositories simultaneously for better maintanice. The two repositories are js4yctosacpe repo (https://github.com/cytoscape/js4cytoscape) and cytoscape-impl repo (https://github.com/cytoscape/cytoscape-impl). Please follow steps below to finish the update.
 
 1. The source file of App Manager web page is located in the js4cytoscape mono repo. It can be found under the ```develop``` branch (https://github.com/cytoscape/js4cytoscape/tree/develop/packages/js4cytoscape). The ```appmanager.html``` is the App Manager web page.
 
