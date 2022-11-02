@@ -114,7 +114,7 @@ public class UpdateNotificationAction extends AbstractCyAction {
 
 		StringBuilder contentBuilder = new StringBuilder();
 		try {
-		    BufferedReader in = new BufferedReader(new InputStreamReader(UpdateNotificationAction.class.getClassLoader().getResourceAsStream("/appmanager.html"), Charset.forName("UTF-8").newDecoder()));
+		    BufferedReader in = new BufferedReader(new InputStreamReader(UpdateNotificationAction.class.getClassLoader().getResourceAsStream("/AppManager/AppManager.html"), Charset.forName("UTF-8").newDecoder()));
 		    String str;
 		    while ((str = in.readLine()) != null) {
 		        contentBuilder.append(str);
