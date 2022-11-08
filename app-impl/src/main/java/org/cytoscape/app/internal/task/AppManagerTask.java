@@ -97,7 +97,7 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		contentBuilder.append("                  \"ID Mapper\", \"JSON Support\", \"Network Merge\", \"NetworkAnalyzer\",\n");
 		contentBuilder.append("                  \"OpenCL Prefuse Layout\", \"PSI-MI Reader\", \"PSICQUIC Web Service Client\",\n");
 		contentBuilder.append("                  \"SBML Reader\", \"aMatReader\", \"copycatLayout\", \"cyBrowser\",\n");
-		contentBuilder.append("                  \"cyChart\", \"cyREST\"]\n");
+		contentBuilder.append("                  \"cyChart\", \"cyREST\", \"enhancedGraphics\", \"Largest Subnetwork\", \"EnrichmentTable\"]\n");
 		contentBuilder.append("function getInstalledAppsCyB() {\n");
 		contentBuilder.append("    cybrowser.executeCyCommandWithResults('apps list installed', 'renderInstalledApps' );\n");
 		contentBuilder.append("}\n");
