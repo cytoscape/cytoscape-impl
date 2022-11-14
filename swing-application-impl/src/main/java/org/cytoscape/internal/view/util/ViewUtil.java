@@ -6,7 +6,6 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.Image;
 import java.awt.Insets;
@@ -261,15 +260,22 @@ public final class ViewUtil {
 			return icon;
 
 		int newHeight = maxHeight;
-		int newWidth = (int) Math.round(width * (newHeight / (float) height));
-
-		BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-		Graphics2D g = img.createGraphics();
-		icon.paintIcon(null, g, 0, 0);
-		g.dispose();
-
-		Image resizedImage = img.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
-		ImageIcon resizedIcon = new ImageIcon(resizedImage);
+		int newWidth = Math.round(width * (newHeight / (float) height));
+		
+		final Icon resizedIcon;
+		
+		if (icon instanceof TextIcon) {
+			var ti = (TextIcon) icon;
+			resizedIcon = new TextIcon(ti, newWidth, newHeight);
+		} else {
+			var img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+			var g = img.createGraphics();
+			icon.paintIcon(null, g, 0, 0);
+			g.dispose();
+	
+			var resizedImage = img.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
+			resizedIcon = new ImageIcon(resizedImage);
+		}
 		
 		return resizedIcon;
 	}
