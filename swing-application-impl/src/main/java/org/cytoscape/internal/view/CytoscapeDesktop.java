@@ -1561,8 +1561,9 @@ public class CytoscapeDesktop extends JFrame
 
 		private class TrimStack extends JPanel {
 			
+			private static final int BTN_WIDTH = 28;
+			private static final int BTN_HEIGHT = 28;
 			private static final int BTN_HPAD = 8;
-			private static final int BTN_VPAD = 4;
 			
 			private final CytoPanelImpl cytoPanel;
 			private final int orientation;
@@ -1686,9 +1687,9 @@ public class CytoscapeDesktop extends JFrame
 						Dimension d = btn.getPreferredSize();
 						
 						if (orientation == SwingConstants.VERTICAL)
-							d = new Dimension(d.width + 2 * BTN_VPAD, d.height + 2 * BTN_HPAD);
+							d = new Dimension(BTN_HEIGHT, (showLabels ? (d.height + 2 * BTN_HPAD) : BTN_WIDTH));
 						else
-							d = new Dimension(d.width + 2 * BTN_HPAD, d.height + 2 * BTN_VPAD);
+							d = new Dimension((showLabels ? (d.width + 2 * BTN_HPAD) : BTN_WIDTH), BTN_HEIGHT);
 						
 						btn.setPreferredSize(d);
 						btn.setMinimumSize(d);
