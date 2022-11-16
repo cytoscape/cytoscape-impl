@@ -355,7 +355,7 @@ public class UpdateNotificationAction extends AbstractCyAction {
 		contentBuilder.append("    if (app != null){\n");
 		contentBuilder.append("        appUrl += \"apps/\"+app\n");
 		contentBuilder.append("    }\n");
-		contentBuilder.append("    cybrowser.executeCyCommand('cybrowser dialog url=\"'+appUrl+'\" id=\"AppStore\" title=\"App Store\" ');\n");
+		contentBuilder.append("    cybrowser.executeCyCommand('cybrowser native url=\"'+appUrl+'\"');\n");
 		contentBuilder.append("}\n");
 		contentBuilder.append("function searchAppStore(){\n");
 		contentBuilder.append("    var query = document.getElementById(\"search\").value\n");
@@ -363,7 +363,7 @@ public class UpdateNotificationAction extends AbstractCyAction {
 		contentBuilder.append("    if (query != \"\"){\n");
 		contentBuilder.append("        qUrl += \"search?q=\"+query\n");
 		contentBuilder.append("    }\n");
-		contentBuilder.append("    cybrowser.executeCyCommand('cybrowser dialog url=\"'+qUrl+'\" id=\"AppStore\" title=\"App Store\" ');\n");
+		contentBuilder.append("    cybrowser.executeCyCommand('cybrowser native url=\"'+qUrl+'\"');\n");
 		contentBuilder.append("}\n");
 		contentBuilder.append("function updateAppAndIcon(app) {\n");
 		contentBuilder.append("    var cmd = 'apps update app=\"'+app+'\"';\n");

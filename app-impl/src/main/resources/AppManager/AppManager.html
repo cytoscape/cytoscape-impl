@@ -409,7 +409,7 @@ function openAppStore(app=null){
     if (app != null){
         appUrl += "apps/"+app
     }
-    cybrowser.executeCyCommand('cybrowser dialog url="'+appUrl+'" id="AppStore" title="App Store" ');
+    cybrowser.executeCyCommand('cybrowser native url="'+appUrl+'" ');
 }
 function searchAppStore(){
     var query = document.getElementById("search").value
@@ -417,7 +417,7 @@ function searchAppStore(){
     if (query != ""){
         qUrl += "search?q="+query
     }
-    cybrowser.executeCyCommand('cybrowser dialog url="'+qUrl+'" id="AppStore" title="App Store" ');
+    cybrowser.executeCyCommand('cybrowser native url="'+qUrl+'" ');
 }
 
 function updateAppAndIcon(app) {
