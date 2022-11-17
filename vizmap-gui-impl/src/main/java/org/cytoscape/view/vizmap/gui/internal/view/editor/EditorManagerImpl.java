@@ -23,7 +23,6 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.ContinuousRange;
 import org.cytoscape.view.model.DiscreteRange;
-import org.cytoscape.view.model.Range;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
@@ -87,8 +86,8 @@ public class EditorManagerImpl implements EditorManager {
 	private static final int ICON_H = 14;
 	
 	static {
-		ICON_WIDTH_MAP.put(LineType.class, ICON_W*3);
-		ICON_WIDTH_MAP.put(ArrowShape.class, ICON_W*3);
+		ICON_WIDTH_MAP.put(LineType.class, ICON_W * 3);
+		ICON_WIDTH_MAP.put(ArrowShape.class, ICON_W * 3);
 	}
 
 	private final Map<Class<?>, VisualPropertyEditor<?>> editors;
@@ -106,9 +105,11 @@ public class EditorManagerImpl implements EditorManager {
 	 * Creates a new EditorFactory object.
 	 * @param cellRendererFactory 
 	 */
-	public EditorManagerImpl(final AttributeSetProxy attrProxy,
-							 final MappingFunctionFactoryProxy mappingFactoryProxy,
-							 final ServicesUtil servicesUtil) {
+	public EditorManagerImpl(
+			AttributeSetProxy attrProxy,
+			MappingFunctionFactoryProxy mappingFactoryProxy,
+			ServicesUtil servicesUtil
+	) {
 		this.servicesUtil = servicesUtil;
 
 		editors = new HashMap<>();
@@ -116,9 +117,9 @@ public class EditorManagerImpl implements EditorManager {
 		valueEditors = new HashMap<>();
 		vizPropValueEditors = new HashMap<>();
 		
-		final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
-		final CyNetworkManager netMgr = servicesUtil.get(CyNetworkManager.class);
-		final CyColumnPresentationManager presMgr = servicesUtil.get(CyColumnPresentationManager.class);
+		var appMgr = servicesUtil.get(CyApplicationManager.class);
+		var netMgr = servicesUtil.get(CyNetworkManager.class);
+		var presMgr = servicesUtil.get(CyColumnPresentationManager.class);
 		
 		// Create attribute (Column Name) editors
 		var nodeAttrEditor = new AttributeComboBoxPropertyEditor(GraphObjectType.node(), attrProxy, appMgr, netMgr, presMgr);
@@ -136,11 +137,11 @@ public class EditorManagerImpl implements EditorManager {
 		mappingTypeEditor = new MappingTypeComboBoxPropertyEditor(mappingFactoryProxy);
 		comboBoxEditors.put("mappingTypeEditor", mappingTypeEditor);
 
-		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
-		Set<VisualLexicon> lexSet = vmMgr.getAllVisualLexicon();
+		var vmMgr = servicesUtil.get(VisualMappingManager.class);
+		var lexSet = vmMgr.getAllVisualLexicon();
 
-		for (final VisualLexicon lex : lexSet) {
-			this.buildDiscreteEditors(lex);
+		for (var lex : lexSet) {
+			buildDiscreteEditors(lex);
 		}
 	}
 
@@ -158,15 +159,15 @@ public class EditorManagerImpl implements EditorManager {
 
 	@Override
 	@SuppressWarnings("rawtypes")
-	public void addValueEditor(final ValueEditor<?> ve, final Map properties) {
+	public void addValueEditor(ValueEditor<?> ve, Map properties) {
 		synchronized (mutex) {
-			this.valueEditors.put(ve.getValueType(), ve);
+			valueEditors.put(ve.getValueType(), ve);
 		}
 	}
 
 	@Override
 	@SuppressWarnings("rawtypes")
-	public void removeValueEditor(final ValueEditor<?> ve, final Map properties) {
+	public void removeValueEditor(ValueEditor<?> ve, Map properties) {
 		synchronized (mutex) {
 			valueEditors.remove(ve.getValueType());
 		}
@@ -174,29 +175,29 @@ public class EditorManagerImpl implements EditorManager {
 
 	@Override
 	@SuppressWarnings("rawtypes")
-	public void addVisualPropertyValueEditor(final VisualPropertyValueEditor<?> ve, final Map properties) {
+	public void addVisualPropertyValueEditor(VisualPropertyValueEditor<?> ve, Map properties) {
 		synchronized (mutex) {
-			this.vizPropValueEditors.put(ve.getValueType(), ve);
+			vizPropValueEditors.put(ve.getValueType(), ve);
 		}
 	}
 
 	@Override
 	@SuppressWarnings("rawtypes")
-	public void removeVisualPropertyValueEditor(final VisualPropertyValueEditor<?> ve, final Map properties) {
+	public void removeVisualPropertyValueEditor(VisualPropertyValueEditor<?> ve, Map properties) {
 		synchronized (mutex) {
 			vizPropValueEditors.remove(ve.getValueType());
 		}
 	}
 
 	@SuppressWarnings("rawtypes")
-	public void addVisualPropertyEditor(final VisualPropertyEditor<?> vpEditor, final Map properties) {
+	public void addVisualPropertyEditor(VisualPropertyEditor<?> vpEditor, Map properties) {
 		synchronized (mutex) {
 			editors.put(vpEditor.getType(), vpEditor);
 		}
 	}
 
 	@SuppressWarnings("rawtypes")
-	public void removeVisualPropertyEditor(final VisualPropertyEditor<?> vpEditor, final Map properties) {
+	public void removeVisualPropertyEditor(VisualPropertyEditor<?> vpEditor, Map properties) {
 		synchronized (mutex) {
 			editors.remove(vpEditor.getType());
 		}
@@ -204,40 +205,43 @@ public class EditorManagerImpl implements EditorManager {
 
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public <V> V showVisualPropertyValueEditor(final Component parentComponent, final VisualProperty<V> type,
-			V initialValue) throws Exception {
+	public <V> V showVisualPropertyValueEditor(Component parentComponent, VisualProperty<V> vp, V initialValue)
+			throws Exception {
 		V newValue = null;
-		final Class<?> valueType = type.getRange().getType();
-		final VisualPropertyValueEditor<V> vizPropEditor = (VisualPropertyValueEditor<V>) vizPropValueEditors.get(valueType);
-		final ValueEditor<V> editor = (ValueEditor<V>) valueEditors.get(valueType);
+		var range = vp.getRange();
+		var valueType = range.getType();
+		var vizPropEditor = (VisualPropertyValueEditor<V>) vizPropValueEditors.get(valueType);
+		var editor = (ValueEditor<V>) valueEditors.get(valueType);
 
 		if (vizPropEditor != null) {
-			newValue = vizPropEditor.showEditor(parentComponent, initialValue, type);
+			newValue = vizPropEditor.showEditor(parentComponent, initialValue, vp);
 		} else if (editor != null) {
 			newValue = editor.showEditor(parentComponent, initialValue);
 		} else {
-			throw new IllegalStateException("No value editor for " + type.getDisplayName() + " is available.");
+			throw new IllegalStateException("No value editor for " + vp.getDisplayName() + " is available.");
 		}
 
 		// Null is valid return value. It's from "Cancel" button.
 		if (newValue == null)
 			return null;
 
-		if (type.getRange().inRange(newValue)) {
+		if (range.inRange(newValue)) {
 			return newValue;
 		} else {
-			String message = "Value is out-of-range.";
-			if (type.getRange() instanceof ContinuousRange)
-				message = message + ": " + ((ContinuousRange) type.getRange()).getMin() + " to "
-						+ ((ContinuousRange) type.getRange()).getMax();
-			JOptionPane.showMessageDialog(parentComponent, message, "Invalid Value", JOptionPane.ERROR_MESSAGE);
+			var msg = "Value is out-of-range.";
+			
+			if (range instanceof ContinuousRange)
+				msg = msg + ": " + ((ContinuousRange) range).getMin() + " to " + ((ContinuousRange) range).getMax();
+			
+			JOptionPane.showMessageDialog(parentComponent, msg, "Invalid Value", JOptionPane.ERROR_MESSAGE);
 
 			return initialValue;
 		}
 	}
 
+	@Override
 	@SuppressWarnings("unchecked")
-	public <V> VisualPropertyEditor<V> getVisualPropertyEditor(final VisualProperty<V> vp) {
+	public <V> VisualPropertyEditor<V> getVisualPropertyEditor(VisualProperty<V> vp) {
 		synchronized (mutex) {
 			return (VisualPropertyEditor<V>) editors.get(vp.getRange().getType());
 		}
@@ -245,9 +249,9 @@ public class EditorManagerImpl implements EditorManager {
 
 	@Override
 	public List<PropertyEditor> getCellEditors() {
-		List<PropertyEditor> ret = new ArrayList<PropertyEditor>();
+		var ret = new ArrayList<PropertyEditor>();
 
-		for (Class<?> type : editors.keySet())
+		for (var type : editors.keySet())
 			ret.add(editors.get(type).getPropertyEditor());
 
 		return ret;
@@ -255,7 +259,7 @@ public class EditorManagerImpl implements EditorManager {
 
 	@Override
 	public PropertyEditor getDefaultComboBoxEditor(String editorName) {
-		PropertyEditor editor = comboBoxEditors.get(editorName);
+		var editor = comboBoxEditors.get(editorName);
 		
 		if (editor == null) {
 			editor = new CyComboBoxPropertyEditor();
@@ -267,14 +271,14 @@ public class EditorManagerImpl implements EditorManager {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public <V> ValueEditor<V> getValueEditor(final Class<V> dataType) {
+	public <V> ValueEditor<V> getValueEditor(Class<V> dataType) {
 		synchronized (mutex) {
-			return (ValueEditor<V>) this.valueEditors.get(dataType);
+			return (ValueEditor<V>) valueEditors.get(dataType);
 		}
 	}
 	
 	@SuppressWarnings("unchecked")
-	public <V> VisualPropertyValueEditor<V> getVisualPropertyValueEditor(final VisualProperty<V> vp) {
+	public <V> VisualPropertyValueEditor<V> getVisualPropertyValueEditor(VisualProperty<V> vp) {
 		synchronized (mutex) {
 			return (VisualPropertyValueEditor<V>) vizPropValueEditors.get(vp.getRange().getType());
 		}
@@ -284,7 +288,7 @@ public class EditorManagerImpl implements EditorManager {
 	 * Editor name is NODE, EDGE, or NETWORK.
 	 */
 	@Override
-	public PropertyEditor getDataTableComboBoxEditor(final Class<? extends CyIdentifiable> targetObjectType) {
+	public PropertyEditor getDataTableComboBoxEditor(Class<? extends CyIdentifiable> targetObjectType) {
 		ListEditor editor = attrComboBoxEditors.get(targetObjectType);
 		if (editor == null)
 			throw new IllegalArgumentException("No such list editor: " + targetObjectType);
@@ -293,9 +297,11 @@ public class EditorManagerImpl implements EditorManager {
 
 	@Override
 	public Collection<PropertyEditor> getAttributeSelectors() {
-		final Collection<PropertyEditor> selectors = new HashSet<PropertyEditor>();
-		for (ListEditor selector : attrComboBoxEditors.values())
+		var selectors = new HashSet<PropertyEditor>();
+		
+		for (var selector : attrComboBoxEditors.values())
 			selectors.add((PropertyEditor) selector);
+		
 		return selectors;
 	}
 
@@ -305,66 +311,64 @@ public class EditorManagerImpl implements EditorManager {
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private <V> void buildDiscreteEditors(final VisualLexicon lexicon) {
-		final Set<VisualProperty> vps = (Set)lexicon.getAllVisualProperties();
+	private <V> void buildDiscreteEditors(VisualLexicon lexicon) {
+		Set<VisualProperty> vps = (Set) lexicon.getAllVisualProperties();
 
-		for (final VisualProperty<V> vp : vps) {
-			final Range<?> range = vp.getRange();
+		for (var vp : vps) {
+			var range = vp.getRange();
 
 			// If data type is basic (String, Boolean, etc.), custom editor is not necessary.
-			final Class<?> targetDataType = range.getType();
+			var targetDataType = range.getType();
 			
 			synchronized (mutex) {
 				if (REGISTRY.getEditor(targetDataType) != null)
 					continue;
 	
-				if (this.getVisualPropertyEditor(vp) != null)
+				if (getVisualPropertyEditor(vp) != null)
 					continue;
 	
 				if (range instanceof DiscreteRange<?>) {
-					DiscreteValueEditor<?> valEditor = (DiscreteValueEditor) getVisualPropertyValueEditor(vp);
+					var valEditor = (DiscreteValueEditor) getVisualPropertyValueEditor(vp);
 					
 					if (valEditor == null) {
 						valEditor = new DiscreteValueEditor(range.getType(), ((DiscreteRange) range).values(),
 								servicesUtil);
-						this.addVisualPropertyValueEditor(valEditor, null);
+						addVisualPropertyValueEditor(valEditor, null);
 					}
 	
-					final CyDiscreteValuePropertyEditor<?> discretePropEditor =
-							new CyDiscreteValuePropertyEditor(valEditor);
+					var discretePropEditor = new CyDiscreteValuePropertyEditor(valEditor);
 					
-					final Set values = ((DiscreteRange)range).values();
+					var values = ((DiscreteRange) range).values();
 					// FIXME how can we manage the custom icon size based on value type?
-					Integer width = ICON_WIDTH_MAP.get(range.getType());
+					var width = ICON_WIDTH_MAP.get(range.getType());
 					
 					if (width == null)
 						width = ICON_W;
 					
-					final ContinuousMappingCellRendererFactory cellRendererFactory =
-							servicesUtil.get(ContinuousMappingCellRendererFactory.class);
-					final VisualPropertyEditor<?> vpEditor = new DiscreteValueVisualPropertyEditor(range.getType(),
-							discretePropEditor, cellRendererFactory, values, width, ICON_H);
+					var cellRendererFactory = servicesUtil.get(ContinuousMappingCellRendererFactory.class);
+					var vpEditor = new DiscreteValueVisualPropertyEditor(range.getType(), discretePropEditor,
+							cellRendererFactory, values, width, ICON_H);
 					
-					this.addVisualPropertyEditor(vpEditor, null);
+					addVisualPropertyEditor(vpEditor, null);
 					servicesUtil.registerService(vpEditor, SetCurrentRenderingEngineListener.class, new Properties());
 				}
 			}
 		}
 	}
 
-	public void addRenderingEngineFactory(final RenderingEngineFactory<?> factory, final Map<?, ?> props) {
-		final VisualLexicon lexicon = factory.getVisualLexicon();
+	public void addRenderingEngineFactory(RenderingEngineFactory<?> factory, Map<?, ?> props) {
+		var lexicon = factory.getVisualLexicon();
 		buildDiscreteEditors(lexicon);
 	}
 
-	public void removeRenderingEngineFactory(final RenderingEngineFactory<?> factory, final Map<?, ?> props) {
+	public void removeRenderingEngineFactory(RenderingEngineFactory<?> factory, Map<?, ?> props) {
 		// TODO: clean up state when rendering engines are removed.
 	}
 
 	@Override
 	@SuppressWarnings("rawtypes")
-	public PropertyEditor getContinuousEditor(final VisualProperty<?> vp) {
-		final ContinuousEditorType editorType = this.getVisualPropertyEditor(vp).getContinuousEditorType();
+	public PropertyEditor getContinuousEditor(VisualProperty<?> vp) {
+		var editorType = getVisualPropertyEditor(vp).getContinuousEditorType();
 
 		if (editorType == ContinuousEditorType.COLOR)
 			return new GradientEditor(this, servicesUtil);
