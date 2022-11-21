@@ -9,6 +9,11 @@ import java.nio.charset.Charset;
 import java.util.Properties;
 import javax.swing.SwingUtilities;
 import java.net.URL;
+import java.awt.Color;
+import java.awt.Font;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.Icon;
 
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -34,6 +39,9 @@ import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.TextIcon;
+import static org.cytoscape.util.swing.IconManager.ICON_ADN;
 
 
 public class AppManagerTask extends AbstractAppTask implements ObservableTask {
@@ -401,7 +409,11 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		//for (DownloadSite downloadSite : downloadSitesManager.getDownloadSites()) {
 		//	System.out.println(downloadSite.getSiteUrl());
 		//}
-
+		IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+		Font iconFont = iconManager.getIconFont(16);
+		Icon icon = new TextIcon(ICON_ADN, iconFont, 16, 16);
+		String iconId = "AppManager";
+		iconManager.addIcon(iconId, icon);
 
 		CommandExecutorTaskFactory commandTF = serviceRegistrar.getService(CommandExecutorTaskFactory.class);
 		TaskManager<?,?> taskManager = serviceRegistrar.getService(TaskManager.class);
@@ -412,6 +424,7 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		args.put("title","App Manager");
 		args.put("panel","WEST");
 		args.put("focus", focus);
+		args.put("iconId", iconId);
 		TaskIterator ti = commandTF.createTaskIterator("cybrowser","show",args, null);
 		taskManager.execute(ti);
 	}

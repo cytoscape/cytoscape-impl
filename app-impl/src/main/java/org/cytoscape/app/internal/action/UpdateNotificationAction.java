@@ -19,6 +19,7 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.Icon;
 
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -39,7 +40,9 @@ import org.cytoscape.work.TaskManager;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
 import org.cytoscape.property.CyProperty;
-
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.TextIcon;
+import static org.cytoscape.util.swing.IconManager.ICON_ADN;
 /*
  * #%L
  * Cytoscape App Impl (app-impl)
@@ -425,17 +428,25 @@ public class UpdateNotificationAction extends AbstractCyAction {
 		contentBuilder.append("  </body>\n");
 		contentBuilder.append("</html>\n");
 		String content = contentBuilder.toString();
-			CommandExecutorTaskFactory commandTF = serviceRegistrar.getService(CommandExecutorTaskFactory.class);
-			TaskManager<?,?> taskManager = serviceRegistrar.getService(TaskManager.class);
-			Map<String, Object> args = new HashMap<>();
-			//args.put("url",url);
-			args.put("text", content);
-			args.put("id","App Manager");
-			args.put("title","App Manager");
-			args.put("panel","WEST");
-			args.put("focus", true);
-			TaskIterator ti = commandTF.createTaskIterator("cybrowser","show",args, null);
-			taskManager.execute(ti);
+
+		IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+		Font iconFont = iconManager.getIconFont(16);
+		Icon icon = new TextIcon(ICON_ADN, iconFont, 16, 16);
+		String iconId = "AppManager";
+		iconManager.addIcon(iconId, icon);
+
+		CommandExecutorTaskFactory commandTF = serviceRegistrar.getService(CommandExecutorTaskFactory.class);
+		TaskManager<?,?> taskManager = serviceRegistrar.getService(TaskManager.class);
+		Map<String, Object> args = new HashMap<>();
+		//args.put("url",url);
+		args.put("text", content);
+		args.put("id","App Manager");
+		args.put("title","App Manager");
+		args.put("panel","WEST");
+		args.put("focus", true);
+		args.put("iconId", iconId);
+		TaskIterator ti = commandTF.createTaskIterator("cybrowser","show",args, null);
+		taskManager.execute(ti);
 	}
 
 	@Override
