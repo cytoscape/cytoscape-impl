@@ -41,7 +41,7 @@ import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
-import static org.cytoscape.util.swing.IconManager.ICON_COGS;
+import static org.cytoscape.util.swing.IconManager.ICON_FONT;
 
 
 public class AppManagerTask extends AbstractAppTask implements ObservableTask {
@@ -94,13 +94,13 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		contentBuilder.append("    if(window.navigator.userAgent.includes('CyBrowser')){\n");
 		contentBuilder.append("        setTimeout(function(){\n");
 		contentBuilder.append("            getInstalledAppsCyB();\n");
-		contentBuilder.append("        }, 000);\n");
-		contentBuilder.append("        setTimeout(function(){\n");
-		contentBuilder.append("            getDisabledAppsCyB();\n");
 		contentBuilder.append("        }, 100);\n");
 		contentBuilder.append("        setTimeout(function(){\n");
-		contentBuilder.append("            getUpdatesAppsCyB();\n");
+		contentBuilder.append("            getDisabledAppsCyB();\n");
 		contentBuilder.append("        }, 200);\n");
+		contentBuilder.append("        setTimeout(function(){\n");
+		contentBuilder.append("            getUpdatesAppsCyB();\n");
+		contentBuilder.append("        }, 300);\n");
 		contentBuilder.append("    } else {\n");
 		contentBuilder.append("        alert(\"Sorry, this page only runs in CyBrowser.\");\n");
 		contentBuilder.append("    }\n");
@@ -429,7 +429,7 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		//}
 		IconManager iconManager = serviceRegistrar.getService(IconManager.class);
 		Font iconFont = iconManager.getIconFont(16);
-		Icon icon = new TextIcon(ICON_COGS, iconFont, 16, 16);
+		Icon icon = new TextIcon(ICON_FONT, iconFont, 16, 16);
 		String iconId = "AppManager";
 		iconManager.addIcon(iconId, icon);
 

@@ -151,13 +151,13 @@ window.addEventListener('load', function() {
     if(window.navigator.userAgent.includes('CyBrowser')){
         setTimeout(function(){
             getInstalledAppsCyB();
-        }, 000);
-        setTimeout(function(){
-            getDisabledAppsCyB(); //a delay between CyBrowser calls is necessary
         }, 100);
         setTimeout(function(){
-            getUpdatesAppsCyB(); //a delay between CyBrowser calls is necessary
+            getDisabledAppsCyB(); //a delay between CyBrowser calls is necessary
         }, 200);
+        setTimeout(function(){
+            getUpdatesAppsCyB(); //a delay between CyBrowser calls is necessary
+        }, 300);
     } else {
         alert("Sorry, this page only runs in CyBrowser.");
     }
