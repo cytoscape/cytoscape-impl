@@ -281,8 +281,26 @@ function sortData() {
 function toggleStatus(checkbox, app) {
     if(checkbox.checked == true){
         enableAppCyB(app);
+        var inputs = document.getElementById(app);
+          if(inputs.type == "checkbox") {
+            inputs.disabled = true;
+          }
+        setTimeout(function(){
+            if(inputs.type == "checkbox") {
+              inputs.disabled = false;
+            }
+        },1000);
     }else{
         disableAppCyB(app);
+        var inputs = document.getElementById(app);
+          if(inputs.type == "checkbox") {
+            inputs.disabled = true;
+          }
+        setTimeout(function(){
+            if(inputs.type == "checkbox") {
+              inputs.disabled = false;
+            }
+        },1000);
    }
 }
 
@@ -359,12 +377,12 @@ function getAppUpdatesCyB() {
 function disableAppCyB(app) {
     setTimeout(function (){
     cybrowser.executeCyCommand('apps disable app=' + "'" + app + "'");
-  }, 0);
+  }, 200);
 }
 function enableAppCyB(app) {
     setTimeout(function (){
     cybrowser.executeCyCommand('apps enable app=' + "'" + app + "'");
-  }, 0);
+  }, 200);
 }
 function uninstallAppCyB(app) {
     cybrowser.executeCyCommand('apps uninstall app=' + "'" + app + "'");
