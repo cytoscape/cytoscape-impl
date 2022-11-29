@@ -162,8 +162,11 @@ public final class TypeUtil {
 				final AttributeDataType dataType = dataTypes[i];
 				
 				if (attempt == 0) {
-					if (CyIdentifiable.SUID.equalsIgnoreCase(name) || name.endsWith(".SUID") || CyNetwork.SELECTED.equalsIgnoreCase(name)) {
-						// SUID and 'selected' columns are ignored by default
+					if (name.isBlank()
+							|| CyIdentifiable.SUID.equalsIgnoreCase(name)
+							|| name.endsWith(".SUID")
+							|| CyNetwork.SELECTED.equalsIgnoreCase(name)) {
+						// Empty/blank, SUID and 'selected' columns are ignored by default
 						types[i] = NONE;
 					} else if (importType == NETWORK_IMPORT) {
 						if (!srcFound && matches(name, PREF_SOURCE_NAMES, exact) && isValid(SOURCE, dataType)) {
