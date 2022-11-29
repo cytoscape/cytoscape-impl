@@ -1168,7 +1168,7 @@ public class PreviewTablePanel extends JPanel {
 		if (types != null) {
 			getSelectAllButton().setEnabled(Arrays.asList(types).contains(NONE));
 			
-			for (SourceColumnSemantic t : types) {
+			for (var t : types) {
 				if (t != NONE) {
 					getSelectNoneButton().setEnabled(true);
 					break;
@@ -1211,7 +1211,7 @@ public class PreviewTablePanel extends JPanel {
 	}
 	
 	private Set<SourceColumnSemantic> getIgnoredTypes() {
-		Set<SourceColumnSemantic> set = new HashSet<>();
+		var set = new HashSet<SourceColumnSemantic>();
 		
 		if (tableImportContext != null && !tableImportContext.isKeyRequired())
 			set.add(KEY);
