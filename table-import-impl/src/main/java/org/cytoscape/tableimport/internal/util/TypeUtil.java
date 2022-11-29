@@ -85,7 +85,7 @@ public final class TypeUtil {
 		"node 1", "node a", "identifier 1", "identifier a", "id 1", "id a",
 		"key 1", "key a",
 		"source shared name", "name 1", "name a", "shared name 1", "shared name a",
-		"source gene", "gene 1", "gene id 1", "gene name 1", "id interactor a",
+		"source gene", "gene 1", "gene1", "gene a", "genea", "gene id 1", "gene name 1", "id interactor a",
 		"name", "shared name", "node", "gene", "gene id", "gene name", "id", "identifier"
 	};
 	private static final String[] PREF_TARGET_NAMES = new String[] {
@@ -93,12 +93,12 @@ public final class TypeUtil {
 		"node 2", "node b", "identifier 2", "identifier b", "id 2", "id b",
 		"key 2", "key b",
 		"target shared name", "name 2", "name b", "shared name 2", "shared name b",
-		"target gene", "gene 2", "gene id 2", "gene name 2", "id interactor b"
+		"target gene", "gene 2", "gene2", "gene b", "geneb", "gene id 2", "gene name 2", "id interactor b"
 	};
 	private static final String[] PREF_INTERACTION_NAMES = new String[] {
 		"interaction", "interaction type", "interaction types", "edge type", "edge types",
 		"interaction id", "interaction identifier",
-		"type"
+		"type", "evidence"
 	};
 	private static final String[] PREF_ONTOLOGY_NAMES = new String[] {
 		"gene ontology", "ontology", "go"
