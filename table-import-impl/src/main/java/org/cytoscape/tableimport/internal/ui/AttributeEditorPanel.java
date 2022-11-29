@@ -69,6 +69,7 @@ public class AttributeEditorPanel extends JPanel {
 	private static final float ICON_FONT_SIZE = 14.0f;
 	
 	private JTextField attributeNameTextField;
+	private JLabel attrNameWarningLabel;
 	
 	private final Map<SourceColumnSemantic, JToggleButton> typeButtons = new LinkedHashMap<>();
 	private final Map<AttributeDataType, JToggleButton> dataTypeButtons = new LinkedHashMap<>();
@@ -93,7 +94,7 @@ public class AttributeEditorPanel extends JPanel {
 	private ButtonGroup namespaceButtonGroup;
 	private ButtonGroup dataTypeButtonGroup;
 	
-	private String attrName;
+	private final String attrName;
 	private SourceColumnSemantic attributeType;
 	private String namespace = CyNetwork.DEFAULT_ATTRS;
 	private final List<SourceColumnSemantic> availableTypes;
@@ -255,6 +256,7 @@ public class AttributeEditorPanel extends JPanel {
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
 				.addComponent(getAttributeNameTextField(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getAttrNameWarningLabel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(typeLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addGroup(typeHGroup)
 				.addGroup(namespaceHGroup)
@@ -282,7 +284,8 @@ public class AttributeEditorPanel extends JPanel {
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addComponent(getAttributeNameTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				.addPreferredGap(ComponentPlacement.UNRELATED)
+				.addComponent(getAttrNameWarningLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addPreferredGap(ComponentPlacement.RELATED)
 				.addComponent(typeLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addPreferredGap(ComponentPlacement.RELATED)
 				.addGroup(typeVGroup)
@@ -316,6 +319,17 @@ public class AttributeEditorPanel extends JPanel {
 		);
 	}
 	
+	private JLabel getAttrNameWarningLabel() {
+		if (attrNameWarningLabel == null) {
+			attrNameWarningLabel = new JLabel(" ");
+			attrNameWarningLabel.setHorizontalAlignment(JLabel.CENTER);
+			attrNameWarningLabel.setForeground(LookAndFeelUtil.getErrorColor());
+			LookAndFeelUtil.makeSmall(attrNameWarningLabel);
+		}
+		
+		return attrNameWarningLabel;
+	}
+	
 	protected JTextField getAttributeNameTextField() {
 		if (attributeNameTextField == null) {
 			attributeNameTextField = new JTextField(attrName);
@@ -335,7 +349,21 @@ public class AttributeEditorPanel extends JPanel {
 					onTextChanged();
 				}
 				public void onTextChanged() {
-					firePropertyChange("attributeName", attrName, attrName = getAttributeName());
+					updateAttrNameWarningLabel();
+					updateTypeButtons();
+					
+					// Notify listeners that the column name has changed
+					var oldValue = attrName;
+					var newValue = getAttributeName();
+					
+					if (newValue.isBlank()) {
+						// Just send the old value if the new one is blank
+						oldValue = null;
+						newValue = attrName;
+					}
+					
+					newValue = newValue.isBlank() ? attrName : newValue;
+					firePropertyChange("attributeName", oldValue, newValue);
 				}
 			});
 		}
@@ -427,6 +455,7 @@ public class AttributeEditorPanel extends JPanel {
 	}
 	
 	private void updateComponents() {
+		updateAttrNameWarningLabel();
 		updateTypeButtonGroup();
 		updateDataTypeButtonGroup();
 		updateListDelimiterComboBox();
@@ -436,13 +465,23 @@ public class AttributeEditorPanel extends JPanel {
 		updateNamespaceButtons();
 	}
 	
-	private void updateTypeButtons() {
-		final AttributeDataType dataType = getSelectedAttributeDataType();
+	private void updateAttrNameWarningLabel() {
+		getAttrNameWarningLabel().setText(getAttributeName().isBlank() ? "The column name cannot be empty!" : " ");
+	}
 
-		for (Entry<SourceColumnSemantic, JToggleButton> entry : typeButtons.entrySet()) {
-			final SourceColumnSemantic type = entry.getKey();
-			final JToggleButton btn = entry.getValue();
-			btn.setEnabled(TypeUtil.isValid(type, dataType));
+	private void updateTypeButtons() {
+		var dataType = getSelectedAttributeDataType();
+		var attrName = getAttributeName();
+
+		for (var entry : typeButtons.entrySet()) {
+			var type = entry.getKey();
+			var btn = entry.getValue();
+			
+			if (attrName.isBlank())
+				btn.setEnabled(type == NONE);
+			else
+				btn.setEnabled(TypeUtil.isValid(type, dataType));
+			
 			btn.setForeground(btn.isEnabled() ? type.getForeground() : UIManager.getColor("Button.disabledForeground"));
 		}
 	}
