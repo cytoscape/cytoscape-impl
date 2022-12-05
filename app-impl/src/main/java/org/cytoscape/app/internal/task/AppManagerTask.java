@@ -393,8 +393,8 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		var cyBrowser = getApp("cybrowser");
 		
 		if (useCybrowser == true && cyBrowser != null && cyBrowser.getStatus() == App.AppStatus.INSTALLED) {
-			var font = IconUtil.getIconFont(19f);
-			var icon = new TextIcon(IconUtil.ICON_APP_STORE, font, 20, 20);
+			var font = IconUtil.getIconFont(16f);
+			var icon = new TextIcon(IconUtil.ICON_APP_STORE, font, 16, 16);
 			var iconId = "cy::App::APP_STORE";
 			serviceRegistrar.getService(IconManager.class).addIcon(iconId, icon);
 			
@@ -404,7 +404,7 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 			//args.put("url",url);
 			args.put("text", content);
 			args.put("id", "App Manager");
-			args.put("title", "App Manager");
+			args.put("title", "App Store");
 			args.put("iconId", iconId);
 			args.put("panel", "WEST");
 			args.put("focus", focus);
