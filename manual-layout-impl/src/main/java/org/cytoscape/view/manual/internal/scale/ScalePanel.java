@@ -22,6 +22,7 @@ import javax.swing.event.ChangeListener;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.view.layout.LayoutEdit;
 import org.cytoscape.view.manual.internal.common.CheckBoxTracker;
 import org.cytoscape.view.manual.internal.common.GraphConverter2;
 import org.cytoscape.view.manual.internal.common.PolymorphicSlider;
@@ -29,6 +30,7 @@ import org.cytoscape.view.manual.internal.common.SliderStateTracker;
 import org.cytoscape.view.manual.internal.layout.algorithm.MutablePolyEdgeGraphLayout;
 import org.cytoscape.view.manual.internal.util.Util;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.undo.UndoSupport;
 
 /*
  * #%L
@@ -71,9 +73,12 @@ public class ScalePanel extends JPanel implements ChangeListener, PolymorphicSli
 	private boolean startAdjusting = true;
 
 	private final CyApplicationManager appMgr;
+  private final UndoSupport undoSupport;
+  private LayoutEdit layoutEdit = null;
 
-	public ScalePanel(CyApplicationManager appMgr, IconManager iconMgr) {
+	public ScalePanel(CyApplicationManager appMgr, IconManager iconMgr, UndoSupport undoSupport) {
 		this.appMgr = appMgr;
+		this.undoSupport = undoSupport;
 
 		prevValue = getSlider().getValue();
 
@@ -158,10 +163,11 @@ public class ScalePanel extends JPanel implements ChangeListener, PolymorphicSli
 		if (currentView == null)
 			return;
 
+
 		// TODO support undo events
 		// only create the edit when we're beginning to adjust
 		if ( startAdjusting ) { 
-			//currentEdit = new ViewChangeEdit(currentView), "Scale");
+      layoutEdit = new LayoutEdit("Scale", currentView);
 			startAdjusting = false;
 		}
 
@@ -191,7 +197,8 @@ public class ScalePanel extends JPanel implements ChangeListener, PolymorphicSli
 		// TODO support undo
 		// only post the edit when we're finished adjusting 
 		if (!getSlider().getValueIsAdjusting()) { 
-			//currentEdit.post();
+      if (undoSupport != null && layoutEdit != null)
+        undoSupport.postEdit(layoutEdit);
 			startAdjusting = true;
 		} 
 	}

@@ -9,10 +9,12 @@ import javax.swing.Icon;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.view.layout.LayoutEdit;
 import org.cytoscape.view.manual.internal.util.Util;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.work.undo.UndoSupport;
 
 /*
  * #%L
@@ -47,10 +49,14 @@ public abstract class AbstractControlAction extends AbstractAction {
 	protected double Y_max;
 
 	private final CyApplicationManager appMgr;
+	private final UndoSupport undoSupport;
+  private final String action;
 
-	public AbstractControlAction(String name, Icon icon, CyApplicationManager appMgr) {
+	public AbstractControlAction(String name, Icon icon, CyApplicationManager appMgr, UndoSupport undoSupport) {
 		super(name,icon);
 		this.appMgr = appMgr;
+		this.undoSupport = undoSupport;
+    this.action = name;
 	}
 
 	@Override
@@ -58,6 +64,7 @@ public abstract class AbstractControlAction extends AbstractAction {
 		final CyNetworkView view = appMgr.getCurrentNetworkView();
 		final List<View<CyNode>> selectedNodeViews = view != null ? Util.findSelectedNodes(view) : null;
 		
+    undoSupport.postEdit(new LayoutEdit(action, view));
 		if (selectedNodeViews != null && !selectedNodeViews.isEmpty()) {
 			computeDimensions(selectedNodeViews);
 			control(selectedNodeViews);

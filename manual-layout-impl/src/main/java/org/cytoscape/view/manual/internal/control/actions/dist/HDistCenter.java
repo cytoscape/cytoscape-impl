@@ -34,14 +34,15 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.view.manual.internal.control.actions.AbstractControlAction;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.work.undo.UndoSupport;
 
 /**
  *
  */
 public class HDistCenter extends AbstractControlAction {
 
-	public HDistCenter(Icon i,CyApplicationManager appMgr) {
-		super("",i,appMgr);
+	public HDistCenter(Icon i,CyApplicationManager appMgr,UndoSupport undoSupport) {
+		super("Distribute",i,appMgr,undoSupport);
 	}
 
 	protected void control(List<View<CyNode>> nodes) {

@@ -18,6 +18,7 @@ import org.cytoscape.view.manual.internal.control.actions.stack.VStackCenter;
 import org.cytoscape.view.manual.internal.control.actions.stack.VStackLeft;
 import org.cytoscape.view.manual.internal.control.actions.stack.VStackRight;
 import org.cytoscape.view.manual.internal.util.Util;
+import org.cytoscape.work.undo.UndoSupport;
 
 /*
  * #%L
@@ -54,7 +55,7 @@ public class StackPanel extends JPanel {
 	private JButton hacButton;
 	private JButton habButton;
 	
-	public StackPanel(CyApplicationManager app) {
+	public StackPanel(CyApplicationManager app, UndoSupport undoSupport) {
 		ImageIcon vali = new ImageIcon(getClass().getResource("/images/V_STACK_LEFT.gif"));
 		ImageIcon vaci = new ImageIcon(getClass().getResource("/images/V_STACK_CENTER.gif"));
 		ImageIcon vari = new ImageIcon(getClass().getResource("/images/V_STACK_RIGHT.gif"));
@@ -62,13 +63,13 @@ public class StackPanel extends JPanel {
 		ImageIcon haci = new ImageIcon(getClass().getResource("/images/H_STACK_CENTER.gif"));
 		ImageIcon habi = new ImageIcon(getClass().getResource("/images/H_STACK_BOTTOM.gif"));
 
-		VStackLeft val = new VStackLeft(vali,app);
-		VStackCenter vac = new VStackCenter(vaci,app);
-		VStackRight var = new VStackRight(vari,app);
+		VStackLeft val = new VStackLeft(vali,app,undoSupport);
+		VStackCenter vac = new VStackCenter(vaci,app,undoSupport);
+		VStackRight var = new VStackRight(vari,app,undoSupport);
 
-		HStackTop hat = new HStackTop(hati,app);
-		HStackCenter hac = new HStackCenter(haci,app);
-		HStackBottom hab = new HStackBottom(habi,app);
+		HStackTop hat = new HStackTop(hati,app,undoSupport);
+		HStackCenter hac = new HStackCenter(haci,app,undoSupport);
+		HStackBottom hab = new HStackBottom(habi,app,undoSupport);
 
 		label = new JLabel("Stack:");
 		makeSmall(label);

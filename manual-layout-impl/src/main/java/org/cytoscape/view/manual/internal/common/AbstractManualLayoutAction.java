@@ -12,6 +12,8 @@ import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.work.undo.UndoSupport;
+
 
 /*
  * #%L
