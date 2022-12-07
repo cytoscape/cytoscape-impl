@@ -3,7 +3,7 @@ package org.cytoscape.internal.model;
 import static org.cytoscape.internal.util.IconUtil.SELECTION_MODE_ANNOTATIONS;
 import static org.cytoscape.internal.util.IconUtil.SELECTION_MODE_EDGES;
 import static org.cytoscape.internal.util.IconUtil.SELECTION_MODE_NODES;
-import static org.cytoscape.internal.util.IconUtil.SELECTION_MODE_NODE_LABELES;
+import static org.cytoscape.internal.util.IconUtil.SELECTION_MODE_NODE_LABELS;
 
 /*
  * #%L
@@ -54,7 +54,7 @@ public enum SelectionMode {
 	),
 	NODE_LABEL_SELECTION(
 			"Toggle Label Selection",
-			SELECTION_MODE_NODE_LABELES,   // Character which map to the icon in the font.
+			SELECTION_MODE_NODE_LABELS,   // Character which map to the icon in the font.
 			"Turn on this option if you want node labels and edge lables to be selected and manually repositioned.",
 			"/images/tooltips/selection-mode-node-label.gif",
 			"NETWORK_NODE_LABEL_SELECTION"
