@@ -113,10 +113,37 @@ public abstract class IconUtil {
 	public static final String SELECTION_MODE_ANNOTATIONS = "7";
 	public static final String SELECTION_MODE_EDGES = "8";
 	public static final String SELECTION_MODE_NODES = "9";
+	public static final String SELECTION_MODE_NODE_LABELS = ":";
+	
+	// Tables
+	public static final String EDGE_TABLE = "!";
+	public static final String NETWORK_TABLE = "\"";
+	public static final String NODE_TABLE = "#";
+	
+	// Command Line
+	public static final String TERMINAL = "%";
+	
+	// LOD (Network View)
+	public static final String GD_HIGH = "$";
+	public static final String GD_LOW = "&";
+	
+	// Window Management
+	public static final String PIN = "'";
+	public static final String PIN_ALL = "(";
+	public static final String UNPIN = ")";
+	
+	// Layout Tools
+	public static final String RULER_COMBINED_SOLID = "*";
 	
 	// Generic Import/Export
 	public static final String FILE_EXPORT = "+";
 	public static final String FILE_IMPORT = ",";
+	
+	public static final String COLUMN_ADD = "-";
+	public static final String COLUMN_REMOVE = ".";
+	public static final String COLUMN_SHOW = "/";
+	
+	public static final String APP_STORE = ";";
 	
 	// Layers/Colors used to build a TextIcon
 	// HELP

@@ -1,50 +1,39 @@
 package org.cytoscape.app.internal.task;
 
+import java.awt.Font;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.io.*;
-import java.nio.charset.Charset;
 import java.util.Properties;
-import javax.swing.SwingUtilities;
-import java.net.URL;
-import java.awt.Color;
-import java.awt.Font;
-import java.util.HashMap;
-import java.util.Map;
+
 import javax.swing.Icon;
 
-import org.cytoscape.application.CyApplicationConfiguration;
+import org.cytoscape.app.internal.event.AppsChangedListener;
+import org.cytoscape.app.internal.manager.AppManager;
+import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.application.swing.CytoPanelState;
-import org.cytoscape.app.internal.event.AppsChangedEvent;
-import org.cytoscape.app.internal.event.AppsChangedListener;
-import org.cytoscape.app.internal.manager.App;
-import org.cytoscape.app.internal.manager.AppManager;
-import org.cytoscape.app.internal.net.WebApp;
-import org.cytoscape.app.internal.net.WebQuerier;
-import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
-import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
 import org.cytoscape.command.CommandExecutorTaskFactory;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskManager;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
-import static org.cytoscape.util.swing.IconManager.ICON_FONT;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
 
 public class AppManagerTask extends AbstractAppTask implements ObservableTask {
+	
 	final CyServiceRegistrar serviceRegistrar;
 	private final CytoPanel cytoPanelWest;
 	private AppsChangedListener appListener;
@@ -58,6 +47,8 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 	public boolean useCybrowser = true;
 
 	public Boolean focus = true;
+	
+	private static final String ICON_APP_STORE = ";";
 
 	public AppManagerTask(final AppManager appManager, CyServiceRegistrar serviceRegistrar, CySwingApplication swingApplication, DownloadSitesManager downloadSitesManager, Boolean focus) {
 		super(appManager);
@@ -428,9 +419,9 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		//	System.out.println(downloadSite.getSiteUrl());
 		//}
 		IconManager iconManager = serviceRegistrar.getService(IconManager.class);
-		Font iconFont = iconManager.getIconFont(16);
-		Icon icon = new TextIcon(ICON_FONT, iconFont, 16, 16);
-		String iconId = "AppManager";
+		Font iconFont = iconManager.getIconFont("cytoscape-3", 16f);
+		Icon icon = new TextIcon(ICON_APP_STORE, iconFont, 16, 16);
+		String iconId = "cy::App::APP_STORE";
 		iconManager.addIcon(iconId, icon);
 
 		CommandExecutorTaskFactory commandTF = serviceRegistrar.getService(CommandExecutorTaskFactory.class);
@@ -438,12 +429,12 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		Map<String, Object> args = new HashMap<>();
 		//args.put("url","file:///Users/yxin/git/cytoscape/cytoscape/cytoscape/impl/app-impl/src/main/resources/AppManager/AppManager.html");
 		args.put("text", content);
-		args.put("id","App Manager");
-		args.put("title","App Manager");
-		args.put("panel","WEST");
+		args.put("id", "App Manager");
+		args.put("title", "App Store");
+		args.put("panel", "WEST");
 		args.put("focus", focus);
 		args.put("iconId", iconId);
-		TaskIterator ti = commandTF.createTaskIterator("cybrowser","show",args, null);
+		TaskIterator ti = commandTF.createTaskIterator("cybrowser", "show", args, null);
 		taskManager.execute(ti);
 	}
 
