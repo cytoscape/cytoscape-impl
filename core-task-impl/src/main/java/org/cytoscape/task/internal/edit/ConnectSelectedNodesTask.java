@@ -162,7 +162,7 @@ public class ConnectSelectedNodesTask extends AbstractTask implements Observable
 		if (type.equals(List.class)) {
 			return newEdges;
 		} else if (type.equals(String.class)) {
-			if (newEdges.isEmpty())
+			if (newEdges == null || newEdges.isEmpty())
 				return "<none>";
 			
 			String ret = "";

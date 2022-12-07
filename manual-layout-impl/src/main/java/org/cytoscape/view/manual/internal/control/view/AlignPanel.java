@@ -18,6 +18,7 @@ import org.cytoscape.view.manual.internal.control.actions.align.VAlignBottom;
 import org.cytoscape.view.manual.internal.control.actions.align.VAlignCenter;
 import org.cytoscape.view.manual.internal.control.actions.align.VAlignTop;
 import org.cytoscape.view.manual.internal.util.Util;
+import org.cytoscape.work.undo.UndoSupport;
 
 /*
  * #%L
@@ -54,7 +55,7 @@ public class AlignPanel extends JPanel {
 	private JButton vacButton;
 	private JButton vabButton;
 	
-	public AlignPanel(CyApplicationManager app) {
+	public AlignPanel(CyApplicationManager app, UndoSupport undoSupport) {
 		ImageIcon hari = new ImageIcon(getClass().getResource("/images/H_ALIGN_RIGHT.gif"));
 		ImageIcon haci = new ImageIcon(getClass().getResource("/images/H_ALIGN_CENTER.gif"));
 		ImageIcon hali = new ImageIcon(getClass().getResource("/images/H_ALIGN_LEFT.gif"));
@@ -62,13 +63,13 @@ public class AlignPanel extends JPanel {
 		ImageIcon vaci = new ImageIcon(getClass().getResource("/images/V_ALIGN_CENTER.gif"));
 		ImageIcon vabi = new ImageIcon(getClass().getResource("/images/V_ALIGN_BOTTOM.gif"));
 
-		HAlignRight har = new HAlignRight(hari,app);
-		HAlignCenter hac = new HAlignCenter(haci,app);
-		HAlignLeft hal = new HAlignLeft(hali,app);
+		HAlignRight har = new HAlignRight(hari,app,undoSupport);
+		HAlignCenter hac = new HAlignCenter(haci,app,undoSupport);
+		HAlignLeft hal = new HAlignLeft(hali,app,undoSupport);
 
-		VAlignTop vat = new VAlignTop(vati,app);
-		VAlignCenter vac = new VAlignCenter(vaci,app);
-		VAlignBottom vab = new VAlignBottom(vabi,app);
+		VAlignTop vat = new VAlignTop(vati,app,undoSupport);
+		VAlignCenter vac = new VAlignCenter(vaci,app,undoSupport);
+		VAlignBottom vab = new VAlignBottom(vabi,app,undoSupport);
 
 		label = new JLabel("Align:");
 		makeSmall(label);

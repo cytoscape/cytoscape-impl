@@ -238,7 +238,7 @@ public class PreviewTablePanel extends JPanel {
 						.addComponent(getSelectNoneButton())
 				)
 				.addPreferredGap(RELATED)
-				.addComponent(getTableScrollPane(), 120, 160, Short.MAX_VALUE)
+				.addComponent(getTableScrollPane(), 120, 180, Short.MAX_VALUE)
 				.addPreferredGap(RELATED)
 		);
 		
@@ -1029,7 +1029,7 @@ public class PreviewTablePanel extends JPanel {
 		attrEditorPanel.addPropertyChangeListener("attributeName", evt -> {
 			var name = (String) evt.getNewValue();
 			
-			if (name != null && !name.trim().isEmpty()) {
+			if (name != null) {
 				((PreviewTableModel) getPreviewTable().getModel()).setColumnName(colIdx, name);
 				getPreviewTable().getColumnModel().getColumn(colIdx).setHeaderValue(name);
 				update();
@@ -1067,6 +1067,14 @@ public class PreviewTablePanel extends JPanel {
 			}
 			@Override
 			public void windowClosed(WindowEvent e) {
+				// Columns with empty names should not be imported!
+				var name = ((PreviewTableModel) getPreviewTable().getModel()).getColumnName(colIdx);
+				
+				if (name == null || name.isBlank()) {
+					setType(colIdx, NONE);
+					update();
+				}
+				
 				getPreviewTable().getTableHeader().repaint();
 			}
 		});
@@ -1160,7 +1168,7 @@ public class PreviewTablePanel extends JPanel {
 		if (types != null) {
 			getSelectAllButton().setEnabled(Arrays.asList(types).contains(NONE));
 			
-			for (SourceColumnSemantic t : types) {
+			for (var t : types) {
 				if (t != NONE) {
 					getSelectNoneButton().setEnabled(true);
 					break;
@@ -1203,7 +1211,7 @@ public class PreviewTablePanel extends JPanel {
 	}
 	
 	private Set<SourceColumnSemantic> getIgnoredTypes() {
-		Set<SourceColumnSemantic> set = new HashSet<>();
+		var set = new HashSet<SourceColumnSemantic>();
 		
 		if (tableImportContext != null && !tableImportContext.isKeyRequired())
 			set.add(KEY);
@@ -1479,7 +1487,7 @@ public class PreviewTablePanel extends JPanel {
 		@Override
 		public Component getTableCellRendererComponent(JTable tbl, Object val, boolean isS,
 		                                               boolean hasF, int row, int col) {
-			nameLabel.setText(val != null ? val.toString() : "");
+			nameLabel.setText(val != null && !val.toString().isBlank() ? val.toString() : "N/A");
 			
 			var fgColor = UIManager.getColor("TableHeader.foreground");
 			

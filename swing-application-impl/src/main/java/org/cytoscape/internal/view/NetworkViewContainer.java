@@ -793,7 +793,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			));
 			birdsEyeViewPanel.setFocusable(true);
 			birdsEyeViewPanel.setRequestFocusEnabled(true);
-			birdsEyeViewPanel.setVisible(true);
+			birdsEyeViewPanel.setVisible(false);
 		}
 		
 		return birdsEyeViewPanel;

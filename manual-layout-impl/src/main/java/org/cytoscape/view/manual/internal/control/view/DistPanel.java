@@ -18,6 +18,7 @@ import org.cytoscape.view.manual.internal.control.actions.dist.VDistBottom;
 import org.cytoscape.view.manual.internal.control.actions.dist.VDistCenter;
 import org.cytoscape.view.manual.internal.control.actions.dist.VDistTop;
 import org.cytoscape.view.manual.internal.util.Util;
+import org.cytoscape.work.undo.UndoSupport;
 
 /*
  * #%L
@@ -53,8 +54,11 @@ public class DistPanel extends JPanel {
 	private JButton vatButton;
 	private JButton vacButton;
 	private JButton vabButton;
+  private final UndoSupport undoSupport;
 	
-	public DistPanel(CyApplicationManager app) {
+	public DistPanel(CyApplicationManager app, UndoSupport undoSupport) {
+    this.undoSupport = undoSupport;
+
 		ImageIcon hali = new ImageIcon(getClass().getResource("/images/H_DIST_LEFT.gif"));
 		ImageIcon haci = new ImageIcon(getClass().getResource("/images/H_DIST_CENTER.gif"));
 		ImageIcon hari = new ImageIcon(getClass().getResource("/images/H_DIST_RIGHT.gif"));
@@ -62,13 +66,13 @@ public class DistPanel extends JPanel {
 		ImageIcon vaci = new ImageIcon(getClass().getResource("/images/V_DIST_CENTER.gif"));
 		ImageIcon vabi = new ImageIcon(getClass().getResource("/images/V_DIST_BOTTOM.gif"));
 
-		HDistLeft hal = new HDistLeft(hali,app);
-		HDistCenter hac = new HDistCenter(haci,app);
-		HDistRight har = new HDistRight(hari,app);
+		HDistLeft hal = new HDistLeft(hali,app,undoSupport);
+		HDistCenter hac = new HDistCenter(haci,app,undoSupport);
+		HDistRight har = new HDistRight(hari,app,undoSupport);
 
-		VDistTop vat = new VDistTop(vati,app);
-		VDistCenter vac = new VDistCenter(vaci,app);
-		VDistBottom vab = new VDistBottom(vabi,app);
+		VDistTop vat = new VDistTop(vati,app,undoSupport);
+		VDistCenter vac = new VDistCenter(vaci,app,undoSupport);
+		VDistBottom vab = new VDistBottom(vabi,app,undoSupport);
 
 		label = new JLabel("Distribute:");
 		makeSmall(label);

@@ -33,6 +33,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.view.manual.internal.control.actions.AbstractControlAction;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.work.undo.UndoSupport;
 /**
  *
  */
@@ -40,8 +41,8 @@ public class HAlignRight extends AbstractControlAction {
 
 	private static final long serialVersionUID = -2582880158463407206L;
 
-	public HAlignRight(Icon i,CyApplicationManager appMgr) {
-		super("",i,appMgr);
+	public HAlignRight(Icon i,CyApplicationManager appMgr, UndoSupport undoSupport) {
+		super("Align",i,appMgr,undoSupport);
 	}
 
 	protected void control(List<View<CyNode>> nodes) {

@@ -33,6 +33,11 @@ public class LaunchManager implements AppsFinishedStartingListener {
 
 	@Override
 	public void handleEvent(AppsFinishedStartingEvent evt){
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
     AppManagerTaskFactory factory = new AppManagerTaskFactory(appManager, registrar, swingApplication, downloadSitesManager, focus);
     TaskManager<?,?> taskManager = registrar.getService(TaskManager.class);
     TaskIterator ti = factory.createTaskIterator();

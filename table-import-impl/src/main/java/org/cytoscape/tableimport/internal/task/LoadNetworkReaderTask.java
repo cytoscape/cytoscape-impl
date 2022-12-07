@@ -8,12 +8,9 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.cytoscape.io.read.CyNetworkReader;
@@ -45,8 +42,6 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
-import org.cytoscape.work.Task;
-import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
@@ -178,14 +173,14 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 	}
 
 	public LoadNetworkReaderTask(
-			final TableImportContext tableImportContext,
-			final CyServiceRegistrar serviceRegistrar,
-			final boolean nogui
+			TableImportContext tableImportContext,
+			CyServiceRegistrar serviceRegistrar,
+			boolean nogui
 	) {
 		this.tableImportContext = tableImportContext;
 		this.serviceRegistrar = serviceRegistrar;
 	    
-		List<String> tempList = new ArrayList<>();
+		var tempList = new ArrayList<String>();
 		tempList.add(TextDelimiter.PIPE.getDelimiter());
 		tempList.add(TextDelimiter.BACKSLASH.getDelimiter());
 		tempList.add(TextDelimiter.SLASH.getDelimiter());
@@ -194,8 +189,13 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		this.nogui = nogui;
 	}
 	
-	public void setInputFile(final InputStream is, final String fileType, final String inputName, final URI uriName,
-			final IconManager iconManager) {
+	public void setInputFile(
+			InputStream is,
+			String fileType,
+			String inputName,
+			URI uriName,
+			IconManager iconManager
+	) {
 		this.is = is;
 		this.fileType = fileType;
 		this.inputName = inputName;
@@ -206,9 +206,9 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		try{
 			tempFile = File.createTempFile("temp", this.fileType);
 			tempFile.deleteOnExit();
-			FileOutputStream os = new FileOutputStream(tempFile);
+			var os = new FileOutputStream(tempFile);
 			int read = 0;
-			byte[] bytes = new byte[1024];
+			var bytes = new byte[1024];
 		 
 			while ((read = is.read(bytes)) != -1) {
 				os.write(bytes, 0, read);
@@ -227,20 +227,20 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 	}
 
 	@Override
-	public void run(final TaskMonitor tm) throws Exception {
+	public void run(TaskMonitor tm) throws Exception {
 		tm.setTitle("Loading network from table");
 		tm.setProgress(0.0);
 
 		tm.setStatusMessage("Loading network...");
 		taskMonitor = tm;
 		
-		if(decimalSeparator == null || decimalSeparator.isEmpty()) {
+		if (decimalSeparator == null || decimalSeparator.isEmpty()) {
 			decSeparator = AbstractMappingParameters.DEF_DECIMAL_SEPARATOR;
 		} else {
 			decSeparator = decimalSeparator.charAt(0);
 		}
 		
-		final CyNetworkReaderManager networkReaderManager = serviceRegistrar.getService(CyNetworkReaderManager.class);
+		var networkReaderManager = serviceRegistrar.getService(CyNetworkReaderManager.class);
 		
 		if (is != null)
 			netReader = networkReaderManager.getReader(is, inputName);
@@ -270,7 +270,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			if (startLoadRow > 0)
 				startLoadRow--;
 			
-			final int startLoadRowTemp = firstRowAsColumnNames ? 0 : startLoadRow;
+			int startLoadRowTemp = firstRowAsColumnNames ? 0 : startLoadRow;
 			
 			previewPanel.update(
 					workbook,
@@ -291,10 +291,10 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 				startLoadRow++;
 			}
 	
-			final SourceColumnSemantic[] types = previewPanel.getTypes();
+			var types = previewPanel.getTypes();
 			
 			// Column Names:
-			final List<String> attrNameList = new ArrayList<>();
+			var attrNameList = new ArrayList<String>();
 
 			for (int i = 0; i < colCount; i++) {
 				curName = previewPanel.getPreviewTable().getColumnModel().getColumn(i).getHeaderValue();
@@ -322,13 +322,12 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 					attrNameList.add(curName.toString());
 			}
 			
-			String[] attributeNames = attrNameList.toArray(new String[attrNameList.size()]);
-			
-			final SourceColumnSemantic[] typesCopy = Arrays.copyOf(types, types.length);
+			var attributeNames = attrNameList.toArray(new String[attrNameList.size()]);
+			var typesCopy = Arrays.copyOf(types, types.length);
 			
 			// Data Types:
-			final AttributeDataType[] dataTypes = previewPanel.getDataTypes();
-			final AttributeDataType[] dataTypesCopy = Arrays.copyOf(dataTypes, dataTypes.length);
+			var dataTypes = previewPanel.getDataTypes();
+			var dataTypesCopy = Arrays.copyOf(dataTypes, dataTypes.length);
 			
 			AttributeDataType[] tunableDataTypes = null;
 			
@@ -354,20 +353,22 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 						Math.min(tunableColumnTypes.length, typesCopy.length));
 				// Set the source and target interaction columns
 				int index = 1;
-				for (SourceColumnSemantic scs: tunableColumnTypes) {
+
+				for (SourceColumnSemantic scs : tunableColumnTypes) {
 					if (scs.equals(SourceColumnSemantic.SOURCE))
 						indexColumnSourceInteraction = index;
 					else if (scs.equals(SourceColumnSemantic.TARGET))
 						indexColumnTargetInteraction = index;
 					else if (scs.equals(SourceColumnSemantic.INTERACTION))
-	          indexColumnTypeInteraction = index;
+						indexColumnTypeInteraction = index;
+					
 					index++;
 				}
 			}
 			
 			// Namespaces:
-			final String[] namespaces = previewPanel.getNamespaces();
-			final String[] namespacesCopy = Arrays.copyOf(namespaces, namespaces.length);
+			var namespaces = previewPanel.getNamespaces();
+			var namespacesCopy = Arrays.copyOf(namespaces, namespaces.length);
 
 // TODO Set namespaces though Tunables as well
 //			String[] tunableNamespaces = null;
@@ -384,7 +385,8 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			if (nogui) {
 				// Handle the validation
 				nogui = false;
-				ValidationState state = getValidationState(new StringBuffer(80));
+				var state = getValidationState(new StringBuffer(80));
+				
 				switch (state) {
 					case INVALID:
 						tm.showMessage(TaskMonitor.Level.ERROR, "Source column must be specified");
@@ -395,7 +397,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 				nogui = true;
 			}
 
-			String[] listDelimiters = previewPanel.getListDelimiters();
+			var listDelimiters = previewPanel.getListDelimiters();
 
 			if (listDelimiters == null || listDelimiters.length == 0) {
 				listDelimiters = new String[dataTypes.length];
@@ -421,13 +423,13 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 					defaultInteraction, startLoadRow, null, decSeparator);
 			
 			try {
-				if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||
-				    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) {
-					final Sheet sheet = workbook.getSheet(networkName);
+				if (fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||
+				    fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) {
+					var sheet = workbook.getSheet(networkName);
 					
 					reader = new ExcelNetworkSheetReader(networkName, sheet, ntmp, nMap, rootNetwork, serviceRegistrar);
 				} else {
-					networkName = this.inputName;
+					networkName = inputName;
 					reader = new NetworkTableReader(networkName, new FileInputStream(tempFile), ntmp, nMap, rootNetwork, serviceRegistrar);
 				}
 			} catch (Exception ioe) {
@@ -438,29 +440,30 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			loadNetwork(tm);
 			tm.setProgress(1.0);
 		} else {
-			networkName = this.inputName;
+			networkName = inputName;
 			insertTasksAfterCurrentTask(netReader);
 		}
 	}
 	
-	private void loadNetwork(final TaskMonitor tm) throws IOException {
-		CyNetwork network;
-		if (this.rootNetwork == null) {
+	private void loadNetwork(TaskMonitor tm) throws IOException {
+		final CyNetwork network;
+		
+		if (rootNetwork == null) {
 			network = serviceRegistrar.getService(CyNetworkFactory.class).createNetwork();
 			rootNetwork = serviceRegistrar.getService(CyRootNetworkManager.class).getRootNetwork(network);
 		} else {
-			network = this.rootNetwork.addSubNetwork(); //CytoscapeServices.cyNetworkFactory.createNetwork();
+			network = rootNetwork.addSubNetwork(); //CytoscapeServices.cyNetworkFactory.createNetwork();
 		}
 		tm.setProgress(0.10);
-		this.reader.setNetwork(network);
+		reader.setNetwork(network);
 
-		if (this.cancelled)
+		if (cancelled)
 			return;
 
-		this.reader.read();
+		reader.read();
 		tm.setProgress(0.80);
 
-		if (this.cancelled)
+		if (cancelled)
 			return;
 		
 		networks = new CyNetwork[] { network };
@@ -472,12 +475,12 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		if (netReader != null) {
 			return netReader.buildCyNetworkView(net);
 		} else {
-			final CyNetworkView view = networkViewFactory.createNetworkView(net);
-			CyLayoutAlgorithmManager layoutMgr = serviceRegistrar.getService(CyLayoutAlgorithmManager.class);
-			CyLayoutAlgorithm layout = layoutMgr.getDefaultLayout();
-			String attribute = layoutMgr.getLayoutAttribute(layout, view);
-			TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS, attribute);
-			Task nextTask = itr.next();
+			var view = networkViewFactory.createNetworkView(net);
+			var layoutMgr = serviceRegistrar.getService(CyLayoutAlgorithmManager.class);
+			var layout = layoutMgr.getDefaultLayout();
+			var attribute = layoutMgr.getLayoutAttribute(layout, view);
+			var itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS, attribute);
+			var nextTask = itr.next();
 			
 			try {
 				nextTask.run(taskMonitor);

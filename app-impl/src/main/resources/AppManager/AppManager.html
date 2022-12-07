@@ -151,13 +151,13 @@ window.addEventListener('load', function() {
     if(window.navigator.userAgent.includes('CyBrowser')){
         setTimeout(function(){
             getInstalledAppsCyB();
-        }, 000);
-        setTimeout(function(){
-            getDisabledAppsCyB(); //a delay between CyBrowser calls is necessary
         }, 100);
         setTimeout(function(){
-            getUpdatesAppsCyB(); //a delay between CyBrowser calls is necessary
+            getDisabledAppsCyB(); //a delay between CyBrowser calls is necessary
         }, 200);
+        setTimeout(function(){
+            getUpdatesAppsCyB(); //a delay between CyBrowser calls is necessary
+        }, 300);
     } else {
         alert("Sorry, this page only runs in CyBrowser.");
     }
@@ -281,8 +281,26 @@ function sortData() {
 function toggleStatus(checkbox, app) {
     if(checkbox.checked == true){
         enableAppCyB(app);
+        var inputs = document.getElementById(app);
+          if(inputs.type == "checkbox") {
+            inputs.disabled = true;
+          }
+        setTimeout(function(){
+            if(inputs.type == "checkbox") {
+              inputs.disabled = false;
+            }
+        },1000);
     }else{
         disableAppCyB(app);
+        var inputs = document.getElementById(app);
+          if(inputs.type == "checkbox") {
+            inputs.disabled = true;
+          }
+        setTimeout(function(){
+            if(inputs.type == "checkbox") {
+              inputs.disabled = false;
+            }
+        },1000);
    }
 }
 
@@ -357,10 +375,14 @@ function getAppUpdatesCyB() {
     cybrowser.executeCyCommand('apps list updates');
 }
 function disableAppCyB(app) {
+    setTimeout(function (){
     cybrowser.executeCyCommand('apps disable app=' + "'" + app + "'");
+  }, 200);
 }
 function enableAppCyB(app) {
+    setTimeout(function (){
     cybrowser.executeCyCommand('apps enable app=' + "'" + app + "'");
+  }, 200);
 }
 function uninstallAppCyB(app) {
     cybrowser.executeCyCommand('apps uninstall app=' + "'" + app + "'");
@@ -409,7 +431,7 @@ function openAppStore(app=null){
     if (app != null){
         appUrl += "apps/"+app
     }
-    cybrowser.executeCyCommand('cybrowser dialog url="'+appUrl+'" id="AppStore" title="App Store" ');
+    cybrowser.executeCyCommand('cybrowser native url="'+appUrl+'" ');
 }
 function searchAppStore(){
     var query = document.getElementById("search").value
@@ -417,7 +439,7 @@ function searchAppStore(){
     if (query != ""){
         qUrl += "search?q="+query
     }
-    cybrowser.executeCyCommand('cybrowser dialog url="'+qUrl+'" id="AppStore" title="App Store" ');
+    cybrowser.executeCyCommand('cybrowser native url="'+qUrl+'" ');
 }
 
 function updateAppAndIcon(app) {

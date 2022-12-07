@@ -39,6 +39,7 @@ import org.cytoscape.view.manual.internal.scale.ScalePanel;
 import org.cytoscape.view.manual.internal.util.IconUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import org.cytoscape.work.undo.UndoSupport;
 
 /*
  * #%L
@@ -90,13 +91,14 @@ public class LayoutToolsPanel extends JPanel implements CytoPanelComponent2, Ses
 		this.serviceRegistrar = serviceRegistrar;
 		
 		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+    final UndoSupport undoSupport = serviceRegistrar.getService(UndoSupport.class);
 		final IconManager iconMgr = serviceRegistrar.getService(IconManager.class);
 		
-		scalePanel = new ScalePanel(appMgr, iconMgr);
-		alignPanel = new AlignPanel(appMgr);
-		distPanel = new DistPanel(appMgr);
-		stackPanel = new StackPanel(appMgr);
-		rotatePanel = new RotatePanel(appMgr);
+		scalePanel = new ScalePanel(appMgr, iconMgr, undoSupport);
+		alignPanel = new AlignPanel(appMgr, undoSupport);
+		distPanel = new DistPanel(appMgr, undoSupport);
+		stackPanel = new StackPanel(appMgr, undoSupport);
+		rotatePanel = new RotatePanel(appMgr, undoSupport);
 		
 		final GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);

@@ -111,7 +111,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.TableModel;
 import javax.xml.bind.JAXBException;
 
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.cytoscape.application.CyApplicationManager;

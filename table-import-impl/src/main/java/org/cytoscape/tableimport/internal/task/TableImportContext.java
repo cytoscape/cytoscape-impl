@@ -31,11 +31,19 @@ import org.cytoscape.tableimport.internal.task.ImportTableDataTask.TableType;
 
 public class TableImportContext {
 
-	private boolean keyRequired = true;
+	private boolean keyRequired;
 	private TableType tableType;
 	
 	private final PropertyChangeSupport changes = new PropertyChangeSupport(this);
 	
+	public TableImportContext() {
+		this(true);
+	}
+	
+	public TableImportContext(boolean keyRequired) {
+		this.keyRequired = keyRequired;
+	}
+
 	public boolean isKeyRequired() {
 		return keyRequired;
 	}
