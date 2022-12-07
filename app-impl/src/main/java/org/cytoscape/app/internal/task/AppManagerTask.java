@@ -12,7 +12,6 @@ import java.util.Properties;
 import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
-import org.cytoscape.app.internal.util.IconUtil;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelName;
@@ -42,6 +41,8 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 	public boolean useCybrowser = true;
 
 	public Boolean focus = true;
+	
+	private static final String ICON_APP_STORE = ";";
 
 	public AppManagerTask(final AppManager appManager, CyServiceRegistrar serviceRegistrar, CySwingApplication swingApplication, DownloadSitesManager downloadSitesManager, Boolean focus) {
 		super(appManager);
@@ -393,10 +394,11 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		var cyBrowser = getApp("cybrowser");
 		
 		if (useCybrowser == true && cyBrowser != null && cyBrowser.getStatus() == App.AppStatus.INSTALLED) {
-			var font = IconUtil.getIconFont(16f);
-			var icon = new TextIcon(IconUtil.ICON_APP_STORE, font, 16, 16);
+			var iconManager = serviceRegistrar.getService(IconManager.class);
+			var font = iconManager.getIconFont("cytoscape-3", 16f);
+			var icon = new TextIcon(ICON_APP_STORE, font, 16, 16);
 			var iconId = "cy::App::APP_STORE";
-			serviceRegistrar.getService(IconManager.class).addIcon(iconId, icon);
+			iconManager.addIcon(iconId, icon);
 			
 			var commandTF = serviceRegistrar.getService(CommandExecutorTaskFactory.class);
 			var taskManager = serviceRegistrar.getService(TaskManager.class);
