@@ -83,6 +83,8 @@ import org.cytoscape.app.event.AppsFinishedStartingEvent;
 import org.cytoscape.app.event.AppsFinishedStartingListener;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyShutdown;
+import org.cytoscape.application.events.CyShutdownEvent;
+import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.application.events.CyStartEvent;
 import org.cytoscape.application.events.CyStartListener;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
@@ -186,10 +188,9 @@ import org.jdesktop.swingx.border.DropShadowBorder;
  * </pre>
  */
 @SuppressWarnings("serial")
-public class CytoscapeDesktop extends JFrame
-		implements CySwingApplication, CyStartListener, AppsFinishedStartingListener, SessionLoadedListener,
-		SessionSavedListener, SetCurrentNetworkListener, SetCurrentNetworkViewListener, TableAddedListener,
-		CytoPanelComponentSelectedListener {
+public class CytoscapeDesktop extends JFrame implements CySwingApplication, CyStartListener, CyShutdownListener,
+		AppsFinishedStartingListener, SessionLoadedListener, SessionSavedListener, SetCurrentNetworkListener,
+		SetCurrentNetworkViewListener, TableAddedListener, CytoPanelComponentSelectedListener {
 
 	private static final String TITLE_PREFIX_STRING = "Session: ";
 	private static final String NEW_SESSION_NAME = "New Session";
@@ -262,6 +263,7 @@ public class CytoscapeDesktop extends JFrame
 	private boolean ignoreFloatingFrameCloseEvents;
 	
 	private boolean appsFinishedStarting;
+	private boolean isShuttingDown;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -487,12 +489,14 @@ public class CytoscapeDesktop extends JFrame
 	}
 
 	public void removeAction(CyAction action, Map<?, ?> props) {
-		cyMenus.removeAction(action);
+		if (!isShuttingDown)
+			cyMenus.removeAction(action);
 	}
 
 	@Override
 	public void removeAction(CyAction action) {
-		cyMenus.removeAction(action);
+		if (!isShuttingDown)
+			cyMenus.removeAction(action);
 	}
 
 	@Override
@@ -641,6 +645,11 @@ public class CytoscapeDesktop extends JFrame
 			
 			toFront();
 		});
+	}
+	
+	@Override
+	public void handleEvent(CyShutdownEvent e) {
+		isShuttingDown = true;
 	}
 	
 	@Override
