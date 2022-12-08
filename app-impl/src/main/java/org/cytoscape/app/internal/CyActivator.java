@@ -456,6 +456,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_MENU, "Apps.App Store");
 			props.setProperty(TITLE, "Show App Store");
 			props.setProperty(MENU_GRAVITY, "0.1");
+			props.setProperty(INSERT_SEPARATOR_AFTER, "true");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
