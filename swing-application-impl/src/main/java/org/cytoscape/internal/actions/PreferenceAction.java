@@ -1,9 +1,7 @@
 package org.cytoscape.internal.actions;
 
 import java.awt.Toolkit;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,18 +47,18 @@ public class PreferenceAction extends AbstractCyAction {
 	
 	private final CySwingApplication desktop;
 	private final PreferencesDialogFactory dialogFactory;
-//	private Cy3PreferencesDialog preferencesDialog;
 	private PreferencesDialog preferencesDialog;
+
 	private Map<String, Properties> propMap = new HashMap<>();
 	private Map<String, Bookmarks> bookmarkMap = new HashMap<>();
-	private  Map<String, CyProperty<?>> cyPropMap = new HashMap<>();
+	private Map<String, CyProperty<?>> cyPropMap = new HashMap<>();
 	
-	public PreferenceAction(final CySwingApplication desktop, final PreferencesDialogFactory dialogFactory) {
+	public PreferenceAction(CySwingApplication desktop, PreferencesDialogFactory dialogFactory) {
 		super("Properties...");
 		this.desktop = desktop;
 		this.dialogFactory = dialogFactory;		
 		
-		setPreferredMenu("Edit.Preferences");	// TODO -- moved out of Edit.Preferences
+		setPreferredMenu("Edit.Preferences");
 		setMenuGravity(11.0f);
 		
 		if (LookAndFeelUtil.isMac())
@@ -70,7 +68,7 @@ public class PreferenceAction extends AbstractCyAction {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		final Window owner = ViewUtil.getWindowAncestor(e, desktop);
+		var owner = ViewUtil.getWindowAncestor(e, desktop);
 		preferencesDialog = dialogFactory.getPreferencesDialog(owner, propMap, cyPropMap); 
 		preferencesDialog.setVisible(true);
 	}
@@ -79,28 +77,28 @@ public class PreferenceAction extends AbstractCyAction {
 	public boolean isEnabled() {
 		return !dialogFactory.isDialogVisible();
 	}
-	
-	public void addCyProperty(CyProperty<?> p, Map<?,?> d){
-		String propertyName = p.getName();
-		Object obj = p.getProperties();
-		
-		if (obj instanceof Properties){		
-			propMap.put(propertyName, (Properties)obj);
+
+	public void addCyProperty(CyProperty<?> p, Map<?, ?> d) {
+		var propertyName = p.getName();
+		var obj = p.getProperties();
+
+		if (obj instanceof Properties) {
+			propMap.put(propertyName, (Properties) obj);
 			cyPropMap.put(propertyName, p);
-		} else if (obj instanceof Bookmarks){
-			bookmarkMap.put(propertyName, (Bookmarks)obj);
+		} else if (obj instanceof Bookmarks) {
+			bookmarkMap.put(propertyName, (Bookmarks) obj);
 		} else {
 			System.out.println("PreferenceAction: Do not know what kind of properties it is.");
 		}
 	}
-	
-	public void removeCyProperty(CyProperty<?> p, Map<?,?> d){
-		String propertyName = p.getName();
-		Object obj = p.getProperties();
-		
-		if (obj instanceof Properties){
+
+	public void removeCyProperty(CyProperty<?> p, Map<?, ?> d) {
+		var propertyName = p.getName();
+		var obj = p.getProperties();
+
+		if (obj instanceof Properties) {
 			propMap.remove(propertyName);
-		} else if (obj instanceof Bookmarks){
+		} else if (obj instanceof Bookmarks) {
 			bookmarkMap.remove(propertyName);
 		}
 	}

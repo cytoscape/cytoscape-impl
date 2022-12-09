@@ -87,8 +87,12 @@ public class PreferencesDialog extends JDialog implements ItemListener, ActionLi
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	public PreferencesDialog(Window owner, Map<String, Properties> propMap,
-			Map<String, CyProperty<?>> cyPropMap, final CyServiceRegistrar serviceRegistrar) {
+	public PreferencesDialog(
+			Window owner,
+			Map<String, Properties> propMap,
+			Map<String, CyProperty<?>> cyPropMap,
+			CyServiceRegistrar serviceRegistrar
+	) {
 		super(owner, ModalityType.APPLICATION_MODAL);
 		
 		this.propMap = propMap;
@@ -99,7 +103,7 @@ public class PreferencesDialog extends JDialog implements ItemListener, ActionLi
 			itemChangedMap.put(key, false);
 		
 		try {
-			initGUI();
+			init();
 			addListeners();
 
 			modifyPropBtn.setEnabled(false);
@@ -126,34 +130,33 @@ public class PreferencesDialog extends JDialog implements ItemListener, ActionLi
 	}
 
 	private void initCMB() {
-		String[] keys = propMap.keySet().toArray(new String[propMap.keySet().size()]);
-    Arrays.sort(keys);
-		DefaultComboBoxModel<String> cmbModel = new DefaultComboBoxModel<>(keys);
+		var keys = propMap.keySet().toArray(new String[propMap.keySet().size()]);
+		Arrays.sort(keys);
+		var cmbModel = new DefaultComboBoxModel<String>(keys);
 
-		this.cmbPropCategories.setModel(cmbModel);
+		cmbPropCategories.setModel(cmbModel);
 		
-		String key = SimpleCyProperty.CORE_PROPRERTY_NAME;
+		var key = SimpleCyProperty.CORE_PROPRERTY_NAME;
 		
 		int index =0;
-		for (int i=0; i<keys.length; i++){
-			if (keys[i].toString().equalsIgnoreCase(key)){
-				index =i;
+		for (int i = 0; i < keys.length; i++) {
+			if (keys[i].toString().equalsIgnoreCase(key)) {
+				index = i;
 				break;
 			}
 		}
-		
+
 		this.cmbPropCategories.setSelectedIndex(index);
 	}
 
 	private void initTable() {
-		DefaultTableColumnModel cm = new DefaultTableColumnModel();
+		var cm = new DefaultTableColumnModel();
 		
 		for (int i = 0; i < PreferenceTableModel.columnHeader.length; i++) {
-			DefaultTableCellRenderer renderer = new DefaultTableCellRenderer();
+			var renderer = new DefaultTableCellRenderer();
 			renderer.setHorizontalAlignment(PreferenceTableModel.alignment[i]);
 
-			TableColumn Column = new TableColumn(i, PreferenceTableModel.columnWidth[i], renderer,
-			                                     null);
+			var Column = new TableColumn(i, PreferenceTableModel.columnWidth[i], renderer, null);
 			Column.setIdentifier(PreferenceTableModel.columnHeader[i]);
 			
 			cm.addColumn(Column);
@@ -195,13 +198,12 @@ public class PreferencesDialog extends JDialog implements ItemListener, ActionLi
 		});    
 	}
 	
-	private void updateTable(){
-		if (this.cmbPropCategories.getSelectedItem() == null)
+	private void updateTable() {
+		if (cmbPropCategories.getSelectedItem() == null)
 			return;
 				
-		String selectedPropertyName = this.cmbPropCategories.getSelectedItem().toString();
-
-		Properties prop = this.propMap.get(selectedPropertyName);
+		var selectedPropertyName = cmbPropCategories.getSelectedItem().toString();
+		var prop = propMap.get(selectedPropertyName);
 		
 		PreferenceTableModel m = new PreferenceTableModel(prop);
 		prefsTable.setModel(m);
@@ -210,45 +212,50 @@ public class PreferencesDialog extends JDialog implements ItemListener, ActionLi
 	// Handle action event from the buttons
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		Object obj = e.getSource();
-		String selectedPropertyName = this.cmbPropCategories.getSelectedItem().toString();
+		var obj = e.getSource();
+		var selectedPropertyName = cmbPropCategories.getSelectedItem().toString();
 
 		if (obj instanceof JButton){
-			JButton btn = (JButton) obj;
+			var btn = (JButton) obj;
 			
-			if (btn == this.deletePropBtn){			
-				int[] selectedIndices = this.prefsTable.getSelectedRows();
-				for (int i = selectedIndices.length-1; i >= 0; i--) {					
-					String name = new String((String) (this.prefsTable.getModel().getValueAt(selectedIndices[i], 0)));
-					PreferenceTableModel m = (PreferenceTableModel)this.prefsTable.getModel();
+			if (btn == this.deletePropBtn) {
+				int[] selectedIndices = prefsTable.getSelectedRows();
+
+				for (int i = selectedIndices.length - 1; i >= 0; i--) {
+					var name = new String((String) (prefsTable.getModel().getValueAt(selectedIndices[i], 0)));
+					var m = (PreferenceTableModel) prefsTable.getModel();
 					m.deleteProperty(name);
 					itemChangedMap.put(selectedPropertyName, true);
 				}
-			} else if (btn == this.modifyPropBtn){				
-				int[] selectedIndices = this.prefsTable.getSelectedRows();
-				for (int i = selectedIndices.length-1; i >= 0; i--) {					
-					String name = new String((String) (this.prefsTable.getModel().getValueAt(selectedIndices[i], 0)));
-					String value = new String((String) (this.prefsTable.getModel().getValueAt(selectedIndices[i], 1)));
-					
-					PreferenceTableModel m = (PreferenceTableModel)this.prefsTable.getModel();
-					PreferenceValueDialog pd = new PreferenceValueDialog(this, name,  value, m, "Modify Property Value");
+			} else if (btn == this.modifyPropBtn) {
+				var selectedIndices = prefsTable.getSelectedRows();
+
+				for (int i = selectedIndices.length - 1; i >= 0; i--) {
+					String name = new String((String) (prefsTable.getModel().getValueAt(selectedIndices[i], 0)));
+					String value = new String((String) (prefsTable.getModel().getValueAt(selectedIndices[i], 1)));
+
+					var m = (PreferenceTableModel) prefsTable.getModel();
+					var pd = new PreferenceValueDialog(this, name, value, m, "Modify Property Value");
+
 					if (pd.itemChanged)
 						itemChangedMap.put(selectedPropertyName, true);
 				}
-			} else if (btn == this.addPropBtn){
-				String key = JOptionPane.showInputDialog(addPropBtn, "Enter property name:",
-                       "Add Property", JOptionPane.QUESTION_MESSAGE);
+			} else if (btn == addPropBtn) {
+				var key = JOptionPane.showInputDialog(addPropBtn, "Enter property name:", "Add Property",
+						JOptionPane.QUESTION_MESSAGE);
 
 				if (key != null) {
-					String value = JOptionPane.showInputDialog(addPropBtn,
-	                              "Enter value for property " + key + ":",
-	                              "Add Property Value",
-	                              JOptionPane.QUESTION_MESSAGE);
+					var value = JOptionPane.showInputDialog(
+							addPropBtn,
+							"Enter value for property " + key + ":",
+							"Add Property Value",
+							JOptionPane.QUESTION_MESSAGE
+					);
 	
 					if (value != null) {
 						String[] vals = { key, value };
-						PreferenceTableModel m = (PreferenceTableModel)this.prefsTable.getModel();
-						
+						var m = (PreferenceTableModel) prefsTable.getModel();
+
 						m.addProperty(vals);
 						itemChangedMap.put(selectedPropertyName, true);
 					}
@@ -258,13 +265,13 @@ public class PreferencesDialog extends JDialog implements ItemListener, ActionLi
 	}
 	
 	@Override
-	public void valueChanged(ListSelectionEvent e){
-		if (this.prefsTable.getSelectedRowCount() == 0){
-			this.modifyPropBtn.setEnabled(false);
-			this.deletePropBtn.setEnabled(false);
+	public void valueChanged(ListSelectionEvent e) {
+		if (prefsTable.getSelectedRowCount() == 0) {
+			modifyPropBtn.setEnabled(false);
+			deletePropBtn.setEnabled(false);
 		} else {
-			this.modifyPropBtn.setEnabled(true);
-			this.deletePropBtn.setEnabled(true);
+			modifyPropBtn.setEnabled(true);
+			deletePropBtn.setEnabled(true);
 		}
 	}
 
@@ -277,7 +284,7 @@ public class PreferencesDialog extends JDialog implements ItemListener, ActionLi
 		prefsTable.getSelectionModel().addListSelectionListener(this);
 	}
     
-	private void initGUI() throws Exception {
+	private void init() throws Exception {
 		var iconFont = serviceRegistrar.getService(IconManager.class).getIconFont(16.0f);
 		
 		addPropBtn.setIcon(new TextIcon(IconManager.ICON_PLUS, iconFont, 16, 16));
@@ -286,15 +293,16 @@ public class PreferencesDialog extends JDialog implements ItemListener, ActionLi
 		closeButton = new JButton(new AbstractAction("Close") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
-				
-				for (String key: itemChangedMap.keySet()){
-					if (itemChangedMap.get(key)){
-						PropertyUpdatedEvent event = new PropertyUpdatedEvent(cyPropMap.get(key));
+				var eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+
+				for (var key : itemChangedMap.keySet()) {
+					if (itemChangedMap.get(key)) {
+						var event = new PropertyUpdatedEvent(cyPropMap.get(key));
 						eventHelper.fireEvent(event);
 						itemChangedMap.put(key, false);
 					}
 				}
+
 				dispose();
 			}
 		});
@@ -302,11 +310,11 @@ public class PreferencesDialog extends JDialog implements ItemListener, ActionLi
 		propsTablePane.getViewport().add(prefsTable, null);
 		prefsTable.setPreferredScrollableViewportSize(new Dimension(700, 500));
 
-		final JPanel propsTablePanel = new JPanel();
+		var propsTablePanel = new JPanel();
 		propsTablePanel.setBorder(LookAndFeelUtil.createTitledBorder("Properties"));
 		
 		{
-			final GroupLayout layout = new GroupLayout(propsTablePanel);
+			var layout = new GroupLayout(propsTablePanel);
 			propsTablePanel.setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
 			layout.setAutoCreateGaps(true);
@@ -331,14 +339,14 @@ public class PreferencesDialog extends JDialog implements ItemListener, ActionLi
 			);
 		}
 		
-		final JPanel contentPane = new JPanel();
+		var contentPane = new JPanel();
 		
 		{
-			final GroupLayout layout = new GroupLayout(contentPane);
+			var layout = new GroupLayout(contentPane);
 			contentPane.setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
 			layout.setAutoCreateGaps(true);
-			final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(null, closeButton, "Linkout");     //#3534      
+			var buttonPanel = LookAndFeelUtil.createOkCancelPanel(null, closeButton, "Linkout"); // #3534      
 
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.TRAILING, true)
 					.addComponent(propsTablePanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
