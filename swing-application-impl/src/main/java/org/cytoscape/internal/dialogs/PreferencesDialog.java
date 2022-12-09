@@ -3,6 +3,8 @@ package org.cytoscape.internal.dialogs;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -28,6 +30,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -39,7 +42,9 @@ import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.PropertyUpdatedEvent;
 import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.util.swing.TextIcon;
 
 /*
  * #%L
@@ -109,10 +114,10 @@ public class PreferencesDialog extends JDialog implements ItemListener, ActionLi
 		}
 
 		setTitle("Cytoscape Preferences Editor");
+		setMinimumSize(new Dimension(520, 440));
 		pack();
 		// set location relative to owner/parent
 		setLocationRelativeTo(owner);
-		setResizable(false);
 	}
 
 	@Override
@@ -167,6 +172,27 @@ public class PreferencesDialog extends JDialog implements ItemListener, ActionLi
 				}
 			}
 		});
+		
+		// Alternate row background colors
+		var bg1 = UIManager.getColor("Table.background");
+		// The property "Table.alternateRowColor" may have started with a 100% transparency,
+		// because we want to preserve the correct LAF color, but don't want then to affect all JTables.
+		// We can now set the "correct" transparency of the LAF color and set it again.
+		var altBg = UIManager.getColor("Table.alternateRowColor");
+		var bg2 = altBg.getAlpha() != 0 ? altBg : new Color(altBg.getRed(), altBg.getGreen(), altBg.getBlue(), 255);
+		
+		prefsTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+			@Override
+			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+					boolean hasFocus, int row, int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				
+				if (!isSelected)
+					setBackground(row % 2 == 0 ? bg1 : bg2);
+				
+				return this;
+			}
+		});    
 	}
 	
 	private void updateTable(){
@@ -252,6 +278,11 @@ public class PreferencesDialog extends JDialog implements ItemListener, ActionLi
 	}
     
 	private void initGUI() throws Exception {
+		var iconFont = serviceRegistrar.getService(IconManager.class).getIconFont(16.0f);
+		
+		addPropBtn.setIcon(new TextIcon(IconManager.ICON_PLUS, iconFont, 16, 16));
+		deletePropBtn.setIcon(new TextIcon(IconManager.ICON_TRASH_O, iconFont, 16, 16));
+		
 		closeButton = new JButton(new AbstractAction("Close") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -269,7 +300,7 @@ public class PreferencesDialog extends JDialog implements ItemListener, ActionLi
 		});
 		
 		propsTablePane.getViewport().add(prefsTable, null);
-		prefsTable.setPreferredScrollableViewportSize(new Dimension(400, 200));
+		prefsTable.setPreferredScrollableViewportSize(new Dimension(700, 500));
 
 		final JPanel propsTablePanel = new JPanel();
 		propsTablePanel.setBorder(LookAndFeelUtil.createTitledBorder("Properties"));
@@ -280,9 +311,9 @@ public class PreferencesDialog extends JDialog implements ItemListener, ActionLi
 			layout.setAutoCreateContainerGaps(true);
 			layout.setAutoCreateGaps(true);
 			
-			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
-					.addComponent(cmbPropCategories, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(propsTablePane, DEFAULT_SIZE, DEFAULT_SIZE, 460)
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+					.addComponent(cmbPropCategories, PREFERRED_SIZE, DEFAULT_SIZE, 400)
+					.addComponent(propsTablePane, 400, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addGroup(Alignment.CENTER, layout.createSequentialGroup()
 							.addComponent(addPropBtn)
 							.addComponent(modifyPropBtn)
@@ -291,7 +322,7 @@ public class PreferencesDialog extends JDialog implements ItemListener, ActionLi
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addComponent(cmbPropCategories, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(propsTablePane, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(propsTablePane, 200, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 							.addComponent(addPropBtn)
 							.addComponent(modifyPropBtn)
@@ -318,6 +349,8 @@ public class PreferencesDialog extends JDialog implements ItemListener, ActionLi
 					.addComponent(buttonPanel)
 			);
 		}
+		
+		LookAndFeelUtil.equalizeSize(addPropBtn, modifyPropBtn, deletePropBtn);
 		
 		setContentPane(contentPane);
 		
