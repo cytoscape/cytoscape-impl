@@ -34,13 +34,14 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.work.undo.UndoSupport;
 /**
  *
  */
 public class VAlignTop extends AbstractControlAction {
 
-	public VAlignTop(Icon i,CyApplicationManager appMgr) {
-		super("",i,appMgr);
+	public VAlignTop(Icon i,CyApplicationManager appMgr, UndoSupport undoSupport) {
+		super("Align",i,appMgr,undoSupport);
 	}
 
 	protected void control(List<View<CyNode>> nodes) {

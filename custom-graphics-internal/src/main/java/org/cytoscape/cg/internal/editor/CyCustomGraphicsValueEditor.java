@@ -34,7 +34,9 @@ import javax.swing.event.ChangeListener;
 
 import org.cytoscape.cg.internal.charts.AbstractChart;
 import org.cytoscape.cg.internal.charts.AbstractChartEditor;
+import org.cytoscape.cg.model.AbstractURLImageCustomGraphics;
 import org.cytoscape.cg.model.CustomGraphics2Manager;
+import org.cytoscape.cg.model.CustomGraphicsManager;
 import org.cytoscape.cg.model.NullCustomGraphics;
 import org.cytoscape.cg.util.ImageCustomGraphicsSelector;
 import org.cytoscape.model.CyColumn;
@@ -95,7 +97,20 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 		dialog.setLocationRelativeTo(parent);
 		dialog.setVisible(true);
 		
-		return editCancelled ? oldCustomGraphics : newCustomGraphics;
+		var ret = editCancelled ? oldCustomGraphics : newCustomGraphics;
+		
+		if (ret instanceof AbstractURLImageCustomGraphics) {
+			// If the current image is no longer registered in the CustomGraphicsManager
+			// (which means it was probably deleted by the user), just return a NullCustomGraphics instead
+			// -- this prevents a stale image from being used and the consequent "value is out-of-range" error
+			var manager = serviceRegistrar.getService(CustomGraphicsManager.class);
+			var allCustomGraphics = manager.getAllCustomGraphics();
+			
+			if (!allCustomGraphics.contains(ret))
+				ret = NullCustomGraphics.getNullObject();
+		}
+		
+		return ret;
 	}
 
 	@Override
@@ -194,6 +209,9 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 			newCustomGraphics = ((ImageCustomGraphicsSelector) c).getSelectedImage();
 		else if (c instanceof CustomGraphics2Panel)
 			newCustomGraphics = ((CustomGraphics2Panel) c).getCustomGraphics2();
+		
+		if (newCustomGraphics == null)
+			newCustomGraphics = NullCustomGraphics.getNullObject();
 
 		dialog.dispose();
 	}

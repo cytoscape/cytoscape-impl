@@ -1,40 +1,42 @@
 package org.cytoscape.app.internal.task;
 
+import java.awt.Font;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.io.*;
-import java.nio.charset.Charset;
 import java.util.Properties;
 
-import org.cytoscape.application.CyApplicationConfiguration;
+import javax.swing.Icon;
+
+import org.cytoscape.app.internal.event.AppsChangedListener;
+import org.cytoscape.app.internal.manager.AppManager;
+import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.application.swing.CytoPanelState;
-import org.cytoscape.app.internal.manager.App;
-import org.cytoscape.app.internal.manager.AppManager;
-import org.cytoscape.app.internal.net.WebApp;
-import org.cytoscape.app.internal.net.WebQuerier;
-import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
-import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
 import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.work.AbstractTask;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
-import org.cytoscape.property.CyProperty;
 
 
 public class AppManagerTask extends AbstractAppTask implements ObservableTask {
+	
 	final CyServiceRegistrar serviceRegistrar;
 	private final CytoPanel cytoPanelWest;
+	private AppsChangedListener appListener;
 	//private static final String APP_MANAGER_DIR = "appManager/appmanager_v3.html";
 	private DownloadSitesManager downloadSitesManager;
 
@@ -44,11 +46,16 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 	@Tunable (description="Use CyBrowser if installed", context="nogui")
 	public boolean useCybrowser = true;
 
-	public AppManagerTask(final AppManager appManager, CyServiceRegistrar serviceRegistrar, CySwingApplication swingApplication, DownloadSitesManager downloadSitesManager) {
+	public Boolean focus = true;
+	
+	private static final String ICON_APP_STORE = ";";
+
+	public AppManagerTask(final AppManager appManager, CyServiceRegistrar serviceRegistrar, CySwingApplication swingApplication, DownloadSitesManager downloadSitesManager, Boolean focus) {
 		super(appManager);
 		cytoPanelWest = swingApplication.getCytoPanel(CytoPanelName.WEST);
 		this.serviceRegistrar = serviceRegistrar;
 		this.downloadSitesManager = downloadSitesManager;
+		this.focus = focus;
 	}
 
 	@Override
@@ -65,7 +72,7 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 
 		StringBuilder contentBuilder = new StringBuilder();
 		try {
-		    BufferedReader in = new BufferedReader(new InputStreamReader(AppManagerTask.class.getClassLoader().getResourceAsStream("/appmanager.html"), Charset.forName("UTF-8").newDecoder()));
+		    BufferedReader in = new BufferedReader(new InputStreamReader(AppManagerTask.class.getClassLoader().getResourceAsStream("/AppManager/AppManager.html"), Charset.forName("UTF-8").newDecoder()));
 		    String str;
 		    while ((str = in.readLine()) != null) {
 		        contentBuilder.append(str);
@@ -78,13 +85,13 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		contentBuilder.append("    if(window.navigator.userAgent.includes('CyBrowser')){\n");
 		contentBuilder.append("        setTimeout(function(){\n");
 		contentBuilder.append("            getInstalledAppsCyB();\n");
-		contentBuilder.append("        }, 000);\n");
-		contentBuilder.append("        setTimeout(function(){\n");
-		contentBuilder.append("            getDisabledAppsCyB();\n");
 		contentBuilder.append("        }, 100);\n");
 		contentBuilder.append("        setTimeout(function(){\n");
-		contentBuilder.append("            getUpdatesAppsCyB();\n");
+		contentBuilder.append("            getDisabledAppsCyB();\n");
 		contentBuilder.append("        }, 200);\n");
+		contentBuilder.append("        setTimeout(function(){\n");
+		contentBuilder.append("            getUpdatesAppsCyB();\n");
+		contentBuilder.append("        }, 300);\n");
 		contentBuilder.append("    } else {\n");
 		contentBuilder.append("        alert(\"Sorry, this page only runs in CyBrowser.\");\n");
 		contentBuilder.append("    }\n");
@@ -94,7 +101,7 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		contentBuilder.append("                  \"ID Mapper\", \"JSON Support\", \"Network Merge\", \"NetworkAnalyzer\",\n");
 		contentBuilder.append("                  \"OpenCL Prefuse Layout\", \"PSI-MI Reader\", \"PSICQUIC Web Service Client\",\n");
 		contentBuilder.append("                  \"SBML Reader\", \"aMatReader\", \"copycatLayout\", \"cyBrowser\",\n");
-		contentBuilder.append("                  \"cyChart\", \"cyREST\"]\n");
+		contentBuilder.append("                  \"cyChart\", \"cyREST\", \"enhancedGraphics\", \"Largest Subnetwork\", \"EnrichmentTable\"]\n");
 		contentBuilder.append("function getInstalledAppsCyB() {\n");
 		contentBuilder.append("    cybrowser.executeCyCommandWithResults('apps list installed', 'renderInstalledApps' );\n");
 		contentBuilder.append("}\n");
@@ -192,8 +199,26 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		contentBuilder.append("function toggleStatus(checkbox, app) {\n");
 		contentBuilder.append("    if(checkbox.checked == true){\n");
 		contentBuilder.append("        enableAppCyB(app);\n");
+		contentBuilder.append("        var inputs = document.getElementById(app);\n");
+		contentBuilder.append("        if(inputs.type == \"checkbox\") {\n");
+		contentBuilder.append("        inputs.disabled = true;\n");
+		contentBuilder.append("        }\n");
+		contentBuilder.append("        setTimeout(function(){\n");
+		contentBuilder.append("        if(inputs.type == \"checkbox\") {\n");
+		contentBuilder.append("        inputs.disabled = false;\n");
+		contentBuilder.append("        }\n");
+		contentBuilder.append("        },1000);\n");
 		contentBuilder.append("    }else{\n");
 		contentBuilder.append("        disableAppCyB(app);\n");
+		contentBuilder.append("        var inputs = document.getElementById(app);\n");
+		contentBuilder.append("        if(inputs.type == \"checkbox\") {\n");
+		contentBuilder.append("        inputs.disabled = true;\n");
+		contentBuilder.append("        }\n");
+		contentBuilder.append("        setTimeout(function(){\n");
+		contentBuilder.append("        if(inputs.type == \"checkbox\") {\n");
+		contentBuilder.append("        inputs.disabled = false;\n");
+		contentBuilder.append("        }\n");
+		contentBuilder.append("        },1000);\n");
 		contentBuilder.append("   }\n");
 		contentBuilder.append("}\n");
 		contentBuilder.append("function uninstallAndRemove(app) {\n");
@@ -262,10 +287,14 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		contentBuilder.append("    cybrowser.executeCyCommand('apps list updates');\n");
 		contentBuilder.append("}\n");
 		contentBuilder.append("function disableAppCyB(app) {\n");
+		contentBuilder.append("       setTimeout(function (){\n");
 		contentBuilder.append("    cybrowser.executeCyCommand('apps disable app=' + \"'\" + app + \"'\");\n");
+		contentBuilder.append("        }, 200);\n");
 		contentBuilder.append("}\n");
 		contentBuilder.append("function enableAppCyB(app) {\n");
+		contentBuilder.append("       setTimeout(function (){\n");
 		contentBuilder.append("    cybrowser.executeCyCommand('apps enable app=' + \"'\" + app + \"'\");\n");
+		contentBuilder.append("        }, 200);\n");
 		contentBuilder.append("}\n");
 		contentBuilder.append("function uninstallAppCyB(app) {\n");
 		contentBuilder.append("    cybrowser.executeCyCommand('apps uninstall app=' + \"'\" + app + \"'\");\n");
@@ -306,7 +335,7 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		contentBuilder.append("    if (app != null){\n");
 		contentBuilder.append("        appUrl += \"apps/\"+app\n");
 		contentBuilder.append("    }\n");
-		contentBuilder.append("    cybrowser.executeCyCommand('cybrowser dialog url=\"'+appUrl+'\" id=\"AppStore\" title=\"App Store\" ');\n");
+		contentBuilder.append("    cybrowser.executeCyCommand('cybrowser native url=\"'+appUrl+'\"');\n");
 		contentBuilder.append("}\n");
 		contentBuilder.append("function searchAppStore(){\n");
 		contentBuilder.append("    var query = document.getElementById(\"search\").value\n");
@@ -314,7 +343,7 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		contentBuilder.append("    if (query != \"\"){\n");
 		contentBuilder.append("        qUrl += \"search?q=\"+query\n");
 		contentBuilder.append("    }\n");
-		contentBuilder.append("    cybrowser.executeCyCommand('cybrowser dialog url=\"'+qUrl+'\" id=\"AppStore\" title=\"App Store\" ');\n");
+		contentBuilder.append("    cybrowser.executeCyCommand('cybrowser native url=\"'+qUrl+'\" ');\n");
 		contentBuilder.append("}\n");
 		contentBuilder.append("function updateAppAndIcon(app) {\n");
 		contentBuilder.append("    var cmd = 'apps update app=\"'+app+'\"';\n");
@@ -344,9 +373,9 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		contentBuilder.append("    var newversion = row.cells[2].children[0].getAttribute('newversion');\n");
 		contentBuilder.append("    if (newversion != null){\n");
 		contentBuilder.append("        newversion = \"(v\"+newversion+\")\";\n");
-		contentBuilder.append("        appinfo = row.cells[3].textContent;\n");
+		contentBuilder.append("        appinfo = row.cells[3].children[0].nextSibling.textContent;\n");
 		contentBuilder.append("        newappinfo = appinfo.replace(/\\(.*\\)/,newversion);\n");
-		contentBuilder.append("        row.cells[3].textContent = newappinfo;\n");
+		contentBuilder.append("        row.cells[3].children[0].nextSibling.textContent = newappinfo;\n");
 		contentBuilder.append("    }\n");
 		contentBuilder.append("}\n");
 		contentBuilder.append("function renderUpdatesApps(res) {\n");
@@ -389,24 +418,24 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		//for (DownloadSite downloadSite : downloadSitesManager.getDownloadSites()) {
 		//	System.out.println(downloadSite.getSiteUrl());
 		//}
+		IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+		Font iconFont = iconManager.getIconFont("cytoscape-3", 16f);
+		Icon icon = new TextIcon(ICON_APP_STORE, iconFont, 16, 16);
+		String iconId = "cy::App::APP_STORE";
+		iconManager.addIcon(iconId, icon);
 
-
-		App cyBrowser = getApp("cybrowser");
-		if (useCybrowser == true && cyBrowser != null && cyBrowser.getStatus() == App.AppStatus.INSTALLED) {
-			CommandExecutorTaskFactory commandTF = serviceRegistrar.getService(CommandExecutorTaskFactory.class);
-			TaskManager<?,?> taskManager = serviceRegistrar.getService(TaskManager.class);
-			Map<String, Object> args = new HashMap<>();
-			//args.put("url",url);
-			args.put("text", content);
-			args.put("id","App Manager");
-			args.put("title","App Manager");
-			args.put("panel","WEST");
-			TaskIterator ti = commandTF.createTaskIterator("cybrowser","show",args, null);
-			taskManager.execute(ti);
-		} else {
-			OpenBrowser openBrowser = serviceRegistrar.getService(OpenBrowser.class);
-			openBrowser.openURL(appStoreUrl);
-		}
+		CommandExecutorTaskFactory commandTF = serviceRegistrar.getService(CommandExecutorTaskFactory.class);
+		TaskManager<?,?> taskManager = serviceRegistrar.getService(TaskManager.class);
+		Map<String, Object> args = new HashMap<>();
+		//args.put("url","file:///Users/yxin/git/cytoscape/cytoscape/cytoscape/impl/app-impl/src/main/resources/AppManager/AppManager.html");
+		args.put("text", content);
+		args.put("id", "App Manager");
+		args.put("title", "App Store");
+		args.put("panel", "WEST");
+		args.put("focus", focus);
+		args.put("iconId", iconId);
+		TaskIterator ti = commandTF.createTaskIterator("cybrowser", "show", args, null);
+		taskManager.execute(ti);
 	}
 
 	@Override

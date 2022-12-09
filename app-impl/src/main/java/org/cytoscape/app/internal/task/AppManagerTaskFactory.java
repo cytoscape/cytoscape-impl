@@ -18,17 +18,19 @@ public class AppManagerTaskFactory extends AbstractTaskFactory {
 	final CyServiceRegistrar serviceRegistrar;
 	final CySwingApplication swingApplication;
 	final DownloadSitesManager downloadSitesManager;
+	final Boolean focus;
 
-	public AppManagerTaskFactory(final AppManager appManager, final CyServiceRegistrar serviceRegistrar, CySwingApplication swingApplication, final DownloadSitesManager downloadSitesManager) {
+	public AppManagerTaskFactory(final AppManager appManager, final CyServiceRegistrar serviceRegistrar, CySwingApplication swingApplication, final DownloadSitesManager downloadSitesManager, Boolean focus) {
 		this.appManager = appManager;
 		this.serviceRegistrar = serviceRegistrar;
 		this.swingApplication = swingApplication;
 		this.downloadSitesManager = downloadSitesManager;
+		this.focus = focus;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new AppManagerTask(appManager, serviceRegistrar, swingApplication, downloadSitesManager));
+		return new TaskIterator(new AppManagerTask(appManager, serviceRegistrar, swingApplication, downloadSitesManager, focus));
 	}
 
 	@Override

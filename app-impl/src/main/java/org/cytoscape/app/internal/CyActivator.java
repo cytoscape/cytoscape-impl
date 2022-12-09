@@ -19,6 +19,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.Map;
+import javax.swing.SwingUtilities;
 
 import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.app.internal.action.UpdateNotificationAction;
@@ -26,6 +27,8 @@ import org.cytoscape.app.internal.action.CitationsAction;
 import org.cytoscape.app.internal.action.YFilesAction;
 import org.cytoscape.app.event.AppsFinishedStartingEvent;
 import org.cytoscape.app.event.AppsFinishedStartingListener;
+import org.cytoscape.app.internal.event.AppsChangedEvent;
+import org.cytoscape.app.internal.event.AppsChangedListener;
 import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.App.AppStatus;
 import org.cytoscape.app.internal.manager.AppManager;
@@ -448,17 +451,18 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			AppManagerTaskFactory factory = new AppManagerTaskFactory(appManager, serviceRegistrar, swingApplication, downloadSitesManager);
+			AppManagerTaskFactory factory = new AppManagerTaskFactory(appManager, serviceRegistrar, swingApplication, downloadSitesManager, true);
 			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, "Apps.App Manager");
-			props.setProperty(TITLE, "Show App Manager");
+			props.setProperty(PREFERRED_MENU, "Apps.App Store[0.0001]");
+			props.setProperty(TITLE, "Show App Store");
 			props.setProperty(MENU_GRAVITY, "0.1");
+			props.setProperty(INSERT_SEPARATOR_AFTER, "true");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
 			ManagerInstallAppsFromFileTaskFactory factory = new ManagerInstallAppsFromFileTaskFactory(appManager, taskManager, serviceRegistrar);
 			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, "Apps.App Manager");
+			props.setProperty(PREFERRED_MENU, "Apps.App Store[0.0001]");
 			props.setProperty(TITLE, "Install Apps From File");
 			props.setProperty(MENU_GRAVITY, "0.2");
 			registerService(bc, factory, TaskFactory.class, props);
@@ -629,8 +633,25 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
-		final LaunchManager launchManager = new LaunchManager(appManager, downloadSitesManager, serviceRegistrar, swingApplication);
+		final LaunchManager launchManager = new LaunchManager(appManager, downloadSitesManager, serviceRegistrar, swingApplication, false);
 		registerService(bc, launchManager, AppsFinishedStartingListener.class);
+
+		AppsChangedListener appListener = new AppsChangedListener() {
+		  @Override
+		  public void appsChanged(AppsChangedEvent event) {
+		    SwingUtilities.invokeLater(new Runnable() {
+		      @Override
+		      public void run() {
+						AppManagerTaskFactory factory = new AppManagerTaskFactory(appManager, serviceRegistrar, swingApplication, downloadSitesManager, true);
+				    TaskManager<?,?> taskManager = serviceRegistrar.getService(TaskManager.class);
+				    TaskIterator ti = factory.createTaskIterator();
+				    taskManager.execute(ti);
+		      }
+		    });
+		  }
+		};
+		appManager.addAppListener(appListener);
+
 	}
 
 	private class YFilesChecker implements BundleListener, AppsFinishedStartingListener {

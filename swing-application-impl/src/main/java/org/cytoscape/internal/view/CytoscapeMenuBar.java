@@ -260,8 +260,13 @@ public class CytoscapeMenuBar extends JMenuBar {
 
 		var gravityTracker = menuTracker.getGravityTracker(menuName);
 		gravityTracker.removeComponent(menuItem);
-		((JMenu) gravityTracker.getMenu()).removeMenuListener(action);
-
+		
+		var parent = (JMenu) gravityTracker.getMenu();
+		parent.removeMenuListener(action);
+		
+		if (isMenuEmpty(parent))
+			menuTracker.removeGravityTracker(menuName);
+			
 		return true;
 	}
 
@@ -367,7 +372,6 @@ public class CytoscapeMenuBar extends JMenuBar {
 		for (var line : lines)
 			addCustomizerRow(line.trim());
 	}
-	
 
 	private void addCustomizerRow(String trimmed) {
 		var tokens = trimmed.split(TABSTR);
@@ -383,5 +387,22 @@ public class CytoscapeMenuBar extends JMenuBar {
 //		String classname = tokens[7];
 		
 		actionOverrideMap.put(name, trimmed);
+	}
+	
+	/**
+	 * Ignores separators when counting the components inside the passed menu.
+	 */
+	private static boolean isMenuEmpty(JMenu menu) {
+		if (menu.getMenuComponentCount() == 0)
+			return true;
+		
+		for (int i = 0; i < menu.getMenuComponentCount(); i++) {
+	        var comp = menu.getMenuComponent(i);
+	        
+	        if (comp instanceof JMenuItem)
+	            return false;
+	    }
+		
+		return true;
 	}
 }

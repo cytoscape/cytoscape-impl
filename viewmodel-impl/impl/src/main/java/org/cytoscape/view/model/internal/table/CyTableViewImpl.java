@@ -134,16 +134,20 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView,
 
 		var view = new CyColumnViewImpl(this, model);
 		
-		synchronized (columnLock) {
+		columnLock.writeLock().lock();
+		try {
 			dataSuidToCol = dataSuidToCol.put(model.getSUID(), view);
 			viewSuidToCol = viewSuidToCol.put(view.getSUID(), view);
+		} finally {
+			columnLock.writeLock().unlock();
 		}
 
 		return view;
 	}
 	
 	public View<CyColumn> removeColumn(Long dataSuid) {
-		synchronized (columnLock) {
+		columnLock.writeLock().lock();
+		try {
 			View<CyColumn> colView = dataSuidToCol.getOrElse(dataSuid, null);
 			if(colView != null) {
 				dataSuidToCol = dataSuidToCol.remove(dataSuid);
@@ -151,6 +155,8 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView,
 				columnVPs.remove(colView.getSUID());
 			}
 			return colView;
+		} finally {
+			columnLock.writeLock().unlock();
 		}
 	}
 	
@@ -234,16 +240,20 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView,
 			return null;
 		
 		CyRowViewImpl rowView = new CyRowViewImpl(this, model);
-		synchronized (rowLock) {
-				dataSuidToRow = dataSuidToRow.put(model.getSUID(), rowView);
-				viewSuidToRow = viewSuidToRow.put(rowView.getSUID(), rowView);
-				pkToRow = pkToRow.put(pkValue, rowView);
+		rowLock.writeLock().lock();
+		try {
+			dataSuidToRow = dataSuidToRow.put(model.getSUID(), rowView);
+			viewSuidToRow = viewSuidToRow.put(rowView.getSUID(), rowView);
+			pkToRow = pkToRow.put(pkValue, rowView);
+		} finally {
+			rowLock.writeLock().unlock();
 		}
 		return rowView;
 	}
 	
 	public View<CyRow> removeRow(Object pkValue) {
-		synchronized (rowLock) {
+		rowLock.writeLock().lock();
+		try {
 			View<CyRow> rowView = pkToRow.getOrElse(pkValue, null);
 			if(rowView != null) {
 				dataSuidToRow = dataSuidToRow.remove(rowView.getModel().getSUID());
@@ -252,6 +262,8 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView,
 				columnVPs.remove(rowView.getSUID());
 			}
 			return rowView;
+		} finally {
+			rowLock.writeLock().unlock();
 		}
 	}
 	
@@ -272,16 +284,25 @@ public class CyTableViewImpl extends CyViewBase<CyTable> implements CyTableView,
 		
 		var type = vp.getTargetDataType();
 		if(type.equals(CyColumn.class)) {
-			synchronized(columnLock) {
+			columnLock.writeLock().lock();
+			try {
 				columnVPs.setViewDefault(vp, defaultValue);
+			} finally {
+				columnLock.writeLock().unlock();
 			}
 		} else if(vp.getTargetDataType().equals(CyRow.class)) {
-			synchronized(rowLock) {
+			rowLock.writeLock().lock();
+			try {
 				rowVPs.setViewDefault(vp, defaultValue);
+			} finally {
+				rowLock.writeLock().unlock();
 			}
 		} else if(vp.getTargetDataType().equals(CyTable.class)) {
-			synchronized(tableLock) {
+			tableLock.writeLock().lock();
+			try {
 				tableVPs.setViewDefault(vp, defaultValue);
+			} finally {
+				tableLock.writeLock().unlock();
 			}
 		}
 	}

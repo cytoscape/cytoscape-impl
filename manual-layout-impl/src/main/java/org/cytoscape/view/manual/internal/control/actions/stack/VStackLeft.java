@@ -35,6 +35,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.work.undo.UndoSupport;
 
 
 /**
@@ -42,8 +43,8 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
  */
 public class VStackLeft extends AbstractControlAction {
 
-	public VStackLeft(Icon i,CyApplicationManager mgr) {
-		super("",i,mgr);
+	public VStackLeft(Icon i,CyApplicationManager mgr,UndoSupport undoSupport) {
+		super("Stack",i,mgr,undoSupport);
 	}
 
 	protected void control(List<View<CyNode>> nodes) {

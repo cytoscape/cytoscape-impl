@@ -3,7 +3,7 @@ package org.cytoscape.internal.model;
 import static org.cytoscape.internal.util.IconUtil.SELECTION_MODE_ANNOTATIONS;
 import static org.cytoscape.internal.util.IconUtil.SELECTION_MODE_EDGES;
 import static org.cytoscape.internal.util.IconUtil.SELECTION_MODE_NODES;
-import static org.cytoscape.internal.util.IconUtil.SELECTION_MODE_NODE_LABELES;
+import static org.cytoscape.internal.util.IconUtil.SELECTION_MODE_NODE_LABELS;
 
 /*
  * #%L
@@ -14,23 +14,23 @@ import static org.cytoscape.internal.util.IconUtil.SELECTION_MODE_NODE_LABELES;
  * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 2.1 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
+ *
+ * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
 
 public enum SelectionMode {
-	
+
 	NODE_SELECTION(
 			"Toggle Node Selection",
 			SELECTION_MODE_NODES,
@@ -53,13 +53,13 @@ public enum SelectionMode {
 			"NETWORK_ANNOTATION_SELECTION"
 	),
 	NODE_LABEL_SELECTION(
-			"Toggle Node Label Selection",
-			SELECTION_MODE_NODE_LABELES,   // Character which map to the icon in the font.
-			"Turn on this option if you want node labels to be selected and manually repositioned.",
+			"Toggle Label Selection",
+			SELECTION_MODE_NODE_LABELS,   // Character which map to the icon in the font.
+			"Turn on this option if you want node labels and edge lables to be selected and manually repositioned.",
 			"/images/tooltips/selection-mode-node-label.gif",
 			"NETWORK_NODE_LABEL_SELECTION"
 	);
-	
+
 	private final String text;
 	private final String iconText;
 	private final String toolTipText;
@@ -79,23 +79,23 @@ public enum SelectionMode {
 		this.toolTipImage = toolTipImage;
 		this.propertyId = propertyId;
 	}
-	
+
 	public String getText() {
 		return text;
 	}
-	
+
 	public String getIconText() {
 		return iconText;
 	}
-	
+
 	public String getPropertyId() {
 		return propertyId;
 	}
-	
+
 	public String getToolTipText() {
 		return toolTipText;
 	}
-	
+
 	public String getToolTipImage() {
 		return toolTipImage;
 	}

@@ -21,17 +21,24 @@ public class LaunchManager implements AppsFinishedStartingListener {
 	private DownloadSitesManager downloadSitesManager;
   private CyServiceRegistrar registrar;
   private CySwingApplication swingApplication;
+	private Boolean focus;
 
-	public LaunchManager(AppManager appManager, DownloadSitesManager downloadSitesManager, CyServiceRegistrar registrar, CySwingApplication swingApplication) {
+	public LaunchManager(AppManager appManager, DownloadSitesManager downloadSitesManager, CyServiceRegistrar registrar, CySwingApplication swingApplication, Boolean focus) {
 		this.appManager = appManager;
 		this.downloadSitesManager = downloadSitesManager;
     this.registrar = registrar;
     this.swingApplication = swingApplication;
+		this.focus = focus;
 	}
 
 	@Override
 	public void handleEvent(AppsFinishedStartingEvent evt){
-    AppManagerTaskFactory factory = new AppManagerTaskFactory(appManager, registrar, swingApplication, downloadSitesManager);
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+    AppManagerTaskFactory factory = new AppManagerTaskFactory(appManager, registrar, swingApplication, downloadSitesManager, focus);
     TaskManager<?,?> taskManager = registrar.getService(TaskManager.class);
     TaskIterator ti = factory.createTaskIterator();
     taskManager.execute(ti);

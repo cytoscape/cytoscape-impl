@@ -63,12 +63,14 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 	
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
-	public NetworkTableReader(final String networkName,
-							  final InputStream is,
-	                          final NetworkTableMappingParameters mapping,
-	                          final Map<Object, CyNode> nMap,
-	                          final CyRootNetwork rootNetwork,
-	                          final CyServiceRegistrar serviceRegistrar) {
+	public NetworkTableReader(
+			String networkName,
+			InputStream is,
+			NetworkTableMappingParameters mapping,
+			Map<Object, CyNode> nMap,
+			CyRootNetwork rootNetwork,
+			CyServiceRegistrar serviceRegistrar
+	) {
 		super(networkName, serviceRegistrar);
 		
 		this.is = is;
@@ -87,7 +89,7 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 	}
 
 	@Override
-	public void readTable(final CyTable table) throws IOException {
+	public void readTable(CyTable table) throws IOException {
 		String line;
 
 		network.getRow(network).set("name", this.getNetworkName());
@@ -147,7 +149,7 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 
 	@Override
 	public String getReport() {
-		final StringBuffer sb = new StringBuffer();
+		var sb = new StringBuffer();
 		sb.append(network.getNodeCount() + " nodes and " + network.getEdgeCount() + " edges are loaded.\n");
 		sb.append("New network name is " + super.getNetworkName() + "\n\n");
 

@@ -15,12 +15,14 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.view.layout.LayoutEdit;
 import org.cytoscape.view.manual.internal.common.CheckBoxTracker;
 import org.cytoscape.view.manual.internal.common.GraphConverter2;
 import org.cytoscape.view.manual.internal.common.PolymorphicSlider;
 import org.cytoscape.view.manual.internal.common.SliderStateTracker;
 import org.cytoscape.view.manual.internal.layout.algorithm.MutablePolyEdgeGraphLayout;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.undo.UndoSupport;
 
 /*
  * #%L
@@ -60,9 +62,12 @@ public class RotatePanel extends JPanel implements ChangeListener, PolymorphicSl
 	private boolean startAdjusting = true;
 
 	private final CyApplicationManager appMgr;
+  private final UndoSupport undoSupport;
+  private LayoutEdit layoutEdit = null;
 
-	public RotatePanel(CyApplicationManager appMgr) {
+	public RotatePanel(CyApplicationManager appMgr, UndoSupport undoSupport) {
 		this.appMgr = appMgr;
+		this.undoSupport = undoSupport;
 		
 		prevValue = getSlider().getValue();
 		
@@ -124,8 +129,10 @@ public class RotatePanel extends JPanel implements ChangeListener, PolymorphicSl
 			return;
 
 		// only create the edit at the beginning of the adjustment
-		if (startAdjusting)
+		if (startAdjusting) {
 			startAdjusting = false;
+      layoutEdit = new LayoutEdit("Rotate", currentView);
+    }
 
 		MutablePolyEdgeGraphLayout nativeGraph = GraphConverter2.getGraphReference(128.0d, true,
 				checkBox.isSelected(), currentView);
@@ -138,8 +145,11 @@ public class RotatePanel extends JPanel implements ChangeListener, PolymorphicSl
 		prevValue = getSlider().getValue();
 
 		// only post edit when adjustment is complete
-		if (!getSlider().getValueIsAdjusting())
+		if (!getSlider().getValueIsAdjusting()) {
+      if (undoSupport != null && layoutEdit != null)
+        undoSupport.postEdit(layoutEdit);
 			startAdjusting = true;
+    }
 	}
 	
 	@Override

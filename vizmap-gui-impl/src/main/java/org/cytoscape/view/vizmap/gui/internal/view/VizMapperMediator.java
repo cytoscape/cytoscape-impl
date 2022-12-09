@@ -261,7 +261,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 						var tableVMM = servicesUtil.get(TableVisualMappingManager.class);
 						Set<VisualStyle> netStyles = tableVMM.getAssociatedNetworkVisualStyles(style);
 						if(netStyles.contains(currNetStyle)) {
-							updateVisualPropertySheets(style, TABLE_SHEET_TYPES, false, true);
+							updateVisualPropertySheets(style, TABLE_SHEET_TYPES, false, false);
 						}
 						break;
 					}

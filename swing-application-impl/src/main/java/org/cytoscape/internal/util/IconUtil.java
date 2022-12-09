@@ -48,7 +48,7 @@ public abstract class IconUtil {
 	public static final String SELECTION_MODE_ANNOTATIONS = "7";
 	public static final String SELECTION_MODE_EDGES = "8";
 	public static final String SELECTION_MODE_NODES = "9";
-	public static final String SELECTION_MODE_NODE_LABELES = ":";
+	public static final String SELECTION_MODE_NODE_LABELS = ":";
 	
 	public static final String TERMINAL = "%";
 	

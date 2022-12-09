@@ -97,11 +97,18 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	
 	@Override
 	public CyNetworkViewSnapshot createSnapshot() {
-		// MKTODO If we used ReentrantLock objects and the try() method we could have this
-		// bail out early so as not to block the renderer.
-		synchronized (nodeLock) {
-			synchronized (edgeLock) {
-				synchronized (netLock) {
+		if(!netLock.readLock().tryLock()) {
+			System.out.println("netLock bail!");
+			return null;
+		} try {
+			if(!nodeLock.readLock().tryLock()) {
+				System.out.println("nodeLock bail!");
+				return null;
+			} try {
+				if(!edgeLock.readLock().tryLock()) {
+					System.out.println("edgeLock bail!");
+					return null;
+				} try {
 					return new CyNetworkViewSnapshotImpl(
 						this, 
 						rendererId, 
@@ -115,8 +122,14 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 						netVPs.createSnapshot(),
 						visualLexicon
 					);
+				} finally {
+					edgeLock.readLock().unlock();
 				}
+			} finally {
+				nodeLock.readLock().unlock();
 			}
+		} finally {
+			netLock.readLock().unlock();
 		}
 	}
 	
@@ -167,7 +180,8 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	public CyNodeViewImpl addNode(CyNode model) {
 		CyNodeViewImpl view;
 		
-		synchronized (nodeLock) {
+		nodeLock.writeLock().lock();
+		try {
 			if(dataSuidToNode.containsKey(model.getSUID()))
 				return null;
 			
@@ -176,6 +190,8 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 			dataSuidToNode = dataSuidToNode.put(model.getSUID(), view);
 			viewSuidToNode = viewSuidToNode.put(view.getSUID(), view);
 			setDirty();
+		} finally {
+			nodeLock.writeLock().unlock();
 		}
 		
 		eventHelper.addEventPayload(this, view, AddedNodeViewsEvent.class);
@@ -201,7 +217,8 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 			
 		CyEdgeViewImpl view;
 		
-		synchronized (edgeLock) {
+		edgeLock.writeLock().lock(); 
+		try {
 			if(dataSuidToEdge.containsKey(edge.getSUID()))
 				return null;
 			
@@ -211,6 +228,8 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 			viewSuidToEdge = viewSuidToEdge.put(view.getSUID(), view);
 			updateAdjacentEdgeMap(view, true);
 			setDirty();
+		} finally {
+			edgeLock.writeLock().unlock();
 		}
 		
 		eventHelper.addEventPayload(this, view, AddedEdgeViewsEvent.class);
@@ -219,11 +238,13 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	
 	
 	public View<CyNode> removeNode(CyNode model) {
-		synchronized (nodeLock) {
-			synchronized (edgeLock) {
+		nodeLock.writeLock().lock();
+		try {
+			edgeLock.writeLock().lock();
+			try {
 				View<CyNode> nodeView = dataSuidToNode.getOrElse(model.getSUID(), null);
 				if(nodeView != null) {
-					// this is non-blocking, so its ok to call in the synchronized block
+					// this is non-blocking, so its ok to call in the lock block
 //					eventHelper.addEventPayload(this, nodeView, AboutToRemoveNodeViewsEvent.class);
 					
 					dataSuidToNode = dataSuidToNode.remove(model.getSUID());
@@ -237,15 +258,20 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 					setDirty();
 				}
 				return nodeView;
+			} finally {
+				edgeLock.writeLock().unlock();
 			}
+		} finally {
+			nodeLock.writeLock().unlock();
 		}
 	}
 	
 	public View<CyEdge> removeEdge(CyEdge model) {
-		synchronized (edgeLock) {
+		edgeLock.writeLock().lock();
+		try {
 			CyEdgeViewImpl edgeView = dataSuidToEdge.getOrElse(model.getSUID(), null);
 			if(edgeView != null) {
-				// this is non-blocking, so its ok to call in the synchronized block
+				// this is non-blocking, so its ok to call in the lock block
 //				eventHelper.addEventPayload(this, edgeView, AboutToRemoveEdgeViewsEvent.class);
 				
 				dataSuidToEdge = dataSuidToEdge.remove(model.getSUID());
@@ -255,8 +281,9 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 				setDirty();
 			}
 			return edgeView;
+		} finally {
+			edgeLock.writeLock().unlock();
 		}
-		
 	}
 	
 	
@@ -358,7 +385,8 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	
 	private void updateAdjacentEdgeMap(CyEdgeViewImpl edgeView, boolean add) {
 		Set<CyEdgeViewImpl> edges;
-		synchronized (edgeLock) {
+		edgeLock.writeLock().lock();
+		try {
 			edges = adjacentEdgeMap.getOrElse(edgeView.getSourceSuid(), HashSet.empty());
 			edges = add ? edges.add(edgeView) : edges.remove(edgeView);
 			adjacentEdgeMap = adjacentEdgeMap.put(edgeView.getSourceSuid(), edges);
@@ -366,6 +394,8 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 			edges = adjacentEdgeMap.getOrElse(edgeView.getTargetSuid(), HashSet.empty());
 			edges = add ? edges.add(edgeView) : edges.remove(edgeView);
 			adjacentEdgeMap = adjacentEdgeMap.put(edgeView.getTargetSuid(), edges);
+		} finally {
+			edgeLock.writeLock().unlock();
 		}
 	}
 	
@@ -376,14 +406,18 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 			return;
 		
 		if(vp.getTargetDataType().equals(CyNode.class)) {
-			synchronized(nodeLock) {
+			nodeLock.writeLock().lock();
+			try {
 				nodeVPs.setViewDefault(vp, defaultValue);
 				if(nodeVPs.getConfig().isTracked(vp)) {
 					netVPs.updateTrackedVP(getSUID(), vp);
 				}
+			} finally {
+				nodeLock.writeLock().unlock();
 			}
 		} else if(vp.getTargetDataType().equals(CyEdge.class)) {
-			synchronized(edgeLock) {
+			edgeLock.writeLock().lock();
+			try {
 				edgeVPs.setViewDefault(vp, defaultValue);
 				if(edgeVPs.getConfig().isTracked(vp)) {
 					for(Tuple2<Long,?> t : viewSuidToEdge) {
@@ -397,15 +431,20 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 				else if(vp == BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT) {
 					setViewDefault(BasicVisualLexicon.EDGE_UNSELECTED_PAINT, defaultValue);
 				}
+			} finally {
+				edgeLock.writeLock().unlock();
 			}
 		} else if(vp.getTargetDataType().equals(CyNetwork.class)) {
-			synchronized(netLock) {
+			netLock.writeLock().lock();
+			try {
 				netVPs.setViewDefault(vp, defaultValue);
 				if(netVPs.getConfig().isTracked(vp)) {
 					for(Tuple2<Long,?> t : viewSuidToNode) {
 						nodeVPs.updateTrackedVP(t._1, vp);
 					}
 				}
+			} finally {
+				netLock.writeLock().unlock();
 			}
 		}
 		setDirty();

@@ -1552,7 +1552,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 					var nodes = re.getPicker().getNodesInPath(selectionLasso);
 					var edges = List.<View<CyEdge>>of();
 					
-					if(edgeSelectionEnabled()) {
+					if(edgeSelectionEnabled() && edgeCountIsLowEnoughToEnablePicking()) {
 						edges = new ArrayList<>();
 						var netView = re.getViewModelSnapshot();
 						

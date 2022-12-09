@@ -9,7 +9,18 @@ import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_STR
 import static org.cytoscape.tableimport.internal.util.ImportType.NETWORK_IMPORT;
 import static org.cytoscape.tableimport.internal.util.ImportType.ONTOLOGY_IMPORT;
 import static org.cytoscape.tableimport.internal.util.ImportType.TABLE_IMPORT;
-import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.*;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.ALIAS;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.ATTR;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.EDGE_ATTR;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.INTERACTION;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.KEY;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.NONE;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.ONTOLOGY;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.SOURCE;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.SOURCE_ATTR;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.TARGET;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.TARGET_ATTR;
+import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.TAXON;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -85,7 +96,7 @@ public final class TypeUtil {
 		"node 1", "node a", "identifier 1", "identifier a", "id 1", "id a",
 		"key 1", "key a",
 		"source shared name", "name 1", "name a", "shared name 1", "shared name a",
-		"source gene", "gene 1", "gene id 1", "gene name 1", "id interactor a",
+		"source gene", "gene 1", "gene1", "gene a", "genea", "gene id 1", "gene name 1", "id interactor a",
 		"name", "shared name", "node", "gene", "gene id", "gene name", "id", "identifier"
 	};
 	private static final String[] PREF_TARGET_NAMES = new String[] {
@@ -93,12 +104,12 @@ public final class TypeUtil {
 		"node 2", "node b", "identifier 2", "identifier b", "id 2", "id b",
 		"key 2", "key b",
 		"target shared name", "name 2", "name b", "shared name 2", "shared name b",
-		"target gene", "gene 2", "gene id 2", "gene name 2", "id interactor b"
+		"target gene", "gene 2", "gene2", "gene b", "geneb", "gene id 2", "gene name 2", "id interactor b"
 	};
 	private static final String[] PREF_INTERACTION_NAMES = new String[] {
 		"interaction", "interaction type", "interaction types", "edge type", "edge types",
 		"interaction id", "interaction identifier",
-		"type"
+		"type", "evidence"
 	};
 	private static final String[] PREF_ONTOLOGY_NAMES = new String[] {
 		"gene ontology", "ontology", "go"
@@ -115,26 +126,30 @@ public final class TypeUtil {
 	
 	private TypeUtil() {}
 	
-	public static List<SourceColumnSemantic> getAvailableTypes(final ImportType importType) {
+	public static List<SourceColumnSemantic> getAvailableTypes(ImportType importType) {
 		if (importType == NETWORK_IMPORT) return NETWORK_IMPORT_TYPES;
 		if (importType == ONTOLOGY_IMPORT) return ONTOLOGY_IMPORT_TYPES;
 		
 		return TABLE_IMPORT_TYPES;
 	}
 	
-	public static List<String> getAvailableNamespaces(final ImportType importType) {
+	public static List<String> getAvailableNamespaces(ImportType importType) {
 		return importType == NETWORK_IMPORT ? NAMESPACES : Collections.emptyList();
 	}
 	
-	public static SourceColumnSemantic getDefaultType(final ImportType importType) {
+	public static SourceColumnSemantic getDefaultType(ImportType importType) {
 		return importType == NETWORK_IMPORT ? EDGE_ATTR : ATTR;
 	}
 	
-	public static SourceColumnSemantic[] guessTypes(final ImportType importType, final TableModel model,
-			final AttributeDataType[] dataTypes, final Set<SourceColumnSemantic> ignoredTypes) {
-		final int size = model.getColumnCount();
+	public static SourceColumnSemantic[] guessTypes(
+			ImportType importType,
+			TableModel model,
+			AttributeDataType[] dataTypes,
+			Set<SourceColumnSemantic> ignoredTypes
+	) {
+		int size = model.getColumnCount();
 		
-		final SourceColumnSemantic[] types = new SourceColumnSemantic[size];
+		var types = new SourceColumnSemantic[size];
 		
 		if (importType == NETWORK_IMPORT)
 			Arrays.fill(types, EDGE_ATTR);
@@ -158,12 +173,15 @@ public final class TypeUtil {
 			boolean exact = attempt == 0;
 			
 			for (int i = 0; i < size; i++) {
-				final String name = model.getColumnName(i);
-				final AttributeDataType dataType = dataTypes[i];
+				var name = model.getColumnName(i);
+				var dataType = dataTypes[i];
 				
 				if (attempt == 0) {
-					if (CyIdentifiable.SUID.equalsIgnoreCase(name) || name.endsWith(".SUID") || CyNetwork.SELECTED.equalsIgnoreCase(name)) {
-						// SUID and 'selected' columns are ignored by default
+					if (name.isBlank()
+							|| CyIdentifiable.SUID.equalsIgnoreCase(name)
+							|| name.endsWith(".SUID")
+							|| CyNetwork.SELECTED.equalsIgnoreCase(name)) {
+						// Empty/blank, SUID and 'selected' columns are ignored by default
 						types[i] = NONE;
 					} else if (importType == NETWORK_IMPORT) {
 						if (!srcFound && matches(name, PREF_SOURCE_NAMES, exact) && isValid(SOURCE, dataType)) {
@@ -205,7 +223,7 @@ public final class TypeUtil {
 		if (importType == TABLE_IMPORT && !keyFound) {
 			// Just use the first String or Integer column as key then...
 			for (int i = 0; i < types.length; i++) {
-				final String name = model.getColumnName(i);
+				var name = model.getColumnName(i);
 				
 				if (CyIdentifiable.SUID.equalsIgnoreCase(name)) // Columns called SUID are ignored by default
 					continue;
@@ -235,24 +253,24 @@ public final class TypeUtil {
 		return types;
 	}
 	
-	public static AttributeDataType[] guessSheetDataTypes(final PreviewTableModel model, Character decimalSeparator) {
-		if(!model.hasPredefinedTypes()) {
+	public static AttributeDataType[] guessSheetDataTypes(PreviewTableModel model, Character decimalSeparator) {
+		if (!model.hasPredefinedTypes())
 			return guessDataTypes(model, decimalSeparator);
-		}
 		
 		// TODO LIST?
 
-		final AttributeDataType[] dataTypes = new AttributeDataType[model.getColumnCount()];
+		var dataTypes = new AttributeDataType[model.getColumnCount()];
+		
 		for (int col = 0; col < model.getColumnCount(); col++) {
-			Class<?> predefinedClass = model.getPredefinedColumnClass(col);
+			var predefinedClass = model.getPredefinedColumnClass(col);
 			
-			if(predefinedClass == Double.class) {
+			if (predefinedClass == Double.class) {
 				dataTypes[col] = TYPE_FLOATING;
-			} else if(predefinedClass == Long.class) {
+			} else if (predefinedClass == Long.class) {
 				dataTypes[col] = TYPE_LONG;
-			} else if(predefinedClass == Integer.class) {
+			} else if (predefinedClass == Integer.class) {
 				dataTypes[col] = TYPE_INTEGER;
-			} else if(predefinedClass == Boolean.class) {
+			} else if (predefinedClass == Boolean.class) {
 				dataTypes[col] = TYPE_BOOLEAN;
 			} else {
 				dataTypes[col] = TYPE_STRING;
@@ -262,16 +280,16 @@ public final class TypeUtil {
 		return dataTypes;
 	}
 	
-	public static AttributeDataType[] guessDataTypes(final TableModel model, Character decimalSeparator) {
-		final AttributeDataType[] dataTypes = new AttributeDataType[model.getColumnCount()];
-		final int rowCount = Math.min(1000, model.getRowCount());
+	public static AttributeDataType[] guessDataTypes(TableModel model, Character decimalSeparator) {
+		var dataTypes = new AttributeDataType[model.getColumnCount()];
+		int rowCount = Math.min(1000, model.getRowCount());
 		
 		COLUMN_LOOP:
 		for (int col = 0; col < model.getColumnCount(); col++) {
-			AttributeDataType dt = dataTypes[col];
+			var dt = dataTypes[col];
 			
 			for (int row = 0; row < rowCount; row++) {
-				final String val = (String) model.getValueAt(row, col);
+				var val = (String) model.getValueAt(row, col);
 				
 				if (val == null || val.isEmpty() || val.equals("null"))
 					continue;
@@ -341,14 +359,14 @@ public final class TypeUtil {
 		return dataTypes;
 	}
 	
-	public static SourceColumnSemantic[] parseColumnTypeList(final String strList) {
-		final List<SourceColumnSemantic> typeList = new ArrayList<>();
+	public static SourceColumnSemantic[] parseColumnTypeList(String strList) {
+		var typeList = new ArrayList<SourceColumnSemantic>();
 		
 		if (strList != null) {
-			final String[] tokens = getCSV(strList);
+			var tokens = getCSV(strList);
 			
-			for (final String t : tokens) {
-				final String s = t.trim().toLowerCase().replaceAll("[^a-zA-Z]", "");
+			for (var t : tokens) {
+				var s = t.trim().toLowerCase().replaceAll("[^a-zA-Z]", "");
 				final SourceColumnSemantic dataType;
 
 				switch(s) {
@@ -394,14 +412,14 @@ public final class TypeUtil {
 		return typeList.toArray(new SourceColumnSemantic[typeList.size()]);
 	}
 
-	public static AttributeDataType[] parseDataTypeList(final String strList) {
-		final List<AttributeDataType> dataTypeList = new ArrayList<>();
+	public static AttributeDataType[] parseDataTypeList(String strList) {
+		var dataTypeList = new ArrayList<AttributeDataType>();
 		
 		if (strList != null) {
-			final String[] tokens = getCSV(strList);
+			var tokens = getCSV(strList);
 			
-			for (final String t : tokens) {
-				final String s = t.trim().toLowerCase().replaceAll("[^a-zA-Z]", "");
+			for (var t : tokens) {
+				var s = t.trim().toLowerCase().replaceAll("[^a-zA-Z]", "");
 				final AttributeDataType dataType;
 				
 				switch(s) {
@@ -501,11 +519,11 @@ public final class TypeUtil {
 	}
 	
 	public static String[] getPreferredNamespaces(SourceColumnSemantic[] types) {
-		String[] namespaces = types != null ? new String[types.length] : null;
+		var namespaces = types != null ? new String[types.length] : null;
 		
 		if (namespaces != null) {
 			for (int i = 0; i < types.length; i++) {
-				SourceColumnSemantic t = types[i];
+				var t = types[i];
 				namespaces[i] = getPreferredNamespace(t);
 			}
 		}
@@ -525,24 +543,24 @@ public final class TypeUtil {
 		TypeUtil.preferredNamespace = preferredNamespace;
 	}
 	
-	private static boolean isBoolean(final String val) {
+	private static boolean isBoolean(String val) {
 		return val != null && (truePattern.matcher(val).matches() || falsePattern.matcher(val).matches());
 	}
 	
-	private static boolean isNaN(final String val){
+	private static boolean isNaN(String val) {
 		if (val != null)
 			return val.equals("NA") || val.equals("#NUM!") || val.equals("NaN");
 		
 		return false;
 	}
 
-	private static boolean isInteger(final String val) {
+	private static boolean isInteger(String val) {
 		if (val != null) {
 			if (isNaN(val))
 				return true;
 			
 			try {
-				final long n = Long.parseLong(val.trim());
+				long n = Long.parseLong(val.trim());
 				return n <= Integer.MAX_VALUE && n >= Integer.MIN_VALUE;
 			} catch (NumberFormatException e) {
 			}
@@ -551,7 +569,7 @@ public final class TypeUtil {
 		return false;
 	}
 	
-	private static boolean isLong(final String val) {
+	private static boolean isLong(String val) {
 		if (val != null) {
 			if (isNaN(val))
 				return true;
@@ -606,7 +624,7 @@ public final class TypeUtil {
 	 * Returns true if columns of the passed column type can have duplicate names in the source file or table.
 	 * @param types 
 	 */
-	public static boolean allowsDuplicateName(final ImportType importType, final SourceColumnSemantic type1,
+	public static boolean allowsDuplicateName(ImportType importType, SourceColumnSemantic type1,
 			SourceColumnSemantic type2) {
 		boolean b = type1 == NONE || type2 == NONE;
 		
@@ -622,7 +640,7 @@ public final class TypeUtil {
 		return b;
 	}
 	
-	public static boolean isValid(final SourceColumnSemantic type, final AttributeDataType dataType) {
+	public static boolean isValid(SourceColumnSemantic type, AttributeDataType dataType) {
 		if (type == KEY || type == SOURCE || type == TARGET)
 			return dataType == TYPE_INTEGER || dataType == TYPE_LONG || dataType == TYPE_STRING;
 		
@@ -632,7 +650,7 @@ public final class TypeUtil {
 		return true;
 	}
 	
-	public static boolean isValid(final SourceColumnSemantic type, final String namespace) {
+	public static boolean isValid(SourceColumnSemantic type, String namespace) {
 		if (type == NONE)
 			return false;
 		
@@ -645,22 +663,22 @@ public final class TypeUtil {
 		return true;
 	}
 	
-	private static boolean matches(String name, final String[] preferredNames, final boolean exact) {
+	private static boolean matches(String name, String[] preferredNames, boolean exact) {
 		// Remove all special chars and spaces from column name
 		name = name.replaceAll("[^a-zA-Z0-9]", "").toLowerCase().trim();
 		
 		PREFERRED_NAMES:
-		for (String s : preferredNames) {
+		for (var s : preferredNames) {
 			if (exact) {
 				s = s.replaceAll(" ", "");
 				
 				if (name.equalsIgnoreCase(s))
 					return true;
 			} if (!exact) {
-				final String[] tokens = s.split(" ");
+				var tokens = s.split(" ");
 				boolean b = false;
 				
-				for (final String t : tokens) {
+				for (var t : tokens) {
 					b = b && name.contains(t.toLowerCase());
 					
 					if (!b)
@@ -674,21 +692,21 @@ public final class TypeUtil {
 		return false;
 	}
 	
-	private static boolean canBeKey(final TableModel model, final int col, final AttributeDataType dataType) {
+	private static boolean canBeKey(TableModel model, int col, AttributeDataType dataType) {
 		if (dataType != TYPE_STRING && dataType != TYPE_INTEGER && dataType != TYPE_LONG)
 			return false;
 		
-		final int rowCount = Math.min(1000, model.getRowCount());
-		final Set<Object> values = new HashSet<>();
+		int rowCount = Math.min(1000, model.getRowCount());
+		var values = new HashSet<Object>();
 		
 		for (int row = 0; row < rowCount; row++) {
-			final Object val = model.getValueAt(row, col);
+			var val = model.getValueAt(row, col);
 			
 			if (val == null)
 				return false;
 			
 			if (dataType == TYPE_STRING) {
-				final String s = val.toString();
+				var s = val.toString();
 				
 				if (values.contains(s))
 					return false;
@@ -696,7 +714,7 @@ public final class TypeUtil {
 				values.add(s);
 			} else {
 				try {
-					final Long n = Long.parseLong(val.toString());
+					Long n = Long.parseLong(val.toString());
 					
 					if (values.contains(n))
 						return false;

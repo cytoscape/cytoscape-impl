@@ -95,6 +95,7 @@ public class CyActivator extends AbstractCyActivator {
         iconFont = iconManager.getIconFont("cytoscape-3", LARGE_ICON_FONT_SIZE);
         
         var tableImportContext = new TableImportContext();
+        var netImportContext = new TableImportContext(false);
         
 		{
 			// ".xls"
@@ -185,7 +186,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, GUITunableHandlerFactory.class);
 		}
 		{
-			var factory = new NetworkTableMappingParametersHandlerFactory(ImportType.NETWORK_IMPORT, tableImportContext, serviceRegistrar);
+			var factory = new NetworkTableMappingParametersHandlerFactory(ImportType.NETWORK_IMPORT, netImportContext, serviceRegistrar);
 			registerService(bc, factory, GUITunableHandlerFactory.class);
 		}
 		{

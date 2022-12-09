@@ -84,7 +84,7 @@ public class DVisualLexicon extends BasicVisualLexicon {
 			"Ding Rndering Engine Root Visual Property");
 
 	public static final VisualProperty<Boolean> NETWORK_FORCE_HIGH_DETAIL = new BooleanVisualProperty(
-			Boolean.FALSE, "NETWORK_FORCE_HIGH_DETAIL", "Force High Detail", CyNetwork.class);
+			Boolean.TRUE, "NETWORK_FORCE_HIGH_DETAIL", "Force High Detail", CyNetwork.class);
 	public static final VisualProperty<Boolean> NETWORK_NODE_SELECTION = new BooleanVisualProperty(
 			Boolean.TRUE, "NETWORK_NODE_SELECTION", "Network Node Selection",
 			CyNetwork.class);
@@ -270,6 +270,11 @@ public class DVisualLexicon extends BasicVisualLexicon {
 	private static final DLineType MARQUEE_DASH_DOT = new DLineType(
 			"Marquee Dash Dot", "MARQUEE_DASH_DOT", 
 			new AnimatedDashDotStroke(1.0f, 0.0f));
+	
+	
+	public static final VisualProperty<Boolean> DUMMY = new BooleanVisualProperty(
+			Boolean.FALSE, "Ding Dummy VP", "", CyNetwork.class);
+	
 	
 	static {
 		CG.add(NODE_CUSTOMGRAPHICS_1);
