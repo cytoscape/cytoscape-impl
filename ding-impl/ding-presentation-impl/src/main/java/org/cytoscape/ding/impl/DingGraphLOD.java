@@ -9,6 +9,7 @@ import org.cytoscape.property.PropertyUpdatedEvent;
 import org.cytoscape.property.PropertyUpdatedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
+import org.osgi.framework.Version;
 
 /*
  * #%L
@@ -43,10 +44,18 @@ import org.cytoscape.view.model.CyNetworkView;
  */
 public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 
-	protected int coarseDetailThreshold;
-	protected int nodeBorderThreshold;
-	protected int nodeLabelThreshold;
-	protected int edgeArrowThreshold;
+	// These defaults must also be set in /property-impl/src/main/resources/cytoscape3.props
+	private static final int coarseDetailThreshold_default = 4000;
+	private static final int nodeBorderThreshold_default = 400;
+	private static final int nodeLabelThreshold_default = 200;
+	private static final int edgeArrowThreshold_default = 600;
+	private static final int edgeLabelThreshold_default = 200;
+	
+	
+	protected int coarseDetailThreshold; // If nodes+edges is less than this amount, then the network is rendered in high detail (and the other thresholds are ignored)
+	protected int nodeBorderThreshold; // If nodes is less than this amount, then borders are rendered
+	protected int nodeLabelThreshold;  // If nodes is less than this amount, then labels are rendered
+	protected int edgeArrowThreshold;  // Thresholds for if edge arrows and labels should be rendrered, but also determines if edges should be rendered at all
 	protected int edgeLabelThreshold;
 	
 	protected boolean edgeBufferPan;
@@ -63,18 +72,19 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 		this.cyProp = serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 		this.props = cyProp.getProperties();
 		this.serviceRegistrar = serviceRegistrar;
-		updateProps();
+		readProps();
 	}
 
-	private void updateProps() {
-		coarseDetailThreshold = parseInt(props.getProperty("render.coarseDetailThreshold"), 4000);
-		nodeBorderThreshold = parseInt(props.getProperty("render.nodeBorderThreshold"), 400);
-		nodeLabelThreshold = parseInt(props.getProperty("render.nodeLabelThreshold"), 200);
-		edgeArrowThreshold = parseInt(props.getProperty("render.edgeArrowThreshold"), 600);
-		edgeLabelThreshold = parseInt(props.getProperty("render.edgeLabelThreshold"), 200);
-		edgeBufferPan = Boolean.valueOf(props.getProperty("render.edgeBufferPan"));
-		labelCache = Boolean.valueOf(props.getProperty("render.labelCache"));
-		hidpi = Boolean.valueOf(props.getProperty("render.hidpi"));
+	private void readProps() {
+		coarseDetailThreshold = parseInt(props.getProperty("render.coarseDetailThreshold"), coarseDetailThreshold_default);
+		nodeBorderThreshold   = parseInt(props.getProperty("render.nodeBorderThreshold"), nodeBorderThreshold_default);
+		nodeLabelThreshold    = parseInt(props.getProperty("render.nodeLabelThreshold"), nodeLabelThreshold_default);
+		edgeArrowThreshold    = parseInt(props.getProperty("render.edgeArrowThreshold"), edgeArrowThreshold_default);
+		edgeLabelThreshold    = parseInt(props.getProperty("render.edgeLabelThreshold"), edgeLabelThreshold_default);
+		// Optimizations
+		edgeBufferPan = parseBoolean(props.getProperty("render.edgeBufferPan"));
+		labelCache    = parseBoolean(props.getProperty("render.labelCache"));
+		hidpi         = parseBoolean(props.getProperty("render.hidpi"));
 	}
 
 	private static int parseInt(String intString, int defaultValue) {
@@ -85,13 +95,68 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 		}
 	}
 
+	private static boolean parseBoolean(String boolString) {
+		// Want missing optimization properties to default to true
+		return !"false".equalsIgnoreCase(boolString);
+	}
+	
+	
+	public void updatePropsForNewVersionOfCytoscape() {
+		// Always overwrite on fresh install
+		// How do I know if I've overwritten?
+		String currentVersion = props.getProperty("cytoscape.version.number");
+		String lastUpdated = props.getProperty("render.lastUpdated");
+		
+		if(shouldUpdateProps(currentVersion, lastUpdated)) {
+			readProps();
+			
+			if(coarseDetailThreshold < coarseDetailThreshold_default)
+				props.setProperty("render.coarseDetailThreshold", String.valueOf(coarseDetailThreshold_default));
+			
+			if(nodeBorderThreshold < nodeBorderThreshold_default)
+				props.setProperty("render.nodeBorderThreshold", String.valueOf(nodeBorderThreshold_default));
+			
+			if(nodeLabelThreshold < nodeLabelThreshold_default)
+				props.setProperty("render.nodeLabelThreshold", String.valueOf(nodeLabelThreshold_default));
+			
+			if(edgeArrowThreshold < edgeArrowThreshold_default)
+				props.setProperty("render.edgeArrowThreshold", String.valueOf(edgeArrowThreshold_default));
+			
+			if(edgeLabelThreshold < edgeLabelThreshold_default)
+				props.setProperty("render.edgeLabelThreshold", String.valueOf(edgeLabelThreshold_default));
+			
+			props.setProperty("render.lastUpdated", currentVersion);
+			System.out.println("render props upgraded to " + currentVersion);
+		}
+	}
+	
+	
+	private boolean shouldUpdateProps(String currentVersionString, String lastUpdatedVersionString) {
+		if(currentVersionString == null)
+			return false;
+		if(lastUpdatedVersionString == null)
+			return true;
+		
+		Version current, lastUpdated;
+		try {
+			current = new Version(currentVersionString);
+			lastUpdated = new Version(lastUpdatedVersionString);
+		} catch(IllegalArgumentException e) {
+			e.printStackTrace();
+			return false;
+		}
+		
+		return current.compareTo(lastUpdated) > 0;
+	}
+	
+	
 	@Override
 	public GraphLOD faster() {
 		return new GraphLOD() {
 			
 			@Override
 			public RenderEdges renderEdges(int visibleNodeCount, int totalNodeCount, int totalEdgeCount) {
-				// This is the only difference, we pass renderEdges=false
+				// This is the only difference, we pass drawEdges=false
 				return DingGraphLOD.this.renderEdges(false, visibleNodeCount, totalNodeCount, totalEdgeCount);
 			}
 			@Override
@@ -155,7 +220,7 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 		if (!e.getSource().equals(cyProp))
 			return;
 
-		updateProps();
+		readProps();
 		
 		CyNetworkView view = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
 		if (view != null)
