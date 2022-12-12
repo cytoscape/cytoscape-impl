@@ -210,6 +210,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		super.onRegister();
 	}
 	
+	public VizMapperProxy getVizMapperProxy() {
+		return vmProxy;
+	}
+	
 	@Override
 	public String[] listNotificationInterests() {
 		return new String[]{ VISUAL_STYLE_SET_CHANGED,

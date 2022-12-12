@@ -32,10 +32,10 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SortOrder;
 import javax.swing.WindowConstants;
 
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.LineType;
@@ -319,8 +319,9 @@ public class DiscreteValueEditor<T> implements VisualPropertyValueEditor<T> {
 			
 			iconMap.clear();
 			
-			// MKTODO how to get the rendering engine???
-			RenderingEngine<?> engine = null;
+			VizMapperMediator mediator = servicesUtil.get(VizMapperMediator.class);
+			Class<? extends CyIdentifiable> type = visualProperty.getTargetDataType();
+			var engine = mediator.getVizMapperProxy().getRenderingEngine(type);
 			
 			// Current engine is not ready yet.
 			if (engine != null) {
