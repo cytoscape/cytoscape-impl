@@ -84,7 +84,7 @@ public class DVisualLexicon extends BasicVisualLexicon {
 			"Ding Rndering Engine Root Visual Property");
 
 	public static final VisualProperty<Boolean> NETWORK_FORCE_HIGH_DETAIL = new BooleanVisualProperty(
-			Boolean.TRUE, "NETWORK_FORCE_HIGH_DETAIL", "Force High Detail", CyNetwork.class);
+			Boolean.FALSE, "NETWORK_FORCE_HIGH_DETAIL", "Force High Detail", CyNetwork.class);
 	public static final VisualProperty<Boolean> NETWORK_NODE_SELECTION = new BooleanVisualProperty(
 			Boolean.TRUE, "NETWORK_NODE_SELECTION", "Network Node Selection",
 			CyNetwork.class);
