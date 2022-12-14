@@ -3,6 +3,7 @@ package org.cytoscape.tableimport.internal.ui;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
+import static javax.swing.GroupLayout.Alignment.TRAILING;
 import static org.cytoscape.tableimport.internal.reader.TextDelimiter.BACKSLASH;
 import static org.cytoscape.tableimport.internal.reader.TextDelimiter.COLON;
 import static org.cytoscape.tableimport.internal.reader.TextDelimiter.COMMA;
@@ -32,9 +33,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -86,6 +89,9 @@ public class AttributeEditorPanel extends JPanel {
 	private JComboBox<String> listDelimiterComboBox;
 	private JTextField otherTextField;
 	
+	private JButton copyButton;
+	private JButton pasteButton;
+	
 	private ButtonGroup typeButtonGroup;
 	private ButtonGroup namespaceButtonGroup;
 	private ButtonGroup dataTypeButtonGroup;
@@ -124,6 +130,24 @@ public class AttributeEditorPanel extends JPanel {
 			availableTypes.add(0, NONE);
 		
 		initComponents();
+		updateComponents();
+	}
+	
+	public AttributeSettings getSettings() {
+		return new AttributeSettings(
+				getAttributeType(),
+				getNamespace(),
+				getAttributeDataType(),
+				getListDelimiter()
+		);
+	}
+
+	public void setSettings(AttributeSettings settings) {
+		setAttributeType(settings.getAttrType());
+		setNamespace(settings.getNamespace());
+		setAttributeDataType(settings.getAttrDataType());
+		setListDelimiter(settings.getListDelimiter());
+		
 		updateComponents();
 	}
 
@@ -194,6 +218,11 @@ public class AttributeEditorPanel extends JPanel {
 			firePropertyChange("attributeDataType", this.attributeDataType, this.attributeDataType = attributeDataType);
 	}
 	
+	public void setListDelimiter(String listDelimiter) {
+		if (this.listDelimiter != listDelimiter)
+			firePropertyChange("listDelimiter", this.listDelimiter, this.listDelimiter = listDelimiter);
+	}
+	
 	private void initComponents() {
 		listDelimiterLabel = new JLabel("List Delimiter:");
 		listDelimiterLabel.putClientProperty("JComponent.sizeVariant", "small");
@@ -250,7 +279,11 @@ public class AttributeEditorPanel extends JPanel {
 		var dataTypeLabel = new JLabel("Data Type:");
 		dataTypeLabel.putClientProperty("JComponent.sizeVariant", "small");
 		
-		layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
+		layout.setHorizontalGroup(layout.createParallelGroup(TRAILING, true)
+				.addGroup(layout.createSequentialGroup()
+						.addComponent(getCopyButton())
+						.addComponent(getPasteButton())
+				)
 				.addComponent(getAttributeNameTextField(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(getAttrNameWarningLabel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(typeLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -279,6 +312,10 @@ public class AttributeEditorPanel extends JPanel {
 				)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup(CENTER)
+						.addComponent(getCopyButton())
+						.addComponent(getPasteButton())
+				)
 				.addComponent(getAttributeNameTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(getAttrNameWarningLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addPreferredGap(ComponentPlacement.RELATED)
@@ -403,7 +440,7 @@ public class AttributeEditorPanel extends JPanel {
 				getOtherTextField().setEnabled(isOther);
 				
 				if (!isOther || !getOtherTextField().getText().isEmpty())
-					firePropertyChange("listDelimiter", listDelimiter, listDelimiter = getListDelimiter());
+					setListDelimiter(listDelimiter = getListDelimiter());
 			});
 		}
 		
@@ -434,6 +471,22 @@ public class AttributeEditorPanel extends JPanel {
 		}
 		
 		return otherTextField;
+	}
+	
+	JButton getCopyButton() {
+		if (copyButton == null) {
+			copyButton = createIconButton(IconManager.ICON_COPY, "Copy Settings");
+		}
+		
+		return copyButton;
+	}
+	
+	public JButton getPasteButton() {
+		if (pasteButton == null) {
+			pasteButton = createIconButton(IconManager.ICON_PASTE, "Paste Settings");
+		}
+		
+		return pasteButton;
 	}
 
 	private void setStyles(JToggleButton... btnList) {
@@ -582,6 +635,18 @@ public class AttributeEditorPanel extends JPanel {
 		typeButtons.put(type, btn);
 		
 		return btn;
+	}
+	
+	private JButton createIconButton(String icon, String tooltip) {
+		var button = new JButton(icon);
+		button.setToolTipText(tooltip);
+		button.setBorderPainted(false);
+		button.setContentAreaFilled(false);
+		button.setFocusPainted(false);
+		button.setFont(iconManager.getIconFont(ICON_FONT_SIZE));
+		button.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
+		
+		return button;
 	}
 	
 	private JToggleButton createNamespaceButton(String namespace) {
