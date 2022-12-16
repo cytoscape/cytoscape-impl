@@ -100,11 +100,6 @@ public class ColumnStyleAddColumnPopup extends JDialog {
 		updateColumns();
 		tableCombo.addActionListener(e -> updateColumns());
 		
-		addButton.addActionListener(e -> {
-			var col = colCombo.getItemAt(colCombo.getSelectedIndex());
-			//addColumnStyle(col);
-		});
-		
 		var layout = new GroupLayout(getContentPane());
 		getContentPane().setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);

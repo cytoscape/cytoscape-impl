@@ -638,6 +638,11 @@ public class VisualStyleSerializerTest {
 		}
 
 		@Override
+		public <V> Map<VisualProperty<?>, Object> getAllDefaultValues() {
+			return Collections.unmodifiableMap(defaults);
+		}
+		
+		@Override
 		public String getTitle() {
 			return this.title;
 		}
