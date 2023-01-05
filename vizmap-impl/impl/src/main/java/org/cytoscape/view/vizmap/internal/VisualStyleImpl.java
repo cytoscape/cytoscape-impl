@@ -239,6 +239,13 @@ public class VisualStyleImpl
 	Map<VisualProperty<?>, Object> getStyleDefaults() {
 		return this.styleDefaults;
 	}
+	
+	@Override
+	public Map<VisualProperty<?>, Object> getAllDefaultValues() {
+		synchronized(lock) {
+			return new HashMap<>(styleDefaults);
+		}
+	}
 
 	@Override
 	public Set<VisualPropertyDependency<?>> getAllVisualPropertyDependencies() {

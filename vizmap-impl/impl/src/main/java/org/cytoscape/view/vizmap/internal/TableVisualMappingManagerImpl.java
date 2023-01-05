@@ -1,5 +1,7 @@
 package org.cytoscape.view.vizmap.internal;
 
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.*;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,14 +56,24 @@ public class TableVisualMappingManagerImpl implements TableVisualMappingManager,
 	private final Map<VisualStyle,Map<String,VisualStyle>> associatedNodeStyles = new WeakHashMap<>();
 	private final Map<VisualStyle,Map<String,VisualStyle>> associatedEdgeStyles = new WeakHashMap<>();
 
-	private VisualStyle defaultStyle;
+	private final VisualStyle defaultStyle;
 	
 	
 	public TableVisualMappingManagerImpl(VisualStyleFactory factory, CyServiceRegistrar serviceRegistrar) {
 		this.registrar = Objects.requireNonNull(serviceRegistrar, "'serviceRegistrar' cannot be null");
-		this.defaultStyle = factory.createVisualStyle(DEFAULT_STYLE_NAME);
+		this.defaultStyle = buildGlobalDefaultStyle(factory);
 	}
 
+	private static VisualStyle buildGlobalDefaultStyle(VisualStyleFactory factory) {
+		var defStyle = factory.createVisualStyle(DEFAULT_STYLE_NAME);
+		defStyle.setDefaultValue(CELL_BACKGROUND_PAINT, CELL_BACKGROUND_PAINT.getDefault());
+		defStyle.setDefaultValue(CELL_FONT_FACE, CELL_FONT_FACE.getDefault());
+		defStyle.setDefaultValue(CELL_FONT_SIZE, CELL_FONT_SIZE.getDefault());
+		defStyle.setDefaultValue(CELL_TEXT_COLOR, CELL_TEXT_COLOR.getDefault());
+		defStyle.setDefaultValue(CELL_TOOLTIP, CELL_TOOLTIP.getDefault());
+		return defStyle;
+	}
+	
 	@Override
 	public VisualStyle getDefaultVisualStyle() {
 		return defaultStyle;

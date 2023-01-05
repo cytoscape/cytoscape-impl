@@ -2,7 +2,6 @@ package org.cytoscape.view.vizmap.internal;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -16,7 +15,6 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
@@ -87,18 +85,14 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 
 	@SuppressWarnings("unchecked")
 	private <V, S extends V> void copyDefaultValues(final VisualStyle original, final VisualStyle copy) {
-		final Set<VisualProperty<?>> visualProps = new HashSet<>();
-		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
-		
-		for (final VisualLexicon lexicon : vmMgr.getAllVisualLexicon())
-			visualProps.addAll(lexicon.getAllVisualProperties());
-
-		for (VisualProperty<?> vp : visualProps) {
-			S value = (S) original.getDefaultValue(vp);
-
+		var defaultValues = original.getAllDefaultValues();
+		for(var entry : defaultValues.entrySet()) {
+			var vp = entry.getKey();
+			var value = entry.getValue();
 			// TODO: if the value is not immutable, this can create problems, since it is not setting a copy!
-			if (value != null)
-				copy.setDefaultValue((VisualProperty<V>) vp, value);
+			if(value != null) {
+				copy.setDefaultValue((VisualProperty<V>) vp, (S) value);
+			}
 		}
 	}
 
