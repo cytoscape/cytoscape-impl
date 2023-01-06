@@ -91,6 +91,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 		this.serviceRegistrar = serviceRegistrar;
 		
 		missingImageCustomGraphicsSet = new HashSet<>();
+		usedCustomGraphicsSet = new HashSet<>();
 		factoryMap = new HashMap<>();
 		factoryPropsMap = new HashMap<>();
 
