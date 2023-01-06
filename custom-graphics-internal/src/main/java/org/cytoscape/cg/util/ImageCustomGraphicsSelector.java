@@ -556,24 +556,37 @@ public class ImageCustomGraphicsSelector extends JPanel {
 	}
 	
 	private void removeSelectedImages() {
-		var toBeRemoved = imageGrid.getSelectedValuesList();
+		var selectedValues = imageGrid.getSelectedValuesList();
 		
-		if (!toBeRemoved.isEmpty()) {
+		if (!selectedValues.isEmpty()) {
 			var manager = serviceRegistrar.getService(CustomGraphicsManager.class);
+			var toBeRemoved = new ArrayList<CyCustomGraphics>();
+			var inUse = new ArrayList<CyCustomGraphics>();
 			
-			for (var obj : toBeRemoved) {
-				var cg = obj;
-				
-				if (!manager.isUsedInCurrentSession(cg)) {
-					manager.removeCustomGraphics(cg.getIdentifier());
-				} else {
-					JOptionPane.showMessageDialog(this,
-							cg.getDisplayName() + " is used in current session and cannot remove it.",
-							"Custom Graphics is in Use.", JOptionPane.ERROR_MESSAGE);
-				}
+			for (var cg : selectedValues) {
+				if (manager.isUsedInCurrentSession(cg))
+					inUse.add(cg);
+				else
+					toBeRemoved.add(cg);
 			}
 			
-			update(manager.getAllCustomGraphics(), null);
+			for (var cg : toBeRemoved) {
+				manager.removeCustomGraphics(cg.getIdentifier());
+			}
+			
+			if (!toBeRemoved.isEmpty())
+				update(manager.getAllCustomGraphics(), null);
+			
+			if (!inUse.isEmpty()) {
+				var msg = inUse.size() == 1 ?
+						"<html><pre>" + ViewUtil.getShortName(inUse.get(0).getDisplayName()) + "</pre>" +
+						"is being used in the current session and cannot be removed.</html>"
+						:
+						(inUse.size() == selectedValues.size() ? "The" : inUse.size()) +
+						" images are being used in the current session and cannot be removed.";
+						
+				JOptionPane.showMessageDialog(this, msg, "Custom Graphics in Use", JOptionPane.ERROR_MESSAGE);
+			}
 		}
 	}
 	
@@ -1651,11 +1664,13 @@ public class ImageCustomGraphicsSelector extends JPanel {
 		
 		JTextField getNameTextField() {
 			if (nameTextField == null) {
-				nameTextField = new JTextField(image.getDisplayName()) {
+				var text = ViewUtil.getShortName(image.getDisplayName());
+				
+				nameTextField = new JTextField(text) {
 					@Override
 					public String getToolTipText(MouseEvent evt) {
 					    return "<html><p image='text-align: center;'>" +
-								"<b>" + image.getDisplayName() + "</b>" +
+								"<b>" + ViewUtil.getShortName(image.getDisplayName()) + "</b>" +
 								(isEditMode() ? "<br>(double-click to rename...)" : "") +
 								"</p></html>";
 					}
@@ -1680,8 +1695,6 @@ public class ImageCustomGraphicsSelector extends JPanel {
 		}
 		
 		void update() {
-			setToolTipText(image.getDisplayName());
-			
 			// Image
 			var icon = VisualPropertyIconFactory.createIcon(image, IMAGE_WIDTH, IMAGE_HEIGHT);
 			getImageLabel().setIcon(icon);
