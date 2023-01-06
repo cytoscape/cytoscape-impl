@@ -427,13 +427,16 @@ public class ImageCustomGraphicsSelector extends JPanel {
 					});
 				}
 			});
-			gridScrollPane.getViewport().getView().addMouseListener(new MouseAdapter() {
+			
+			var viewportMouseAdapter = new MouseAdapter() {
 				@Override
 				public void mousePressed(MouseEvent evt) {
 					if (isEditMode() && !evt.isShiftDown()) // Deselect all items
 						getImageGrid().deselectAll();
 				}
-			});
+			};
+			gridScrollPane.getViewport().addMouseListener(viewportMouseAdapter);
+			gridScrollPane.getViewport().getView().addMouseListener(viewportMouseAdapter);
 			
 			gridScrollPane.setDropTarget(new URLDropTarget());
 		}
