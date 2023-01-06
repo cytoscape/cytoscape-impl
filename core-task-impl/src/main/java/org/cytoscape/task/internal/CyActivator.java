@@ -2347,7 +2347,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(MENU_GRAVITY, "1.8");
 			props.setProperty(INSERT_SEPARATOR_AFTER, "true");
 
-			props.setProperty(TITLE, "Close");
+			props.setProperty(TITLE, "Close Session");
 			props.setProperty(COMMAND, "new");
 			props.setProperty(COMMAND_NAMESPACE, "session");
 			props.setProperty(COMMAND_DESCRIPTION, "Create a new, empty session");
@@ -2369,7 +2369,8 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_MENU, "File");
 			props.setProperty(ACCELERATOR, "cmd o");
 			props.setProperty(LARGE_ICON_ID, iconId);
-			props.setProperty(TITLE, "Open...");
+			props.setProperty(TITLE, "Open Session...");
+			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
 			props.setProperty(TOOL_BAR_GRAVITY, "1.0");
 			props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(MENU_GRAVITY, "0.5");
@@ -2404,7 +2405,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_MENU, "File");
 			props.setProperty(ACCELERATOR, "cmd s");
 			props.setProperty(LARGE_ICON_ID, iconId);
-			props.setProperty(TITLE, "Save");
+			props.setProperty(TITLE, "Save Session");
 			props.setProperty(TOOL_BAR_GRAVITY, "1.1");
 			props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(MENU_GRAVITY, "1.5");
@@ -2426,7 +2427,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_MENU, "File");
 			props.setProperty(ACCELERATOR, "cmd shift s");
 			props.setProperty(MENU_GRAVITY, "1.7");
-			props.setProperty(TITLE, "Save As...");
+			props.setProperty(TITLE, "Save Session As...");
 			props.setProperty(COMMAND, "save as");
 			props.setProperty(COMMAND_NAMESPACE, "session");
 			props.setProperty(COMMAND_DESCRIPTION, "Save the session to a file");
