@@ -52,8 +52,8 @@ public class DisableTask extends AbstractAppTask implements ObservableTask {
 		}
 		appManager.disableApp(appObject);
 		updateApps();
-		error = "App '"+app+"' disabled";
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, error);
+		String msg = "App '"+app+"' disabled";
+		taskMonitor.showMessage(TaskMonitor.Level.INFO, msg);
 	}
 
 	@Override
