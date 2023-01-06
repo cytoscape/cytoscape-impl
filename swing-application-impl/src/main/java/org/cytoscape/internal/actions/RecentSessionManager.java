@@ -63,7 +63,7 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 	
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
-	private static final String MENU_CATEGORY = "File.Open Recent[1.2]";
+	private static final String MENU_CATEGORY = "File.Open Recent Session[1.2]";
 
 	private final Set<OpenRecentSessionAction> currentMenuItems;
 	private final ClearMenuAction clearMenuAction;
