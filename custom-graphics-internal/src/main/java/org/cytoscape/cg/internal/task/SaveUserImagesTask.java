@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
+import org.apache.commons.io.FileUtils;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.cg.internal.util.ImageUtil;
 import org.cytoscape.cg.model.CustomGraphicsManager;
@@ -45,12 +46,10 @@ public class SaveUserImagesTask implements Task {
 		tm.setProgress(0.0);
 
 		// Remove all existing files
-		var files = location.listFiles();
-
-		if (files != null) {
-			for (var old : files)
-				old.delete();
-		}
+		if (location.exists())
+			FileUtils.cleanDirectory(location);
+		else
+			location.mkdir();
 
 		long startTime = System.currentTimeMillis();
 		var exService = Executors.newFixedThreadPool(NUM_THREADS);

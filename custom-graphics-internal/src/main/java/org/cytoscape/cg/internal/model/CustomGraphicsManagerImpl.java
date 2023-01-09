@@ -343,9 +343,6 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 		} catch (Exception e) {
 			logger.error("Cannot clean " + CYS_IMG_DIR_NAME + " directory", e);
 		}
-		
-		// But we still need to do this to keep things working in v3.10!
-		restoreImages();
 	}
 
 	@Override
