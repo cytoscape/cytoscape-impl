@@ -131,7 +131,7 @@ public abstract class AbstractAnnotationDialog<T extends AbstractAnnotation> ext
 		layout.setVerticalGroup(vGroup);
 
 		hGroup.addComponent(getControlPanel());
-		vGroup.addComponent(getControlPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+		vGroup.addComponent(getControlPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE);
 
 		hGroup.addComponent(buttonPanel);
 		vGroup.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
