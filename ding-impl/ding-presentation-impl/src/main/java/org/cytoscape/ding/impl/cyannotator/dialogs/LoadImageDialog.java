@@ -6,6 +6,7 @@ import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
+import java.awt.Font;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
@@ -29,6 +30,7 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -46,7 +48,9 @@ import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.event.DebounceTimer;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -356,6 +360,8 @@ public class LoadImageDialog extends AbstractAnnotationDialog<ImageAnnotationImp
 		private static final int PREVIEW_PAD = 5;
 		
 		private JTextField urlTextField;
+		private JLabel errorIconLabel;
+		private JLabel errorLabel;
 		private JLabel previewImgLabel;
 		
 		@SuppressWarnings("rawtypes")
@@ -376,12 +382,22 @@ public class LoadImageDialog extends AbstractAnnotationDialog<ImageAnnotationImp
 			var layout = new GroupLayout(this);
 			setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
-			layout.setAutoCreateGaps(true);
+			layout.setAutoCreateGaps(false);
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
 					.addGroup(layout.createSequentialGroup()
-							.addComponent(urlLabel)
-							.addComponent(getUrlTextField(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							.addGroup(layout.createParallelGroup(LEADING, false)
+									.addComponent(urlLabel)
+							)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addGroup(layout.createParallelGroup(LEADING, true)
+									.addComponent(getUrlTextField(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+									.addGroup(layout.createSequentialGroup()
+											.addComponent(getErrorIconLabel())
+											.addPreferredGap(ComponentPlacement.RELATED)
+											.addComponent(getErrorLabel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+									)
+							)
 					)
 					.addComponent(previewLabel)
 					.addComponent(getPreviewImgLabel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -389,10 +405,15 @@ public class LoadImageDialog extends AbstractAnnotationDialog<ImageAnnotationImp
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addGroup(layout.createParallelGroup(CENTER, false)
 							.addComponent(urlLabel)
-							.addComponent(getUrlTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getUrlTextField())
+					)
+					.addGroup(layout.createParallelGroup(CENTER, false)
+							.addComponent(getErrorIconLabel())
+							.addComponent(getErrorLabel(), getErrorLabel().getPreferredSize().height, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
 					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addComponent(previewLabel)
+					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(getPreviewImgLabel(), 320, 320, Short.MAX_VALUE)
 			);
 		}
@@ -405,7 +426,7 @@ public class LoadImageDialog extends AbstractAnnotationDialog<ImageAnnotationImp
 		JTextField getUrlTextField() {
 			if (urlTextField == null) {
 				urlTextField = new JTextField();
-				urlTextField.setToolTipText("The address of the image (JPEG, PNG, SVG) on the Internet");
+				urlTextField.setToolTipText("The address of the image (JPEG, PNG, GIF, TIFF, SVG) on the Internet");
 				urlTextField.getDocument().addDocumentListener(new DocumentListener() {
 					@Override
 					public void removeUpdate(DocumentEvent e) {
@@ -423,13 +444,42 @@ public class LoadImageDialog extends AbstractAnnotationDialog<ImageAnnotationImp
 						var text = urlTextField.getText();
 						resetPreview(!text.isBlank());
 						
-						if (!text.isBlank())
+						if (text.isBlank())
+							updateErrorMessage(null, null);
+						else
 							urlDebouncer.debounce(() -> loadImage(text));
 					}
 				});
 			}
 			
 			return urlTextField;
+		}
+		
+		JLabel getErrorIconLabel() {
+			if (errorIconLabel == null) {
+				var iconFont = serviceRegistrar.getService(IconManager.class).getIconFont(14.0f);
+				
+				errorIconLabel = new JLabel(" ");
+				errorIconLabel.setIcon(new TextIcon(IconManager.ICON_WARNING, iconFont, 14, 14));
+				errorIconLabel.setForeground(LookAndFeelUtil.getErrorColor());
+				errorIconLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+				errorIconLabel.setVisible(false);
+				LookAndFeelUtil.makeSmall(errorIconLabel);
+			}
+			
+			return errorIconLabel;
+		}
+		
+		JLabel getErrorLabel() {
+			if (errorLabel == null) {
+				// Start with a space char so the label is actually rendered and reserves some room for the error msg,
+				// avoiding shifting the components bellow it when an error text is set
+				errorLabel = new JLabel(" ");
+				errorLabel.setForeground(LookAndFeelUtil.getErrorColor());
+				LookAndFeelUtil.makeSmall(errorLabel);
+			}
+			
+			return errorLabel;
 		}
 		
 		JLabel getPreviewImgLabel() {
@@ -441,6 +491,7 @@ public class LoadImageDialog extends AbstractAnnotationDialog<ImageAnnotationImp
 				previewImgLabel.setHorizontalAlignment(JLabel.CENTER);
 				previewImgLabel.setHorizontalTextPosition(JLabel.CENTER);
 				previewImgLabel.setForeground(UIManager.getColor("Separator.foreground"));
+				previewImgLabel.setFont(previewImgLabel.getFont().deriveFont(Font.BOLD, 16.0f));
 				previewImgLabel.addComponentListener(new ComponentAdapter() {
 					@Override
 					public void componentResized(ComponentEvent e) {
@@ -465,9 +516,9 @@ public class LoadImageDialog extends AbstractAnnotationDialog<ImageAnnotationImp
 			if (urlStr.startsWith("/"))
 				urlStr = "file:" + urlStr; // Assume it's a local file
 			else if (urlStr.startsWith("file://"))
-				urlStr.replaceFirst("file://", "file:/"); // "file://" does NOT work, but "file:/" does
-			
-			System.out.println("\nURL: " + urlStr);
+				urlStr = urlStr.replaceFirst("//", "/"); // "file://" does NOT work, but "file:/" does
+			else if (urlStr.startsWith("www."))
+				urlStr = "https://" + urlStr; // Lets be nice and and the httpS protocol
 			
 			image = null;
 			
@@ -491,7 +542,9 @@ public class LoadImageDialog extends AbstractAnnotationDialog<ImageAnnotationImp
 					var name = urlStr;
 					
 					try {
-						image = isSVG(url) ? new SVGCustomGraphics(id, name, url) : new BitmapCustomGraphics(id, name, url);
+						image = isSVG(url)
+								? new SVGCustomGraphics(id, name, url)
+								: new BitmapCustomGraphics(id, name, url);
 					} catch (Exception e) {
 						errorMsg = "Invalid Image";
 						errorDesc = e.getMessage();
@@ -499,9 +552,16 @@ public class LoadImageDialog extends AbstractAnnotationDialog<ImageAnnotationImp
 				}
 			}
 			
-			// Update the preview
-			getPreviewImgLabel().setToolTipText(errorDesc); // TODO
+			// Update error and preview
 			updatePreview();
+			updateErrorMessage(errorMsg, errorDesc);
+		}
+
+		private void updateErrorMessage(String msg, String description) {
+			getErrorLabel().setText(msg);
+			getErrorLabel().setToolTipText(description);
+			getErrorIconLabel().setVisible(msg != null);
+			getErrorIconLabel().setToolTipText(description);
 		}
 		
 		private void resetPreview(boolean loading) {
@@ -531,7 +591,6 @@ public class LoadImageDialog extends AbstractAnnotationDialog<ImageAnnotationImp
 	private boolean isSVG(URL url) throws IOException {
 		var conn = url.openConnection();
 		var type = conn.getHeaderField("Content-Type");
-		System.out.println("\t-- type: " + type);
 		
 		if ("image/svg+xml".equalsIgnoreCase(type))
 			return true;
@@ -541,12 +600,9 @@ public class LoadImageDialog extends AbstractAnnotationDialog<ImageAnnotationImp
 		// try to check the file extension)
 		if (type == null) {
 			var protocol = url.getProtocol();
-			System.out.println(">> PROTOCOL: " + protocol);
 			
-			if (protocol.equalsIgnoreCase("file")) {
-				System.out.println("\t-- filename: " + url.getFile());
+			if (protocol.equalsIgnoreCase("file"))
 				return url.getFile().toLowerCase().endsWith(".svg");
-			}
 		}
 		
 		return false;
