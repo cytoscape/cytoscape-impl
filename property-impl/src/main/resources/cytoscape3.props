@@ -2,11 +2,11 @@
 viewThreshold=100000
 defaultVisualStyle=default
 canonicalizeNames=true
-render.coarseDetailThreshold=4000
-render.nodeBorderThreshold=400
-render.nodeLabelThreshold=200
-render.edgeArrowThreshold=600
-render.edgeLabelThreshold=200
+render.coarseDetailThreshold=8000
+render.nodeBorderThreshold=800
+render.nodeLabelThreshold=400
+render.edgeArrowThreshold=1200
+render.edgeLabelThreshold=400
 render.edgeBufferPan=true
 render.labelCache=true
 render.selectedOnly=true

@@ -148,6 +148,7 @@ public class CyActivator extends AbstractCyActivator {
 		var annotationManager = new AnnotationManagerImpl(serviceRegistrar);
 
 		var dingGraphLOD = new DingGraphLOD(serviceRegistrar);
+		dingGraphLOD.updatePropsForNewVersionOfCytoscape();
 		registerService(bc, dingGraphLOD, PropertyUpdatedListener.class);
 		
 		var handleFactory = new HandleFactoryImpl();

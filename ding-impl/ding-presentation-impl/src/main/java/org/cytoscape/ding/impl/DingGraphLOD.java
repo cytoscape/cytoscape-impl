@@ -45,11 +45,11 @@ import org.osgi.framework.Version;
 public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 
 	// These defaults must also be set in /property-impl/src/main/resources/cytoscape3.props
-	private static final int coarseDetailThreshold_default = 4000;
-	private static final int nodeBorderThreshold_default = 400;
-	private static final int nodeLabelThreshold_default = 200;
-	private static final int edgeArrowThreshold_default = 600;
-	private static final int edgeLabelThreshold_default = 200;
+	private static final int coarseDetailThreshold_default = 8000;
+	private static final int nodeBorderThreshold_default = 800;
+	private static final int nodeLabelThreshold_default = 400;
+	private static final int edgeArrowThreshold_default = 1200;
+	private static final int edgeLabelThreshold_default = 400;
 	
 	
 	protected int coarseDetailThreshold; // If nodes+edges is less than this amount, then the network is rendered in high detail (and the other thresholds are ignored)
@@ -68,7 +68,7 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 
 
 	@SuppressWarnings("unchecked")
-	public DingGraphLOD(final CyServiceRegistrar serviceRegistrar) {
+	public DingGraphLOD(CyServiceRegistrar serviceRegistrar) {
 		this.cyProp = serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 		this.props = cyProp.getProperties();
 		this.serviceRegistrar = serviceRegistrar;
@@ -102,9 +102,7 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 	
 	
 	public void updatePropsForNewVersionOfCytoscape() {
-		// Always overwrite on fresh install
-		// How do I know if I've overwritten?
-		String currentVersion = props.getProperty("cytoscape.version.number");
+		String currentVersion = props.getProperty("cytoscape.version.number"); // This is set in CyVersionImpl
 		String lastUpdated = props.getProperty("render.lastUpdated");
 		
 		if(shouldUpdateProps(currentVersion, lastUpdated)) {
@@ -137,16 +135,25 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 		if(lastUpdatedVersionString == null)
 			return true;
 		
-		Version current, lastUpdated;
 		try {
-			current = new Version(currentVersionString);
-			lastUpdated = new Version(lastUpdatedVersionString);
+			Version current = new Version(removeMavenQualifier(currentVersionString));
+			Version lastUpdated = new Version(removeMavenQualifier(lastUpdatedVersionString));
+			
+			return current.compareTo(lastUpdated) > 0;
+			
 		} catch(IllegalArgumentException e) {
 			e.printStackTrace();
 			return false;
 		}
-		
-		return current.compareTo(lastUpdated) > 0;
+	}
+	
+	private static String removeMavenQualifier(String ver) {
+		// OSGi Version class doesn't support the Maven "-SNAPSHOT" qualifier, so we just remove it.
+		int i = ver.indexOf("-");
+		if(i >= 0) {
+			ver = ver.substring(0, i);
+		}
+		return ver;
 	}
 	
 	

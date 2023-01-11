@@ -51,7 +51,6 @@ public class CyVersionImpl implements CyVersion {
 	private final String qualifier;
 	private final String version;
 
-	@SuppressWarnings("deprecation")
 	public CyVersionImpl(final CyServiceRegistrar serviceRegistrar) {
 		InputStream stream = getClass().getResourceAsStream(PROPERTY_FILE);
 		
