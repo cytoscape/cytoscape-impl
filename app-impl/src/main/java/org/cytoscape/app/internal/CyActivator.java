@@ -23,6 +23,7 @@ import org.cytoscape.app.event.AppsFinishedStartingEvent;
 import org.cytoscape.app.event.AppsFinishedStartingListener;
 import org.cytoscape.app.internal.action.CitationsAction;
 import org.cytoscape.app.internal.action.UpdateNotificationAction;
+import org.cytoscape.app.internal.action.YFilesAction;
 import org.cytoscape.app.internal.event.AppsChangedEvent;
 import org.cytoscape.app.internal.event.AppsChangedListener;
 import org.cytoscape.app.internal.manager.App;
@@ -666,6 +667,9 @@ public class CyActivator extends AbstractCyActivator {
 		YFilesChecker(AppManager manager, CyServiceRegistrar serviceRegistrar, OpenBrowser openBrowser) {
 			this.manager = manager;
 			this.serviceRegistrar = serviceRegistrar;
+			for (String s : yFilesLayouts) {
+			actionMap.put(s, new YFilesAction("Install yFiles ".concat(s), openBrowser));
+		}
 		}
 
 		@Override

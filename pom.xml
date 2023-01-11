@@ -66,6 +66,7 @@
 		<module>edge-bundler-impl</module>
 		<module>scripting-impl</module>
 		<module>core-task-impl</module>
+		<module>cycl-impl</module>
 		<module>util-impl</module>
 		<module>headless-application-impl</module>
 		<module>headless-cmdline-parser-impl</module>
@@ -227,6 +228,11 @@
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>util-api</artifactId>
+				<version>${cytoscape.api.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.cytoscape</groupId>
+				<artifactId>cycl-api</artifactId>
 				<version>${cytoscape.api.version}</version>
 			</dependency>
 

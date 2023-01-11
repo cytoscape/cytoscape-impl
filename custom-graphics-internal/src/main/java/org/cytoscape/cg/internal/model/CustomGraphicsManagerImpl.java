@@ -14,7 +14,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.cytoscape.application.CyApplicationConfiguration;
+import org.apache.commons.io.FileUtils;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.events.CyStartEvent;
 import org.cytoscape.application.events.CyStartListener;
@@ -61,9 +61,10 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
-	private static final String IMAGE_DIR_NAME = "images3";
 	private static final String APP_NAME = "org.cytoscape.ding.customgraphicsmgr";
-	private static final String TEMP_DIR = "java.io.tmpdir";
+	private static final String TEMP_DIR_KEY = "java.io.tmpdir";
+	/** Temporary folder where images are saved right before being added to a session file (when saving a session) -- since v3.10 */
+	private static final String CYS_IMG_DIR_NAME = "cys-images";
 	private static final String PNG_EXT = ".png";
 	private static final String SVG_EXT = ".svg";
 
@@ -94,8 +95,19 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 		factoryMap = new HashMap<>();
 		factoryPropsMap = new HashMap<>();
 
-		var config = serviceRegistrar.getService(CyApplicationConfiguration.class);
-		imageHomeDirectory = new File(config.getConfigurationDirectoryLocation(), IMAGE_DIR_NAME);
+		// Since version 3.10, we save the session images in a folder inside the TEMP directory
+		// and not in the root of the CytoscapeConfiguration directory, because we want to get rid of all the
+		// "junk images" (a.k.a. images saved in every single session even though they were not used by the session),
+		// but without affecting older versions of Cytoscape 3. This way, the images already inside 
+		// CytoscapeConfiguration/images3 are kept untouched and can be loaded by Cytoscape 3.9.x and below. 
+		// =============================================================================================================
+		// var config = serviceRegistrar.getService(CyApplicationConfiguration.class);
+		// var parentDir = config.getConfigurationDirectoryLocation();
+		// imageHomeDirectory = new File(parentDir, "images3");
+		// -------------------------------------------------------------------------------------------------------------
+		var parentDir = new File(System.getProperty(TEMP_DIR_KEY));
+		imageHomeDirectory = new File(parentDir, CYS_IMG_DIR_NAME);
+		// =============================================================================================================
 
 		instance = this;
 	}
@@ -246,9 +258,10 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 
 	@Override
 	public void removeAllCustomGraphics() {
-		this.graphicsMap.clear();
-		this.sourceMap.clear();
-		this.usedCustomGraphicsSet.clear();
+		graphicsMap.clear();
+		sourceMap.clear();
+		usedCustomGraphicsSet.clear();
+		missingImageCustomGraphicsSet.clear();
 	}
 
 	@Override
@@ -303,22 +316,33 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	}
 	
 	@Override
-	public void handleEvent(SessionAboutToBeLoadedEvent e) {
+	public void handleEvent(SessionAboutToBeLoadedEvent evt) {
 		// Since version 3.10, the current images are removed before the new ones are restored!
 		removeAllCustomGraphics();
 		IDGenerator.getIDGenerator().initCounter(0L);
 		
-		// Delete the actual image files from the TEMP folder
-		var dir = new File(System.getProperty(TEMP_DIR));
-		var files = dir.listFiles();
+		// Delete all image files from the TEMP folder (used in v3.9.x and below)...
+		var tmpDir = new File(System.getProperty(TEMP_DIR_KEY));
+		var files = tmpDir.listFiles();
 		
 		for (var f : files) {
-			if (isSupportedImageFile(f))
-				f.delete();
+			try {
+				if (isSupportedImageFile(f))
+					f.delete();
+			} catch (Exception e) {
+				logger.error("Cannot delete temporary image: " + f.getName(), e);
+			}
 		}
 		
-		// But we still have to restore the sample images
-		restoreImages();
+		// ...and the files inside the "CYS images" folder
+		var cysImgDir = new File(tmpDir, CYS_IMG_DIR_NAME);
+		
+		try {
+			if (cysImgDir.exists())
+				FileUtils.cleanDirectory(cysImgDir);
+		} catch (Exception e) {
+			logger.error("Cannot clean " + CYS_IMG_DIR_NAME + " directory", e);
+		}
 	}
 
 	@Override

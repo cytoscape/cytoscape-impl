@@ -33,7 +33,9 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.event.DebounceTimer;
@@ -51,6 +53,7 @@ import org.cytoscape.model.events.ColumnNameChangedEvent;
 import org.cytoscape.model.events.ColumnNameChangedListener;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
@@ -824,31 +827,31 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		var nodeColStyles = tableVMM.getAssociatedColumnVisualStyles(netVS, CyNode.class);
 		var edgeColStyles = tableVMM.getAssociatedColumnVisualStyles(netVS, CyEdge.class);
 		
-		List<ColumnSpec> columns = new ArrayList<>();
+		List<ColumnSpec> colSpecs = new ArrayList<>();
+		
 		for(var entry : nodeColStyles.entrySet()) {
-			columns.add(new ColumnSpec(GraphObjectType.node(), entry.getKey()));
+			colSpecs.add(new ColumnSpec(GraphObjectType.node(), entry.getKey()));
 		}
 		for(var entry : edgeColStyles.entrySet()) {
-			columns.add(new ColumnSpec(GraphObjectType.edge(), entry.getKey()));
+			colSpecs.add(new ColumnSpec(GraphObjectType.edge(), entry.getKey()));
 		}
 		
-		columns.sort(ColumnSpec.comparingName());
+		colSpecs.sort(ColumnSpec.comparingName());
 		
-		if(selectedColumn == null && !columns.isEmpty()) {
-			selectedColumn = columns.get(0);
+		if(colSpecs.isEmpty()) { // There must always be at least one column style
+			colSpecs.add(selectedColumn = new ColumnSpec(GraphObjectType.node(), CyRootNetwork.SHARED_NAME));
+			getOrCreateAssociatedColumnStyleForCurrentNetwork(selectedColumn);
+		} else if(selectedColumn == null) {
+			selectedColumn = colSpecs.get(0);
 		}
 
-		VisualStyle colVS = null;
-		if(selectedColumn != null) {
-			var tableType = selectedColumn.tableType().type();
-			colVS = tableVMM.getAssociatedColumnVisualStyle(netVS, tableType, selectedColumn.columnName());
-		}
+		var colVS = tableVMM.getAssociatedColumnVisualStyle(netVS, selectedColumn.tableType().type(), selectedColumn.columnName());
 		
 		updateVisualPropertySheets(netVS, NETWORK_SHEET_TYPES, resetDefaultVisibleItems, rebuild);
-		updateVisualPropertySheets(colVS, TABLE_SHEET_TYPES, resetDefaultVisibleItems, true);
+		updateVisualPropertySheets(colVS, TABLE_SHEET_TYPES,   resetDefaultVisibleItems, true);
 		
 		vizMapperMainPanel.getColumnStylePnl().removeColumnSelectionListener(columnChangeListener);
-		vizMapperMainPanel.updateColumns(columns, selectedColumn);
+		vizMapperMainPanel.updateColumns(colSpecs, selectedColumn);
 		vizMapperMainPanel.getColumnStylePnl().addColumnSelectionListener(columnChangeListener);
 	}
 	
@@ -871,13 +874,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		var tableType = col.tableType().type();
 		
 		if(action == Action.CREATE) {
-			selectedColumn = col;
-			VisualStyle colVS = tableVMM.getAssociatedColumnVisualStyle(netVS, tableType, col.columnName());
-			if(colVS == null) {
-				var visualStyleFactory = servicesUtil.get(VisualStyleFactory.class);
-				colVS = visualStyleFactory.createVisualStyle(col.columnName());
-				tableVMM.setAssociatedVisualStyle(netVS, tableType, col.columnName(), colVS); // Fires event that calls updateColumnAssociation
-			}
+			selectedColumn = col; 
+			getOrCreateAssociatedColumnStyleForCurrentNetwork(col);
 		} else if(action == Action.DELETE) {
 			selectedColumn = null;
 			tableVMM.setAssociatedVisualStyle(netVS, tableType, col.columnName(), null); // Fires event that calls updateColumnAssociation
@@ -886,6 +884,20 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			VisualStyle colVS = tableVMM.getAssociatedColumnVisualStyle(netVS, tableType, col.columnName());
 			updateVisualPropertySheets(colVS, TABLE_SHEET_TYPES, false, true);
 		}
+	}
+	
+	private VisualStyle getOrCreateAssociatedColumnStyleForCurrentNetwork(ColumnSpec col) {
+		var tableType = col.tableType().type();
+		var netVS = vmProxy.getCurrentNetworkVisualStyle();
+		var tableVMM = servicesUtil.get(TableVisualMappingManager.class);
+		
+		VisualStyle colVS = tableVMM.getAssociatedColumnVisualStyle(netVS, tableType, col.columnName());
+		if(colVS == null) {
+			var visualStyleFactory = servicesUtil.get(VisualStyleFactory.class);
+			colVS = visualStyleFactory.createVisualStyle(tableVMM.getDefaultVisualStyle());
+			tableVMM.setAssociatedVisualStyle(netVS, tableType, col.columnName(), colVS); // Fires event that calls updateColumnAssociation
+		}
+		return colVS;
 	}
 	
 	
@@ -952,7 +964,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				for (var item : sheet.getItems()) {
 					// Update values
 					var model = item.getModel();
-					model.update(vmProxy.getRenderingEngine(model.getLexiconType()));
+					var re = vmProxy.getRenderingEngine(model.getLexiconType());
+					model.update(re);
 					
 					if (model.getVisualPropertyDependency() != null)
 						item.update();
@@ -986,11 +999,25 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	
 	
 	public VisualLexicon getCurrentVisualLexicon(VisualProperty<?> vp) {
-		Class<? extends CyIdentifiable> type = vp.getTargetDataType();
+		var type = vp.getTargetDataType();
 		var re = vmProxy.getRenderingEngine(type);
 		if(re == null)
-			return null;
+			return getDefaultVisualLexicon(vp);
 		return re.getVisualLexicon();
+	}
+	
+	private VisualLexicon getDefaultVisualLexicon(VisualProperty<?> vp) {
+		var type = vp.getTargetDataType();
+		var appMgr = servicesUtil.get(CyApplicationManager.class);
+		if (type == CyNode.class || type == CyEdge.class || type == CyNetwork.class) {
+			return appMgr.getDefaultNetworkViewRenderer()
+					.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT)
+					.getVisualLexicon();
+		} else { 
+			return appMgr.getDefaultTableViewRenderer()
+					.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT)
+					.getVisualLexicon();
+		}
 	}
 	
 	

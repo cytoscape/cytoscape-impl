@@ -146,7 +146,7 @@ public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 		return engine;
 	}
 	
-	public void setRenderingEngine(final RenderingEngine<?> engine) {
+	public void setRenderingEngine(RenderingEngine<?> engine) {
 		if (engine != this.engine)
 			propChangeSupport.firePropertyChange("renderingEngine", engine, this.engine = engine);
 	}

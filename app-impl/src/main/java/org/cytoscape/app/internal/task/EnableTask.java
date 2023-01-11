@@ -55,8 +55,8 @@ public class EnableTask extends AbstractAppTask implements ObservableTask {
 		}
 		appManager.installApp(appObject);
 		updateApps();
-		error = "App '"+app+"' re-enabled";
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, error);
+		String msg = "App '"+app+"' re-enabled";
+		taskMonitor.showMessage(TaskMonitor.Level.INFO, msg);
 	}
 
 	@Override

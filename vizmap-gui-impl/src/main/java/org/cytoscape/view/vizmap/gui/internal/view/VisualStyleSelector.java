@@ -2,7 +2,11 @@ package org.cytoscape.view.vizmap.gui.internal.view;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
-import static org.cytoscape.util.swing.IconManager.*;
+import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE_O;
+import static org.cytoscape.util.swing.IconManager.ICON_EDIT;
+import static org.cytoscape.util.swing.IconManager.ICON_SHARE_ALT_SQUARE;
+import static org.cytoscape.util.swing.IconManager.ICON_SQUARE_O;
+import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
 import static org.cytoscape.view.vizmap.gui.internal.view.util.ViewUtil.invokeOnEDT;
@@ -513,13 +517,16 @@ public class VisualStyleSelector extends JPanel {
 					});
 				}
 			});
-			gridScrollPane.getViewport().addMouseListener(new MouseAdapter() {
+			
+			var viewportMouseAdapter = new MouseAdapter() {
 				@Override
 				public void mousePressed(MouseEvent evt) {
 					if (isEditMode() && !evt.isShiftDown()) // Deselect all items
 						getStyleGrid().deselectAll();
 				}
-			});
+			};
+			gridScrollPane.getViewport().addMouseListener(viewportMouseAdapter);
+			gridScrollPane.getViewport().getView().addMouseListener(viewportMouseAdapter);
 		}
 		
 		return gridScrollPane;
@@ -1065,21 +1072,6 @@ public class VisualStyleSelector extends JPanel {
 					
 					if (!isFilteredOut(vs))
 						add(itemPnl);
-				}
-				
-				var diff = (cols * rows) - dm.getSize();
-					
-				for (int i = 0; i < diff; i++) {
-					var fillPnl = new JPanel();
-					fillPnl.setBackground(BG_COLOR);
-					fillPnl.addMouseListener(new MouseAdapter() {
-						@Override
-						public void mousePressed(MouseEvent evt) {
-							if (isEditMode() && !evt.isShiftDown()) // Deselect all items
-								deselectAll();
-						}
-					});
-					add(fillPnl);
 				}
 			}
 			

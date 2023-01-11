@@ -51,7 +51,6 @@ public class RestoreImagesTask implements Task {
 	// For image I/O, PNG is used as bitmap image format.
 	private static final String PNG_EXT = ".png";
 
-	// Default vectors
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	public RestoreImagesTask(File imageLocation, CyServiceRegistrar serviceRegistrar) {

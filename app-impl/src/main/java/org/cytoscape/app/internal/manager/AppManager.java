@@ -721,7 +721,7 @@ public class AppManager implements FrameworkListener {
 				}
 
 				app.setStatus(AppStatus.UNINSTALLED);
-				//fireAppsChangedEvent();
+				fireAppsChangedEvent();
 
 				// System.out.println(file + " on create");
 			}
