@@ -510,16 +510,7 @@ public class LoadImageDialog extends AbstractAnnotationDialog<ImageAnnotationImp
 		 * Load the image (wrapped as Custom Graphics) and update the preview.
 		 */
 		private void loadImage(String urlStr) {
-			if (urlStr != null)
-				urlStr = urlStr.trim();
-			
-			if (urlStr.startsWith("/"))
-				urlStr = "file:" + urlStr; // Assume it's a local file
-			else if (urlStr.startsWith("file://"))
-				urlStr = urlStr.replaceFirst("//", "/"); // "file://" does NOT work, but "file:/" does
-			else if (urlStr.startsWith("www."))
-				urlStr = "https://" + urlStr; // Lets be nice and and the httpS protocol
-			
+			urlStr = normalizeURL(urlStr);
 			image = null;
 			
 			String errorMsg = null;
@@ -537,17 +528,22 @@ public class LoadImageDialog extends AbstractAnnotationDialog<ImageAnnotationImp
 				}
 				
 				if (url != null) {
+					// Only load the image if the manager doesn't have any image with the same URL yet 
 					var manager = serviceRegistrar.getService(CustomGraphicsManager.class);
-					var id = manager.getNextAvailableID();
-					var name = urlStr;
+					image = manager.getCustomGraphicsBySourceURL(url);
 					
-					try {
-						image = isSVG(url)
-								? new SVGCustomGraphics(id, name, url)
-								: new BitmapCustomGraphics(id, name, url);
-					} catch (Exception e) {
-						errorMsg = "Invalid Image";
-						errorDesc = e.getMessage();
+					if (image == null) {
+						var id = manager.getNextAvailableID();
+						var name = urlStr;
+						
+						try {
+							image = isSVG(url)
+									? new SVGCustomGraphics(id, name, url)
+									: new BitmapCustomGraphics(id, name, url);
+						} catch (Exception e) {
+							errorMsg = "Invalid Image";
+							errorDesc = e.getMessage();
+						}
 					}
 				}
 			}
@@ -555,6 +551,19 @@ public class LoadImageDialog extends AbstractAnnotationDialog<ImageAnnotationImp
 			// Update error and preview
 			updatePreview();
 			updateErrorMessage(errorMsg, errorDesc);
+		}
+
+		private String normalizeURL(String urlStr) {
+			urlStr = urlStr.trim();
+			
+			if (urlStr.startsWith("/"))
+				urlStr = "file:" + urlStr; // Assume it's a local file
+			else if (urlStr.startsWith("file://"))
+				urlStr = urlStr.replaceFirst("//", "/"); // "file://" does NOT work, but "file:/" does
+			else if (urlStr.startsWith("www."))
+				urlStr = "https://" + urlStr; // Lets be nice and and the httpS protocol
+			
+			return urlStr;
 		}
 
 		private void updateErrorMessage(String msg, String description) {
