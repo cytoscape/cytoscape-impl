@@ -5,6 +5,9 @@ import org.cytoscape.search.internal.index.SearchManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskMonitor;
 
+/**
+ * Searches any table.
+ */
 public class TableSearchTask extends SearchTask {
 
 	private final CyServiceRegistrar registrar;
@@ -33,13 +36,13 @@ public class TableSearchTask extends SearchTask {
 	}
 	
 	private String getPopupMessage(SearchResults results) {
-		if(results.isError() == false && results.getErrorMessage() == null) {
-			int hitCount = results.getHitCount(table);
-			if(hitCount == 1)
-				return "Selected 1 row";
-			else
-				return "Selected " + hitCount + " rows";
-		}
-		return results.getErrorMessage();
+		if(results.isError() || results.getErrorMessage() != null)
+			return results.getErrorMessage();
+		
+		int hitCount = results.getHitCount(table);
+		if(hitCount == 1)
+			return "Selected 1 row";
+		else
+			return "Selected " + hitCount + " rows";
 	}
 }

@@ -3,7 +3,8 @@ package org.cytoscape.search.internal.ui;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.search.internal.index.SearchManager;
-import org.cytoscape.search.internal.search.NetworkSearchTask;
+import org.cytoscape.search.internal.search.NetworkTableSearchTask;
+import org.cytoscape.search.internal.search.SearchTask;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,17 +24,15 @@ public class NetworkSearchBox extends SearchBox {
 	}
 
 	@Override
-	public NetworkSearchTask getSearchTask(String queryString) {
+	public SearchTask getSearchTask(String queryString) {
 		var appManager = registrar.getService(CyApplicationManager.class);
-		final var currentNetwork = appManager.getCurrentNetwork();
+		var currentNetwork = appManager.getCurrentNetwork();
 		if(currentNetwork == null) {
 			logger.error("Could not find network for search");
 			return null;
 		}
 		
-		return new NetworkSearchTask(searchManager, queryString, currentNetwork);
+		return new NetworkTableSearchTask(searchManager, queryString, currentNetwork);
 	}
-
-	
 	
 }

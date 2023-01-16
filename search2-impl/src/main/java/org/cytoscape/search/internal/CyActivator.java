@@ -11,7 +11,7 @@ import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.search.internal.index.SearchManager;
 import org.cytoscape.search.internal.ui.NetworkSearchBox;
 import org.cytoscape.search.internal.ui.NetworkSearchToolbarComponent;
-import org.cytoscape.search.internal.ui.TableSearchAction;
+import org.cytoscape.search.internal.ui.NetworkTableSearchAction;
 import org.cytoscape.search.internal.ui.debug.DebugSearchProgressPanel;
 
 /*
@@ -95,7 +95,7 @@ public class CyActivator extends AbstractCyActivator {
 		var iconManager = getService(bc, IconManager.class);
 		var iconFont = iconManager.getIconFont(ICON_FONT_SIZE);
 		var icon = new TextIcon(IconManager.ICON_SEARCH, iconFont, ICON_WIDTH, ICON_HEIGHT);
-		var tableSearchAction = new TableSearchAction(registrar, searchManager, icon, 0.0055f);
+		var tableSearchAction = new NetworkTableSearchAction(registrar, searchManager, icon, 0.0055f);
 		registerService(bc, tableSearchAction, CyAction.class);
 		
 		// Debug panel

@@ -17,7 +17,7 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.search.internal.LogSilenceRule;
-import org.cytoscape.search.internal.search.NetworkSearchTask;
+import org.cytoscape.search.internal.search.NetworkTableSearchTask;
 import org.cytoscape.search.internal.search.SearchResults;
 import org.cytoscape.search.internal.search.SearchResults.Status;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -177,7 +177,7 @@ public class QueryTest {
 	}
 	
 	private SearchResults queryIndex(String query) {
-		NetworkSearchTask searchTask = new NetworkSearchTask(searchManager, query, network);
+		var searchTask = new NetworkTableSearchTask(searchManager, query, network);
 		var results = searchTask.runQuery(mock(TaskMonitor.class));
 		assertEquals("Error running search", Status.SUCCESS, results.getStatus());
 		return results;

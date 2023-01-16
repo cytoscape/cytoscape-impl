@@ -13,16 +13,16 @@ import org.cytoscape.search.internal.index.SearchManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
 @SuppressWarnings("serial")
-public class TableSearchAction extends AbstractCyAction {
+public class NetworkTableSearchAction extends AbstractCyAction {
 
 	private static String TITLE = "Search Table...";
 	
 	private final CyServiceRegistrar registrar;
 	private final SearchManager searchManager;
 	
-	private TableSearchBox searchBox;
+	private NetworkTableSearchBox searchBox;
 	
-	public TableSearchAction(CyServiceRegistrar registrar, SearchManager searchManager, Icon icon, float toolbarGravity) {
+	public NetworkTableSearchAction(CyServiceRegistrar registrar, SearchManager searchManager, Icon icon, float toolbarGravity) {
 		super(TITLE);
 		this.registrar = registrar;
 		this.searchManager = searchManager;
@@ -46,9 +46,9 @@ public class TableSearchAction extends AbstractCyAction {
 	}
 	
 	
-	private TableSearchBox getSearchBox() {
+	private NetworkTableSearchBox getSearchBox() {
 		if(searchBox == null) {
-			searchBox = new TableSearchBox(registrar, searchManager);
+			searchBox = new NetworkTableSearchBox(registrar, searchManager);
 		}
 		return searchBox;
 	}
