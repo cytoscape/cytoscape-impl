@@ -156,7 +156,8 @@ public class SearchManager implements
 		return null;
 	}
 	
-	private boolean isIndexable(CyTable table) {
+	
+	public boolean isIndexable(CyTable table) {
 		return getTableType(table) != null;
 	}
 			

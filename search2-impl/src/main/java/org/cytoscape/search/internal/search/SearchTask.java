@@ -17,6 +17,7 @@ import org.cytoscape.search.internal.index.SearchManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.TaskMonitor.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,10 +89,21 @@ public class SearchTask extends AbstractTask implements ObservableTask {
 	
 	private SearchResults searchTable(TaskMonitor tm, CyTable table) { 
 		boolean first = true;
+		
+		if(!searchManager.isIndexable(table)) {
+			tm.showMessage(Level.ERROR, "Table cannot be searched");
+			return SearchResults.fatalError();
+		}
+		
 		while(!searchManager.isReady(table)) {
 			if(first) {
 				tm.setStatusMessage("Waiting for index to be ready.");
 				first = false;
+			}
+			try {
+				Thread.sleep(200);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
 			if(cancelled) {
 				return SearchResults.cancelled();

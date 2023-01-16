@@ -26,6 +26,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
+import org.mockito.Mockito;
 
 
 public class QueryTest {
@@ -162,7 +163,11 @@ public class QueryTest {
 		baseDir.toFile().deleteOnExit();
 		
 		var registrar = mock(CyServiceRegistrar.class);
-		searchManager = new SearchManager(registrar, baseDir);
+		var searchManager = new SearchManager(registrar, baseDir);
+		var searchManagerSpy = Mockito.spy(searchManager);
+		Mockito.doReturn(true).when(searchManagerSpy).isIndexable(Mockito.any());
+		
+		this.searchManager = searchManagerSpy;
 		
 		var future1 = searchManager.addTable(network.getDefaultNodeTable(), TableType.NODE);
 		var future2 = searchManager.addTable(network.getDefaultEdgeTable(), TableType.EDGE);

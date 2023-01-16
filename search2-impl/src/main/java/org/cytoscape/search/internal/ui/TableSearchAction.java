@@ -28,10 +28,12 @@ public class TableSearchAction extends AbstractCyAction {
 		this.searchManager = searchManager;
 		putValue(SHORT_DESCRIPTION, TITLE);
 		putValue(LARGE_ICON_KEY, icon);
+		
 		setIsInNodeTableToolBar(true);
 		setIsInEdgeTableToolBar(true);
-		setIsInNetworkTableToolBar(true);
-		setIsInUnassignedTableToolBar(false); // TEMPORARY!
+		setIsInNetworkTableToolBar(false);
+		setIsInUnassignedTableToolBar(false);
+		
 		setToolbarGravity(toolbarGravity);
 		insertSeparatorAfter();
 	}
