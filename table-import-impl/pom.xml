@@ -35,8 +35,11 @@
 						<Export-Package>!${bundle.namespace}.*</Export-Package>
 						<Private-Package>${bundle.namespace}.*</Private-Package>
 						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
-						<Embed-Dependency>poi|poi-ooxml|poi-ooxml-schemas|ooxml-schemas;groupId=org.apache.poi;inline=false</Embed-Dependency>
-						<!-- <Import-Package>junit.*|org.apache.poi.hdgf.*|org.apache.poi.hpbf.*|org.apache.poi.hslf.*|org.apache.poi.hsmf|org.apache.poi.hsmf.*|org.apache.poi.hwpf.*;resolution:=optional,*</Import-Package> -->
+						<Embed-Dependency>
+							poi,commons-codec,commons-collections4,commons-math3,commons-io,
+							SparseBitSet,poi-ooxml,poi-ooxml-lite,xmlbeans,commons-compress,curvesapi
+						</Embed-Dependency>
+						<Embed-Transitive>true</Embed-Transitive>
 						<Import-Package>*;resolution:=optional</Import-Package>
 					</instructions>
 				</configuration>
@@ -142,17 +145,6 @@
 		</dependency>
     
 		<!-- Apache poi -->
-		<dependency>
-			<groupId>org.apache.xmlbeans</groupId> 
-			<artifactId>xmlbeans</artifactId> 
-			<version>2.4.0</version> 
-		</dependency>
-
-		<!-- 
-		     org.apache.poi-all (below) consists of the 4 jars listed
-			 in this comment. We need to combine them because of a package 
-			 split between org.apache.poi and org.apache.poi-ooxml.
-        -->
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
@@ -163,24 +155,6 @@
             <artifactId>poi-ooxml</artifactId>
             <version>5.2.2</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi-ooxml-schemas</artifactId>
-            <version>4.1.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>ooxml-schemas</artifactId>
-            <version>1.4</version>
-        </dependency>
-        
-        <!--
-		<dependency>
-			<groupId>cytoscape-temp</groupId>
-			<artifactId>org.apache.poi-all</artifactId>
-			<version>3.6</version>
-		</dependency>
-        -->
         
         <dependency>
             <groupId>dom4j</groupId>
@@ -274,12 +248,6 @@
             <artifactId>opencsv</artifactId>
             <version>2.1</version>
         </dependency>
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<version>2.1</version>
-			<scope>provided</scope>
-		</dependency>        
     </dependencies>
 
 
