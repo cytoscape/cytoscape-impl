@@ -279,7 +279,8 @@ public class VizMapperProxy extends Proxy
 			
 			var tableView = tableViewManager.getTableView(table);
 			var engines = engineManager.getRenderingEngines(tableView);
-			return engines.iterator().next();
+			
+			return engines.isEmpty() ? null : engines.iterator().next();
 		}
 	}
 	
