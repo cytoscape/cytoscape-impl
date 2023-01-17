@@ -31,10 +31,14 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.events.TableViewAddedEvent;
+import org.cytoscape.view.model.events.TableViewAddedListener;
 import org.cytoscape.view.model.table.CyTableViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.SynchronousTaskManager;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 
 /*
@@ -162,9 +166,13 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		netManager.addNetwork(newNet, false);
 		tm.setProgress(0.6);
 		
-		// Copy the Table visual properties in a separate task
-		var copyTableVisualPropertiesTask = new CopyTableVisualPropertiesTask(newNet);
-		insertTasksAfterCurrentTask(copyTableVisualPropertiesTask);
+		// Copy the Table visual properties after the table views are created
+		var nodeTableListener = new CopyTableVisualPropertiesListener(serviceRegistrar, parentNetwork.getTable(CyNode.class, DEFAULT_ATTRS), newNet.getTable(CyNode.class, DEFAULT_ATTRS));
+		var edgeTableListener = new CopyTableVisualPropertiesListener(serviceRegistrar, parentNetwork.getTable(CyEdge.class, DEFAULT_ATTRS), newNet.getTable(CyEdge.class, DEFAULT_ATTRS));
+		var netTableListener  = new CopyTableVisualPropertiesListener(serviceRegistrar, parentNetwork.getTable(CyNetwork.class, DEFAULT_ATTRS), newNet.getTable(CyNetwork.class, DEFAULT_ATTRS));
+		serviceRegistrar.registerService(nodeTableListener, TableViewAddedListener.class);
+		serviceRegistrar.registerService(edgeTableListener, TableViewAddedListener.class);
+		serviceRegistrar.registerService(netTableListener,  TableViewAddedListener.class);
 		
 		// Create the view in a separate task
 		var networks = new HashSet<CyNetwork>();
@@ -256,12 +264,44 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		}
 	}
 	
-	private class CopyTableVisualPropertiesTask extends AbstractTask {
-		
-		private CySubNetwork newNet;
+	
+	private static class CopyTableVisualPropertiesListener implements TableViewAddedListener {
 
-		public CopyTableVisualPropertiesTask(CySubNetwork newNet) {
-			this.newNet = newNet;
+		private final CyServiceRegistrar registrar;
+		private final CyTable parentTable;
+		private final CyTable subTable;
+
+		public CopyTableVisualPropertiesListener(CyServiceRegistrar registrar, CyTable parentTable, CyTable subTable) {
+			this.registrar = registrar;
+			this.parentTable = parentTable;
+			this.subTable = subTable;
+		}
+		
+		@Override
+		public void handleEvent(TableViewAddedEvent e) {
+			var tableView = e.getTableView();
+			if(tableView.getModel() == subTable) {
+				registrar.unregisterService(this, TableViewAddedListener.class); // Only this run once
+				var taskManager = registrar.getService(SynchronousTaskManager.class);
+				
+				var copyTask = new CopyTableVisualPropertiesTask(registrar, parentTable, subTable);
+				taskManager.execute(new TaskIterator(copyTask));
+			}
+		}
+		
+	}
+	
+	
+	private static class CopyTableVisualPropertiesTask extends AbstractTask {
+		
+		private final CyServiceRegistrar registrar;
+		private final CyTable parentTable;
+		private final CyTable subTable;
+
+		public CopyTableVisualPropertiesTask(CyServiceRegistrar registrar, CyTable parentTable, CyTable subTable) {
+			this.registrar = registrar;
+			this.parentTable = parentTable;
+			this.subTable = subTable;
 		}
 
 		@Override
@@ -269,24 +309,14 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 			tm.setTitle("Copy Table Visual Properties");
 			tm.setProgress(0.0);
 			
-			eventHelper.flushPayloadEvents(); // To make sure the new table views are created before the next steps
-			tm.setProgress(0.1);
-			
-			// Copy the Table visual properties
-			copyVisualProperties(parentNetwork.getTable(CyNode.class, DEFAULT_ATTRS), newNet.getTable(CyNode.class, DEFAULT_ATTRS));
-			tm.setStatusMessage("Copying Node table's properties...");
-			tm.setProgress(0.6);
-			
-			copyVisualProperties(parentNetwork.getTable(CyEdge.class, DEFAULT_ATTRS), newNet.getTable(CyEdge.class, DEFAULT_ATTRS));
-			tm.setStatusMessage("Copying Edge table's properties...");
-			tm.setProgress(0.9);
-			
-			copyVisualProperties(parentNetwork.getTable(CyNetwork.class, DEFAULT_ATTRS), newNet.getTable(CyNetwork.class, DEFAULT_ATTRS));
-			tm.setStatusMessage("Copying Network table's properties...");
+			copyVisualProperties(parentTable, subTable);
 			tm.setProgress(1.0);
 		}
 		
 		private void copyVisualProperties(CyTable parentTable, CyTable subTable) {
+			var tableViewManager = registrar.getService(CyTableViewManager.class);
+			var renderingEngineManager = registrar.getService(RenderingEngineManager.class);
+			
 			var parentTableView = tableViewManager.getTableView(parentTable);
 			var subTableView = tableViewManager.getTableView(subTable);
 
