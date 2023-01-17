@@ -10,7 +10,6 @@ import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GraphicsConfiguration;
-import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
@@ -324,6 +323,8 @@ public class NetworkViewMainPanel extends JPanel {
 					if (window != null && !window.isActive())
 						window.toFront();
 				}
+			} else {
+				showNullView(null);
 			}
 		}
 	}
