@@ -152,5 +152,10 @@ public abstract class CyViewBase<M> implements View<M> {
 			lock.writeLock().unlock();
 		}
 	}
+
+	@Override
+	public String toString() {
+		return getClass().getSimpleName() + "[suid=" + suid + "]";
+	}
 	
 }
