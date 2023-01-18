@@ -3,6 +3,8 @@ package org.cytoscape.ding.impl.cyannotator.dialogs;
 import java.awt.BorderLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.geom.Point2D;
 
 import javax.swing.AbstractAction;
@@ -78,6 +80,15 @@ public class LoadImageDialog extends AbstractAnnotationDialog<ImageAnnotationImp
 		setResizable(true);
 		
 		getControlPanel().add(getImageSelector(), BorderLayout.CENTER);
+		
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowOpened(WindowEvent e) {
+				// Let the user load new images right away if the selector is empty
+				if (getImageSelector().isEmpty())
+					getImageSelector().loadNewImages();
+			}
+		});
 		
 		pack();
 	}
