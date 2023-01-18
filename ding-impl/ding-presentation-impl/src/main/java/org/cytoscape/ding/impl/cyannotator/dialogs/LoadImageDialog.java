@@ -76,7 +76,7 @@ public class LoadImageDialog extends AbstractAnnotationDialog<ImageAnnotationImp
 		
 		this.serviceRegistrar = serviceRegistrar;
 		
-		setTitle("Add Images");
+		setTitle("Select an Image");
 		setResizable(true);
 		
 		getControlPanel().add(getImageSelector(), BorderLayout.CENTER);

@@ -44,7 +44,7 @@ class LoadImageDialog extends JDialog {
 	private final CyServiceRegistrar serviceRegistrar;
 	
 	LoadImageDialog(Window owner, CyServiceRegistrar serviceRegistrar) {
-		super(owner, "Select an Image", ModalityType.APPLICATION_MODAL);
+		super(owner, "Add Images", ModalityType.APPLICATION_MODAL);
 		
 		this.serviceRegistrar = serviceRegistrar;
 		
