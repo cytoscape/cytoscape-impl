@@ -3,7 +3,6 @@ package org.cytoscape.ding.impl.cyannotator.dialogs;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.LEADING;
-import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -136,8 +135,6 @@ public abstract class AbstractAnnotationDialog<T extends AbstractAnnotation> ext
 		hGroup.addComponent(buttonPanel);
 		vGroup.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
 
-		makeSmall(getApplyButton(), getCancelButton());
-		
 		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), getApplyButton().getAction(), getCancelButton().getAction());
 		getRootPane().setDefaultButton(getApplyButton());
 		

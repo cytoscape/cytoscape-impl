@@ -42,18 +42,15 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.Serializable;
 import java.net.URL;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 
-import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractListModel;
 import javax.swing.BorderFactory;
@@ -64,7 +61,6 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -79,13 +75,14 @@ import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.cytoscape.application.CyUserLog;
+import org.cytoscape.cg.internal.util.ImageUtil;
 import org.cytoscape.cg.internal.util.ViewUtil;
 import org.cytoscape.cg.internal.util.VisualPropertyIconFactory;
 import org.cytoscape.cg.model.AbstractURLImageCustomGraphics;
@@ -105,9 +102,6 @@ import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({ "rawtypes", "serial" })
 public class ImageCustomGraphicsSelector extends JPanel {
-	
-	private static final String IMG_FILES_DESCRIPTION = "Image file (PNG, GIF, JPEG or SVG)";
-	private static final String[] IMG_EXTENSIONS = { "jpg", "jpeg", "png", "gif", "svg" };
 	
 	private static final int IMAGE_WIDTH = 120;
 	private static final int IMAGE_HEIGHT = 68;
@@ -337,6 +331,17 @@ public class ImageCustomGraphicsSelector extends JPanel {
 		return allImages == null || allImages.isEmpty();
 	}
 	
+	public void loadNewImages() {
+		// Add a directory
+		var owner = SwingUtilities.getWindowAncestor(this);
+		var dialog = new LoadImageDialog(owner, serviceRegistrar);
+		dialog.setLocationRelativeTo(this);
+		dialog.setVisible(true);
+		
+		var images = dialog.getImages();
+		addNewImages(images);
+	}
+	
 	public void dispose() {
 		try {
 			allImages.clear();
@@ -463,13 +468,13 @@ public class ImageCustomGraphicsSelector extends JPanel {
 		return imageGrid;
 	}
 	
-	public JButton getAddBtn() {
+	JButton getAddBtn() {
 		if (addBtn == null) {
 			var iconFont = serviceRegistrar.getService(IconManager.class).getIconFont(18.0f);
 			var icon = new TextIcon(ICON_PLUS, iconFont, 18, 18);
 			
 			addBtn = new JButton("Add Images", icon);
-			addBtn.addActionListener(evt -> addImages());
+			addBtn.addActionListener(evt -> loadNewImages());
 		}
 		
 		return addBtn;
@@ -544,18 +549,26 @@ public class ImageCustomGraphicsSelector extends JPanel {
 		return removeImagesBtn;
 	}
 	
-	private void addImages() {
-		// Add a directory
-		var chooser = new JFileChooser();
+	private void addNewImages(List<AbstractURLImageCustomGraphics> images) {
+		var manager = serviceRegistrar.getService(CustomGraphicsManager.class);
+		var addedImages = new ArrayList<CyCustomGraphics>();
 		
-		var filter = new FileNameExtensionFilter(IMG_FILES_DESCRIPTION, IMG_EXTENSIONS);
-		chooser.setDialogTitle("Select Image Files");
-		chooser.setMultiSelectionEnabled(true);
-		chooser.setFileFilter(filter);
-		int returnVal = chooser.showOpenDialog(this);
+		for (var cg : images) {
+			manager.addCustomGraphics(cg, cg.getSourceURL());
+			addedImages.add(cg);
+		}
 		
-		if (returnVal == JFileChooser.APPROVE_OPTION)
-			processFiles(chooser.getSelectedFiles());
+		if (!addedImages.isEmpty()) {
+			update(manager.getAllCustomGraphics(), null);
+			
+			if (isEditMode())
+				getImageGrid().setSelectedList(addedImages);
+			else
+				getImageGrid().setSelectedValue(addedImages.get(0), false);
+			
+			// Scroll to the first selected item
+			getImageGrid().ensureIndexIsVisible(getImageGrid().getMinSelectionIndex());
+		}
 	}
 	
 	private void removeSelectedImages() {
@@ -590,59 +603,6 @@ public class ImageCustomGraphicsSelector extends JPanel {
 						
 				JOptionPane.showMessageDialog(this, msg, "Custom Graphics in Use", JOptionPane.ERROR_MESSAGE);
 			}
-		}
-	}
-	
-	private void processFiles(File[] files) {
-		var manager = serviceRegistrar.getService(CustomGraphicsManager.class);
-		var newImages = new ArrayList<CyCustomGraphics>();
-		
-		for (var file : files) {
-			BufferedImage img = null;
-			String svg = null;
-			
-			if (file.isFile()) {
-				try {
-					if (file.getName().toLowerCase().endsWith(".svg"))
-						svg = Files.readString(file.toPath());
-					else
-						img = ImageIO.read(file);
-				} catch (Exception e) {
-					logger.error("Could not read file: " + file.toString(), e);
-					continue;
-				}
-			}
-
-			try {
-				var url = file.toURI().toURL();
-				var name = ViewUtil.getShortName(file.toString());
-				AbstractURLImageCustomGraphics<?> cg = null;
-				
-				if (svg != null)
-					cg = new SVGCustomGraphics(manager.getNextAvailableID(), name, url, svg);
-				else if (img != null)
-					cg = new BitmapCustomGraphics(manager.getNextAvailableID(), name, url, img);
-
-				if (cg != null) {
-					newImages.add(cg);
-					manager.addCustomGraphics(cg, url);
-				}
-			} catch (Exception e) {
-				logger.error("Could not create custom graphics: " + file, e);
-				continue;
-			}
-		}
-		
-		if (!newImages.isEmpty()) {
-			update(manager.getAllCustomGraphics(), null);
-			
-			if (isEditMode())
-				getImageGrid().setSelectedList(newImages);
-			else
-				getImageGrid().setSelectedValue(newImages.get(0), false);
-			
-			// Scroll to the first selected item
-			getImageGrid().ensureIndexIsVisible(getImageGrid().getMinSelectionIndex());
 		}
 	}
 	
@@ -1780,7 +1740,11 @@ public class ImageCustomGraphicsSelector extends JPanel {
 				try {
 					if (trans.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
 						var fileList = (List<File>) trans.getTransferData(DataFlavor.javaFileListFlavor);
-						processFiles(fileList.toArray(new File[fileList.size()]));
+						var files = fileList.toArray(new File[fileList.size()]);
+						var manager = serviceRegistrar.getService(CustomGraphicsManager.class);
+						var loadedImages = ImageUtil.loadImageCustomGraphics(files, manager);
+						
+						addNewImages(loadedImages);
 					} else {
 						AbstractURLImageCustomGraphics<?> lastCG = null;
 						
