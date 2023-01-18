@@ -214,6 +214,11 @@ class SwingTaskMonitor implements TaskMonitor {
 
 	@Override
 	public void showMessage(TaskMonitor.Level level, String message) {
+    showMessage(level, message, -2);
+  }
+
+	@Override
+	public void showMessage(TaskMonitor.Level level, String message, int wait) {
 		switch (level) {
 		case ERROR:
 			thisLog.error(message);
@@ -225,7 +230,7 @@ class SwingTaskMonitor implements TaskMonitor {
 			thisLog.info(message);
 			break;
 		}
-		showStatusMessage(level, message);
+		showStatusMessage(level, message, wait);
 	}
 
 	@Override
@@ -263,23 +268,66 @@ class SwingTaskMonitor implements TaskMonitor {
 		return task == null;
 	}
 
-	private void showStatusMessage(final TaskMonitor.Level level, final String statusMessage) {
+	private void showStatusMessage(final TaskMonitor.Level level, final String statusMessage, int wait) {
 		invokeOnEDT(() -> {
 			this.statusMessage = statusMessage;
 			this.statusMessageLevel = level;
 			
-			if (dialog != null)
-				dialog.setStatus(
-						GUIDefaults.getIconText(statusMessageLevel),
-						GUIDefaults.getForeground(statusMessageLevel),
-						statusMessage
-				);
+			if (dialog != null) {
+        if (level.equals(TaskMonitor.Level.ERROR)) {
+          dialog.setErrorStatus(statusMessage);
+        } else if (level.equals(TaskMonitor.Level.WARN) && wait > 0) {
+          dialog.setWarnStatus(statusMessage);
+        } else {
+          dialog.setStatus(
+              GUIDefaults.getIconText(statusMessageLevel),
+              GUIDefaults.getForeground(statusMessageLevel),
+              statusMessage
+          );
+        }
+      }
 			
 			history.addMessage(level, statusMessage);
 		});
+
+    if (level.equals(TaskMonitor.Level.WARN)) {
+      if (wait == -2)
+        waitForTime(1);
+      else if (wait > 0)
+        waitForTime(wait);
+      else if (wait == -1) // Wait forever
+        waitUntilClosed();
+    } else if (level.equals(TaskMonitor.Level.ERROR)) {
+      if (wait == -2)
+        waitForTime(10);
+      else if (wait == -1) // Wait forever
+        waitUntilClosed();
+      else if (wait > 0)
+        waitForTime(wait);
+    }
 	}
 
 	public String getFirstTitle() {
 		return firstTitle;
 	}
+
+  private void waitForTime(int wait) {
+    try {
+      int count = wait*1000/500; // Don't wait forever...
+      while (!isClosed()) {
+        Thread.sleep(500);
+        if (count-- <= 0) {
+          break;
+        }
+      }
+    } catch (Exception e) {}
+  }
+
+  private void waitUntilClosed() {
+    try {
+      while (!isClosed()) {
+        Thread.sleep(500);
+      }
+    } catch (Exception e) {}
+  }
 }

@@ -328,8 +328,11 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 		public void setStatusMessage(String statusMessage) {
 		}
 		@Override
-        public void showMessage(TaskMonitor.Level level, String message) {
-        }
+    public void showMessage(TaskMonitor.Level level, String message, int wait) {
+    }
+		@Override
+    public void showMessage(TaskMonitor.Level level, String message) {
+    }
 	}
 	
 	private class ReusableInputStream extends InputStream {

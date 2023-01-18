@@ -56,6 +56,10 @@ public class CommandTaskRunner {
 				task.run(new TaskMonitor() {
 					
 					@Override
+					public void showMessage(Level level, String message, int wait) {
+            showMessage(level, message);
+          }
+					@Override
 					public void showMessage(Level level, String message) {
 						switch(level) {
 						default:

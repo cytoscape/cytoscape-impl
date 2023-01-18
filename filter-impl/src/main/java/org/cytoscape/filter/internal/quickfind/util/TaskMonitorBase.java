@@ -53,6 +53,10 @@ public class TaskMonitorBase implements TaskMonitor {
 		showMessage(TaskMonitor.Level.INFO, statusMessage);
 	}
 
+    public void showMessage(TaskMonitor.Level level, String message, int wait) {
+      showMessage(level, message);
+    }
+
     public void showMessage(TaskMonitor.Level level, String message) {
         this.level = level;
         this.status = message;

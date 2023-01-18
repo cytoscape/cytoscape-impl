@@ -228,6 +228,33 @@ public class TaskDialog extends JDialog {
 		});
 	}
 
+	public void setErrorStatus(final String message) {
+		errorOccurred = true;
+
+		invokeOnEDT(() -> {
+			setStatus(GUIDefaults.ICON_ERROR, LookAndFeelUtil.getErrorColor(), message);
+			progressBar.setVisible(false);
+			closeButton.setVisible(true);
+			cancelButton.setVisible(false);
+			cancelLabel.setVisible(false);
+			updateLabels();
+			pack();
+		});
+  }
+
+  // We use this method when the caller wants to put up a warning with a timeout
+	public void setWarnStatus(final String message) {
+		invokeOnEDT(() -> {
+			setStatus(GUIDefaults.ICON_WARN, LookAndFeelUtil.getErrorColor(), message);
+			progressBar.setVisible(false);
+			closeButton.setVisible(true);
+			cancelButton.setVisible(false);
+			cancelLabel.setVisible(false);
+			updateLabels();
+			pack();
+		});
+  }
+
 	public void setStatus(final String iconText, final Color iconForeground, final String message) {
 		invokeOnEDT(() -> {
 			msgIconLabel.setText(iconText);
