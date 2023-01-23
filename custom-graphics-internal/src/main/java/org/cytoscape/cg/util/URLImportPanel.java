@@ -14,6 +14,7 @@ import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.Icon;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
@@ -34,6 +35,8 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.TextIcon;
 
+import com.google.common.base.Objects;
+
 @SuppressWarnings("serial")
 class URLImportPanel extends JPanel {
 
@@ -41,12 +44,13 @@ class URLImportPanel extends JPanel {
 	private static final int PREVIEW_PAD = 5;
 	
 	private JTextField urlTextField;
-	private JLabel errorIconLabel;
-	private JLabel errorLabel;
+	private JLabel msgIconLabel;
+	private JLabel msgLabel;
 	private JLabel previewImgLabel;
 	
 	@SuppressWarnings("rawtypes")
 	private AbstractURLImageCustomGraphics image;
+	private boolean duplicateImage;
 	
 	private DebounceTimer urlDebouncer = new DebounceTimer(500);
 	private DebounceTimer resizeDebouncer = new DebounceTimer(250);
@@ -78,9 +82,9 @@ class URLImportPanel extends JPanel {
 						.addGroup(layout.createParallelGroup(LEADING, true)
 								.addComponent(getUrlTextField(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 								.addGroup(layout.createSequentialGroup()
-										.addComponent(getErrorIconLabel())
+										.addComponent(getMsgIconLabel())
 										.addPreferredGap(ComponentPlacement.RELATED)
-										.addComponent(getErrorLabel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+										.addComponent(getMsgLabel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 								)
 						)
 				)
@@ -93,8 +97,8 @@ class URLImportPanel extends JPanel {
 						.addComponent(getUrlTextField())
 				)
 				.addGroup(layout.createParallelGroup(CENTER, false)
-						.addComponent(getErrorIconLabel())
-						.addComponent(getErrorLabel(), getErrorLabel().getPreferredSize().height, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getMsgIconLabel())
+						.addComponent(getMsgLabel(), getMsgLabel().getPreferredSize().height, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
 				.addPreferredGap(ComponentPlacement.UNRELATED)
 				.addComponent(previewLabel)
@@ -105,7 +109,27 @@ class URLImportPanel extends JPanel {
 	
 	@SuppressWarnings("rawtypes")
 	AbstractURLImageCustomGraphics getImage() {
-		return image;
+		return duplicateImage ? null : image;
+	}
+	
+	@SuppressWarnings("rawtypes")
+	private void setImage(AbstractURLImageCustomGraphics image) {
+		if (!Objects.equal(this.image, image)) {
+			var oldValue = this.image;
+			this.image = image;
+			firePropertyChange("image", oldValue, image);
+		}
+	}
+	
+	boolean isDuplicateImage() {
+		return duplicateImage;
+	}
+	
+	private void setDuplicateImage(boolean duplicateImage) {
+		if (this.duplicateImage != duplicateImage) {
+			this.duplicateImage = duplicateImage;
+			firePropertyChange("duplicateImage", !duplicateImage, duplicateImage);
+		}
 	}
 	
 	JTextField getUrlTextField() {
@@ -130,7 +154,7 @@ class URLImportPanel extends JPanel {
 					resetPreview(!text.isBlank());
 					
 					if (text.isBlank())
-						updateErrorMessage(null, null);
+						updateErrorMessage(JOptionPane.PLAIN_MESSAGE, null, null);
 					else
 						urlDebouncer.debounce(() -> loadImage(text));
 				}
@@ -140,31 +164,26 @@ class URLImportPanel extends JPanel {
 		return urlTextField;
 	}
 	
-	JLabel getErrorIconLabel() {
-		if (errorIconLabel == null) {
-			var iconFont = serviceRegistrar.getService(IconManager.class).getIconFont(14.0f);
-			
-			errorIconLabel = new JLabel(" ");
-			errorIconLabel.setIcon(new TextIcon(IconManager.ICON_WARNING, iconFont, 14, 14));
-			errorIconLabel.setForeground(LookAndFeelUtil.getErrorColor());
-			errorIconLabel.setHorizontalTextPosition(SwingConstants.CENTER);
-			errorIconLabel.setVisible(false);
-			LookAndFeelUtil.makeSmall(errorIconLabel);
+	JLabel getMsgIconLabel() {
+		if (msgIconLabel == null) {
+			msgIconLabel = new JLabel(" ");
+			msgIconLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+			msgIconLabel.setVisible(false);
+			LookAndFeelUtil.makeSmall(msgIconLabel);
 		}
 		
-		return errorIconLabel;
+		return msgIconLabel;
 	}
 	
-	JLabel getErrorLabel() {
-		if (errorLabel == null) {
+	JLabel getMsgLabel() {
+		if (msgLabel == null) {
 			// Start with a space char so the label is actually rendered and reserves some room for the error msg,
 			// avoiding shifting the components bellow it when an error text is set
-			errorLabel = new JLabel(" ");
-			errorLabel.setForeground(LookAndFeelUtil.getErrorColor());
-			LookAndFeelUtil.makeSmall(errorLabel);
+			msgLabel = new JLabel(" ");
+			LookAndFeelUtil.makeSmall(msgLabel);
 		}
 		
-		return errorLabel;
+		return msgLabel;
 	}
 	
 	JLabel getPreviewImgLabel() {
@@ -194,12 +213,14 @@ class URLImportPanel extends JPanel {
 	/**
 	 * Load the image (wrapped as Custom Graphics) and update the preview.
 	 */
+	@SuppressWarnings("rawtypes")
 	private void loadImage(String urlStr) {
 		urlStr = normalizeURL(urlStr);
-		image = null;
+		setImage(null);
 		
-		String errorMsg = null;
-		String errorDesc = null;
+		int msgType = JOptionPane.PLAIN_MESSAGE;
+		String msg = null;
+		String msgDesc = null;
 		
 		if (!Strings.isBlank(urlStr)) {
 			// Load the image as Custom Graphics
@@ -208,8 +229,9 @@ class URLImportPanel extends JPanel {
 			try {
 				url = new URL(urlStr);
 			} catch (Exception e) {
-				errorMsg = "Invalid URL";
-				errorDesc = e.getMessage();
+				msgType = JOptionPane.ERROR_MESSAGE;
+				msg = "Invalid URL";
+				msgDesc = e.getMessage();
 			}
 			
 			if (url != null) {
@@ -218,23 +240,36 @@ class URLImportPanel extends JPanel {
 				var cg = manager.getCustomGraphicsBySourceURL(url);
 				
 				if (cg == null) {
+					setDuplicateImage(false);
 					var id = manager.getNextAvailableID();
 					
 					try {
-						image = CustomGraphicsUtil.isSVG(url)
+						setImage(
+								CustomGraphicsUtil.isSVG(url)
 								? new SVGCustomGraphics(id, url)
-								: new BitmapCustomGraphics(id, url);
+								: new BitmapCustomGraphics(id, url)
+						);
 					} catch (Exception e) {
-						errorMsg = "Invalid Image";
-						errorDesc = e.getMessage();
+						msgType = JOptionPane.ERROR_MESSAGE;
+						msg = "Invalid Image";
+						msgDesc = e.getMessage();
 					}
+				} else {
+					setDuplicateImage(true);
+					
+					var img = cg instanceof AbstractURLImageCustomGraphics ? (AbstractURLImageCustomGraphics) cg : null;
+					setImage(img);
+					
+					msgType = JOptionPane.INFORMATION_MESSAGE;
+					msg = "Duplicate Image";
+					msgDesc = "This image has been imported before";
 				}
 			}
 		}
 		
 		// Update error and preview
 		updatePreview();
-		updateErrorMessage(errorMsg, errorDesc);
+		updateErrorMessage(msgType, msg, msgDesc);
 	}
 
 	private String normalizeURL(String urlStr) {
@@ -250,11 +285,33 @@ class URLImportPanel extends JPanel {
 		return urlStr;
 	}
 
-	private void updateErrorMessage(String msg, String description) {
-		getErrorLabel().setText(msg);
-		getErrorLabel().setToolTipText(description);
-		getErrorIconLabel().setVisible(msg != null);
-		getErrorIconLabel().setToolTipText(description);
+	private void updateErrorMessage(int msgType, String msg, String description) {
+		var fg = LookAndFeelUtil.getInfoColor();
+		Icon icon = null;
+		
+		if (msg != null) {
+			var iconTxt = IconManager.ICON_INFO_CIRCLE;
+			
+			if (msgType == JOptionPane.WARNING_MESSAGE) {
+				iconTxt = IconManager.ICON_WARNING;
+				fg = LookAndFeelUtil.getWarnColor();
+			} else if (msgType == JOptionPane.ERROR_MESSAGE) {
+				iconTxt = IconManager.ICON_WARNING;
+				fg = LookAndFeelUtil.getErrorColor();
+			}
+			
+			var iconFont = serviceRegistrar.getService(IconManager.class).getIconFont(14.0f);
+			icon = new TextIcon(iconTxt, iconFont, 14, 14);
+		}
+		
+		getMsgIconLabel().setForeground(fg);
+		getMsgIconLabel().setIcon(icon);
+		
+		getMsgLabel().setForeground(fg);
+		getMsgLabel().setText(msg);
+		getMsgLabel().setToolTipText(description);
+		getMsgIconLabel().setVisible(msg != null);
+		getMsgIconLabel().setToolTipText(description);
 	}
 	
 	private void resetPreview(boolean loading) {

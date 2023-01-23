@@ -100,7 +100,9 @@ class LoadImageDialog extends JDialog {
 	
 	URLImportPanel getUrlImportPanel() {
 		if (urlImportPanel == null) {
-			urlImportPanel = new URLImportPanel(serviceRegistrar);	
+			urlImportPanel = new URLImportPanel(serviceRegistrar);
+			urlImportPanel.addPropertyChangeListener("image", evt -> updateOkButton());
+			urlImportPanel.addPropertyChangeListener("duplicateImage", evt -> updateOkButton());
 		}
 		
 		return urlImportPanel;
@@ -118,6 +120,8 @@ class LoadImageDialog extends JDialog {
 			var filter = new FileNameExtensionFilter(IMG_FILES_DESCRIPTION, IMG_EXTENSIONS);
 			fileChooser.setFileFilter(filter);
 			fileChooser.addChoosableFileFilter(filter);
+			
+			fileChooser.addPropertyChangeListener("SelectedFileChangedProperty", evt -> updateOkButton());
 		}
 
 		return fileChooser;
@@ -132,6 +136,7 @@ class LoadImageDialog extends JDialog {
 					dispose();
 				}
 			});
+			okButton.setEnabled(false);
 		}
 		
 		return okButton;
@@ -168,6 +173,18 @@ class LoadImageDialog extends JDialog {
 			
 			if (cg != null)
 				images.add(cg);
+		}
+	}
+	
+	private void updateOkButton() {
+		var selectedComp = getTabbedPane().getSelectedComponent();
+		
+		if (selectedComp == getFileChooser()) {
+			var files = fileChooser.getSelectedFiles();
+			getOkButton().setEnabled(files != null && files.length > 0);
+		} else if (selectedComp == getUrlImportPanel()) {
+			var cg = getUrlImportPanel().getImage();
+			getOkButton().setEnabled(cg != null);
 		}
 	}
 	
