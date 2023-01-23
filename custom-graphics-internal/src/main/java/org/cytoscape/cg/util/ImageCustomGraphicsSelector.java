@@ -135,7 +135,7 @@ public class ImageCustomGraphicsSelector extends JPanel {
 	private final int maxColumns = 0; // 0 means any number of columns
 	
 	private boolean editMode;
-	private boolean editingName;
+	private ImagePanel editingNameItem;
 	private boolean selectionIsAdjusting;
 	
 	private int selectionHead;
@@ -1242,7 +1242,7 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			item.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseEntered(MouseEvent evt) {
-					if (isEnabled() && !editingName)
+					if (isEnabled() && !isEditMode())
 						item.requestFocusInWindow();
 				}
 				@Override
@@ -1260,14 +1260,17 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			item.getNameTextField().addMouseListener(new MouseAdapter() {
 				@Override
 				public void mousePressed(MouseEvent evt) {
-					if (isEnabled())
+					if (isEnabled()) {
 						onMousePressedItem(evt, item);
+						evt.consume();
+					}
 				}
 				@Override
 				public void mouseClicked(MouseEvent evt) {
 					if (isEnabled()) {
 						if (isEditMode() && evt.getClickCount() == 2)
 							editNameStart(item);
+						evt.consume();
 					}
 				}
 			});
@@ -1276,6 +1279,13 @@ public class ImageCustomGraphicsSelector extends JPanel {
 		}
 		
 		private void onMousePressedItem(MouseEvent evt, ImagePanel item) {
+			if (isEditMode() && editingNameItem != null) {
+				if (item.equals(editingNameItem))
+					return;
+				else
+					editNameCommit(editingNameItem, null);
+			}
+			
 			item.requestFocusInWindow();
 			
 			if (isEditMode()) {
@@ -1390,7 +1400,7 @@ public class ImageCustomGraphicsSelector extends JPanel {
 		}
 
 		void editNameStart(ImagePanel item) {
-			editingName = true;
+			editingNameItem = item;
 			var oldValue = item.getNameTextField().getText().trim();
 			
 			item.getNameTextField().setFocusable(true);
@@ -1445,7 +1455,7 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			item.getNameTextField().setEditable(false);
 			item.requestFocusInWindow();
 			item.getNameTextField().setFocusable(false);
-			editingName = false;
+			editingNameItem = null;
 		}
 
 		private void setKeyBindings() {
@@ -1569,7 +1579,8 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			this.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent evt) {
-					ImagePanel.this.requestFocusInWindow();
+					if (isEnabled() && editingNameItem == null)
+						ImagePanel.this.requestFocusInWindow();
 				}
 			});
 			this.addFocusListener(new FocusListener() {

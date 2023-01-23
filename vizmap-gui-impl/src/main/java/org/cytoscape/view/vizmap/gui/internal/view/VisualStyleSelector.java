@@ -161,7 +161,7 @@ public class VisualStyleSelector extends JPanel {
 	private final int maxColumns;
 	
 	private boolean editMode;
-	private boolean editingTitle;
+	private StylePanel editingTitleItem;
 	private boolean selectionIsAdjusting;
 	
 	private int selectionHead;
@@ -1092,7 +1092,7 @@ public class VisualStyleSelector extends JPanel {
 			item.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseEntered(MouseEvent evt) {
-					if (isEnabled() && !editingTitle)
+					if (isEnabled() && !isEditMode())
 						item.requestFocusInWindow();
 				}
 				@Override
@@ -1104,14 +1104,17 @@ public class VisualStyleSelector extends JPanel {
 			item.getTitleTextField().addMouseListener(new MouseAdapter() {
 				@Override
 				public void mousePressed(MouseEvent evt) {
-					if (isEnabled())
+					if (isEnabled()) {
 						onMousePressedItem(evt, item);
+						evt.consume();
+					}
 				}
 				@Override
 				public void mouseClicked(MouseEvent evt) {
 					if (isEnabled()) {
 						if (isEditMode() && evt.getClickCount() == 2)
 							editTitleStart(item);
+						evt.consume();
 					}
 				}
 			});
@@ -1120,6 +1123,13 @@ public class VisualStyleSelector extends JPanel {
 		}
 		
 		private void onMousePressedItem(MouseEvent evt, StylePanel item) {
+			if (isEditMode() && editingTitleItem != null) {
+				if (item.equals(editingTitleItem))
+					return;
+				else
+					editTitleCommit(editingTitleItem, null);
+			}
+			
 			item.requestFocusInWindow();
 			
 			if (isEditMode()) {
@@ -1217,7 +1227,7 @@ public class VisualStyleSelector extends JPanel {
 			if (getProxy().isDefaultStyle(item.getStyle()))
 				return;
 			
-			editingTitle = true;
+			editingTitleItem = item;
 			var oldValue = item.getTitleTextField().getText().trim();
 			
 			item.getTitleTextField().setFocusable(true);
@@ -1280,7 +1290,7 @@ public class VisualStyleSelector extends JPanel {
 			item.getTitleTextField().setEditable(false);
 			item.requestFocusInWindow();
 			item.getTitleTextField().setFocusable(false);
-			editingTitle = false;
+			editingTitleItem = null;
 		}
 
 		private class ListSelectionHandler implements ListSelectionListener, Serializable {
@@ -1404,7 +1414,8 @@ public class VisualStyleSelector extends JPanel {
 			this.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent evt) {
-					StylePanel.this.requestFocusInWindow();
+                    if (isEnabled() && editingTitleItem == null)
+                    	StylePanel.this.requestFocusInWindow();
 				}
 			});
 			this.addFocusListener(new FocusListener() {
