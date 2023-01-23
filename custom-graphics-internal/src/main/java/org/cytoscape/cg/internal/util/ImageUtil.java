@@ -18,6 +18,7 @@ import org.cytoscape.cg.model.AbstractURLImageCustomGraphics;
 import org.cytoscape.cg.model.BitmapCustomGraphics;
 import org.cytoscape.cg.model.CustomGraphicsManager;
 import org.cytoscape.cg.model.SVGCustomGraphics;
+import org.cytoscape.cg.util.CustomGraphicsUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,33 +56,28 @@ public final class ImageUtil {
 			BufferedImage img = null;
 			String svg = null;
 			
-			if (file.isFile()) {
-				try {
-					if (file.getName().toLowerCase().endsWith(".svg"))
-						svg = Files.readString(file.toPath());
-					else
-						img = ImageIO.read(file);
-				} catch (Exception e) {
-					logger.error("Could not read file: " + file.toString(), e);
-					continue;
-				}
-			}
-
 			try {
 				var url = file.toURI().toURL();
-				var name = ViewUtil.getShortName(file.toString());
+				
+				if (!file.isFile())
+					continue;
+					
+				if (CustomGraphicsUtil.isSVG(url))
+					svg = Files.readString(file.toPath());
+				else
+					img = ImageIO.read(file);
+
 				AbstractURLImageCustomGraphics<?> cg = null;
 				
 				if (svg != null)
-					cg = new SVGCustomGraphics(manager.getNextAvailableID(), name, url, svg);
+					cg = new SVGCustomGraphics(manager.getNextAvailableID(), url, svg);
 				else if (img != null)
-					cg = new BitmapCustomGraphics(manager.getNextAvailableID(), name, url, img);
+					cg = new BitmapCustomGraphics(manager.getNextAvailableID(), url, img);
 
 				if (cg != null)
 					images.add(cg);
 			} catch (Exception e) {
 				logger.error("Could not create custom graphics: " + file, e);
-				continue;
 			}
 		}
 		

@@ -8,7 +8,6 @@ import static javax.swing.GroupLayout.Alignment.LEADING;
 import java.awt.Font;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.io.IOException;
 import java.net.URL;
 
 import javax.swing.BorderFactory;
@@ -220,12 +219,11 @@ class URLImportPanel extends JPanel {
 				
 				if (cg == null) {
 					var id = manager.getNextAvailableID();
-					var name = urlStr;
 					
 					try {
-						image = isSVG(url)
-								? new SVGCustomGraphics(id, name, url)
-								: new BitmapCustomGraphics(id, name, url);
+						image = CustomGraphicsUtil.isSVG(url)
+								? new SVGCustomGraphics(id, url)
+								: new BitmapCustomGraphics(id, url);
 					} catch (Exception e) {
 						errorMsg = "Invalid Image";
 						errorDesc = e.getMessage();
@@ -280,25 +278,5 @@ class URLImportPanel extends JPanel {
 		
 		getPreviewImgLabel().setText("");
 		getPreviewImgLabel().setIcon(icon);
-	}
-
-	private boolean isSVG(URL url) throws IOException {
-		var conn = url.openConnection();
-		var type = conn.getHeaderField("Content-Type");
-		
-		if ("image/svg+xml".equalsIgnoreCase(type))
-			return true;
-		
-		// If the Content-Type is null, check whether this is a local file
-		// (it may happen that the OS does not return the file type, in which case we can still
-		// try to check the file extension)
-		if (type == null) {
-			var protocol = url.getProtocol();
-			
-			if (protocol.equalsIgnoreCase("file"))
-				return url.getFile().toLowerCase().endsWith(".svg");
-		}
-		
-		return false;
 	}
 }

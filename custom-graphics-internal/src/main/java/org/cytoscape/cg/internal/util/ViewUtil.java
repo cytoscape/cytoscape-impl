@@ -7,7 +7,6 @@ import java.awt.Font;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.util.function.Consumer;
 
 import javax.swing.AbstractButton;
@@ -22,15 +21,8 @@ import javax.swing.border.Border;
 
 import org.slf4j.Logger;
 
-public class ViewUtil {
+public final class ViewUtil {
 
-	public static String getShortName(String pathName) {
-		if (pathName == null)
-			return null;
-		
-		return new File(pathName).getName();
-	}
-	
 	public static ImageIcon resizeIcon(ImageIcon icon, int width, int height) {
 		var img = icon.getImage().getScaledInstance(width, height, Image.SCALE_AREA_AVERAGING);
 		var bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
@@ -164,5 +156,9 @@ public class ViewUtil {
 			btn.setForeground(UIManager.getColor("ToggleButton.disabledForeground"));
 			btn.setBackground(UIManager.getColor("CyToggleButton.unselectedBackground"));
 		}
+	}
+	
+	private ViewUtil() {
+		// Restrict instantiation
 	}
 }

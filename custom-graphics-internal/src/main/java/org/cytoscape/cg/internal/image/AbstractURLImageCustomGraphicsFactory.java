@@ -6,8 +6,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.cytoscape.application.CyUserLog;
-import org.cytoscape.cg.internal.util.ViewUtil;
 import org.cytoscape.cg.model.CustomGraphicsManager;
+import org.cytoscape.cg.util.CustomGraphicsUtil;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNode;
@@ -57,7 +57,7 @@ public abstract class AbstractURLImageCustomGraphicsFactory<T extends CustomGrap
 	
 		var imageId = entry[0];
 		var sourceURL = entry[1];
-		var imageName = ViewUtil.getShortName(sourceURL);
+		var imageName = CustomGraphicsUtil.getShortName(sourceURL);
 		
 		// Try using the URL first
 		if (sourceURL != null) {

@@ -10,6 +10,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Scanner;
 
+import org.cytoscape.cg.util.CustomGraphicsUtil;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.view.model.CyNetworkView;
@@ -56,6 +57,13 @@ public class SVGCustomGraphics extends AbstractURLImageCustomGraphics<SVGLayer> 
 		}
 	}
 	
+	public SVGCustomGraphics(Long id, URL url) throws IOException {
+		super(id, url);
+		
+		svgLayer = createLayer();
+		init();
+	}
+	
 	public SVGCustomGraphics(Long id, String name, URL url) throws IOException {
 		super(id, name, url);
 		
@@ -72,6 +80,12 @@ public class SVGCustomGraphics extends AbstractURLImageCustomGraphics<SVGLayer> 
 		this.svg = svg;
 		svgLayer = createLayer();
 		init();
+	}
+	
+	public SVGCustomGraphics(Long id, URL url, String svg) throws IOException {
+		this(id, CustomGraphicsUtil.getShortName(url), svg);
+		
+		sourceUrl = url;
 	}
 	
 	public SVGCustomGraphics(Long id, String name, URL url, String svg) throws IOException {

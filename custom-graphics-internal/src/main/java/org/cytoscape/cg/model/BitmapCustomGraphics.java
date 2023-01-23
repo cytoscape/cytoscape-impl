@@ -10,6 +10,7 @@ import javax.imageio.ImageIO;
 
 import org.cytoscape.cg.internal.paint.TexturePaintFactory;
 import org.cytoscape.cg.internal.util.ImageUtil;
+import org.cytoscape.cg.util.CustomGraphicsUtil;
 
 /**
  * Creates bitmap images from URLs or Base64 Data URLs (e.g. "data:image/jpeg;base64,LzlqLzRBQ...").
@@ -36,6 +37,14 @@ public class BitmapCustomGraphics extends AbstractURLImageCustomGraphics<BitmapL
 			e.printStackTrace();
 		}
 	}
+	
+	public BitmapCustomGraphics(Long id, URL url) {
+		super(id, url);
+		
+		tags.add(DEF_TAG);
+		createImage();
+		buildCustomGraphics(originalImage);
+	}
 
 	public BitmapCustomGraphics(Long id, String name, URL url) {
 		super(id, name, url);
@@ -61,6 +70,12 @@ public class BitmapCustomGraphics extends AbstractURLImageCustomGraphics<BitmapL
 		tags.add(DEF_TAG);
 		this.originalImage = img;
 		buildCustomGraphics(originalImage);
+	}
+	
+	public BitmapCustomGraphics(Long id, URL url, BufferedImage img) {
+		this(id, CustomGraphicsUtil.getShortName(url), img);
+		
+		sourceUrl = url;
 	}
 	
 	public BitmapCustomGraphics(Long id, String name, URL url, BufferedImage img) {

@@ -83,7 +83,6 @@ import javax.swing.event.ListSelectionListener;
 
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.cg.internal.util.ImageUtil;
-import org.cytoscape.cg.internal.util.ViewUtil;
 import org.cytoscape.cg.internal.util.VisualPropertyIconFactory;
 import org.cytoscape.cg.model.AbstractURLImageCustomGraphics;
 import org.cytoscape.cg.model.BitmapCustomGraphics;
@@ -595,7 +594,7 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			
 			if (!inUse.isEmpty()) {
 				var msg = inUse.size() == 1 ?
-						"<html><pre>" + ViewUtil.getShortName(inUse.get(0).getDisplayName()) + "</pre>" +
+						"<html><pre>" + CustomGraphicsUtil.getShortName(inUse.get(0).getDisplayName()) + "</pre>" +
 						"is being used in the current session and cannot be removed.</html>"
 						:
 						(inUse.size() == selectedValues.size() ? "The" : inUse.size()) +
@@ -1638,13 +1637,13 @@ public class ImageCustomGraphicsSelector extends JPanel {
 		
 		JTextField getNameTextField() {
 			if (nameTextField == null) {
-				var text = ViewUtil.getShortName(image.getDisplayName());
+				var text = CustomGraphicsUtil.getShortName(image.getDisplayName());
 				
 				nameTextField = new JTextField(text) {
 					@Override
 					public String getToolTipText(MouseEvent evt) {
 					    return "<html><p image='text-align: center;'>" +
-								"<b>" + ViewUtil.getShortName(image.getDisplayName()) + "</b>" +
+								"<b>" + CustomGraphicsUtil.getShortName(image.getDisplayName()) + "</b>" +
 								(isEditMode() ? "<br>(double-click to rename...)" : "") +
 								"</p></html>";
 					}
@@ -1674,7 +1673,7 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			getImageLabel().setIcon(icon);
 			
 			// Name
-			getNameTextField().setText(ViewUtil.getShortName(image.getDisplayName()));
+			getNameTextField().setText(CustomGraphicsUtil.getShortName(image.getDisplayName()));
 			getNameTextField().setToolTipText(image.getDisplayName()); // Otherwise our getToolTipText() won't be called!
 			
 			dirty = false;
@@ -1830,10 +1829,9 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			try {
 				var url = new URL(urlStr);
 				var id = manager.getNextAvailableID();
-				var name = ViewUtil.getShortName(urlStr);
-				var cg = urlStr.toLowerCase().endsWith(".svg")
-						? new SVGCustomGraphics(id, name, url)
-						: new BitmapCustomGraphics(id, name, url);
+				var cg = CustomGraphicsUtil.isSVG(url)
+						? new SVGCustomGraphics(id, url)
+						: new BitmapCustomGraphics(id, url);
 				
 				if (cg != null)
 					manager.addCustomGraphics(cg, url);

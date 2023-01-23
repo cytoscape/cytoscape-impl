@@ -2,6 +2,7 @@ package org.cytoscape.cg.model;
 
 import java.net.URL;
 
+import org.cytoscape.cg.util.CustomGraphicsUtil;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 
 /*
@@ -34,6 +35,10 @@ public abstract class AbstractURLImageCustomGraphics<T extends CustomGraphicLaye
 	
 	protected URL sourceUrl;
 	
+	protected AbstractURLImageCustomGraphics(Long id, URL url) {
+		this(id, CustomGraphicsUtil.getShortName(url), url);
+	}
+	
 	protected AbstractURLImageCustomGraphics(Long id, String displayName) {
 		super(id, displayName);
 	}
@@ -47,7 +52,7 @@ public abstract class AbstractURLImageCustomGraphics<T extends CustomGraphicLaye
 		// resulting URL's are not really helpful, so we need to massage the displayName here.
 		if (displayName.startsWith("bundle:")) {
 			int index = displayName.lastIndexOf("/");
-			displayName = displayName.substring(index+1);
+			displayName = displayName.substring(index + 1);
 		}
 	}
 	

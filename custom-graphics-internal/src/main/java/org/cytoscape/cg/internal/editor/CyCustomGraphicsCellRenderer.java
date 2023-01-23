@@ -7,8 +7,8 @@ import javax.swing.JTable;
 import javax.swing.SwingConstants;
 
 import org.cytoscape.cg.internal.util.IconUtil;
-import org.cytoscape.cg.internal.util.ViewUtil;
 import org.cytoscape.cg.model.SVGCustomGraphics;
+import org.cytoscape.cg.util.CustomGraphicsUtil;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 
@@ -52,7 +52,7 @@ public class CyCustomGraphicsCellRenderer extends DefaultCellRenderer {
 				setIcon(img != null ? IconUtil.resizeIcon(new ImageIcon(img), WIDTH, HEIGHT) : null);
 			}
 			
-			setText(ViewUtil.getShortName(cg.getDisplayName()));
+			setText(CustomGraphicsUtil.getShortName(cg.getDisplayName()));
 			setHorizontalTextPosition(SwingConstants.RIGHT);
 			setVerticalTextPosition(SwingConstants.CENTER);
 			
