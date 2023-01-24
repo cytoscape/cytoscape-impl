@@ -21,7 +21,6 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
-import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.datatransfer.DataFlavor;
@@ -137,11 +136,10 @@ public class ImageCustomGraphicsSelector extends JPanel {
 	private ImagePanel editingNameItem;
 	private boolean selectionIsAdjusting;
 	
-	private int selectionHead;
-	private int selectionTail;
-	
 	private List<CyCustomGraphics> allImages;
 	private CyCustomGraphics selectedImage;
+	
+	private ImagePanel overItem;
 	
 	private DebounceTimer resizeDebouncer = new DebounceTimer();
 	private boolean ready;
@@ -691,7 +689,7 @@ public class ImageCustomGraphicsSelector extends JPanel {
 		private int cellHeight;
 
 		private boolean autoScroll = true;
-		
+
 		ImageGrid(Collection<CyCustomGraphics> data) {
 			this.dataModel = new ImageGridModel(data);
 			this.selectionModel = createSelectionModel();
@@ -790,6 +788,13 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			return vsPanelMap.get(image);
 		}
 		
+		ImagePanel getItem(int index) {
+			var dm = getModel();
+			var cg = dm.getElementAt(index);
+			
+			return getItem(cg);
+		}
+		
 		int indexOf(CyCustomGraphics image) {
 			int i, c;
 			var dm = getModel();
@@ -807,8 +812,7 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			var dm = getModel();
 			
 			if (index > -1 && index < dm.getSize()) {
-				var cg = dm.getElementAt(index);
-				var item = getItem(cg);
+				var item = getItem(index);
 				
 				if (item != null)
 					item.requestFocusInWindow();
@@ -867,17 +871,15 @@ public class ImageCustomGraphicsSelector extends JPanel {
 		}
 
 		void selectAll() {
-			if (getModel().getSize() >= 0) {
+			if (getModel().getSize() >= 0)
 				getSelectionModel().setSelectionInterval(0, getModel().getSize() - 1);
-				selectionHead = -1;
-				selectionTail = -1;
-			}
 		}
 		
 		void deselectAll() {
-			getSelectionModel().clearSelection();
-			selectionHead = -1;
-			selectionTail = -1;
+			var sm = getSelectionModel();
+			sm.clearSelection();
+			sm.setAnchorSelectionIndex(-1);
+			sm.setLeadSelectionIndex(-1);
 		}
 		
 		/**
@@ -939,8 +941,8 @@ public class ImageCustomGraphicsSelector extends JPanel {
 					sm.addSelectionInterval(idx, idx);
 			}
 			
-			selectionHead = -1;
-			selectionTail = -1;
+			sm.setAnchorSelectionIndex(sm.getMaxSelectionIndex());
+			sm.setLeadSelectionIndex(sm.getMaxSelectionIndex());
 		}
 		
 		void setSelectionModel(ListSelectionModel selectionModel) {
@@ -1241,9 +1243,19 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			item.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseEntered(MouseEvent evt) {
-					if (isEnabled() && !isEditMode())
-						item.requestFocusInWindow();
+					if (isEnabled()) {
+						overItem = item;
+						repaint();
+					}
 				}
+				@Override
+				public void mouseExited(MouseEvent evt) {
+					if (isEnabled()) {
+						overItem = null;
+						repaint();
+					}
+				}
+				
 				@Override
 				public void mousePressed(MouseEvent evt) {
 					if (isEnabled()) {
@@ -1288,39 +1300,22 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			item.requestFocusInWindow();
 			
 			if (isEditMode()) {
+				// See: https://stackoverflow.com/questions/2959887/algorithm-for-shift-clicking-items-in-a-collection-to-select-them
 				int index = indexOf(item.image);
-				boolean selected = isSelected(item.image);
-				var sm = getSelectionModel();
 				
-				if (evt.isPopupTrigger()) {
-					// RIGHT-CLICK...
-					selectionHead = index;
-				} else {
+				if (!evt.isPopupTrigger() && SwingUtilities.isLeftMouseButton(evt)) {
 					// LEFT-CLICK...
 					var isMac = LookAndFeelUtil.isMac();
 					
 					if ((isMac && evt.isMetaDown()) || (!isMac && evt.isControlDown())) {
 						// CMD or CTRL key pressed...
 						toggleSelection(item);
-						// Find new selection range head
-						selectionHead = selected ? index : findNextSelectionHead(selectionHead);
 					} else if (evt.isShiftDown()) {
 						// SHIFT key pressed...
-						if (selectionHead >= 0 && selectionHead != index && sm.isSelectedIndex(selectionHead)) {
-							// First deselect previous range, if there is a tail
-							if (selectionTail >= 0)
-								changeRangeSelection(selectionHead, selectionTail, false);
-							// Now select the new range
-							changeRangeSelection(selectionHead, (selectionTail = index), true);
-						} else if (!selected) {
-							addSelectionInterval(index, index);
-						}
+						shiftSelectTo(index);
 					} else {
 						setSelectedValue(item.getImage(), false);
 					}
-					
-					if (sm.getSelectedItemsCount() == 1)
-						selectionHead = index;
 				}
 			} else {
 				setSelectedValue(item.getImage(), false);
@@ -1330,6 +1325,27 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			
 			if (evt.isPopupTrigger())
 				showContextMenu(evt, item);
+		}
+		
+		private void shiftSelectTo(int index) {
+			int size = getModel().getSize();
+			
+			if (index < 0 || index >= size)
+				return;
+			
+			var sm = getSelectionModel();
+			int anchor = sm.getAnchorSelectionIndex();
+			int lead = sm.getLeadSelectionIndex();
+			
+			// 1. remove everything between anchor and focus (lead)
+			if (anchor >= 0 || lead >= 0)
+				sm.removeIndexInterval(Math.max(0, anchor), Math.max(0, lead));
+			
+			// 2. add everything between anchor and the new index, which  should also be made the new lead
+			sm.addSelectionInterval(Math.max(0, anchor), index);
+			
+			// 3. Make sure the lead component is focused
+			getItem(index).requestFocusInWindow();
 		}
 		
 		private void showContextMenu(MouseEvent me, ImagePanel item) {
@@ -1358,46 +1374,6 @@ public class ImageCustomGraphicsSelector extends JPanel {
 				addSelectionInterval(index, index);
 		}
 		
-		private void changeRangeSelection(int index0, int index1, boolean select) {
-			if (select)
-				addSelectionInterval(index0, index1);
-			else
-				removeSelectionInterval(index0, index1);
-		}
-		
-		private int findNextSelectionHead(int fromIndex) {
-			int head = -1;
-			
-			if (fromIndex >= 0) {
-				var dm = getModel();
-				int total = dm.getSize();
-				
-				// Try with the tail subset first (go down)...
-				for (int i = fromIndex; i < total; i++) {
-					var nextItem = dm.getElementAt(i);
-					
-					if (isSelected(nextItem)) {
-						head = i;
-						break;
-					}
-				}
-				
-				if (head == -1) {
-					// Try with the head subset  (go up)...
-					for (int i = fromIndex; i <= 0; i--) {
-						var nextItem = dm.getElementAt(i);
-						
-						if (isSelected(nextItem)) {
-							head = i;
-							break;
-						}
-					}
-				}
-			}
-			
-			return head;
-		}
-
 		void editNameStart(ImagePanel item) {
 			editingNameItem = item;
 			var oldValue = item.getNameTextField().getText().trim();
@@ -1466,8 +1442,10 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), KeyAction.VK_RIGHT);
 			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), KeyAction.VK_UP);
 			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), KeyAction.VK_DOWN);
-			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), KeyAction.VK_ENTER);
-			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), KeyAction.VK_SPACE);
+			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.SHIFT_DOWN_MASK), KeyAction.VK_SHIFT_LEFT);
+			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.SHIFT_DOWN_MASK), KeyAction.VK_SHIFT_RIGHT);
+			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.SHIFT_DOWN_MASK), KeyAction.VK_SHIFT_UP);
+			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.SHIFT_DOWN_MASK), KeyAction.VK_SHIFT_DOWN);
 			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, ctrl), KeyAction.VK_CTRL_A);
 			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, ctrl + InputEvent.SHIFT_DOWN_MASK), KeyAction.VK_CTRL_SHIFT_A);
 			
@@ -1475,8 +1453,10 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			actionMap.put(KeyAction.VK_RIGHT, new KeyAction(KeyAction.VK_RIGHT));
 			actionMap.put(KeyAction.VK_UP, new KeyAction(KeyAction.VK_UP));
 			actionMap.put(KeyAction.VK_DOWN, new KeyAction(KeyAction.VK_DOWN));
-			actionMap.put(KeyAction.VK_ENTER, new KeyAction(KeyAction.VK_ENTER));
-			actionMap.put(KeyAction.VK_SPACE, new KeyAction(KeyAction.VK_SPACE));
+			actionMap.put(KeyAction.VK_SHIFT_LEFT, new KeyAction(KeyAction.VK_SHIFT_LEFT));
+			actionMap.put(KeyAction.VK_SHIFT_RIGHT, new KeyAction(KeyAction.VK_SHIFT_RIGHT));
+			actionMap.put(KeyAction.VK_SHIFT_UP, new KeyAction(KeyAction.VK_SHIFT_UP));
+			actionMap.put(KeyAction.VK_SHIFT_DOWN, new KeyAction(KeyAction.VK_SHIFT_DOWN));
 			actionMap.put(KeyAction.VK_CTRL_A, new KeyAction(KeyAction.VK_CTRL_A));
 			actionMap.put(KeyAction.VK_CTRL_SHIFT_A, new KeyAction(KeyAction.VK_CTRL_SHIFT_A));
 		}
@@ -1487,39 +1467,37 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			final static String VK_RIGHT = "VK_RIGHT";
 			final static String VK_UP = "VK_UP";
 			final static String VK_DOWN = "VK_DOWN";
-			final static String VK_ENTER = "VK_ENTER";
-			final static String VK_SPACE = "VK_SPACE";
+			final static String VK_SHIFT_LEFT = "VK_SHIFT_LEFT";
+			final static String VK_SHIFT_RIGHT = "VK_SHIFT_RIGHT";
+			final static String VK_SHIFT_UP = "VK_SHIFT_UP";
+			final static String VK_SHIFT_DOWN = "VK_SHIFT_DOWN";
 			final static String VK_CTRL_A = "VK_CTRL_A";
 			final static String VK_CTRL_SHIFT_A = "VK_CTRL_SHIFT_A";
 			
-			KeyAction(final String actionCommand) {
+			KeyAction(String actionCommand) {
 				putValue(ACTION_COMMAND_KEY, actionCommand);
 			}
 
 			@Override
 			public void actionPerformed(ActionEvent evt) {
-				var cmd = evt.getActionCommand();
-				var focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-				var focusedItem = focusOwner instanceof ImagePanel ? (ImagePanel) focusOwner : null;
 				var dm = ImageGrid.this.getModel();
 				
-				if (cmd.equals(VK_ENTER) || cmd.equals(VK_SPACE)) {
-					if (focusedItem != null)
-						setSelectedValue(focusedItem.getImage(), false);
-				} else if (dm.getSize() > 0) {
-					var cg = focusedItem != null ? focusedItem.getImage() : dm.getElementAt(0);
+				if (dm.getSize() > 0) {
+					var cmd = evt.getActionCommand();
 					int size = dm.getSize();
-					int idx = indexOf(cg);
+					var sm = ImageGrid.this.getSelectionModel();
+					int idx = sm.getLeadSelectionIndex();
 					int newIdx = idx;
+					boolean shift = cmd.startsWith("VK_SHIFT_");
 					
-					if (cmd.equals(VK_RIGHT)) {
+					if (cmd.equals(VK_RIGHT) || cmd.equals(VK_SHIFT_RIGHT)) {
 						newIdx = idx + 1;
-					} else if (cmd.equals(VK_LEFT)) {
+					} else if (cmd.equals(VK_LEFT) || cmd.equals(VK_SHIFT_LEFT)) {
 						newIdx = idx - 1;
-					} else if (cmd.equals(VK_UP)) {
+					} else if (cmd.equals(VK_UP) || cmd.equals(VK_SHIFT_UP)) {
 						newIdx = idx - cols < 0 ? idx : idx - cols;
-					} else if (cmd.equals(VK_DOWN)) {
-						final boolean sameRow = Math.ceil(size / (double) cols) == Math.ceil((idx + 1) / (double) cols);
+					} else if (cmd.equals(VK_DOWN) || cmd.equals(VK_SHIFT_DOWN)) {
+						boolean sameRow = Math.ceil(size / (double) cols) == Math.ceil((idx + 1) / (double) cols);
 						newIdx = sameRow ? idx : Math.min(size - 1, idx + cols);
 					} else if (cmd.equals(VK_CTRL_A)) {
 						if (isEditMode())
@@ -1529,8 +1507,12 @@ public class ImageCustomGraphicsSelector extends JPanel {
 							deselectAll();
 					}
 					
-					if (newIdx != idx)
-						setFocus(newIdx);
+					if (newIdx != idx) {
+						if (shift)
+							shiftSelectTo(newIdx);
+						else
+							setSelectedIndex(newIdx);
+					}
 				}
 			}
 		}
@@ -1691,11 +1673,8 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			int h = this.getHeight();
 			int arc = 10;
 
-			boolean selected = isSelected(image);
-			boolean focusOwner = this.isFocusOwner();
-			
 			// Add a colored border if it is the current image
-			if (selected) {
+			if (isSelected(image)) {
 				g2d.setColor(SEL_BG_COLOR);
 				g2d.setStroke(new BasicStroke(2 * ITEM_BORDER_WIDTH));
 				g2d.drawRoundRect(ITEM_MARGIN, ITEM_MARGIN, w - 2 * ITEM_MARGIN, h - 2 * ITEM_MARGIN, arc, arc);
@@ -1706,7 +1685,7 @@ public class ImageCustomGraphicsSelector extends JPanel {
 			}
 			
 			// Add a colored border and transparent overlay on top if it currently has focus
-			if (focusOwner) {
+			if (overItem == this) {
 				g2d.setColor(FOCUS_OVERLAY_COLOR);
 				g2d.fillRect(ITEM_MARGIN, ITEM_MARGIN, w - 2 * ITEM_MARGIN, h - 2 * ITEM_MARGIN);
 				
