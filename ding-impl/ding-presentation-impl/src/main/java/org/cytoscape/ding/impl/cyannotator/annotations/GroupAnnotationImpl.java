@@ -222,6 +222,18 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		}
 		updateBounds();
 	}
+	
+	@Override
+	public Rectangle2D getRotatedBounds() {
+		Rectangle2D union = null;
+		for(var a : annotations) {
+			var bounds = a.getRotatedBounds();
+			if(bounds != null) {
+				union = (union == null) ? bounds : union.createUnion(bounds);
+			}
+		}
+		return union;
+	}
 
 	@Override
 	public void paint(Graphics g, boolean showSelected) {
