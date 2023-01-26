@@ -117,7 +117,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		var argMap = super.getArgMap();
 		argMap.put(TYPE, TextAnnotation.class.getName());
 		argMap.put(TEXT, joinString(text));
-		argMap.put(COLOR, ViewUtils.convertColor(textColor));
+		argMap.put(COLOR, ViewUtils.serialize(textColor));
 		argMap.put(FONTFAMILY, font.getFamily());
 		argMap.put(FONTSIZE, Integer.toString(font.getSize()));
 		argMap.put(FONTSTYLE, Integer.toString(font.getStyle()));

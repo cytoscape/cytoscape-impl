@@ -49,49 +49,49 @@ import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
 public class ViewUtils {
 
-	static public String convertColor(Paint clr) {
-		if (clr == null)
+	static public String serialize(Paint paint) {
+		if (paint == null)
 			return null;
 		
-		if (clr instanceof LinearGradientPaint) {
-			String lg = "lingrad(";
-			LinearGradientPaint lingrad = (LinearGradientPaint) clr;
-			Point2D start = lingrad.getStartPoint();
-			Point2D end = lingrad.getEndPoint();
-			lg += convertPoint(start) + ";";
-			lg += convertPoint(end) + ";";
+		if (paint instanceof LinearGradientPaint) {
+			var lg = "lingrad(";
+			var lingrad = (LinearGradientPaint) paint;
+			var start = lingrad.getStartPoint();
+			var end = lingrad.getEndPoint();
+			lg += serialize(start) + ";";
+			lg += serialize(end) + ";";
 			float[] fractions = lingrad.getFractions();
 			Color[] colors = lingrad.getColors();
-			lg += convertStops(fractions, colors) + ")";
+			lg += serialize(fractions, colors) + ")";
 			
 			return lg;
-		} else if (clr instanceof RadialGradientPaint) {
+		} else if (paint instanceof RadialGradientPaint) {
 			// System.out.println("radgrad");
-			String rg = "radgrad(";
-			RadialGradientPaint radgrad = (RadialGradientPaint) clr;
-			Point2D center = radgrad.getCenterPoint();
-			Point2D focus = radgrad.getFocusPoint();
+			var rg = "radgrad(";
+			var radgrad = (RadialGradientPaint) paint;
+			var center = radgrad.getCenterPoint();
+			var focus = radgrad.getFocusPoint();
 			float radius = radgrad.getRadius();
-			rg += convertPoint(center) + ";";
-			rg += convertPoint(focus) + ";";
+			rg += serialize(center) + ";";
+			rg += serialize(focus) + ";";
 			rg += radius + ";";
 			float[] fractions = radgrad.getFractions();
 			Color[] colors = radgrad.getColors();
-			rg += convertStops(fractions, colors) + ")";
+			rg += serialize(fractions, colors) + ")";
 			
 			return rg;
-		} else if (clr instanceof Color) {
-			return Integer.toString(((Color) clr).getRGB());
+		} else if (paint instanceof Color) {
+			return Integer.toString(((Color) paint).getRGB());
 		}
 		
-		return clr.toString();
+		return paint.toString();
 	}
 
-	static public String convertPoint(Point2D point) {
+	static public String serialize(Point2D point) {
 		return point == null ? "" : point.getX() + "," + point.getY();
 	}
 
-	static public String convertStops(float[] fractions, Color[] colors) {
+	static public String serialize(float[] fractions, Color[] colors) {
 		String stops = null;
 
 		for (int i = 0; i < fractions.length; i++) {
@@ -131,12 +131,13 @@ public class ViewUtils {
 			
 			return new RadialGradientPaint(center, radius, focus, fractions, colors, method);
 		} else if (strColor.startsWith("#")) {
-      // Hex string
-      String hex = strColor.substring(1);
-      int clr = Integer.parseInt(hex, 16);
-		  return new Color(clr);
-    }
-		
+			// Hex string
+			String hex = strColor.substring(1);
+			int clr = Integer.parseInt(hex, 16);
+			
+			return new Color(clr);
+		}
+
 		return new Color(Integer.parseInt(strColor), true);
 	}
 
@@ -286,7 +287,6 @@ public class ViewUtils {
 		tree.resetZOrder();
 		re.updateView(UpdateType.JUST_ANNOTATIONS);
 	}
-
 
 	public static void styleWindowStateButton(AbstractButton btn) {
 		final int size = 16;

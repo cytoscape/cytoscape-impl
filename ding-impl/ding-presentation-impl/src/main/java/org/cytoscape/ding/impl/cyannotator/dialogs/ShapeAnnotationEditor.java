@@ -8,34 +8,57 @@ import static javax.swing.GroupLayout.Alignment.TRAILING;
 import static org.cytoscape.util.swing.LookAndFeelUtil.getSmallFontSize;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
+import static org.cytoscape.util.swing.LookAndFeelUtil.setDefaultOkCancelKeyStrokes;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dialog.ModalityType;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.LinearGradientPaint;
+import java.awt.MultipleGradientPaint;
+import java.awt.Paint;
+import java.awt.RadialGradientPaint;
+import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.event.ActionEvent;
+import java.awt.geom.Point2D;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.JCheckBox;
+import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.GraphicsUtilities;
 import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.utils.EnhancedSlider;
+import org.cytoscape.ding.impl.cyannotator.utils.MultipleGradientEditor;
+import org.cytoscape.ding.impl.cyannotator.utils.MultipleGradientEditor.GradientType;
+import org.cytoscape.ding.impl.cyannotator.utils.PointPicker;
 import org.cytoscape.ding.impl.cyannotator.utils.ShapeIcon;
+import org.cytoscape.ding.internal.util.MathUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.swing.ColorButton;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation.ShapeType;
@@ -67,6 +90,23 @@ import org.cytoscape.view.presentation.annotations.ShapeAnnotation.ShapeType;
 @SuppressWarnings("serial")
 public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotation> {
 	
+	private enum FillType {
+		NONE("-- none --"),
+		COLOR("Color"),
+		GRADIENT("Gradient");
+
+		private String label;
+
+		private FillType(String label) {
+			this.label = label;
+		}
+		
+		@Override
+		public String toString() {
+			return label;
+		}
+	}
+	
 	private JLabel borderWidthLabel;
 	private JLabel shapeLabel;
 	private JLabel fillColorLabel;
@@ -76,8 +116,9 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 	private JLabel rotationLabel;
 	
 	private JList<String> shapeList;
-	private JCheckBox fillColorCheck;
+	private JComboBox<FillType> fillTypeCombo;
 	private ColorButton fillColorButton;
+	private GradientButton fillGradientButton;
 	private ColorButton borderColorButton;
 	private EnhancedSlider fillOpacitySlider;
 	private EnhancedSlider borderOpacitySlider;
@@ -85,6 +126,13 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 	private EnhancedSlider rotationSlider;
 
 	private Shape customShape;
+	
+	private static final LinearGradientPaint defaultGradientPaint = new LinearGradientPaint(
+			new Point2D.Double(),
+			new Point2D.Double(1.0, 0.0),
+			new float[] { 0.0f, 1.0f },
+			new Color[] { Color.WHITE, Color.BLACK }
+	);
 
 	public ShapeAnnotationEditor(AnnotationFactory<ShapeAnnotation> factory, CyServiceRegistrar serviceRegistrar) {
 		super(factory, serviceRegistrar);
@@ -107,13 +155,25 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 			// Shape
 			getShapeList().setSelectedValue(annotation.getShapeType(), true);
 			
-			// Fill Color and Opacity
+			// Fill Paint and Opacity
 			// Its possible for an app to set the annotation color to a gradient, which won't work
-			var fillColor = annotation.getFillColor() instanceof Color ? (Color) annotation.getFillColor() : null;
-			int fillOpacity = (int) annotation.getFillOpacity();
+			var fillPaint = annotation.getFillColor();
 			
-			getFillColorCheck().setSelected(annotation.getFillColor() != null);
-			getFillColorButton().setColor(fillColor != null ? fillColor : Color.BLACK);
+			if (fillPaint instanceof Color)
+				getFillTypeCombo().setSelectedItem(FillType.COLOR);
+			else if (fillPaint instanceof MultipleGradientPaint)
+				getFillTypeCombo().setSelectedItem(FillType.GRADIENT);
+			else
+				getFillTypeCombo().setSelectedItem(FillType.NONE);
+				
+			getFillColorButton().setColor(fillPaint instanceof Color ? (Color) fillPaint : Color.BLACK);
+			getFillGradientButton().setPaint(
+					fillPaint instanceof MultipleGradientPaint
+							? (MultipleGradientPaint) fillPaint
+							: defaultGradientPaint
+			);
+
+			int fillOpacity = (int) annotation.getFillOpacity();
 			getFillOpacitySlider().setValue(fillOpacity);
 			
 			// Border
@@ -140,6 +200,7 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 		}
 		
 		updateEnabled();
+		updateFillButtons();
 	}
 
 	@Override
@@ -153,9 +214,18 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 			else
 				annotation.setShapeType(shapeType);
 			
-			annotation.setBorderWidth((int) getBorderWidthCombo().getModel().getSelectedItem());
-			annotation.setFillColor(getFillColorCheck().isSelected() ? getFillColorButton().getColor() : null);
+			Paint fillPaint = null;
+			var fillType = (FillType) getFillTypeCombo().getSelectedItem();
+			
+			if (fillType == FillType.COLOR)
+				fillPaint = getFillColorButton().getColor();
+			else if (fillType == FillType.GRADIENT)
+				fillPaint = getFillGradientButton().getPaint();
+			
+			annotation.setFillColor(fillPaint);
+			
 			annotation.setFillOpacity(getFillOpacitySlider().getValue());
+			annotation.setBorderWidth((int) getBorderWidthCombo().getModel().getSelectedItem());
 			annotation.setBorderColor(getBorderColorButton().getColor());
 			annotation.setBorderOpacity(getBorderOpacitySlider().getValue());
 			annotation.setRotation(getRotationSlider().getValue());
@@ -166,7 +236,7 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 	protected void init() {
 		borderWidthLabel = new JLabel("Border Width:");
 		shapeLabel = new JLabel("Shape:");
-		fillColorLabel = new JLabel("Fill Color:");
+		fillColorLabel = new JLabel("Fill:");
 		fillOpacityLabel = new JLabel("Fill Opacity:");
 		borderColorLabel = new JLabel("Border Color:");
 		borderOpacityLabel = new JLabel("Border Opacity:");
@@ -204,8 +274,9 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 						.addPreferredGap(ComponentPlacement.RELATED)
 						.addGroup(layout.createParallelGroup(Alignment.LEADING, false)
 								.addGroup(layout.createSequentialGroup()
-										.addComponent(getFillColorCheck())
+										.addComponent(getFillTypeCombo())
 										.addComponent(getFillColorButton())
+										.addComponent(getFillGradientButton())
 								)
 								.addComponent(getFillOpacitySlider(), min, pref, max)
 								.addComponent(sep1, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -227,8 +298,9 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 						.addGroup(layout.createSequentialGroup()
 								.addGroup(layout.createParallelGroup(CENTER, false)
 										.addComponent(fillColorLabel)
-										.addComponent(getFillColorCheck())
+										.addComponent(getFillTypeCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 										.addComponent(getFillColorButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+										.addComponent(getFillGradientButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 								)
 								.addGroup(layout.createParallelGroup(LEADING, false)
 										.addComponent(fillOpacityLabel)
@@ -259,8 +331,9 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 
 		makeSmall(shapeLabel, fillColorLabel, fillOpacityLabel, borderColorLabel, borderOpacityLabel, borderWidthLabel,
 				rotationLabel);
-		makeSmall(getFillColorCheck(), getFillColorButton(), getFillOpacitySlider(), getBorderColorButton(),
-				getBorderOpacitySlider(), getBorderWidthCombo(), getRotationSlider());
+		makeSmall(getFillTypeCombo(), getFillColorButton(), getFillGradientButton(), getFillOpacitySlider());
+		makeSmall(getBorderColorButton(), getBorderOpacitySlider(), getBorderWidthCombo());
+		makeSmall(getRotationSlider());
 		makeSmall(scrollPane);
 	}
 	
@@ -315,16 +388,17 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 		return shapeList;
 	}
 	
-	private JCheckBox getFillColorCheck() {
-		if (fillColorCheck == null) {
-			fillColorCheck = new JCheckBox();
-			fillColorCheck.addActionListener(evt -> {
+	public JComboBox<FillType> getFillTypeCombo() {
+		if (fillTypeCombo == null) {
+			fillTypeCombo = new JComboBox<>(FillType.values());
+			fillTypeCombo.addActionListener(evt -> {
+				updateFillButtons();
 				updateEnabled();
 				apply();
 			});
 		}
 		
-		return fillColorCheck;
+		return fillTypeCombo;
 	}
 	
 	private ColorButton getFillColorButton() {
@@ -335,6 +409,16 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 		}
 		
 		return fillColorButton;
+	}
+	
+	private GradientButton getFillGradientButton() {
+		if (fillGradientButton == null) {
+			fillGradientButton = new GradientButton();
+			fillGradientButton.setToolTipText("Edit fill gradient...");
+			fillGradientButton.addPropertyChangeListener("paint", evt -> apply());
+		}
+		
+		return fillGradientButton;
 	}
 	
 	private ColorButton getBorderColorButton() {
@@ -389,9 +473,11 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 	private void updateEnabled() {
 		// Fill
 		{
-			boolean enabled = getFillColorCheck().isSelected();
+			var type = (FillType) getFillTypeCombo().getSelectedItem();
+			boolean enabled = type != null && type != FillType.NONE;
 			
-			getFillColorButton().setEnabled(enabled);	
+			getFillColorButton().setEnabled(enabled);
+			getFillGradientButton().setEnabled(enabled);
 			getFillOpacitySlider().setEnabled(enabled);
 			fillOpacityLabel.setEnabled(enabled);
 		}
@@ -404,6 +490,194 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 			getBorderColorButton().setEnabled(enabled);
 			borderOpacityLabel.setEnabled(enabled);
 			getBorderOpacitySlider().setEnabled(enabled);
+		}
+	}
+	
+	private void updateFillButtons() {
+		var type = (FillType) getFillTypeCombo().getSelectedItem();
+		getFillColorButton().setVisible(type == FillType.COLOR);
+		getFillGradientButton().setVisible(type == FillType.GRADIENT);
+	}
+	
+	protected class GradientButton extends JButton {
+
+		private static Rectangle DEF_BOUNDS = new Rectangle(0, 0, 1, 1);
+		
+		private MultipleGradientPaint paint = defaultGradientPaint;
+		private Color borderColor;
+		
+		private double angle;
+		/** PointPicker's center point (range between 0.0 and  1.0) */
+		private Point2D centerPoint = (Point2D) PointPicker.DEFAULT_VALUE.clone();
+		
+		private boolean canceled;
+		
+		protected GradientButton() {
+			super(" ");
+			
+			init();
+			
+			addActionListener(evt -> {
+				// Open the gradient editor
+				var type = paint instanceof RadialGradientPaint ? GradientType.RADIAL : GradientType.LINEAR;
+				var fractions = paint.getFractions();
+				var colors = paint.getColors();
+				
+				MultipleGradientEditor editor = null;
+				
+				if (paint instanceof RadialGradientPaint) {
+					editor = new MultipleGradientEditor(centerPoint, fractions, colors, serviceRegistrar);
+				} else if (paint instanceof LinearGradientPaint) {
+					var sp = ((LinearGradientPaint) paint).getStartPoint();
+					var ep = ((LinearGradientPaint) paint).getEndPoint();
+					var p1 = new Point2D.Double(sp.getX(), sp.getY());
+					var p2 = new Point2D.Double(ep.getX(), ep.getY());
+					var angle = MathUtil.getAngle(p1, p2);
+					editor = new MultipleGradientEditor(angle, fractions, colors, serviceRegistrar);
+				}
+				
+				if (editor != null) {
+					editor.setPreferredSize(new Dimension(320, 320));
+					
+					showEditorDialog(editor);
+					
+					if (!canceled) {
+						type = editor.getType();
+						fractions = editor.getFractions();
+						colors = editor.getColors();
+					
+						if (type == GradientType.LINEAR) {
+							angle = editor.getAngle();
+							var line = MathUtil.getGradientAxis(DEF_BOUNDS, angle);
+							setPaint(new LinearGradientPaint(line.getP1(), line.getP2(), fractions, colors));
+						} else {
+							centerPoint = editor.getCenterPoint();
+							setPaint(new RadialGradientPaint(centerPoint, 0.5f, fractions, colors));
+						}
+					}
+				}
+			});
+		}
+
+		private void init() {
+			if (LookAndFeelUtil.isAquaLAF())
+				putClientProperty("JButton.buttonType", "gradient");
+
+			setHorizontalTextPosition(JButton.CENTER);
+			setVerticalTextPosition(JButton.CENTER);
+			borderColor = UIManager.getColor("Separator.foreground");
+			setIcon(new GradientIcon());
+			
+			setPaint(paint);
+			repaint();
+		}
+
+		/**
+		 * Sets a new Paint and fires a {@link java.beans.PropertyChangeEvent} for the property "paint".
+		 */
+		protected void setPaint(MultipleGradientPaint paint) {
+			if (paint instanceof LinearGradientPaint == false && paint instanceof RadialGradientPaint == false)
+				paint = defaultGradientPaint;
+			
+			if (this.paint != paint) {
+				var oldValue = this.paint;
+				this.paint = paint;
+				
+				if (paint instanceof RadialGradientPaint)
+					centerPoint = ((RadialGradientPaint) paint).getCenterPoint();
+				
+				repaint();
+				firePropertyChange("paint", oldValue, paint);
+			}
+		}
+
+		protected MultipleGradientPaint getPaint() {
+			return paint;
+		}
+		
+		private JDialog showEditorDialog(MultipleGradientEditor editor) {
+			var owner = SwingUtilities.getWindowAncestor(GradientButton.this);
+			
+			var dialog = new JDialog(owner, "Gradient Editor", ModalityType.APPLICATION_MODAL);
+			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			dialog.setResizable(false);
+			
+			dialog.getContentPane().add(editor, BorderLayout.CENTER);
+			
+			var okButton = new JButton(new AbstractAction("OK") {
+				@Override
+				public void actionPerformed(ActionEvent evt) {
+					canceled = false;
+					dialog.dispose();
+				}
+			});
+			var cancelButton = new JButton(new AbstractAction("Cancel") {
+				@Override
+				public void actionPerformed(ActionEvent evt) {
+					canceled = true;
+					dialog.dispose();
+				}
+			});
+			
+			var buttonPanel = LookAndFeelUtil.createOkCancelPanel(okButton, cancelButton);
+			int pad = 10;
+			buttonPanel.setBorder(BorderFactory.createCompoundBorder(
+					BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")),
+					BorderFactory.createEmptyBorder(pad, pad, pad, pad)
+			));
+			dialog.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
+			
+			setDefaultOkCancelKeyStrokes(dialog.getRootPane(), okButton.getAction(), cancelButton.getAction());
+			getRootPane().setDefaultButton(okButton);
+			
+			dialog.pack();
+			dialog.setLocationRelativeTo(GradientButton.this);
+			dialog.setVisible(true);
+			
+			return dialog;
+		}
+		
+		private class GradientIcon implements Icon {
+
+			@Override
+			public int getIconHeight() {
+				return 16;
+			}
+
+			@Override
+			public int getIconWidth() {
+				return 44;
+			}
+
+			@Override
+			public void paintIcon(Component c, Graphics g, int x, int y) {
+				int w = getIconWidth();
+				int h = getIconHeight();
+				
+				var g2 = (Graphics2D) g.create();
+				
+				if (paint != null) {
+					var fractions = paint.getFractions();
+					var colors = paint.getColors();
+					var bounds = new Rectangle(x, y, w, h);
+					
+					if (paint instanceof LinearGradientPaint) {
+						var line = MathUtil.getGradientAxis(bounds, angle);
+						g2.setPaint(new LinearGradientPaint(line.getP1(), line.getP2(), fractions, colors));
+					} else if (paint instanceof RadialGradientPaint) {
+						var cp = MathUtil.convertCoordinate(centerPoint, DEF_BOUNDS, new Rectangle(x, y, w, h));
+						int radius = Math.min(w, h);
+						g2.setPaint(new RadialGradientPaint(cp, radius, fractions, colors));
+					}
+					
+					g2.fillRect(x, y, w, h);
+				}
+				
+				g2.setColor(borderColor);
+				g2.drawRect(x, y, w, h);
+				
+				g2.dispose();
+			}
 		}
 	}
 }

@@ -1,5 +1,7 @@
 package org.cytoscape.ding.internal.util;
 
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -170,6 +172,16 @@ public final class MathUtil {
         return x * x;
     }
 	
+	/**
+	 * Calculates the angle (in degrees) of a straight line drawn between point one and two.
+	 */
+	public static double getAngle(Point.Double p1, Point.Double p2) {
+		double xDiff = p2.x - p1.x;
+		double yDiff = p2.y - p1.y;
+		
+		return Math.toDegrees(Math.atan2(yDiff, xDiff));
+	}
+	
 	public static double normalizeAngle(double angle) {
 		double value = angle % 360;
 		if (angle < 0) value = value + 360;
@@ -212,4 +224,98 @@ public final class MathUtil {
 		
 		return Math.min(fw, fh); // final scaling factor
     }
+	
+	/**
+	 * Converts a coordinate (point) from one dimension to another.
+	 * 
+	 * @param cp The original center point, with its x/y values between 0.0 and 1.0
+	 * @param ob The original bounds of the passed center point
+	 * @param nb The new bounds
+	 * @return A new center point, adjusted to the new bounds
+	 */
+	public static Point2D convertCoordinate(Point2D cp, Rectangle ob, Rectangle nb) {
+		var cx = cp.getX();
+		var cy = cp.getY();
+		
+		var xlo = ob.getMinX();
+		var ylo = ob.getMinY();
+		var xho = ob.getMaxX();
+		var yho = ob.getMaxY();
+		
+		var xln = nb.getMinX();
+		var yln = nb.getMinY();
+		var xhn = nb.getMaxX();
+		var yhn = nb.getMaxY();
+		
+		var xro = xho - xlo; // old x range
+        var xrn = xhn - xln; // new x range
+        var x = xln + ((cx - xlo) * xrn) / xro;
+        
+        var yro = yho - ylo; // old y range
+        var yrn = yhn - yln; // new y range
+        var y = yln + ((cy - ylo) * yrn) / yro;
+		
+		var np = new Point2D.Double(x, y);
+		
+		return np;
+	}
+	
+	public static Line2D getGradientAxis(Rectangle2D bounds, double angle) {
+		Point2D start = null;
+		Point2D end = null;
+		
+		double x1 = bounds.getMinX();
+		double y1 = bounds.getMinY();
+		double x2 = bounds.getMaxX();
+		double y2 = bounds.getMaxY();
+		double cx = bounds.getCenterX();
+		double cy = bounds.getCenterY();
+		
+		if (angle == 0.0) {
+			// Just because it's faster to calculate it like this with these angles
+			start = new Point2D.Double(x1, cy);
+			end = new Point2D.Double(x2, cy);
+		} else if (angle == 90.0) {
+			start = new Point2D.Double(cx, y2);
+			end = new Point2D.Double(cx, y1);
+		} else if (angle == 180.0) {
+			start = new Point2D.Double(x2, cy);
+			end = new Point2D.Double(x1, cy);
+		} else if (angle == 270.0) {
+			start = new Point2D.Double(cx, y1);
+			end = new Point2D.Double(cx, y2);
+		} else {
+			// To understand what it does here, see:
+			//   https://developer.mozilla.org/en-US/docs/Web/CSS/linear-gradient
+			//   http://hugogiraudel.com/blog/css-gradients
+			//   http://codepen.io/thebabydino/pen/qgoBL
+			
+			double ax;
+			double ay;
+			double d = Math.max(bounds.getWidth(), bounds.getHeight());
+			
+			// Gradient line when angle is 0 degree and the rotate it
+			Line2D gl = new Line2D.Double(cx - d, cy, cx + d, cy);
+			gl = MathUtil.rotate(gl, -angle, cx, cy);
+			
+			int q = MathUtil.getQuadrant(angle);
+			
+			// Creates two perpendicular lines (to the gradient line) and rotate them accordingly
+			Line2D pl1 = new Line2D.Double(x1, cy - d, x1, cy + d);
+			ax = x1;
+			ay = q == 1 || q == 3 ? y2 : y1;
+			pl1 = MathUtil.rotate(pl1, -angle, ax, ay);
+			
+			Line2D pl2 = new Line2D.Double(x2, cy - d, x2, cy + d);
+			ax = x2;
+			ay = q == 1 || q == 3 ? y1 : y2;
+			pl2 = MathUtil.rotate(pl2, -angle, ax, ay);
+			
+			// Find the intersection points between the gradient line and the perpendicular lines
+			start = MathUtil.getIntersectionPoint(gl, (q == 1 || q == 4 ? pl1 : pl2));
+			end = MathUtil.getIntersectionPoint(gl, (q == 1 || q == 4 ? pl2 : pl1));
+		}
+		
+		return new Line2D.Double(start, end);
+	}
 }

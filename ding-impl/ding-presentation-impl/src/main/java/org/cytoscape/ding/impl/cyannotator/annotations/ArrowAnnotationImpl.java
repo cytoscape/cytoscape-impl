@@ -174,7 +174,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		argMap.put(TYPE, ArrowAnnotation.class.getName());
 
 		if (lineColor != null)
-			argMap.put(ARROWCOLOR, ViewUtils.convertColor(lineColor));
+			argMap.put(ARROWCOLOR, ViewUtils.serialize(lineColor));
 
 		argMap.put(ARROWTHICKNESS, Float.toString(lineWidth));
 
@@ -185,7 +185,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		argMap.put(SOURCESIZE, Double.toString(sourceSize));
 
 		if (sourceColor != null)
-			argMap.put(SOURCECOLOR, ViewUtils.convertColor(sourceColor));
+			argMap.put(SOURCECOLOR, ViewUtils.serialize(sourceColor));
 
 		if (target instanceof Point2D) {
 			var xy = (Point2D) target;
@@ -206,7 +206,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		argMap.put(TARGETSIZE, Double.toString(targetSize));
 
 		if (targetColor != null)
-			argMap.put(TARGETCOLOR, ViewUtils.convertColor(targetColor));
+			argMap.put(TARGETCOLOR, ViewUtils.serialize(targetColor));
 
 		return argMap;
 	}

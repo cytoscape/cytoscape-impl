@@ -974,7 +974,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 				lastSelected = selectionHead;
 			} else {
 				if (e.isShiftDown()) {
-					selectRange(item);
+					selectTo(item);
 				} else {
 					// No SHIFT/CTRL pressed
 					selectAndSetCurrent(item);
@@ -988,7 +988,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		}
 	}
 
-	private void selectRange(AbstractNetworkPanel<?> target) {
+	private void selectTo(AbstractNetworkPanel<?> target) {
 		if (selectionHead != null && selectionHead.isVisible() && selectionHead.isSelected() && selectionHead != target) {
 			var oldRootSelection = getSelectedRootNetworks();
 			var oldSubSelection = getSelectedNetworks(false);
@@ -1397,12 +1397,12 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 				var previous = getPreviousItem(lastSelected, false);
 				
 				if (previous != null)
-					selectRange(previous);
+					selectTo(previous);
 			} else if (cmd.equals(VK_SHIFT_DOWN)) {
 				var next = getNextItem(lastSelected, false);
 				
 				if (next != null)
-					selectRange(next);
+					selectTo(next);
 			} else if (cmd.equals(VK_CTRL_A)) {
 				selectAll();
 			} else if (cmd.equals(VK_CTRL_SHIFT_A)) {

@@ -149,7 +149,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		var argMap = super.getArgMap();
 		argMap.put(TYPE, BoundedTextAnnotation.class.getName());
 		argMap.put(TEXT, TextAnnotationImpl.joinString(text));
-		argMap.put(COLOR, ViewUtils.convertColor((Paint) this.textColor));
+		argMap.put(COLOR, ViewUtils.serialize((Paint) this.textColor));
 		argMap.put(FONTFAMILY, this.font.getFamily());
 		argMap.put(FONTSIZE, Integer.toString(this.font.getSize()));
 		argMap.put(FONTSTYLE, Integer.toString(this.font.getStyle()));

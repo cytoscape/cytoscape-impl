@@ -130,12 +130,12 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
     argMap.put(TYPE, ShapeAnnotation.class.getName());
 
     if (fillColor != null)
-      argMap.put(FILLCOLOR, ViewUtils.convertColor(fillColor));
+      argMap.put(FILLCOLOR, ViewUtils.serialize(fillColor));
 
     argMap.put(FILLOPACITY, Double.toString(fillOpacity));
 
     if (borderColor != null)
-      argMap.put(EDGECOLOR, ViewUtils.convertColor(borderColor));
+      argMap.put(EDGECOLOR, ViewUtils.serialize(borderColor));
 
     argMap.put(EDGETHICKNESS, Double.toString(borderWidth));
     argMap.put(EDGEOPACITY, Double.toString(borderOpacity));
