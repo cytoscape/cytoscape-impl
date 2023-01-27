@@ -24,6 +24,8 @@ import java.awt.RadialGradientPaint;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.geom.Point2D;
 import java.util.HashMap;
 import java.util.Map;
@@ -522,18 +524,19 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 				var type = paint instanceof RadialGradientPaint ? GradientType.RADIAL : GradientType.LINEAR;
 				var fractions = paint.getFractions();
 				var colors = paint.getColors();
+				var annUuid = annotation.getUUID().toString();
 				
 				MultipleGradientEditor editor = null;
 				
 				if (paint instanceof RadialGradientPaint) {
-					editor = new MultipleGradientEditor(centerPoint, fractions, colors, serviceRegistrar);
+					editor = new MultipleGradientEditor(centerPoint, fractions, colors, annUuid, serviceRegistrar);
 				} else if (paint instanceof LinearGradientPaint) {
 					var sp = ((LinearGradientPaint) paint).getStartPoint();
 					var ep = ((LinearGradientPaint) paint).getEndPoint();
 					var p1 = new Point2D.Double(sp.getX(), sp.getY());
 					var p2 = new Point2D.Double(ep.getX(), ep.getY());
 					var angle = MathUtil.getAngle(p1, p2);
-					editor = new MultipleGradientEditor(angle, fractions, colors, serviceRegistrar);
+					editor = new MultipleGradientEditor(angle, fractions, colors, annUuid, serviceRegistrar);
 				}
 				
 				if (editor != null) {
@@ -595,7 +598,7 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 			return paint;
 		}
 		
-		private JDialog showEditorDialog(MultipleGradientEditor editor) {
+		private void showEditorDialog(MultipleGradientEditor editor) {
 			var owner = SwingUtilities.getWindowAncestor(GradientButton.this);
 			
 			var dialog = new JDialog(owner, "Gradient Editor", ModalityType.APPLICATION_MODAL);
@@ -630,11 +633,17 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 			setDefaultOkCancelKeyStrokes(dialog.getRootPane(), okButton.getAction(), cancelButton.getAction());
 			getRootPane().setDefaultButton(okButton);
 			
+			dialog.addWindowListener(new WindowAdapter() {
+				@Override
+				public void windowClosed(WindowEvent event) {
+					if (!canceled)
+						editor.saveCurrentPalette();
+				}
+			});
+			
 			dialog.pack();
 			dialog.setLocationRelativeTo(GradientButton.this);
 			dialog.setVisible(true);
-			
-			return dialog;
 		}
 		
 		private class GradientIcon implements Icon {

@@ -8,17 +8,27 @@ import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 
 import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.LayoutStyle.ComponentPlacement;
 
+import org.cytoscape.ding.impl.cyannotator.utils.GradientEditor.ControlPoint;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.color.BrewerType;
+import org.cytoscape.util.color.Palette;
+import org.cytoscape.util.color.PaletteProviderManager;
+import org.cytoscape.util.color.PaletteType;
+import org.cytoscape.util.swing.CyColorPaletteChooserFactory;
+import org.cytoscape.util.swing.IconManager;
 
 @SuppressWarnings("serial")
 public class MultipleGradientEditor extends JPanel {
@@ -49,7 +59,8 @@ public class MultipleGradientEditor extends JPanel {
 	private JToggleButton radialToggle;
 	private ButtonGroup typeGroup = new ButtonGroup();
 	
-	private JLabel colorsLbl = new JLabel("Colors:");
+	private JButton paletteBtn;
+	private JButton reverseBtn;
 	private GradientEditor grEditor;
 	
 	private JPanel linearOptionsPnl;
@@ -60,6 +71,10 @@ public class MultipleGradientEditor extends JPanel {
 	private JLabel centerLbl = new JLabel("Center:");
 	private PointPicker pointPicker;
 
+	private Palette lastPalette;
+	private Palette currentPalette;
+	private PaletteType paletteType;
+	
 	private float[] fractions;
 	private Color[] colors;
 	private double angle; // Linear Gradient only
@@ -67,15 +82,23 @@ public class MultipleGradientEditor extends JPanel {
 	
 	private GradientType type;
 	
+	private final String targetId;
 	private final CyServiceRegistrar serviceRegistrar;
+
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
 	/**
 	 * Start with the Linear Gradient editor.
 	 */
-	public MultipleGradientEditor(double angle, float[] fractions, Color[] colors, CyServiceRegistrar serviceRegistrar) {
-		this(GradientType.LINEAR, fractions, colors, serviceRegistrar);
+	public MultipleGradientEditor(
+			double angle,
+			float[] fractions,
+			Color[] colors,
+			String targetId,
+			CyServiceRegistrar serviceRegistrar
+	) {
+		this(GradientType.LINEAR, fractions, colors, targetId, serviceRegistrar);
 		this.angle = angle;
 		
 		init();
@@ -84,19 +107,38 @@ public class MultipleGradientEditor extends JPanel {
 	/**
 	 * Start with the Radial Gradient editor.
 	 */
-	public MultipleGradientEditor(Point2D centerPoint, float[] fractions, Color[] colors, CyServiceRegistrar serviceRegistrar) {
-		this(GradientType.RADIAL, fractions, colors, serviceRegistrar);
+	public MultipleGradientEditor(
+			Point2D centerPoint,
+			float[] fractions,
+			Color[] colors,
+			String targetId,
+			CyServiceRegistrar serviceRegistrar
+	) {
+		this(GradientType.RADIAL, fractions, colors, targetId, serviceRegistrar);
 		this.centerPoint = (Point2D) centerPoint.clone();
 		
 		init();
 	}
 	
-	private MultipleGradientEditor(GradientType type, float[] fractions, Color[] colors, CyServiceRegistrar serviceRegistrar) {
+	private MultipleGradientEditor(
+			GradientType type,
+			float[] fractions,
+			Color[] colors,
+			String targetId,
+			CyServiceRegistrar serviceRegistrar
+	) {
 		this.type = type;
 		this.fractions = fractions.clone();
 		this.colors = colors.clone();
 		
+		this.targetId = targetId;
 		this.serviceRegistrar = serviceRegistrar;
+		
+		paletteType = BrewerType.ANY;
+		lastPalette = retrievePalette();
+		
+		if (lastPalette != null)
+			setCurrentPalette(lastPalette);
 	}
 	
 	// ==[ PUBLIC METHODS ]=============================================================================================
@@ -121,6 +163,13 @@ public class MultipleGradientEditor extends JPanel {
 		return centerPoint != null ? (Point2D) centerPoint.clone() : (Point2D) PointPicker.DEFAULT_VALUE.clone();
 	}
 	
+	public void saveCurrentPalette() {
+		if (currentPalette != null) {
+			var mgr = serviceRegistrar.getService(PaletteProviderManager.class);
+			mgr.savePalette("annotation::" + targetId, currentPalette);
+		}
+	}
+	
 	// ==[ PRIVATE METHODS ]============================================================================================
 
 	private void init() {
@@ -142,7 +191,11 @@ public class MultipleGradientEditor extends JPanel {
 						.addComponent(getRadialToggle())
 						.addGap(10, 10, Short.MAX_VALUE)
 				)
-				.addComponent(colorsLbl)
+				.addGroup(layout.createSequentialGroup()
+						.addComponent(getPaletteBtn())
+						.addGap(10, 10, Short.MAX_VALUE)
+						.addComponent(getReverseBtn())
+				)
 				.addComponent(getGrEditor())
 				.addComponent(getLinearOptionsPnl())
 				.addComponent(getRadialOptionsPnl())
@@ -153,14 +206,17 @@ public class MultipleGradientEditor extends JPanel {
 						.addComponent(getRadialToggle(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
 				.addPreferredGap(ComponentPlacement.UNRELATED)
-				.addComponent(colorsLbl)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(getPaletteBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getReverseBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
 				.addComponent(getGrEditor(), 100, 100, PREFERRED_SIZE)
 				.addPreferredGap(ComponentPlacement.UNRELATED)
 				.addComponent(getLinearOptionsPnl())
 				.addComponent(getRadialOptionsPnl())
 		);
 		
-		makeSmall(colorsLbl, centerLbl);
+		makeSmall(centerLbl);
 		makeSmall(getLinearToggle(), getRadialToggle());
 		
 		if (isAquaLAF()) {
@@ -219,6 +275,54 @@ public class MultipleGradientEditor extends JPanel {
 		return radialToggle;
 	}
 	
+	private JButton getPaletteBtn() {
+		if (paletteBtn == null) {
+			paletteBtn = new JButton("Palette");
+			paletteBtn.setToolTipText("None");
+			paletteBtn.addActionListener(evt -> {
+				// Bring up the palette chooser dialog
+				var factory = serviceRegistrar.getService(CyColorPaletteChooserFactory.class);
+				var chooser = factory.getColorPaletteChooser(paletteType, false);
+				var newPalette = chooser.showDialog(MultipleGradientEditor.this, "Set Palette", currentPalette, 9);
+
+				if (newPalette == null)
+					return;
+
+				// Get the palette
+				var colors = newPalette.getColors(this.colors.length);
+				
+				Object[] options = { "Yes", "No" };
+				int n = JOptionPane.showOptionDialog(
+						null, 
+						"This will reset your current settings.\nAre you sure you want to continue?", 
+				        "Warning",
+				        JOptionPane.DEFAULT_OPTION,
+				        JOptionPane.WARNING_MESSAGE,
+				        null,
+				        options,
+				        options[1]
+				);
+				
+				if (n == 0) {
+					setCurrentPalette(newPalette);
+					setColors(colors);
+				}
+			});
+		}
+		
+		return paletteBtn;
+	}
+	
+	public JButton getReverseBtn() {
+		if (reverseBtn == null) {
+			reverseBtn = new JButton(IconManager.ICON_EXCHANGE);
+			reverseBtn.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(14.0f));
+			reverseBtn.addActionListener(evt -> reverseColors());
+		}
+		
+		return reverseBtn;
+	}
+	
 	private GradientEditor getGrEditor() {
 		if (grEditor == null) {
 			var fractions = getFractions();
@@ -237,7 +341,7 @@ public class MultipleGradientEditor extends JPanel {
 		
 		return grEditor;
 	}
-	
+
 	private JPanel getLinearOptionsPnl() {
 		if (linearOptionsPnl == null) {
 			linearOptionsPnl = new JPanel();
@@ -300,6 +404,7 @@ public class MultipleGradientEditor extends JPanel {
 			);
 			
 			makeSmall(centerLbl);
+			makeSmall(getPaletteBtn(), getReverseBtn());
 		}
 		
 		return radialOptionsPnl;
@@ -315,6 +420,45 @@ public class MultipleGradientEditor extends JPanel {
 		}
 		
 		return pointPicker;
+	}
+	
+	private Palette retrievePalette() {
+		var mgr = serviceRegistrar.getService(PaletteProviderManager.class);
+		
+		return mgr.retrievePalette("annotation::" + targetId);
+	}
+
+	private void setCurrentPalette(Palette palette) {
+		getPaletteBtn().setToolTipText(palette.toString());
+		currentPalette = palette;
+	}
+	
+	private void setColors(Color[] colors) {
+		var controlPoints = new ArrayList<ControlPoint>();
+		
+		for (int i = 0; i < colors.length; i++) {
+			var c = colors[i];
+			float f = fractions[i];
+			
+			controlPoints.add(new GradientEditor.ControlPoint(c, f));
+		}
+		
+		grEditor.setPoints(controlPoints);
+	}
+	
+	private void reverseColors() {
+		var controlPoints = new ArrayList<ControlPoint>();
+		
+		for (int i = fractions.length - 1; i >= 0; i--) {
+			var c = colors[i];
+			
+			float f = 1.0f - fractions[i];
+			f = Math.max(0.0f, Math.min(1.0f, f));
+			
+			controlPoints.add(new GradientEditor.ControlPoint(c, f));
+		}
+		
+		grEditor.setPoints(controlPoints);
 	}
 	
 	private void updateOptionPanel() {

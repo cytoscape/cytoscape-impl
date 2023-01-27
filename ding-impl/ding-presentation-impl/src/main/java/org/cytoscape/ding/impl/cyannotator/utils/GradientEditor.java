@@ -69,7 +69,7 @@ public class GradientEditor extends JPanel {
 	 */
 	public GradientEditor(List<ControlPoint> points, CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
-		setPoints(points);
+		setPoints(points, false);
 		init();
 	}
 	
@@ -89,7 +89,7 @@ public class GradientEditor extends JPanel {
 			}
 		}
 		
-		setPoints(points);
+		setPoints(points, false);
 		init();
 	}
 	
@@ -167,7 +167,7 @@ public class GradientEditor extends JPanel {
 	/**
 	 * Add a control point to the gradient
 	 * 
-	 * @param position The position in the gradient (0 -> 1)
+	 * @param pos The position in the gradient (0 -> 1)
 	 * @param color The color at the new control point
 	 */
 	public void addPoint(float pos, Color col) {
@@ -272,6 +272,10 @@ public class GradientEditor extends JPanel {
 		return colors;
 	}
 	
+	public void setPoints(List<ControlPoint> points) {
+		setPoints(points, true);
+	}
+	
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	private void init() {
@@ -322,7 +326,7 @@ public class GradientEditor extends JPanel {
 		});
 	}
 	
-	private void setPoints(List<ControlPoint> points) {
+	private void setPoints(List<ControlPoint> points, boolean update) {
 		controlPoints.clear();
 		
 		if (points == null || points.isEmpty()) {
@@ -348,15 +352,20 @@ public class GradientEditor extends JPanel {
 				}
 			}
 		}
+		
+		if (update) {
+			repaint(0);
+			fireUpdate();
+		}
 	}
 	
 	/**
 	 * Fire an update to all listeners
 	 */
 	private void fireUpdate() {
-		var event = new ActionEvent(this,0,"");
-		
-		for (int i=0; i < listeners.size(); i++)
+		var event = new ActionEvent(this, 0, "");
+
+		for (int i = 0; i < listeners.size(); i++)
 			listeners.get(i).actionPerformed(event);
 	}
 	
@@ -369,12 +378,12 @@ public class GradientEditor extends JPanel {
 	 * @return True if the mouse point coincides with the control point
 	 */
 	private boolean checkPoint(int mx, int my, ControlPoint pt) {
-		int dx = (int) Math.abs((10+(width * pt.getPosition())) - mx);
-		int dy = Math.abs((y+barHeight+7)-my);
-		
+		int dx = (int) Math.abs((10 + (width * pt.getPosition())) - mx);
+		int dy = Math.abs((y + barHeight + 7) - my);
+
 		if ((dx < 5) && (dy < 7))
 			return true;
-		
+
 		return false;
 	}
 	
@@ -407,8 +416,8 @@ public class GradientEditor extends JPanel {
 	 */
 	private void sortPoints() {
 		var firstPt = controlPoints.get(0);
-		var lastPt  = controlPoints.get(controlPoints.size()-1);
-		
+		var lastPt = controlPoints.get(controlPoints.size() - 1);
+
 		var compare = new Comparator<ControlPoint>() {
 			@Override
 			public int compare(ControlPoint first, ControlPoint second) {
@@ -531,7 +540,7 @@ public class GradientEditor extends JPanel {
 	
 	// ==[ CLASSES ]====================================================================================================
 	
-	public class ControlPoint {
+	public static class ControlPoint {
 		
 		/** The color at this control point */
 		private Color color;

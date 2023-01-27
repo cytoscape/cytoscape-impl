@@ -92,7 +92,7 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 		getPaletteButton().addActionListener(evt -> {
 			// Bring up the palette chooser dialog
 			CyColorPaletteChooser chooser = paletteChooserFactory.getColorPaletteChooser(paletteType, false);
-			Palette newPalette = chooser.showDialog(GradientEditorPanel.this, "Set palette", currentPalette, 9);
+			Palette newPalette = chooser.showDialog(GradientEditorPanel.this, "Set Palette", currentPalette, 9);
 
 			if (newPalette == null)
 				return;
