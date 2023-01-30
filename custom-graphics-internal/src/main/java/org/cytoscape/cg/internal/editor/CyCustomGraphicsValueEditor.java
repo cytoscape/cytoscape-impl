@@ -93,15 +93,6 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 		
 		update(vp.getTargetDataType());
 		
-		dialog.addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowOpened(WindowEvent e) {
-				// Let the user load new images right away if the selector is empty
-				if (imageSelector != null && imageSelector.isEmpty())
-					imageSelector.loadNewImages();
-			}
-		});
-		
 		dialog.pack();
 		dialog.setLocationRelativeTo(parent);
 		dialog.setVisible(true);
