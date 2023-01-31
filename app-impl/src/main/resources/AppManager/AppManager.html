@@ -147,68 +147,10 @@ display: none;
 
 <!-- Additional JavaScript -->
 <script type="text/javascript">
-const defaultBaseUrl = 'http://127.0.0.1:1234/v1';
-async function commandsPOST(cmdString, baseUrl = defaultBaseUrl) {
-  const qurl = command2postQueryUrl(cmdString, baseUrl);
-  let qbody = command2postQueryBody(cmdString);
-  qbody = JSON.stringify(qbody);
-  const res = await fetch(qurl, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json'
-    },
-    body: qbody
-  });
-    const json = await res.json();
-    return json;
-}
-
-function command2postQueryUrl(cmdString, baseUrl = defaultBaseUrl){
-    let pattern =  /\ [A-Za-z0-9_-]*=/g;
-    let cmdMarkParams = cmdString.replace(pattern, "XXXXXX$&");
-    let splitCmd = cmdMarkParams.split("XXXXXX");
-    let cyCmd = splitCmd[0];
-    let tempString = cyCmd.replace(" ", "/");
-    let commandUrl = baseUrl.concat('/commands/')
-    let urlPost = encodeURI(commandUrl.concat(tempString));
-    return urlPost;
-}
-
-
-function command2postQueryBody(cmdString){
-    let pattern =  /\ [A-Za-z0-9_-]*=/g;
-    let cmdMarkParams = cmdString.replace(pattern, "XXXXXX$&");
-    let splitCmd = cmdMarkParams.split("XXXXXX");
-    let args = (splitCmd.slice(1)).join(' ');
-    let qargs = {};
-    let keyList = [];
-    let valueList = [];
-    if (!(args === undefined || args.length == 0)) {
-        args = args.replace(/['"]+/g, '');
-        const re1 = /[A-Za-z0-9_-]+=/g;
-        keyList = args.match(re1);
-        keyList = keyList.map(function(x){ return x.replace(/=/g,"") });
-        const re2 = /\ *[A-Za-z0-9_-]+=/g;
-        valueList = args.split(re2).slice(1);
-        keyList.forEach((key, i) => qargs[key] = valueList[i]);
-        return qargs;
-    } else {
-        qargs = {'atLeastOneArg':'required'};
-        return qargs;
-    }
-}
-
-
-async function getInstalledAppsOffLine(baseUrl = defaultBaseUrl) {
-    let res = await commandsPOST('apps list installed', baseUrl=baseUrl);
-    return res;
-}
-
 window.addEventListener('load', function() {
-    
+    if(window.navigator.userAgent.includes('CyBrowser')){
         setTimeout(function(){
-            renderInstalledApps();
+            getInstalledAppsCyB();
         }, 100);
         setTimeout(function(){
             getDisabledAppsCyB(); //a delay between CyBrowser calls is necessary
@@ -216,18 +158,9 @@ window.addEventListener('load', function() {
         setTimeout(function(){
             getUpdatesAppsCyB(); //a delay between CyBrowser calls is necessary
         }, 300);
-
-
-    //fetch('https://www.google.com', {
-    //method: 'HEAD',
-    //mode: 'no-cors'
-  //})
-  //.then((response) => {
-    //alert("connected");
-  //}, (err) => {
-    //alert("error: " + err); // (currently fetch failed)
-  //})
-
+    } else {
+        alert("Sorry, this page only runs in CyBrowser.");
+    }
 });
 
 // const coreApps = []
@@ -240,12 +173,8 @@ const coreApps = ["BioPAX Reader",  "Biomart Web Service Client", "CX Support",
 
 
 function getInstalledAppsCyB() {
-    //cybrowser.executeCyCommandWithResults('apps list installed', 'renderInstalledApps' );
-    let res = getInstalledAppsOffLine();
-    return res;
+    cybrowser.executeCyCommandWithResults('apps list installed', 'renderInstalledApps' );
 }
-
-
 function getDisabledAppsCyB() {
     cybrowser.executeCyCommandWithResults('apps list disabled', 'renderDisabledApps' );
 }
@@ -253,10 +182,9 @@ function getUpdatesAppsCyB() {
     cybrowser.executeCyCommandWithResults('apps list updates', 'renderUpdatesApps' );
 }
 
-async function renderInstalledApps() {
-        let abc = await getInstalledAppsCyB();
-        array = abc['data'];
-        alert(array);
+function renderInstalledApps(res) {
+    // alert(res);
+        array = JSON.parse(res);
         array = array.sort(function(a,b){return a.appName.localeCompare(b.appName)});
         arrayUser = array.filter(function(a){return !coreApps.includes(a['appName'])});
         console.log(arrayUser.length + " enabled apps");
