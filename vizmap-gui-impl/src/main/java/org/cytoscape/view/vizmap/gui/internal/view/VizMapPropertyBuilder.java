@@ -3,6 +3,7 @@ package org.cytoscape.view.vizmap.gui.internal.view;
 import java.awt.Component;
 import java.beans.PropertyEditor;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -301,30 +302,28 @@ public class VizMapPropertyBuilder {
 		propertySheetPanel.repaint();
 	}
 	
-	public VizMapperProperty<VisualProperty<?>, String, VisualMappingFunctionFactory> getColumnProperty(
-			final PropertySheetPanel propSheetPnl) {
+	public VizMapperProperty<VisualProperty<?>, String, VisualMappingFunctionFactory> getColumnProperty(PropertySheetPanel propSheetPnl) {
 		final Property[] properties = propSheetPnl != null ? propSheetPnl.getProperties() : null;
 		
 		if (properties != null) {
 			for (final Property p : properties) {
-				if (p instanceof VizMapperProperty && 
-						((VizMapperProperty)p).getCellType() == CellType.VISUAL_PROPERTY_TYPE)
-					return (VizMapperProperty<VisualProperty<?>, String, VisualMappingFunctionFactory>) p;
+				if (p instanceof VizMapperProperty vmp && vmp.getCellType() == CellType.VISUAL_PROPERTY_TYPE) {
+					return vmp;
+				}
 			}
 		}
-		
+
 		return null;
 	}
 	
-	public VizMapperProperty<String, VisualMappingFunctionFactory, VisualMappingFunction<?, ?>> getMappingTypeProperty(
-			final PropertySheetPanel propSheetPnl) {
+	public VizMapperProperty<String, VisualMappingFunctionFactory, VisualMappingFunction<?, ?>> getMappingTypeProperty(PropertySheetPanel propSheetPnl) {
 		final Property[] properties = propSheetPnl != null ? propSheetPnl.getProperties() : null;
 		
 		if (properties != null) {
 			for (final Property p : properties) {
-				if (p instanceof VizMapperProperty && 
-						((VizMapperProperty)p).getCellType() == CellType.MAPPING_TYPE)
-					return (VizMapperProperty<String, VisualMappingFunctionFactory, VisualMappingFunction<?, ?>>) p;
+				if (p instanceof VizMapperProperty vmp && vmp.getCellType() == CellType.MAPPING_TYPE) {
+					return vmp;
+				}
 			}
 		}
 		
@@ -348,6 +347,11 @@ public class VizMapPropertyBuilder {
 		final Property[] properties = propertySheetPanel.getProperties();
 		
 		if (properties != null) {
+			var propsToKeep = new LinkedHashSet<>(); // maintains insertion order
+			for(var p : properties) {
+				propsToKeep.add(p);
+			}
+			
 			final PropertySheetTable table = propertySheetPanel.getTable();
 			final PropertyRendererRegistry rendReg = (PropertyRendererRegistry) table.getRendererFactory();
 			
@@ -357,14 +361,15 @@ public class VizMapPropertyBuilder {
 					
 					if (cellType == CellType.CONTINUOUS || cellType == CellType.DISCRETE) {
 						if (cellType == CellType.CONTINUOUS) {
-							// TODO: Update range trace?
-							rendReg.unregisterRenderer(p);
-						}
+							rendReg.unregisterRenderer(p); // TODO: Update range trace?
+						} 
 						
-						propertySheetPanel.removeProperty(p);
+						propsToKeep.remove(p);
 					}
 				}
 			}
+			
+			propertySheetPanel.setProperties(propsToKeep.toArray(Property[]::new));
 			
 			table.repaint();
 			propertySheetPanel.repaint();
@@ -403,6 +408,7 @@ public class VizMapPropertyBuilder {
 	 * Set value, title, and renderer for each property in the category. This
 	 * list should be created against all available attribute values.
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private <K, V> void setDiscreteProps(VisualProperty<V> vp, VisualMappingFunction<K, V> mapping,
 			SortedSet<Object> attrSet, VisualPropertyEditor<V> vpEditor,
 			PropertySheetPanel propertySheetPanel) {
@@ -410,19 +416,20 @@ public class VizMapPropertyBuilder {
 			return;
 
 		final Map<K, V> discMapping = ((DiscreteMapping<K, V>) mapping).getAll();
-
-		V val = null;
-		VizMapperProperty<K, V, VisualMappingFunction<K, V>> valProp;
-		String strVal;
-
 		final PropertySheetTable table = propertySheetPanel.getTable();
 		final PropertyRendererRegistry cellRendererFactory = (PropertyRendererRegistry) table.getRendererFactory();
 		final PropertyEditorRegistry cellEditorFactory = (PropertyEditorRegistry) table.getEditorFactory();
 
-		for (final Object key : attrSet) {
-			valProp = new VizMapperProperty<>(
-					CellType.DISCRETE, (K) key, mapping.getVisualProperty().getRange().getType());
-			strVal = key.toString();
+		Property[] properties = new Property[propertySheetPanel.getPropertyCount() + attrSet.size()];
+		int i = 0;
+		
+		for (var existingProp : propertySheetPanel.getProperties()) {
+			properties[i++] = existingProp;
+		}
+		
+		for (var key : attrSet) {
+			var valProp = new VizMapperProperty<>(CellType.DISCRETE, (K) key, mapping.getVisualProperty().getRange().getType());
+			var strVal = key.toString();
 			valProp.setDisplayName(strVal);
 
 			// Get the mapped value
@@ -437,6 +444,7 @@ public class VizMapPropertyBuilder {
 			//
 			// In that case "controllerType=-2" means that the attribute type is List,
 			// but we don't know the type of the list items.
+			V val = null;
 			if (mapping.getMappingColumnType() == String.class && !(key instanceof String))
 				val = discMapping.get(key.toString());
 			else
@@ -444,8 +452,6 @@ public class VizMapPropertyBuilder {
 
 			if (val != null)
 				valProp.setType(val.getClass());
-
-			propertySheetPanel.addProperty(valProp);
 			
 			if (vpEditor != null) {
 				final TableCellRenderer renderer = vpEditor.getDiscreteTableCellRenderer();
@@ -463,11 +469,16 @@ public class VizMapPropertyBuilder {
 				if (cellEditor != null)
 					cellEditorFactory.registerEditor(valProp, cellEditor);
 			}
-			
+
 			valProp.setValue(val);
 			valProp.setInternalValue(mapping);
+			
+			properties[i++] = valProp;
 		}
+		
+		propertySheetPanel.setProperties(properties);
 	}
+	
 	
 	@SuppressWarnings("serial")
 	private class DefaultVizMapTableCellRenderer extends DefaultTableCellRenderer {
