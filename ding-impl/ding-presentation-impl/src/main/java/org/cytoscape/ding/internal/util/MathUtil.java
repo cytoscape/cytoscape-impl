@@ -8,6 +8,30 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2021 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 public final class MathUtil {
 
 	private static final double EPSILON = 1e-30d;
@@ -24,8 +48,8 @@ public final class MathUtil {
 	 * @param min the maximum value (corresponds to f==1)
 	 * @return the inferred interpolation fraction
 	 */
-    public static double invLinearInterp(final double x, final double min, final double max) {
-        final double denom = max - min;
+    public static double invLinearInterp(double x, double min, double max) {
+        double denom = max - min;
         return (denom < EPSILON && denom > -EPSILON ? 0 : (x - min) / denom);
     }
     
@@ -36,7 +60,7 @@ public final class MathUtil {
 	 * @param max the maximum value (corresponds to f==1)
 	 * @return the interpolated value
 	 */
-	public static double linearInterp(final double f, final double min, final double max) {
+	public static double linearInterp(double f, double min, double max) {
 		return min + f * (max - min);
 	}
 	
@@ -97,11 +121,11 @@ public final class MathUtil {
 	 * @param p4 Point 2 of Line 2
 	 * @return Point where the segments intersect, or null if they don't
 	 */
-	public static Point2D getIntersectionPoint(final Point2D p1, final Point2D p2, final Point2D p3, final Point2D p4) {
+	public static Point2D getIntersectionPoint(Point2D p1, Point2D p2, Point2D p3, Point2D p4) {
 		return getIntersectionPoint(new Line2D.Double(p1, p2), new Line2D.Double(p3, p4));
 	}
 	
-	public static Point2D getIntersectionPoint(final Line2D lineA, final Line2D lineB) {
+	public static Point2D getIntersectionPoint(Line2D lineA, Line2D lineB) {
         double a1x = lineA.getX1();
         double a1y = lineA.getY1();
         double a2x = lineA.getX2();
@@ -134,7 +158,7 @@ public final class MathUtil {
 	 * @param rect
 	 * @return Point2D[0] = Top line; Point2D[1] = Bottom line; Point2D[3] = Left line; Point2D[4] = Right line;
 	 */
-	public static Point2D[] getIntersectionPoints(final Line2D line, final Rectangle2D rect) {
+	public static Point2D[] getIntersectionPoints(Line2D line, Rectangle2D rect) {
         Point2D[] p = new Point2D[4];
 
         // Top line
@@ -184,10 +208,10 @@ public final class MathUtil {
 		return (int)(normalizeAngle(angle) / 90) % 4 + 1;
 	}
 	
-	public static Line2D rotate(final Line2D line, final double angle, final double anchorx, final double anchory) {
-		final AffineTransform at = AffineTransform.getRotateInstance(Math.toRadians(angle), anchorx, anchory);
-		final Point2D p1 = at.transform(line.getP1(), new Point2D.Double());
-		final Point2D p2 = at.transform(line.getP2(), new Point2D.Double());
+	public static Line2D rotate(Line2D line, double angle, double anchorx, double anchory) {
+		AffineTransform at = AffineTransform.getRotateInstance(Math.toRadians(angle), anchorx, anchory);
+		Point2D p1 = at.transform(line.getP1(), new Point2D.Double());
+		Point2D p2 = at.transform(line.getP2(), new Point2D.Double());
 		
 		return new Line2D.Double(p1, p2);
 	}
