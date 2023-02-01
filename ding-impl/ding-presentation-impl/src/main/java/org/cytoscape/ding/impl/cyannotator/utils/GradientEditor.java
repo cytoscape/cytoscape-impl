@@ -10,6 +10,7 @@ import java.awt.Polygon;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
@@ -17,7 +18,10 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.AbstractAction;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 
 import org.cytoscape.ding.internal.util.ColorUtil;
@@ -453,6 +457,9 @@ public class GradientEditor extends JPanel {
 		setMinimumSize(new Dimension(100, 50));
 		setPreferredSize(new Dimension(200, 50));
 		
+		setFocusable(true);
+		setKeyBindings();
+		
 		marker.addPoint(0, 0);
 		marker.addPoint(MARKER_SIZE / 2, MARKER_SIZE);
 		marker.addPoint(-MARKER_SIZE / 2, MARKER_SIZE);
@@ -604,16 +611,22 @@ public class GradientEditor extends JPanel {
 		for (int i = controlPoints.size() - 2; i > 0; i--) {
 			if (checkPoint(mx, my, controlPoints.get(i))) {
 				setSelected(controlPoints.get(i));
+				requestFocusInWindow();
+				
 				return;
 			}
 		}
 		// Now we can check the first and last points
 		if (checkPoint(mx, my, controlPoints.get(0))) {
 			setSelected(controlPoints.get(0));
+			requestFocusInWindow();
+			
 			return;
 		}
 		if (checkPoint(mx, my, controlPoints.get(controlPoints.size() - 1))) {
 			setSelected(controlPoints.get(controlPoints.size() - 1));
+			requestFocusInWindow();
+			
 			return;
 		}
 		
@@ -655,7 +668,40 @@ public class GradientEditor extends JPanel {
 		fireUpdate();
 	}
 	
+	private void setKeyBindings() {
+		var actionMap = this.getActionMap();
+		var inputMap = this.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), KeyAction.VK_DELETE);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0), KeyAction.VK_BACK_SPACE);
+		
+		actionMap.put(KeyAction.VK_DELETE, new KeyAction(KeyAction.VK_DELETE));
+		actionMap.put(KeyAction.VK_BACK_SPACE, new KeyAction(KeyAction.VK_BACK_SPACE));
+	}
+	
 	// ==[ CLASSES ]====================================================================================================
+	
+	private class KeyAction extends AbstractAction {
+
+		final static String VK_DELETE = "VK_DELETE";
+		final static String VK_BACK_SPACE = "VK_BACK_SPACE";
+		
+		KeyAction(String actionCommand) {
+			putValue(ACTION_COMMAND_KEY, actionCommand);
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent evt) {
+			var cmd = evt.getActionCommand();
+			
+			if (isEnabled()) {
+				if (cmd.equals(VK_DELETE) || cmd.equals(VK_BACK_SPACE)) {
+					if (selected != null)
+						deletePoint();
+				}
+			}
+		}
+	}
 	
 	public static class ControlPoint {
 		
