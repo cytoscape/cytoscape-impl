@@ -1548,8 +1548,14 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			var editComp = ((BorderLayout) getLayout()).getLayoutComponent(BorderLayout.CENTER);
 			
 			// Remove current editor
-			if (editComp != null)
+			if (editComp != null) {
 				remove(editComp);
+				
+				// Also reset the removed editor so it can get updated with another annotation
+				// in the future, even if that annotation is "equals()" to its current one
+				if (editComp instanceof AbstractAnnotationEditor)
+					((AbstractAnnotationEditor<?>) editComp).setAnnotation(null);
+			}
 		}
 
 		@SuppressWarnings("rawtypes")
