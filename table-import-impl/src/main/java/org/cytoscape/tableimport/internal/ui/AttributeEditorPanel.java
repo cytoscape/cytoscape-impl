@@ -89,8 +89,8 @@ public class AttributeEditorPanel extends JPanel {
 	private JComboBox<String> listDelimiterComboBox;
 	private JTextField otherTextField;
 	
-	private JButton copyButton;
-	private JButton pasteButton;
+//	private JButton copyButton;
+//	private JButton pasteButton;
 	
 	private ButtonGroup typeButtonGroup;
 	private ButtonGroup namespaceButtonGroup;
@@ -280,10 +280,10 @@ public class AttributeEditorPanel extends JPanel {
 		dataTypeLabel.putClientProperty("JComponent.sizeVariant", "small");
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(TRAILING, true)
-				.addGroup(layout.createSequentialGroup()
-						.addComponent(getCopyButton())
-						.addComponent(getPasteButton())
-				)
+//				.addGroup(layout.createSequentialGroup()
+//						.addComponent(getCopyButton())
+//						.addComponent(getPasteButton())
+//				)
 				.addComponent(getAttributeNameTextField(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(getAttrNameWarningLabel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(typeLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -312,10 +312,10 @@ public class AttributeEditorPanel extends JPanel {
 				)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addGroup(layout.createParallelGroup(CENTER)
-						.addComponent(getCopyButton())
-						.addComponent(getPasteButton())
-				)
+//				.addGroup(layout.createParallelGroup(CENTER)
+//						.addComponent(getCopyButton())
+//						.addComponent(getPasteButton())
+//				)
 				.addComponent(getAttributeNameTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(getAttrNameWarningLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addPreferredGap(ComponentPlacement.RELATED)
@@ -472,22 +472,23 @@ public class AttributeEditorPanel extends JPanel {
 		
 		return otherTextField;
 	}
-	
-	JButton getCopyButton() {
-		if (copyButton == null) {
-			copyButton = createIconButton(IconManager.ICON_COPY, "Copy Settings");
-		}
-		
-		return copyButton;
-	}
-	
-	public JButton getPasteButton() {
-		if (pasteButton == null) {
-			pasteButton = createIconButton(IconManager.ICON_PASTE, "Paste Settings");
-		}
-		
-		return pasteButton;
-	}
+
+// TODO: suggested feature (copy/paste column settings)
+//	JButton getCopyButton() {
+//		if (copyButton == null) {
+//			copyButton = createIconButton(IconManager.ICON_COPY, "Copy Settings");
+//		}
+//		
+//		return copyButton;
+//	}
+//	
+//	public JButton getPasteButton() {
+//		if (pasteButton == null) {
+//			pasteButton = createIconButton(IconManager.ICON_PASTE, "Paste Settings");
+//		}
+//		
+//		return pasteButton;
+//	}
 
 	private void setStyles(JToggleButton... btnList) {
 		if (LookAndFeelUtil.isAquaLAF()) {

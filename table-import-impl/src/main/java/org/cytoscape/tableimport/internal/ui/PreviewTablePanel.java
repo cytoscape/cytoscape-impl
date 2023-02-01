@@ -4,7 +4,6 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
-import static javax.swing.GroupLayout.Alignment.TRAILING;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 import static javax.swing.LayoutStyle.ComponentPlacement.UNRELATED;
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_BOOLEAN;
@@ -62,7 +61,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
@@ -150,7 +148,7 @@ public class PreviewTablePanel extends JPanel {
 	 */
 	private JLabel sheetLabel;
 	private JComboBox<Sheet> sheetComboBox;
-	private JButton pasteColumnSettingsButton;
+//	private JButton pasteColumnSettingsButton; // TODO: suggested feature (copy/paste column settings)
 	private JTable previewTable;
 	private JButton selectAllButton;
 	private JButton selectNoneButton;
@@ -167,7 +165,7 @@ public class PreviewTablePanel extends JPanel {
 	private long lastDialogTime;
 	private boolean updating;
 	
-	private AttributeSettings copiedColumnSettings;
+//	private AttributeSettings copiedColumnSettings; TODO: suggested feature
 	
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
@@ -230,8 +228,8 @@ public class PreviewTablePanel extends JPanel {
 						.addComponent(getSelectAllButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addPreferredGap(RELATED)
 						.addComponent(getSelectNoneButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addPreferredGap(UNRELATED)
-						.addComponent(getPasteColumnSettingsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+//						.addPreferredGap(UNRELATED)
+//						.addComponent(getPasteColumnSettingsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
 				.addComponent(getTableScrollPane(), DEFAULT_SIZE, 320, Short.MAX_VALUE)
 		);
@@ -242,7 +240,7 @@ public class PreviewTablePanel extends JPanel {
 						.addComponent(instructionLabel)
 						.addComponent(getSelectAllButton())
 						.addComponent(getSelectNoneButton())
-						.addComponent(getPasteColumnSettingsButton())
+//						.addComponent(getPasteColumnSettingsButton())
 				)
 				.addPreferredGap(RELATED)
 				.addComponent(getTableScrollPane(), 120, 180, Short.MAX_VALUE)
@@ -252,31 +250,32 @@ public class PreviewTablePanel extends JPanel {
 		ColumnResizer.adjustColumnPreferredWidths(getPreviewTable());
 		update();
 	}
-	
-	private JButton getPasteColumnSettingsButton() {
-		if (pasteColumnSettingsButton == null) {
-			pasteColumnSettingsButton = new JButton(IconManager.ICON_PASTE);
-			pasteColumnSettingsButton.setToolTipText("Paste Column Settings...");
-			pasteColumnSettingsButton.setBorderPainted(false);
-			pasteColumnSettingsButton.setContentAreaFilled(false);
-			pasteColumnSettingsButton.setFocusPainted(false);
-			pasteColumnSettingsButton.setFont(iconManager.getIconFont(ICON_FONT_SIZE));
-			pasteColumnSettingsButton.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
-			pasteColumnSettingsButton.setEnabled(false);
-			
-			pasteColumnSettingsButton.addActionListener(evt -> {
-				if (copiedColumnSettings != null) {
-					var parent = SwingUtilities.getWindowAncestor(PreviewTablePanel.this);
-					var dialog = new ColumnSelectorDialog(parent);
-					dialog.pack();
-					dialog.setLocationRelativeTo(parent);
-					dialog.setVisible(true);
-				}
-			});
-		}
-		
-		return pasteColumnSettingsButton;
-	}
+
+// TODO: suggested feature (copy/paste column settings)
+//	private JButton getPasteColumnSettingsButton() {
+//		if (pasteColumnSettingsButton == null) {
+//			pasteColumnSettingsButton = new JButton(IconManager.ICON_PASTE);
+//			pasteColumnSettingsButton.setToolTipText("Paste Column Settings...");
+//			pasteColumnSettingsButton.setBorderPainted(false);
+//			pasteColumnSettingsButton.setContentAreaFilled(false);
+//			pasteColumnSettingsButton.setFocusPainted(false);
+//			pasteColumnSettingsButton.setFont(iconManager.getIconFont(ICON_FONT_SIZE));
+//			pasteColumnSettingsButton.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
+//			pasteColumnSettingsButton.setEnabled(false);
+//			
+//			pasteColumnSettingsButton.addActionListener(evt -> {
+//				if (copiedColumnSettings != null) {
+//					var parent = SwingUtilities.getWindowAncestor(PreviewTablePanel.this);
+//					var dialog = new ColumnSelectorDialog(parent);
+//					dialog.pack();
+//					dialog.setLocationRelativeTo(parent);
+//					dialog.setVisible(true);
+//				}
+//			});
+//		}
+//		
+//		return pasteColumnSettingsButton;
+//	}
 	
 	public JTable getPreviewTable() {
 		if (previewTable == null) {
@@ -1028,9 +1027,10 @@ public class PreviewTablePanel extends JPanel {
 				listDelimiters[colIdx],
 				iconManager
 		);
-		attrEditorPanel.getCopyButton().addActionListener(evt -> copyColumnSettings());
-		attrEditorPanel.getPasteButton().addActionListener(evt -> pasteColumnSettings());
-		attrEditorPanel.getPasteButton().setEnabled(copiedColumnSettings != null);
+// TODO: suggested feature (copy/paste column settings)
+//		attrEditorPanel.getCopyButton().addActionListener(evt -> copyColumnSettings());
+//		attrEditorPanel.getPasteButton().addActionListener(evt -> pasteColumnSettings());
+//		attrEditorPanel.getPasteButton().setEnabled(copiedColumnSettings != null);
 		
 		if (LookAndFeelUtil.isWinLAF()) {
 			attrEditorPanel.setBorder(
@@ -1129,30 +1129,31 @@ public class PreviewTablePanel extends JPanel {
 	    editDialog.pack();
 		editDialog.setVisible(true);
 	}
-	
-	private void copyColumnSettings() {
-		if (editDialog != null) {
-			copiedColumnSettings = editDialog.attrEditorPanel.getSettings();
-			getPasteColumnSettingsButton().setEnabled(true);
-		}
-	}
-	
-	private void pasteColumnSettings() {
-		if (editDialog != null && copiedColumnSettings != null)
-			editDialog.attrEditorPanel.setSettings(copiedColumnSettings);
-	}
-	
-	private void pasteColumnSettings(int[] selectedColumns) {
-		if (copiedColumnSettings != null) {
-			for (var colIdx : selectedColumns) {
-				setNamespace(colIdx, copiedColumnSettings.getNamespace());
-				setType(colIdx, copiedColumnSettings.getAttrType());
-				setDataType(colIdx, copiedColumnSettings.getAttrDataType());
-				setListDelimiter(colIdx, copiedColumnSettings.getListDelimiter());
-				update();
-			}
-		}
-	}
+
+// TODO: suggested feature (copy/paste column settings)
+//	private void copyColumnSettings() {
+//		if (editDialog != null) {
+//			copiedColumnSettings = editDialog.attrEditorPanel.getSettings();
+//			getPasteColumnSettingsButton().setEnabled(true);
+//		}
+//	}
+//	
+//	private void pasteColumnSettings() {
+//		if (editDialog != null && copiedColumnSettings != null)
+//			editDialog.attrEditorPanel.setSettings(copiedColumnSettings);
+//	}
+//	
+//	private void pasteColumnSettings(int[] selectedColumns) {
+//		if (copiedColumnSettings != null) {
+//			for (var colIdx : selectedColumns) {
+//				setNamespace(colIdx, copiedColumnSettings.getNamespace());
+//				setType(colIdx, copiedColumnSettings.getAttrType());
+//				setDataType(colIdx, copiedColumnSettings.getAttrDataType());
+//				setListDelimiter(colIdx, copiedColumnSettings.getListDelimiter());
+//				update();
+//			}
+//		}
+//	}
 
 	private void positionEditDialog() {
 		if (editDialog != null) {
@@ -1631,57 +1632,58 @@ public class PreviewTablePanel extends JPanel {
 			getContentPane().add(attrEditorPanel);
 		}
 	}
-	
-	private class ColumnSelectorDialog extends JDialog {
-		
-		ColumnSelectorDialog(Window parent) {
-			super(parent, "Paste Column Settings", ModalityType.MODELESS);
-			
-			setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			setResizable(false);
-			
-			var columnList = new JList<String>(getAttributeNames());
-			columnList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-			
-			var scrollPane = new JScrollPane(
-					columnList,
-					JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-					JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
-			);
-			
-			var okButton = new JButton(new AbstractAction("OK") {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					pasteColumnSettings(columnList.getSelectedIndices());
-					dispose();
-				}
-			});
-			var cancelButton = new JButton(new AbstractAction("Cancel") {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					dispose();
-				}
-			});
-			
-			var buttonPanel = LookAndFeelUtil.createOkCancelPanel(okButton, cancelButton);
-			
-			var layout = new GroupLayout(getContentPane());
-			getContentPane().setLayout(layout);
-			layout.setAutoCreateContainerGaps(true);
-			layout.setAutoCreateGaps(false);
-			
-			layout.setHorizontalGroup(layout.createParallelGroup(TRAILING, true)
-					.addComponent(scrollPane, DEFAULT_SIZE, 360, Short.MAX_VALUE)
-					.addComponent(buttonPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-			);
-			layout.setVerticalGroup(layout.createSequentialGroup()
-					.addComponent(scrollPane, DEFAULT_SIZE, 240, Short.MAX_VALUE)
-					.addPreferredGap(RELATED)
-					.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-			);
-			
-			getRootPane().setDefaultButton(okButton);
-			LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), okButton.getAction(), cancelButton.getAction());
-		}
-	}
+
+// TODO: suggested feature (copy/paste column settings)
+//	private class ColumnSelectorDialog extends JDialog {
+//		
+//		ColumnSelectorDialog(Window parent) {
+//			super(parent, "Paste Column Settings", ModalityType.MODELESS);
+//			
+//			setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+//			setResizable(false);
+//			
+//			var columnList = new JList<String>(getAttributeNames());
+//			columnList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+//			
+//			var scrollPane = new JScrollPane(
+//					columnList,
+//					JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+//					JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
+//			);
+//			
+//			var okButton = new JButton(new AbstractAction("OK") {
+//				@Override
+//				public void actionPerformed(ActionEvent e) {
+//					pasteColumnSettings(columnList.getSelectedIndices());
+//					dispose();
+//				}
+//			});
+//			var cancelButton = new JButton(new AbstractAction("Cancel") {
+//				@Override
+//				public void actionPerformed(ActionEvent e) {
+//					dispose();
+//				}
+//			});
+//			
+//			var buttonPanel = LookAndFeelUtil.createOkCancelPanel(okButton, cancelButton);
+//			
+//			var layout = new GroupLayout(getContentPane());
+//			getContentPane().setLayout(layout);
+//			layout.setAutoCreateContainerGaps(true);
+//			layout.setAutoCreateGaps(false);
+//			
+//			layout.setHorizontalGroup(layout.createParallelGroup(TRAILING, true)
+//					.addComponent(scrollPane, DEFAULT_SIZE, 360, Short.MAX_VALUE)
+//					.addComponent(buttonPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+//			);
+//			layout.setVerticalGroup(layout.createSequentialGroup()
+//					.addComponent(scrollPane, DEFAULT_SIZE, 240, Short.MAX_VALUE)
+//					.addPreferredGap(RELATED)
+//					.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+//			);
+//			
+//			getRootPane().setDefaultButton(okButton);
+//			LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), okButton.getAction(), cancelButton.getAction());
+//		}
+//	}
 }
