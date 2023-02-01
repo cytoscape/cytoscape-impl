@@ -56,6 +56,7 @@ import org.cytoscape.ding.impl.cyannotator.utils.MultipleGradientEditor;
 import org.cytoscape.ding.impl.cyannotator.utils.MultipleGradientEditor.GradientType;
 import org.cytoscape.ding.impl.cyannotator.utils.PointPicker;
 import org.cytoscape.ding.impl.cyannotator.utils.ShapeIcon;
+import org.cytoscape.ding.internal.util.ColorUtil;
 import org.cytoscape.ding.internal.util.MathUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.color.BrewerType;
@@ -506,7 +507,6 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 		private static Rectangle DEF_BOUNDS = new Rectangle(0, 0, 1, 1);
 		
 		private MultipleGradientPaint paint = defaultGradientPaint;
-		private Color borderColor;
 		
 		private double angle;
 		/** PointPicker's center point (range between 0.0 and  1.0) */
@@ -568,7 +568,6 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 
 			setHorizontalTextPosition(JButton.CENTER);
 			setVerticalTextPosition(JButton.CENTER);
-			borderColor = UIManager.getColor("Separator.foreground");
 			setIcon(new GradientIcon());
 			
 			setPaint(paint);
@@ -682,7 +681,7 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 					g2.fillRect(x, y, w, h);
 				}
 				
-				g2.setColor(borderColor);
+				g2.setColor(ColorUtil.getContrastingColor(c.getBackground()));
 				g2.drawRect(x, y, w, h);
 				
 				g2.dispose();

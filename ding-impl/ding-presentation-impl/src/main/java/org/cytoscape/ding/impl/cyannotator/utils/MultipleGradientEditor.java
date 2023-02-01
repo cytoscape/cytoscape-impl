@@ -2,17 +2,21 @@ package org.cytoscape.ding.impl.cyannotator.utils;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.cytoscape.util.swing.LookAndFeelUtil.equalizeSize;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
 import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -20,8 +24,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.UIManager;
 
 import org.cytoscape.ding.impl.cyannotator.utils.GradientEditor.ControlPoint;
+import org.cytoscape.ding.internal.util.ColorUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.color.Palette;
@@ -29,6 +35,9 @@ import org.cytoscape.util.color.PaletteProviderManager;
 import org.cytoscape.util.color.PaletteType;
 import org.cytoscape.util.swing.CyColorPaletteChooserFactory;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.TextIcon;
+
+import com.google.common.base.Objects;
 
 @SuppressWarnings("serial")
 public class MultipleGradientEditor extends JPanel {
@@ -62,6 +71,9 @@ public class MultipleGradientEditor extends JPanel {
 	private JButton paletteBtn;
 	private JButton reverseBtn;
 	private GradientEditor grEditor;
+	private JButton addBtn;
+	private JButton removeBtn;
+	private JButton editBtn;
 	
 	private JPanel linearOptionsPnl;
 	private JLabel angleLbl = new JLabel("Angle (degrees):");
@@ -184,7 +196,7 @@ public class MultipleGradientEditor extends JPanel {
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(false);
 		
-		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
 				.addGroup(layout.createSequentialGroup()
 						.addGap(10, 10, Short.MAX_VALUE)
 						.addComponent(getLinearToggle())
@@ -192,11 +204,20 @@ public class MultipleGradientEditor extends JPanel {
 						.addGap(10, 10, Short.MAX_VALUE)
 				)
 				.addGroup(layout.createSequentialGroup()
+						.addGap(5)
 						.addComponent(getPaletteBtn())
 						.addGap(10, 10, Short.MAX_VALUE)
 						.addComponent(getReverseBtn())
+						.addGap(5)
 				)
-				.addComponent(getGrEditor())
+				.addComponent(getGrEditor(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addGroup(layout.createSequentialGroup()
+						.addComponent(getAddBtn())
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addComponent(getRemoveBtn())
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addComponent(getEditBtn())
+				)
 				.addComponent(getLinearOptionsPnl())
 				.addComponent(getRadialOptionsPnl())
 		);
@@ -210,7 +231,13 @@ public class MultipleGradientEditor extends JPanel {
 						.addComponent(getPaletteBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(getReverseBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
-				.addComponent(getGrEditor(), 100, 100, PREFERRED_SIZE)
+				.addComponent(getGrEditor(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addPreferredGap(ComponentPlacement.RELATED)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(getAddBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getRemoveBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getEditBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
 				.addPreferredGap(ComponentPlacement.UNRELATED)
 				.addComponent(getLinearOptionsPnl())
 				.addComponent(getRadialOptionsPnl())
@@ -219,22 +246,31 @@ public class MultipleGradientEditor extends JPanel {
 		makeSmall(centerLbl);
 		makeSmall(getLinearToggle(), getRadialToggle());
 		
+		var otherBtns = new JButton[] { getPaletteBtn(), getReverseBtn(), getAddBtn(), getRemoveBtn(), getEditBtn() };
+		makeSmall(getPaletteBtn(), getReverseBtn(), getAddBtn(), getRemoveBtn(), getEditBtn());
+		
 		if (isAquaLAF()) {
 			// Mac OS properties:
-			var toggleButtons = new JToggleButton[] { getLinearToggle(), getRadialToggle() };
+			var toggleBtns = new JToggleButton[] { getLinearToggle(), getRadialToggle() };
 			
-			for (int i = 0; i < toggleButtons.length; i++) {
-				var btn = toggleButtons[i];
+			for (int i = 0; i < toggleBtns.length; i++) {
+				var btn = toggleBtns[i];
 				btn.putClientProperty("JButton.buttonType", "segmented");
 	
 				if (i == 0)
 					btn.putClientProperty("JButton.segmentPosition", "first");
-				else if (i == toggleButtons.length - 1)
+				else if (i == toggleBtns.length - 1)
 					btn.putClientProperty("JButton.segmentPosition", "last");
 				else
 					btn.putClientProperty("JButton.segmentPosition", "middle");
 			}
+			
+			
+			for (int i = 0; i < otherBtns.length; i++)
+				otherBtns[i].putClientProperty("JButton.buttonType", "gradient");
 		}
+		
+		equalizeSize(otherBtns);
 		
 		if (type == GradientType.LINEAR)
 			typeGroup.setSelected(getLinearToggle().getModel(), true);
@@ -317,6 +353,7 @@ public class MultipleGradientEditor extends JPanel {
 		if (reverseBtn == null) {
 			reverseBtn = new JButton(IconManager.ICON_EXCHANGE);
 			reverseBtn.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(14.0f));
+			reverseBtn.setToolTipText("Reverse Colors");
 			reverseBtn.addActionListener(evt -> reverseColors());
 		}
 		
@@ -328,9 +365,9 @@ public class MultipleGradientEditor extends JPanel {
 			var fractions = getFractions();
 			var colors = getColors();
 			grEditor = new GradientEditor(fractions, colors, serviceRegistrar);
-			
+			grEditor.addPropertyChangeListener("selected", evt-> updatePointButtons());
 			// Add listener--update gradient when user interacts with the UI
-			grEditor.addActionListener(e -> {
+			grEditor.addActionListener(evt -> {
 				this.fractions = grEditor.getPositions();
 				this.colors = grEditor.getColors();
 				
@@ -340,6 +377,45 @@ public class MultipleGradientEditor extends JPanel {
 		}
 		
 		return grEditor;
+	}
+	
+	private JButton getAddBtn() {
+		if (addBtn == null) {
+			var icoMgr = serviceRegistrar.getService(IconManager.class);
+			
+			addBtn = new JButton();
+			addBtn.setIcon(new TextIcon(IconManager.ICON_PLUS, icoMgr.getIconFont(14.0f), 16,  16));
+			addBtn.setToolTipText("Add Color");
+			addBtn.addActionListener(evt -> getGrEditor().addPoint());
+		}
+		
+		return addBtn;
+	}
+	
+	private JButton getRemoveBtn() {
+		if (removeBtn == null) {
+			var icoMgr = serviceRegistrar.getService(IconManager.class);
+			
+			removeBtn = new JButton();
+			removeBtn.setIcon(new TextIcon(IconManager.ICON_TRASH_O, icoMgr.getIconFont(16.0f), 16,  16));
+			removeBtn.setToolTipText("Remove Color");
+			removeBtn.setEnabled(false);
+			removeBtn.addActionListener(evt -> getGrEditor().deletePoint());
+		}
+		
+		return removeBtn;
+	}
+	
+	private JButton getEditBtn() {
+		if (editBtn == null) {
+			editBtn = new JButton();
+			editBtn.setIcon(new ColorIcon(16, 16));
+			editBtn.setToolTipText("Edit Color");
+			editBtn.setEnabled(false);
+			editBtn.addActionListener(evt -> getGrEditor().editPoint());
+		}
+		
+		return editBtn;
 	}
 
 	private JPanel getLinearOptionsPnl() {
@@ -392,7 +468,7 @@ public class MultipleGradientEditor extends JPanel {
 			var layout = new GroupLayout(radialOptionsPnl);
 			radialOptionsPnl.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
-			layout.setAutoCreateGaps(true);
+			layout.setAutoCreateGaps(false);
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, false)
 					.addComponent(centerLbl)
@@ -412,7 +488,7 @@ public class MultipleGradientEditor extends JPanel {
 	
 	private PointPicker getPointPicker() {
 		if (pointPicker == null) {
-			pointPicker = new PointPicker(100, 12, getCenterPoint());
+			pointPicker = new PointPicker(100, 12, getCenterPoint(), serviceRegistrar);
 			
 			pointPicker.addPropertyChangeListener("value", evt -> {
 				centerPoint = (Point2D) evt.getNewValue();
@@ -469,8 +545,72 @@ public class MultipleGradientEditor extends JPanel {
 			updatePointPicker();
 	}
 	
+	private void updatePointButtons() {
+		var selected = getGrEditor().getSelected();
+		var controlPoints = getGrEditor().getControlPoints();
+		
+		((ColorIcon) getEditBtn().getIcon()).setColor(selected != null ? selected.getColor() : null);
+		
+		getEditBtn().setEnabled(selected != null);
+		getRemoveBtn().setEnabled(selected != null
+				&& !Objects.equal(selected, controlPoints.get(0))
+				&& !Objects.equal(selected, controlPoints.get(controlPoints.size() - 1)));
+	}
+	
 	private void updatePointPicker() {
 		if (getRadialOptionsPnl().isVisible())
 			getPointPicker().update(getGrEditor().getPositions(), getGrEditor().getColors());
+	}
+	
+	// ==[ CLASSES ]====================================================================================================
+	
+	private class ColorIcon implements Icon {
+
+		private Color color;
+		
+		private final int width;
+		private final int height;
+		
+		public ColorIcon(int width, int height) {
+			this.width = width;
+			this.height = height;
+		}
+		
+		@Override
+		public int getIconHeight() {
+			return width;
+		}
+
+		@Override
+		public int getIconWidth() {
+			return height;
+		}
+		
+		public void setColor(Color color) {
+			this.color = color;
+			repaint();
+		}
+
+		@Override
+		public void paintIcon(Component c, Graphics g, int x, int y) {
+			int w = getIconWidth();
+			int h = getIconHeight();
+			
+			if (c.isEnabled()) {
+				g.setColor(color != null ? color : Color.WHITE);
+				g.fillRect(x, y, w, h);
+			}
+			
+			g.setColor(c.isEnabled() 
+					? ColorUtil.getContrastingColor(c.getBackground())
+					: UIManager.getColor("Button.disabledForeground")
+			);
+			g.drawRect(x, y, w, h);
+			
+			if (color == null && c.isEnabled()) {
+				g.setColor(Color.RED);
+				g.drawLine(x + 1, y + h - 1, x + w - 1, y + 1);
+			}
+		}
 	}
 }

@@ -903,7 +903,7 @@ public class CyActivator extends AbstractCyActivator {
 			UIManager.put("SplitPaneDivider.border", BorderFactory.createEmptyBorder());
 			
 			// Created for Cytoscape ------------------------------------------------------------------------
-			// ToggleButton
+			// ToggleButton and other components
 			UIManager.put("CyToggleButton.background", UIManager.getColor("Button.background"));
 			
 			if (isNimbusLAF()) {
@@ -911,11 +911,15 @@ public class CyActivator extends AbstractCyActivator {
 				UIManager.put("CyToggleButton[Selected].background", new Color(UIManager.getColor("nimbusBlueGrey").getRGB()));
 				UIManager.put("CyToggleButton[Selected].foreground", new Color(UIManager.getColor("ToggleButton.foreground").getRGB()));
 				UIManager.put("CyToggleButton[Selected].borderColor", new Color(UIManager.getColor("nimbusBorder").getRGB()));
+				
+				UIManager.put("CyComponent.borderColor", new Color(UIManager.getColor("nimbusBorder").getRGB())); // Customized Cytoscape componet's border color
 			} else {
 				UIManager.put("CyToggleButton.foreground", ColorUtil.setBrightness(UIManager.getColor("Button.foreground"), 0.25f));
 				UIManager.put("CyToggleButton[Selected].background", ColorUtil.setBrightness(UIManager.getColor("Button.background"), 0.8f));
 				UIManager.put("CyToggleButton[Selected].foreground", UIManager.getColor("Button.foreground"));
 				UIManager.put("CyToggleButton[Selected].borderColor", ColorUtil.setBrightness(UIManager.getColor("Button.foreground"), 0.68f));
+				
+				UIManager.put("CyComponent.borderColor", ColorUtil.setBrightness(UIManager.getColor("Button.foreground"), 0.70f)); // Customized Cytoscape componet's border color
 			}
 		} catch (Exception e) {
 			logger.error("Unexpected error", e);

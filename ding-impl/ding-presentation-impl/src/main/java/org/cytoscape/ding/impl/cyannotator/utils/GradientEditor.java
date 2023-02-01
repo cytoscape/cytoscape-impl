@@ -2,9 +2,10 @@ package org.cytoscape.ding.impl.cyannotator.utils;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.GradientPaint;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.LinearGradientPaint;
 import java.awt.Polygon;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
@@ -12,12 +13,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
-import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 
@@ -35,27 +34,27 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 @SuppressWarnings("serial")
 public class GradientEditor extends JPanel {
 	
+	private static int HPAD = 4;
+	private static int VPAD = 2;
+	private static int BORDER_WIDTH = 2;
+	private static int MARKER_SIZE = 12;
+	
 	/** The controlPoints of control points */
 	private List<ControlPoint> controlPoints = new ArrayList<>();
 	/** The current selected control point */
 	private ControlPoint selected;
-	/** The polygon used for the markers */
-	private Polygon poly = new Polygon();
-	/** A button to addBtn a control point */
-	private JButton addBtn = new JButton("Add");
-	/** A button to editBtn a control point */
-	private JButton editBtn = new JButton("Edit");
-	/** A button to delete a control point */
-	private JButton delBtn = new JButton("Delete");
+	
+	/** The shape used for the movable markers */
+	private Polygon marker = new Polygon();
 	
 	/** The x position of the gradient bar */
 	private int x;
 	/** The y position of the gradient bar */
 	private int y;
 	/** The width of the gradient bar */
-	private int width;
+	private int w;
 	/** The height of the gradient bar */
-	private int barHeight;
+	private int h;
 	
 	/** The listeners that should be notified of changes to this emitter */
 	private List<ActionListener> listeners = new ArrayList<>();
@@ -128,62 +127,137 @@ public class GradientEditor extends JPanel {
 	public void paintComponent(Graphics g1d) {
 		super.paintComponent(g1d);
 		
-		var g = (Graphics2D) g1d;
+		var g = (Graphics2D) g1d.create();
+		
+		var insets = getInsets();
+		int bw = BORDER_WIDTH / 2; // The width of each border (we draw 2 borders, an internal and an external one)
+		
+		// Draw compound border first, but draw it as two fill rectangles
+		x = HPAD + MARKER_SIZE / 2;
+		y = VPAD;
+		w = getWidth()  - insets.left - insets.right  - 2 * HPAD - MARKER_SIZE;
+		h = getHeight() - insets.top  - insets.bottom - 2 * VPAD - MARKER_SIZE;
+		
+		var extBC = UIManager.getColor("CyComponent.borderColor");
+		var intBC = UIManager.getColor("Table.background");
+		
+		// External Border
+		g.setColor(extBC);
+		g.setStroke(new BasicStroke(bw));
+		g.drawRect(x, y, w, h);
+		// Internal Border
+		x += bw;
+		y += bw;
+		w -= 2 * bw;
+		h -= 2 * bw;
+		g.setColor(intBC);
+		g.fillRect(x, y, w, h);
+		
+		// Linear Gradient
+		x += bw;
+		y += bw;
+		w -= 2 * bw;
+		h -= 2 * bw;
+		
+//		int px = x;
+//		
+//		for (int i = 0; i < controlPoints.size() - 1; i++) {
+//			var now = controlPoints.get(i);
+//			var next = controlPoints.get(i + 1);
+//
+//			int size = (int) ((next.getPosition() - now.getPosition()) * w);
+//			g.setPaint(new GradientPaint(px, y, now.getColor(), px + size, y, next.getColor()));
+//			g.fillRect(px, y, size + bw, h);
+//			px += size;
+//		}
+		var paint = new LinearGradientPaint(
+				new Point2D.Double(x, y),
+				new Point2D.Double(x + w, y),
+				getPositions(),
+				getColors()
+		);
+		g.setPaint(paint);
+		g.fillRect(x, y, w, h);
+		
+		// Control Point Markers (start/end first)
+		paintMarker(g, controlPoints.get(0));
+		paintMarker(g, controlPoints.get(controlPoints.size() - 1));
+		
+		for (int i = 1; i < controlPoints.size() - 1; i++) {
+			paintMarker(g, controlPoints.get(i));
+		}
+		
+		g.dispose();
+	}
+
+	private void paintMarker(Graphics g1d, ControlPoint pt) {
+		var g = (Graphics2D) g1d.create();
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
-		width = getWidth() - 30;
-		x = 10;
-		y = 20;
-		barHeight = 25;
+		float py = y + h;
+		float px = MARKER_SIZE + (w * pt.getPosition());
 		
-		var lineColor = UIManager.getColor(isEnabled() ? "Label.disabledForeground" : "Separator.foreground");
+		int bw = BORDER_WIDTH / 2;
+		var borderColor = UIManager.getColor(pt == selected ? "Focus.color" : "CyComponent.borderColor");
+		var stroke = new BasicStroke(pt == selected ? bw * 1.5f : bw);
 		
-		for (int i = 0; i < controlPoints.size() - 1; i++) {
-			var now = controlPoints.get(i);
-			var next = controlPoints.get(i+1);
+		var firstPt = controlPoints.get(0);
+		var lastPt = controlPoints.get(controlPoints.size() - 1);
+		
+		if (pt == firstPt || pt == lastPt) {
+			if (pt == firstPt)
+				g.translate(px - BORDER_WIDTH, py);
+			else
+				g.translate(px + BORDER_WIDTH, py);
 			
-			int size = (int) ((next.getPosition() - now.getPosition()) * width);
-			g.setPaint(new GradientPaint(x, y, now.getColor(), x + size, y, next.getColor()));
-			g.fillRect(x, y, size + 1, barHeight);
-			x += size;
-		}
-		
-		g.setColor(lineColor);
-		g.drawRect(10, y, width, barHeight - 1);
-		
-		for (int i = 0; i < controlPoints.size(); i++) {
-			var pt = controlPoints.get(i);
-			g.translate(10 + (width * pt.getPosition()), y + barHeight);
 			g.setColor(pt.getColor());
-			g.fillPolygon(poly);
-			g.setColor(pt == selected? UIManager.getColor("Focus.color") : lineColor);
-			g.setStroke(new BasicStroke(pt == selected ? 1.5f : 1.0f));
-			g.drawPolygon(poly);
+			g.fillOval(-MARKER_SIZE / 2, 0, MARKER_SIZE, MARKER_SIZE);
 			
-			g.translate(-10 - (width * pt.getPosition()), -y - barHeight);
+			g.setColor(borderColor);
+			g.setStroke(stroke);
+			g.drawOval(-MARKER_SIZE / 2, 0, MARKER_SIZE, MARKER_SIZE);
+		} else {
+			
+			g.translate(px, py);
+			
+			g.setColor(pt.getColor());
+			g.fillPolygon(marker);
+			
+			g.setColor(borderColor);
+			g.setStroke(stroke);
+			g.drawPolygon(marker);
 		}
+		
+		g.dispose();
 	}
 	
 	/**
-	 * Add a control point to the gradient
+	 * Add a control point to the gradient.
 	 * 
 	 * @param pos The position in the gradient (0 -> 1)
 	 * @param color The color at the new control point
 	 */
 	public void addPoint(float pos, Color col) {
-		var point = new ControlPoint(col, pos);
+		addPoint(new ControlPoint(col, pos));
+	}
+	
+	/**
+	 * Delete the currently selected point
+	 */
+	public void deletePoint() {
+		if (!isEnabled())
+			return;
+		if (selected == null)
+			return;
+		if (controlPoints.indexOf(selected) == 0)
+			return;
+		if (controlPoints.indexOf(selected) == controlPoints.size()-1)
+			return;
 		
-		for (int i = 0; i < controlPoints.size() - 1; i++) {
-			var now = controlPoints.get(i);
-			var next = controlPoints.get(i+1);
-			
-			if ((now.getPosition() <= pos) && (next.getPosition() >= pos)) {
-				controlPoints.add(i+1, point);
-				break;
-			}
-		}
-		
+		controlPoints.remove(selected);
+		setSelected(null);
 		repaint(0);
+		fireUpdate();
 	}
 	
 	/**
@@ -202,8 +276,42 @@ public class GradientEditor extends JPanel {
 	 * @param color The color at the end of the gradient
 	 */
 	public void setEnd(Color col) {
-		(controlPoints.get(controlPoints.size()-1)).setColor(col);
+		(controlPoints.get(controlPoints.size() - 1)).setColor(col);
 		repaint(0);
+	}
+	
+	/**
+	 * Add a new control point
+	 */
+	public void addPoint() {
+		var point = new ControlPoint(Color.WHITE, 0.5f);
+		addPoint(point);
+		
+		var oldSelected = this.selected;
+		this.selected = point;
+		
+		repaint(0);
+		
+		fireUpdate();
+		firePropertyChange("selected", oldSelected, selected);
+	}
+	
+	/**
+	 * Edit the currently selected control point
+	 */
+	public void editPoint() {
+		if (selected == null)
+			return;
+		
+		var chooserFactory = serviceRegistrar.getService(CyColorPaletteChooserFactory.class);
+		var chooser = chooserFactory.getColorPaletteChooser(BrewerType.ANY, false);
+		var col = chooser.showDialog(this, "Colors", null, selected.getColor(), 8);
+		
+		if (col != null) {
+			selected.setColor(col);
+			repaint(0);
+			fireUpdate();
+		}
 	}
 	
 	/**
@@ -233,7 +341,7 @@ public class GradientEditor extends JPanel {
 	 * index.
 	 *  
 	 * @param index The index of the control point
-	 * @return The graident position of the control point
+	 * @return The gradient position of the control point
 	 */
 	public float getPointPos(int index) {
 		return controlPoints.get(index).getPosition();
@@ -254,54 +362,76 @@ public class GradientEditor extends JPanel {
 		return new ArrayList<ControlPoint>(controlPoints);
 	}
 	
+	/**
+	 * @return Distinct position values (duplicates are removed).
+	 */
 	public float[] getPositions() {
-		var positions = new float[controlPoints.size()];
+		// We need to remove duplicates or MultipleGradientPaint throws this exception:
+		// "java.lang.IllegalArgumentException: Keyframe fractions must be increasing"
+		var positions = new ArrayList<Float>();
+		int size = controlPoints.size();
 		
-		for (int i = 0; i < controlPoints.size(); i++)
-			positions[i] = controlPoints.get(i).getPosition();
+		for (int i = 0; i < size; i++) {
+			var cp = controlPoints.get(i);
+			float pos = cp.getPosition();
+			
+			if (i < size - 1) {
+				if (pos == controlPoints.get(i + 1).getPosition())
+					continue;
+			}
+			
+			positions.add(pos);
+		}
 		
-		return positions;
+		var res = new float[positions.size()];
+		int i = 0;
+		
+		for (var pos : positions)
+		  res[i++] = pos;
+		
+		return res;
 	}
 	
+	/**
+	 * @return Colors from the distinct positions.
+	 */
 	public Color[] getColors() {
-		var colors = new Color[controlPoints.size()];
+		var colors = new ArrayList<Color>();
+		int size = controlPoints.size();
 		
-		for (int i = 0; i < controlPoints.size(); i++)
-			colors[i] = controlPoints.get(i).getColor();
+		for (int i = 0; i < size; i++) {
+			var cp = controlPoints.get(i);
+			float pos = cp.getPosition();
+			
+			if (i < size - 1) {
+				if (pos == controlPoints.get(i + 1).getPosition())
+					continue;
+			}
+			
+			colors.add(cp.getColor());
+		}
 		
-		return colors;
+		return colors.toArray(new Color[colors.size()]);
 	}
 	
 	public void setPoints(List<ControlPoint> points) {
 		setPoints(points, true);
 	}
 	
+	public ControlPoint getSelected() {
+		return selected;
+	}
+	
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	private void init() {
-		setLayout(null);
 		setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
+		setMinimumSize(new Dimension(100, 50));
+		setPreferredSize(new Dimension(200, 50));
 		
-		addBtn.setBounds(20, 70, 75, 20);
-		add(addBtn);
-		
-		editBtn.setBounds(100, 70, 75, 20);
-		editBtn.setEnabled(false);
-		add(editBtn);
-		
-		delBtn.setBounds(180, 70, 75, 20);
-		delBtn.setEnabled(false);
-		add(delBtn);
-		
-		addBtn.addActionListener(e -> addPoint());
-		delBtn.addActionListener(e -> delPoint());
-		editBtn.addActionListener(e -> editPoint());
-		
-		LookAndFeelUtil.makeSmall(addBtn, editBtn, delBtn);
-		
-		poly.addPoint(0, 0);
-		poly.addPoint(5, 10);
-		poly.addPoint(-5, 10);
+		marker.addPoint(0, 0);
+		marker.addPoint(MARKER_SIZE / 2, MARKER_SIZE);
+		marker.addPoint(-MARKER_SIZE / 2, MARKER_SIZE);
 		
 		addMouseListener(new MouseAdapter() {
 			@Override
@@ -324,6 +454,24 @@ public class GradientEditor extends JPanel {
 			public void mouseMoved(MouseEvent e) {
 			}
 		});
+	}
+	
+	private void addPoint(ControlPoint point) {
+		float pos = point.getPosition();
+		
+		for (int i = 0; i < controlPoints.size(); i++) {
+			var now = controlPoints.get(i);
+			var next = i < controlPoints.size() - 1 ? controlPoints.get(i + 1) : null;
+
+			if ((pos >= now.getPosition()) && (next == null || pos < next.getPosition())) {
+				int newIdx = next == null ? i : i + 1; // Do not replace the end point! 
+				
+				controlPoints.add(newIdx, point);
+				break;
+			}
+		}
+		
+		repaint(0);
 	}
 	
 	private void setPoints(List<ControlPoint> points, boolean update) {
@@ -378,80 +526,45 @@ public class GradientEditor extends JPanel {
 	 * @return True if the mouse point coincides with the control point
 	 */
 	private boolean checkPoint(int mx, int my, ControlPoint pt) {
-		int dx = (int) Math.abs((10 + (width * pt.getPosition())) - mx);
-		int dy = Math.abs((y + barHeight + 7) - my);
+		int shift = 0; // for the first/last points
+		
+		if (pt == controlPoints.get(0))
+			shift = -BORDER_WIDTH;
+		else if (pt == controlPoints.get(controlPoints.size() - 1))
+			shift = BORDER_WIDTH;
+		
+		int dx = (int) Math.abs((MARKER_SIZE + shift + (w * pt.getPosition())) - mx);
+		int dy = Math.abs((y + h + BORDER_WIDTH / 2 + MARKER_SIZE / 2) - my);
 
-		if ((dx < 5) && (dy < 7))
+		if ((dx < MARKER_SIZE / 2) && (dy < BORDER_WIDTH / 2 + MARKER_SIZE / 2))
 			return true;
 
 		return false;
 	}
 	
-	/**
-	 * Add a new control point
-	 */
-	private void addPoint() {
-		var point = new ControlPoint(Color.WHITE, 0.5f);
-		
-		for (int i = 0; i < controlPoints.size() - 1; i++) {
-			var now = controlPoints.get(i);
-			var next = controlPoints.get(i+1);
-			
-			if ((now.getPosition() <= 0.5f) && (next.getPosition() >=0.5f)) {
-				controlPoints.add(i+1,point);
-				break;
-			}
-			
-		}
-		
-		setSelected(point);
-		sortPoints();
-		repaint(0);
-		
-		fireUpdate();
-	}
-	
-	/**
-	 * Sort the control points based on their position
-	 */
-	private void sortPoints() {
-		var firstPt = controlPoints.get(0);
-		var lastPt = controlPoints.get(controlPoints.size() - 1);
-
-		var compare = new Comparator<ControlPoint>() {
-			@Override
-			public int compare(ControlPoint first, ControlPoint second) {
-				if (first == firstPt)
-					return -1;
-				if (second == lastPt)
-					return -1;
-				
-				float a = first.getPosition();
-				float b = second.getPosition();
-				return (int) ((a-b) * 10000);
-			}
-		};
-		
-		Collections.sort(controlPoints, compare);
-	}
-	
-	/**
-	 * Edit the currently selected control point
-	 */
-	private void editPoint() {
-		if (selected == null)
-			return;
-		
-		var chooserFactory = serviceRegistrar.getService(CyColorPaletteChooserFactory.class);
-		var chooser = chooserFactory.getColorPaletteChooser(BrewerType.ANY, false);
-		var col = chooser.showDialog(this, "Colors", null, selected.getColor(), 8);
-		
-		if (col != null) {
-			selected.setColor(col);
-			repaint(0);
-			fireUpdate();
-		}
-	}
+//	/**
+//	 * Sort the control points based on their position
+//	 */
+//	private void sortPoints() {
+//		var firstPt = controlPoints.get(0);
+//		var lastPt = controlPoints.get(controlPoints.size() - 1);
+//
+//		var compare = new Comparator<ControlPoint>() {
+//			@Override
+//			public int compare(ControlPoint first, ControlPoint second) {
+//				if (first == firstPt)
+//					return -1;
+//				if (second == lastPt)
+//					return -1;
+//				
+//				float a = first.getPosition();
+//				float b = second.getPosition();
+//				return (int) ((a-b) * 10000);
+//			}
+//		};
+//		
+//		Collections.sort(controlPoints, compare);
+//	}
 	
 	/**
 	 * Select the control point at the specified mouse coordinate
@@ -463,18 +576,20 @@ public class GradientEditor extends JPanel {
 		if (!isEnabled())
 			return;
 		
-		for (int i = 1; i < controlPoints.size() - 1; i++) {
+		// Check all points, except the start and end ones, first
+		for (int i = controlPoints.size() - 2; i > 0; i--) {
 			if (checkPoint(mx, my, controlPoints.get(i))) {
 				setSelected(controlPoints.get(i));
 				return;
 			}
 		}
+		// Now we can check the first and last points
 		if (checkPoint(mx, my, controlPoints.get(0))) {
 			setSelected(controlPoints.get(0));
 			return;
 		}
 		if (checkPoint(mx, my, controlPoints.get(controlPoints.size() - 1))) {
-			setSelected(controlPoints.get(controlPoints.size()-1));
+			setSelected(controlPoints.get(controlPoints.size() - 1));
 			return;
 		}
 		
@@ -482,35 +597,11 @@ public class GradientEditor extends JPanel {
 	}
 	
 	private void setSelected(ControlPoint selected) {
-		this.selected = selected;
-		updateButtons();
-	}
-	
-	private void updateButtons() {
-		editBtn.setEnabled(selected != null);
-		delBtn.setEnabled(selected != null
-				&& selected != controlPoints.get(0)
-				&& selected != controlPoints.get(controlPoints.size()-1));
-	}
-
-	/**
-	 * Delete the currently selected point
-	 */
-	private void delPoint() {
-		if (!isEnabled())
-			return;
-		if (selected == null)
-			return;
-		if (controlPoints.indexOf(selected) == 0)
-			return;
-		if (controlPoints.indexOf(selected) == controlPoints.size()-1)
-			return;
-		
-		controlPoints.remove(selected);
-		setSelected(null);
-		sortPoints();
-		repaint(0);
-		fireUpdate();
+		if (this.selected != selected) {
+			var oldValue = this.selected;
+			this.selected = selected;
+			firePropertyChange("selected", oldValue, selected);
+		}
 	}
 	
 	/**
@@ -526,15 +617,17 @@ public class GradientEditor extends JPanel {
 			return;
 		if (controlPoints.indexOf(selected) == 0)
 			return;
-		if (controlPoints.indexOf(selected) == controlPoints.size()-1)
+		if (controlPoints.indexOf(selected) == controlPoints.size() - 1)
 			return;
 		
-		float newPos = (mx - 10) / (float) width;
+		float newPos = (mx - 10) / (float) w;
 		newPos = Math.min(1, newPos);
 		newPos = Math.max(0, newPos);
 		
 		selected.setPosition(newPos);
-		sortPoints();
+		controlPoints.remove(selected);
+		addPoint(selected);
+		
 		fireUpdate();
 	}
 	
@@ -581,35 +674,6 @@ public class GradientEditor extends JPanel {
 			this.position = position;
 		}
 		
-		@Override
-		public int hashCode() {
-			int prime = 11;
-			int result = 5;
-			result = prime * result + ((color == null) ? 0 : color.hashCode());
-			result = prime * result + Float.floatToIntBits(position);
-			return result;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			ControlPoint other = (ControlPoint) obj;
-			if (color == null) {
-				if (other.color != null)
-					return false;
-			} else if (!color.equals(other.color)) {
-				return false;
-			}
-			if (Float.floatToIntBits(position) != Float.floatToIntBits(other.position))
-				return false;
-			return true;
-		}
-
 		@Override
 		public String toString() {
 			return getPosition() + ":" + ColorUtil.toHexString(getColor());

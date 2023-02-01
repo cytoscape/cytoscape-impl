@@ -20,6 +20,7 @@ import java.awt.geom.Rectangle2D;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -27,6 +28,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.cytoscape.ding.internal.util.MathUtil;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 /**
@@ -53,15 +56,20 @@ public class PointPicker extends JPanel {
     private JTextField xTxt;
     private JLabel yLbl;
     private JTextField yTxt;
+    private JButton resetBtn;
 
 	private float[] fractions;
 	private Color[] colors;
 
-    public PointPicker(int size, int targetSize) {
-    	this(size, targetSize, DEFAULT_VALUE);
+	private final CyServiceRegistrar serviceRegistrar;
+
+    public PointPicker(int size, int targetSize, CyServiceRegistrar serviceRegistrar) {
+    	this(size, targetSize, DEFAULT_VALUE, serviceRegistrar);
     }
     
-    public PointPicker(int size, int targetSize, Point2D value) {
+    public PointPicker(int size, int targetSize, Point2D value, CyServiceRegistrar serviceRegistrar) {
+    	this.serviceRegistrar = serviceRegistrar;
+    	
     	if (value == null)
     		value = DEFAULT_VALUE;
     	
@@ -72,10 +80,10 @@ public class PointPicker extends JPanel {
         this.targetSize = targetSize;
         fieldHeight = fieldWidth = (size - targetSize - 2 * EXTRA_PADDING);
         
-        fieldX = targetSize/2 + EXTRA_PADDING;
-        fieldY = targetSize/2 + EXTRA_PADDING;
-        fieldCenterX = fieldX + fieldWidth / 2;
-        fieldCenterY = fieldY + fieldHeight / 2;
+		fieldX = targetSize / 2 + EXTRA_PADDING;
+		fieldY = targetSize / 2 + EXTRA_PADDING;
+		fieldCenterX = fieldX + fieldWidth / 2;
+		fieldCenterY = fieldY + fieldHeight / 2;
         
         position = convertToPosition((Point2D) value.clone());
         
@@ -124,6 +132,7 @@ public class PointPicker extends JPanel {
 				.addComponent(getCanvas(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addGap(4)
 				.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+						.addComponent(getResetBtn(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 						.addGroup(layout.createSequentialGroup()
 							.addComponent(xLbl)
 							.addComponent(getXTxt())
@@ -134,10 +143,10 @@ public class PointPicker extends JPanel {
 						)
 				)
 		);
-		layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, true)
 				.addComponent(getCanvas())
 				.addGroup(layout.createSequentialGroup()
-						.addGap((int) fieldY)
+						.addComponent(getResetBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 								.addComponent(xLbl)
 								.addComponent(getXTxt(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -149,9 +158,7 @@ public class PointPicker extends JPanel {
 				)
 		);
 		
-		LookAndFeelUtil.makeSmall(xLbl, yLbl, getXTxt(), getYTxt());
-    	
-        add(getCanvas());
+		LookAndFeelUtil.makeSmall(xLbl, yLbl, getXTxt(), getYTxt(), getResetBtn());
 	}
 
 	private JPanel getCanvas() {
@@ -228,6 +235,20 @@ public class PointPicker extends JPanel {
 		return yTxt;
 	}
     
+    private JButton getResetBtn() {
+    	if (resetBtn == null) {
+    		resetBtn = new JButton(IconManager.ICON_REFRESH);
+    		resetBtn.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(14.0f));
+    		resetBtn.setToolTipText("Reset");
+    		resetBtn.addActionListener(evt -> setValue(DEFAULT_VALUE));
+    		
+    		if (LookAndFeelUtil.isAquaLAF())
+    			resetBtn.putClientProperty("JButton.buttonType", "gradient");
+    	}
+    	
+		return resetBtn;
+	}
+    
     private void mouseCheck(MouseEvent e) {
         if (SwingUtilities.isLeftMouseButton(e))
         	moveTarget(e.getX(), e.getY());
@@ -285,6 +306,7 @@ public class PointPicker extends JPanel {
     
 	protected void paintCanvas(Graphics g) {
 		super.paintComponent(g);
+		
 		var g2 = (Graphics2D) g.create();
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
@@ -306,7 +328,7 @@ public class PointPicker extends JPanel {
 			g2.fillRect(x, y, w, h);
 		}
 		
-		g2.setColor(UIManager.getColor("Label.disabledForeground"));
+		g2.setColor(UIManager.getColor("CyComponent.borderColor"));
 		g2.drawRect(x, y, w, h);
 
 		drawTarget(g2, 3.2f, UIManager.getColor("Label.foreground"));
@@ -327,17 +349,4 @@ public class PointPicker extends JPanel {
         // horizontal line
         g2.drawLine((int)(cx - d/2), (int)cy, (int)(cx + d/2), (int)cy);
     }
-    
-//    public static void main(String[] args) {
-//		var pp = new PointPicker(100, 12, new Point2D.Double(0.5, 0.5));
-//		pp.update(
-//				new float[] { 0.0f, 0.2f, 0.7f, 1.0f },
-//				new Color[] { Color.WHITE, Color.LIGHT_GRAY, Color.DARK_GRAY, Color.BLACK }
-//		);
-//		var d = new javax.swing.JDialog();
-//		d.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-//		d.getContentPane().add(pp, java.awt.BorderLayout.CENTER);
-//		d.pack();
-//		d.setVisible(true);
-//	}
 }
