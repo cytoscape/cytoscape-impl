@@ -130,6 +130,8 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 
 	private Shape customShape;
 	
+	private boolean ignorePaintEvents;
+	
 	private static final LinearGradientPaint defaultGradientPaint = new LinearGradientPaint(
 			new Point2D.Double(),
 			new Point2D.Double(1.0, 0.0),
@@ -168,13 +170,16 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 				getFillTypeCombo().setSelectedItem(FillType.GRADIENT);
 			else
 				getFillTypeCombo().setSelectedItem(FillType.NONE);
-				
+			
 			getFillColorButton().setColor(fillPaint instanceof Color ? (Color) fillPaint : Color.BLACK);
+			
+			ignorePaintEvents = true;
 			getFillGradientButton().setPaint(
 					fillPaint instanceof MultipleGradientPaint
 							? (MultipleGradientPaint) fillPaint
 							: defaultGradientPaint
 			);
+			ignorePaintEvents = false;
 
 			int fillOpacity = (int) annotation.getFillOpacity();
 			getFillOpacitySlider().setValue(fillOpacity);
@@ -418,7 +423,10 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 		if (fillGradientButton == null) {
 			fillGradientButton = new GradientButton();
 			fillGradientButton.setToolTipText("Edit fill gradient...");
-			fillGradientButton.addPropertyChangeListener("paint", evt -> apply());
+			fillGradientButton.addPropertyChangeListener("paint", evt -> {
+				if (!ignorePaintEvents)
+					apply();
+			});
 		}
 		
 		return fillGradientButton;
@@ -531,11 +539,7 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 				if (paint instanceof RadialGradientPaint) {
 					editor = new MultipleGradientEditor(centerPoint, fractions, colors, annUuid, serviceRegistrar);
 				} else if (paint instanceof LinearGradientPaint) {
-					var sp = ((LinearGradientPaint) paint).getStartPoint();
-					var ep = ((LinearGradientPaint) paint).getEndPoint();
-					var p1 = new Point2D.Double(sp.getX(), sp.getY());
-					var p2 = new Point2D.Double(ep.getX(), ep.getY());
-					var angle = MathUtil.getAngle(p1, p2);
+					var angle = MathUtil.getGradientAngle((LinearGradientPaint) paint);
 					editor = new MultipleGradientEditor(angle, fractions, colors, annUuid, serviceRegistrar);
 				}
 				
@@ -549,14 +553,10 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 						fractions = editor.getFractions();
 						colors = editor.getColors();
 					
-						if (type == GradientType.LINEAR) {
-							angle = editor.getAngle();
-							var line = MathUtil.getGradientAxis(DEF_BOUNDS, angle);
-							setPaint(new LinearGradientPaint(line.getP1(), line.getP2(), fractions, colors));
-						} else {
-							centerPoint = editor.getCenterPoint();
-							setPaint(new RadialGradientPaint(centerPoint, 0.5f, fractions, colors));
-						}
+						if (type == GradientType.LINEAR)
+							setLinearGradientPaint(fractions, colors, editor.getAngle());
+						else
+							setRadialGradientPaint(fractions, colors, editor.getCenterPoint(), 0.5f);
 					}
 				}
 			});
@@ -570,7 +570,6 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 			setVerticalTextPosition(JButton.CENTER);
 			setIcon(new GradientIcon());
 			
-			setPaint(paint);
 			repaint();
 		}
 
@@ -585,12 +584,45 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 				var oldValue = this.paint;
 				this.paint = paint;
 				
-				if (paint instanceof RadialGradientPaint)
+				if (paint instanceof LinearGradientPaint)
+					angle = MathUtil.getGradientAngle((LinearGradientPaint) paint);
+				else if (paint instanceof RadialGradientPaint)
 					centerPoint = ((RadialGradientPaint) paint).getCenterPoint();
 				
 				repaint();
 				firePropertyChange("paint", oldValue, paint);
 			}
+		}
+		
+		/**
+		 * Creates and sets a new {@link LinearGradientPaint} and fires a {@link java.beans.PropertyChangeEvent}
+		 * for the property "paint".
+		 */
+		protected void setLinearGradientPaint(float[] fractions, Color[] colors, double angle) {
+			this.angle = angle;
+			
+			var line = MathUtil.getGradientAxis(DEF_BOUNDS, angle);
+			var paint = new LinearGradientPaint(line.getP1(), line.getP2(), fractions, colors);
+			var oldValue = this.paint;
+			this.paint = paint;
+			
+			repaint();
+			firePropertyChange("paint", oldValue, paint);
+		}
+		
+		/**
+		 * Creates and sets a new {@link RadialGradientPaint} and fires a {@link java.beans.PropertyChangeEvent}
+		 * for the property "paint".
+		 */
+		protected void setRadialGradientPaint(float[] fractions, Color[] colors, Point2D centerPoint, float radius) {
+			this.centerPoint = centerPoint;
+			
+			var paint = new RadialGradientPaint(centerPoint, radius, fractions, colors);
+			var oldValue = this.paint;
+			this.paint = paint;
+			
+			repaint();
+			firePropertyChange("paint", oldValue, paint);
 		}
 
 		protected MultipleGradientPaint getPaint() {

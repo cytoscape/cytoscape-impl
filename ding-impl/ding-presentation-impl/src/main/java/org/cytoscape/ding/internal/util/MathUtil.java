@@ -1,5 +1,6 @@
 package org.cytoscape.ding.internal.util;
 
+import java.awt.LinearGradientPaint;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
@@ -172,16 +173,6 @@ public final class MathUtil {
         return x * x;
     }
 	
-	/**
-	 * Calculates the angle (in degrees) of a straight line drawn between point one and two.
-	 */
-	public static double getAngle(Point.Double p1, Point.Double p2) {
-		double xDiff = p2.x - p1.x;
-		double yDiff = p2.y - p1.y;
-		
-		return Math.toDegrees(Math.atan2(yDiff, xDiff));
-	}
-	
 	public static double normalizeAngle(double angle) {
 		double value = angle % 360;
 		if (angle < 0) value = value + 360;
@@ -258,6 +249,25 @@ public final class MathUtil {
 		var np = new Point2D.Double(x, y);
 		
 		return np;
+	}
+	
+	public static double getGradientAngle(LinearGradientPaint paint) {
+		var sp = paint.getStartPoint();
+		var ep = paint.getEndPoint();
+		var p1 = new Point2D.Double(sp.getX(), sp.getY());
+		var p2 = new Point2D.Double(ep.getX(), ep.getY());
+	    
+	    return getGradientAngle(p1, p2);
+	}
+	
+	/**
+	 * Calculates the angle (in degrees) of a straight line drawn between point one and two.
+	 */
+	public static double getGradientAngle(Point.Double p1, Point.Double p2) {
+		double angle = Math.toDegrees(Math.atan2(p2.y - p1.y, p2.x - p1.x)) * -1;
+		angle = angle + Math.ceil(-angle / 360) * 360; // Keep angle between 0 and 360
+	    
+	    return angle;
 	}
 	
 	public static Line2D getGradientAxis(Rectangle2D bounds, double angle) {
