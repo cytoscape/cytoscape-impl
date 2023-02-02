@@ -10,9 +10,14 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.LinearGradientPaint;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
+import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -28,6 +33,7 @@ import javax.swing.UIManager;
 
 import org.cytoscape.ding.impl.cyannotator.utils.GradientEditor.ControlPoint;
 import org.cytoscape.ding.internal.util.ColorUtil;
+import org.cytoscape.ding.internal.util.MathUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.color.Palette;
@@ -100,6 +106,7 @@ public class MultipleGradientEditor extends JPanel {
 	private JPanel linearOptionsPnl;
 	private JLabel angleLbl = new JLabel("Angle (degrees):");
 	private JComboBox<Double> angleCmb;
+	private JPanel linearPreviewPanel;
 	
 	private JPanel radialOptionsPnl;
 	private JLabel centerLbl = new JLabel("Center:");
@@ -393,7 +400,9 @@ public class MultipleGradientEditor extends JPanel {
 				this.fractions = grEditor.getPositions();
 				this.colors = grEditor.getColors();
 				
-				if (getRadialOptionsPnl().isVisible())
+				if (getLinearOptionsPnl().isVisible())
+					getLinearPreviewPanel().repaint();
+				else if (getRadialOptionsPnl().isVisible())
 					updatePointPicker();
 			});
 		}
@@ -450,13 +459,20 @@ public class MultipleGradientEditor extends JPanel {
 			layout.setAutoCreateContainerGaps(false);
 			layout.setAutoCreateGaps(true);
 			
-			layout.setHorizontalGroup(layout.createSequentialGroup()
-					.addComponent(angleLbl)
-					.addComponent(getAngleCmb(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, false)
+					.addGroup(layout.createSequentialGroup()
+							.addComponent(angleLbl)
+							.addComponent(getAngleCmb(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
+					.addComponent(getLinearPreviewPanel(), 80, 80, 80)
 			);
-			layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, false)
-					.addComponent(angleLbl)
-					.addComponent(getAngleCmb(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(angleLbl)
+						.addComponent(getAngleCmb(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
+					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addComponent(getLinearPreviewPanel(), 80, 80, 80)
 			);
 			
 			makeSmall(angleLbl, getAngleCmb());
@@ -480,10 +496,44 @@ public class MultipleGradientEditor extends JPanel {
 			angleCmb.addActionListener(e -> {
 				var angle = angleCmb.getSelectedItem();
 				this.angle = angle instanceof Number ? ((Number) angle).doubleValue() : 0.0;
+				getLinearPreviewPanel().repaint();
 			});
 		}
 		
 		return angleCmb;
+	}
+	
+	private JPanel getLinearPreviewPanel() {
+    	if (linearPreviewPanel == null) {
+    		linearPreviewPanel = new JPanel() {
+    			@Override
+    		    protected void paintComponent(Graphics g) {
+    				super.paintComponent(g);
+    				
+    				var g2 = (Graphics2D) g.create();
+    				g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+    				var insets = getInsets();
+    				int x = insets.left;
+    				int y = insets.top;
+    				int w = getWidth() - insets.left - insets.right;
+    				int h = getHeight() - insets.top - insets.bottom;
+
+    				if (fractions != null && fractions.length > 0 && colors != null && colors.length > 0) {
+    					var line = MathUtil.getGradientAxis(new Rectangle(x, y, w, h), angle);
+    					var paint = new LinearGradientPaint(line.getP1(), line.getP2(), fractions, colors);
+    					g2.setPaint(paint);
+    					g2.fillRect(x, y, w, h);
+    				}
+    				
+    				g2.dispose();
+    		    }
+    		};
+    		linearPreviewPanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
+    		linearPreviewPanel.setToolTipText("Preview");
+    	}
+    	
+		return linearPreviewPanel;
 	}
 	
 	private JPanel getRadialOptionsPnl() {
