@@ -1,5 +1,6 @@
 package org.cytoscape.ding.impl.cyannotator.utils;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -8,6 +9,7 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 
 import javax.swing.JComponent;
 import javax.swing.UIManager;
@@ -20,39 +22,64 @@ public class AnglePicker extends JComponent {
   
 	private static final int POINT_RADIUS = 4;
 	private static final int[] MAIN_ANGLES = { 0, 45, 90, 135, 180, 225, 270, 315 };
+	/** We need the 360 value for the findClosestNumber function, or it will be hard to snap to 0 degrees. */
+	private static final  int[] ALL_ANGLES = { 0, 45, 90, 135, 180, 225, 270, 315, 360 };
 	
 	private int angle = -1;
 	
-	private float[] fractions = { 0.0f, 0.5f, 1.0f };
-	private Color[] colors = { Color.BLACK, Color.BLUE, Color.WHITE };
+	private float[] fractions = { 0.0f, 1.0f };
+	private Color[] colors = { Color.BLACK, Color.WHITE };
+	
+	private boolean mousePressed;
+	private boolean mouseDragging;
 	
 	public AnglePicker() {
 		setOpaque(!LookAndFeelUtil.isAquaLAF());
 		
-		// We need the 360 value for the findClosestNumber function, or it will be hard to snap to 0 degrees
-		final int[] allAngles = { 0, 45, 90, 135, 180, 225, 270, 315, 360 };
-		
 		addMouseListener(new MouseAdapter() {
 			@Override
-			public void mouseClicked(MouseEvent evt) {
-				double oldValue = angle;
-				
-				// Make sure we get the angle in counterclockwise orientation
-				int x = evt.getX() - getWidth() / 2;
-				int y = -evt.getY() + getHeight() / 2;
-				angle = (int) Math.toDegrees(Math.atan2(y, x));
-				
-				if (angle < 0)
-					angle = 360 + angle;
-				
-				// Snap to the nearest main angle if holding the SHIFT key
-				if (evt.isShiftDown())
-					angle = MathUtil.findNearestNumber(allAngles, Math.round(angle));
-				
+			public void mousePressed(MouseEvent evt) {
+				mousePressed = true;
+				selectAngle(evt);
+			}
+			@Override
+			public void mouseReleased(MouseEvent evt) {
+				mousePressed = false;
+				mouseDragging = false;
 				repaint();
-				firePropertyChange("value", oldValue, angle);
 			}
 		});
+		addMouseMotionListener(new MouseMotionAdapter() {
+			@Override
+			public void mouseDragged(MouseEvent evt) {
+				if (mousePressed) {
+					mouseDragging = true;
+					selectAngle(evt);
+				}
+			}
+		});
+	}
+	
+	private void selectAngle(MouseEvent evt) {
+		double oldValue = angle;
+		
+		// Make sure we get the angle in counterclockwise orientation
+		int x = evt.getX() - getWidth() / 2;
+		int y = -evt.getY() + getHeight() / 2;
+		angle = (int) Math.toDegrees(Math.atan2(y, x));
+		
+		if (angle < 0)
+			angle = 360 + angle;
+		
+		// Snap to the nearest main angle if holding the SHIFT key
+		if (evt.isShiftDown())
+			angle = MathUtil.findNearestNumber(ALL_ANGLES, Math.round(angle));
+		
+		if (angle == 360)
+			angle = 0;
+		
+		repaint();
+		firePropertyChange("value", oldValue, angle);
 	}
 	
 	/**
@@ -82,27 +109,33 @@ public class AnglePicker extends JComponent {
 		
 		var color1 = UIManager.getColor("Separator.foreground");
 		var color2 = UIManager.getColor("Table.background");
+		var selColor = UIManager.getColor("Focus.color");
+		
+		g2.translate(w / 2, h / 2);
 		
 		if (fractions != null && fractions.length > 0 && colors != null && colors.length > 0) {
 			// Use the passed colors and fractions to paint our background with a linear gradient,
 			// but with an updated center point, of course
-			var bounds = new Rectangle(pad + pr, pad + pr, 2 * r - 4 + pr, 2 * r - 4 + pr);
+			var bounds = new Rectangle(-r, -r, 2 * r - 4 + pr, 2 * r - 4 + pr);
 			var line = MathUtil.getGradientAxis(bounds, angle);
 			var paint = new LinearGradientPaint(line.getP1(), line.getP2(), fractions, colors);
 			g2.setPaint(paint);
 			g2.fill(bounds);
 		}
 		
-		g2.translate(w / 2, h / 2);
-		
 		g2.setColor(color1);
 		g2.drawOval(-r, -r, r * 2, r * 2); // external line
 		g2.setColor(color2);
 		g2.drawOval(-r + 1, -r + 1, (r - 1) * 2, (r - 1) * 2); // internal line
 		
+		var dashed = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] { 5 }, 0);
+		g2.setStroke(dashed);
+		
 		g2.drawLine(-r, 0, r, 0);
 		g2.drawLine(0, -r, 0, r);
 
+		g2.setStroke(new BasicStroke());
+		
 		for (int angle : MAIN_ANGLES) {
 			int x = (int) (r * Math.cos(Math.toRadians(angle)));
 			int y = (int) (r * Math.sin(Math.toRadians(angle)));
@@ -118,11 +151,27 @@ public class AnglePicker extends JComponent {
 			int x = (int) (r * Math.cos(Math.toRadians(angle))); 
 			int y = (int) (r * Math.sin(Math.toRadians(angle)));
 			
+			if (mouseDragging) {
+				g2.setColor(selColor);
+				g2.drawLine(x, -y, 0, 0);
+			}
+			
 			g2.setColor(color2);
 			g2.drawOval(x - pr, -y - pr, 2 * pr, 2 * pr);
 			
-			g2.setColor(UIManager.getColor("Focus.color"));
+			g2.setColor(selColor);
 			g2.fillOval(x - pr, -y - pr, 2 * pr, 2 * pr);
 		}
 	}
+	
+//	public static void main(String[] args) {
+//		var dialog = new JDialog();
+//		dialog.setTitle("Angle Picker");
+//		dialog.setModal(true);
+//		dialog.add(new AnglePicker());
+//		dialog.setPreferredSize(new Dimension(200, 200));
+//		dialog.pack();
+//		dialog.setLocationRelativeTo(null);
+//		dialog.setVisible(true);
+//	}
 }
