@@ -634,7 +634,6 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 			
 			var dialog = new JDialog(owner, "Gradient Editor", ModalityType.APPLICATION_MODAL);
 			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			dialog.setResizable(false);
 			
 			dialog.getContentPane().add(editor, BorderLayout.CENTER);
 			
@@ -672,7 +671,9 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 				}
 			});
 			
+			dialog.getContentPane().setPreferredSize(new Dimension(320, 400));
 			dialog.pack();
+			dialog.setResizable(false);
 			dialog.setLocationRelativeTo(GradientButton.this);
 			dialog.setVisible(true);
 		}

@@ -113,6 +113,22 @@ public final class MathUtil {
 		return Math.log(x) / Math.log(b);
 	}
 	
+	public static int findNearestNumber(int[] numbers, int target) {
+		int minDiff = Integer.MAX_VALUE;
+		int nearest = 0;
+		
+		for (int n : numbers) {
+			int diff = Math.abs(n - target);
+			
+			if (diff < minDiff) {
+				minDiff = diff;
+				nearest = n;
+			}
+		}
+		
+		return nearest;
+	}
+	
 	/**
 	 * Computes the intersection between two lines. The calculated point is approximate, 
 	 * @param p1 Point 1 of Line 1
@@ -197,6 +213,9 @@ public final class MathUtil {
         return x * x;
     }
 	
+	/**
+	 * Keep angle between 0 and 360.
+	 */
 	public static double normalizeAngle(double angle) {
 		double value = angle % 360;
 		if (angle < 0) value = value + 360;
@@ -289,11 +308,11 @@ public final class MathUtil {
 	 */
 	public static double getGradientAngle(Point.Double p1, Point.Double p2) {
 		double angle = Math.toDegrees(Math.atan2(p2.y - p1.y, p2.x - p1.x)) * -1;
-		angle = angle + Math.ceil(-angle / 360) * 360; // Keep angle between 0 and 360
+		angle = normalizeAngle(angle);
 	    
 	    return angle;
 	}
-	
+
 	public static Line2D getGradientAxis(Rectangle2D bounds, double angle) {
 		Point2D start = null;
 		Point2D end = null;

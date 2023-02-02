@@ -62,10 +62,10 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 @SuppressWarnings("serial")
 public class GradientEditor extends JPanel {
 	
-	private static int HPAD = 4;
-	private static int VPAD = 2;
-	private static int BORDER_WIDTH = 2;
-	private static int MARKER_SIZE = 12;
+	private static final int HPAD = 4;
+	private static final int VPAD = 2;
+	private static final int BORDER_WIDTH = 2;
+	private static final int MARKER_SIZE = 12;
 	
 	/** The controlPoints of control points */
 	private List<ControlPoint> controlPoints = new ArrayList<>();
