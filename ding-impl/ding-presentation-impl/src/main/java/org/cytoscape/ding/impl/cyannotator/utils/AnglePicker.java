@@ -37,12 +37,16 @@ public class AnglePicker extends JComponent {
 			public void mouseClicked(MouseEvent evt) {
 				double oldValue = angle;
 				
+				// Make sure we get the angle in counterclockwise orientation
 				int x = evt.getX() - getWidth() / 2;
-				int y = evt.getY() - getHeight() / 2;
-				angle = (int) Math.round(Math.toDegrees(Math.atan2(y, x)));
-				angle = (int) Math.round(MathUtil.normalizeAngle(angle));
+				int y = -evt.getY() + getHeight() / 2;
+				angle = (int) Math.toDegrees(Math.atan2(y, x));
 				
-				if (evt.isShiftDown()) // Snap to closer main angle
+				if (angle < 0)
+					angle = 360 + angle;
+				
+				// Snap to the nearest main angle if holding the SHIFT key
+				if (evt.isShiftDown())
 					angle = MathUtil.findNearestNumber(allAngles, Math.round(angle));
 				
 				repaint();
@@ -111,14 +115,14 @@ public class AnglePicker extends JComponent {
 		}
 
 		if (angle >= 0) {
-			int x = (int) (r * Math.cos(Math.toRadians(angle)));
+			int x = (int) (r * Math.cos(Math.toRadians(angle))); 
 			int y = (int) (r * Math.sin(Math.toRadians(angle)));
 			
 			g2.setColor(color2);
-			g2.drawOval(x - pr, y - pr, 2 * pr, 2 * pr);
+			g2.drawOval(x - pr, -y - pr, 2 * pr, 2 * pr);
 			
 			g2.setColor(UIManager.getColor("Focus.color"));
-			g2.fillOval(x - pr, y - pr, 2 * pr, 2 * pr);
+			g2.fillOval(x - pr, -y - pr, 2 * pr, 2 * pr);
 		}
 	}
 }

@@ -485,8 +485,8 @@ public class MultipleGradientEditor extends JPanel {
 		if (angleCmb == null) {
 			angleCmb = new JComboBox<>(ANGLES);
 			angleCmb.setEditable(true);
-			((JLabel)angleCmb.getRenderer()).setHorizontalAlignment(JLabel.RIGHT);
-			angleCmb.setSelectedIndex(0);
+			((JLabel) angleCmb.getRenderer()).setHorizontalAlignment(JLabel.RIGHT);
+			angleCmb.setSelectedItem((int) Math.round(angle));
 			angleCmb.setInputVerifier(new DoubleInputVerifier());
 			
 			angleCmb.addActionListener(e -> {
@@ -504,7 +504,7 @@ public class MultipleGradientEditor extends JPanel {
     		anglePicker = new AnglePicker();
     		
     		anglePicker.addPropertyChangeListener("value", evt -> {
-				angle = (int) evt.getNewValue();
+				angle = ((Number) evt.getNewValue()).intValue();
 				getAngleCmb().setSelectedItem((int) angle);
 			});
     	}
