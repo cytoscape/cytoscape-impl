@@ -21,7 +21,7 @@ public class AnglePicker extends JComponent {
 	private static final int POINT_RADIUS = 4;
 	private static final int[] MAIN_ANGLES = { 0, 45, 90, 135, 180, 225, 270, 315 };
 	
-	private double angle = -1;
+	private int angle = -1;
 	
 	private float[] fractions = { 0.0f, 0.5f, 1.0f };
 	private Color[] colors = { Color.BLACK, Color.BLUE, Color.WHITE };
@@ -39,11 +39,11 @@ public class AnglePicker extends JComponent {
 				
 				int x = evt.getX() - getWidth() / 2;
 				int y = evt.getY() - getHeight() / 2;
-				angle = Math.toDegrees(Math.atan2(y, x));
-				angle = MathUtil.normalizeAngle(angle);
+				angle = (int) Math.round(Math.toDegrees(Math.atan2(y, x)));
+				angle = (int) Math.round(MathUtil.normalizeAngle(angle));
 				
 				if (evt.isShiftDown()) // Snap to closer main angle
-					angle = MathUtil.findNearestNumber(allAngles, (int) Math.round(angle));
+					angle = MathUtil.findNearestNumber(allAngles, Math.round(angle));
 				
 				repaint();
 				firePropertyChange("value", oldValue, angle);
@@ -54,10 +54,10 @@ public class AnglePicker extends JComponent {
 	/**
      * Optional, in case you want the canvas background to show the linear gradient it's modifying.
      */
-    public void update(float[] fractions, Color[] colors, double angle) {
+    public void update(float[] fractions, Color[] colors, int angle) {
     	this.fractions = fractions;
     	this.colors = colors;
-    	this.angle = MathUtil.normalizeAngle(angle);
+    	this.angle = (int) Math.round(MathUtil.normalizeAngle(angle));
     	repaint();
 	}
 

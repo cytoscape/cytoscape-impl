@@ -217,10 +217,7 @@ public final class MathUtil {
 	 * Keep angle between 0 and 360.
 	 */
 	public static double normalizeAngle(double angle) {
-		double value = angle % 360;
-		if (angle < 0) value = value + 360;
-		
-		return value;
+		return angle + Math.ceil(-angle / 360) * 360;
 	}
 	
 	public static int getQuadrant(double angle) {
