@@ -414,6 +414,7 @@ public class GradientEditor extends JPanel {
 	}
 	
 	private void setPoints(List<ControlPoint> points, boolean update) {
+		setSelected(null);
 		controlPoints.clear();
 		
 		if (points == null || points.isEmpty()) {
