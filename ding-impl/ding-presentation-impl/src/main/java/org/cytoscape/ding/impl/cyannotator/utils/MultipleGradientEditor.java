@@ -207,8 +207,6 @@ public class MultipleGradientEditor extends JPanel {
 
 	private void init() {
 		setOpaque(!isAquaLAF()); // Transparent if Aqua
-		setMinimumSize(new Dimension(320, 340));
-		setPreferredSize(new Dimension(320, 340));
 		
 		typeGroup.add(getLinearToggle());
 		typeGroup.add(getRadialToggle());
@@ -253,6 +251,7 @@ public class MultipleGradientEditor extends JPanel {
 						.addComponent(getPaletteBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(getReverseBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
+				.addPreferredGap(ComponentPlacement.RELATED)
 				.addComponent(getGrEditor(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addPreferredGap(ComponentPlacement.RELATED)
 				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
@@ -447,9 +446,6 @@ public class MultipleGradientEditor extends JPanel {
 			linearOptionsPnl = new JPanel();
 			linearOptionsPnl.setVisible(false);
 			
-			int apw = 120; // AnglePicker width
-			int aph = 120; // AnglePicker height
-			
 			var layout = new GroupLayout(linearOptionsPnl);
 			linearOptionsPnl.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
@@ -460,15 +456,15 @@ public class MultipleGradientEditor extends JPanel {
 							.addComponent(angleLbl)
 							.addComponent(getAngleCmb(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
-					.addComponent(getAnglePicker(), apw, apw, apw)
+					.addComponent(getAnglePicker(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
-					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+					.addGroup(layout.createParallelGroup(Alignment.CENTER, true)
 						.addComponent(angleLbl)
 						.addComponent(getAngleCmb(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
 					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(getAnglePicker(), aph, aph, aph)
+					.addComponent(getAnglePicker(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 			
 			makeSmall(angleLbl, getAngleCmb());
@@ -502,6 +498,7 @@ public class MultipleGradientEditor extends JPanel {
 	private AnglePicker getAnglePicker() {
     	if (anglePicker == null) {
     		anglePicker = new AnglePicker();
+    		anglePicker.setPreferredSize(new Dimension(120, 120));
     		
     		anglePicker.addPropertyChangeListener("value", evt -> {
 				angle = ((Number) evt.getNewValue()).intValue();

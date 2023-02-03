@@ -10,11 +10,9 @@ import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 import static org.cytoscape.util.swing.LookAndFeelUtil.setDefaultOkCancelKeyStrokes;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog.ModalityType;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.LinearGradientPaint;
@@ -544,7 +542,7 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 				}
 				
 				if (editor != null) {
-					editor.setPreferredSize(new Dimension(320, 320));
+					editor.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground")));
 					
 					showEditorDialog(editor);
 					
@@ -635,8 +633,6 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 			var dialog = new JDialog(owner, "Gradient Editor", ModalityType.APPLICATION_MODAL);
 			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 			
-			dialog.getContentPane().add(editor, BorderLayout.CENTER);
-			
 			var okButton = new JButton(new AbstractAction("OK") {
 				@Override
 				public void actionPerformed(ActionEvent evt) {
@@ -653,12 +649,20 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 			});
 			
 			var buttonPanel = LookAndFeelUtil.createOkCancelPanel(okButton, cancelButton);
-			int pad = 10;
-			buttonPanel.setBorder(BorderFactory.createCompoundBorder(
-					BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")),
-					BorderFactory.createEmptyBorder(pad, pad, pad, pad)
-			));
-			dialog.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
+			
+			var layout = new GroupLayout(dialog.getContentPane());
+			dialog.getContentPane().setLayout(layout);
+			layout.setAutoCreateContainerGaps(true);
+			layout.setAutoCreateGaps(true);
+			
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+					.addComponent(editor, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(buttonPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(editor, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
 			
 			setDefaultOkCancelKeyStrokes(dialog.getRootPane(), okButton.getAction(), cancelButton.getAction());
 			getRootPane().setDefaultButton(okButton);
@@ -671,7 +675,6 @@ public class ShapeAnnotationEditor extends AbstractAnnotationEditor<ShapeAnnotat
 				}
 			});
 			
-			dialog.getContentPane().setPreferredSize(new Dimension(320, 400));
 			dialog.pack();
 			dialog.setResizable(false);
 			dialog.setLocationRelativeTo(GradientButton.this);
