@@ -8,12 +8,13 @@ import java.awt.Graphics2D;
 import java.awt.LinearGradientPaint;
 import java.awt.Polygon;
 import java.awt.RenderingHints;
+import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,7 @@ import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 
 import org.cytoscape.ding.internal.util.ColorUtil;
+import org.cytoscape.ding.internal.util.MathUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.swing.CyColorPaletteChooserFactory;
@@ -67,6 +69,16 @@ public class GradientEditor extends JPanel {
 	private static final int BORDER_WIDTH = 2;
 	private static final int MARKER_SIZE = 12;
 	
+	private static final float[] MAIN_POSITIONS = { .1f, .2f, .3f, .4f, .5f, .6f, .7f, .8f, .9f };
+	
+	private Color color1 = UIManager.getColor("CyComponent.borderColor");
+	private Color color2 = UIManager.getColor("Table.background");
+	private Color color3 = UIManager.getColor("Separator.foreground");
+	private Color selColor = UIManager.getColor("Focus.color");
+	
+	private Stroke defStroke = new BasicStroke(1);
+	private Stroke dashedStroke = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] { 1 }, 0);
+	
 	/** The controlPoints of control points */
 	private List<ControlPoint> controlPoints = new ArrayList<>();
 	/** The current selected control point */
@@ -86,6 +98,8 @@ public class GradientEditor extends JPanel {
 	
 	/** The listeners that should be notified of changes to this emitter */
 	private List<ActionListener> listeners = new ArrayList<>();
+	
+	private boolean mouseDragging;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	
@@ -149,114 +163,6 @@ public class GradientEditor extends JPanel {
 	 */
 	public void removeActionListener(ActionListener listener) {
 		listeners.remove(listener);
-	}
-	
-	@Override
-	public void paintComponent(Graphics g1d) {
-		super.paintComponent(g1d);
-		
-		var g = (Graphics2D) g1d.create();
-		
-		var insets = getInsets();
-		int bw = BORDER_WIDTH / 2; // The width of each border (we draw 2 borders, an internal and an external one)
-		
-		// Draw compound border first, but draw it as two fill rectangles
-		x = HPAD + MARKER_SIZE / 2;
-		y = VPAD;
-		w = getWidth()  - insets.left - insets.right  - 2 * HPAD - MARKER_SIZE;
-		h = getHeight() - insets.top  - insets.bottom - 2 * VPAD - MARKER_SIZE;
-		
-		var extBC = UIManager.getColor("CyComponent.borderColor");
-		var intBC = UIManager.getColor("Table.background");
-		
-		// External Border
-		g.setColor(extBC);
-		g.setStroke(new BasicStroke(bw));
-		g.drawRect(x, y, w, h);
-		// Internal Border
-		x += bw;
-		y += bw;
-		w -= 2 * bw;
-		h -= 2 * bw;
-		g.setColor(intBC);
-		g.fillRect(x, y, w, h);
-		
-		// Linear Gradient
-		x += bw;
-		y += bw;
-		w -= 2 * bw;
-		h -= 2 * bw;
-		
-//		int px = x;
-//		
-//		for (int i = 0; i < controlPoints.size() - 1; i++) {
-//			var now = controlPoints.get(i);
-//			var next = controlPoints.get(i + 1);
-//
-//			int size = (int) ((next.getPosition() - now.getPosition()) * w);
-//			g.setPaint(new GradientPaint(px, y, now.getColor(), px + size, y, next.getColor()));
-//			g.fillRect(px, y, size + bw, h);
-//			px += size;
-//		}
-		var paint = new LinearGradientPaint(
-				new Point2D.Double(x, y),
-				new Point2D.Double(x + w, y),
-				getPositions(),
-				getColors()
-		);
-		g.setPaint(paint);
-		g.fillRect(x, y, w, h);
-		
-		// Control Point Markers (start/end first)
-		paintMarker(g, controlPoints.get(0));
-		paintMarker(g, controlPoints.get(controlPoints.size() - 1));
-		
-		for (int i = 1; i < controlPoints.size() - 1; i++) {
-			paintMarker(g, controlPoints.get(i));
-		}
-		
-		g.dispose();
-	}
-
-	private void paintMarker(Graphics g1d, ControlPoint pt) {
-		var g = (Graphics2D) g1d.create();
-		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		
-		float py = y + h;
-		float px = MARKER_SIZE + (w * pt.getPosition());
-		
-		int bw = BORDER_WIDTH / 2;
-		var borderColor = UIManager.getColor(pt == selected ? "Focus.color" : "CyComponent.borderColor");
-		var stroke = new BasicStroke(pt == selected ? bw * 1.5f : bw);
-		
-		var firstPt = controlPoints.get(0);
-		var lastPt = controlPoints.get(controlPoints.size() - 1);
-		
-		if (pt == firstPt || pt == lastPt) {
-			if (pt == firstPt)
-				g.translate(px - BORDER_WIDTH, py);
-			else
-				g.translate(px + BORDER_WIDTH, py);
-			
-			g.setColor(pt.getColor());
-			g.fillOval(-MARKER_SIZE / 2, 0, MARKER_SIZE, MARKER_SIZE);
-			
-			g.setColor(borderColor);
-			g.setStroke(stroke);
-			g.drawOval(-MARKER_SIZE / 2, 0, MARKER_SIZE, MARKER_SIZE);
-		} else {
-			
-			g.translate(px, py);
-			
-			g.setColor(pt.getColor());
-			g.fillPolygon(marker);
-			
-			g.setColor(borderColor);
-			g.setStroke(stroke);
-			g.drawPolygon(marker);
-		}
-		
-		g.dispose();
 	}
 	
 	/**
@@ -473,16 +379,18 @@ public class GradientEditor extends JPanel {
 				if (e.getClickCount() == 2)
 					editPoint();
 			}
+			@Override
+			public void mouseReleased(MouseEvent evt) {
+				mouseDragging = false;
+				repaint();
+			}
 		});
-		
-		addMouseMotionListener(new MouseMotionListener() {
+		addMouseMotionListener(new MouseMotionAdapter() {
 			@Override
 			public void mouseDragged(MouseEvent e) {
-				movePoint(e.getX(), e.getY());
+				mouseDragging = true;
+				movePoint(e);
 				repaint(0);
-			}
-			@Override
-			public void mouseMoved(MouseEvent e) {
 			}
 		});
 	}
@@ -506,6 +414,7 @@ public class GradientEditor extends JPanel {
 	}
 	
 	private void setPoints(List<ControlPoint> points, boolean update) {
+		setSelected(null);
 		controlPoints.clear();
 		
 		if (points == null || points.isEmpty()) {
@@ -643,11 +552,8 @@ public class GradientEditor extends JPanel {
 	
 	/**
 	 * Move the current point to the specified mouse location
-	 * 
-	 * @param mx The x coordinate of the mouse
-	 * @param my The y coordinate of teh mouse 
 	 */
-	private void movePoint(int mx, int my) {
+	private void movePoint(MouseEvent e) {
 		if (!isEnabled())
 			return;
 		if (selected == null)
@@ -657,9 +563,13 @@ public class GradientEditor extends JPanel {
 		if (controlPoints.indexOf(selected) == controlPoints.size() - 1)
 			return;
 		
-		float newPos = (mx - 10) / (float) w;
+		float newPos = (e.getX() - 10) / (float) w;
 		newPos = Math.min(1, newPos);
 		newPos = Math.max(0, newPos);
+		
+		// Snap to the nearest main position if holding the SHIFT key
+		if (e.isShiftDown())
+			newPos = MathUtil.findNearestNumber(MAIN_POSITIONS, newPos);
 		
 		selected.setPosition(newPos);
 		controlPoints.remove(selected);
@@ -677,6 +587,125 @@ public class GradientEditor extends JPanel {
 		
 		actionMap.put(KeyAction.VK_DELETE, new KeyAction(KeyAction.VK_DELETE));
 		actionMap.put(KeyAction.VK_BACK_SPACE, new KeyAction(KeyAction.VK_BACK_SPACE));
+	}
+	
+	@Override
+	protected void paintComponent(Graphics g) {
+		super.paintComponent(g);
+		
+		var g2 = (Graphics2D) g.create();
+		
+		var insets = getInsets();
+		int bw = BORDER_WIDTH / 2; // The width of each border (we draw 2 borders, an internal and an external one)
+		
+		// Draw compound border first, but draw it as two fill rectangles
+		x = HPAD + MARKER_SIZE / 2;
+		y = VPAD;
+		w = getWidth()  - insets.left - insets.right  - 2 * HPAD - MARKER_SIZE;
+		h = getHeight() - insets.top  - insets.bottom - 2 * VPAD - MARKER_SIZE;
+		
+		// External Border
+		g2.setColor(color1);
+		g2.setStroke(new BasicStroke(bw));
+		g2.drawRect(x, y, w, h);
+		// Internal Border
+		x += bw;
+		y += bw;
+		w -= 2 * bw;
+		h -= 2 * bw;
+		g2.setColor(color2);
+		g2.fillRect(x, y, w, h);
+		
+		// Linear Gradient
+		x += bw;
+		y += bw;
+		w -= 2 * bw;
+		h -= 2 * bw;
+		
+//		int px = x;
+//		
+//		for (int i = 0; i < controlPoints.size() - 1; i++) {
+//			var now = controlPoints.get(i);
+//			var next = controlPoints.get(i + 1);
+//
+//			int size = (int) ((next.getPosition() - now.getPosition()) * w);
+//			g.setPaint(new GradientPaint(px, y, now.getColor(), px + size, y, next.getColor()));
+//			g.fillRect(px, y, size + bw, h);
+//			px += size;
+//		}
+		var paint = new LinearGradientPaint(
+				new Point2D.Double(x, y),
+				new Point2D.Double(x + w, y),
+				getPositions(),
+				getColors()
+		);
+		g2.setPaint(paint);
+		g2.fillRect(x, y, w, h);
+		
+		if (mouseDragging) {
+			// Draw a temporary dashed line to show where the center of the gradient is
+			float mpx = x - bw / 2 + w * 0.5f;
+			
+			g2.translate(mpx, y);
+			g2.setStroke(dashedStroke);
+			
+			g2.setColor(Color.LIGHT_GRAY);
+			g2.drawLine(0, 0, 0, h);
+			
+			g2.setStroke(defStroke);
+			g2.translate(-mpx, -y);
+		}
+		
+		// Control Point Markers (start/end first)
+		paintMarker(g2, controlPoints.get(0));
+		paintMarker(g2, controlPoints.get(controlPoints.size() - 1));
+		
+		for (int i = 1; i < controlPoints.size() - 1; i++) {
+			paintMarker(g2, controlPoints.get(i));
+		}
+		
+		g2.dispose();
+	}
+
+	private void paintMarker(Graphics g, ControlPoint pt) {
+		var g2 = (Graphics2D) g.create();
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		
+		float py = y + h;
+		float px = MARKER_SIZE + (w * pt.getPosition());
+		
+		int bw = BORDER_WIDTH / 2;
+		var borderColor = pt == selected ? selColor : color1;
+		var stroke = new BasicStroke(pt == selected ? bw * 1.5f : bw);
+		
+		var firstPt = controlPoints.get(0);
+		var lastPt = controlPoints.get(controlPoints.size() - 1);
+		
+		if (pt == firstPt || pt == lastPt) {
+			if (pt == firstPt)
+				g2.translate(px - BORDER_WIDTH, py);
+			else
+				g2.translate(px + BORDER_WIDTH, py);
+			
+			g2.setColor(pt.getColor());
+			g2.fillOval(-MARKER_SIZE / 2, 0, MARKER_SIZE, MARKER_SIZE);
+			
+			g2.setColor(borderColor);
+			g2.setStroke(stroke);
+			g2.drawOval(-MARKER_SIZE / 2, 0, MARKER_SIZE, MARKER_SIZE);
+		} else {
+			
+			g2.translate(px, py);
+			
+			g2.setColor(pt.getColor());
+			g2.fillPolygon(marker);
+			
+			g2.setColor(borderColor);
+			g2.setStroke(stroke);
+			g2.drawPolygon(marker);
+		}
+		
+		g2.dispose();
 	}
 	
 	// ==[ CLASSES ]====================================================================================================

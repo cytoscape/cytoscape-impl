@@ -391,6 +391,7 @@ public class MultipleGradientEditor extends JPanel {
 			grEditor.addActionListener(evt -> {
 				this.fractions = grEditor.getPositions();
 				this.colors = grEditor.getColors();
+				updatePointButtons();
 				
 				if (getLinearOptionsPnl().isVisible())
 					updateAnglePicker();

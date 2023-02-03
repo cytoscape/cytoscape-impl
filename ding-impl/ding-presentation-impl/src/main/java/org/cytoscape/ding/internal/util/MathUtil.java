@@ -129,6 +129,22 @@ public final class MathUtil {
 		return nearest;
 	}
 	
+	public static float findNearestNumber(float[] numbers, float target) {
+		float minDiff = Float.MAX_VALUE;
+		float nearest = 0.0f;
+		
+		for (float n : numbers) {
+			float diff = Math.abs(n - target);
+			
+			if (diff < minDiff) {
+				minDiff = diff;
+				nearest = n;
+			}
+		}
+		
+		return nearest;
+	}
+	
 	/**
 	 * Computes the intersection between two lines. The calculated point is approximate, 
 	 * @param p1 Point 1 of Line 1
