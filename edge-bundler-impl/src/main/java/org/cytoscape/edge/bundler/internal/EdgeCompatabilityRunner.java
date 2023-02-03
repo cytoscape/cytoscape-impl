@@ -1,5 +1,6 @@
 package org.cytoscape.edge.bundler.internal;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -27,48 +28,37 @@ import java.util.Map;
  * #L%
  */
 
-public final class EdgeBundlerRunner implements Runnable {
+public final class EdgeCompatabilityRunner implements Runnable {
 
-	private final int ei;
-	private final int numNubs;
-	private final double[][][] nubs;
-	private final double[][][] forces;
   private final EdgeBundlerTask bundlerTask;
   private final Map<Integer, List<Integer>> edgeMatcher;
+  private int ei;
+  private double COMPATABILITY_THRESHOLD;
 
-	public EdgeBundlerRunner(final int ei, final int numNubs, final EdgeBundlerTask bundlerTask, final double[][][] nubs, final double[][][] forces,
-			final Map<Integer, List<Integer>> edgeMatcher) {
-		this.ei = ei;
-		this.numNubs = numNubs;
-		this.nubs = nubs;
-		this.forces = forces;
+	//public EdgeBundlerRunner(final int ni, final int numNubs, final boolean[][] edgeAlign, final double[][][] nubs, final double[][][] forces,
+	//		final double[][] edgeCompatability, final int[][] edgeMatcher) {
+	public EdgeCompatabilityRunner(final EdgeBundlerTask bundlerTask, int ei, final Map<Integer, List<Integer>> edgeMatcher) {
 		this.bundlerTask = bundlerTask;
+    this.ei = ei;
 		this.edgeMatcher = edgeMatcher;
+    COMPATABILITY_THRESHOLD = bundlerTask.threshold();
 	}
 
 	@Override
 	public void run() {
-    for (int ni = 0; ni < numNubs; ni++) {
-      for (int ej: edgeMatcher.get(ei)) {
-				final int nj = (bundlerTask.cEdgeAlign(ei,ej)) ? ni : numNubs - ni - 1;
-
-				final double diffx = (nubs[ni][0][ei] - nubs[nj][0][ej]);
-				final double diffy = (nubs[ni][1][ei] - nubs[nj][1][ej]);
-
-        double edgeCompatability = bundlerTask.cEdgeCompatability(ei,ej);
-
-				if (Math.abs(diffx) > 1) {
-					final double fx = edgeCompatability / diffx;
-					forces[ni][0][ei] -= fx;
-					forces[nj][0][ej] += fx;
-				}
-
-				if (Math.abs(diffy) > 1) {
-					final double fy = edgeCompatability / diffy;
-					forces[ni][1][ei] -= fy;
-					forces[nj][1][ej] += fy;
-				}
+    List<Integer> compatibleEdges = new ArrayList<Integer>();
+    for (int ej = 0; ej < ei; ej++) {
+      if (bundlerTask.isCancelled()) {
+        break;
       }
+
+      if (bundlerTask.cEdgeCompatability(ei, ej) > COMPATABILITY_THRESHOLD) {
+        compatibleEdges.add(ej);
+      }
+    }
+
+    if (compatibleEdges.size() > 0) {
+      edgeMatcher.put(ei, compatibleEdges);
     }
 	}
 }
