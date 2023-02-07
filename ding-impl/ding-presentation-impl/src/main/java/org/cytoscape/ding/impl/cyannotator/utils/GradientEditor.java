@@ -73,7 +73,6 @@ public class GradientEditor extends JPanel {
 	
 	private Color color1 = UIManager.getColor("CyComponent.borderColor");
 	private Color color2 = UIManager.getColor("Table.background");
-	private Color color3 = UIManager.getColor("Separator.foreground");
 	private Color selColor = UIManager.getColor("Focus.color");
 	
 	private Stroke defStroke = new BasicStroke(1);

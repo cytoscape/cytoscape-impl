@@ -20,6 +20,7 @@ import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
 import org.cytoscape.ding.impl.cyannotator.AnnotationTree.Shift;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
@@ -299,5 +300,12 @@ public class ViewUtils {
 		btn.setFocusPainted(false);
 		btn.setFocusable(false);
 		btn.setContentAreaFilled(false);
+	}
+	
+	public static void styleEditorButtons(AbstractButton... buttons) {
+		for (var btn : buttons) {
+			btn.putClientProperty("JButton.buttonType", "gradient");
+			LookAndFeelUtil.makeSmall(btn);
+		}
 	}
 }

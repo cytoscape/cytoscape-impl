@@ -229,15 +229,15 @@ public final class MathUtil {
         return x * x;
     }
 	
+	public static int getQuadrant(double angle) {
+		return (int)(normalizeAngle(angle) / 90) % 4 + 1;
+	}
+	
 	/**
 	 * Keep angle between 0 and 360.
 	 */
 	public static double normalizeAngle(double angle) {
 		return angle + Math.ceil(-angle / 360) * 360;
-	}
-	
-	public static int getQuadrant(double angle) {
-		return (int)(normalizeAngle(angle) / 90) % 4 + 1;
 	}
 	
 	public static Line2D rotate(Line2D line, double angle, double anchorx, double anchory) {

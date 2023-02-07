@@ -134,6 +134,7 @@ public class AnglePicker extends JPanel {
 		g2.drawLine(-r, 0, r, 0);
 		g2.drawLine(0, -r, 0, r);
 		
+		g2.setStroke(defStroke);
 		g2.setColor(color1);
 		g2.drawOval(-r, -r, r * 2, r * 2); // external line
 		g2.setColor(color2);

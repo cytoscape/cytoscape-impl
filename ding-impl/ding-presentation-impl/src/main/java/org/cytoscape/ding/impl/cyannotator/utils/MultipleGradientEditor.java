@@ -28,6 +28,7 @@ import javax.swing.UIManager;
 
 import org.cytoscape.ding.impl.cyannotator.utils.GradientEditor.ControlPoint;
 import org.cytoscape.ding.internal.util.ColorUtil;
+import org.cytoscape.ding.internal.util.MathUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.color.Palette;
@@ -132,7 +133,7 @@ public class MultipleGradientEditor extends JPanel {
 			CyServiceRegistrar serviceRegistrar
 	) {
 		this(GradientType.LINEAR, fractions, colors, targetId, serviceRegistrar);
-		this.angle = angle;
+		this.angle = (int) Math.round(MathUtil.normalizeAngle(angle));
 		
 		init();
 	}
@@ -268,7 +269,7 @@ public class MultipleGradientEditor extends JPanel {
 		makeSmall(getLinearToggle(), getRadialToggle());
 		
 		var otherBtns = new JButton[] { getPaletteBtn(), getReverseBtn(), getAddBtn(), getRemoveBtn(), getEditBtn() };
-		makeSmall(getPaletteBtn(), getReverseBtn(), getAddBtn(), getRemoveBtn(), getEditBtn());
+		makeSmall(otherBtns);
 		
 		if (isAquaLAF()) {
 			// Mac OS properties:
@@ -386,7 +387,7 @@ public class MultipleGradientEditor extends JPanel {
 			var fractions = getFractions();
 			var colors = getColors();
 			grEditor = new GradientEditor(fractions, colors, serviceRegistrar);
-			grEditor.addPropertyChangeListener("selected", evt-> updatePointButtons());
+			
 			// Add listener--update gradient when user interacts with the UI
 			grEditor.addActionListener(evt -> {
 				this.fractions = grEditor.getPositions();
@@ -398,6 +399,7 @@ public class MultipleGradientEditor extends JPanel {
 				else if (getRadialOptionsPnl().isVisible())
 					updatePointPicker();
 			});
+			grEditor.addPropertyChangeListener("selected", evt-> updatePointButtons());
 		}
 		
 		return grEditor;
@@ -489,7 +491,8 @@ public class MultipleGradientEditor extends JPanel {
 			angleCmb.addActionListener(e -> {
 				var angle = angleCmb.getSelectedItem();
 				this.angle = angle instanceof Number ? ((Number) angle).intValue() : 0;
-				getAnglePicker().update(fractions, colors, (int) Math.round(this.angle));
+				this.angle = (int) Math.round(MathUtil.normalizeAngle(this.angle));
+				updateAnglePicker();
 			});
 		}
 		

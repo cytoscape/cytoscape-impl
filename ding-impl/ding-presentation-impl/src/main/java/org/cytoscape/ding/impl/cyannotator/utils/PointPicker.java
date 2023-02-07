@@ -10,6 +10,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
+import java.awt.Stroke;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
@@ -64,6 +65,15 @@ public class PointPicker extends JPanel {
     
 	public static final Point2D DEFAULT_VALUE = new Point2D.Double(0.5, 0.5);
     
+	private static final float[] MAIN_XY = { .0f, .25f, 0.5f, .75f, 1.0f };
+
+	private Color borderColor = UIManager.getColor("CyComponent.borderColor");
+	private Color color1 = UIManager.getColor("Label.foreground");
+	private Color color2 = UIManager.getColor("Table.background");
+	
+	private Stroke defStroke = new BasicStroke(1);
+	private Stroke dashedStroke = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] { 1 }, 0);
+	
 	private int size;
     private float fieldWidth;
     private float fieldHeight;
@@ -85,6 +95,8 @@ public class PointPicker extends JPanel {
 	private float[] fractions;
 	private Color[] colors;
 
+	private boolean shiftDown;
+	
 	private final CyServiceRegistrar serviceRegistrar;
 
     public PointPicker(int size, int targetSize, CyServiceRegistrar serviceRegistrar) {
@@ -125,7 +137,7 @@ public class PointPicker extends JPanel {
             this.value = value;
             
             var p = convertToPosition((Point2D) value.clone());
-            moveTarget(p.getX(), p.getY());
+            moveTarget(p.getX(), p.getY(), false);
             updateTextFields();
             
             firePropertyChange("value", oldValue, value);
@@ -182,7 +194,8 @@ public class PointPicker extends JPanel {
 				)
 		);
 		
-		LookAndFeelUtil.makeSmall(xLbl, yLbl, getXTxt(), getYTxt(), getResetBtn());
+		LookAndFeelUtil.makeSmall(xLbl, yLbl, getXTxt(), getYTxt());
+		ViewUtils.styleEditorButtons(getResetBtn());
 	}
 
 	private JPanel getCanvas() {
@@ -209,9 +222,12 @@ public class PointPicker extends JPanel {
                     
                     if (SwingUtilities.isLeftMouseButton(e))
                     	setValue(convertToValue(position));
+                    
+                    shiftDown = false;
                 }
 				@Override
                 public void mouseDragged(MouseEvent e) {
+					shiftDown = false;
                     mouseCheck(e);
                 }
             };
@@ -273,12 +289,14 @@ public class PointPicker extends JPanel {
 		return resetBtn;
 	}
     
-    private void mouseCheck(MouseEvent e) {
-        if (SwingUtilities.isLeftMouseButton(e))
-        	moveTarget(e.getX(), e.getY());
+    private void mouseCheck(MouseEvent evt) {
+        if (SwingUtilities.isLeftMouseButton(evt)) {
+        	shiftDown = evt.isShiftDown();
+        	moveTarget(evt.getX(), evt.getY(), shiftDown);
+        }
     }
 
-    private void moveTarget(double x, double y) {
+    private void moveTarget(double x, double y, boolean snap) {
 		var line = new Line2D.Double(fieldCenterX, fieldCenterY, x, y);
 		var ips = MathUtil.getIntersectionPoints(line, new Rectangle2D.Float(fieldX, fieldY, fieldWidth, fieldHeight));
 
@@ -290,11 +308,19 @@ public class PointPicker extends JPanel {
 				break;
 			}
 		}
-
-        if (ip != null)
-        	position.setLocation(ip.getX(), ip.getY());
-        else
-        	position.setLocation(x, y);
+		
+        if (ip != null) {
+        	x = ip.getX();
+        	y = ip.getY();
+        }
+        
+        // Snap to the nearest main point if holding the SHIFT key
+     	if (snap) {
+     		x = fieldX + MathUtil.findNearestNumber(MAIN_XY, (float) (x / fieldWidth)) * fieldWidth;
+     		y = fieldY + MathUtil.findNearestNumber(MAIN_XY, (float) (y / fieldHeight)) * fieldHeight;
+     	}
+        
+        position.setLocation(x, y);
         
         SwingUtilities.getRoot(PointPicker.this).repaint();
         updateTextFields();
@@ -339,24 +365,36 @@ public class PointPicker extends JPanel {
 		int w = (int) fieldWidth;
 		int h = (int) fieldHeight;
 
-		g2.setColor(UIManager.getColor("Panel.background"));
-		g2.fillRect(x, y, w, h);
-		
 		if (fractions != null && fractions.length > 0 && colors != null && colors.length > 0) {
 			// Use the passed colors and fractions to paint our background with a nice radial gradient,
 			// but with an updated center point, of course
 			float cx = (float) position.getX();
 			float cy = (float) position.getY();
-			var newPaint = new RadialGradientPaint(cx, cy, Math.min(w, h) / 2, fractions, colors);
+			var newPaint = new RadialGradientPaint(cx, cy, Math.max(w, h), fractions, colors);
 			g2.setPaint(newPaint);
+			g2.fillRect(x, y, w, h);
+		} else {
+			g2.setColor(UIManager.getColor("Panel.background"));
 			g2.fillRect(x, y, w, h);
 		}
 		
-		g2.setColor(UIManager.getColor("CyComponent.borderColor"));
+		if (shiftDown) {
+			g2.setStroke(dashedStroke);
+			g2.setColor(Color.LIGHT_GRAY);
+			
+			// Center/Middle lines
+			int mx = (int) (x + .5f * w);
+			int my = (int) (y + .5f * h);
+			g2.drawLine(mx, y, mx, y + h); // vertical
+			g2.drawLine(x, my, x + w, my); // horizontal
+		}
+		
+		g2.setStroke(defStroke);
+		g2.setColor(borderColor);
 		g2.drawRect(x, y, w, h);
 
-		drawTarget(g2, 3.2f, UIManager.getColor("Label.foreground"));
-		drawTarget(g2, 1.0f, UIManager.getColor("Table.background"));
+		drawTarget(g2, 3.2f, color1);
+		drawTarget(g2, 1.0f, color2);
 		
 		g2.dispose();
 	}

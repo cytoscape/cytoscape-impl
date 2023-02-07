@@ -29,6 +29,7 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -353,15 +354,15 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	protected JPanel getPalettesPanel() {
 		if (palettesPanel == null) {
 			palettesPanel = new JPanel();
-			JLabel label = new JLabel("Current Palette: ");
+			JLabel label = new JLabel("Current Palette:");
 			// paletteBox = new JComboBox<>(getPalettes().toArray(new Palette[1]));
-			final GroupLayout layout = new GroupLayout(palettesPanel);
+			var layout = new GroupLayout(palettesPanel);
 			palettesPanel.setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
 			layout.setAutoCreateGaps(true);
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addComponent(label, DEFAULT_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addGap(2)
+					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(getPaletteButton(), DEFAULT_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 
@@ -410,7 +411,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 			editorPanel = new JPanel();
 			editorPanel.setMinimumSize(new Dimension(280, 240));
 			
-			final GroupLayout layout = new GroupLayout(editorPanel);
+			var layout = new GroupLayout(editorPanel);
 			editorPanel.setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
 			layout.setAutoCreateGaps(false);
@@ -439,13 +440,13 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 			formPanel = new JPanel();
 			formPanel.setBorder(LookAndFeelUtil.createTitledBorder("Edit Handle Positions and Values"));
 			
-			final JLabel infoLabel = new JLabel("Double-click on icon to change " + type.getDisplayName());
+			var infoLabel = new JLabel("Double-click on icon to change " + type.getDisplayName());
 			infoLabel.setFont(infoLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 			
 			if (Number.class.isAssignableFrom(vpValueType) || Paint.class.isAssignableFrom(vpValueType))
 				infoLabel.setVisible(false);
 			
-			final GroupLayout layout = new GroupLayout(formPanel);
+			var layout = new GroupLayout(formPanel);
 			formPanel.setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
 			layout.setAutoCreateGaps(true);

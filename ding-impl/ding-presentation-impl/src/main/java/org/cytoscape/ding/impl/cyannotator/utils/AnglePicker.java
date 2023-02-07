@@ -2,7 +2,6 @@ package org.cytoscape.ding.impl.cyannotator.utils;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.LinearGradientPaint;
@@ -13,7 +12,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 
-import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 
@@ -137,6 +135,7 @@ public class AnglePicker extends JPanel {
 		g2.drawLine(-r, 0, r, 0);
 		g2.drawLine(0, -r, 0, r);
 		
+		g2.setStroke(defStroke);
 		g2.setColor(color1);
 		g2.drawOval(-r, -r, r * 2, r * 2); // external line
 		g2.setColor(color2);
@@ -176,18 +175,18 @@ public class AnglePicker extends JPanel {
 		g2.dispose();
 	}
 	
-	public static void main(String[] args) {
-		var dialog = new JDialog();
-		dialog.setTitle("Angle Picker");
-		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		dialog.setModal(true);
-		
-		var picker = new AnglePicker();
-		picker.setPreferredSize(new Dimension(200, 200));
-		dialog.add(picker);
-		
-		dialog.pack();
-		dialog.setLocationRelativeTo(null);
-		dialog.setVisible(true);
-	}
+//	public static void main(String[] args) {
+//		var dialog = new JDialog();
+//		dialog.setTitle("Angle Picker");
+//		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+//		dialog.setModal(true);
+//		
+//		var picker = new AnglePicker();
+//		picker.setPreferredSize(new Dimension(200, 200));
+//		dialog.add(picker);
+//		
+//		dialog.pack();
+//		dialog.setLocationRelativeTo(null);
+//		dialog.setVisible(true);
+//	}
 }
