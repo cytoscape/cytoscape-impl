@@ -94,7 +94,8 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 	private double[][] edgeCompatability;
 	private boolean[][] edgeAlign;
 	private double[] edgeLength;
-	private int[][] edgeMatcher;
+	// private int[][] edgeMatcher;
+  private Map<Integer, List<Integer>> edgeMatcher;
 
 	private int numEdges;
 	private int selection;
@@ -332,41 +333,41 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 	}
 
 	private void computeEdgeCompatability(final TaskMonitor tm) {
-		edgeCompatability = new double[edgeLength.length][];
-		edgeAlign = new boolean[edgeLength.length][];
-		edgeMatcher = new int[edgeLength.length][];
+    edgeMatcher = new HashMap<>();
 
-		edgeMatcher[0] = new int[0];
+		final ExecutorService exec = Executors.newCachedThreadPool();
 
 		for (int ei = 1; ei < edgeLength.length; ei++) {
-			tm.setStatusMessage("Preparing data for edge bundling (" + ei + "/" + edgeLength.length + ")" );
+      if (ei%1000 == 0)
+        tm.setStatusMessage("Preparing data for edge bundling (" + ei + "/" + edgeLength.length + ")" );
 			if (this.cancelled) {
 				break;
 			}
-			edgeCompatability[ei] = new double[ei];
-			edgeAlign[ei] = new boolean[ei];
-
-			List<Integer> compatibleEdges = new ArrayList<Integer>(1000);
-			for (int ej = 0; ej < ei; ej++) {
-				if (this.cancelled) {
-					break;
-				}
-				edgeCompatability[ei][ej] = cangle(ei, ej) * cscale(ei, ej) * cpos(ei, ej) * cvis(ei, ej);
-				edgeAlign[ei][ej] = cangleSign(ei, ej) > 0;
-
-				if (edgeCompatability[ei][ej] > COMPATABILITY_THRESHOLD)
-					compatibleEdges.add(ej);
-			}
-
-			edgeMatcher[ei] = new int[compatibleEdges.size()];
-			for (int i = 0; i < compatibleEdges.size(); i++) {
-				if (this.cancelled) {
-					break;
-				}
-				edgeMatcher[ei][i] = compatibleEdges.get(i);
-			}
+      exec.execute(new EdgeCompatabilityRunner(this, ei, edgeMatcher));
 		}
+
+		exec.shutdown();
+
+		try {
+			exec.awaitTermination(30, TimeUnit.DAYS);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			exec.shutdownNow();
+		}
+
 	}
+
+  public double cEdgeCompatability(int ei, int ej) {
+		return cangle(ei, ej) * cscale(ei, ej) * cpos(ei, ej) * cvis(ei, ej);
+  }
+
+  public boolean cEdgeAlign(int ei, int ej) {
+    return cangleSign(ei, ej) > 0;
+  }
+
+  public boolean isCancelled() { return this.cancelled; }
+
+  public double threshold() { return COMPATABILITY_THRESHOLD; }
 
 	private double cangle(int ei, int ej) {
 		double a = edgePos[1][0][ei] - edgePos[0][0][ei];
@@ -518,8 +519,9 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 		// Electrostatic forces
 		// For parallel processing
 		final ExecutorService exec = Executors.newCachedThreadPool();
-		for (int ni = 0; ni < numNubs; ni++)
-			exec.execute(new EdgeBundlerRunner(ni, numNubs, edgeAlign, nubs, forces, edgeCompatability, edgeMatcher));
+    for (int ei: edgeMatcher.keySet()) {
+			exec.execute(new EdgeBundlerRunner(ei, numNubs, this, nubs, forces, edgeMatcher));
+    }
 
 		exec.shutdown();
 

@@ -21,7 +21,6 @@ import org.cytoscape.io.internal.read.datatable.CyAttributesReaderFactory;
 import org.cytoscape.io.internal.read.expression.ExpressionReaderFactory;
 import org.cytoscape.io.internal.read.gml.GMLFileFilter;
 import org.cytoscape.io.internal.read.gml.GMLNetworkReaderFactory;
-import org.cytoscape.io.internal.read.nnf.NNFNetworkReaderFactory;
 import org.cytoscape.io.internal.read.properties.PropertiesFileFilter;
 import org.cytoscape.io.internal.read.properties.PropertiesReaderFactory;
 import org.cytoscape.io.internal.read.session.Cy2SessionReaderFactoryImpl;
@@ -65,7 +64,6 @@ import org.cytoscape.io.internal.write.graphics.PDFWriterFactory;
 import org.cytoscape.io.internal.write.graphics.PSWriterFactory;
 import org.cytoscape.io.internal.write.graphics.SVGWriterFactory;
 import org.cytoscape.io.internal.write.graphics.command.ExportNetworkTaskFactory;
-import org.cytoscape.io.internal.write.nnf.NnfNetworkWriterFactory;
 import org.cytoscape.io.internal.write.properties.PropertiesWriterFactoryImpl;
 import org.cytoscape.io.internal.write.session.SessionWriterFactoryImpl;
 import org.cytoscape.io.internal.write.sif.SifNetworkWriterFactory;
@@ -111,34 +109,34 @@ import org.osgi.framework.BundleContext;
  * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 2.1 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
+ *
+ * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
 
 public class CyActivator extends AbstractCyActivator {
-	
+
 	@Override
 	public void start(BundleContext bc) {
 		var serviceRegistrar = getService(bc, CyServiceRegistrar.class);
-		
+
 		var streamUtil = new StreamUtilImpl(serviceRegistrar);
 		var expressionFilter = new BasicCyFileFilter(new String[]{"pvals"}, new String[]{"text/plain"},"Cytoscape Expression Matrix", DataCategory.TABLE, streamUtil);
-		
+
 		// Always register CYS filters from higher to lower version!
 		var cys3Filter = new SessionFileFilter(new String[]{"cys","tmpCYS"}, new String[]{"application/zip"}, "Cytoscape 3 Session", DataCategory.SESSION, "3.0.0", streamUtil);
 		var cys2Filter = new SessionFileFilter(new String[]{"cys","tmpCYS"}, new String[]{"application/zip"}, "Cytoscape 2 Session", DataCategory.SESSION, "2.0.0", streamUtil);
-		
+
 		var pngFilter = new BasicCyFileFilter(new String[]{"png"}, new String[]{"image/png"}, "PNG", DataCategory.IMAGE, streamUtil);
 		var jpegFilter = new BasicCyFileFilter(new String[]{"jpg","jpeg"}, new String[]{"image/jpeg"}, "JPEG", DataCategory.IMAGE, streamUtil);
 		var pdfFilter = new BasicCyFileFilter(new String[]{"pdf"}, new String[]{"image/pdf"}, "PDF", DataCategory.IMAGE, streamUtil);
@@ -146,7 +144,6 @@ public class CyActivator extends AbstractCyActivator {
 		var svgFilter = new BasicCyFileFilter(new String[]{"svg"}, new String[]{"image/svg"}, "SVG", DataCategory.IMAGE, streamUtil);
 		var attrsFilter = new BasicCyFileFilter(new String[]{"attrs"}, new String[]{"text/plain"}, "Text", DataCategory.TABLE, streamUtil);
 		var sifFilter = new BasicCyFileFilter(new String[]{"sif"}, new String[]{"text/sif"}, "SIF", DataCategory.NETWORK, streamUtil);
-		var nnfFilter = new BasicCyFileFilter(new String[]{"nnf"}, new String[]{"text/nnf"}, "NNF", DataCategory.NETWORK, streamUtil);
 		var csvFilter = new BasicCyFileFilter(new String[]{"csv"}, new String[]{"text/plain"}, "CSV", DataCategory.TABLE, streamUtil);
 		var sessionTableFilter = new BasicCyFileFilter(new String[]{"cytable"}, new String[]{"text/plain"}, "Session Table", DataCategory.TABLE, streamUtil);
 		var xgmmlFilter = new GenericXGMMLFileFilter(new String[]{"xgmml","xml"}, new String[]{"text/xgmml","text/xgmml+xml"}, "XGMML",DataCategory.NETWORK, streamUtil);
@@ -177,15 +174,14 @@ public class CyActivator extends AbstractCyActivator {
 		var expressionReaderFactory = new ExpressionReaderFactory(expressionFilter, serviceRegistrar);
 		var attrsDataReaderFactory = new CyAttributesReaderFactory(attrsFilter, serviceRegistrar);
 		var sifNetworkViewReaderFactory = new SIFNetworkReaderFactory(sifFilter, serviceRegistrar);
-		var nnfNetworkViewReaderFactory = new NNFNetworkReaderFactory(nnfFilter, serviceRegistrar);
 		var unrecognizedVisualPropertyManager = new UnrecognizedVisualPropertyManager(serviceRegistrar);
 		var gmlNetworkViewReaderFactory = new GMLNetworkReaderFactory(gmlFilter, unrecognizedVisualPropertyManager, serviceRegistrar);
-		
+
 		var readCache = new ReadCache(serviceRegistrar);
 		var groupUtil = new GroupUtil(serviceRegistrar);
 		var suidUpdater = new SUIDUpdater();
 		var readDataManager = new ReadDataManager(readCache, suidUpdater, groupUtil, serviceRegistrar);
-		
+
 		var handlerFactory = new HandlerFactory(readDataManager);
 		var xgmmlParser = new XGMMLParser(handlerFactory,readDataManager);
 		var xgmmlReaderFactory = new GenericXGMMLReaderFactory(xgmmlFilter, readDataManager, xgmmlParser, unrecognizedVisualPropertyManager, serviceRegistrar);
@@ -206,7 +202,6 @@ public class CyActivator extends AbstractCyActivator {
 		var psWriterFactory = new PSWriterFactory(psFilter);
 		var svgWriterFactory = new SVGWriterFactory(svgFilter);
 		var sifNetworkViewWriterFactory = new SifNetworkWriterFactory(sifFilter);
-		var nnfNetworkViewWriterFactory = new NnfNetworkWriterFactory(nnfFilter, serviceRegistrar);
 		var xgmmlWriterFactory = new GenericXGMMLWriterFactory(xgmmlFilter, unrecognizedVisualPropertyManager, groupUtil, serviceRegistrar);
 		var xgmmlWriterNoViewFactory = new GenericXGMMLWriterNoViewFactory(xgmmlNoViewFilter, unrecognizedVisualPropertyManager, groupUtil, serviceRegistrar);
 		var sessionXgmmlWriterFactory = new SessionXGMMLWriterFactory(sessXgmmlFileFilter, unrecognizedVisualPropertyManager, serviceRegistrar);
@@ -218,13 +213,13 @@ public class CyActivator extends AbstractCyActivator {
 		var vizmapWriterFactory = new VizmapWriterFactoryImpl(vizmapXMLFilter, visualStyleSerializer);
 		var sessionWriterFactory = new SessionWriterFactoryImpl(cys3Filter, bookmarksFilter, propertiesFilter, sessionTableFilter, vizmapXMLFilter, sessionXgmmlWriterFactory, propertyWriterManager, tableWriterManager, vizmapWriterManager, groupUtil, serviceRegistrar);
 		var recentlyOpenedTracker = new RecentlyOpenedTrackerImpl(serviceRegistrar);
-		
+
 		var transformerReader = new CyTransformerReaderImpl();
 		var transformerWriter = new CyTransformerWriterImpl();
 		registerService(bc, transformerReader, CyTransformerReader.class);
 		registerService(bc, transformerWriter, CyTransformerWriter.class);
 		registerServiceListener(bc, transformerReader::registerTransformerManager, transformerReader::unregisterTransformerManager, TransformerManager.class);
-		
+
 		registerService(bc, networkReaderManager, CyNetworkReaderManager.class);
 		registerService(bc, tableReaderManager, CyTableReaderManager.class);
 		registerService(bc, vizmapReaderManager, VizmapReaderManager.class);
@@ -237,7 +232,6 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, tableWriterManager, CyTableWriterManager.class);
 		registerService(bc, vizmapWriterManager, VizmapWriterManager.class);
 		registerService(bc, sifNetworkViewReaderFactory, InputStreamTaskFactory.class);
-		registerService(bc, nnfNetworkViewReaderFactory, InputStreamTaskFactory.class);
 
 		registerService(bc, xgmmlReaderFactory, InputStreamTaskFactory.class);
 		registerService(bc, sessXgmmlNetReaderFactory, InputStreamTaskFactory.class);
@@ -257,7 +251,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, streamUtil, StreamUtil.class);
 		registerService(bc,unrecognizedVisualPropertyManager, NetworkViewAboutToBeDestroyedListener.class);
 		registerService(bc, recentlyOpenedTracker, RecentlyOpenedTracker.class);
-		
+
 		registerServiceListener(bc, networkReaderManager::addInputStreamTaskFactory, networkReaderManager::removeInputStreamTaskFactory, InputStreamTaskFactory.class);
 		registerServiceListener(bc, tableReaderManager::addInputStreamTaskFactory, tableReaderManager::removeInputStreamTaskFactory, InputStreamTaskFactory.class);
 		registerServiceListener(bc, sessionReaderManager::addInputStreamTaskFactory, sessionReaderManager::removeInputStreamTaskFactory, InputStreamTaskFactory.class);
@@ -276,7 +270,6 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, psWriterFactory);
 		registerAllServices(bc, svgWriterFactory);
 		registerAllServices(bc, sifNetworkViewWriterFactory);
-		registerAllServices(bc, nnfNetworkViewWriterFactory);
 		registerAllServices(bc, xgmmlWriterFactory);
 		registerAllServices(bc, xgmmlWriterNoViewFactory);
 		registerAllServices(bc, cysessionWriterFactory);
@@ -286,7 +279,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, sessionTableWriterFactory);
 		registerAllServices(bc, vizmapWriterFactory);
 		registerAllServices(bc, sessionWriterFactory);
-		
+
 		// Network image export commands, eg 'view export png'
 		for(var format : ExportNetworkTaskFactory.Format.values()) {
 			var factory = new ExportNetworkTaskFactory(serviceRegistrar, format);
