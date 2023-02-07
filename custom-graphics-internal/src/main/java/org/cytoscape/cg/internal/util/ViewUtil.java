@@ -1,5 +1,7 @@
 package org.cytoscape.cg.internal.util;
 
+import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
+
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -72,6 +74,13 @@ public final class ViewUtil {
 		if (component instanceof Container) {
 			for (Component child : ((Container) component).getComponents())
 				recursiveDo(child, c);
+		}
+	}
+	
+	public static void styleEditorButtons(AbstractButton... buttons) {
+		for (var btn : buttons) {
+			btn.putClientProperty("JButton.buttonType", "gradient");
+			makeSmall(btn);
 		}
 	}
 	

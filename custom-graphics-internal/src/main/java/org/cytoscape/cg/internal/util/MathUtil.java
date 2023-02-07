@@ -21,8 +21,8 @@ public final class MathUtil {
 	 * @param min the maximum value (corresponds to f==1)
 	 * @return the inferred interpolation fraction
 	 */
-    public static double invLinearInterp(final double x, final double min, final double max) {
-        final double denom = max - min;
+    public static double invLinearInterp(double x, double min, double max) {
+        double denom = max - min;
         return (denom < EPSILON && denom > -EPSILON ? 0 : (x - min) / denom);
     }
     
@@ -33,7 +33,7 @@ public final class MathUtil {
 	 * @param max the maximum value (corresponds to f==1)
 	 * @return the interpolated value
 	 */
-	public static double linearInterp(final double f, final double min, final double max) {
+	public static double linearInterp(double f, double min, double max) {
 		return min + f * (max - min);
 	}
 	
@@ -86,6 +86,38 @@ public final class MathUtil {
 		return Math.log(x) / Math.log(b);
 	}
 	
+	public static int findNearestNumber(int[] numbers, int target) {
+		int minDiff = Integer.MAX_VALUE;
+		int nearest = 0;
+		
+		for (int n : numbers) {
+			int diff = Math.abs(n - target);
+			
+			if (diff < minDiff) {
+				minDiff = diff;
+				nearest = n;
+			}
+		}
+		
+		return nearest;
+	}
+	
+	public static float findNearestNumber(float[] numbers, float target) {
+		float minDiff = Float.MAX_VALUE;
+		float nearest = 0.0f;
+		
+		for (float n : numbers) {
+			float diff = Math.abs(n - target);
+			
+			if (diff < minDiff) {
+				minDiff = diff;
+				nearest = n;
+			}
+		}
+		
+		return nearest;
+	}
+	
 	/**
 	 * Computes the intersection between two lines. The calculated point is approximate, 
 	 * @param p1 Point 1 of Line 1
@@ -94,11 +126,11 @@ public final class MathUtil {
 	 * @param p4 Point 2 of Line 2
 	 * @return Point where the segments intersect, or null if they don't
 	 */
-	public static Point2D getIntersectionPoint(final Point2D p1, final Point2D p2, final Point2D p3, final Point2D p4) {
+	public static Point2D getIntersectionPoint(Point2D p1, Point2D p2, Point2D p3, Point2D p4) {
 		return getIntersectionPoint(new Line2D.Double(p1, p2), new Line2D.Double(p3, p4));
 	}
 	
-	public static Point2D getIntersectionPoint(final Line2D lineA, final Line2D lineB) {
+	public static Point2D getIntersectionPoint(Line2D lineA, Line2D lineB) {
         double a1x = lineA.getX1();
         double a1y = lineA.getY1();
         double a2x = lineA.getX2();
@@ -131,7 +163,7 @@ public final class MathUtil {
 	 * @param rect
 	 * @return Point2D[0] = Top line; Point2D[1] = Bottom line; Point2D[3] = Left line; Point2D[4] = Right line;
 	 */
-	public static Point2D[] getIntersectionPoints(final Line2D line, final Rectangle2D rect) {
+	public static Point2D[] getIntersectionPoints(Line2D line, Rectangle2D rect) {
         Point2D[] p = new Point2D[4];
 
         // Top line
@@ -170,21 +202,77 @@ public final class MathUtil {
         return x * x;
     }
 	
-	public static double normalizeAngle(double angle) {
-		double value = angle % 360;
-		if (angle < 0) value = value + 360;
-		
-		return value;
-	}
-	
 	public static int getQuadrant(double angle) {
 		return (int)(normalizeAngle(angle) / 90) % 4 + 1;
 	}
 	
-	public static Line2D rotate(final Line2D line, final double angle, final double anchorx, final double anchory) {
-		final AffineTransform at = AffineTransform.getRotateInstance(Math.toRadians(angle), anchorx, anchory);
-		final Point2D p1 = at.transform(line.getP1(), new Point2D.Double());
-		final Point2D p2 = at.transform(line.getP2(), new Point2D.Double());
+	public static double normalizeAngle(double angle) {
+		return angle + Math.ceil(-angle / 360) * 360;
+	}
+	
+	public static Line2D getGradientAxis(Rectangle2D bounds, double angle) {
+		Point2D start = null;
+		Point2D end = null;
+		
+		double x1 = bounds.getMinX();
+		double y1 = bounds.getMinY();
+		double x2 = bounds.getMaxX();
+		double y2 = bounds.getMaxY();
+		double cx = bounds.getCenterX();
+		double cy = bounds.getCenterY();
+		
+		if (angle == 0.0) {
+			// Just because it's faster to calculate it like this with these angles
+			start = new Point2D.Double(x1, cy);
+			end = new Point2D.Double(x2, cy);
+		} else if (angle == 90.0) {
+			start = new Point2D.Double(cx, y2);
+			end = new Point2D.Double(cx, y1);
+		} else if (angle == 180.0) {
+			start = new Point2D.Double(x2, cy);
+			end = new Point2D.Double(x1, cy);
+		} else if (angle == 270.0) {
+			start = new Point2D.Double(cx, y1);
+			end = new Point2D.Double(cx, y2);
+		} else {
+			// To understand what it does here, see:
+			//   https://developer.mozilla.org/en-US/docs/Web/CSS/linear-gradient
+			//   http://hugogiraudel.com/blog/css-gradients
+			//   http://codepen.io/thebabydino/pen/qgoBL
+			
+			double ax;
+			double ay;
+			double d = Math.max(bounds.getWidth(), bounds.getHeight());
+			
+			// Gradient line when angle is 0 degree and the rotate it
+			Line2D gl = new Line2D.Double(cx - d, cy, cx + d, cy);
+			gl = MathUtil.rotate(gl, -angle, cx, cy);
+			
+			int q = MathUtil.getQuadrant(angle);
+			
+			// Creates two perpendicular lines (to the gradient line) and rotate them accordingly
+			Line2D pl1 = new Line2D.Double(x1, cy - d, x1, cy + d);
+			ax = x1;
+			ay = q == 1 || q == 3 ? y2 : y1;
+			pl1 = MathUtil.rotate(pl1, -angle, ax, ay);
+			
+			Line2D pl2 = new Line2D.Double(x2, cy - d, x2, cy + d);
+			ax = x2;
+			ay = q == 1 || q == 3 ? y1 : y2;
+			pl2 = MathUtil.rotate(pl2, -angle, ax, ay);
+			
+			// Find the intersection points between the gradient line and the perpendicular lines
+			start = MathUtil.getIntersectionPoint(gl, (q == 1 || q == 4 ? pl1 : pl2));
+			end = MathUtil.getIntersectionPoint(gl, (q == 1 || q == 4 ? pl2 : pl1));
+		}
+		
+		return new Line2D.Double(start, end);
+	}
+	
+	public static Line2D rotate(Line2D line, double angle, double anchorx, double anchory) {
+		AffineTransform at = AffineTransform.getRotateInstance(Math.toRadians(angle), anchorx, anchory);
+		Point2D p1 = at.transform(line.getP1(), new Point2D.Double());
+		Point2D p2 = at.transform(line.getP2(), new Point2D.Double());
 		
 		return new Line2D.Double(p1, p2);
 	}

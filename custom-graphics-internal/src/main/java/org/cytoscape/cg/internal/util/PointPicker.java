@@ -8,7 +8,9 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
+import java.awt.Stroke;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
@@ -19,6 +21,7 @@ import java.awt.geom.Rectangle2D;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -26,6 +29,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.cytoscape.cg.internal.charts.AbstractChartEditor.DoubleInputVerifier;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 /**
@@ -34,8 +39,17 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 @SuppressWarnings("serial")
 public class PointPicker extends JPanel {
     
-	private static final Point2D DEFAULT_VALUE = new Point2D.Double(0.5, 0.5);
+	public static final Point2D DEFAULT_VALUE = new Point2D.Double(0.5, 0.5);
     
+	private static final float[] MAIN_XY = { .0f, .25f, 0.5f, .75f, 1.0f };
+
+	private Color borderColor = UIManager.getColor("CyComponent.borderColor");
+	private Color color1 = UIManager.getColor("Label.foreground");
+	private Color color2 = UIManager.getColor("Table.background");
+	
+	private Stroke defStroke = new BasicStroke(1);
+	private Stroke dashedStroke = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] { 1 }, 0);
+	
 	private int size;
     private float fieldWidth;
     private float fieldHeight;
@@ -52,12 +66,22 @@ public class PointPicker extends JPanel {
     private JTextField xTxt;
     private JLabel yLbl;
     private JTextField yTxt;
+    private JButton resetBtn;
 
-    public PointPicker(int size, int targetSize) {
-    	this(size, targetSize, DEFAULT_VALUE);
+	private float[] fractions;
+	private Color[] colors;
+
+	private boolean shiftDown;
+	
+	private final CyServiceRegistrar serviceRegistrar;
+
+    public PointPicker(int size, int targetSize, CyServiceRegistrar serviceRegistrar) {
+    	this(size, targetSize, DEFAULT_VALUE, serviceRegistrar);
     }
     
-    public PointPicker(int size, int targetSize, Point2D value) {
+    public PointPicker(int size, int targetSize, Point2D value, CyServiceRegistrar serviceRegistrar) {
+    	this.serviceRegistrar = serviceRegistrar;
+    	
     	if (value == null)
     		value = DEFAULT_VALUE;
     	
@@ -68,12 +92,12 @@ public class PointPicker extends JPanel {
         this.targetSize = targetSize;
         fieldHeight = fieldWidth = (size - targetSize - 2 * EXTRA_PADDING);
         
-        fieldX = targetSize/2 + EXTRA_PADDING;
-        fieldY = targetSize/2 + EXTRA_PADDING;
-        fieldCenterX = fieldX + fieldWidth / 2;
-        fieldCenterY = fieldY + fieldHeight / 2;
+		fieldX = targetSize / 2 + EXTRA_PADDING;
+		fieldY = targetSize / 2 + EXTRA_PADDING;
+		fieldCenterX = fieldX + fieldWidth / 2;
+		fieldCenterY = fieldY + fieldHeight / 2;
         
-        position = convertToPosition(new Point2D.Double(value.getX(), value.getY()));
+        position = convertToPosition((Point2D) value.clone());
         
         init();
         updateTextFields();
@@ -88,13 +112,22 @@ public class PointPicker extends JPanel {
             var oldValue = this.value;
             this.value = value;
             
-            var p = convertToPosition(new Point2D.Double(value.getX(), value.getY()));
-            moveTarget(p.getX(), p.getY());
+            var p = convertToPosition((Point2D) value.clone());
+            moveTarget(p.getX(), p.getY(), false);
             updateTextFields();
             
             firePropertyChange("value", oldValue, value);
         }
     }
+    
+    /**
+     * Optional, in case you want the canvas background to show the radial gradient it's modifying.
+     */
+    public void update(float[] fractions, Color[] colors) {
+    	this.fractions = fractions;
+    	this.colors = colors;
+    	repaint();
+	}
     
     private void init() {
     	xLbl = new JLabel("x:");
@@ -104,13 +137,14 @@ public class PointPicker extends JPanel {
     	
     	var layout = new GroupLayout(this);
 		setLayout(layout);
-		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(true);
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
 				.addComponent(getCanvas(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addGap(4)
 				.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+						.addComponent(getResetBtn(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 						.addGroup(layout.createSequentialGroup()
 							.addComponent(xLbl)
 							.addComponent(getXTxt())
@@ -121,10 +155,10 @@ public class PointPicker extends JPanel {
 						)
 				)
 		);
-		layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, true)
 				.addComponent(getCanvas())
 				.addGroup(layout.createSequentialGroup()
-						.addGap((int) fieldY)
+						.addComponent(getResetBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 								.addComponent(xLbl)
 								.addComponent(getXTxt(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -137,8 +171,7 @@ public class PointPicker extends JPanel {
 		);
 		
 		LookAndFeelUtil.makeSmall(xLbl, yLbl, getXTxt(), getYTxt());
-    	
-        add(getCanvas());
+		ViewUtil.styleEditorButtons(getResetBtn());
 	}
 
 	private JPanel getCanvas() {
@@ -151,8 +184,8 @@ public class PointPicker extends JPanel {
     		};
     		
     		canvas.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
-    		canvas.setMinimumSize(new Dimension((int) size, (int) size));
-    		canvas.setPreferredSize(new Dimension((int) size, (int) size));
+    		canvas.setMinimumSize(new Dimension(size, size));
+    		canvas.setPreferredSize(new Dimension(size, size));
     		
     		var mouseAdapter = new MouseAdapter() {
                 @Override
@@ -165,9 +198,12 @@ public class PointPicker extends JPanel {
                     
                     if (SwingUtilities.isLeftMouseButton(e))
                     	setValue(convertToValue(position));
+                    
+                    shiftDown = false;
                 }
 				@Override
                 public void mouseDragged(MouseEvent e) {
+					shiftDown = false;
                     mouseCheck(e);
                 }
             };
@@ -215,12 +251,28 @@ public class PointPicker extends JPanel {
 		return yTxt;
 	}
     
-    private void mouseCheck(MouseEvent e) {
-        if (SwingUtilities.isLeftMouseButton(e))
-        	moveTarget(e.getX(), e.getY());
+    private JButton getResetBtn() {
+    	if (resetBtn == null) {
+    		resetBtn = new JButton(IconManager.ICON_REFRESH);
+    		resetBtn.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(14.0f));
+    		resetBtn.setToolTipText("Reset");
+    		resetBtn.addActionListener(evt -> setValue(DEFAULT_VALUE));
+    		
+    		if (LookAndFeelUtil.isAquaLAF())
+    			resetBtn.putClientProperty("JButton.buttonType", "gradient");
+    	}
+    	
+		return resetBtn;
+	}
+    
+    private void mouseCheck(MouseEvent evt) {
+        if (SwingUtilities.isLeftMouseButton(evt)) {
+        	shiftDown = evt.isShiftDown();
+        	moveTarget(evt.getX(), evt.getY(), shiftDown);
+        }
     }
 
-    private void moveTarget(double x, double y) {
+    private void moveTarget(double x, double y, boolean snap) {
 		var line = new Line2D.Double(fieldCenterX, fieldCenterY, x, y);
 		var ips = MathUtil.getIntersectionPoints(line, new Rectangle2D.Float(fieldX, fieldY, fieldWidth, fieldHeight));
 
@@ -232,11 +284,19 @@ public class PointPicker extends JPanel {
 				break;
 			}
 		}
-
-        if (ip != null)
-        	position.setLocation(ip.getX(), ip.getY());
-        else
-        	position.setLocation(x, y);
+		
+        if (ip != null) {
+        	x = ip.getX();
+        	y = ip.getY();
+        }
+        
+        // Snap to the nearest main point if holding the SHIFT key
+     	if (snap) {
+     		x = fieldX + MathUtil.findNearestNumber(MAIN_XY, (float) (x / fieldWidth)) * fieldWidth;
+     		y = fieldY + MathUtil.findNearestNumber(MAIN_XY, (float) (y / fieldHeight)) * fieldHeight;
+     	}
+        
+        position.setLocation(x, y);
         
         SwingUtilities.getRoot(PointPicker.this).repaint();
         updateTextFields();
@@ -272,6 +332,7 @@ public class PointPicker extends JPanel {
     
 	protected void paintCanvas(Graphics g) {
 		super.paintComponent(g);
+		
 		var g2 = (Graphics2D) g.create();
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
@@ -280,13 +341,36 @@ public class PointPicker extends JPanel {
 		int w = (int) fieldWidth;
 		int h = (int) fieldHeight;
 
-		g2.setColor(UIManager.getColor("Panel.background"));
-		g2.fillRect(x, y, w, h);
-		g2.setColor(UIManager.getColor("Label.disabledForeground"));
+		if (fractions != null && fractions.length > 0 && colors != null && colors.length > 0) {
+			// Use the passed colors and fractions to paint our background with a nice radial gradient,
+			// but with an updated center point, of course
+			float cx = (float) position.getX();
+			float cy = (float) position.getY();
+			var newPaint = new RadialGradientPaint(cx, cy, Math.max(w, h), fractions, colors);
+			g2.setPaint(newPaint);
+			g2.fillRect(x, y, w, h);
+		} else {
+			g2.setColor(UIManager.getColor("Panel.background"));
+			g2.fillRect(x, y, w, h);
+		}
+		
+		if (shiftDown) {
+			g2.setStroke(dashedStroke);
+			g2.setColor(Color.LIGHT_GRAY);
+			
+			// Center/Middle lines
+			int mx = (int) (x + .5f * w);
+			int my = (int) (y + .5f * h);
+			g2.drawLine(mx, y, mx, y + h); // vertical
+			g2.drawLine(x, my, x + w, my); // horizontal
+		}
+		
+		g2.setStroke(defStroke);
+		g2.setColor(borderColor);
 		g2.drawRect(x, y, w, h);
 
-		drawTarget(g2, 3.2f, UIManager.getColor("Label.foreground"));
-		drawTarget(g2, 1.0f, UIManager.getColor("Table.background"));
+		drawTarget(g2, 3.2f, color1);
+		drawTarget(g2, 1.0f, color2);
 		
 		g2.dispose();
 	}
@@ -303,15 +387,5 @@ public class PointPicker extends JPanel {
         // horizontal line
         g2.drawLine((int)(cx - d/2), (int)cy, (int)(cx + d/2), (int)cy);
     }
-    
-//    public static void main(String[] args) {
-//		PointPicker pp = new PointPicker(100, 12, new Point2D.Double(0.5, 0.5));
-//		
-//		javax.swing.JDialog d = new javax.swing.JDialog();
-//		d.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-//		d.getContentPane().add(pp, java.awt.BorderLayout.CENTER);
-//		d.pack();
-//		d.setVisible(true);
-//	}
 }
 
