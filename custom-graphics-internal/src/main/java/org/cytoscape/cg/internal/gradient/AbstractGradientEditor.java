@@ -159,17 +159,15 @@ public abstract class AbstractGradientEditor<T extends AbstractCustomGraphics2<?
 				// Bring up the palette chooser dialog
 				var factory = serviceRegistrar.getService(CyColorPaletteChooserFactory.class);
 				var chooser = factory.getColorPaletteChooser(paletteType, false);
-				chooser.showDialog(AbstractGradientEditor.this, "Set Palette", currentPalette, 9);
-				var newPalette = chooser.getSelectedPalette();
+				var newPalette = chooser.showDialog(AbstractGradientEditor.this, "Set Palette", currentPalette, 9);
 
-				// Get the palette
-				var colorList = gradient.getList(GRADIENT_COLORS, Color.class);
-				var colors = newPalette.getColors(colorList.size());
+				if (newPalette == null)
+					return;
 				
 				Object[] options = { "Yes", "No" };
 				int n = JOptionPane.showOptionDialog(
 						null, 
-						"This will reset your current settings.\nAre you sure you want to continue?", 
+						"This will reset your current colors.\nAre you sure you want to continue?", 
 				        "Warning",
 				        JOptionPane.DEFAULT_OPTION,
 				        JOptionPane.WARNING_MESSAGE,
@@ -180,6 +178,9 @@ public abstract class AbstractGradientEditor<T extends AbstractCustomGraphics2<?
 				
 				if (n == 0) {
 					setCurrentPalette(newPalette);
+					
+					var colorList = gradient.getList(GRADIENT_COLORS, Color.class);
+					var colors = newPalette.getColors(colorList.size());
 					setColors(colors);
 				}
 			});

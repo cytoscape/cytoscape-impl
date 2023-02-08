@@ -346,13 +346,10 @@ public class MultipleGradientEditor extends JPanel {
 				if (newPalette == null)
 					return;
 
-				// Get the palette
-				var colors = newPalette.getColors(this.colors.length);
-				
 				Object[] options = { "Yes", "No" };
 				int n = JOptionPane.showOptionDialog(
 						null, 
-						"This will reset your current settings.\nAre you sure you want to continue?", 
+						"This will reset your current colors.\nAre you sure you want to continue?", 
 				        "Warning",
 				        JOptionPane.DEFAULT_OPTION,
 				        JOptionPane.WARNING_MESSAGE,
@@ -363,6 +360,8 @@ public class MultipleGradientEditor extends JPanel {
 				
 				if (n == 0) {
 					setCurrentPalette(newPalette);
+					
+					var colors = newPalette.getColors(this.colors.length);
 					setColors(colors);
 				}
 			});
