@@ -118,7 +118,7 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 				Object[] options = { "Yes", "No" };
 				int n = JOptionPane.showOptionDialog(
 						null, 
-						"This will reset your current settings. Are you sure you want to continue?", 
+						"This will reset your current settings.\nAre you sure you want to continue?", 
 				        "Warning",
 				        JOptionPane.DEFAULT_OPTION,
 				        JOptionPane.WARNING_MESSAGE,

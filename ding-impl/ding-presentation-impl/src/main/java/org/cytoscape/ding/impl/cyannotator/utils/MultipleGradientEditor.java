@@ -20,7 +20,6 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.LayoutStyle.ComponentPlacement;
@@ -343,22 +342,7 @@ public class MultipleGradientEditor extends JPanel {
 				var chooser = factory.getColorPaletteChooser(paletteType, false);
 				var newPalette = chooser.showDialog(MultipleGradientEditor.this, "Set Palette", currentPalette, 9);
 
-				if (newPalette == null)
-					return;
-
-				Object[] options = { "Yes", "No" };
-				int n = JOptionPane.showOptionDialog(
-						null, 
-						"This will reset your current colors.\nAre you sure you want to continue?", 
-				        "Warning",
-				        JOptionPane.DEFAULT_OPTION,
-				        JOptionPane.WARNING_MESSAGE,
-				        null,
-				        options,
-				        options[1]
-				);
-				
-				if (n == 0) {
+				if (newPalette != null) {
 					setCurrentPalette(newPalette);
 					
 					var colors = newPalette.getColors(this.colors.length);

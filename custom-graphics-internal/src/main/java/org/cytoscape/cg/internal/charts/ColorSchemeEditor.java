@@ -23,7 +23,6 @@ import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
@@ -185,26 +184,12 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 				var newPalette = chooser.showDialog(this, title, palette, size);
 
 				if (newPalette != null) {
-					Object[] options = { "Yes", "No" };
-					int n = JOptionPane.showOptionDialog(
-							null, 
-							"This will reset your current colors.\nAre you sure you want to continue?", 
-					        "Warning",
-					        JOptionPane.DEFAULT_OPTION,
-					        JOptionPane.WARNING_MESSAGE,
-					        null,
-					        options,
-					        options[1]
-					);
+					palette = newPalette;
+					var newScheme = new ColorScheme(palette);
+					chart.set(COLOR_SCHEME, newScheme);
 					
-					if (n == 0) {
-						palette = newPalette;
-						var newScheme = new ColorScheme(palette);
-						chart.set(COLOR_SCHEME, newScheme);
-						
-						updateColorList(true);
-						updateColorPaletteBtn();
-					}
+					updateColorList(true);
+					updateColorPaletteBtn();
 				}
 			});
 		}

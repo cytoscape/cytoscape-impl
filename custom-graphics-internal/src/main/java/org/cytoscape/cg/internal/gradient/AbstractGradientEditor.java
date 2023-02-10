@@ -17,7 +17,6 @@ import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
 import javax.swing.JButton;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.UIManager;
@@ -161,22 +160,7 @@ public abstract class AbstractGradientEditor<T extends AbstractCustomGraphics2<?
 				var chooser = factory.getColorPaletteChooser(paletteType, false);
 				var newPalette = chooser.showDialog(AbstractGradientEditor.this, "Set Palette", currentPalette, 9);
 
-				if (newPalette == null)
-					return;
-				
-				Object[] options = { "Yes", "No" };
-				int n = JOptionPane.showOptionDialog(
-						null, 
-						"This will reset your current colors.\nAre you sure you want to continue?", 
-				        "Warning",
-				        JOptionPane.DEFAULT_OPTION,
-				        JOptionPane.WARNING_MESSAGE,
-				        null,
-				        options,
-				        options[1]
-				);
-				
-				if (n == 0) {
+				if (newPalette != null) {
 					setCurrentPalette(newPalette);
 					
 					var colorList = gradient.getList(GRADIENT_COLORS, Color.class);
