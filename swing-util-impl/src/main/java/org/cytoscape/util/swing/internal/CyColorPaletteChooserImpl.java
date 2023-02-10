@@ -131,7 +131,7 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 		if (showDialog())
 			return getSelectedColor();
 
-		return initialColor;
+		return null;
 	}
 
 	@Override
@@ -151,7 +151,7 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 		if (showDialog())
 			return getSelectedPalette();
 		
-		return initialPalette;
+		return null;
 	}
 
 	@Override
