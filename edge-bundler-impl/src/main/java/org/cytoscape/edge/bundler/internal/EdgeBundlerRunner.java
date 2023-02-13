@@ -33,8 +33,8 @@ public final class EdgeBundlerRunner implements Runnable {
 	private final int numNubs;
 	private final double[][][] nubs;
 	private final double[][][] forces;
-  private final EdgeBundlerTask bundlerTask;
-  private final Map<Integer, List<Integer>> edgeMatcher;
+	private final EdgeBundlerTask bundlerTask;
+	private final Map<Integer, List<Integer>> edgeMatcher;
 
 	public EdgeBundlerRunner(final int ei, final int numNubs, final EdgeBundlerTask bundlerTask, final double[][][] nubs, final double[][][] forces,
 			final Map<Integer, List<Integer>> edgeMatcher) {
@@ -48,14 +48,14 @@ public final class EdgeBundlerRunner implements Runnable {
 
 	@Override
 	public void run() {
-    for (int ni = 0; ni < numNubs; ni++) {
-      for (int ej: edgeMatcher.get(ei)) {
-				final int nj = (bundlerTask.cEdgeAlign(ei,ej)) ? ni : numNubs - ni - 1;
+		for (int ni = 0; ni < numNubs; ni++) {
+			for (int ej : edgeMatcher.get(ei)) {
+				final int nj = (bundlerTask.cEdgeAlign(ei, ej)) ? ni : numNubs - ni - 1;
 
 				final double diffx = (nubs[ni][0][ei] - nubs[nj][0][ej]);
 				final double diffy = (nubs[ni][1][ei] - nubs[nj][1][ej]);
 
-        double edgeCompatability = bundlerTask.cEdgeCompatability(ei,ej);
+				double edgeCompatability = bundlerTask.cEdgeCompatability(ei, ej);
 
 				if (Math.abs(diffx) > 1) {
 					final double fx = edgeCompatability / diffx;
@@ -68,7 +68,7 @@ public final class EdgeBundlerRunner implements Runnable {
 					forces[ni][1][ei] -= fy;
 					forces[nj][1][ej] += fy;
 				}
-      }
-    }
+			}
+		}
 	}
 }

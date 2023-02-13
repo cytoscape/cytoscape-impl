@@ -66,13 +66,12 @@ import org.slf4j.LoggerFactory;
  * Based on Holten and Wijk. Force-directed edge bundling for graph
  * visualization. Eurographics/IEEE-VGTC Symposium on Visualization. 2009
  * 
- * @author Gregory Hannum
- * May 2012 
+ * @author Gregory Hannum May 2012
  */
 public class EdgeBundlerTask extends AbstractNetworkViewTask {
 
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
-	
+
 	private static final String BEND_MAP_COLUMN = "BEND_MAP_ID";
 
 	@Tunable(description = "Number of handles:")
@@ -86,30 +85,26 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 
 	@Tunable(description = "Maximum iterations:")
 	public int maxIterations = 500;
-	
+
 	private boolean animate = false;
 
 	private double[][][] edgePos; // source/target, X/Y, edgeIndex
 	private double[][][] nubs; // nubLocation, X/Y, edgeIndex
-	private double[][] edgeCompatability;
-	private boolean[][] edgeAlign;
 	private double[] edgeLength;
-	// private int[][] edgeMatcher;
-  private Map<Integer, List<Integer>> edgeMatcher;
+	private Map<Integer, List<Integer>> edgeMatcher;
 
 	private int numEdges;
 	private int selection;
-	
+
 	private final CyServiceRegistrar serviceRegistrar;
 
-	EdgeBundlerTask(final CyNetworkView view, final int selection, final CyServiceRegistrar serviceRegistrar) { 
+	EdgeBundlerTask(final CyNetworkView view, final int selection, final CyServiceRegistrar serviceRegistrar) {
 		super(view);
 
 		this.selection = selection;
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
-	
 	@Override
 	public void run(TaskMonitor tm) {
 		// Check tunables
@@ -207,8 +202,6 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 		computeEdgeCompatability(tm);
 		if (this.cancelled) {
 			logger.info("Edge bundling cancelled.");
-			edgeCompatability = null;
-			edgeAlign = null;
 			return;
 		}
 
@@ -217,7 +210,7 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 		double time = System.nanoTime();
 		final double maxItrDouble = Double.valueOf(maxIterations);
 		final double[][][] forces = new double[numNubs][2][numEdges]; // Nub, X/Y, edgeIndex
-		
+
 		final HandleFactory handleFactory = serviceRegistrar.getService(HandleFactory.class);
 		final BendFactory bendFactory = serviceRegistrar.getService(BendFactory.class);
 		final VisualMappingManager visualMappingManager = serviceRegistrar.getService(VisualMappingManager.class);
@@ -275,14 +268,14 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 		VisualMappingFunction<?, Bend> bendMapping = style.getVisualMappingFunction(EDGE_BEND);
 		final Map<Long, Bend> mappingValues;
 		Map<Long, Bend> existingMap = null;
-		
-		if(bendMapping != null && bendMapping instanceof DiscreteMapping) {
+
+		if (bendMapping != null && bendMapping instanceof DiscreteMapping) {
 			final String columnName = bendMapping.getMappingColumnName();
-			if(columnName.equals(BEND_MAP_COLUMN)) {
+			if (columnName.equals(BEND_MAP_COLUMN)) {
 				existingMap = ((DiscreteMapping<Long, Bend>) bendMapping).getAll();
 			} else {
-				bendMapping = (DiscreteMapping<Long, Bend>) discreteFactory
-						.createVisualMappingFunction(BEND_MAP_COLUMN, Long.class, EDGE_BEND);
+				bendMapping = (DiscreteMapping<Long, Bend>) discreteFactory.createVisualMappingFunction(BEND_MAP_COLUMN,
+						Long.class, EDGE_BEND);
 			}
 		}
 		mappingValues = new HashMap<>();
@@ -290,17 +283,17 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 		final CyNetwork network = view.getModel();
 		final CyTable edgeTable = network.getTable(CyEdge.class, CyNetwork.LOCAL_ATTRS);
 		final CyColumn bendMapColumn = edgeTable.getColumn(BEND_MAP_COLUMN);
-		if(bendMapColumn == null) {
+		if (bendMapColumn == null) {
 			edgeTable.createColumn(BEND_MAP_COLUMN, Long.class, false);
 		}
-		
+
 		int ei = 0;
 		for (final View<CyEdge> edge : edges) {
 			final Long edgeId = edge.getModel().getSUID();
 			final View<CyNode> eSource = view.getNodeView(edge.getModel().getSource());
 			final View<CyNode> eTarget = view.getNodeView(edge.getModel().getTarget());
 			network.getRow(edge.getModel()).set(BEND_MAP_COLUMN, edgeId);
-			
+
 			// Ignore self-edge
 			if (eSource.getSUID().equals(eTarget.getSUID()))
 				continue;
@@ -313,37 +306,37 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 				final Handle h = hf.createHandle(view, edge, x, y);
 				hlist.add(h);
 			}
-			
+
 			mappingValues.put(edgeId, bend);
 			ei++;
 		}
 
-		if(bendMapping == null) {
+		if (bendMapping == null) {
 			// Create new discrete mapping for edge SUID to Edge Bend
 			final DiscreteMapping<Long, Bend> function = (DiscreteMapping<Long, Bend>) discreteFactory
-				.createVisualMappingFunction(BEND_MAP_COLUMN, Long.class, EDGE_BEND);
+					.createVisualMappingFunction(BEND_MAP_COLUMN, Long.class, EDGE_BEND);
 			style.addVisualMappingFunction(function);
 			function.putAll(mappingValues);
 		} else {
-			if(existingMap != null) {
+			if (existingMap != null) {
 				mappingValues.putAll(existingMap);
 			}
-			((DiscreteMapping<Long, Bend>)bendMapping).putAll(mappingValues);
+			((DiscreteMapping<Long, Bend>) bendMapping).putAll(mappingValues);
 		}
 	}
 
 	private void computeEdgeCompatability(final TaskMonitor tm) {
-    edgeMatcher = new HashMap<>();
+		edgeMatcher = new HashMap<>();
 
 		final ExecutorService exec = Executors.newCachedThreadPool();
 
 		for (int ei = 1; ei < edgeLength.length; ei++) {
-      if (ei%1000 == 0)
-        tm.setStatusMessage("Preparing data for edge bundling (" + ei + "/" + edgeLength.length + ")" );
+			if (ei % 1000 == 0)
+				tm.setStatusMessage("Preparing data for edge bundling (" + ei + "/" + edgeLength.length + ")");
 			if (this.cancelled) {
 				break;
 			}
-      exec.execute(new EdgeCompatabilityRunner(this, ei, edgeMatcher));
+			exec.execute(new EdgeCompatabilityRunner(this, ei, edgeMatcher));
 		}
 
 		exec.shutdown();
@@ -357,17 +350,21 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 
 	}
 
-  public double cEdgeCompatability(int ei, int ej) {
+	public double cEdgeCompatability(int ei, int ej) {
 		return cangle(ei, ej) * cscale(ei, ej) * cpos(ei, ej) * cvis(ei, ej);
-  }
+	}
 
-  public boolean cEdgeAlign(int ei, int ej) {
-    return cangleSign(ei, ej) > 0;
-  }
+	public boolean cEdgeAlign(int ei, int ej) {
+		return cangleSign(ei, ej) > 0;
+	}
 
-  public boolean isCancelled() { return this.cancelled; }
+	public boolean isCancelled() {
+		return this.cancelled;
+	}
 
-  public double threshold() { return COMPATABILITY_THRESHOLD; }
+	public double threshold() {
+		return COMPATABILITY_THRESHOLD;
+	}
 
 	private double cangle(int ei, int ej) {
 		double a = edgePos[1][0][ei] - edgePos[0][0][ei];
@@ -403,8 +400,8 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 		double lavg = (edgeLength[ei] + edgeLength[ej]) / 2.0;
 
 		// Note: the formula in the paper is wrong (*min vs. /min)
-		double out = 2.0 / ((lavg / Math.min(edgeLength[ei], edgeLength[ej])) + (Math.max(edgeLength[ei],
-				edgeLength[ej]) / lavg));
+		double out = 2.0 / ((lavg / Math.min(edgeLength[ei], edgeLength[ej]))
+				+ (Math.max(edgeLength[ei], edgeLength[ej]) / lavg));
 
 		if (Double.isNaN(out) || Double.isInfinite(out))
 			return 0;
@@ -519,9 +516,9 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 		// Electrostatic forces
 		// For parallel processing
 		final ExecutorService exec = Executors.newCachedThreadPool();
-    for (int ei: edgeMatcher.keySet()) {
+		for (int ei : edgeMatcher.keySet()) {
 			exec.execute(new EdgeBundlerRunner(ei, numNubs, this, nubs, forces, edgeMatcher));
-    }
+		}
 
 		exec.shutdown();
 

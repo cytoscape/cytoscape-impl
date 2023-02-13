@@ -30,35 +30,34 @@ import java.util.Map;
 
 public final class EdgeCompatabilityRunner implements Runnable {
 
-  private final EdgeBundlerTask bundlerTask;
-  private final Map<Integer, List<Integer>> edgeMatcher;
-  private int ei;
-  private double COMPATABILITY_THRESHOLD;
+	private final EdgeBundlerTask bundlerTask;
+	private final Map<Integer, List<Integer>> edgeMatcher;
+	private final int ei;
+	private final double COMPATABILITY_THRESHOLD;
 
-	//public EdgeBundlerRunner(final int ni, final int numNubs, final boolean[][] edgeAlign, final double[][][] nubs, final double[][][] forces,
-	//		final double[][] edgeCompatability, final int[][] edgeMatcher) {
 	public EdgeCompatabilityRunner(final EdgeBundlerTask bundlerTask, int ei, final Map<Integer, List<Integer>> edgeMatcher) {
 		this.bundlerTask = bundlerTask;
-    this.ei = ei;
+		this.ei = ei;
 		this.edgeMatcher = edgeMatcher;
-    COMPATABILITY_THRESHOLD = bundlerTask.threshold();
+		this.COMPATABILITY_THRESHOLD = bundlerTask.threshold();
 	}
 
 	@Override
 	public void run() {
-    List<Integer> compatibleEdges = new ArrayList<Integer>();
-    for (int ej = 0; ej < ei; ej++) {
-      if (bundlerTask.isCancelled()) {
-        break;
-      }
+		List<Integer> compatibleEdges = new ArrayList<>();
+		
+		for (int ej = 0; ej < ei; ej++) {
+			if (bundlerTask.isCancelled()) {
+				break;
+			}
 
-      if (bundlerTask.cEdgeCompatability(ei, ej) > COMPATABILITY_THRESHOLD) {
-        compatibleEdges.add(ej);
-      }
-    }
+			if (bundlerTask.cEdgeCompatability(ei, ej) > COMPATABILITY_THRESHOLD) {
+				compatibleEdges.add(ej);
+			}
+		}
 
-    if (compatibleEdges.size() > 0) {
-      edgeMatcher.put(ei, compatibleEdges);
-    }
+		if (compatibleEdges.size() > 0) {
+			edgeMatcher.put(ei, compatibleEdges);
+		}
 	}
 }
