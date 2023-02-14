@@ -56,7 +56,6 @@ import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -242,7 +241,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			networkHeader = new JPanel();
 			networkHeader.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 			
-			final GroupLayout layout = new GroupLayout(networkHeader);
+			var layout = new GroupLayout(networkHeader);
 			networkHeader.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
 			layout.setAutoCreateGaps(true);
@@ -270,7 +269,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	
 	private JButton getExpandAllButton() {
 		if (expandAllButton == null) {
-			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+			var iconManager = serviceRegistrar.getService(IconManager.class);
 			
 			expandAllButton = new JButton(ICON_ANGLE_DOUBLE_DOWN);
 			expandAllButton.setFont(iconManager.getIconFont(17.0f));
@@ -290,7 +289,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	
 	private JButton getCollapseAllButton() {
 		if (collapseAllButton == null) {
-			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+			var iconManager = serviceRegistrar.getService(IconManager.class);
 			
 			collapseAllButton = new JButton(ICON_ANGLE_DOUBLE_UP);
 			collapseAllButton.setFont(iconManager.getIconFont(17.0f));
@@ -308,7 +307,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	
 	private JButton getOptionsButton() {
 		if (optionsBtn == null) {
-			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+			var iconManager = serviceRegistrar.getService(IconManager.class);
 			
 			optionsBtn = new JButton(ICON_COG);
 			optionsBtn.setFont(iconManager.getIconFont(ICON_FONT_SIZE * 4/5));
@@ -337,10 +336,10 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	private JPopupMenu getNetworkOptionsMenu() {
-		final JPopupMenu menu = new JPopupMenu();
+		var menu = new JPopupMenu();
 		
 		{
-			final JMenuItem mi = new JCheckBoxMenuItem("Show Network Provenance Hierarchy");
+			var mi = new JCheckBoxMenuItem("Show Network Provenance Hierarchy");
 			mi.addActionListener(e -> {
 				setShowNetworkProvenanceHierarchy(mi.isSelected());
 			});
@@ -348,7 +347,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			menu.add(mi);
 		}
 		{
-			final JMenuItem mi = new JCheckBoxMenuItem("Show Number of Nodes and Edges");
+			var mi = new JCheckBoxMenuItem("Show Number of Nodes and Edges");
 			mi.addActionListener(e -> {
 				setShowNodeEdgeCount(mi.isSelected());
 			});
@@ -360,25 +359,25 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	public Map<Long, Integer> getNetworkListOrder() {
-		final Map<Long, Integer> order = new HashMap<>();
+		var order = new HashMap<Long, Integer>();
 		
-		final List<SubNetworkPanel> items = getAllSubNetworkItems();
+		var items = getAllSubNetworkItems();
 		int count = 0;
 		
-		for (SubNetworkPanel snp : items) {
-			final CySubNetwork net = snp.getModel().getNetwork();
+		for (var snp : items) {
+			var net = snp.getModel().getNetwork();
 			order.put(net.getSUID(), count++);
 		}
 				
 		return order;
 	}
 	
-	public int indexOf(final CyNetwork network) {
+	public int indexOf(CyNetwork network) {
 		int idx = -1;
-		final AbstractNetworkPanel<?> item = getNetworkItem(network);
+		var item = getNetworkItem(network);
 		
 		if (item != null) {
-			final List<AbstractNetworkPanel<?>> allItems = getAllItems(true);
+			var allItems = getAllItems(true);
 			idx = allItems.indexOf(item);
 		}
 		
@@ -388,15 +387,15 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	/**
 	 * Replace the current network list with the passed ones.
 	 */
-	public void setNetworks(final Collection<CySubNetwork> networks) {
+	public void setNetworks(Collection<CySubNetwork> networks) {
 		clear();
 				
 		ignoreSelectionEvents = true;
 		doNotUpdateCollapseExpandButtons = true;
 		
 		try {
-			for (final CySubNetwork n : networks)
-				addNetwork((CySubNetwork) n);
+			for (var n : networks)
+				addNetwork(n);
 		} finally {
 			doNotUpdateCollapseExpandButtons = false;
 			ignoreSelectionEvents = false;
@@ -411,21 +410,21 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	 * @param includeSelectedRootNetworks if true the CySubNetworks from selected CyRootNetworks are also included
 	 * @return
 	 */
-	public Set<CyNetwork> getSelectedNetworks(final boolean includeSelectedRootNetworks) {
-		final Set<CyNetwork> list = new LinkedHashSet<>();
+	public Set<CyNetwork> getSelectedNetworks(boolean includeSelectedRootNetworks) {
+		var list = new LinkedHashSet<CyNetwork>();
 		
-		for (SubNetworkPanel p : getSelectedSubNetworkItems())
+		for (var p : getSelectedSubNetworkItems())
 			list.add(p.getModel().getNetwork());
 		
 		if (includeSelectedRootNetworks) {
-			for (RootNetworkPanel p : getSelectedRootNetworkItems())
+			for (var p : getSelectedRootNetworkItems())
 				list.addAll(getNetworks(p.getAllItems()));
 		}
 		
 		return list;
 	}
 	
-	public void setSelectedNetworks(final Collection<CyNetwork> selectedNetworks) {
+	public void setSelectedNetworks(Collection<CyNetwork> selectedNetworks) {
 		if (Util.equalSets(selectedNetworks, getSelectedNetworks(false))) {
 			if (selectedNetworks.isEmpty()) {
 				// Even if there are no selected networks still make sure we don't cause a memory leak.
@@ -437,11 +436,11 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		ignoreSelectionEvents = true;
 		
 		try {
-			for (final RootNetworkPanel rnp : getRootNetworkListPanel().getAllItems()) {
+			for (var rnp : getRootNetworkListPanel().getAllItems()) {
 				setSelected(rnp, selectedNetworks.contains(rnp.getModel().getNetwork()));
 				
-				for (SubNetworkPanel snp : rnp.getAllItems()) {
-					final boolean selected = selectedNetworks.contains(snp.getModel().getNetwork());
+				for (var snp : rnp.getAllItems()) {
+					boolean selected = selectedNetworks.contains(snp.getModel().getNetwork());
 					
 					if (selected && !rnp.isExpanded())
 						rnp.expand();
@@ -453,7 +452,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			ignoreSelectionEvents = false;
 		}
 		
-		final List<AbstractNetworkPanel<?>> selectedItems = getSelectedItems();
+		var selectedItems = getSelectedItems();
 		selectionHead = selectedItems.isEmpty() ? null : selectedItems.get(0);
 		selectionTail = selectedItems.size() > 1 ? selectedItems.get(selectedItems.size() - 1) : null;
 		lastSelected = selectedItems.isEmpty() ? null : selectedItems.get(selectedItems.size() - 1);
@@ -462,9 +461,9 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	public Set<CyRootNetwork> getSelectedRootNetworks() {
-		final Set<CyRootNetwork> list = new LinkedHashSet<>();
+		var list = new LinkedHashSet<CyRootNetwork>();
 		
-		for (RootNetworkPanel p : getSelectedRootNetworkItems())
+		for (var p : getSelectedRootNetworkItems())
 			list.add(p.getModel().getNetwork());
 		
 		return list;
@@ -474,7 +473,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		return getSelectedRootNetworkItems().size();
 	}
 	
-	public int countSelectedSubNetworks(final boolean includeSelectedRootNetworks) {
+	public int countSelectedSubNetworks(boolean includeSelectedRootNetworks) {
 		return getSelectedNetworks(includeSelectedRootNetworks).size();
 	}
 	
@@ -501,7 +500,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		return "true".equalsIgnoreCase(ViewUtil.getViewProperty(ViewUtil.SHOW_NODE_EDGE_COUNT_KEY, serviceRegistrar));
 	}
 	
-	public void setShowNodeEdgeCount(final boolean b) {
+	public void setShowNodeEdgeCount(boolean b) {
 		ViewUtil.setViewProperty(ViewUtil.SHOW_NODE_EDGE_COUNT_KEY, "" + b, serviceRegistrar);
 		updateNodeEdgeCount();
 	}
@@ -511,14 +510,14 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 				ViewUtil.getViewProperty(ViewUtil.SHOW_NETWORK_PROVENANCE_HIERARCHY_KEY, serviceRegistrar));
 	}
 	
-	public void setShowNetworkProvenanceHierarchy(final boolean b) {
-		for (final RootNetworkPanel item : getRootNetworkListPanel().getAllItems())
+	public void setShowNetworkProvenanceHierarchy(boolean b) {
+		for (var item : getRootNetworkListPanel().getAllItems())
 			item.setShowIndentation(b);
 		
 		ViewUtil.setViewProperty(ViewUtil.SHOW_NETWORK_PROVENANCE_HIERARCHY_KEY, "" + b, serviceRegistrar);
 	}
 	
-	public void scrollTo(final CyNetwork network) {
+	public void scrollTo(CyNetwork network) {
 		final AbstractNetworkPanel<?> target;
 		
 		if (network instanceof CySubNetwork)
@@ -528,8 +527,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		
 		if (target != null) {
 			if (target instanceof SubNetworkPanel) {
-				final RootNetworkPanel rnp = getRootNetworkPanel(
-						((SubNetworkPanel) target).getModel().getNetwork().getRootNetwork());
+				var rnp = getRootNetworkPanel(((SubNetworkPanel) target).getModel().getNetwork().getRootNetwork());
 				rnp.expand();
 			}
 			
@@ -539,7 +537,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 
 	// // Private Methods // //
 	
-	protected SubNetworkPanel addNetwork(final CySubNetwork network) {
+	protected SubNetworkPanel addNetwork(CySubNetwork network) {
 		var rootNetwork = network.getRootNetwork();
 		var rootNetPanel = getRootNetworkPanel(rootNetwork);
 		
@@ -581,7 +579,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			firePropertyChange("rootNetworkPanelCreated", null, item);
 		}
 		
-		final SubNetworkPanel subNetPanel = rootNetPanel.addItem(network);
+		var subNetPanel = rootNetPanel.addItem(network);
 		setKeyBindings(subNetPanel);
 		
 		subNetPanel.addPropertyChangeListener("selected", (PropertyChangeEvent e) -> {
@@ -622,7 +620,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	/**
 	 * Remove a network from the panel.
 	 */
-	protected void removeNetwork(final CySubNetwork network) {
+	protected void removeNetwork(CySubNetwork network) {
 		nameTables.values().removeAll(Collections.singletonList(network));
 		nodeEdgeTables.values().removeAll(Collections.singletonList(network));
 		
@@ -644,7 +642,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		});
 	}
 
-	private boolean setSelected(final AbstractNetworkPanel<?> item, final boolean selected) {
+	private boolean setSelected(AbstractNetworkPanel<?> item, boolean selected) {
 		if (item.isSelected() != selected) {
 			item.setSelected(selected);
 			
@@ -659,7 +657,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		return false;
 	}
 
-	protected AbstractNetworkPanel<?> getNetworkItem(final CyNetwork net) {
+	protected AbstractNetworkPanel<?> getNetworkItem(CyNetwork net) {
 		if (net instanceof CySubNetwork)
 			return getSubNetworkPanel(net);
 		if (net instanceof CyRootNetwork)
@@ -878,13 +876,12 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			fireSelectedSubNetworksChange(oldSubSelection);
 	}
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	void selectAndSetCurrent(AbstractNetworkPanel<?> item) {
 		if (item == null)
 			return;
 		
 		// First select the clicked item
-		setSelectedItems((Set) (Collections.singleton(item)));
+		setSelectedItems((Collections.singleton(item)));
 		lastSelected = selectionHead = item;
 		selectionTail = null;
 		
