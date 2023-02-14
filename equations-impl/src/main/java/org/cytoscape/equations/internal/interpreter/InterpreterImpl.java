@@ -193,8 +193,14 @@ public class InterpreterImpl implements Interpreter {
 		if (argumentStack.size() != 1)
 			throw new IllegalStateException("invalid argument stack size " + argumentStack.size() + ", must be 1.");
 		final Object retVal = argumentStack.peek();
+
+    // Special case for null values
+    if (retVal == null)
+      return null;
+
 		final Class retValClass = retVal.getClass();
 		if (retValClass == Double.class || retValClass == String.class || retValClass == Boolean.class || retValClass == Long.class
+        || retValClass == Integer.class
 		    || retValClass == DoubleList.class || retValClass == BooleanList.class || retValClass == LongList.class
 		    || retValClass == StringList.class)
 			return retVal;

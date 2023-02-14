@@ -292,12 +292,13 @@ public final class BrowserTableModel extends AbstractTableModel
 		var isEquation = raw instanceof Equation;
 		var cooked = isEquation ? getColumnValue(row, columnName) : raw;
 		var editString = createEditString(raw);
-		
-		if (cooked != null)
-			return new ValidatedObjectAndEditString(cooked, editString, isEquation);
+
 
 		var lastInternalError = dataTable.getLastInternalError();
-		
+
+		if (cooked != null || lastInternalError == "") // What if the cooked value is supposed to be null?
+			return new ValidatedObjectAndEditString(cooked, editString, isEquation);
+
 		return new ValidatedObjectAndEditString(cooked, editString, lastInternalError, isEquation);
 	}
 

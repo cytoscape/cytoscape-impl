@@ -7,6 +7,7 @@ import org.cytoscape.equations.AbstractFunction;
 import org.cytoscape.equations.ArgDescriptor;
 import org.cytoscape.equations.ArgType;
 import org.cytoscape.equations.FunctionUtil;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -74,19 +75,19 @@ public class GetTableCell extends AbstractFunction {
 		final CyNetwork currentNetwork = registrar.getService(CyApplicationManager.class).getCurrentNetwork();
 
 		if (currentNetwork != null) {
-			Object result = findIdentifiableInNetwork(currentNetwork, suid, column);
-			if(result != null) {
-				return result;
+      CyIdentifiable identifiable = findIdentifiableInNetwork(currentNetwork, suid);
+      if(identifiable != null) {
+        return getColumn(identifiable, currentNetwork, column);
 			}
 		}
-		
+
 		// Either there is no current network, or the SUID was not in the current network, need to search all networks.
 		Set<CyNetwork> allNetworks = registrar.getService(CyNetworkManager.class).getNetworkSet();
 		for(CyNetwork network : allNetworks) {
 			if(network != currentNetwork) {
-				Object result = findIdentifiableInNetwork(network, suid, column);
-				if(result != null) {
-					return result;
+        CyIdentifiable identifiable = findIdentifiableInNetwork(network, suid);
+				if(identifiable != null) {
+          return getColumn(identifiable, network, column);
 				}
 			}
 		}
@@ -95,24 +96,28 @@ public class GetTableCell extends AbstractFunction {
 	}
 	
 	
-	private Object findIdentifiableInNetwork(CyNetwork network, Long suid, String column) {
+	private CyIdentifiable findIdentifiableInNetwork(CyNetwork network, Long suid) {
 		// Get the appropriate CyIdentifiable
 		CyNode node = network.getNode(suid);
 		if (node != null)
-			return getColumn(node, network, column);
+      return node;
 
 		CyEdge edge = network.getEdge(suid);
 		if (edge != null)
-			return getColumn(edge, network, column);
+      return edge;
 
 		if (network.getSUID().equals(suid))
-			return getColumn(network, network, column);
+      return network;
 		
 		return null;
 	}
 
 	private Object getColumn(CyIdentifiable id, CyNetwork network, String column) {
 		CyRow row = network.getRow(id);
+    // Make sure the column exists
+    CyColumn col = row.getTable().getColumn(column);
+    if ( col == null)
+      throw new IllegalArgumentException("\"" + column + "\" is a column.");
 		return row.get(column, clazz);
 	}
 }
