@@ -109,7 +109,6 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 			final boolean oldValue = showIndentation;
 			showIndentation = newValue;
 			updateIndentation();
-			repaint();
 			firePropertyChange("showIndentation", oldValue, newValue);
 		}
 	}
@@ -169,6 +168,7 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 		getIndentLabel().setMinimumSize(d);
 		getIndentLabel().setMaximumSize(d);
 		getIndentLabel().setSize(d);
+		revalidate();
 	}
 	
 	protected void updateCountLabels() {
