@@ -60,8 +60,7 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 	private int depth;
 	private boolean showIndentation;
 	
-	public SubNetworkPanel(final SubNetworkPanelModel model, final boolean showIndentation,
-			final CyServiceRegistrar serviceRegistrar) {
+	public SubNetworkPanel(SubNetworkPanelModel model, boolean showIndentation, CyServiceRegistrar serviceRegistrar) {
 		super(model, serviceRegistrar);
 		
 		if (showIndentation != this.showIndentation)
@@ -83,16 +82,16 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 		return depth;
 	}
 	
-	public void setDepth(final int newValue) {
+	public void setDepth(int newValue) {
 		if (newValue != depth) {
-			final int oldValue = depth;
+			int oldValue = depth;
 			depth = newValue;
 			firePropertyChange("depth", oldValue, newValue);
 		}
 	}
 	
-	public boolean isDescendantOf(final CySubNetwork parentNet) {
-		CySubNetwork net = getModel().getNetwork();
+	public boolean isDescendantOf(CySubNetwork parentNet) {
+		var net = getModel().getNetwork();
 		
 		while (net != null) {
 			net = ViewUtil.getParent(net, serviceRegistrar);
@@ -106,17 +105,16 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 	
 	public void setShowIndentation(final boolean newValue) {
 		if (newValue != showIndentation) {
-			final boolean oldValue = showIndentation;
+			boolean oldValue = showIndentation;
 			showIndentation = newValue;
 			updateIndentation();
-			repaint();
 			firePropertyChange("showIndentation", oldValue, newValue);
 		}
 	}
 	
 	@Override
 	public Dimension getMaximumSize() {
-		final Dimension size = getPreferredSize();
+		var size = getPreferredSize();
 	    size.width = Short.MAX_VALUE;
 	    
 	    return size;
@@ -134,7 +132,7 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 	}
 	
 	private void updateViewInfo() {
-		final int viewCount = getModel().getViewCount();
+		int viewCount = getModel().getViewCount();
 		String viewCountText = " ";
 		
 		if (viewCount > 9)
@@ -149,7 +147,7 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 	}
 	
 	private void updateViewIconLabel() {
-		final int viewCount = getModel().getViewCount();
+		int viewCount = getModel().getViewCount();
 		
 		getViewIconLabel().setText(viewCount == 0 ? ICON_SHARE_ALT : ICON_SHARE_ALT_SQUARE);
 		getViewIconLabel().setForeground(
@@ -163,12 +161,13 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 	}
 	
 	protected void updateIndentation() {
-		final int indent = showIndentation ? depth * INDENT_WIDTH : 0;
-		final Dimension d = new Dimension(indent, getIndentLabel().getPreferredSize().height);
+		int indent = showIndentation ? depth * INDENT_WIDTH : 0;
+		var d = new Dimension(indent, getIndentLabel().getPreferredSize().height);
 		getIndentLabel().setPreferredSize(d);
 		getIndentLabel().setMinimumSize(d);
 		getIndentLabel().setMaximumSize(d);
 		getIndentLabel().setSize(d);
+		revalidate();
 	}
 	
 	protected void updateCountLabels() {
@@ -180,7 +179,7 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 	protected void init() {
 		setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0));
 		
-		final GroupLayout layout = new GroupLayout(this);
+		var layout = new GroupLayout(this);
 		setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(false);
@@ -241,9 +240,10 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 			viewCountLabel.setFont(viewCountLabel.getFont().deriveFont(16.0f));
 			viewCountLabel.setHorizontalAlignment(JLabel.RIGHT);
 			
-			final Dimension d = new Dimension(
+			var d = new Dimension(
 					viewCountLabel.getPreferredSize().width,
-					getViewIconLabel().getPreferredSize().height);
+					getViewIconLabel().getPreferredSize().height
+			);
 			viewCountLabel.setMinimumSize(d);
 			viewCountLabel.setPreferredSize(d);
 			viewCountLabel.setMaximumSize(d);
@@ -255,7 +255,7 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 	
 	protected JLabel getViewIconLabel() {
 		if (viewIconLabel == null) {
-			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+			var iconManager = serviceRegistrar.getService(IconManager.class);
 			
 			viewIconLabel = new JLabel(ICON_SHARE_ALT_SQUARE);
 			viewIconLabel.setFont(iconManager.getIconFont(16.0f));
@@ -264,14 +264,14 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 //			viewIconLabel.addMouseListener(new MouseAdapter() {
 //				@Override
 //				public void mouseEntered(MouseEvent e) {
-//					final int viewCount = getModel().getViewCount();
+//					int viewCount = getModel().getViewCount();
 //					
 //					if (viewCount > 0)
 //						getViewIconLabel().setForeground(UIManager.getColor("Focus.color"));
 //				}
 //				@Override
 //				public void mouseExited(MouseEvent e) {
-//					final int viewCount = getModel().getViewCount();
+//					int viewCount = getModel().getViewCount();
 //					
 //					if (viewCount > 0)
 //						updateViewIconLabel();
