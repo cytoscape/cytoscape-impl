@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -72,7 +73,8 @@ public class DestroyNetworkTask extends AbstractNetworkCollectionTask implements
 			tm.setTitle("Destroy Network(s)");
 			tm.setProgress(0.0);
 			
-			CyNetworkManager netManager = serviceRegistrar.getService(CyNetworkManager.class);
+			var netManager = serviceRegistrar.getService(CyNetworkManager.class);
+			var appManager = serviceRegistrar.getService(CyApplicationManager.class);
 			
 			if (localNets == null || localNets.isEmpty()) {
 				if (network == null) {
@@ -89,6 +91,11 @@ public class DestroyNetworkTask extends AbstractNetworkCollectionTask implements
 			for (CyNetwork n : localNets) {
 				if (cancelled)
 					return;
+				
+				if (n.equals(appManager.getCurrentNetwork())) {
+					appManager.setCurrentNetwork(null);
+					appManager.setCurrentNetworkView(null);
+				}
 				
 				destroyNetwork(n, netManager);
 				i++;

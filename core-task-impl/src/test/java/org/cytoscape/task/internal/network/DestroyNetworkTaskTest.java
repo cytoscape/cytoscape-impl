@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.NetworkTestSupport;
@@ -46,15 +47,18 @@ public class DestroyNetworkTaskTest {
 	private final NetworkTestSupport support = new NetworkTestSupport();
 	
 	private CyServiceRegistrar serviceRegistrar;
+	private CyApplicationManager appMgr;
 	private CyNetworkManager netMgr;
 	private TaskMonitor tm = mock(TaskMonitor.class);
 	
 	@Before
 	public void setUp() throws Exception {
+		appMgr = mock(CyApplicationManager.class);
 		netMgr = mock(CyNetworkManager.class);
 		
 		serviceRegistrar = mock(CyServiceRegistrar.class);
 		when(serviceRegistrar.getService(CyNetworkManager.class)).thenReturn(netMgr);
+		when(serviceRegistrar.getService(CyApplicationManager.class)).thenReturn(appMgr);
 	}
 
 	@After
