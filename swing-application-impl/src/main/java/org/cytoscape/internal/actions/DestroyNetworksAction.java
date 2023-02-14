@@ -42,8 +42,7 @@ public class DestroyNetworksAction extends AbstractCyAction {
 	private final NetworkMainPanel netPanel;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public DestroyNetworksAction(final float menuGravity, final NetworkMainPanel netPanel,
-			final CyServiceRegistrar serviceRegistrar) {
+	public DestroyNetworksAction(float menuGravity, NetworkMainPanel netPanel, CyServiceRegistrar serviceRegistrar) {
 		super("Destroy Networks");
 		this.netPanel = netPanel;
 		this.serviceRegistrar = serviceRegistrar;
@@ -52,12 +51,12 @@ public class DestroyNetworksAction extends AbstractCyAction {
 	}
 
 	@Override
-	public void actionPerformed(final ActionEvent e) {
-		final Set<CyNetwork> subNetworks = getSelectedSubNetworks();
+	public void actionPerformed(ActionEvent e) {
+		var subNetworks = getSelectedSubNetworks();
 		
 		if (!subNetworks.isEmpty()) {
-			final DestroyNetworkTaskFactory factory = serviceRegistrar.getService(DestroyNetworkTaskFactory.class);
-			final DialogTaskManager taskManager = serviceRegistrar.getService(DialogTaskManager.class);
+			var factory = serviceRegistrar.getService(DestroyNetworkTaskFactory.class);
+			var taskManager = serviceRegistrar.getService(DialogTaskManager.class);
 			
 			taskManager.execute(factory.createTaskIterator(subNetworks));
 		}
@@ -65,8 +64,8 @@ public class DestroyNetworksAction extends AbstractCyAction {
 
 	@Override
 	public void updateEnableState() {
-		final int colCount = netPanel.countSelectedRootNetworks();
-		final int netCount = netPanel.countSelectedSubNetworks(false);
+		int colCount = netPanel.countSelectedRootNetworks();
+		int netCount = netPanel.countSelectedSubNetworks(false);
 		
 		setEnabled(colCount > 0 || netCount > 0);
 		

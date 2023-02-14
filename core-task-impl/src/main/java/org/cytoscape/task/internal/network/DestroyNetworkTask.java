@@ -88,7 +88,7 @@ public class DestroyNetworkTask extends AbstractNetworkCollectionTask implements
 			int i = 0;
 			int networkCount = localNets.size();
 				
-			for (CyNetwork n : localNets) {
+			for (var n : localNets) {
 				if (cancelled)
 					return;
 				
@@ -106,13 +106,13 @@ public class DestroyNetworkTask extends AbstractNetworkCollectionTask implements
 		}
 	}
 
-	private void destroyNetwork(final CyNetwork net, CyNetworkManager netManager) {
+	private void destroyNetwork(CyNetwork net, CyNetworkManager netManager) {
 		CyRootNetwork rootNet = null;
 		CySubNetwork parentNet = null;
 
 		if (net instanceof CySubNetwork) {
 			rootNet = ((CySubNetwork) net).getRootNetwork();
-			final Long suid = DataUtils.getParentNetworkSUID((CySubNetwork) net);
+			var suid = DataUtils.getParentNetworkSUID((CySubNetwork) net);
 
 			if (suid != null && netManager.getNetwork(suid) instanceof CySubNetwork)
 				parentNet = (CySubNetwork) netManager.getNetwork(suid);
@@ -125,7 +125,7 @@ public class DestroyNetworkTask extends AbstractNetworkCollectionTask implements
 	}
 
 	private void updateParentNetworkData(Long destroyedSUID, CyRootNetwork rootNet, Long newParentSUID) {
-		for (CySubNetwork sn : rootNet.getSubNetworkList()) {
+		for (var sn : rootNet.getSubNetworkList()) {
 			if (destroyedSUID.equals(DataUtils.getParentNetworkSUID(sn)))
 				DataUtils.saveParentNetworkSUID(sn, newParentSUID);
 		}
