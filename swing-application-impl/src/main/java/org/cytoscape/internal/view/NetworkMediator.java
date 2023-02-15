@@ -137,12 +137,12 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 	// // Event handlers // //
 
 	@Override
-	public void handleEvent(final SessionAboutToBeLoadedEvent e) {
+	public void handleEvent(SessionAboutToBeLoadedEvent e) {
 		loadingSession = true;
 	}
 
 	@Override
-	public void handleEvent(final SessionLoadedEvent e) {
+	public void handleEvent(SessionLoadedEvent e) {
 		loadingSession = false;
 	}
 
@@ -539,7 +539,7 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 				a.updateEnableState();
 				
 				if (a instanceof PopupMenuListener)
-					popup.addPopupMenuListener((PopupMenuListener) a);
+					popup.addPopupMenuListener(a);
 			}
 		}
 	}

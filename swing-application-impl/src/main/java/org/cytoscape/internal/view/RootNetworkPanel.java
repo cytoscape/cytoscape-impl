@@ -5,7 +5,6 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -13,7 +12,6 @@ import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map.Entry;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -64,20 +62,19 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 	private LinkedHashMap<CySubNetwork, SubNetworkPanel> items;
 	private boolean showIndentation;
 	
-	public RootNetworkPanel(final RootNetworkPanelModel model, final boolean showIndentation,
-			final CyServiceRegistrar serviceRegistrar) {
+	public RootNetworkPanel(RootNetworkPanelModel model, boolean showIndentation, CyServiceRegistrar serviceRegistrar) {
 		super(model, serviceRegistrar);
 		this.showIndentation = showIndentation;
 	}
 	
-	public SubNetworkPanel addItem(final CySubNetwork network) {
+	public SubNetworkPanel addItem(CySubNetwork network) {
 		if (!getItems().containsKey(network)) {
-			final SubNetworkPanelModel model = new SubNetworkPanelModel(network, serviceRegistrar);
+			var model = new SubNetworkPanelModel(network, serviceRegistrar);
 			
-			final SubNetworkPanel subNetPanel = new SubNetworkPanel(model, showIndentation, serviceRegistrar);
+			var subNetPanel = new SubNetworkPanel(model, showIndentation, serviceRegistrar);
 			subNetPanel.setAlignmentX(LEFT_ALIGNMENT);
 			
-			final CySubNetwork parentNet = ViewUtil.getParent(network, serviceRegistrar);
+			var parentNet = ViewUtil.getParent(network, serviceRegistrar);
 			
 			if (parentNet == null) {
 				// No parent network? So just add it to the end of the list...
@@ -85,11 +82,11 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 				getItems().put(network, subNetPanel);
 			} else {
 				// It has a parent network, so let's find the position where it must be inserted...
-				final LinkedHashMap<CySubNetwork, SubNetworkPanel> newItems = new LinkedHashMap<>();
+				var newItems = new LinkedHashMap<CySubNetwork, SubNetworkPanel>();
 				boolean newItemAdded = false; // New item added to the map?
 				boolean parentItemFound = false;
 				
-				for (Entry<CySubNetwork, SubNetworkPanel> entry : getItems().entrySet()) {
+				for (var entry : getItems().entrySet()) {
 					if (!newItemAdded) {
 						if (!parentItemFound && entry.getKey().equals(parentNet)) {
 							// We found the parent of the new item
@@ -116,7 +113,7 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 					getSubNetListPanel().removeAll();
 					getItems().clear();
 				
-					for (Entry<CySubNetwork, SubNetworkPanel> entry : newItems.entrySet()) {
+					for (var entry : newItems.entrySet()) {
 						getSubNetListPanel().add(entry.getValue());
 						getItems().put(entry.getKey(), entry.getValue());
 					}
@@ -129,8 +126,8 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 		return getItems().get(network);
 	}
 	
-	public SubNetworkPanel removeItem(final CySubNetwork network) {
-		final SubNetworkPanel subNetPanel = getItems().remove(network);
+	public SubNetworkPanel removeItem(CySubNetwork network) {
+		var subNetPanel = getItems().remove(network);
 		
 		if (subNetPanel != null) {
 			getSubNetListPanel().remove(subNetPanel);
@@ -146,7 +143,7 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 		getSubNetListPanel().removeAll();
 	}
 	
-	public SubNetworkPanel getItem(final CySubNetwork network) {
+	public SubNetworkPanel getItem(CySubNetwork network) {
 		return getItems().get(network);
 	}
 	
@@ -176,7 +173,7 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 		return getSubNetListPanel().isVisible();
 	}
 	
-	public void setShowIndentation(final boolean newValue) {
+	public void setShowIndentation(boolean newValue) {
 		if (newValue != showIndentation) {
 			showIndentation = newValue;
 			updateIndentation();
@@ -192,7 +189,7 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 	
 	protected void updateRootPanel() {
 		super.update();
-		final int netCount = getItems().values().size();
+		int netCount = getItems().values().size();
 		
 		getNetworkCountLabel().setText("" + netCount);
 		getNetworkCountLabel().setToolTipText(
@@ -200,20 +197,20 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 	}
 	
 	protected void updateItemsDepth() {
-		for (SubNetworkPanel snp : getItems().values()) {
+		for (var snp : getItems().values()) {
 			int depth = getDepth(snp.getModel().getNetwork());
 			snp.setDepth(depth);
 		}
 	}
 	
 	protected void updateIndentation() {
-		for (SubNetworkPanel snp : getItems().values())
+		for (var snp : getItems().values())
 			snp.setShowIndentation(showIndentation);
 	}
 	
 	@Override
 	protected void updateSelection() {
-		final Color c = UIManager.getColor(isSelected() ? "Table.selectionBackground" : "Table.background");
+		var c = UIManager.getColor(isSelected() ? "Table.selectionBackground" : "Table.background");
 		getHeaderPanel().setBackground(c);
 	}
 	
@@ -222,7 +219,7 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 		setBackground(UIManager.getColor("Table.background"));
 		setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground")));
 		
-		final GroupLayout layout = new GroupLayout(this);
+		var layout = new GroupLayout(this);
 		setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(false);
@@ -241,7 +238,7 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 		if (expandCollapseBtn == null) {
 			expandCollapseBtn = new ExpandCollapseButton(isExpanded(), new ActionListener() {
 				@Override
-				public void actionPerformed(final ActionEvent ae) {
+				public void actionPerformed(ActionEvent ae) {
 					if (isExpanded())
 						collapse();
 					else
@@ -269,7 +266,7 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 			headerPanel = new JPanel();
 			headerPanel.setBackground(UIManager.getColor("Table.background"));
 			
-			final GroupLayout layout = new GroupLayout(headerPanel);
+			var layout = new GroupLayout(headerPanel);
 			headerPanel.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
 			layout.setAutoCreateGaps(false);
@@ -302,12 +299,12 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 			
 			subNetListPanel.addComponentListener(new ComponentAdapter() {
 				@Override
-				public void componentShown(final ComponentEvent ce) {
+				public void componentShown(ComponentEvent ce) {
 					if (!getExpandCollapseBtn().isSelected())
 						getExpandCollapseBtn().setSelected(true);
 				}
 				@Override
-				public void componentHidden(final ComponentEvent ce) {
+				public void componentHidden(ComponentEvent ce) {
 					if (getExpandCollapseBtn().isSelected())
 						getExpandCollapseBtn().setSelected(false);
 				}
@@ -321,9 +318,9 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 		return items != null ? items : (items = new LinkedHashMap<>());
 	}
 	
-	private int getDepth(final CySubNetwork net) {
+	private int getDepth(CySubNetwork net) {
 		int depth = -1;
-		CySubNetwork parent = net;
+		var parent = net;
 		
 		do {
 			parent = ViewUtil.getParent(parent, serviceRegistrar);

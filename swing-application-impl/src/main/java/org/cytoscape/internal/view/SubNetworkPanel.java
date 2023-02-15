@@ -104,7 +104,7 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 		return false;
 	}
 	
-	public void setShowIndentation(final boolean newValue) {
+	public void setShowIndentation(boolean newValue) {
 		if (newValue != showIndentation) {
 			boolean oldValue = showIndentation;
 			showIndentation = newValue;
