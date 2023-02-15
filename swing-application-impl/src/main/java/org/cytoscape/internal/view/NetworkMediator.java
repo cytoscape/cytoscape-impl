@@ -17,11 +17,13 @@ import javax.swing.JSeparator;
 import javax.swing.event.PopupMenuListener;
 
 import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.event.DebounceTimer;
 import org.cytoscape.internal.actions.DestroyNetworksAction;
 import org.cytoscape.internal.model.RootNetworkManager;
 import org.cytoscape.internal.task.DynamicTaskFactory;
 import org.cytoscape.internal.task.DynamicTogglableTaskFactory;
 import org.cytoscape.internal.task.TaskFactoryTunableAction;
+import org.cytoscape.internal.view.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.events.AddedEdgesEvent;
@@ -41,6 +43,7 @@ import org.cytoscape.model.events.RemovedNodesListener;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
@@ -103,6 +106,8 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 	private final Map<Object, CyAction> rootPopupActionMap = new WeakHashMap<>();
 	
 	private boolean loadingSession;
+	
+	private DebounceTimer parentUpdateTimer = new DebounceTimer();
 	
 	private final NetworkMainPanel networkMainPanel;
 	private final RootNetworkManager rootNetManager;
@@ -186,24 +191,43 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 		if (loadingSession || networkMainPanel.getRootNetworkListPanel().isEmpty())
 			return;
 
-		// We only care about network name changes
+		// We only care about changes to network name or parentNetwork columns
 		var nameRecords = e.getColumnRecords(CyNetwork.NAME);
+		var parentRecords = e.getColumnRecords(ViewUtil.PARENT_NETWORK_COLUMN);
 
-		if (nameRecords == null || nameRecords.isEmpty())
+		if (nameRecords.isEmpty() && parentRecords.isEmpty())
 			return;
 
 		var tbl = e.getSource();
 		var netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
 		var net = netTblMgr.getNetworkForTable(tbl);
-
+		
 		// And if there is no related network, nothing needs to be done
-		if (net != null && tbl.equals(net.getDefaultNetworkTable())) {
-			invokeOnEDT(() -> {
-				var item = networkMainPanel.getNetworkItem(net);
-
-				if (item != null)
-					item.update();
-			});
+		if (net != null) {
+			if (!nameRecords.isEmpty() && tbl.equals(net.getDefaultNetworkTable())) {
+				// Network NAME changed...
+				invokeOnEDT(() -> {
+					// Update root or subnetwork name
+					var item = networkMainPanel.getNetworkItem(net);
+					
+					if (item != null)
+						item.update();
+				});
+			} else if (!parentRecords.isEmpty() && tbl.equals(net.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS))) {
+				// Network PARENT ID changed...
+				// Update the whole root component, including the hierarchy indentation of its subnetworks
+				var rootNetMgr = serviceRegistrar.getService(CyRootNetworkManager.class);
+				var rootNet = rootNetMgr.getRootNetwork(net);
+				
+				parentUpdateTimer.debounce(rootNet.getSUID(), () -> {
+					invokeOnEDT(() -> {
+						var item = networkMainPanel.getNetworkItem(rootNet);
+						
+						if (item != null)
+							item.update();
+					});
+				});
+			}
 		}
 	}
 

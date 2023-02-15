@@ -86,6 +86,7 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 		if (newValue != depth) {
 			int oldValue = depth;
 			depth = newValue;
+			updateIndentation();
 			firePropertyChange("depth", oldValue, newValue);
 		}
 	}

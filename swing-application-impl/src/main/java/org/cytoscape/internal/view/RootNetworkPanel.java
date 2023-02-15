@@ -186,13 +186,7 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 	@Override
 	public void update() {
 		updateRootPanel();
-		
-		for (SubNetworkPanel snp : getItems().values()) {
-			int depth = getDepth(snp.getModel().getNetwork());
-			snp.setDepth(depth);
-			snp.update();
-		}
-		
+		updateItemsDepth();
 		updateIndentation();
 	}
 	
