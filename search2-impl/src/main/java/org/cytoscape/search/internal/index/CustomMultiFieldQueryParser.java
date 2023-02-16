@@ -6,12 +6,14 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.DoublePoint;
 import org.apache.lucene.document.IntPoint;
 import org.apache.lucene.document.LongPoint;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
 
 public class CustomMultiFieldQueryParser extends MultiFieldQueryParser {
 
@@ -62,6 +64,23 @@ public class CustomMultiFieldQueryParser extends MultiFieldQueryParser {
 			}
 		}
 		return super.getFieldQuery(field, queryText, quoted);
+	}
+	
+	
+	@Override
+	protected Query newFieldQuery(Analyzer analyzer, String field, String queryText, boolean quoted) throws ParseException {
+		Class<?> type = fields.getType(field);
+		
+		// Boolean attributes are indexed using StringTerm containing "true" or "false"
+		// and cannot be searched by PhraseQuery (CYTOSCAPE-13045)
+		if(type == Boolean.class) {
+			if(queryText.equalsIgnoreCase("true") || queryText.equalsIgnoreCase("false")) {
+				return new TermQuery(new Term(field, queryText.toLowerCase()));
+			}
+			return null;
+		}
+		
+		return super.newFieldQuery(analyzer, field, queryText, quoted);
 	}
 	
 	

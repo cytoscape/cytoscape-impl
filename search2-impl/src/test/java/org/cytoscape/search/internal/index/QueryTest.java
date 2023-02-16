@@ -644,6 +644,14 @@ public class QueryTest {
 		assertNodeHits(results, 9);
 		results = queryIndex("name:true");
 		assertNodeHits(results);
+		
+		// CYTOSCAPE-13045, this should not throw an exception
+		results = queryIndex("\"abc def\"");
+		assertNodeHits(results);
+		results = queryIndex("\"true\"");
+		assertNodeHits(results, 1, 15);
+		results = queryIndex("\"far from\"");
+		assertNodeHits(results, 1);
 	}
 
 

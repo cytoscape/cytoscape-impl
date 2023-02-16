@@ -69,7 +69,7 @@ public class CyActivator extends AbstractCyActivator {
 			// The shutDown() method has to delete all the files in the folder for this to work.
 			baseDir.toFile().deleteOnExit();
 			
-			System.out.println("Search index folder: " + baseDir);
+			logger.info("Search index folder: " + baseDir);
 		} catch (IOException e) {
 			logger.error("Could not start search2-impl bundle. Cannot create temp folder for index files.", e);
 			return;
@@ -109,7 +109,6 @@ public class CyActivator extends AbstractCyActivator {
 	@Override
 	public void shutDown() {
 		if(searchManager != null) {
-			System.out.println("Shutting down search2_impl");
 			try {
 				searchManager.disposeAll();
 			} catch (Exception e) {
