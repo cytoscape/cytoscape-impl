@@ -834,8 +834,16 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		var netMgr = serviceRegistrar.getService(CyNetworkManager.class);
 		var networks = netMgr.getNetworkSet();
 		
-		for (var n : networks)
-			netMgr.destroyNetwork(n);
+		for (var n : networks) {
+			try {
+				if (netMgr.networkExists(n.getSUID())) // Check whether the network still exists in the Network Manager
+					netMgr.destroyNetwork(n);
+			} catch (IllegalArgumentException e) {
+				// The manager throws this exception if the network is not registered (or not anymore),
+				// so it is probably safe to catch it here and just log it, instead of interrupting the whole action.
+				logger.warn("Error when trying to destroy network: " + n, e);
+			}
+		}
 		
 		netMgr.reset();
 
