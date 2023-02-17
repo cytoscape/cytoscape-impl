@@ -75,9 +75,9 @@ public class GetTableCell extends AbstractFunction {
 		final CyNetwork currentNetwork = registrar.getService(CyApplicationManager.class).getCurrentNetwork();
 
 		if (currentNetwork != null) {
-      CyIdentifiable identifiable = findIdentifiableInNetwork(currentNetwork, suid);
-      if(identifiable != null) {
-        return getColumn(identifiable, currentNetwork, column);
+			CyIdentifiable identifiable = findIdentifiableInNetwork(currentNetwork, suid);
+			if (identifiable != null) {
+				return getColumn(identifiable, currentNetwork, column);
 			}
 		}
 
@@ -85,9 +85,9 @@ public class GetTableCell extends AbstractFunction {
 		Set<CyNetwork> allNetworks = registrar.getService(CyNetworkManager.class).getNetworkSet();
 		for(CyNetwork network : allNetworks) {
 			if(network != currentNetwork) {
-        CyIdentifiable identifiable = findIdentifiableInNetwork(network, suid);
+				CyIdentifiable identifiable = findIdentifiableInNetwork(network, suid);
 				if(identifiable != null) {
-          return getColumn(identifiable, network, column);
+					return getColumn(identifiable, network, column);
 				}
 			}
 		}
@@ -100,24 +100,24 @@ public class GetTableCell extends AbstractFunction {
 		// Get the appropriate CyIdentifiable
 		CyNode node = network.getNode(suid);
 		if (node != null)
-      return node;
+			return node;
 
 		CyEdge edge = network.getEdge(suid);
 		if (edge != null)
-      return edge;
+			return edge;
 
 		if (network.getSUID().equals(suid))
-      return network;
+			return network;
 		
 		return null;
 	}
 
 	private Object getColumn(CyIdentifiable id, CyNetwork network, String column) {
 		CyRow row = network.getRow(id);
-    // Make sure the column exists
-    CyColumn col = row.getTable().getColumn(column);
-    if ( col == null)
-      throw new IllegalArgumentException("\"" + column + "\" is a column.");
+		// Make sure the column exists
+		CyColumn col = row.getTable().getColumn(column);
+		if (col == null)
+			throw new IllegalArgumentException("\"" + column + "\" is a column.");
 		return row.get(column, clazz);
 	}
 }
