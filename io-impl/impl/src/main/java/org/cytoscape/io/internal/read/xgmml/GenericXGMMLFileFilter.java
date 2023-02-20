@@ -82,7 +82,7 @@ public class GenericXGMMLFileFilter extends BasicCyFileFilter {
 	}
 
 	@Override
-	public boolean accepts(final URI uri, final DataCategory category) {
+	public boolean accepts(URI uri, DataCategory category) {
 		try (InputStream is = uri.toURL().openStream()) {
 			return accepts(is, category);
 		} catch (IOException e) {
@@ -95,7 +95,7 @@ public class GenericXGMMLFileFilter extends BasicCyFileFilter {
 	 * @param stream
 	 * @return null if not an XGMML file
 	 */
-	protected String getXGMMLRootElement(final InputStream stream) {
+	protected String getXGMMLRootElement(InputStream stream) {
 		final String header = this.getHeader(stream, 20);
 		final Matcher matcher = XGMML_HEADER_PATTERN.matcher(header);
 		String root = null;

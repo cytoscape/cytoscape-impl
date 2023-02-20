@@ -19,15 +19,9 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.File;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import javax.imageio.ImageIO;
@@ -161,7 +155,7 @@ public class StarterPanel extends JPanel {
 	}
 	
 	public void update() {
-		List<FileInfo> recentFiles = getRecentFiles();
+		var recentFiles = getRecentFiles();
 		getRecentSessionsPanel().update(recentFiles);
 		getRecentSessionsPanel().setVisible(!recentFiles.isEmpty());
 		
@@ -182,7 +176,7 @@ public class StarterPanel extends JPanel {
 			contentPane = new JPanel();
 			contentPane.setOpaque(false);
 			
-			GroupLayout layout = new GroupLayout(contentPane);
+			var layout = new GroupLayout(contentPane);
 			contentPane.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
 			layout.setAutoCreateGaps(false);
@@ -206,11 +200,11 @@ public class StarterPanel extends JPanel {
 			titlePanel = new JPanel();
 			titlePanel.setOpaque(false);
 			
-			JLabel titleLabel = new JLabel("Welcome to Cytoscape");
+			var titleLabel = new JLabel("Welcome to Cytoscape");
 			titleLabel.setHorizontalAlignment(JLabel.CENTER);
 			makeSmall(titleLabel);
 			
-			GroupLayout layout = new GroupLayout(titlePanel);
+			var layout = new GroupLayout(titlePanel);
 			titlePanel.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
 			layout.setAutoCreateGaps(false);
@@ -285,8 +279,8 @@ public class StarterPanel extends JPanel {
 		return closeButton;
 	}
 	
-	private JLabel createLinkLabel(final String text, final String url) {
-		JLabel label = new JLabel(text);
+	private JLabel createLinkLabel(String text, String url) {
+		var label = new JLabel(text);
 		label.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
 		label.setForeground(LINK_FONT_COLOR);
 		label.setHorizontalAlignment(SwingConstants.CENTER);
@@ -307,18 +301,18 @@ public class StarterPanel extends JPanel {
 	 * Returns a list of the most recently opened session files.
 	 */
 	private List<FileInfo> getRecentFiles() {
-		final List<FileInfo> files = new ArrayList<>();
+		var files = new ArrayList<FileInfo>();
 		
-		final RecentlyOpenedTracker fileTracker = serviceRegistrar.getService(RecentlyOpenedTracker.class);
-		final List<URL> recentFiles = fileTracker.getRecentlyOpenedURLs();
+		var fileTracker = serviceRegistrar.getService(RecentlyOpenedTracker.class);
+		var recentFiles = fileTracker.getRecentlyOpenedURLs();
 		int fileCount = Math.min(recentFiles.size(), MAX_FILES);
 		
 		for (int i = 0; i < fileCount; i++) {
-			final URL url = recentFiles.get(i);
+			var url = recentFiles.get(i);
 			File file = null;
 			
 			try {
-				URI uri = url.toURI();
+				var uri = url.toURI();
 				file = new File(uri);
 			} catch (Exception e) {
 				logger.error("Invalid file URL.", e);
@@ -326,7 +320,7 @@ public class StarterPanel extends JPanel {
 			}
 			
 			if (file.exists() && file.canRead()) {
-				FileInfo fi = new FileInfo(file, file.getName(), file.getAbsolutePath());
+				var fi = new FileInfo(file, file.getName(), file.getAbsolutePath());
 				files.add(fi);
 			} else {
 				fileCount = Math.min(recentFiles.size(), fileCount + 1);
@@ -340,20 +334,20 @@ public class StarterPanel extends JPanel {
 	 * Returns a list of example files.
 	 */
 	private List<FileInfo> getSampleFiles() {
-		final List<FileInfo> list = new ArrayList<>();
-		final File dir = getExampleDir();
+		var list = new ArrayList<FileInfo>();
+		var dir = getExampleDir();
 		
 		if (dir != null && dir.exists() && dir.canRead()) {
-			File[] files = dir.listFiles();
+			var files = dir.listFiles();
 			
 			if (files != null) {
 				for (File f : files) {
 					if (f.canRead() && f.getName().toLowerCase().endsWith(SESSION_EXT)) {
-						String toolTip = 
+						var toolTip = 
 								"<html>This (<b>" + f.getName() + "</b>) and other example files can be found in:<br />"
 								+ dir.getAbsolutePath() + "</html>";
 						
-						final FileInfo fi = new FileInfo(f, f.getName().replace(SESSION_EXT, ""), toolTip);
+						var fi = new FileInfo(f, f.getName().replace(SESSION_EXT, ""), toolTip);
 						list.add(fi);
 					}
 				}
@@ -364,7 +358,7 @@ public class StarterPanel extends JPanel {
 	}
 	
 	private final File getExampleDir() {
-		final CyApplicationConfiguration applicationCfg = serviceRegistrar.getService(CyApplicationConfiguration.class);
+		var applicationCfg = serviceRegistrar.getService(CyApplicationConfiguration.class);
 
 		if (applicationCfg != null) {
 			return new File(applicationCfg.getInstallationDirectoryLocation() + "/" + SAMPLE_DATA_DIR + "/");
@@ -374,7 +368,7 @@ public class StarterPanel extends JPanel {
 		}
 	}
 	
-	private void maybeOpenSession(final File file) {
+	private void maybeOpenSession(File file) {
 		if (file.exists()) {
 			Util.maybeOpenSession(file, StarterPanel.this.getTopLevelAncestor(), serviceRegistrar);
 		} else {
@@ -385,7 +379,7 @@ public class StarterPanel extends JPanel {
 					JOptionPane.WARNING_MESSAGE
 			);
 			
-			final RecentlyOpenedTracker fileTracker = serviceRegistrar.getService(RecentlyOpenedTracker.class);
+			var fileTracker = serviceRegistrar.getService(RecentlyOpenedTracker.class);
 			
 			try {
 				fileTracker.remove(file.toURI().toURL());
@@ -396,10 +390,10 @@ public class StarterPanel extends JPanel {
 	}
 	
 	private void drawFocus(SessionPanel panel) {
-		List<SessionPanel> all = getRecentSessionsPanel().getAllPanels();
+		var all = getRecentSessionsPanel().getAllPanels();
 		all.addAll(getSampleSessionsPanel().getAllPanels());
 		
-		for (SessionPanel p : all)
+		for (var p : all)
 			drawFocus(p, panel == p);
 	}
 	
@@ -416,7 +410,7 @@ public class StarterPanel extends JPanel {
 		SessionListPanel(String title) {
 			setOpaque(false);
 			
-			JLabel titleLabel = new JLabel(title);
+			var titleLabel = new JLabel(title);
 			titleLabel.setBorder(BorderFactory.createEmptyBorder(2, 16, 2, 16));
 			makeSmall(titleLabel);
 			
@@ -426,19 +420,19 @@ public class StarterPanel extends JPanel {
 		}
 		
 		void update(List<FileInfo> files) {
-			JPanel panel = getListPanel();
+			var panel = getListPanel();
 			panel.removeAll();
 			
-			for (final FileInfo fi : files) {
-				SessionPanel sessionPanel = new SessionPanel(fi);
+			for (var fi : files) {
+				var sessionPanel = new SessionPanel(fi);
 				panel.add(sessionPanel);
 			}
 		}
 		
 		List<SessionPanel> getAllPanels() {
-			ScrollableListPanel lp = getListPanel();
+			var lp = getListPanel();
 			int total = lp.getComponentCount();
-			ArrayList<SessionPanel> list = new ArrayList<>(total);
+			var list = new ArrayList<SessionPanel>(total);
 			
 			for (int i = 0; i < total; i++)
 				list.add((SessionPanel) lp.getComponent(i));
@@ -534,7 +528,7 @@ public class StarterPanel extends JPanel {
 		private JLabel nameLabel;
 		
 		private final FileInfo fileInfo;
-
+		
 		SessionPanel(FileInfo fileInfo) {
 			this.fileInfo = fileInfo;
 			init();
@@ -545,7 +539,7 @@ public class StarterPanel extends JPanel {
 			setBorder(DEF_BORDER);
 			setBackground(LIST_BG_COLOR);
 			
-			final GroupLayout layout = new GroupLayout(this);
+			var layout = new GroupLayout(this);
 			setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
 			layout.setAutoCreateGaps(true);
@@ -559,7 +553,7 @@ public class StarterPanel extends JPanel {
 					.addComponent(getNameLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 			
-			MouseListener mouseListener = new MouseAdapter() {
+			var mouseListener = new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent e) {
 					if (!ignoreClickEvents && !sessionLoading
@@ -618,7 +612,7 @@ public class StarterPanel extends JPanel {
 				
 				nameLabel.setHorizontalAlignment(SwingConstants.CENTER);
 				
-				Dimension d = new Dimension(NAME_WIDTH, nameLabel.getPreferredSize().height);
+				var d = new Dimension(NAME_WIDTH, nameLabel.getPreferredSize().height);
 				nameLabel.setMinimumSize(d);
 				nameLabel.setPreferredSize(d);
 				nameLabel.setSize(d);
@@ -790,13 +784,13 @@ public class StarterPanel extends JPanel {
 	
 				try {
 					zipFile = new ZipFile(file);
-					Enumeration<? extends ZipEntry> entries = zipFile.entries();
+					var entries = zipFile.entries();
 	
 					while (entries.hasMoreElements()) {
-						ZipEntry entry = entries.nextElement();
+						var entry = entries.nextElement();
 	
 						if (entry.getName().endsWith(THUMBNAIL_FILE)) {
-							InputStream stream = zipFile.getInputStream(entry);
+							var stream = zipFile.getInputStream(entry);
 							img = ImageIO.read(stream);
 							stream.close();
 							break;
@@ -808,7 +802,7 @@ public class StarterPanel extends JPanel {
 					if (zipFile != null) {
 						try {
 							zipFile.close();
-						} catch (final Exception ex) {
+						} catch (Exception ex) {
 							logger.error("Unable to close file " + file.getName(), ex);
 						}
 					}
@@ -820,7 +814,7 @@ public class StarterPanel extends JPanel {
 
 		@Override
 		public int hashCode() {
-			final int prime = 17;
+			int prime = 17;
 			int result = 7;
 			result = prime * result + getOuterType().hashCode();
 			result = prime * result + ((file == null) ? 0 : file.hashCode());

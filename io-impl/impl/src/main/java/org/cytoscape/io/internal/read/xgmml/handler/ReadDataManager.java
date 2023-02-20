@@ -143,10 +143,12 @@ public class ReadDataManager {
 
 	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
-	public ReadDataManager(final ReadCache cache,
-						   final SUIDUpdater suidUpdater,
-						   final GroupUtil groupUtil,
-						   final CyServiceRegistrar serviceRegistrar) {
+	public ReadDataManager(
+			ReadCache cache,
+			SUIDUpdater suidUpdater,
+			GroupUtil groupUtil,
+			CyServiceRegistrar serviceRegistrar
+	) {
 		this.cache = cache;
 		this.suidUpdater = suidUpdater;
 		this.groupUtil = groupUtil;
@@ -260,7 +262,7 @@ public class ReadDataManager {
 	public SUIDUpdater getSUIDUpdater() {
 		return suidUpdater;
 	}
-
+	
 	/**
 	 * @param element A CyNode or CyEdge
 	 * @param attName The name of the attribute
@@ -314,11 +316,11 @@ public class ReadDataManager {
 
 			for (int i = 0; i < attrLength; i++) {
 				if (element instanceof CyNode)
-					addGraphicsAttribute((CyNode) element, atts.getLocalName(i), atts.getValue(i));
+					addGraphicsAttribute(element, atts.getLocalName(i), atts.getValue(i));
 				else if (element instanceof CyEdge)
-					addGraphicsAttribute((CyEdge) element, atts.getLocalName(i), atts.getValue(i));
+					addGraphicsAttribute(element, atts.getLocalName(i), atts.getValue(i));
 				else if (element instanceof CyNetwork)
-					addGraphicsAttribute((CyNetwork) element, atts.getLocalName(i), atts.getValue(i));
+					addGraphicsAttribute(element, atts.getLocalName(i), atts.getValue(i));
 			}
 		}
 	}
@@ -340,7 +342,7 @@ public class ReadDataManager {
 		return null;
 	}
 	
-	public <T extends CyIdentifiable> Map<String, String> getViewGraphicsAttributes(final Object oldId, final boolean locked) {
+	public <T extends CyIdentifiable> Map<String, String> getViewGraphicsAttributes(Object oldId, boolean locked) {
 		return locked ? viewLockedGraphics.get(oldId) : viewGraphics.get(oldId);
 	}
 
@@ -445,7 +447,7 @@ public class ReadDataManager {
 		return rootNetworkManager;
 	}
 	
-    protected CyNode createNode(final Object oldId, final String label, final CyNetwork net) {
+    protected CyNode createNode(Object oldId, String label, CyNetwork net) {
         if (oldId == null)
         	throw new NullPointerException("'oldId' is null.");
         
@@ -483,14 +485,14 @@ public class ReadDataManager {
         return node;
     }
 
-	protected void addNode(final CyNode node, final String label, final CySubNetwork net) {
+	protected void addNode(CyNode node, String label, CySubNetwork net) {
 		net.addNode(node);
 		cache.cacheNodeByName(label, node);
 		cache.removeUnresolvedNode(node, net);
 	}
     
-	protected CyEdge createEdge(final CyNode source, final CyNode target, Object id, final String label,
-			final boolean directed, CyNetwork net) {
+	protected CyEdge createEdge(CyNode source, CyNode target, Object id, String label, boolean directed,
+			CyNetwork net) {
 		CyEdge edge = null;
 		
 		if (id == null) id = label;
@@ -571,8 +573,8 @@ public class ReadDataManager {
 		return edge;
 	}
 
-	protected CyEdge createEdge (final Object sourceId, final Object targetId, Object id, final String label,
-			final boolean directed, final CyNetwork net) {
+	protected CyEdge createEdge(Object sourceId, Object targetId, Object id, String label, boolean directed,
+			CyNetwork net) {
 		if (id == null) id = label;
 		
 		CyNode source = cache.getNode(sourceId);
@@ -608,7 +610,7 @@ public class ReadDataManager {
 		groupUtil.createGroups(publicNetworks, null);
 	}
 	
-	public void updateGroupNodes(final CyNetworkView view) {
+	public void updateGroupNodes(CyNetworkView view) {
 		groupUtil.updateGroupNodes(view);
 	}
 	
@@ -622,7 +624,7 @@ public class ReadDataManager {
 		}
 	}
 	
-	protected void addElementLink(final String href, final Class<? extends CyIdentifiable> clazz) {
+	protected void addElementLink(String href, Class<? extends CyIdentifiable> clazz) {
 		cache.addElementLink(href, clazz, getCurrentNetwork());
 	}
 	
@@ -708,7 +710,7 @@ public class ReadDataManager {
  	/**
  	 * Adds old->new SUID references to the SUID Updater 
  	 */
-	private void mapSUIDs(final Object oldId, final Long newSUID) {
+	private void mapSUIDs(Object oldId, Long newSUID) {
         if (oldId instanceof Long) // if String (probably Cy2), it has to be handled differently
         	suidUpdater.addSUIDMapping((Long)oldId, newSUID);
 	}
@@ -721,7 +723,7 @@ public class ReadDataManager {
 	 * @param attName The name of the XGMML attribute
 	 * @return
 	 */
-	private final boolean ignoreGraphicsAttribute(final CyIdentifiable element, final String attName) {
+	private final boolean ignoreGraphicsAttribute(CyIdentifiable element, String attName) {
 		boolean b = false;
 		
 		// When reading XGMML as part of a CYS file, these graphics attributes should not be parsed.
@@ -736,12 +738,12 @@ public class ReadDataManager {
 		return b;
 	}
 	
-	private final boolean matches2x(final String text) {
+	private final boolean matches2x(String text) {
 		final Matcher matcher = P2X.matcher(text);
 		return matcher.matches();
 	}
 	
-	private final boolean matchesBg(final String text) {
+	private final boolean matchesBg(String text) {
 		final Matcher matcher = PBG_COLOR.matcher(text);
 		return matcher.matches();
 	}

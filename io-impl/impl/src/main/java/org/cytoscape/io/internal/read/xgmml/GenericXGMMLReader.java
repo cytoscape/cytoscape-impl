@@ -443,7 +443,7 @@ public class GenericXGMMLReader extends AbstractCyNetworkReader {
 			int c;
 
 			c = super.read();
-			if (c == (int) '&') {
+			if (c == '&') {
 				byte[] b = new byte[7];
 				int cnt;
 

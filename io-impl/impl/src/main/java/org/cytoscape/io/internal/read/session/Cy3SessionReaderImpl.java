@@ -1,6 +1,14 @@
 package org.cytoscape.io.internal.read.session;
 
-import static org.cytoscape.io.internal.util.session.SessionUtil.*;
+import static org.cytoscape.io.internal.util.session.SessionUtil.APPS_FOLDER;
+import static org.cytoscape.io.internal.util.session.SessionUtil.CYTABLE_STATE_FILE;
+import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORKS_FOLDER;
+import static org.cytoscape.io.internal.util.session.SessionUtil.NETWORK_VIEWS_FOLDER;
+import static org.cytoscape.io.internal.util.session.SessionUtil.PROPERTIES_FOLDER;
+import static org.cytoscape.io.internal.util.session.SessionUtil.TABLE_EXT;
+import static org.cytoscape.io.internal.util.session.SessionUtil.VERSION_EXT;
+import static org.cytoscape.io.internal.util.session.SessionUtil.VIZMAP_XML_FILE;
+import static org.cytoscape.io.internal.util.session.SessionUtil.XGMML_EXT;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -368,7 +376,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 				}
 			}
 		} else {
-			logger.error("The network view will cannot be recreated. The network view entry is invalid: " + entryName);
+			logger.error("The network view cannot be recreated. The network view entry is invalid: " + entryName);
 		}
 	}
 	

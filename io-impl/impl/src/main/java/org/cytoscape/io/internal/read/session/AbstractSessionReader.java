@@ -13,12 +13,10 @@ import java.util.WeakHashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.cytoscape.group.CyGroup;
 import org.cytoscape.io.internal.read.MarkSupportedInputStream;
 import org.cytoscape.io.internal.read.ZipInputStreamWrapper;
 import org.cytoscape.io.internal.util.GroupUtil;
 import org.cytoscape.io.internal.util.ReadCache;
-import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.io.read.CySessionReader;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -94,10 +92,12 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	
 	private boolean inputStreamRead;
 
-	public AbstractSessionReader(final InputStream sourceInputStream,
-								 final ReadCache cache,
-								 final GroupUtil groupUtil,
-								 final CyServiceRegistrar serviceRegistrar) {
+	public AbstractSessionReader(
+			InputStream sourceInputStream,
+			ReadCache cache,
+			GroupUtil groupUtil,
+			CyServiceRegistrar serviceRegistrar
+	) {
 		assert sourceInputStream != null;
 		assert cache != null;
 		assert groupUtil != null;
@@ -127,7 +127,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 
 	@Override
 	public CySession getSession() {
-		CySession sess = new CySession.Builder()
+		var sess = new CySession.Builder()
 				.networks(networks)
 				.networkViews(networkViews)
 				.viewVisualStyleMap(visualStyleMap)
@@ -197,11 +197,11 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 		
 		if (cancelled) {
 			// Destroy groups
-			final Set<CyGroup> groups = groupUtil.getGroups(cache.getNetworks());
+			var groups = groupUtil.getGroups(cache.getNetworks());
 			groupUtil.destroyGroups(groups);
 			
 			// Dispose CyNetworkViews and CyNetworks
-			for (final CyNetworkView view : networkViews)
+			for (var view : networkViews)
 				view.dispose();
 			
 			final CyRootNetworkManager rootNetworkManager = serviceRegistrar.getService(CyRootNetworkManager.class);
@@ -209,12 +209,12 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 			
 			// Get all networks from the ReadCache, because it also contains unregistered networks
 			// such as group networks.
-			for (final CyNetwork net : cache.getNetworks()) {
+			for (var net : cache.getNetworks()) {
 				net.dispose();
 				rootNetworks.add(rootNetworkManager.getRootNetwork(net));
 			}
 			
-			for (final CyRootNetwork rootNet : rootNetworks)
+			for (var rootNet : rootNetworks)
 				rootNet.dispose();
 			
 			networkViews.clear();

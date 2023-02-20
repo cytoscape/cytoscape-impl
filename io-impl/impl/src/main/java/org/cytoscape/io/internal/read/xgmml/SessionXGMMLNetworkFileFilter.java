@@ -65,12 +65,12 @@ public class SessionXGMMLNetworkFileFilter extends GenericXGMMLFileFilter {
 		if (category != this.category || !cache.isReadingSessionFile())
 			return false;
 		
-		final String root = getXGMMLRootElement(stream);
+		var root = getXGMMLRootElement(stream);
 		
 		if (root != null) {
 			// It looks like an XGMML file, but it cannot have the 'cy:view="1"' flag,
 			// which would mean it's a Cy3 CyNetworkView file
-			final Matcher matcher = SESSION_XGMML_VIEW_PATTERN.matcher(root);
+			var matcher = SESSION_XGMML_VIEW_PATTERN.matcher(root);
 			
 			return !matcher.find();
 		}

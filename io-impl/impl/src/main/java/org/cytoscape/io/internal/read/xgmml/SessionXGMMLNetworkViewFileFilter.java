@@ -26,7 +26,6 @@ package org.cytoscape.io.internal.read.xgmml;
 
 import java.io.InputStream;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.cytoscape.io.DataCategory;
@@ -67,11 +66,11 @@ public class SessionXGMMLNetworkViewFileFilter extends GenericXGMMLFileFilter {
 		if (category != this.category || !cache.isReadingSessionFile())
 			return false;
 		
-		final String root = getXGMMLRootElement(stream);
+		var root = getXGMMLRootElement(stream);
 		
 		if (root != null) {
 			// It looks like an XGMML file, but it also needs to have the 'cy:view="1"' flag
-			final Matcher matcher = SESSION_XGMML_VIEW_PATTERN.matcher(root);
+			var matcher = SESSION_XGMML_VIEW_PATTERN.matcher(root);
 			
 			return matcher.find();
 		}

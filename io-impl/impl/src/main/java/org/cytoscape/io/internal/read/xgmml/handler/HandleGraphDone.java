@@ -1,5 +1,16 @@
 package org.cytoscape.io.internal.read.xgmml.handler;
 
+import java.util.Set;
+
+import org.cytoscape.io.internal.read.xgmml.ParseState;
+import org.cytoscape.io.internal.util.SUIDUpdater;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
@@ -24,18 +35,6 @@ package org.cytoscape.io.internal.read.xgmml.handler;
  * #L%
  */
 
-import java.util.Map;
-import java.util.Set;
-
-import org.cytoscape.io.internal.read.xgmml.ParseState;
-import org.cytoscape.io.internal.util.SUIDUpdater;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.subnetwork.CySubNetwork;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-
 /**
  * handleGraphDone is called when we finish parsing the entire XGMML file. This
  * allows us to do deal with some cleanup line creating all of our groups, etc.
@@ -51,9 +50,9 @@ public class HandleGraphDone extends AbstractHandler {
 			return current;
 		
 		// Resolve any unresolved node and edge references
-		Map<CyNetwork, Set<Long>> nodeMap = manager.getCache().getNodeLinks();
+		var nodeMap = manager.getCache().getNodeLinks();
 		
-		for (Map.Entry<CyNetwork, Set<Long>> entry : nodeMap.entrySet()) {
+		for (var entry : nodeMap.entrySet()) {
 			CyNetwork net = entry.getKey();
 			Set<Long> ids = entry.getValue();
 			
@@ -77,9 +76,9 @@ public class HandleGraphDone extends AbstractHandler {
 		}
 		
 		// TODO: refactor
-		Map<CyNetwork, Set<Long>> edgeMap = manager.getCache().getEdgeLinks();
+		var edgeMap = manager.getCache().getEdgeLinks();
 		
-		for (Map.Entry<CyNetwork, Set<Long>> entry : edgeMap.entrySet()) {
+		for (var entry : edgeMap.entrySet()) {
 			CyNetwork net = entry.getKey();
 			Set<Long> ids = entry.getValue();
 			

@@ -76,8 +76,11 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 
 	private final Object lock = new Object();
 
-	public CyTableManagerImpl(final CyNetworkTableManager networkTableManager, final CyNetworkManager networkManager,
-			final CyServiceRegistrar serviceRegistrar) {
+	public CyTableManagerImpl(
+			CyNetworkTableManager networkTableManager,
+			CyNetworkManager networkManager,
+			CyServiceRegistrar serviceRegistrar
+	) {
 		if (networkTableManager == null)
 			throw new IllegalArgumentException("networkTableManager must not be null.");
 		if (networkManager == null)
@@ -100,9 +103,9 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 			values = tables.values();
 		}
 		
-		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		var eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 
-		for (CyTable table : values) {
+		for (var table : values) {
 			eventHelper.fireEvent(new TableAboutToBeDeletedEvent(this, table));
 		}
 
@@ -112,14 +115,14 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 	}
 
 	@Override
-	public void addTable(final CyTable t) {
+	public void addTable(CyTable t) {
 		boolean fireEvent = false;
 		
 		synchronized (lock) {
 			if (t == null)
 				throw new NullPointerException("added table is null");
 
-			final Long suid = t.getSUID();
+			var suid = t.getSUID();
 
 			if (tables.get(suid) == null) {
 				tables.put(suid, t);
@@ -128,17 +131,17 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 		}
 		
 		if (fireEvent) {
-			final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+			var eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 			eventHelper.fireEvent(new TableAddedEvent(this, t));
 		}
 	}
 
 	@Override
-	public Set<CyTable> getAllTables(final boolean includePrivate) {
+	public Set<CyTable> getAllTables(boolean includePrivate) {
 		synchronized (lock) {
-			final Set<CyTable> res = new HashSet<>();
+			var res = new HashSet<CyTable>();
 	
-			for (final Long key : tables.keySet()) {
+			for (var key : tables.keySet()) {
 				if (includePrivate || tables.get(key).isPublic())
 					res.add(tables.get(key));
 			}
@@ -148,14 +151,14 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 	}
 
 	@Override
-	public CyTable getTable(final long suid) {
+	public CyTable getTable(long suid) {
 		synchronized (lock) {
 			return tables.get(suid);
 		}
 	}
 
-	void deleteTableInternal(final long suid, boolean force) {
-		CyTable table;
+	void deleteTableInternal(long suid, boolean force) {
+		CyTable table = null;
 
 		synchronized (lock) {
 			table = tables.get(suid);
@@ -165,7 +168,7 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 			}
 		}
 
-		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		var eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 		eventHelper.fireEvent(new TableAboutToBeDeletedEvent(this, table));
 
 		synchronized (lock) {
@@ -198,9 +201,10 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 
 	@Override
 	public void handleEvent(NetworkAboutToBeDestroyedEvent e) {
-		CyNetwork network = e.getNetwork();
-		for (Class<? extends CyIdentifiable> type : COMPATIBLE_TYPES)
-			for (CyTable table : networkTableManager.getTables(network, type).values())
+		var network = e.getNetwork();
+		
+		for (var type : COMPATIBLE_TYPES)
+			for (var table : networkTableManager.getTables(network, type).values())
 				deleteTableInternal(table.getSUID(), true);
 	}
 	
@@ -211,13 +215,13 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 
 	@Override
 	public Set<CyTable> getGlobalTables() {
-		final Set<CyTable> nonGlobalTables = new HashSet<>();
-		final Set<CyTable> globalTables = new HashSet<>();
-		final Set<CyNetwork> networks = networkTableManager.getNetworkSet();
+		var nonGlobalTables = new HashSet<CyTable>();
+		var globalTables = new HashSet<CyTable>();
+		var networks = networkTableManager.getNetworkSet();
 
-		for (final CyNetwork network : networks) {
-			for (final Class<? extends CyIdentifiable> type : COMPATIBLE_TYPES) {
-				final Map<String, CyTable> objTables = networkTableManager.getTables(network,type);
+		for (var network : networks) {
+			for (var type : COMPATIBLE_TYPES) {
+				var objTables = networkTableManager.getTables(network, type);
 				nonGlobalTables.addAll(objTables.values());
 			}
 		}
@@ -232,18 +236,19 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 	}
 
 	@Override
-	public Set<CyTable> getLocalTables(final Class<? extends CyIdentifiable> type) {
-		final Set<CyTable> localTables = new HashSet<>();
+	public Set<CyTable> getLocalTables(Class<? extends CyIdentifiable> type) {
+		var localTables = new HashSet<CyTable>();
+		var networks = networkManager.getNetworkSet();
 
-		final Set<CyNetwork> networks = networkManager.getNetworkSet();
-
-		for (final CyNetwork network : networks) {
-			final Map<String, CyTable> objTables = networkTableManager.getTables(network, type);
+		for (var network : networks) {
+			var objTables = networkTableManager.getTables(network, type);
+			
 			if (network instanceof CySubNetwork) {
-				final CyTable shared = networkTableManager.getTable(((CySubNetwork) network).getRootNetwork(), type,
+				var shared = networkTableManager.getTable(((CySubNetwork) network).getRootNetwork(), type,
 						CyRootNetwork.SHARED_ATTRS);
 				localTables.add(shared);
 			}
+			
 			localTables.addAll(objTables.values());
 		}
 
@@ -251,10 +256,10 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 	}
 
 	private void refreshTableEquations() {
-		final EquationCompiler compiler = serviceRegistrar.getService(EquationCompiler.class);
-		Set<CyTable> tables = getAllTables(true);
+		var compiler = serviceRegistrar.getService(EquationCompiler.class);
+		var tables = getAllTables(true);
 
-		for (CyTable table : tables) {
+		for (var table : tables) {
 			EquationUtil.refreshEquations(table, compiler);
 		}
 	}
