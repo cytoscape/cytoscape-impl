@@ -30,7 +30,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.cytoscape.io.DataCategory;
-import org.cytoscape.io.internal.util.session.SessionUtil;
+import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.util.StreamUtil;
 
 /**
@@ -40,19 +40,31 @@ public class SessionXGMMLNetworkViewFileFilter extends GenericXGMMLFileFilter {
 
 	protected static final Pattern SESSION_XGMML_VIEW_PATTERN = Pattern.compile("cy:view=[\\'\"](1|true)[\\'\"]");
 	
-	public SessionXGMMLNetworkViewFileFilter(Set<String> extensions, Set<String> contentTypes,
-			String description, DataCategory category, StreamUtil streamUtil) {
-		super(extensions, contentTypes, description, category, streamUtil);
+	public SessionXGMMLNetworkViewFileFilter(
+			Set<String> extensions, 
+			Set<String> contentTypes,
+			String description,
+			DataCategory category,
+			ReadCache cache,
+			StreamUtil streamUtil
+	) {
+		super(extensions, contentTypes, description, category, cache, streamUtil);
 	}
 
-	public SessionXGMMLNetworkViewFileFilter(String[] extensions, String[] contentTypes,
-			String description, DataCategory category, StreamUtil streamUtil) {
-		super(extensions, contentTypes, description, category, streamUtil);
+	public SessionXGMMLNetworkViewFileFilter(
+			String[] extensions,
+			String[] contentTypes,
+			String description,
+			DataCategory category,
+			ReadCache cache,
+			StreamUtil streamUtil
+	) {
+		super(extensions, contentTypes, description, category, cache, streamUtil);
 	}
 	
 	@Override
 	public boolean accepts(InputStream stream, DataCategory category) {
-		if (category != this.category || !SessionUtil.isReadingSessionFile())
+		if (category != this.category || !cache.isReadingSessionFile())
 			return false;
 		
 		final String root = getXGMMLRootElement(stream);

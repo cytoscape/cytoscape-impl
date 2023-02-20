@@ -22,7 +22,6 @@ import org.cytoscape.io.internal.read.xgmml.ParseState;
 import org.cytoscape.io.internal.util.GroupUtil;
 import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.internal.util.SUIDUpdater;
-import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -156,7 +155,7 @@ public class ReadDataManager {
 	}
 
 	public void init() {
-		if (!SessionUtil.isReadingSessionFile()) {
+		if (!cache.isReadingSessionFile()) {
 			cache.init();
 			suidUpdater.init();
 		}
@@ -224,7 +223,7 @@ public class ReadDataManager {
 		// Important: graphics related maps and lists cannot be disposed here,
 		// because they may be necessary when creating the network views.
 		
-		if (!SessionUtil.isReadingSessionFile()) {
+		if (!cache.isReadingSessionFile()) {
 			cache.dispose();
 			suidUpdater.dispose();
 		}
@@ -239,7 +238,7 @@ public class ReadDataManager {
 	}
 
 	public boolean isSessionFormat() {
-		return SessionUtil.isReadingSessionFile();
+		return cache.isReadingSessionFile();
 	}
 	
 	public boolean isViewFormat() {

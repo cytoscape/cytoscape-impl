@@ -9,9 +9,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.HashSet;
 import java.util.Properties;
-import java.util.Set;
 
 import org.cytoscape.io.DataCategory;
+import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.internal.util.StreamUtilImpl;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.CyProperty.SavePolicy;
@@ -19,7 +19,6 @@ import org.cytoscape.property.SimpleCyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.junit.Before;
 import org.junit.Test;
-
 
 public class GenericXGMMLFileFilterTest {
 
@@ -29,17 +28,20 @@ public class GenericXGMMLFileFilterTest {
 	
 	@Before
 	public void setUp() {
-		Set<String> extensions = new HashSet<String>();
-		Set<String> contentTypes = new HashSet<String>();
-		String description = "XGMML";
+		var extensions = new HashSet<String>();
+		var contentTypes = new HashSet<String>();
+		var description = "XGMML";
 		
-		Properties props = new Properties();
-		CyProperty<Properties> cyProperties = new SimpleCyProperty<Properties>("test", props, Properties.class, SavePolicy.DO_NOT_SAVE);	
+		var props = new Properties();
+		var cyProperties = new SimpleCyProperty<Properties>("test", props, Properties.class, SavePolicy.DO_NOT_SAVE);	
 		
-		CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		var serviceRegistrar = mock(CyServiceRegistrar.class);
 		when(serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)")).thenReturn(cyProperties);
 		
-		filter = new GenericXGMMLFileFilter(extensions, contentTypes, description , DataCategory.NETWORK, new StreamUtilImpl(serviceRegistrar));
+		var streamUtil = new StreamUtilImpl(serviceRegistrar);
+		var cache = new ReadCache(serviceRegistrar);
+		
+		filter = new GenericXGMMLFileFilter(extensions, contentTypes, description , DataCategory.NETWORK, cache, streamUtil);
 	}
 	
 	@Test

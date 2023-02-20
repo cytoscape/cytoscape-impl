@@ -130,6 +130,7 @@ public class CyActivator extends AbstractCyActivator {
 	public void start(BundleContext bc) {
 		var serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 
+		var readCache = new ReadCache(serviceRegistrar);
 		var streamUtil = new StreamUtilImpl(serviceRegistrar);
 		var expressionFilter = new BasicCyFileFilter(new String[]{"pvals"}, new String[]{"text/plain"},"Cytoscape Expression Matrix", DataCategory.TABLE, streamUtil);
 
@@ -146,11 +147,11 @@ public class CyActivator extends AbstractCyActivator {
 		var sifFilter = new BasicCyFileFilter(new String[]{"sif"}, new String[]{"text/sif"}, "SIF", DataCategory.NETWORK, streamUtil);
 		var csvFilter = new BasicCyFileFilter(new String[]{"csv"}, new String[]{"text/plain"}, "CSV", DataCategory.TABLE, streamUtil);
 		var sessionTableFilter = new BasicCyFileFilter(new String[]{"cytable"}, new String[]{"text/plain"}, "Session Table", DataCategory.TABLE, streamUtil);
-		var xgmmlFilter = new GenericXGMMLFileFilter(new String[]{"xgmml","xml"}, new String[]{"text/xgmml","text/xgmml+xml"}, "XGMML",DataCategory.NETWORK, streamUtil);
-		var xgmmlNoViewFilter = new GenericXGMMLFileFilter(new String[]{"xgmml","xml"}, new String[]{"text/xgmml","text/xgmml+xml"}, "XGMML without style data",DataCategory.NETWORK, streamUtil);
-		var sessXgmmlFileFilter = new SessionXGMMLFileFilter(new String[]{"xgmml"}, new String[]{"text/xgmml","text/xgmml+xml"}, "Cy3 Session XGMML", DataCategory.NETWORK, streamUtil);
-		var sessXgmmlNetFileFilter = new SessionXGMMLNetworkFileFilter(new String[]{"xgmml"}, new String[]{"text/xgmml","text/xgmml+xml"}, "CYS Network XGMML", DataCategory.NETWORK, streamUtil);
-		var sessXgmmlViewFileFilter = new SessionXGMMLNetworkViewFileFilter(new String[]{"xgmml"}, new String[]{"text/xgmml","text/xgmml+xml"}, "CYS View XGMML",DataCategory.NETWORK, streamUtil);
+		var xgmmlFilter = new GenericXGMMLFileFilter(new String[]{"xgmml","xml"}, new String[]{"text/xgmml","text/xgmml+xml"}, "XGMML", DataCategory.NETWORK, readCache, streamUtil);
+		var xgmmlNoViewFilter = new GenericXGMMLFileFilter(new String[]{"xgmml","xml"}, new String[]{"text/xgmml","text/xgmml+xml"}, "XGMML without style data", DataCategory.NETWORK, readCache, streamUtil);
+		var sessXgmmlFileFilter = new SessionXGMMLFileFilter(new String[]{"xgmml"}, new String[]{"text/xgmml","text/xgmml+xml"}, "Cy3 Session XGMML", DataCategory.NETWORK, readCache, streamUtil);
+		var sessXgmmlNetFileFilter = new SessionXGMMLNetworkFileFilter(new String[]{"xgmml"}, new String[]{"text/xgmml","text/xgmml+xml"}, "CYS Network XGMML", DataCategory.NETWORK, readCache, streamUtil);
+		var sessXgmmlViewFileFilter = new SessionXGMMLNetworkViewFileFilter(new String[]{"xgmml"}, new String[]{"text/xgmml","text/xgmml+xml"}, "CYS View XGMML",DataCategory.NETWORK, readCache, streamUtil);
 		var gmlFilter = new GMLFileFilter(new String[]{"gml"}, new String[]{"text/gml"}, "GML", DataCategory.NETWORK, streamUtil);
 		var cysessionFilter = new CysessionFileFilter(new String[]{"xml"}, new String[]{}, "Cysession XML", DataCategory.PROPERTIES, streamUtil);
 		var bookmarksFilter = new BookmarkFileFilter(new String[]{"xml"}, new String[]{}, "Bookmark XML", DataCategory.PROPERTIES, streamUtil);
@@ -177,7 +178,6 @@ public class CyActivator extends AbstractCyActivator {
 		var unrecognizedVisualPropertyManager = new UnrecognizedVisualPropertyManager(serviceRegistrar);
 		var gmlNetworkViewReaderFactory = new GMLNetworkReaderFactory(gmlFilter, unrecognizedVisualPropertyManager, serviceRegistrar);
 
-		var readCache = new ReadCache(serviceRegistrar);
 		var groupUtil = new GroupUtil(serviceRegistrar);
 		var suidUpdater = new SUIDUpdater();
 		var readDataManager = new ReadDataManager(readCache, suidUpdater, groupUtil, serviceRegistrar);

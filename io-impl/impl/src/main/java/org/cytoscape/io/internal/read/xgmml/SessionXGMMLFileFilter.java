@@ -1,5 +1,12 @@
 package org.cytoscape.io.internal.read.xgmml;
 
+import java.io.InputStream;
+import java.util.Set;
+
+import org.cytoscape.io.DataCategory;
+import org.cytoscape.io.internal.util.ReadCache;
+import org.cytoscape.io.util.StreamUtil;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
@@ -24,28 +31,33 @@ package org.cytoscape.io.internal.read.xgmml;
  * #L%
  */
 
-import java.io.InputStream;
-import java.util.Set;
-
-import org.cytoscape.io.DataCategory;
-import org.cytoscape.io.internal.util.session.SessionUtil;
-import org.cytoscape.io.util.StreamUtil;
-
 public class SessionXGMMLFileFilter extends GenericXGMMLFileFilter {
 	
-	public SessionXGMMLFileFilter(Set<String> extensions, Set<String> contentTypes,
-			String description, DataCategory category, StreamUtil streamUtil) {
-		super(extensions, contentTypes, description, category, streamUtil);
+	public SessionXGMMLFileFilter(
+			Set<String> extensions,
+			Set<String> contentTypes,
+			String description,
+			DataCategory category,
+			ReadCache cache,
+			StreamUtil streamUtil
+	) {
+		super(extensions, contentTypes, description, category, cache, streamUtil);
 	}
 
-	public SessionXGMMLFileFilter(String[] extensions, String[] contentTypes,
-			String description, DataCategory category, StreamUtil streamUtil) {
-		super(extensions, contentTypes, description, category, streamUtil);
+	public SessionXGMMLFileFilter(
+			String[] extensions,
+			String[] contentTypes,
+			String description,
+			DataCategory category,
+			ReadCache cache,
+			StreamUtil streamUtil
+	) {
+		super(extensions, contentTypes, description, category, cache, streamUtil);
 	}
 	
 	@Override
 	public boolean accepts(InputStream stream, DataCategory category) {
-		if (category != this.category || !SessionUtil.isReadingSessionFile())
+		if (category != this.category || !cache.isReadingSessionFile())
 			return false;
 		
 		return getXGMMLRootElement(stream) != null;

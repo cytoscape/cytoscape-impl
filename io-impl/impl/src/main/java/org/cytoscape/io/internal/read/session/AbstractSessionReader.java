@@ -152,7 +152,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 	protected void init(TaskMonitor tm) throws Exception {
 		inputStreamRead = false;
 		
-		SessionUtil.setReadingSessionFile(true);
+		cache.setReadingSessionFile(true);
 		cache.init();
 		
 		logger.debug("Reading CYS file...");
@@ -222,7 +222,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 		}
 		
 		cache.dispose();
-		SessionUtil.setReadingSessionFile(false);
+		cache.setReadingSessionFile(false);
 	}
 	
 	protected void processNetworkPointers() {

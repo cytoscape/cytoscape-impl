@@ -1,5 +1,6 @@
 package org.cytoscape.io.internal.util;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -64,38 +65,45 @@ public class ReadCache {
 	private Map<CySubNetwork, Set<CyNode>> unresolvedNodeMap;
 	private Map<CyNode, Object/*network's id*/> networkPointerMap;
 	
+	private boolean readingSessionFile;
+	
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private final Object lock = new Object();
 	
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	public ReadCache(final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	public void init() {
-		oldIdMap = new HashMap<>();
-		nodeByIdMap = new HashMap<>();
-		edgeByIdMap = new HashMap<>();
-		networkByIdMap = new HashMap<>();
-		networkViewByIdMap = new HashMap<>();
-		nodeByNameMap = new HashMap<>();
-		nodeLinkMap = new WeakHashMap<>();
-		edgeLinkMap = new WeakHashMap<>();
-		unresolvedNodeMap = new WeakHashMap<>();
-		networkPointerMap = new WeakHashMap<>();
+		synchronized (lock) {
+			oldIdMap = new HashMap<>();
+			nodeByIdMap = new HashMap<>();
+			edgeByIdMap = new HashMap<>();
+			networkByIdMap = new HashMap<>();
+			networkViewByIdMap = new HashMap<>();
+			nodeByNameMap = new HashMap<>();
+			nodeLinkMap = new WeakHashMap<>();
+			edgeLinkMap = new WeakHashMap<>();
+			unresolvedNodeMap = new WeakHashMap<>();
+			networkPointerMap = new WeakHashMap<>();
+		}
 	}
 	
 	public void dispose() {
-		nodeByIdMap = null;
-		edgeByIdMap = null;
-		networkByIdMap = null;
-		networkViewByIdMap = null;
-		nodeByNameMap = null;
-		nodeLinkMap = null;
-		edgeLinkMap = null;
-		unresolvedNodeMap = null;
-		networkPointerMap = null;
+		synchronized (lock) {
+			nodeByIdMap = null;
+			edgeByIdMap = null;
+			networkByIdMap = null;
+			networkViewByIdMap = null;
+			nodeByNameMap = null;
+			nodeLinkMap = null;
+			edgeLinkMap = null;
+			unresolvedNodeMap = null;
+			networkPointerMap = null;
+		}
 	}
 	
 	/**
@@ -135,107 +143,138 @@ public class ReadCache {
 		if (networkId == null)
 			throw new NullPointerException("Cannot parse network pointer: network id is null.");
 		
-		networkPointerMap.put(node, networkId);
+		synchronized (lock) {
+			networkPointerMap.put(node, networkId);
+		}
 	}
 	
 	public Object getNetworkPointerId(CyNode node) {
-		return networkPointerMap.get(node);
+		synchronized (lock) {
+			return networkPointerMap.get(node);
+		}
 	}
 	
 	public boolean hasNetworkPointers() {
-		return !networkPointerMap.isEmpty();
+		synchronized (lock) {
+			return !networkPointerMap.isEmpty();
+		}
 	}
 	
 	public Object getOldId(Long suid) {
-		return oldIdMap.get(suid);
+		synchronized (lock) {
+			return oldIdMap.get(suid);
+		}
 	}
 	
 	@SuppressWarnings("unchecked")
 	public <T extends CyIdentifiable> T getObjectById(Object oldId, Class<T> type) {
-		if (type == CyNetwork.class)
-			return (T) networkByIdMap.get(oldId);
-		if (type == CyNetworkView.class)
-			return (T) networkViewByIdMap.get(oldId);
-		if (type == CyNode.class)
-			return (T) nodeByIdMap.get(oldId);
-		if (type == CyEdge.class)
-			return (T) edgeByIdMap.get(oldId);
+		synchronized (lock) {
+			if (type == CyNetwork.class)
+				return (T) networkByIdMap.get(oldId);
+			if (type == CyNetworkView.class)
+				return (T) networkViewByIdMap.get(oldId);
+			if (type == CyNode.class)
+				return (T) nodeByIdMap.get(oldId);
+			if (type == CyEdge.class)
+				return (T) edgeByIdMap.get(oldId);
+		}
 		
 		return null;
 	}
 	
 	public CyNetwork getNetwork(Object oldId) {
-		return networkByIdMap.get(oldId);
+		synchronized (lock) {
+			return networkByIdMap.get(oldId);
+		}
 	}
 	
 	public Collection<CyNetwork> getNetworks() {
-		return networkByIdMap.values();
+		synchronized (lock) {
+			return new ArrayList<>(networkByIdMap.values());
+		}
 	}
 	
 	public CyNetworkView getNetworkView(Object oldId) {
-		return networkViewByIdMap.get(oldId);
+		synchronized (lock) {
+			return networkViewByIdMap.get(oldId);
+		}
 	}
 	
 	public CyNode getNode(Object oldId) {
-		return nodeByIdMap.get(oldId);
+		synchronized (lock) {
+			return nodeByIdMap.get(oldId);
+		}
 	}
 	
 	public CyEdge getEdge(Object oldId) {
-		return edgeByIdMap.get(oldId);
+		synchronized (lock) {
+			return edgeByIdMap.get(oldId);
+		}
 	}
 	
 	public CyNode getNodeByName(String nodeName) {
-		return nodeByNameMap.get(nodeName);
-	}
-	
-	public void addUnresolvedNode(final CyNode node, final CySubNetwork net) {
-		Set<CyNode> nodes = unresolvedNodeMap.get(net);
-		
-		if (nodes == null) {
-			nodes = new HashSet<>();
-			unresolvedNodeMap.put(net, nodes);
+		synchronized (lock) {
+			return nodeByNameMap.get(nodeName);
 		}
-		
-		nodes.add(node);
 	}
 	
-	public boolean removeUnresolvedNode(final CyNode node, final CySubNetwork net) {
-		Set<CyNode> nodes = unresolvedNodeMap.get(net);
-		return nodes != null ? nodes.remove(node) : false;
+	public void addUnresolvedNode(CyNode node, CySubNetwork net) {
+		synchronized (lock) {
+			var nodes = unresolvedNodeMap.get(net);
+			
+			if (nodes == null) {
+				nodes = new HashSet<>();
+				unresolvedNodeMap.put(net, nodes);
+			}
+			
+			nodes.add(node);
+		}
+	}
+	
+	public boolean removeUnresolvedNode(CyNode node, CySubNetwork net) {
+		synchronized (lock) {
+			var nodes = unresolvedNodeMap.get(net);
+			
+			return nodes != null ? nodes.remove(node) : false;
+		}
 	}
 	
 	public void deleteUnresolvedNodes() {
 		// Delete unresolved nodes from
-		for (Map.Entry<CySubNetwork, Set<CyNode>> entry : unresolvedNodeMap.entrySet()) {
-			final CySubNetwork net = entry.getKey();
-			final Set<CyNode> nodes = entry.getValue();
-			
-			if (net != null && nodes != null && !nodes.isEmpty()) {
-				logger.error("The following nodes can't be resolved and will be deleted from network \"" + net + "\": " 
-						+ nodes);
-				net.removeNodes(nodes);
+		synchronized (lock) {
+			for (var entry : unresolvedNodeMap.entrySet()) {
+				var net = entry.getKey();
+				var nodes = entry.getValue();
+				
+				if (net != null && nodes != null && !nodes.isEmpty()) {
+					logger.error("The following nodes can't be resolved and will be deleted from network \"" + net + "\": " 
+							+ nodes);
+					net.removeNodes(nodes);
+				}
 			}
 		}
 	}
 
-	public void addElementLink(final String href, final Class<? extends CyIdentifiable> clazz, final CyNetwork net) {
+	public void addElementLink(String href, Class<? extends CyIdentifiable> clazz, CyNetwork net) {
 		Map<CyNetwork, Set<Long>> map = null;
-		final Long id = XGMMLParseUtil.getIdFromXLink(href);
+		var id = XGMMLParseUtil.getIdFromXLink(href);
 		
-		if (clazz == CyNode.class)
-			map = getNodeLinks();
-		else if (clazz == CyEdge.class)
-			map = getEdgeLinks();
-		
-		if (map != null && net != null) {
-			Set<Long> idSet = map.get(net);
+		synchronized (lock) {
+			if (clazz == CyNode.class)
+				map = nodeLinkMap;
+			else if (clazz == CyEdge.class)
+				map = edgeLinkMap;
 			
-			if (idSet == null) {
-				idSet = new HashSet<Long>();
-				map.put(net, idSet);
+			if (map != null && net != null) {
+				var idSet = map.get(net);
+				
+				if (idSet == null) {
+					idSet = new HashSet<Long>();
+					map.put(net, idSet);
+				}
+				
+				idSet.add(id);
 			}
-			
-			idSet.add(id);
 		}
 	}
 	
@@ -276,14 +315,16 @@ public class ReadCache {
 		final Set<CyNetwork> networks = new HashSet<>();
 		final Class<?>[] types = new Class[] { CyNetwork.class, CyNode.class, CyEdge.class };
 		
-		if (networkByIdMap.values() != null)
-			networks.addAll(networkByIdMap.values());
+		synchronized (lock) {
+			if (networkByIdMap.values() != null)
+				networks.addAll(networkByIdMap.values());
+		}
 		
-		final CyNetworkTableManager netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
+		var netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
 		
-		for (final CyNetwork n : networks) {
-			for (final Class t : types) {
-				Map<String, CyTable> tblMap = new HashMap<>(netTblMgr.getTables(n, t));
+		for (var n : networks) {
+			for (Class t : types) {
+				var tblMap = new HashMap<>(netTblMgr.getTables(n, t));
 				tblMap.remove(CyNetwork.DEFAULT_ATTRS);
 				
 				if (tblMap != null)
@@ -305,12 +346,14 @@ public class ReadCache {
 	}
 	
 	public void createNetworkPointers() {
-		if (networkPointerMap != null) {
-			// Iterate the rows and recreate the network pointers
-			for (Map.Entry<CyNode, Object> entry : networkPointerMap.entrySet()) {
-				final CyNode node = entry.getKey();
-				final Object oldNetId = entry.getValue();
-				CyNetwork network = getNetwork(oldNetId);
+		synchronized (lock) {
+			if (networkPointerMap == null)
+				return;
+		
+			for (var entry : networkPointerMap.entrySet()) {
+				var node = entry.getKey();
+				var oldNetId = entry.getValue();
+				var network = getNetwork(oldNetId);
 				
 				if (network != null) {
 					node.setNetworkPointer(network);
@@ -318,6 +361,18 @@ public class ReadCache {
 					logger.error("Cannot recreate network pointer: Cannot find network " + oldNetId);
 				}
 			}
+		}
+	}
+	
+	public boolean isReadingSessionFile() {
+		synchronized (lock) {
+			return readingSessionFile;
+		}
+	}
+
+	public void setReadingSessionFile(boolean readingSessionFile) {
+		synchronized (lock) {
+			this.readingSessionFile = readingSessionFile;
 		}
 	}
 }

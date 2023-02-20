@@ -1,5 +1,14 @@
 package org.cytoscape.io.internal.read.xgmml;
 
+import static org.cytoscape.io.internal.read.xgmml.SessionXGMMLNetworkViewFileFilter.SESSION_XGMML_VIEW_PATTERN;
+
+import java.io.InputStream;
+import java.util.Set;
+
+import org.cytoscape.io.DataCategory;
+import org.cytoscape.io.internal.util.ReadCache;
+import org.cytoscape.io.util.StreamUtil;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
@@ -24,34 +33,36 @@ package org.cytoscape.io.internal.read.xgmml;
  * #L%
  */
 
-import static org.cytoscape.io.internal.read.xgmml.SessionXGMMLNetworkViewFileFilter.SESSION_XGMML_VIEW_PATTERN;
-
-import java.io.InputStream;
-import java.util.Set;
-import java.util.regex.Matcher;
-
-import org.cytoscape.io.DataCategory;
-import org.cytoscape.io.internal.util.session.SessionUtil;
-import org.cytoscape.io.util.StreamUtil;
-
 /**
  * Filters XGMML files that are used to save CyNetworks as part of a session file. 
  */
 public class SessionXGMMLNetworkFileFilter extends GenericXGMMLFileFilter {
 
-	public SessionXGMMLNetworkFileFilter(Set<String> extensions, Set<String> contentTypes,
-			String description, DataCategory category, StreamUtil streamUtil) {
-		super(extensions, contentTypes, description, category, streamUtil);
+	public SessionXGMMLNetworkFileFilter(
+			Set<String> extensions,
+			Set<String> contentTypes,
+			String description,
+			DataCategory category,
+			ReadCache cache,
+			StreamUtil streamUtil
+	) {
+		super(extensions, contentTypes, description, category, cache, streamUtil);
 	}
 
-	public SessionXGMMLNetworkFileFilter(String[] extensions, String[] contentTypes,
-			String description, DataCategory category, StreamUtil streamUtil) {
-		super(extensions, contentTypes, description, category, streamUtil);
+	public SessionXGMMLNetworkFileFilter(
+			String[] extensions,
+			String[] contentTypes,
+			String description,
+			DataCategory category,
+			ReadCache cache,
+			StreamUtil streamUtil
+	) {
+		super(extensions, contentTypes, description, category, cache, streamUtil);
 	}
 	
 	@Override
 	public boolean accepts(InputStream stream, DataCategory category) {
-		if (category != this.category || !SessionUtil.isReadingSessionFile())
+		if (category != this.category || !cache.isReadingSessionFile())
 			return false;
 		
 		final String root = getXGMMLRootElement(stream);

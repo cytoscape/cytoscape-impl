@@ -19,7 +19,6 @@ import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
-import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.io.read.AbstractCyNetworkReader;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -133,7 +132,7 @@ public class GenericXGMMLReader extends AbstractCyNetworkReader {
 		if (attemptRepair)
 			this.inputStream = new RepairBareAmpersandsInputStream(inputStream, 512);
 		
-		if (!SessionUtil.isReadingSessionFile()) {
+		if (!readDataMgr.getCache().isReadingSessionFile()) {
 			final List<CyNetwork> selectedNetworks = cyApplicationManager.getSelectedNetworks();
 			
 			if (selectedNetworks != null && selectedNetworks.size() > 0) {

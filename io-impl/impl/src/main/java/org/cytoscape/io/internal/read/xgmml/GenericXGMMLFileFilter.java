@@ -1,5 +1,20 @@
 package org.cytoscape.io.internal.read.xgmml;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.io.BasicCyFileFilter;
+import org.cytoscape.io.DataCategory;
+import org.cytoscape.io.internal.util.ReadCache;
+import org.cytoscape.io.util.StreamUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
@@ -24,21 +39,6 @@ package org.cytoscape.io.internal.read.xgmml;
  * #L%
  */
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.cytoscape.application.CyUserLog;
-import org.cytoscape.io.BasicCyFileFilter;
-import org.cytoscape.io.DataCategory;
-import org.cytoscape.io.internal.util.session.SessionUtil;
-import org.cytoscape.io.util.StreamUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class GenericXGMMLFileFilter extends BasicCyFileFilter {
 	
 	public static final Pattern XGMML_HEADER_PATTERN = Pattern
@@ -46,21 +46,36 @@ public class GenericXGMMLFileFilter extends BasicCyFileFilter {
 					+ "<!DOCTYPE[\\s]+graph[\\s]+[^<>]*[\\'\"][^<>]*xgmml.dtd[\\'\"][^<>]*>"); // or XGMML DTD
 	
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
-	
 
-	public GenericXGMMLFileFilter(Set<String> extensions, Set<String> contentTypes,
-			String description, DataCategory category, StreamUtil streamUtil) {
+	protected final ReadCache cache;
+	
+	public GenericXGMMLFileFilter(
+			Set<String> extensions,
+			Set<String> contentTypes,
+			String description,
+			DataCategory category,
+			ReadCache cache,
+			StreamUtil streamUtil
+	) {
 		super(extensions, contentTypes, description, category, streamUtil);
+		this.cache = cache;
 	}
 
-	public GenericXGMMLFileFilter(String[] extensions, String[] contentTypes,
-			String description, DataCategory category, StreamUtil streamUtil) {
+	public GenericXGMMLFileFilter(
+			String[] extensions,
+			String[] contentTypes,
+			String description,
+			DataCategory category,
+			ReadCache cache,
+			StreamUtil streamUtil
+	) {
 		super(extensions, contentTypes, description, category, streamUtil);
+		this.cache = cache;
 	}
 
 	@Override
-	public boolean accepts(final InputStream stream, final DataCategory category) {
-		if (category != this.category || SessionUtil.isReadingSessionFile())
+	public boolean accepts(InputStream stream, DataCategory category) {
+		if (category != this.category || cache.isReadingSessionFile())
 			return false;
 		
 		return getXGMMLRootElement(stream) != null;

@@ -26,7 +26,6 @@ import org.cytoscape.io.internal.util.GroupUtil;
 import org.cytoscape.io.internal.util.ReadCache;
 import org.cytoscape.io.internal.util.SUIDUpdater;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
-import org.cytoscape.io.internal.util.session.SessionUtil;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -74,6 +73,7 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 	XGMMLParser parser;
 	GenericXGMMLReader reader;
 
+	@Override
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
@@ -89,7 +89,7 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 
 		unrecognizedVisualPropertyMgr = new UnrecognizedVisualPropertyManager(serviceRegistrar);
 		
-		SessionUtil.setReadingSessionFile(false);
+		readCache.setReadingSessionFile(false);
 	}
 
 	@Test
@@ -493,7 +493,7 @@ public class GenericXGMMLReaderTest extends AbstractNetworkReaderTest {
 	}
 	
 	private List<CyNetworkView> getViews(String file) throws Exception {
-		SessionUtil.setReadingSessionFile(false);
+		readCache.setReadingSessionFile(false);
 		
 		File f = new File("./src/test/resources/testData/xgmml/" + file);
 		reader = new GenericXGMMLReader(new FileInputStream(f), readDataMgr, parser, unrecognizedVisualPropertyMgr,

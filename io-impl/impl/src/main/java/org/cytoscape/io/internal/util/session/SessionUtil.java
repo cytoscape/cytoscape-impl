@@ -62,8 +62,6 @@ public class SessionUtil {
 	
 	public static final String NETWORK_ROOT = "Network Root";
 	
-	private static boolean readingSessionFile; // TODO: delete it and find a better solution!
-	
 	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	public static String escape(String text) {
@@ -138,13 +136,5 @@ public class SessionUtil {
 		}
 		
 		return 0;
-	}
-
-	public static boolean isReadingSessionFile() {
-		return readingSessionFile;
-	}
-
-	public static void setReadingSessionFile(boolean readingSessionFile) {
-		SessionUtil.readingSessionFile = readingSessionFile;
 	}
 }
