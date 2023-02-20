@@ -124,16 +124,21 @@ public class StarterPanel extends JPanel {
 	
 	private final Icon missingImageIcon;
 	
-	private final CyServiceRegistrar serviceRegistrar;
+	private boolean ignoreClickEvents;
+	private boolean sessionLoading;
 	
-	public StarterPanel(final CyServiceRegistrar serviceRegistrar) {
+	private final CyServiceRegistrar serviceRegistrar;
+
+	public StarterPanel(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 		missingImageIcon = new ImageIcon(Toolkit.getDefaultToolkit().getImage(getClass().getResource(MISSING_IMAGE)));
 		
 		setName(NAME);
-		
 		init();
-		update();
+	}
+
+	public void setSessionLoading(boolean b) {
+		sessionLoading = b;
 	}
 
 	@Override
@@ -556,8 +561,16 @@ public class StarterPanel extends JPanel {
 			MouseListener mouseListener = new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent e) {
-					if (e.getClickCount() == 1 && SwingUtilities.isLeftMouseButton(e))
-						maybeOpenSession(fileInfo.getFile());
+					if (!ignoreClickEvents && !sessionLoading
+							&& e.getClickCount() == 1 && SwingUtilities.isLeftMouseButton(e)) {
+						ignoreClickEvents = true;
+						
+						try {
+							maybeOpenSession(fileInfo.getFile());
+						} finally {
+							ignoreClickEvents = false;
+						}
+					}
 				}
 				@Override
 				public void mouseEntered(MouseEvent e) {

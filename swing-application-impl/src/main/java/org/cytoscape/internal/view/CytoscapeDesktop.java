@@ -112,6 +112,8 @@ import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.TableAddedEvent;
 import org.cytoscape.model.events.TableAddedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
+import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.session.events.SessionSavedEvent;
@@ -188,8 +190,9 @@ import org.jdesktop.swingx.border.DropShadowBorder;
  * </pre>
  */
 @SuppressWarnings("serial")
-public class CytoscapeDesktop extends JFrame implements CySwingApplication, CyStartListener, CyShutdownListener,
-		AppsFinishedStartingListener, SessionLoadedListener, SessionSavedListener, SetCurrentNetworkListener,
+public class CytoscapeDesktop extends JFrame
+		implements CySwingApplication, CyStartListener, CyShutdownListener, AppsFinishedStartingListener,
+		SessionAboutToBeLoadedListener, SessionLoadedListener, SessionSavedListener, SetCurrentNetworkListener,
 		SetCurrentNetworkViewListener, TableAddedListener, CytoPanelComponentSelectedListener {
 
 	private static final String TITLE_PREFIX_STRING = "Session: ";
@@ -674,6 +677,11 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	}
 	
 	@Override
+	public void handleEvent(SessionAboutToBeLoadedEvent e) {
+		getStarterPanel().setSessionLoading(true);
+	}
+	
+	@Override
 	public void handleEvent(SessionLoadedEvent e) {
 		// Update window title
 		var sessionName = e.getLoadedFileName();
@@ -690,6 +698,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		invokeOnEDT(() -> {
 			setTitle(title);
 			hideStarterPanel();
+			getStarterPanel().setSessionLoading(false);
 		});
 	}
 	
