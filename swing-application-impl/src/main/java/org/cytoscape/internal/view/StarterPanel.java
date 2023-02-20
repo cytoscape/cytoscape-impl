@@ -541,6 +541,7 @@ public class StarterPanel extends JPanel {
 		}
 		
 		private void init() {
+			setFocusable(true);
 			setBorder(DEF_BORDER);
 			setBackground(LIST_BG_COLOR);
 			
@@ -574,6 +575,7 @@ public class StarterPanel extends JPanel {
 				}
 				@Override
 				public void mouseEntered(MouseEvent e) {
+					SessionPanel.this.requestFocusInWindow();
 					drawFocus(SessionPanel.this);
 				}
 				@Override
