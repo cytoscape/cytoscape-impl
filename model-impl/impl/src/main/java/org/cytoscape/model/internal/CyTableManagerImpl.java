@@ -221,9 +221,12 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 				nonGlobalTables.addAll(objTables.values());
 			}
 		}
-		for(final CyTable table: tables.values())
-			if(nonGlobalTables.contains(table) == false)
-				globalTables.add(table);
+
+		synchronized (lock) {
+			for (var table : tables.values())
+				if (nonGlobalTables.contains(table) == false)
+					globalTables.add(table);
+		}
 		
 		return globalTables;
 	}
