@@ -28,6 +28,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StreamTokenizer;
 import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.io.BasicCyFileFilter;
@@ -39,6 +41,8 @@ import org.slf4j.LoggerFactory;
 public class GMLFileFilter extends BasicCyFileFilter {
 
 	private static final int DEFAULT_WORDS_TO_SAMPLE = 10;
+	private static final List<String> BLACK_LIST = Arrays.asList("xls", "xlsx");
+	
 	private StreamUtil streamUtil;
 
 	public GMLFileFilter(Set<String> extensions, Set<String> contentTypes,
@@ -90,6 +94,9 @@ public class GMLFileFilter extends BasicCyFileFilter {
 	@Override
 	public boolean accepts(URI uri, DataCategory category) {
 		if (!category.equals(DataCategory.NETWORK))
+			return false;
+		
+		if (BLACK_LIST.contains(getExtension(uri.toString())))
 			return false;
 		
 		try (InputStream is = streamUtil.getInputStream(uri.toURL())) {
