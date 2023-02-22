@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.io.BasicCyFileFilter;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.util.StreamUtil;
@@ -43,50 +44,65 @@ public class GMLFileFilter extends BasicCyFileFilter {
 	private static final int DEFAULT_WORDS_TO_SAMPLE = 10;
 	private static final List<String> BLACK_LIST = Arrays.asList("xls", "xlsx");
 	
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
+	
 	private StreamUtil streamUtil;
 
-	public GMLFileFilter(Set<String> extensions, Set<String> contentTypes,
-			String description, DataCategory category, StreamUtil streamUtil) {
+	public GMLFileFilter(
+			Set<String> extensions,
+			Set<String> contentTypes,
+			String description,
+			DataCategory category,
+			StreamUtil streamUtil
+	) {
 		super(extensions, contentTypes, description, category, streamUtil);
 		this.streamUtil = streamUtil;
 	}
 
-	public GMLFileFilter(String[] extensions, String[] contentTypes,
-			String description, DataCategory category, StreamUtil streamUtil) {
+	public GMLFileFilter(
+			String[] extensions,
+			String[] contentTypes,
+			String description,
+			DataCategory category,
+			StreamUtil streamUtil
+	) {
 		super(extensions, contentTypes, description, category, streamUtil);
 		this.streamUtil = streamUtil;
 	}
 
 	@Override
 	public boolean accepts(InputStream stream, DataCategory category) {
-		if (!category.equals(DataCategory.NETWORK)) {
+		if (!category.equals(DataCategory.NETWORK))
 			return false;
-		}
 		
-		StreamTokenizer tokenizer = GMLParser.createTokenizer(stream);
+		var tokenizer = GMLParser.createTokenizer(stream);
+		
 		try {
 			try {
 				int wordCount = 0;
 				int type = tokenizer.nextToken();
 				String lastWord = null;
+				
 				while (type != StreamTokenizer.TT_EOF && wordCount < DEFAULT_WORDS_TO_SAMPLE) {
 					// Look for the token sequence { "graph", "[" }
-					if (type == StreamTokenizer.TT_WORD && "[".equals(tokenizer.sval) && "graph".equals(lastWord)) {
+					if (type == StreamTokenizer.TT_WORD && "[".equals(tokenizer.sval) && "graph".equals(lastWord))
 						return true;
-					}
+					
 					if (type == StreamTokenizer.TT_WORD) {
 						lastWord = tokenizer.sval;
 						wordCount++;
 					}
+					
 					type = tokenizer.nextToken();
 				}
+				
 				return false;
 			} finally {
 				stream.close();
 			}
 		} catch (IOException e) {
-			Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 			logger.error("Error parsing header", e);
+			
 			return false;
 		}
 	}
@@ -102,8 +118,8 @@ public class GMLFileFilter extends BasicCyFileFilter {
 		try (InputStream is = streamUtil.getInputStream(uri.toURL())) {
 			return accepts(is, category);
 		} catch (IOException e) {
-			Logger logger = LoggerFactory.getLogger(getClass());
 			logger.error("Error while reading header", e);
+			
 			return false;
 		}
 	}
