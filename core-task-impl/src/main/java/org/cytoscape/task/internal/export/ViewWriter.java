@@ -116,6 +116,17 @@ public final class ViewWriter extends TunableAbstractCyWriter<PresentationWriter
 				break;
 			}
 		}
+		
+		// If options.setSelectedValue(...) is passed a value that is already selected 
+		// then it won't fire an event to set the writer field. CYTOSCAPE-13049
+		if(writer == null) {
+			try {
+				writer = getWriter(getFileFilter(getExportFileFormat()));
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
 		options.addListener(new ListChangeListener<>() {
 			@Override public void selectionChanged(ListSelection<String> source) {
 				defaultFormat = options.getSelectedValue();
@@ -125,7 +136,8 @@ public final class ViewWriter extends TunableAbstractCyWriter<PresentationWriter
 	
 	@Override
 	protected CyWriter getWriter(CyFileFilter filter) throws Exception {
-		if (view == null) return null;
+		if (view == null) 
+			return null;
 		return writerManager.getWriter(view, re, filter, outputStream);
 	}
 
