@@ -6,8 +6,10 @@ import java.util.List;
 import java.util.UUID;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
@@ -117,14 +119,16 @@ public class UpdateAnnotationTask extends AbstractTask implements ObservableTask
 		var annotationManager = serviceRegistrar.getService(AnnotationManager.class);
 		
 		Annotation annotation = null;
+		CyNetworkView view = null;
 		
 		if (aUUID != null) {
 			// Iterate over the set of all annotations, looking for the one with the same UUID
 			SEARCH:
-			for (var view : viewManager.getNetworkViewSet()) {
-				for (var a : annotationManager.getAnnotations(view)) {
+			for (var nv : viewManager.getNetworkViewSet()) {
+				for (var a : annotationManager.getAnnotations(nv)) {
 					if (a.getUUID().equals(aUUID)) {
 						annotation = a;
+						view = nv;
 						break SEARCH;
 					}
 				}
@@ -136,10 +140,11 @@ public class UpdateAnnotationTask extends AbstractTask implements ObservableTask
 			var viewSet = currView != null ? Collections.singleton(currView) : viewManager.getNetworkViewSet();
 			
 			SEARCH:
-			for (var view : viewSet) {
-				for (var a : annotationManager.getAnnotations(view)) {
+			for (var nv : viewSet) {
+				for (var a : annotationManager.getAnnotations(nv)) {
 					if (name.equals(a.getName())) {
 						annotation = a;
+						view = nv;
 						break SEARCH;
 					}
 				}
@@ -148,7 +153,7 @@ public class UpdateAnnotationTask extends AbstractTask implements ObservableTask
 		
 		if (annotation != null) {
 			try {
-				updateAnnotation(tm, annotation);
+				updateAnnotation(tm, annotation, view);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -159,7 +164,7 @@ public class UpdateAnnotationTask extends AbstractTask implements ObservableTask
 		}
 	}
 
-	private void updateAnnotation(TaskMonitor tm, Annotation annotation) {
+	private void updateAnnotation(TaskMonitor tm, Annotation annotation, CyNetworkView view) {
 		if (annotation instanceof ImageAnnotation) {
 			standardTunables.update(tm, annotation);
 			shapeTunables.update(tm, annotation);
@@ -177,7 +182,19 @@ public class UpdateAnnotationTask extends AbstractTask implements ObservableTask
 		} else if (annotation instanceof GroupAnnotation) {
 			standardTunables.update(tm, annotation);
 		}
-
+		
+		if (standardTunables.canvas != null && view != null) {
+			// need to rebuild the tree AFTER changing the canvas
+			var dingRenderer = serviceRegistrar.getService(DingRenderer.class);
+			var re = dingRenderer.getRenderingEngine(view);
+			
+			var cyAnnotator = re.getCyAnnotator();
+			var tree = cyAnnotator.getAnnotationTree();
+			tree.resetZOrder();
+			
+			cyAnnotator.fireAnnotationsReordered();
+		}
+		
 		annotation.update();
 	}
 
