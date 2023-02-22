@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
 public class GMLFileFilter extends BasicCyFileFilter {
 
 	private static final int DEFAULT_WORDS_TO_SAMPLE = 10;
-	private static final List<String> BLACK_LIST = Arrays.asList("xls", "xlsx");
+	private static final List<String> BLACK_LIST = Arrays.asList("xls", "xlsx"); // Excel files can cause exceptions
 	
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
