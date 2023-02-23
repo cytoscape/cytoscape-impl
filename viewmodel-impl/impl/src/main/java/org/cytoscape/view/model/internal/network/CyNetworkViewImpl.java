@@ -98,15 +98,12 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	@Override
 	public CyNetworkViewSnapshot createSnapshot() {
 		if(!netLock.readLock().tryLock()) {
-			System.out.println("netLock bail!");
 			return null;
 		} try {
 			if(!nodeLock.readLock().tryLock()) {
-				System.out.println("nodeLock bail!");
 				return null;
 			} try {
 				if(!edgeLock.readLock().tryLock()) {
-					System.out.println("edgeLock bail!");
 					return null;
 				} try {
 					return new CyNetworkViewSnapshotImpl(
