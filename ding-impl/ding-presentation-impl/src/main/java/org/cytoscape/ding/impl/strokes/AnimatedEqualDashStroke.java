@@ -32,14 +32,10 @@ public class AnimatedEqualDashStroke extends BasicStroke implements DAnimatedStr
 	private final float offset;
 
 	public AnimatedEqualDashStroke(float width) {
-		super(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 
-		      10.0f, new float[]{width * 2f,width * 2f}, 0.0f);
-
-		this.width = width;
-		this.offset = -1;
+		this(width, INITIAL_OFFSET);
 	}
 
-	public AnimatedEqualDashStroke(float width, float offset) {
+	private AnimatedEqualDashStroke(float width, float offset) {
 		super(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 
 		      10.0f, new float[]{width * 2f,width * 2f}, width*4f*offset);
 
@@ -47,6 +43,7 @@ public class AnimatedEqualDashStroke extends BasicStroke implements DAnimatedStr
 		this.offset = offset;
 	}
 
+	@Override
 	public WidthStroke newInstanceForWidth(float w) {
 		if (offset >= 0.0f)
 			return new AnimatedEqualDashStroke(w, offset);
@@ -54,20 +51,20 @@ public class AnimatedEqualDashStroke extends BasicStroke implements DAnimatedStr
 			return new AnimatedEqualDashStroke(w);
 	}
 
-	public DAnimatedStroke newInstanceForNextOffset() {
-		float stepSize = 1.0f/N_STEPS;
-		float newOffset = offset - stepSize;
-		if (newOffset < 0)
-			newOffset = 1.0f-stepSize;
-
-		return new AnimatedEqualDashStroke(width, newOffset);
+	@Override
+	public AnimatedEqualDashStroke newInstanceForNextOffset() {
+		return new AnimatedEqualDashStroke(width, DAnimatedStroke.nextOffset(offset));
 	}
 
-	public float getOffset() { return offset; }
-	
-	public float getWidth() { return width; }
+	@Override
+	public float getWidth() { 
+		return width;
+	}
 
-	@Override public String toString() { return this.getClass().getSimpleName() + " " + Float.toString(width); }
+	@Override 
+	public String toString() { 
+		return getClass().getSimpleName() + " " + width; 
+	}
 }
 
 

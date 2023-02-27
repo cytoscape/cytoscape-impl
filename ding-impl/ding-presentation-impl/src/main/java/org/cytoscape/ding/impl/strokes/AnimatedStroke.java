@@ -36,9 +36,4 @@ public interface AnimatedStroke extends Stroke {
 	 */
 	public AnimatedStroke newInstanceForNextOffset();
 
-	/**
-	 * @return the current offset for this stroke
-	 */
-	public float getOffset();
-
 }

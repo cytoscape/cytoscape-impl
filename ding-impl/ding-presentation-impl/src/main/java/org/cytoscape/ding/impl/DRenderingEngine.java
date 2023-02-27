@@ -44,6 +44,7 @@ import org.cytoscape.ding.impl.canvas.NetworkImageBuffer;
 import org.cytoscape.ding.impl.canvas.NetworkTransform;
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
+import org.cytoscape.ding.impl.strokes.DAnimatedStroke;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.event.DebounceTimer;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
@@ -319,9 +320,13 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 	
 	private boolean advanceAnimatedEdges() { // call every time the timer thread fires
-		if(animateEdges && animationCounter++ % 6 == 0) { // Timer fires 30 times per second, animation advances 5 times per second, 30 / 6 = 5
-			edgeDetails.advanceAnimatedEdges();
-			return true;
+		if(animateEdges) {
+			int trigger = timerDelay / DAnimatedStroke.STEPS_PER_SECOND;
+			boolean advance = animationCounter++ % trigger == 0;
+			if(advance) {
+				edgeDetails.advanceAnimatedEdges();
+				return true;
+			}
 		}
 		return false;
 	}

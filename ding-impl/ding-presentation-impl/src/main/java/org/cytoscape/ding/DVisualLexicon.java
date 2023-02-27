@@ -261,15 +261,15 @@ public class DVisualLexicon extends BasicVisualLexicon {
 	// right number of these
 	private static final DLineType MARQUEE_DASH = new DLineType(
 			"Marquee Dash", "MARQUEE_DASH", 
-			new AnimatedLongDashStroke(1.0f,0.0f));
+			new AnimatedLongDashStroke(1.0f));
 
 	private static final DLineType MARQUEE_EQUAL = new DLineType(
 			"Marquee Equal Dash", "MARQUEE_EQUAL", 
-			new AnimatedEqualDashStroke(1.0f,0.0f));
+			new AnimatedEqualDashStroke(1.0f));
 
 	private static final DLineType MARQUEE_DASH_DOT = new DLineType(
 			"Marquee Dash Dot", "MARQUEE_DASH_DOT", 
-			new AnimatedDashDotStroke(1.0f, 0.0f));
+			new AnimatedDashDotStroke(1.0f));
 	
 	
 	public static final VisualProperty<Boolean> DUMMY = new BooleanVisualProperty(

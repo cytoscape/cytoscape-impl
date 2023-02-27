@@ -32,14 +32,10 @@ public class AnimatedDashDotStroke extends BasicStroke implements DAnimatedStrok
 	private final float offset;
 
 	public AnimatedDashDotStroke(float width) {
-		super(width, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 10.0f,
-				new float[] { width * 4f, width * 2f, width, width * 2f }, 0.0f);
-
-		this.width = width;
-		this.offset = -1;
+		this(width, INITIAL_OFFSET);
 	}
 
-	public AnimatedDashDotStroke(float width, float offset) {
+	private AnimatedDashDotStroke(float width, float offset) {
 		super(width, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 10.0f,
 				new float[] { width * 4f, width * 2f, width, width * 2f }, width*9f*offset);
 
@@ -47,6 +43,7 @@ public class AnimatedDashDotStroke extends BasicStroke implements DAnimatedStrok
 		this.offset = offset;
 	}
 
+	@Override
 	public WidthStroke newInstanceForWidth(float w) {
 		if (offset >= 0)
 			return new AnimatedDashDotStroke(w, offset);
@@ -54,20 +51,18 @@ public class AnimatedDashDotStroke extends BasicStroke implements DAnimatedStrok
 			return new AnimatedDashDotStroke(w);
 	}
 
-	public DAnimatedStroke newInstanceForNextOffset() {
-		float stepSize = 1.0f/N_STEPS;
-		float newOffset = offset - stepSize;
-		if (newOffset < 0)
-			newOffset = 1.0f-stepSize;
-
-		return new AnimatedDashDotStroke(width, newOffset);
+	@Override
+	public AnimatedDashDotStroke newInstanceForNextOffset() {
+		return new AnimatedDashDotStroke(width, DAnimatedStroke.nextOffset(offset));
+	}
+	
+	@Override
+	public float getWidth() { 
+		return width;
 	}
 
-	public float getOffset() { return offset; }
-	
-	public float getWidth() { return width; }
-
+	@Override
 	public String toString() {
-		return this.getClass().getSimpleName() + " " + Float.toString(width);
+		return getClass().getSimpleName() + " " + width;
 	}
 }
