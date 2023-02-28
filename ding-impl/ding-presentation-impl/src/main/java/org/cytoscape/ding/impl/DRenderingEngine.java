@@ -519,7 +519,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		synchronized (dingLock) {
 			// make sure we use the latest snapshot, don't wait for timer to check dirty flag
 			CyNetworkViewSnapshot netViewSnapshot = getViewModel().createSnapshot();
-			if(netViewSnapshot.getNodeCount() == 0)
+			if(netViewSnapshot == null || netViewSnapshot.getNodeCount() == 0)
 				return;
 			
 			NetworkTransform transform = renderComponent.getTransform();
