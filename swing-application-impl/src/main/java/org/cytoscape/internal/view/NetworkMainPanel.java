@@ -9,6 +9,7 @@ import static org.cytoscape.internal.view.util.ViewUtil.NetworksSortMode.NAME;
 import static org.cytoscape.util.swing.IconManager.ICON_ANGLE_DOUBLE_DOWN;
 import static org.cytoscape.util.swing.IconManager.ICON_ANGLE_DOUBLE_UP;
 import static org.cytoscape.util.swing.IconManager.ICON_COG;
+import static org.cytoscape.util.swing.IconManager.ICON_SHARE_ALT;
 import static org.cytoscape.util.swing.IconManager.ICON_SORT_ALPHA_ASC;
 
 import java.awt.BorderLayout;
@@ -187,7 +188,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	@Override
 	public Icon getIcon() {
 		if (icon == null)
-			icon = new TextIcon(IconManager.ICON_SHARE_ALT,
+			icon = new TextIcon(ICON_SHARE_ALT,
 					serviceRegistrar.getService(IconManager.class).getIconFont(14.0f), 16, 16);
 		
 		return icon;
@@ -357,18 +358,14 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		menu.addSeparator();
 		{
 			var mi = new JCheckBoxMenuItem("Show Network Provenance Hierarchy");
-			mi.addActionListener(e -> {
-				setShowNetworkProvenanceHierarchy(mi.isSelected());
-			});
+			mi.addActionListener(e -> setShowNetworkProvenanceHierarchy(mi.isSelected()));
 			mi.setSelected(isShowNetworkProvenanceHierarchy());
 			mi.setEnabled(sortMode == CREATION);
 			menu.add(mi);
 		}
 		{
 			var mi = new JCheckBoxMenuItem("Show Number of Nodes and Edges");
-			mi.addActionListener(e -> {
-				setShowNodeEdgeCount(mi.isSelected());
-			});
+			mi.addActionListener(e -> setShowNodeEdgeCount(mi.isSelected()));
 			mi.setSelected(isShowNodeEdgeCount());
 			menu.add(mi);
 		}

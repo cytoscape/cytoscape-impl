@@ -4,14 +4,10 @@ import static org.cytoscape.internal.view.util.ViewUtil.invokeOnEDT;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.swing.JOptionPane;
 
@@ -19,7 +15,6 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.events.CyShutdownRequestedEvent;
 import org.cytoscape.application.events.CyShutdownRequestedListener;
-import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.internal.io.SessionIO;
@@ -33,11 +28,9 @@ import org.cytoscape.internal.view.CytoPanelStateInternal;
 import org.cytoscape.internal.view.CytoscapeDesktop;
 import org.cytoscape.internal.view.NetworkMainPanel;
 import org.cytoscape.internal.view.NetworkViewMediator;
-import org.cytoscape.internal.view.SubNetworkPanel;
 import org.cytoscape.internal.view.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
@@ -48,8 +41,6 @@ import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.write.SaveSessionAsTaskFactory;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,11 +88,11 @@ public class SessionHandler implements CyShutdownRequestedListener, SessionLoade
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	public SessionHandler(
-			final CytoscapeDesktop desktop,
-			final NetworkViewMediator netViewMediator,
-			final SessionIO sessionIO,
-			final NetworkMainPanel netPanel,
-			final CyServiceRegistrar serviceRegistrar
+			CytoscapeDesktop desktop,
+			NetworkViewMediator netViewMediator,
+			SessionIO sessionIO,
+			NetworkMainPanel netPanel,
+			CyServiceRegistrar serviceRegistrar
 	) {
 		this.desktop = desktop;
 		this.netViewMediator = netViewMediator;
@@ -115,18 +106,18 @@ public class SessionHandler implements CyShutdownRequestedListener, SessionLoade
 	}
 
 	@Override
-	public void handleEvent(final CyShutdownRequestedEvent e) {
-		final CyNetworkManager netMgr = serviceRegistrar.getService(CyNetworkManager.class);
+	public void handleEvent(CyShutdownRequestedEvent e) {
+		var netMgr = serviceRegistrar.getService(CyNetworkManager.class);
 		
 		// If there are no networks, just quit.
 		if (netMgr.getNetworkSet().isEmpty() || e.forceShutdown()) 
 			return;
 
 		// Ask user whether to save current session or not.
-		final String msg = "Do you want to save your session?";
-		final String header = "Save Networks Before Quitting?";
-		final Object[] options = { "Yes, save and quit", "No, just quit", "Cancel" };
-		final int n = JOptionPane.showOptionDialog(desktop.getJFrame(), msg, header,
+		var msg = "Do you want to save your session?";
+		var header = "Save Networks Before Quitting?";
+		Object[] options = { "Yes, save and quit", "No, just quit", "Cancel" };
+		int n = JOptionPane.showOptionDialog(desktop.getJFrame(), msg, header,
 		                                     JOptionPane.YES_NO_OPTION,
 		                                     JOptionPane.QUESTION_MESSAGE, 
 											 null, options, options[0]);
@@ -134,16 +125,16 @@ public class SessionHandler implements CyShutdownRequestedListener, SessionLoade
 		if (n == JOptionPane.NO_OPTION) {
 			return;
 		} else if (n == JOptionPane.YES_OPTION) {
-			final CySessionManager sessionMgr = serviceRegistrar.getService(CySessionManager.class);
-			final String sessionFileName = sessionMgr.getCurrentSessionFileName();
+			var sessionMgr = serviceRegistrar.getService(CySessionManager.class);
+			var sessionFileName = sessionMgr.getCurrentSessionFileName();
 			final File file;
 			
 			if (sessionFileName == null || sessionFileName.isEmpty()) {
-				FileChooserFilter filter = new FileChooserFilter("Session File", "cys");
-				List<FileChooserFilter> filterCollection = new ArrayList<>(1);
+				var filter = new FileChooserFilter("Session File", "cys");
+				var filterCollection = new ArrayList<FileChooserFilter>(1);
 				filterCollection.add(filter);
 				
-				final FileUtil fileUtil = serviceRegistrar.getService(FileUtil.class);
+				var fileUtil = serviceRegistrar.getService(FileUtil.class);
 				file = fileUtil.getFile(desktop, "Save Session File", FileUtil.SAVE, filterCollection );
 			} else {
 				file = new File(sessionFileName);
@@ -154,8 +145,8 @@ public class SessionHandler implements CyShutdownRequestedListener, SessionLoade
 				return;
 			}
 			
-			final SynchronousTaskManager<?> syncTaskMgr = serviceRegistrar.getService(SynchronousTaskManager.class);
-			final SaveSessionAsTaskFactory saveTaskFactory = serviceRegistrar.getService(SaveSessionAsTaskFactory.class);
+			var syncTaskMgr = serviceRegistrar.getService(SynchronousTaskManager.class);
+			var saveTaskFactory = serviceRegistrar.getService(SaveSessionAsTaskFactory.class);
 			
 			syncTaskMgr.execute(saveTaskFactory.createTaskIterator(file));
 			
@@ -168,12 +159,12 @@ public class SessionHandler implements CyShutdownRequestedListener, SessionLoade
 	}
 
 	@Override
-	public void handleEvent(final SessionAboutToBeSavedEvent e) {
+	public void handleEvent(SessionAboutToBeSavedEvent e) {
 		// Do not use invokeLater() here.  It breaks session file.
-		final File f1 = saveSessionState(e);
-		final File f2 = saveNetworkList(e);
+		var f1 = saveSessionState(e);
+		var f2 = saveNetworkList(e);
 		
-		final List<File> files = new ArrayList<>();
+		var files = new ArrayList<File>();
 		if (f1 != null) files.add(f1);
 		if (f2 != null) files.add(f2);
 		
@@ -187,25 +178,25 @@ public class SessionHandler implements CyShutdownRequestedListener, SessionLoade
 	}
 	
 	@Override
-	public void handleEvent(final SessionLoadedEvent e) {
-		final CySession sess = e.getLoadedSession();
+	public void handleEvent(SessionLoadedEvent e) {
+		var sess = e.getLoadedSession();
 
 		if (sess != null)
 			invokeOnEDT(() -> postLoading(sess));
 	}
 	
-	private File saveSessionState(final SessionAboutToBeSavedEvent e) {
-		final SessionState sessState = new SessionState();
+	private File saveSessionState(SessionAboutToBeSavedEvent e) {
+		var sessState = new SessionState();
 		sessState.setDocumentVersion(SESSION_STATE_DOC_VERSION);
 
 		// CytoPanels States
-		final Cytopanels cytopanels = new Cytopanels();
+		var cytopanels = new Cytopanels();
 		sessState.setCytopanels(cytopanels);
 		
-		for (Map.Entry<String, CytoPanelName> entry : CYTOPANEL_NAMES.entrySet()) {
-			final CytoPanel p = desktop.getCytoPanel(entry.getValue());
+		for (var entry : CYTOPANEL_NAMES.entrySet()) {
+			var p = desktop.getCytoPanel(entry.getValue());
 
-			final Cytopanel cytopanel = new Cytopanel();
+			var cytopanel = new Cytopanel();
 			cytopanel.setId(entry.getKey());
 			cytopanel.setPanelState(p.getState().toString());
 			cytopanel.setSelectedPanel(Integer.toString(p.getSelectedIndex()));
@@ -217,7 +208,7 @@ public class SessionHandler implements CyShutdownRequestedListener, SessionLoade
 		}
 
 		// Create temp file
-		File tmpFile = new File(System.getProperty("java.io.tmpdir"), SESSION_STATE_FILENAME);
+		var tmpFile = new File(System.getProperty("java.io.tmpdir"), SESSION_STATE_FILENAME);
 		tmpFile.deleteOnExit();
 
 		// Write to the file
@@ -226,18 +217,18 @@ public class SessionHandler implements CyShutdownRequestedListener, SessionLoade
 		return tmpFile;
 	}
 	
-	private File saveNetworkList(final SessionAboutToBeSavedEvent e) {
-		final Map<Long, Integer> netOrder = netPanel.getNetworkListOrder();
+	private File saveNetworkList(SessionAboutToBeSavedEvent e) {
+		var netPos = netPanel.getNetworkListOrder();
 		
 		// Create the JAXB objects
-		final NetworkList netList = new NetworkList();
+		var netList = new NetworkList();
 		
-		for (final Entry<Long, Integer> entry : netOrder.entrySet()) {
-			final Long suid = entry.getKey();
-			final Integer order = entry.getValue();
+		for (var entry : netPos.entrySet()) {
+			var suid = entry.getKey();
+			var order = entry.getValue();
 			
 			if (order != null) {
-				final Network n = new Network();
+				var n = new Network();
 				n.setId(suid);
 				n.setOrder(order);
 				netList.getNetwork().add(n);
@@ -245,7 +236,7 @@ public class SessionHandler implements CyShutdownRequestedListener, SessionLoade
 		}
 		
 		// Create temp file
-		File tmpFile = new File(System.getProperty("java.io.tmpdir"), NETWORK_LIST_FILENAME);
+		var tmpFile = new File(System.getProperty("java.io.tmpdir"), NETWORK_LIST_FILENAME);
 		tmpFile.deleteOnExit();
 
 		// Write to the file
@@ -254,17 +245,17 @@ public class SessionHandler implements CyShutdownRequestedListener, SessionLoade
 		return tmpFile;
 	}
 	
-	private final void postLoading(final CySession sess) {
+	private final void postLoading(CySession sess) {
 		NetworkList netList = null;
-		final Map<String, List<File>> filesMap = sess.getAppFileListMap();
+		var filesMap = sess.getAppFileListMap();
 
 		if (filesMap != null) {
-			final List<File> files = filesMap.get(APP_NAME);
+			var files = filesMap.get(APP_NAME);
 
 			if (files != null) {
 				SessionState sessState = null;
 				
-				for (File f : files) {
+				for (var f : files) {
 					if (f.getName().endsWith(SESSION_STATE_FILENAME))
 						sessState = sessionIO.read(f, SessionState.class);
 					else if (f.getName().endsWith(NETWORK_LIST_FILENAME))
@@ -280,14 +271,14 @@ public class SessionHandler implements CyShutdownRequestedListener, SessionLoade
 			// Probably a Cy2 session file, which does not provide a separate "network_list" file
 			// so let's get the orders from the networks in the CySession file
 			// (we just assume the Session Reader sent the networks in the correct order in a LinkedHashSet)
-			final Set<CyNetwork> netSet = sess.getNetworks();
-			final Map<Long, Integer> netOrder = new HashMap<>();
+			var netSet = sess.getNetworks();
+			var netPos = new HashMap<Long, Integer>();
 			int count = 0;
 			
-			for (CyNetwork n : netSet)
-				netOrder.put(n.getSUID(), count++);
+			for (var n : netSet)
+				netPos.put(n.getSUID(), count++);
 				
-			setSessionNetworks(netOrder);
+			setSessionNetworks(netPos);
 		} else {
 			setSessionNetworks(netList.getNetwork(), sess);
 		}
@@ -297,16 +288,16 @@ public class SessionHandler implements CyShutdownRequestedListener, SessionLoade
 	 * Restore the states of the CytoPanels.
 	 * @param cytopanels
 	 */
-	private void setCytoPanelStates(final Cytopanels cytopanels) {
+	private void setCytoPanelStates(Cytopanels cytopanels) {
 		if (cytopanels != null) {
-			final List<Cytopanel> cytopanelsList = cytopanels.getCytopanel();
+			var cytopanelsList = cytopanels.getCytopanel();
 
-			for (Cytopanel cytopanel : cytopanelsList) {
-				String id = cytopanel.getId();
-				final CytoPanelName panelName = CYTOPANEL_NAMES.get(id);
+			for (var cytopanel : cytopanelsList) {
+				var id = cytopanel.getId();
+				var panelName = CYTOPANEL_NAMES.get(id);
 
 				if (panelName != null) {
-					final CytoPanel p = desktop.getCytoPanel(panelName);
+					var p = desktop.getCytoPanel(panelName);
 
 					if (p instanceof CytoPanelImpl && cytopanel.getPanelStateInternal() != null) {
 						try {
@@ -336,11 +327,11 @@ public class SessionHandler implements CyShutdownRequestedListener, SessionLoade
 		}
 	}
 	
-	private void setSessionNetworks(final List<Network> netInfoList, final CySession sess) {
-		final Map<Long, Integer> netOrder = new HashMap<>();
+	private void setSessionNetworks(List<Network> netInfoList, CySession sess) {
+		var netOrder = new HashMap<Long, Integer>();
 		
-		for (final Network n : netInfoList) {
-			final CyNetwork net = sess.getObject(n.getId(), CyNetwork.class); // in order to retrieve the new SUID
+		for (var n : netInfoList) {
+			var net = sess.getObject(n.getId(), CyNetwork.class); // in order to retrieve the new SUID
 			
 			if (net != null)
 				netOrder.put(net.getSUID(), n.getOrder());

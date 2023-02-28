@@ -43,7 +43,7 @@ public abstract class AbstractNetworkPanel<T extends CyNetwork> extends JPanel {
 	
 	protected final CyServiceRegistrar serviceRegistrar;
 
-	protected AbstractNetworkPanel(final AbstractNetworkPanelModel<T> model, final CyServiceRegistrar serviceRegistrar) {
+	protected AbstractNetworkPanel(AbstractNetworkPanelModel<T> model, CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 		setModel(model);
 		init();
@@ -53,11 +53,11 @@ public abstract class AbstractNetworkPanel<T extends CyNetwork> extends JPanel {
 		return model;
 	}
 
-	public void setModel(final AbstractNetworkPanelModel<T> newModel) {
+	public void setModel(AbstractNetworkPanelModel<T> newModel) {
 		if (newModel == null)
 			throw new IllegalArgumentException("'newModel' must not be null.");
 		
-		final AbstractNetworkPanelModel<T> oldModel = model;
+		var oldModel = model;
 		model = newModel;
 		update();
         firePropertyChange("model", oldModel, newModel);
