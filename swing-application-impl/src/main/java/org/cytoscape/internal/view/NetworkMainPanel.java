@@ -4,9 +4,12 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static org.cytoscape.internal.view.util.ViewUtil.invokeOnEDT;
+import static org.cytoscape.internal.view.util.ViewUtil.NetworksSortMode.CREATION;
+import static org.cytoscape.internal.view.util.ViewUtil.NetworksSortMode.NAME;
 import static org.cytoscape.util.swing.IconManager.ICON_ANGLE_DOUBLE_DOWN;
 import static org.cytoscape.util.swing.IconManager.ICON_ANGLE_DOUBLE_UP;
 import static org.cytoscape.util.swing.IconManager.ICON_COG;
+import static org.cytoscape.util.swing.IconManager.ICON_SORT_ALPHA_ASC;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -39,6 +42,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -74,6 +78,7 @@ import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.internal.task.LoadFileListTask;
 import org.cytoscape.internal.util.Util;
 import org.cytoscape.internal.view.util.ViewUtil;
+import org.cytoscape.internal.view.util.ViewUtil.NetworksSortMode;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
@@ -83,6 +88,7 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
@@ -143,6 +149,8 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	
 	private NetworkViewPreviewDialog viewDialog;
 	private TextIcon icon;
+	
+	private NetworksSortMode sortMode = CREATION;
 
 	private final NetworkSearchBar networkSearchBar;
 	private final CyServiceRegistrar serviceRegistrar;
@@ -337,13 +345,23 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	
 	private JPopupMenu getNetworkOptionsMenu() {
 		var menu = new JPopupMenu();
+		var iconManager = serviceRegistrar.getService(IconManager.class);
 		
+		{
+			var icon = new TextIcon(ICON_SORT_ALPHA_ASC, iconManager.getIconFont(16.0f), 16, 16);
+			var mi = new JCheckBoxMenuItem("Sort Networks by Name", icon);
+			mi.addActionListener(e -> sortNetworks(mi.isSelected() ? NAME : CREATION));
+			mi.setSelected(sortMode == NAME);
+			menu.add(mi);
+		}
+		menu.addSeparator();
 		{
 			var mi = new JCheckBoxMenuItem("Show Network Provenance Hierarchy");
 			mi.addActionListener(e -> {
 				setShowNetworkProvenanceHierarchy(mi.isSelected());
 			});
 			mi.setSelected(isShowNetworkProvenanceHierarchy());
+			mi.setEnabled(sortMode == CREATION);
 			menu.add(mi);
 		}
 		{
@@ -358,18 +376,21 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		return menu;
 	}
 	
+	/**
+	 * Return the network creation positions.
+	 */
 	public Map<Long, Integer> getNetworkListOrder() {
-		var order = new HashMap<Long, Integer>();
-		
-		var items = getAllSubNetworkItems();
+		var map = new LinkedHashMap<Long, Integer>();
 		int count = 0;
 		
-		for (var snp : items) {
-			var net = snp.getModel().getNetwork();
-			order.put(net.getSUID(), count++);
+		for (var rootNet : getRootNetworkListPanel().getRootNetworks()) {
+			var rnp = getRootNetworkListPanel().getItem(rootNet);
+			
+			for (var subNet : rnp.getSubNetworks())
+				map.put(subNet.getSUID(), count++);
 		}
-				
-		return order;
+		
+		return map;
 	}
 	
 	public int indexOf(CyNetwork network) {
@@ -394,8 +415,13 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		doNotUpdateCollapseExpandButtons = true;
 		
 		try {
-			for (var n : networks)
-				addNetwork(n);
+			var netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+			
+			for (var n : networks) {
+				var snp = addNetwork(n);
+				int count = netViewMgr.getNetworkViews(snp.getModel().getNetwork()).size();
+				snp.getModel().setViewCount(count);
+			}
 		} finally {
 			doNotUpdateCollapseExpandButtons = false;
 			ignoreSelectionEvents = false;
@@ -511,10 +537,19 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	public void setShowNetworkProvenanceHierarchy(boolean b) {
+		if (b) // If showing the indentation, Reorder by the original CREATION positions
+			getRootNetworkListPanel().sortNetworks(CREATION);
+		
 		for (var item : getRootNetworkListPanel().getAllItems())
 			item.setShowIndentation(b);
 		
+		// Save the user preference 
 		ViewUtil.setViewProperty(ViewUtil.SHOW_NETWORK_PROVENANCE_HIERARCHY_KEY, "" + b, serviceRegistrar);
+	}
+	
+	private void sortNetworks(NetworksSortMode mode) {
+		sortMode = mode;
+		getRootNetworkListPanel().sortNetworks(mode);
 	}
 	
 	public void scrollTo(CyNetwork network) {
@@ -1123,6 +1158,9 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		private final Border dropBorder;
 		private boolean scrollableTracksViewportHeight;
 		
+		/** Contains all root networks in their original CREATION order */
+		private final List<CyRootNetwork> rootNetworks = new LinkedList<>();
+		/** Contains all root networks and their panels in their current "view" order */
 		private final Map<CyRootNetwork, RootNetworkPanel> items = new LinkedHashMap<>();
 		
 		RootNetworkListPanel() {
@@ -1179,6 +1217,32 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			
 			updateDropArea();
 			updateScrollableTracksViewportHeight();
+		}
+		
+		public void sortNetworks(NetworksSortMode mode) {
+			var sortedRootNets = new ArrayList<>(rootNetworks); // This has the CREATION order already
+			
+			if (mode == NAME)
+				ViewUtil.sortNetworksByName(sortedRootNets);
+			
+			// Save the current items
+			var map = new HashMap<>(items);
+			// Remove/clear everything except the rootNetworks list
+			items.clear();
+			removeAll();
+			
+			for (var rootNet : sortedRootNets) {
+				var rootNetPanel = map.get(rootNet); 
+				add(rootNetPanel);
+				items.put(rootNet, rootNetPanel);
+				
+				rootNetPanel.sortNetworks(mode);
+			}
+			
+			add(filler);
+			revalidate();
+			
+			// TODO clear or fix previous selection?
 		}
 		
 		void update() {
@@ -1245,8 +1309,9 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 					}
 				});
 				
-				items.put(rootNetwork, rootNetworkPanel);
 				add(rootNetworkPanel, getComponentCount() - 1);
+				items.put(rootNetwork, rootNetworkPanel);
+				rootNetworks.add(rootNetwork);
 			}
 			
 			return items.get(rootNetwork);
@@ -1258,13 +1323,23 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			if (rootNetworkPanel != null)
 				remove(rootNetworkPanel);
 			
+			rootNetworks.remove(rootNetwork);
+			
 			return rootNetworkPanel;
 		}
 		
 		void removeAllItems() {
+			rootNetworks.clear();
 			items.clear();
 			removeAll();
 			add(filler);
+		}
+		
+		/**
+		 * @return All CyRootNetworks in their original CREATION order (not affected by the current "view" order).
+		 */
+		List<CyRootNetwork> getRootNetworks() {
+			return rootNetworks;
 		}
 		
 		RootNetworkPanel getItem(CyRootNetwork rootNetwork) {

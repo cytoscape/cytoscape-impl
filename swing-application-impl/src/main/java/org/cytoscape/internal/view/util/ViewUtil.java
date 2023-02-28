@@ -14,6 +14,12 @@ import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -78,6 +84,15 @@ import org.slf4j.Logger;
 
 public final class ViewUtil {
 
+	public static enum NetworksSortMode {
+		CREATION, NAME;
+		
+		@Override
+		public String toString() {
+			return name().toLowerCase();
+		}
+	}
+	
 	public static final int DIVIDER_SIZE = 5;
 	
 	public static final String CY_PROPERTY_NAME = "(cyPropertyName=cytoscape3.props)";
@@ -165,7 +180,47 @@ public final class ViewUtil {
 		return null;
 	}
 	
-	public static void styleToolBarButton(final AbstractButton btn) {
+	public static List<CySubNetwork> getSessionNetworks(CyServiceRegistrar serviceRegistrar) {
+		var netMgr = serviceRegistrar.getService(CyNetworkManager.class);
+		var sortedNetworks = new ArrayList<CySubNetwork>();
+		
+		for (var n : netMgr.getNetworkSet()) {
+			if (n instanceof CySubNetwork && netMgr.networkExists(n.getSUID()))
+				sortedNetworks.add((CySubNetwork) n);
+		}
+		
+		return sortedNetworks;
+	}
+	
+	public static void sortNetworksByCreationPos(List<? extends CyNetwork> networks, Map<Long, Integer> netPos) {
+		Collections.sort(networks, new Comparator<CyNetwork>() {
+			@Override
+			public int compare(CyNetwork n1, CyNetwork n2) {
+				Integer o1 = netPos.get(n1.getSUID());
+				Integer o2 = netPos.get(n2.getSUID());
+				if (o1 == null) o1 = -1;
+				if (o2 == null) o2 = -1;
+				
+				return o1.compareTo(o2);
+			}
+		});
+	}
+	
+	public static void sortNetworksByName(List<? extends CyNetwork> networks) {
+		var collator = Collator.getInstance();
+		
+		Collections.sort(networks, new Comparator<CyNetwork>() {
+			@Override
+			public int compare(CyNetwork n1, CyNetwork n2) {
+				var name1 = getName(n1);
+				var name2 = getName(n2);
+				
+				return collator.compare(name1, name2);
+			}
+		});
+	}
+	
+	public static void styleToolBarButton(AbstractButton btn) {
 		styleToolBarButton(btn, null, true);
 	}
 	

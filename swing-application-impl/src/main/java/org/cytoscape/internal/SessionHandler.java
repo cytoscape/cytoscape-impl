@@ -34,6 +34,7 @@ import org.cytoscape.internal.view.CytoscapeDesktop;
 import org.cytoscape.internal.view.NetworkMainPanel;
 import org.cytoscape.internal.view.NetworkViewMediator;
 import org.cytoscape.internal.view.SubNetworkPanel;
+import org.cytoscape.internal.view.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
@@ -349,48 +350,19 @@ public class SessionHandler implements CyShutdownRequestedListener, SessionLoade
 	}
 	
 	/**
-	 * @param netOrder Maps CyNetwork SUID to the network position
+	 * @param netPos Maps CyNetwork SUID to the network position
 	 */
-	private void setSessionNetworks(final Map<Long, Integer> netOrder) {
-		final CyNetworkManager netMgr = serviceRegistrar.getService(CyNetworkManager.class);
-		final List<CySubNetwork> sortedNetworks = new ArrayList<>();
+	private void setSessionNetworks(Map<Long, Integer> netPos) {
+		var sortedNetworks = ViewUtil.getSessionNetworks(serviceRegistrar);
+		ViewUtil.sortNetworksByCreationPos(sortedNetworks, netPos);
 		
-		for (CyNetwork n : netMgr.getNetworkSet()) {
-			if (n instanceof CySubNetwork && netMgr.networkExists(n.getSUID()))
-				sortedNetworks.add((CySubNetwork) n);
-		}
+		var applicationMgr = serviceRegistrar.getService(CyApplicationManager.class);
 		
-		Collections.sort(sortedNetworks, new Comparator<CySubNetwork>() {
-			@Override
-			public int compare(final CySubNetwork n1, final CySubNetwork n2) {
-				try {
-					Integer o1 = netOrder.get(n1.getSUID());
-					Integer o2 = netOrder.get(n2.getSUID());
-					if (o1 == null) o1 = -1;
-					if (o2 == null) o2 = -1;
-					
-					return o1.compareTo(o2);
-				} catch (final Exception e) {
-					logger.error("Cannot sort networks", e);
-				}
-				
-				return 0;
-			}
-		});
-		
-		final CyApplicationManager applicationMgr = serviceRegistrar.getService(CyApplicationManager.class);
-		final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
-		
-		final List<CyNetwork> selectedNetworks = applicationMgr.getSelectedNetworks();
-		final List<CyNetworkView> selectedViews = applicationMgr.getSelectedNetworkViews();
+		var selectedNetworks = applicationMgr.getSelectedNetworks();
+		var selectedViews = applicationMgr.getSelectedNetworkViews();
 		
 		invokeOnEDT(() -> {
 			netPanel.setNetworks(sortedNetworks);
-			
-			for (SubNetworkPanel snp : netPanel.getAllSubNetworkItems()) {
-				final int count = netViewMgr.getNetworkViews(snp.getModel().getNetwork()).size();
-				snp.getModel().setViewCount(count);
-			}
 			
 			netPanel.setSelectedNetworks(selectedNetworks);
 			netViewMediator.getNetworkViewMainPanel().setSelectedNetworkViews(selectedViews);

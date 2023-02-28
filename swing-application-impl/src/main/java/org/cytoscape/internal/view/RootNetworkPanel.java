@@ -4,14 +4,19 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
+import static org.cytoscape.internal.view.util.ViewUtil.NetworksSortMode.CREATION;
+import static org.cytoscape.internal.view.util.ViewUtil.NetworksSortMode.NAME;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -21,6 +26,7 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 
 import org.cytoscape.internal.view.util.ViewUtil;
+import org.cytoscape.internal.view.util.ViewUtil.NetworksSortMode;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -59,8 +65,13 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 	private JPanel headerPanel;
 	private JPanel subNetListPanel;
 	
+	/** Contains all subnetworks in their original CREATION order */
+	private List<CySubNetwork> subNetworks;
+	/** Contains all subnetworks and their panels in their current "view" order */
 	private LinkedHashMap<CySubNetwork, SubNetworkPanel> items;
 	private boolean showIndentation;
+	
+	private NetworksSortMode sortMode = CREATION;
 	
 	public RootNetworkPanel(RootNetworkPanelModel model, boolean showIndentation, CyServiceRegistrar serviceRegistrar) {
 		super(model, serviceRegistrar);
@@ -80,6 +91,7 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 				// No parent network? So just add it to the end of the list...
 				getSubNetListPanel().add(subNetPanel);
 				getItems().put(network, subNetPanel);
+				getSubNetworks().add(network);
 			} else {
 				// It has a parent network, so let's find the position where it must be inserted...
 				var newItems = new LinkedHashMap<CySubNetwork, SubNetworkPanel>();
@@ -108,14 +120,19 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 					// Just add the new item to the end...
 					getSubNetListPanel().add(subNetPanel);
 					getItems().put(network, subNetPanel);
+					getSubNetworks().add(network);
 				} else {
 					// Rebuild the whole list...
 					getSubNetListPanel().removeAll();
 					getItems().clear();
+					getSubNetworks().clear();
 				
 					for (var entry : newItems.entrySet()) {
-						getSubNetListPanel().add(entry.getValue());
-						getItems().put(entry.getKey(), entry.getValue());
+						var net = entry.getKey();
+						var snp = entry.getValue();
+						getSubNetListPanel().add(snp);
+						getItems().put(net, snp);
+						getSubNetworks().add(net);
 					}
 				}
 			}
@@ -139,6 +156,7 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 	}
 	
 	public void removeAllItems() {
+		getSubNetworks().clear();
 		getItems().clear();
 		getSubNetListPanel().removeAll();
 	}
@@ -180,6 +198,34 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 		}
 	}
 	
+	public void sortNetworks(NetworksSortMode mode) {
+		sortMode = mode;
+		
+		if (isEmpty())
+			return;
+		
+		var map = new HashMap<>(items);
+		var sortedSubNets = new ArrayList<>(items.keySet());
+		
+		if (mode == NAME)
+			ViewUtil.sortNetworksByName(sortedSubNets);
+		else
+			ViewUtil.sortNetworksByCreationPos(sortedSubNets, getCreationPositions());
+		
+		getSubNetListPanel().removeAll();
+		getItems().clear();
+		
+		for (var subNet : sortedSubNets) {
+			var subNetPanel = map.get(subNet); 
+			getSubNetListPanel().add(subNetPanel);
+			getItems().put(subNet, subNetPanel);
+			
+			subNetPanel.update();
+		}
+		
+		updateIndentation();
+	}
+	
 	@Override
 	public void update() {
 		updateRootPanel();
@@ -205,7 +251,7 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 	
 	protected void updateIndentation() {
 		for (var snp : getItems().values())
-			snp.setShowIndentation(showIndentation);
+			snp.setShowIndentation(showIndentation && sortMode == CREATION);
 	}
 	
 	@Override
@@ -316,6 +362,23 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 	
 	private LinkedHashMap<CySubNetwork, SubNetworkPanel> getItems() {
 		return items != null ? items : (items = new LinkedHashMap<>());
+	}
+	
+	/**
+	 * @return All CySubNetworks listed here in their original CREATION order (not affected by the current "view" order).
+	 */
+	protected List<CySubNetwork> getSubNetworks() {
+		return subNetworks != null ? subNetworks : (subNetworks = new LinkedList<>());
+	}
+	
+	private Map<Long, Integer> getCreationPositions() {
+		var map = new LinkedHashMap<Long, Integer>();
+		int count = 0;
+		
+		for (var net : getSubNetworks())
+			map.put(net.getSUID(), count++);
+		
+		return map;
 	}
 	
 	private int getDepth(CySubNetwork net) {
