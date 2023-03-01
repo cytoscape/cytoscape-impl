@@ -79,7 +79,10 @@ import org.slf4j.Logger;
 public final class ViewUtil {
 
 	public static enum NetworksSortMode {
-		CREATION, NAME;
+		/** To sort by the original creation positions */
+		CREATION,
+		/** To sort alphabetically (ASC) by the network name */
+		NAME;
 		
 		@Override
 		public String toString() {

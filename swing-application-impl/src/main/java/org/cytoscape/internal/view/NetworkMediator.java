@@ -24,6 +24,7 @@ import org.cytoscape.internal.task.DynamicTaskFactory;
 import org.cytoscape.internal.task.DynamicTogglableTaskFactory;
 import org.cytoscape.internal.task.TaskFactoryTunableAction;
 import org.cytoscape.internal.view.util.ViewUtil;
+import org.cytoscape.internal.view.util.ViewUtil.NetworksSortMode;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.events.AddedEdgesEvent;
@@ -210,8 +211,12 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 					// Update root or subnetwork name
 					var item = networkMainPanel.getNetworkItem(net);
 					
-					if (item != null)
+					if (item != null) {
 						item.update();
+						
+						if (networkMainPanel.getSortMode() == NetworksSortMode.NAME) // Sort by name again
+							networkMainPanel.sortNetworks(NetworksSortMode.NAME);
+					}
 				});
 			} else if (!parentRecords.isEmpty() && tbl.equals(net.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS))) {
 				// Network PARENT ID changed...

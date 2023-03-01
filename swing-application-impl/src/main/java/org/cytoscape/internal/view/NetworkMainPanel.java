@@ -536,7 +536,11 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		ViewUtil.setViewProperty(ViewUtil.SHOW_NETWORK_PROVENANCE_HIERARCHY_KEY, "" + b, serviceRegistrar);
 	}
 	
-	private void sortNetworks(NetworksSortMode mode) {
+	public NetworksSortMode getSortMode() {
+		return sortMode;
+	}
+	
+	public void sortNetworks(NetworksSortMode mode) {
 		sortMode = mode;
 		getRootNetworkListPanel().sortNetworks(mode);
 	}
@@ -564,6 +568,10 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	protected SubNetworkPanel addNetwork(CySubNetwork network) {
 		var rootNetwork = network.getRootNetwork();
 		var rootNetPanel = getRootNetworkPanel(rootNetwork);
+		var sortMode = this.sortMode;
+		
+		if (sortMode != CREATION) // Go back to the original order first, so we get the correct creation position
+			sortNetworks(CREATION);
 		
 		if (rootNetPanel == null) {
 			rootNetPanel = getRootNetworkListPanel().addItem(rootNetwork);
@@ -629,6 +637,9 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		});
 		
 		firePropertyChange("subNetworkPanelCreated", null, subNetPanel);
+		
+		if (sortMode != this.sortMode) // Apply the current sort mode again, if necessary
+			sortNetworks(sortMode);
 		
 		// Scroll to new item
 		rootNetPanel.expand();
