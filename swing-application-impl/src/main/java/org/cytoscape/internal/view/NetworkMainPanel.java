@@ -48,7 +48,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.WeakHashMap;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
@@ -81,7 +80,6 @@ import org.cytoscape.internal.util.Util;
 import org.cytoscape.internal.view.util.ViewUtil;
 import org.cytoscape.internal.view.util.ViewUtil.NetworksSortMode;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -138,9 +136,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 
 	private CyNetwork currentNetwork;
 	
-	private final Map<CyTable, CyNetwork> nameTables = new WeakHashMap<>();
-	private final Map<CyTable, CyNetwork> nodeEdgeTables = new WeakHashMap<>();
-
 	private AbstractNetworkPanel<?> selectionHead;
 	private AbstractNetworkPanel<?> selectionTail;
 	private AbstractNetworkPanel<?> lastSelected;
@@ -501,9 +496,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	public void clear() {
-		nameTables.clear();
-		nodeEdgeTables.clear();
-		
 		ignoreSelectionEvents = true;
 		doNotUpdateCollapseExpandButtons = true;
 		
@@ -642,10 +634,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		rootNetPanel.expand();
 		scrollTo(network);
 		
-		nameTables.put(network.getDefaultNetworkTable(), network);
-		nodeEdgeTables.put(network.getDefaultNodeTable(), network);
-		nodeEdgeTables.put(network.getDefaultEdgeTable(), network);
-		
 		return subNetPanel;
 	}
 	
@@ -653,9 +641,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	 * Remove a network from the panel.
 	 */
 	protected void removeNetwork(CySubNetwork network) {
-		nameTables.values().removeAll(Collections.singletonList(network));
-		nodeEdgeTables.values().removeAll(Collections.singletonList(network));
-		
 		invokeOnEDT(() -> {
 			var rootNet = network.getRootNetwork();
 			var item = getRootNetworkPanel(rootNet);
@@ -663,11 +648,8 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			if (item != null) {
 				item.removeItem(network);
 				
-				if (item.isEmpty()) {
+				if (item.isEmpty())
 					getRootNetworkListPanel().removeItem(rootNet);
-					nameTables.values().removeAll(Collections.singletonList(rootNet));
-					nodeEdgeTables.values().removeAll(Collections.singletonList(rootNet));
-				}
 				
 				updateNetworkHeader();
 			}
