@@ -393,9 +393,9 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	 */
 	public int indexOf(CyNetwork network) {
 		var netPos = getNetworkListOrder();
-		int idx = netPos.get(network.getSUID());
+		var idx = netPos.get(network.getSUID());
 		
-		return idx;
+		return idx != null ? idx.intValue() : -1;
 	}
 	
 	/**
