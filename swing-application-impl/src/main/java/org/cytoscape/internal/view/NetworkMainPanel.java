@@ -147,6 +147,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	private TextIcon icon;
 	
 	private NetworksSortMode sortMode = CREATION;
+	private Map<Long, Integer> networkListOrder;
 
 	private final NetworkSearchBar networkSearchBar;
 	private final CyServiceRegistrar serviceRegistrar;
@@ -372,27 +373,27 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	 * Return the network creation positions.
 	 */
 	public Map<Long, Integer> getNetworkListOrder() {
-		var map = new LinkedHashMap<Long, Integer>();
-		int count = 0;
-		
-		for (var rootNet : getRootNetworkListPanel().getRootNetworks()) {
-			var rnp = getRootNetworkListPanel().getItem(rootNet);
+		if (networkListOrder == null) {
+			networkListOrder = new LinkedHashMap<Long, Integer>();
+			int count = 0;
 			
-			for (var subNet : rnp.getSubNetworks())
-				map.put(subNet.getSUID(), count++);
+			for (var rootNet : getRootNetworkListPanel().getRootNetworks()) {
+				var rnp = getRootNetworkListPanel().getItem(rootNet);
+				
+				for (var subNet : rnp.getSubNetworks())
+					networkListOrder.put(subNet.getSUID(), count++);
+			}
 		}
 		
-		return map;
+		return networkListOrder;
 	}
 	
+	/**
+	 * @return The model index of the network, which means the current sort mode is ignored.
+	 */
 	public int indexOf(CyNetwork network) {
-		int idx = -1;
-		var item = getNetworkItem(network);
-		
-		if (item != null) {
-			var allItems = getAllItems(true);
-			idx = allItems.indexOf(item);
-		}
+		var netPos = getNetworkListOrder();
+		int idx = netPos.get(network.getSUID());
 		
 		return idx;
 	}
@@ -508,6 +509,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		
 		lastSelected = selectionHead = selectionTail = null;
 		
+		networkListOrder = null;
 		updateNetworkHeader();
 	}
 	
@@ -636,6 +638,8 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			}
 		});
 		
+		networkListOrder = null;
+		
 		firePropertyChange("subNetworkPanelCreated", null, subNetPanel);
 		
 		if (sortMode != this.sortMode) // Apply the current sort mode again, if necessary
@@ -662,6 +666,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 				if (item.isEmpty())
 					getRootNetworkListPanel().removeItem(rootNet);
 				
+				networkListOrder = null;
 				updateNetworkHeader();
 			}
 		});
@@ -1302,6 +1307,8 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 				add(rootNetworkPanel, getComponentCount() - 1);
 				items.put(rootNetwork, rootNetworkPanel);
 				rootNetworks.add(rootNetwork);
+				
+				networkListOrder = null;
 			}
 			
 			return items.get(rootNetwork);
@@ -1315,6 +1322,8 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			
 			rootNetworks.remove(rootNetwork);
 			
+			networkListOrder = null;
+			
 			return rootNetworkPanel;
 		}
 		
@@ -1323,6 +1332,8 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			items.clear();
 			removeAll();
 			add(filler);
+			
+			networkListOrder = null;
 		}
 		
 		/**

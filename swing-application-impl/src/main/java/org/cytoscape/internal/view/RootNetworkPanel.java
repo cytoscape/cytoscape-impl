@@ -155,12 +155,6 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 		return subNetPanel;
 	}
 	
-	public void removeAllItems() {
-		getSubNetworks().clear();
-		getItems().clear();
-		getSubNetListPanel().removeAll();
-	}
-	
 	public SubNetworkPanel getItem(CySubNetwork network) {
 		return getItems().get(network);
 	}
