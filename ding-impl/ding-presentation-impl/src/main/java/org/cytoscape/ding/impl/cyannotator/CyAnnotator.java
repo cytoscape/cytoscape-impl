@@ -105,7 +105,6 @@ public class CyAnnotator implements SessionAboutToBeSavedListener, CustomGraphic
 	
 	@Override
 	public void handleEvent(CustomGraphicsLibraryUpdatedEvent evt) {
-		System.out.println("CyAnnotator.handleEvent(CustomGraphicsLibraryUpdatedEvent)");
 		var iterator = new TaskIterator(new ReloadImagesTask(this));
 		registrar.getService(TaskManager.class).execute(iterator);
 	}
@@ -187,7 +186,6 @@ public class CyAnnotator implements SessionAboutToBeSavedListener, CustomGraphic
 	public void loadAnnotations(List<String> annotations) {
 		loading = true;
 		
-		System.out.println("CyAnnotator.loadAnnotations()");
 		try {
 			var arrowList = new ArrayList<Map<String, String>>(); // Keep a list of arrows
 			var groupMap = new HashMap<GroupAnnotation, String>(); // Keep a map of groups and uuids
