@@ -105,6 +105,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener, CustomGraphic
 	
 	@Override
 	public void handleEvent(CustomGraphicsLibraryUpdatedEvent evt) {
+		System.out.println("CyAnnotator.handleEvent(CustomGraphicsLibraryUpdatedEvent)");
 		var iterator = new TaskIterator(new ReloadImagesTask(this));
 		registrar.getService(TaskManager.class).execute(iterator);
 	}
@@ -186,6 +187,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener, CustomGraphic
 	public void loadAnnotations(List<String> annotations) {
 		loading = true;
 		
+		System.out.println("CyAnnotator.loadAnnotations()");
 		try {
 			var arrowList = new ArrayList<Map<String, String>>(); // Keep a list of arrows
 			var groupMap = new HashMap<GroupAnnotation, String>(); // Keep a map of groups and uuids
@@ -313,8 +315,9 @@ public class CyAnnotator implements SessionAboutToBeSavedListener, CustomGraphic
 		var oldValue = new HashSet<>(annotationSet);
 		
 		for (var a : annotations) {
-			if (a instanceof DingAnnotation)
-				annotationSet.add((DingAnnotation) a);
+			if (a instanceof DingAnnotation da) {
+				annotationSet.add(da);
+			}
 		}
 		
 		getAnnotationTree().resetZOrder();
@@ -534,15 +537,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener, CustomGraphic
 			annotation = (DingAnnotation) a;
 
 			uuidMap.put(annotation.getUUID().toString(), annotation);
-			CanvasID canvas;
-
-			if (annotation.getCanvas() != null) {
-//				annotation.getCanvas().add(annotation);
-				canvas = annotation.getCanvas();
-			} else {
-				canvas = CanvasID.FOREGROUND;
-//				foreGroundCanvas.add(annotation);
-			}
+			var canvas = annotation.getCanvas() == null ? CanvasID.FOREGROUND : annotation.getCanvas();
 
 			if (argMap.containsKey(Annotation.Z)) {
 				int zOrder = Integer.parseInt(argMap.get(Annotation.Z));

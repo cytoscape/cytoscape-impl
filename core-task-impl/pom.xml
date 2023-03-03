@@ -138,6 +138,13 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>util-api</artifactId>
 		</dependency>
+		
+		<!-- Internal API -->
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>custom-graphics-internal</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 		<!-- 3rd party library -->
 		<dependency>

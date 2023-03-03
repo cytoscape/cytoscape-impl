@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cytoscape.cg.event.CustomGraphicsReadyToBeLoadedEvent;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
@@ -113,9 +114,7 @@ public class OpenSessionTask extends AbstractOpenSessionTask {
 					if (file == null)
 						throw new NullPointerException("No file specified.");
 					
-					reader = serviceRegistrar.getService(CySessionReaderManager.class)
-							.getReader(file.toURI(), file.getName());
-					
+					reader = serviceRegistrar.getService(CySessionReaderManager.class).getReader(file.toURI(), file.getName());
 					if (reader == null)
 						throw new NullPointerException("Failed to find appropriate reader for file: " + file);
 					
@@ -128,8 +127,13 @@ public class OpenSessionTask extends AbstractOpenSessionTask {
 					tm.setProgress(0.2);
 					
 					// Now we can read the new session
-					if (!cancelled)
+					if (!cancelled) {
 						reader.run(tm);
+						
+						// The CustomGraphicsManager needs to load images before the session is restored.
+						tm.setProgress(0.7);
+						eventHelper.fireEvent(new CustomGraphicsReadyToBeLoadedEvent(this, reader.getSession()));
+					}
 					
 					tm.setProgress(0.8);
 				} catch (Exception e) {

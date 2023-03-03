@@ -18,6 +18,8 @@ import org.apache.commons.io.FileUtils;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.events.CyStartEvent;
 import org.cytoscape.application.events.CyStartListener;
+import org.cytoscape.cg.event.CustomGraphicsReadyToBeLoadedEvent;
+import org.cytoscape.cg.event.CustomGraphicsReadyToBeLoadedListener;
 import org.cytoscape.cg.internal.image.MissingImageCustomGraphics;
 import org.cytoscape.cg.internal.task.RestoreImagesTask;
 import org.cytoscape.cg.internal.task.SaveGraphicsToSessionTaskFactory;
@@ -34,8 +36,6 @@ import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
 import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
-import org.cytoscape.session.events.SessionLoadedEvent;
-import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
@@ -57,7 +57,7 @@ import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("rawtypes")
 public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, CyStartListener,
-		SessionAboutToBeSavedListener, SessionAboutToBeLoadedListener, SessionLoadedListener {
+		SessionAboutToBeSavedListener, SessionAboutToBeLoadedListener, CustomGraphicsReadyToBeLoadedListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
@@ -346,7 +346,7 @@ public final class CustomGraphicsManagerImpl implements CustomGraphicsManager, C
 	}
 
 	@Override
-	public void handleEvent(SessionLoadedEvent e) {
+	public void handleEvent(CustomGraphicsReadyToBeLoadedEvent e) {
 		// Add new images
 		var sess = e.getLoadedSession();
 

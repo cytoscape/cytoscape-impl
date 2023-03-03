@@ -220,22 +220,23 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			// Get the image from the image pool
 			try {
 				url = new URL(argMap.get(URL));
-        reloadImage();
-				
-        if (name == null)
-          name = getDefaultName();
+				reloadImage();
 
-        double aspectRatio = (double)image.getHeight() / (double)image.getWidth();
-        // If the user didn't specify the WIDTH and HEIGHT, it will be set to 100X100.  We want to
-        // scale that to the appropriate aspect ratio
-        if (argMap.containsKey(ShapeAnnotation.WIDTH) && argMap.containsKey(ShapeAnnotation.HEIGHT))
-          return;
+				if (name == null)
+					name = getDefaultName();
 
-        // If the user specified the width, adjust the height
-        if (argMap.containsKey(ShapeAnnotation.WIDTH))
-          height = width*aspectRatio;
-        else
-          width = height/aspectRatio;
+				double aspectRatio = (double) image.getHeight() / (double) image.getWidth();
+				// If the user didn't specify the WIDTH and HEIGHT, it will be set to 100X100.
+				// We want to
+				// scale that to the appropriate aspect ratio
+				if (argMap.containsKey(ShapeAnnotation.WIDTH) && argMap.containsKey(ShapeAnnotation.HEIGHT))
+					return;
+
+				// If the user specified the width, adjust the height
+				if (argMap.containsKey(ShapeAnnotation.WIDTH))
+					height = width * aspectRatio;
+				else
+					width = height / aspectRatio;
 
 			} catch (Exception e) {
 				logger.warn("Unable to restore image '" + argMap.get(URL) + "'", e);
@@ -319,22 +320,22 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			if (cg != null) {
 				if (!isSVG())
 					image = ImageUtil.toBufferedImage(cg.getRenderedImage());
-        modifiedImage = null;
-				
+				modifiedImage = null;
+
 				customGraphicsManager.addCustomGraphics(cg, url);
 				customGraphicsManager.setUsedInCurrentSession(cg, true);
 			} else {
-        try {
-          // We don't already have the image -- fetch it
-          image = ImageIO.read(url);
-          cg = new BitmapCustomGraphics(customGraphicsManager.getNextAvailableID(), url.toString(), image);
-          customGraphicsManager.addCustomGraphics(cg, url);
-          customGraphicsManager.setUsedInCurrentSession(cg, true);
-          modifiedImage = null;
-        } catch (Exception e) {
-          logger.error("Unable to read image from "+ url.toString() + ": "+e.getMessage());
-          throw e;
-        }
+				try {
+					// We don't already have the image -- fetch it
+					image = ImageIO.read(url);
+					cg = new BitmapCustomGraphics(customGraphicsManager.getNextAvailableID(), url.toString(), image);
+					customGraphicsManager.addCustomGraphics(cg, url);
+					customGraphicsManager.setUsedInCurrentSession(cg, true);
+					modifiedImage = null;
+				} catch (Exception e) {
+					logger.error("Unable to read image from " + url.toString() + ": " + e.getMessage());
+					throw e;
+				}
 			}
 		} catch (Exception e) {
 			logger.warn("Unable to restore image '" + url + "'", e);
@@ -383,7 +384,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		var oldValue = this.url;
 		this.url = url;
 		reloadImage();
-    getModifiedImage();
+		getModifiedImage();
 		update();
 		firePropertyChange("imageURL", oldValue, url);
 	}

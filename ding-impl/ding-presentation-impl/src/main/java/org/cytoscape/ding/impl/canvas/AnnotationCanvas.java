@@ -68,12 +68,15 @@ public class AnnotationCanvas<GP extends GraphicsProvider> extends DingCanvas<GP
 		if(g == null)
 			return;
 		
+		var annotations = re.getCyAnnotator().getAnnotations(canvasID, false);
+		if(annotations == null || annotations.isEmpty())
+			return;
+		
 		var transform = graphicsProvider.getTransform();
 		g.transform(transform.getPaintAffineTransform());
 		
 		Rectangle2D visibleArea = transform.getNetworkVisibleAreaNodeCoords();
 		
-		var annotations = re.getCyAnnotator().getAnnotations(canvasID, false);
 		var dpm = pm.toDiscrete(annotations.size());
 		
 		for(DingAnnotation a : annotations) {
