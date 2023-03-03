@@ -9,6 +9,7 @@ import java.nio.channels.Channels;
 import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
+import org.cytoscape.cg.event.CustomGraphicsReadyToBeLoadedEvent;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
@@ -147,8 +148,13 @@ public class OpenSessionCommandTask extends AbstractOpenSessionTask {
 				tm.setProgress(0.2);
 				
 				// Now we can read the new session
-				if (!cancelled)
+				if (!cancelled) {
 					reader.run(tm);
+					
+					// The CustomGraphicsManager needs to load images before the session is restored.
+					tm.setProgress(0.7);
+					eventHelper.fireEvent(new CustomGraphicsReadyToBeLoadedEvent(this, reader.getSession()));
+				}
 				
 				tm.setProgress(0.8);
 			} catch (Exception e) {
