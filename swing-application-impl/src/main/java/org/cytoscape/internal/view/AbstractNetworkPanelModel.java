@@ -41,7 +41,7 @@ public abstract class AbstractNetworkPanelModel<T extends CyNetwork> {
 	protected final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
 	protected final CyServiceRegistrar serviceRegistrar;
 
-	protected AbstractNetworkPanelModel(final T network, final CyServiceRegistrar serviceRegistrar) {
+	protected AbstractNetworkPanelModel(T network, CyServiceRegistrar serviceRegistrar) {
 		if (network == null)
 			throw new IllegalArgumentException("'subNetwork' must not be null.");
 		if (serviceRegistrar == null)
@@ -59,9 +59,9 @@ public abstract class AbstractNetworkPanelModel<T extends CyNetwork> {
 		return viewCount;
 	}
 	
-	public void setViewCount(final int newValue) {
+	public void setViewCount(int newValue) {
 		if (viewCount != newValue) {
-			final int oldValue = viewCount;
+			int oldValue = viewCount;
 			viewCount = newValue;
 			changeSupport.firePropertyChange("viewCount", oldValue, newValue);
 		}
@@ -83,9 +83,9 @@ public abstract class AbstractNetworkPanelModel<T extends CyNetwork> {
 		return current;
 	}
 	
-	public void setCurrent(final boolean newValue) {
+	public void setCurrent(boolean newValue) {
 		if (current != newValue) {
-			final boolean oldValue = current;
+			boolean oldValue = current;
 			current = newValue;
 			changeSupport.firePropertyChange("current", oldValue, newValue);
 		}

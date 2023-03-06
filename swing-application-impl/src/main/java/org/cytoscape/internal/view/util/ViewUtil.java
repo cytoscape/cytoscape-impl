@@ -8,12 +8,17 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GraphicsConfiguration;
 import java.awt.Image;
-import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -35,12 +40,8 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -48,7 +49,6 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.slf4j.Logger;
 
@@ -78,6 +78,18 @@ import org.slf4j.Logger;
 
 public final class ViewUtil {
 
+	public static enum NetworksSortMode {
+		/** To sort by the original creation positions */
+		CREATION,
+		/** To sort alphabetically (ASC) by the network name */
+		NAME;
+		
+		@Override
+		public String toString() {
+			return name().toLowerCase();
+		}
+	}
+	
 	public static final int DIVIDER_SIZE = 5;
 	
 	public static final String CY_PROPERTY_NAME = "(cyPropertyName=cytoscape3.props)";
@@ -93,8 +105,8 @@ public final class ViewUtil {
 	private static final String DEF_ICON_REGEX = "([A-Z]?[0-9a-z]+)|([A-Z]+)"; // Finds camelCase and PascalCase groups
 	private static final Pattern DEF_ICON_PATTERN = Pattern.compile(DEF_ICON_REGEX);
 	
-	public static String getName(final CyNetwork network) {
-		String name = "";
+	public static String getName(CyNetwork network) {
+		var name = "";
 		
 		try {
 			name = network.getRow(network).get(CyNetwork.NAME, String.class);
@@ -107,8 +119,8 @@ public final class ViewUtil {
 		return name;
 	}
 	
-	public static String getTitle(final CyNetworkView view) {
-		String title = view.getVisualProperty(BasicVisualLexicon.NETWORK_TITLE);
+	public static String getTitle(CyNetworkView view) {
+		var title = view.getVisualProperty(BasicVisualLexicon.NETWORK_TITLE);
 		
 		if (title == null || title.trim().isEmpty())
 			title = getName(view.getModel());
@@ -116,11 +128,11 @@ public final class ViewUtil {
 		return title;
 	}
 	
-	public static int getHiddenNodeCount(final CyNetworkView view) {
+	public static int getHiddenNodeCount(CyNetworkView view) {
 		int count = 0;
 		
 		if (view != null) {
-			for (View<CyNode> nv : view.getNodeViews()) {
+			for (var nv : view.getNodeViews()) {
 				if (nv.getVisualProperty(BasicVisualLexicon.NODE_VISIBLE) == Boolean.FALSE)
 					count++;
 			}
@@ -129,11 +141,11 @@ public final class ViewUtil {
 		return count;
 	}
 	
-	public static int getHiddenEdgeCount(final CyNetworkView view) {
+	public static int getHiddenEdgeCount(CyNetworkView view) {
 		int count = 0;
 		
 		if (view != null) {
-			for (View<CyEdge> ev : view.getEdgeViews()) {
+			for (var ev : view.getEdgeViews()) {
 				if (ev.getVisualProperty(BasicVisualLexicon.EDGE_VISIBLE) == Boolean.FALSE)
 					count++;
 			}
@@ -142,21 +154,21 @@ public final class ViewUtil {
 		return count;
 	}
 	
-	public static String createUniqueKey(final CyNetworkView view) {
+	public static String createUniqueKey(CyNetworkView view) {
 		return "__CyNetworkView_" + view.getSUID();
 	}
 	
-	public static String createUniqueKey(final CyNetwork net) {
+	public static String createUniqueKey(CyNetwork net) {
 		return "__CyNetwork_" + (net != null ? net.getSUID() : "null");
 	}
 	
-	public static CySubNetwork getParent(final CySubNetwork net, final CyServiceRegistrar serviceRegistrar) {
-		final CyTable hiddenTable = net.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS);
-		final CyRow row = hiddenTable != null ? hiddenTable.getRow(net.getSUID()) : null;
-		final Long suid = row != null ? row.get(PARENT_NETWORK_COLUMN, Long.class) : null;
+	public static CySubNetwork getParent(CySubNetwork net, CyServiceRegistrar serviceRegistrar) {
+		var hiddenTable = net.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS);
+		var row = hiddenTable != null ? hiddenTable.getRow(net.getSUID()) : null;
+		var suid = row != null ? row.get(PARENT_NETWORK_COLUMN, Long.class) : null;
 		
 		if (suid != null) {
-			final CyNetwork parent = serviceRegistrar.getService(CyNetworkManager.class).getNetwork(suid);
+			var parent = serviceRegistrar.getService(CyNetworkManager.class).getNetwork(suid);
 			
 			if (parent instanceof CySubNetwork)
 				return (CySubNetwork) parent;
@@ -165,25 +177,65 @@ public final class ViewUtil {
 		return null;
 	}
 	
-	public static void styleToolBarButton(final AbstractButton btn) {
+	public static List<CySubNetwork> getSessionNetworks(CyServiceRegistrar serviceRegistrar) {
+		var netMgr = serviceRegistrar.getService(CyNetworkManager.class);
+		var sortedNetworks = new ArrayList<CySubNetwork>();
+		
+		for (var n : netMgr.getNetworkSet()) {
+			if (n instanceof CySubNetwork && netMgr.networkExists(n.getSUID()))
+				sortedNetworks.add((CySubNetwork) n);
+		}
+		
+		return sortedNetworks;
+	}
+	
+	public static void sortNetworksByCreationPos(List<? extends CyNetwork> networks, Map<Long, Integer> netPos) {
+		Collections.sort(networks, new Comparator<CyNetwork>() {
+			@Override
+			public int compare(CyNetwork n1, CyNetwork n2) {
+				Integer o1 = netPos.get(n1.getSUID());
+				Integer o2 = netPos.get(n2.getSUID());
+				if (o1 == null) o1 = -1;
+				if (o2 == null) o2 = -1;
+				
+				return o1.compareTo(o2);
+			}
+		});
+	}
+	
+	public static void sortNetworksByName(List<? extends CyNetwork> networks) {
+		var collator = Collator.getInstance();
+		
+		Collections.sort(networks, new Comparator<CyNetwork>() {
+			@Override
+			public int compare(CyNetwork n1, CyNetwork n2) {
+				var name1 = getName(n1);
+				var name2 = getName(n2);
+				
+				return collator.compare(name1, name2);
+			}
+		});
+	}
+	
+	public static void styleToolBarButton(AbstractButton btn) {
 		styleToolBarButton(btn, null, true);
 	}
 	
-	public static void styleToolBarButton(final AbstractButton btn, final boolean addPadding) {
+	public static void styleToolBarButton(AbstractButton btn, boolean addPadding) {
 		styleToolBarButton(btn, null, addPadding);
 	}
 	
-	public static void styleToolBarButton(final AbstractButton btn, final Font font) {
+	public static void styleToolBarButton(AbstractButton btn, Font font) {
 		styleToolBarButton(btn, font, true);
 	}
 	
-	public static void styleToolBarButton(final AbstractButton btn, final Font font, final boolean addPadding) {
+	public static void styleToolBarButton(AbstractButton btn, Font font, boolean addPadding) {
 		int hPad = addPadding ? 5 : 0;
 		int vPad = addPadding ? 4 : 0;
 		styleToolBarButton(btn, font, hPad, vPad);
 	}
 	
-	public static void styleToolBarButton(final AbstractButton btn, final Font font, int hPad, int vPad) {
+	public static void styleToolBarButton(AbstractButton btn, Font font, int hPad, int vPad) {
 		if (font != null)
 			btn.setFont(font);
 		
@@ -202,7 +254,7 @@ public final class ViewUtil {
 		btn.setVerticalTextPosition(SwingConstants.TOP);
 		
 		if (hPad > 0 || vPad > 0) {
-			Dimension d = btn.getPreferredSize();
+			var d = btn.getPreferredSize();
 			d = new Dimension(d.width + 2 * hPad, d.height + 2 * vPad);
 			btn.setPreferredSize(d);
 			btn.setMinimumSize(d);
@@ -221,10 +273,10 @@ public final class ViewUtil {
 	}
 	
 	public static void updateToolBarStyle(JToggleButton btn, boolean showSelectionBorder) {
-		Border defBorder = BorderFactory.createEmptyBorder(2, 2, 2, 2);
+		var defBorder = BorderFactory.createEmptyBorder(2, 2, 2, 2);
 		
 		if (btn.isEnabled()) {
-			Border selBorder = showSelectionBorder ?
+			var selBorder = showSelectionBorder ?
 					BorderFactory.createCompoundBorder(
 							BorderFactory.createMatteBorder(1, 1, 1, 1, UIManager.getColor("CyToggleButton[Selected].borderColor")),
 							BorderFactory.createEmptyBorder(1, 1, 1, 1))
@@ -247,14 +299,14 @@ public final class ViewUtil {
 	}
 	
 	public static JSeparator createToolBarSeparator() {
-		JSeparator sep = new ToolBarSeparator(JSeparator.VERTICAL);
+		var sep = new ToolBarSeparator(JSeparator.VERTICAL);
 		sep.setForeground(UIManager.getColor("Separator.foreground"));
 		
 		return sep;
 	}
 	
 	public static Icon resizeIcon(Icon icon, int maxHeight) {
-		final int height = icon.getIconHeight(), width = icon.getIconWidth();
+		int height = icon.getIconHeight(), width = icon.getIconWidth();
 
 		if (height <= maxHeight)
 			return icon;
@@ -280,29 +332,27 @@ public final class ViewUtil {
 		return resizedIcon;
 	}
 	
-	public static String getViewProperty(final String key, final CyServiceRegistrar serviceRegistrar) {
+	public static String getViewProperty(String key, CyServiceRegistrar serviceRegistrar) {
 		return getViewProperty(key, null, serviceRegistrar);
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static String getViewProperty(final String key, final String defaultValue,
-			final CyServiceRegistrar serviceRegistrar) {
-		final CyProperty<Properties> cyProps = serviceRegistrar.getService(CyProperty.class, CY_PROPERTY_NAME);
+	public static String getViewProperty(String key, String defaultValue, CyServiceRegistrar serviceRegistrar) {
+		CyProperty<Properties> cyProps = serviceRegistrar.getService(CyProperty.class, CY_PROPERTY_NAME);
 
 		return cyProps.getProperties().getProperty(key, defaultValue);
 	}
 
 	@SuppressWarnings("unchecked")
-	public static void setViewProperty(final String key, final String value,
-			final CyServiceRegistrar serviceRegistrar) {
-		final CyProperty<Properties> cyProps = serviceRegistrar.getService(CyProperty.class, CY_PROPERTY_NAME);
+	public static void setViewProperty(String key, String value, CyServiceRegistrar serviceRegistrar) {
+		CyProperty<Properties> cyProps = serviceRegistrar.getService(CyProperty.class, CY_PROPERTY_NAME);
 		cyProps.getProperties().setProperty(key, value);
 	}
 	
-	public static Rectangle getEffectiveScreenArea(final GraphicsConfiguration gc) {
-		final Rectangle bounds = gc.getBounds();
-		final Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
-		final Rectangle rect = new Rectangle();
+	public static Rectangle getEffectiveScreenArea(GraphicsConfiguration gc) {
+		var bounds = gc.getBounds();
+		var screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
+		var rect = new Rectangle();
 		rect.x = bounds.x + screenInsets.left;
 		rect.y = bounds.y + screenInsets.top;
 		rect.height = bounds.height - screenInsets.top - screenInsets.bottom;
@@ -311,7 +361,7 @@ public final class ViewUtil {
 		return rect;
 	}
 	
-	public static Window getWindowAncestor(final ActionEvent evt, final CySwingApplication swingApplication) {
+	public static Window getWindowAncestor(ActionEvent evt, CySwingApplication swingApplication) {
 		Window window = null;
 		
 		if (evt.getSource() instanceof JMenuItem) {
@@ -338,11 +388,11 @@ public final class ViewUtil {
 	}
 	
 	@SuppressWarnings("serial")
-	public static void makeSmall(final JComponent... components) {
+	public static void makeSmall(JComponent... components) {
 		if (components == null || components.length == 0)
 			return;
 
-		for (JComponent c : components) {
+		for (var c : components) {
 			if (LookAndFeelUtil.isAquaLAF()) {
 				c.putClientProperty("JComponent.sizeVariant", "small");
 			} else {
@@ -368,7 +418,7 @@ public final class ViewUtil {
 	}
 	
 	public static boolean hasVisibleOwnedWindows(Window window) {
-		Window[] ownedWindows = window != null ? window.getOwnedWindows() : null;
+		var ownedWindows = window != null ? window.getOwnedWindows() : null;
 		
 		if (ownedWindows == null || ownedWindows.length == 0)
 			return false;
@@ -385,18 +435,18 @@ public final class ViewUtil {
 	 * Utility method that invokes the code in Runnable.run on the AWT Event Dispatch Thread.
 	 * @param runnable
 	 */
-	public static void invokeOnEDT(final Runnable runnable) {
+	public static void invokeOnEDT(Runnable runnable) {
 		if (SwingUtilities.isEventDispatchThread())
 			runnable.run();
 		else
 			SwingUtilities.invokeLater(runnable);
 	}
 	
-	public static void invokeOnEDTAndWait(final Runnable runnable) {
+	public static void invokeOnEDTAndWait(Runnable runnable) {
 		invokeOnEDTAndWait(runnable, null);
 	}
 	
-	public static void invokeOnEDTAndWait(final Runnable runnable, final Logger logger) {
+	public static void invokeOnEDTAndWait(Runnable runnable, Logger logger) {
 		if (SwingUtilities.isEventDispatchThread()) {
 			runnable.run();
 		} else {
@@ -419,14 +469,14 @@ public final class ViewUtil {
 	}
 	
 	public static Icon createDefaultIcon(String title, int size, IconManager iconManager) {
-		String text = createDefaultIconText(title);
-		Color iconColor = getDefaultIconColor(title);
-		Color textColor = getContrastingColor(iconColor);
-		String shape = text.length() > 1 ? IconManager.ICON_SQUARE : IconManager.ICON_CIRCLE;
+		var text = createDefaultIconText(title);
+		var iconColor = getDefaultIconColor(title);
+		var textColor = getContrastingColor(iconColor);
+		var shape = text.length() > 1 ? IconManager.ICON_SQUARE : IconManager.ICON_CIRCLE;
 
-		Font iconFont = iconManager.getIconFont(size * 1.125f);
+		var iconFont = iconManager.getIconFont(size * 1.125f);
 		int fontSize = (int) Math.round(size / (text.length() > 1 ? 1.6 : 1.3));
-		Font textFont = new Font(Font.MONOSPACED, Font.BOLD, fontSize);
+		var textFont = new Font(Font.MONOSPACED, Font.BOLD, fontSize);
 		
 		return new TextIcon(
 				new String[] { shape, text },
@@ -440,7 +490,7 @@ public final class ViewUtil {
 	public static Color getContrastingColor(Color color) {
 		int d = 0;
 		// Counting the perceptive luminance - human eye favors green color...
-		final double a = 1 - (0.299 * color.getRed() + 0.587 * color.getGreen() + 0.114 * color.getBlue()) / 255;
+		double a = 1 - (0.299 * color.getRed() + 0.587 * color.getGreen() + 0.114 * color.getBlue()) / 255;
 
 		if (a < 0.5)
 			d = 0; // bright colors - black font
@@ -451,7 +501,7 @@ public final class ViewUtil {
 	}
 	
 	static String createDefaultIconText(String title) {
-		String text = "";
+		var text = "";
 		title = title.trim();
 
 		if (!title.isEmpty()) {
@@ -460,7 +510,7 @@ public final class ViewUtil {
 			DONE:
 			while (matcher.find()) {
 				for (int i = 1; i <= matcher.groupCount(); i++) {
-					String s = matcher.group(i);
+					var s = matcher.group(i);
 					s = s != null ? s.trim() : "";
 
 					if (!s.isEmpty())
@@ -506,7 +556,7 @@ public final class ViewUtil {
 		
 		@Override
 		public void paint(Graphics g) {
-			Dimension s = getSize();
+			var s = getSize();
 
 			if (getOrientation() == JSeparator.VERTICAL) {
 				g.setColor(getForeground());

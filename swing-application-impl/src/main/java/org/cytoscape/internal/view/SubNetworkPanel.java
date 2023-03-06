@@ -7,7 +7,6 @@ import static org.cytoscape.util.swing.IconManager.ICON_SHARE_ALT;
 import static org.cytoscape.util.swing.IconManager.ICON_SHARE_ALT_SQUARE;
 
 import java.awt.Dimension;
-import java.beans.PropertyChangeEvent;
 
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
@@ -70,9 +69,8 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 	@Override
 	public void setModel(AbstractNetworkPanelModel<CySubNetwork> model) {
 		if (model != null) {
-			model.addPropertyChangeListener("viewCount", (PropertyChangeEvent evt) -> {
-				updateViewInfo();
-			});
+			model.addPropertyChangeListener("viewCount", evt -> updateViewInfo());
+			model.addPropertyChangeListener("current", evt -> updateCurrentLabel());
 		}
 		
 		super.setModel(model);
