@@ -164,12 +164,11 @@ public class VisualStyleSelector extends JPanel {
 	private StylePanel editingTitleItem;
 	private boolean selectionIsAdjusting;
 	
-	private int selectionHead;
-	private int selectionTail;
-	
 	private final Map<String, RenderingEngine<CyNetwork>> engineMap;
 	
 	private VisualStyle selectedStyle;
+	
+	private StylePanel overItem;
 	
 	private final CyNetworkView previewNetView;
 	private final Map<String/*visual style name*/, JPanel> defViewPanelsMap;
@@ -221,12 +220,13 @@ public class VisualStyleSelector extends JPanel {
 			
 			try {
 				update();
-				
-				if (!editMode)
-					getStyleGrid().setSelectedValue(selectedStyle, getStyleGrid().isShowing());
+				getStyleGrid().setSelectedValue(selectedStyle, getStyleGrid().isShowing());
 			} finally {
 				selectionIsAdjusting = false;
 			}
+			
+			if (selectedStyle != null)
+    			getStyleGrid().setFocus(getStyleGrid().indexOf(selectedStyle));
 			
 			firePropertyChange("editMode", !editMode, editMode);
 		}
@@ -247,8 +247,10 @@ public class VisualStyleSelector extends JPanel {
 	@Override
     public void addNotify() {
     	super.addNotify();
-    	getSearchTxtFld().requestFocusInWindow();
-    }
+    	
+		if (selectedStyle != null)
+			getStyleGrid().setFocus(getStyleGrid().indexOf(selectedStyle));
+	}
 	
 	public void update(SortedSet<VisualStyle> styles, VisualStyle currentStyle) {
 		allStyles.clear();
@@ -261,6 +263,9 @@ public class VisualStyleSelector extends JPanel {
 		
 		getStyleGrid().setSelectedValue(currentStyle, getStyleGrid().isShowing());
 		update(true);
+		
+		if (currentStyle != null)
+			getStyleGrid().setFocus(getStyleGrid().indexOf(currentStyle));
 	}
 	
 	public void setSelectedStyle(VisualStyle style) {
@@ -762,6 +767,13 @@ public class VisualStyleSelector extends JPanel {
 			return vsPanelMap.get(style);
 		}
 		
+		StylePanel getItem(int index) {
+			var dm = getModel();
+			var vs = dm.getElementAt(index);
+			
+			return getItem(vs);
+		}
+		
 		int indexOf(VisualStyle style) {
 			int i, c;
 			var dm = getModel();
@@ -838,17 +850,15 @@ public class VisualStyleSelector extends JPanel {
 		}
 
 		void selectAll() {
-			if (getModel().getSize() >= 0) {
+			if (getModel().getSize() >= 0)
 				getSelectionModel().setSelectionInterval(0, getModel().getSize() - 1);
-				selectionHead = -1;
-				selectionTail = -1;
-			}
 		}
 		
 		void deselectAll() {
-			getSelectionModel().clearSelection();
-			selectionHead = -1;
-			selectionTail = -1;
+			var sm = getSelectionModel();
+			sm.clearSelection();
+			sm.setAnchorSelectionIndex(-1);
+			sm.setLeadSelectionIndex(-1);
 		}
 		
 		/**
@@ -910,8 +920,8 @@ public class VisualStyleSelector extends JPanel {
 					sm.addSelectionInterval(idx, idx);
 			}
 			
-			selectionHead = -1;
-			selectionTail = -1;
+			sm.setAnchorSelectionIndex(sm.getMaxSelectionIndex());
+			sm.setLeadSelectionIndex(sm.getMaxSelectionIndex());
 		}
 		
 		void setSelectionModel(ListSelectionModel selectionModel) {
@@ -1092,8 +1102,21 @@ public class VisualStyleSelector extends JPanel {
 			item.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseEntered(MouseEvent evt) {
-					if (isEnabled() && !isEditMode())
-						item.requestFocusInWindow();
+					if (isEnabled()) {
+						if (isEditMode())
+							overItem = item;
+						else
+							item.requestFocusInWindow();
+						
+						repaint();
+					}
+				}
+				@Override
+				public void mouseExited(MouseEvent evt) {
+					if (isEnabled() && isEditMode()) {
+						overItem = null;
+						repaint();
+					}
 				}
 				@Override
 				public void mousePressed(MouseEvent evt) {
@@ -1134,38 +1157,20 @@ public class VisualStyleSelector extends JPanel {
 			
 			if (isEditMode()) {
 				int index = indexOf(item.style);
-				boolean selected = isSelected(item.style);
-				var sm = getSelectionModel();
 				
-				if (evt.isPopupTrigger()) {
-					// RIGHT-CLICK...
-					selectionHead = index;
-				} else {
+				if (!evt.isPopupTrigger()) {
 					// LEFT-CLICK...
 					var isMac = LookAndFeelUtil.isMac();
 					
 					if ((isMac && evt.isMetaDown()) || (!isMac && evt.isControlDown())) {
 						// CMD or CTRL key pressed...
 						toggleSelection(item);
-						// Find new selection range head
-						selectionHead = selected ? index : findNextSelectionHead(selectionHead);
 					} else if (evt.isShiftDown()) {
 						// SHIFT key pressed...
-						if (selectionHead >= 0 && selectionHead != index && sm.isSelectedIndex(selectionHead)) {
-							// First deselect previous range, if there is a tail
-							if (selectionTail >= 0)
-								changeRangeSelection(selectionHead, selectionTail, false);
-							// Now select the new range
-							changeRangeSelection(selectionHead, (selectionTail = index), true);
-						} else if (!selected) {
-							addSelectionInterval(index, index);
-						}
+						shiftSelectTo(index);
 					} else {
 						setSelectedValue(item.getStyle(), false);
 					}
-					
-					if (sm.getSelectedItemsCount() == 1)
-						selectionHead = index;
 				}
 			} else {
 				setSelectedValue(item.getStyle(), false);
@@ -1183,44 +1188,25 @@ public class VisualStyleSelector extends JPanel {
 				addSelectionInterval(index, index);
 		}
 		
-		private void changeRangeSelection(int index0, int index1, boolean select) {
-			if (select)
-				addSelectionInterval(index0, index1);
-			else
-				removeSelectionInterval(index0, index1);
-		}
-		
-		private int findNextSelectionHead(int fromIndex) {
-			int head = -1;
+		private void shiftSelectTo(int index) {
+			int size = getModel().getSize();
 			
-			if (fromIndex >= 0) {
-				var dm = getModel();
-				int total = dm.getSize();
-				
-				// Try with the tail subset first (go down)...
-				for (int i = fromIndex; i < total; i++) {
-					var nextItem = dm.getElementAt(i);
-					
-					if (isSelected(nextItem)) {
-						head = i;
-						break;
-					}
-				}
-				
-				if (head == -1) {
-					// Try with the head subset  (go up)...
-					for (int i = fromIndex; i <= 0; i--) {
-						var nextItem = dm.getElementAt(i);
-						
-						if (isSelected(nextItem)) {
-							head = i;
-							break;
-						}
-					}
-				}
-			}
+			if (index < 0 || index >= size)
+				return;
 			
-			return head;
+			var sm = getSelectionModel();
+			int anchor = sm.getAnchorSelectionIndex();
+			int lead = sm.getLeadSelectionIndex();
+			
+			// 1. remove everything between anchor and focus (lead)
+			if (anchor >= 0 || lead >= 0)
+				sm.removeIndexInterval(Math.max(0, anchor), Math.max(0, lead));
+			
+			// 2. add everything between anchor and the new index, which  should also be made the new lead
+			sm.addSelectionInterval(Math.max(0, anchor), index);
+			
+			// 3. Make sure the lead component is focused
+			getItem(index).requestFocusInWindow();
 		}
 
 		void editTitleStart(StylePanel item) {
@@ -1310,6 +1296,10 @@ public class VisualStyleSelector extends JPanel {
 			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), KeyAction.VK_RIGHT);
 			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), KeyAction.VK_UP);
 			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), KeyAction.VK_DOWN);
+			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.SHIFT_DOWN_MASK), KeyAction.VK_SHIFT_LEFT);
+			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.SHIFT_DOWN_MASK), KeyAction.VK_SHIFT_RIGHT);
+			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.SHIFT_DOWN_MASK), KeyAction.VK_SHIFT_UP);
+			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.SHIFT_DOWN_MASK), KeyAction.VK_SHIFT_DOWN);
 			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), KeyAction.VK_ENTER);
 			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), KeyAction.VK_SPACE);
 			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, ctrl), KeyAction.VK_CTRL_A);
@@ -1319,6 +1309,10 @@ public class VisualStyleSelector extends JPanel {
 			actionMap.put(KeyAction.VK_RIGHT, new KeyAction(KeyAction.VK_RIGHT));
 			actionMap.put(KeyAction.VK_UP, new KeyAction(KeyAction.VK_UP));
 			actionMap.put(KeyAction.VK_DOWN, new KeyAction(KeyAction.VK_DOWN));
+			actionMap.put(KeyAction.VK_SHIFT_LEFT, new KeyAction(KeyAction.VK_SHIFT_LEFT));
+			actionMap.put(KeyAction.VK_SHIFT_RIGHT, new KeyAction(KeyAction.VK_SHIFT_RIGHT));
+			actionMap.put(KeyAction.VK_SHIFT_UP, new KeyAction(KeyAction.VK_SHIFT_UP));
+			actionMap.put(KeyAction.VK_SHIFT_DOWN, new KeyAction(KeyAction.VK_SHIFT_DOWN));
 			actionMap.put(KeyAction.VK_ENTER, new KeyAction(KeyAction.VK_ENTER));
 			actionMap.put(KeyAction.VK_SPACE, new KeyAction(KeyAction.VK_SPACE));
 			actionMap.put(KeyAction.VK_CTRL_A, new KeyAction(KeyAction.VK_CTRL_A));
@@ -1331,12 +1325,16 @@ public class VisualStyleSelector extends JPanel {
 			final static String VK_RIGHT = "VK_RIGHT";
 			final static String VK_UP = "VK_UP";
 			final static String VK_DOWN = "VK_DOWN";
+			final static String VK_SHIFT_LEFT = "VK_SHIFT_LEFT";
+			final static String VK_SHIFT_RIGHT = "VK_SHIFT_RIGHT";
+			final static String VK_SHIFT_UP = "VK_SHIFT_UP";
+			final static String VK_SHIFT_DOWN = "VK_SHIFT_DOWN";
 			final static String VK_ENTER = "VK_ENTER";
 			final static String VK_SPACE = "VK_SPACE";
 			final static String VK_CTRL_A = "VK_CTRL_A";
 			final static String VK_CTRL_SHIFT_A = "VK_CTRL_SHIFT_A";
 			
-			KeyAction(final String actionCommand) {
+			KeyAction(String actionCommand) {
 				putValue(ACTION_COMMAND_KEY, actionCommand);
 			}
 
@@ -1346,24 +1344,33 @@ public class VisualStyleSelector extends JPanel {
 				var focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
 				var focusedItem = focusOwner instanceof StylePanel ? (StylePanel) focusOwner : null;
 				var dm = StyleGrid.this.getModel();
+				var sm = StyleGrid.this.getSelectionModel();
+				boolean shift = cmd.startsWith("VK_SHIFT_");
 				
 				if (cmd.equals(VK_ENTER) || cmd.equals(VK_SPACE)) {
 					if (focusedItem != null)
 						setSelectedValue(focusedItem.getStyle(), false);
 				} else if (dm.getSize() > 0) {
-					var vs = focusedItem != null ? focusedItem.getStyle() : dm.getElementAt(0);
+					int idx = -1;
+					
+					if (isEditMode()) {
+						idx = sm.getLeadSelectionIndex();
+					} else {
+						var vs = focusedItem != null ? focusedItem.getStyle() : dm.getElementAt(0);
+						idx = indexOf(vs);
+					}
+					
 					int size = dm.getSize();
-					int idx = indexOf(vs);
 					int newIdx = idx;
 					
-					if (cmd.equals(VK_RIGHT)) {
+					if (cmd.equals(VK_RIGHT) || cmd.equals(VK_SHIFT_RIGHT)) {
 						newIdx = idx + 1;
-					} else if (cmd.equals(VK_LEFT)) {
+					} else if (cmd.equals(VK_LEFT) || cmd.equals(VK_SHIFT_LEFT)) {
 						newIdx = idx - 1;
-					} else if (cmd.equals(VK_UP)) {
+					} else if (cmd.equals(VK_UP) || cmd.equals(VK_SHIFT_UP)) {
 						newIdx = idx - cols < 0 ? idx : idx - cols;
-					} else if (cmd.equals(VK_DOWN)) {
-						final boolean sameRow = Math.ceil(size / (double) cols) == Math.ceil((idx + 1) / (double) cols);
+					} else if (cmd.equals(VK_DOWN) || cmd.equals(VK_SHIFT_DOWN)) {
+						boolean sameRow = Math.ceil(size / (double) cols) == Math.ceil((idx + 1) / (double) cols);
 						newIdx = sameRow ? idx : Math.min(size - 1, idx + cols);
 					} else if (cmd.equals(VK_CTRL_A)) {
 						if (isEditMode())
@@ -1373,8 +1380,16 @@ public class VisualStyleSelector extends JPanel {
 							deselectAll();
 					}
 					
-					if (newIdx != idx)
-						setFocus(newIdx);
+					if (newIdx != idx) {
+						if (isEditMode()) {
+							if (shift)
+								shiftSelectTo(newIdx);
+							else
+								setSelectedIndex(newIdx);
+						} else {
+							setFocus(newIdx);
+						}
+					}
 				}
 			}
 		}
@@ -1537,7 +1552,6 @@ public class VisualStyleSelector extends JPanel {
 			int arc = 10;
 
 			boolean selected = isSelected(style);
-			boolean focusOwner = this.isFocusOwner();
 			
 			// Add a colored border if it is the current style
 			if (selected) {
@@ -1551,7 +1565,7 @@ public class VisualStyleSelector extends JPanel {
 			}
 			
 			// Add a colored border and transparent overlay on top if it currently has focus
-			if (focusOwner) {
+			if ((isEditMode() && overItem == this) || (!isEditMode() && isFocusOwner())) {
 				g2d.setColor(FOCUS_OVERLAY_COLOR);
 				g2d.fillRect(ITEM_MARGIN, ITEM_MARGIN, w - 2 * ITEM_MARGIN, h - 2 * ITEM_MARGIN);
 				
@@ -1575,19 +1589,19 @@ public class VisualStyleSelector extends JPanel {
 //		final static String VK_CTRL_A = "VK_CTRL_A";
 //		final static String VK_CTRL_SHIFT_A = "VK_CTRL_SHIFT_A";
 //		
-//		KeyAction(final String actionCommand) {
+//		KeyAction(String actionCommand) {
 //			putValue(ACTION_COMMAND_KEY, actionCommand);
 //		}
 //
 //		@Override
-//		public void actionPerformed(final ActionEvent e) {
-//			final Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+//		public void actionPerformed(ActionEvent e) {
+//			Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
 //			
 //			if (focusOwner instanceof JTextComponent || focusOwner instanceof JTable ||
 //					!NetworkViewGrid.this.isVisible() || isEmpty())
 //				return; // We don't want to steal the key event from these components
 //			
-//			final String cmd = e.getActionCommand();
+//			String cmd = e.getActionCommand();
 //			
 //			if (cmd.equals(VK_CTRL_A))
 //				selectAll();
