@@ -34,16 +34,16 @@ import org.cytoscape.work.util.ListSingleSelection;
  * Copyright (C) 2006 - 2021 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 2.1 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
+ *
+ * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
@@ -58,7 +58,7 @@ import org.cytoscape.work.util.ListSingleSelection;
  */
 public class ListSingleHandler<T> extends AbstractGUITunableHandler
                                   implements ActionListener, ListChangeListener<T> {
-	
+
 	private JComboBox<T> combobox;
 	private final JLabel label = new JLabel(getDescription());
 	private boolean isUpdating;
@@ -89,7 +89,7 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 		try {
 			return (ListSingleSelection<T>)getValue();
 		} catch(final Exception e) {
-			throw new IllegalStateException("bad ListSingleSelection object", e);	
+			throw new IllegalStateException("bad ListSingleSelection object", e);
 		}
 	}
 
@@ -113,6 +113,7 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 		combobox = new JComboBox<>(values);
 		combobox.getModel().setSelectedItem(selectedValue);
 		combobox.addActionListener(this);
+    combobox.setMaximumRowCount(12);
 
 		String decorate = getParams().getProperty("lookup");
 
@@ -181,9 +182,9 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 	public void handle() {
 		if (combobox == null || isUpdating)
 			return;
-		
+
 		final T selectedItem = (T) combobox.getSelectedItem();
-		
+
 		if (selectedItem != null) {
 			ListSingleSelection<T> singleSelection = getSingleSelection();
 
@@ -195,7 +196,7 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 			} else {
 				singleSelection.setSelectedValue(selectedItem);
 			}
-			
+
 			try {
 				// TODO This is wrong! It should not set the same list of values again,
 				//      because only the selected value has changed. It can create infinite loops!
