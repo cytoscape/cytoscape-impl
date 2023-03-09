@@ -1,1 +1,0 @@
-println("This is test from JavaScript engine.");

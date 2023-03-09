@@ -64,7 +64,6 @@
 		<module>datasource-impl</module>
 		<module>gui-cmdline-parser-impl</module>
 		<module>edge-bundler-impl</module>
-		<module>scripting-impl</module>
 		<module>core-task-impl</module>
 		<module>cycl-impl</module>
 		<module>util-impl</module>
