@@ -44,7 +44,7 @@ public class TableVisualMappingManagerImpl implements TableVisualMappingManager,
 	
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
-	public static final String DEFAULT_STYLE_NAME = "default";
+	private static final String DEFAULT_STYLE_NAME = "default";
 	
 	private final CyServiceRegistrar registrar;
 	private final Object lock = new Object();

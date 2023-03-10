@@ -26,6 +26,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 
 import javax.swing.AbstractAction;
@@ -895,6 +896,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		if(colVS == null) {
 			var visualStyleFactory = servicesUtil.get(VisualStyleFactory.class);
 			colVS = visualStyleFactory.createVisualStyle(tableVMM.getDefaultVisualStyle());
+			colVS.setTitle(UUID.randomUUID().toString());
 			tableVMM.setAssociatedVisualStyle(netVS, tableType, col.columnName(), colVS); // Fires event that calls updateColumnAssociation
 		}
 		return colVS;
