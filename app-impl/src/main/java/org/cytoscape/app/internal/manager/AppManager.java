@@ -520,7 +520,7 @@ public class AppManager implements FrameworkListener {
 				this.onFileDelete(file);
 				this.onFileCreate(file);
 
-				//fireAppsChangedEvent();
+				fireAppsChangedEvent();
 			}
 
 			@Override
@@ -588,7 +588,7 @@ public class AppManager implements FrameworkListener {
 						userLogger.error("Failed to start app " + appToStart.getAppName(), e);
 					}
 				}
-			//fireAppsChangedEvent();
+			fireAppsChangedEvent();
 			}
 		});
 
@@ -640,7 +640,7 @@ public class AppManager implements FrameworkListener {
 				}
 
 				app.setStatus(AppStatus.DISABLED);
-				//fireAppsChangedEvent();
+				fireAppsChangedEvent();
 
 				// System.out.println(file + " on create");
 			}
@@ -651,7 +651,7 @@ public class AppManager implements FrameworkListener {
 				this.onFileDelete(file);
 				this.onFileCreate(file);
 
-				//fireAppsChangedEvent();
+				fireAppsChangedEvent();
 			}
 
 			@Override
@@ -669,7 +669,7 @@ public class AppManager implements FrameworkListener {
 					}
 				}
 
-				//fireAppsChangedEvent();
+				fireAppsChangedEvent();
 			}
 		});
 
@@ -732,7 +732,7 @@ public class AppManager implements FrameworkListener {
 				this.onFileDelete(file);
 				this.onFileCreate(file);
 
-				//fireAppsChangedEvent();
+				fireAppsChangedEvent();
 			}
 
 			@Override
@@ -750,7 +750,7 @@ public class AppManager implements FrameworkListener {
 					}
 				}
 
-				//fireAppsChangedEvent();
+				fireAppsChangedEvent();
 			}
 		});
 
@@ -857,7 +857,7 @@ public class AppManager implements FrameworkListener {
 
 			apps.add(app);
 			app.setStatus(AppStatus.TO_BE_INSTALLED);
-			//fireAppsChangedEvent();
+			fireAppsChangedEvent();
 		}
 		else {
 			try {
