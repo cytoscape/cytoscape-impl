@@ -33,6 +33,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -389,7 +390,7 @@ public class NetworkViewGrid extends JPanel {
 						changed = true;
 					}
 				} else {
-					setSelectedItems((Set) (Collections.singleton(item)));
+					setSelectedItems((Collections.singleton(item)));
 					
 					if (!item.isCurrent())
 						setCurrentNetworkView(item.getNetworkView());
@@ -408,19 +409,19 @@ public class NetworkViewGrid extends JPanel {
 		return new ArrayList<>(selectedNetworkViews);
 	}
 	
-	protected void setSelectedNetworkViews(final Collection<CyNetworkView> networkViews) {
+	protected void setSelectedNetworkViews(Collection<CyNetworkView> networkViews) {
 		if (Util.equalSets(networkViews, selectedNetworkViews))
 			return;
 		
-		final List<CyNetworkView> oldValue = new ArrayList<>(selectedNetworkViews);
+		var oldValue = new ArrayList<>(selectedNetworkViews);
 		selectedNetworkViews.clear();
 		
 		if (networkViews != null)
 			selectedNetworkViews.addAll(networkViews);
 		
-		final Set<ThumbnailPanel> selectedItems = new HashSet<>();
+		Set<ThumbnailPanel> selectedItems = new LinkedHashSet<>();
 		
-		for (ThumbnailPanel tp : getItems()) {
+		for (var tp : getItems()) {
 			if (selectedNetworkViews.contains(tp.getNetworkView()))
 				selectedItems.add(tp);
 		}
@@ -434,7 +435,7 @@ public class NetworkViewGrid extends JPanel {
 		}
 		
 		updateToolBar();
-		firePropertyChange("selectedNetworkViews", oldValue, new HashSet<>(selectedNetworkViews));
+		firePropertyChange("selectedNetworkViews", oldValue, new LinkedHashSet<>(selectedNetworkViews));
 	}
 	
 	private void setSelectedItems(final Collection<ThumbnailPanel> selectedItems) {

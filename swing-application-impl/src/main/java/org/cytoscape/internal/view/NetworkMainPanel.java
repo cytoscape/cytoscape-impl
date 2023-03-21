@@ -39,7 +39,6 @@ import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -53,6 +52,7 @@ import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListSelectionModel;
 import javax.swing.GroupLayout;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -83,6 +83,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.edit.EditNetworkTitleTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.TextIcon;
@@ -136,11 +137,8 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 
 	private CyNetwork currentNetwork;
 	
-	private AbstractNetworkPanel<?> selectionHead;
-	private AbstractNetworkPanel<?> selectionTail;
-	private AbstractNetworkPanel<?> lastSelected;
-	
 	private boolean ignoreSelectionEvents;
+	private boolean ignoreExpandedEvents;
 	private boolean doNotUpdateCollapseExpandButtons;
 	
 	private NetworkViewPreviewDialog viewDialog;
@@ -149,6 +147,8 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	private NetworksSortMode sortMode = CREATION;
 	private Map<Long, Integer> networkListOrder;
 
+	private NetworkListSelectionModel selectionModel;
+	
 	private final NetworkSearchBar networkSearchBar;
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -158,6 +158,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		this.networkSearchBar = networkSearchBar;
 		this.serviceRegistrar = serviceRegistrar;
 		
+		selectionModel = new NetworkListSelectionModel();
 		init();
 	}
 
@@ -284,9 +285,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			expandAllButton.setFocusPainted(false);
 			expandAllButton.setBorder(BorderFactory.createEmptyBorder());
 			
-			expandAllButton.addActionListener(e -> {
-				expandAllRootNetworks();
-			});
+			expandAllButton.addActionListener(e -> expandAll());
 		}
 		
 		return expandAllButton;
@@ -304,7 +303,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			collapseAllButton.setFocusPainted(false);
 			collapseAllButton.setBorder(BorderFactory.createEmptyBorder());
 			
-			collapseAllButton.addActionListener(e -> collapseAllRootNetworks());
+			collapseAllButton.addActionListener(e -> collapseAll());
 		}
 		
 		return collapseAllButton;
@@ -322,9 +321,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			optionsBtn.setFocusPainted(false);
 			optionsBtn.setBorder(BorderFactory.createEmptyBorder());
 			
-			optionsBtn.addActionListener(e -> {
-				getNetworkOptionsMenu().show(optionsBtn, 0, optionsBtn.getHeight());
-			});
+			optionsBtn.addActionListener(e -> getNetworkOptionsMenu().show(optionsBtn, 0, optionsBtn.getHeight()));
 		}
 		
 		return optionsBtn;
@@ -388,6 +385,12 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		return networkListOrder;
 	}
 	
+	AbstractNetworkPanel<?> getItem(int index, boolean includeVisible) {
+		var allItems = getAllItems(includeVisible);
+		
+		return allItems.size() > index ? allItems.get(index) : null;
+	}
+	
 	/**
 	 * @return The model index of the network, which means the current sort mode is ignored.
 	 */
@@ -427,7 +430,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	
 	/**
 	 * @param includeSelectedRootNetworks if true the CySubNetworks from selected CyRootNetworks are also included
-	 * @return
 	 */
 	public Set<CyNetwork> getSelectedNetworks(boolean includeSelectedRootNetworks) {
 		var list = new LinkedHashSet<CyNetwork>();
@@ -444,37 +446,33 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	public void setSelectedNetworks(Collection<CyNetwork> selectedNetworks) {
-		if (Util.equalSets(selectedNetworks, getSelectedNetworks(false))) {
-			if (selectedNetworks.isEmpty()) {
-				// Even if there are no selected networks still make sure we don't cause a memory leak.
-				selectionHead = selectionTail = lastSelected = null;
-			}
+		if (Util.equalSets(selectedNetworks, getSelectedNetworks(false)))
 			return;
-		}
 
+		selectionModel.setValueIsAdjusting(true);
 		ignoreSelectionEvents = true;
 		
 		try {
-			for (var rnp : getRootNetworkListPanel().getAllItems()) {
-				setSelected(rnp, selectedNetworks.contains(rnp.getModel().getNetwork()));
+			// TODO Expand the collection if selected network item is invisible
+			selectionModel.clearSelection();
+			var allNetworks = getAllNetworks(false);
+			int maxIdx = -1;
+			
+			for (var n : selectedNetworks) {
+				int idx = allNetworks.indexOf(n);
 				
-				for (var snp : rnp.getAllItems()) {
-					boolean selected = selectedNetworks.contains(snp.getModel().getNetwork());
-					
-					if (selected && !rnp.isExpanded())
-						rnp.expand();
-					
-					setSelected(snp, selected);
+				if (idx >= 0) {
+					selectionModel.addSelectionInterval(idx, idx);
+					maxIdx = Math.max(idx, maxIdx);
 				}
 			}
+			
+			selectionModel.setAnchorSelectionIndex(maxIdx);
+			selectionModel.moveLeadSelectionIndex(maxIdx);
 		} finally {
 			ignoreSelectionEvents = false;
+			selectionModel.setValueIsAdjusting(false);
 		}
-		
-		var selectedItems = getSelectedItems();
-		selectionHead = selectedItems.isEmpty() ? null : selectedItems.get(0);
-		selectionTail = selectedItems.size() > 1 ? selectedItems.get(selectedItems.size() - 1) : null;
-		lastSelected = selectedItems.isEmpty() ? null : selectedItems.get(selectedItems.size() - 1);
 		
 		updateNetworkHeader();
 	}
@@ -501,13 +499,12 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		doNotUpdateCollapseExpandButtons = true;
 		
 		try {
+			deselectAll();
 			getRootNetworkListPanel().removeAllItems();
 		} finally {
 			doNotUpdateCollapseExpandButtons = false;
 			ignoreSelectionEvents = false;
 		}
-		
-		lastSelected = selectionHead = selectionTail = null;
 		
 		networkListOrder = null;
 		updateNetworkHeader();
@@ -584,14 +581,37 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			var item = rootNetPanel;
 			
 			item.addPropertyChangeListener("expanded", e -> {
-				// Deselect its selected subnetworks first
-				if (Boolean.FALSE.equals(e.getNewValue())) {
-					var selectedItems = getSelectedItems();
+				if (ignoreExpandedEvents)
+					return;
+				
+				var selectedItems = getSelectedItems();
+				
+				if (!selectedItems.isEmpty()) {
+					boolean expanded = Boolean.TRUE.equals(e.getNewValue());
 					
-					if (!selectedItems.isEmpty()) {
-						selectedItems.removeAll(item.getAllItems());
-						setSelectedItems(selectedItems);
+					// Adjust Selection Model's anchor/lead, because the visible indexes have changed
+					int anchor = -1;
+					int lead = -1;
+					
+					if (expanded) {
+						// When expanded, just use the first/last selection indexes as the new anchor/lead
+						var allItems = getAllItems(false);
+						anchor = allItems.indexOf(selectedItems.get(0));
+						lead = allItems.indexOf(selectedItems.get(selectedItems.size() - 1));
 					}
+						
+					selectionModel.setValueIsAdjusting(true);
+					selectionModel.setAnchorSelectionIndex(anchor);
+					selectionModel.moveLeadSelectionIndex(lead);
+					selectionModel.fireValueChanged(true);
+					selectionModel.setValueIsAdjusting(false);
+					
+					// If collapsed, make sure all of its subnetwork items are unselected
+					if (!expanded)
+						selectedItems.removeAll(item.getAllItems());
+						
+					// Always select the items again to make sure the model's min/max selection index are updated
+					setSelectedItems(selectedItems);
 				}
 				
 				updateCollapseExpandButtons();
@@ -676,11 +696,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		if (item.isSelected() != selected) {
 			item.setSelected(selected);
 			
-			if (!selected) {
-				 if (item == selectionHead) selectionHead = null;
-				 if (item == selectionTail) selectionTail = null;
-			}
-			
 			return true;
 		}
 		
@@ -694,20 +709,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			return getRootNetworkPanel(net);
 		
 		return null; // Should never happen!
-	}
-	
-	private AbstractNetworkPanel<?> getPreviousItem(AbstractNetworkPanel<?> item, boolean includeInvisible) {
-		var allItems = getAllItems(includeInvisible);
-		int index = allItems.indexOf(item);
-		
-		return index > 0 ? allItems.get(index - 1) : null;
-	}
-	
-	private AbstractNetworkPanel<?> getNextItem(AbstractNetworkPanel<?> item, boolean includeInvisible) {
-		var allItems = getAllItems(includeInvisible);
-		int index = allItems.indexOf(item);
-		
-		return index >= 0 && index < allItems.size() - 1 ? allItems.get(index + 1) : null;
 	}
 	
 	RootNetworkPanel getRootNetworkPanel(CyNetwork net) {
@@ -795,7 +796,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	private void updateNetworkSelectionLabel() {
-		int total = getSubNetworkCount();
+		int total = getSubNetworkCount(true);
 		
 		if (total == 0) {
 			getNetworkSelectionLabel().setText(null);
@@ -808,48 +809,89 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		getNetworkHeader().updateUI();
 	}
 	
-	private void collapseAllRootNetworks() {
-		// First deselect all subnetwork items, to prevent selection issues
-		// caused by selection and current net/view events being fired
-		// every time one of the root panels is collapsed
-		setSelectedItems(getSelectedRootNetworkItems()); // Keep only root networks that are already selected
-		
-		doNotUpdateCollapseExpandButtons = true;
-		var allItems = getRootNetworkListPanel().getAllItems();
-		
-		for (var item : allItems)
-			item.collapse();
-		
-		doNotUpdateCollapseExpandButtons = false;
-		updateCollapseExpandButtons();
+	private void collapseAll() {
+		expandOrCollapseAll(false);
 	}
 
-	private void expandAllRootNetworks() {
+	private void expandAll() {
+		expandOrCollapseAll(true);
+	}
+	
+	private void expandOrCollapseAll(boolean expand) {
+		// First deselect all items, to prevent selection issues
+		// caused by selection and current net/view events being fired
+		// every time one of the root panels is collapsed
+		var selectedItems = expand ? getSelectedItems() : getSelectedRootNetworkItems(); // but save the selected roots ("Collection" items)
+		deselectAll();
+		
+		ignoreExpandedEvents = true;
 		doNotUpdateCollapseExpandButtons = true;
+		
 		var allItems = getRootNetworkListPanel().getAllItems();
 		
-		for (var item : allItems)
-			item.expand();
+		for (var item : allItems) {
+			if (expand)
+				item.expand();
+			else
+				item.collapse();
+		}
 		
+		ignoreExpandedEvents = false;
 		doNotUpdateCollapseExpandButtons = false;
 		updateCollapseExpandButtons();
+		
+		// Restore and adjust the selection
+		if (!selectedItems.isEmpty()) {
+			// Adjust Selection Model's anchor/lead, because the visible indexes have changed
+			int anchor = -1;
+			int lead = -1;
+			
+			if (expand) {
+				// When expanded, just use the first/last selection indexes as the new anchor/lead
+				var visibleItems = getAllItems(false);
+				anchor = visibleItems.indexOf(selectedItems.get(0));
+				lead = visibleItems.indexOf(selectedItems.get(selectedItems.size() - 1));
+			}
+				
+			selectionModel.setValueIsAdjusting(true);
+			selectionModel.setAnchorSelectionIndex(anchor);
+			selectionModel.moveLeadSelectionIndex(lead);
+			selectionModel.fireValueChanged(true);
+			selectionModel.setValueIsAdjusting(false);
+		
+			// Apply the selection
+			setSelectedItems(selectedItems);
+		}
 	}
 	
 	private void selectAll() {
 		var allItems = getAllItems(false);
 		
-		if (!allItems.isEmpty()) {
-			setSelectedItems(getAllItems(false));
-			selectionHead = allItems.get(0);
-			selectionTail = allItems.get(allItems.size() - 1);
-			lastSelected = selectionTail;
-		}
+		if (!allItems.isEmpty())
+			selectionModel.setSelectionInterval(0, allItems.size() - 1);
 	}
 	
 	private void deselectAll() {
-		setSelectedItems(Collections.emptyList());
+		selectionModel.clearSelection();
+		selectionModel.setAnchorSelectionIndex(-1);
+		selectionModel.setLeadSelectionIndex(-1);
 		setCurrentNetwork(null);
-		lastSelected = selectionHead = selectionTail = null;
+	}
+	
+	/**
+     * Selects a single cell. Does nothing if the given index is greater
+     * than or equal to the model size. This is a convenience method that uses
+     * {@code setSelectionInterval} on the selection model. Refer to the
+     * documentation for the selection model class being used for details on
+     * how values less than {@code 0} are handled.
+     *
+     * @param index the index of the cell to select
+     */
+	void setSelectedIndex(int index) {
+		if (index >= getTotalNetworkCount(false))
+			return;
+		
+		selectionModel.setSelectionInterval(index, index);
 	}
 	
 	public List<AbstractNetworkPanel<?>> getAllItems(boolean includeInvisible) {
@@ -878,32 +920,20 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 
 	private void setSelectedItems(Collection<? extends AbstractNetworkPanel<?>> items) {
-		var oldRootSelection = getSelectedRootNetworks();
-		var oldSubSelection = getSelectedNetworks(false);
-		boolean rootChanged = false;
-		boolean subChanged = false;
-		ignoreSelectionEvents = true;
+		selectionModel.setValueIsAdjusting(true);
 		
 		try {
-			for (var p : getAllItems(true)) {
-				boolean b = setSelected(p, items.contains(p));
-				
-				if (b) {
-					if (p.getModel().getNetwork() instanceof CyRootNetwork)
-						rootChanged = true;
-					else if (p.getModel().getNetwork() instanceof CySubNetwork)
-						subChanged = true;
-				}
+			selectionModel.clearSelection();
+			
+			var allItems = getAllItems(false);
+			
+			for (var p : items) {
+				int idx = allItems.indexOf(p);
+				selectionModel.addSelectionInterval(idx, idx);
 			}
 		} finally {
-			ignoreSelectionEvents = false;
-			updateNetworkHeader();
+			selectionModel.setValueIsAdjusting(false);
 		}
-		
-		if (rootChanged)
-			fireSelectedRootNetworksChange(oldRootSelection);
-		if (subChanged)
-			fireSelectedSubNetworksChange(oldSubSelection);
 	}
 	
 	void selectAndSetCurrent(AbstractNetworkPanel<?> item) {
@@ -911,10 +941,8 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			return;
 		
 		// First select the clicked item
-		setSelectedItems((Collections.singleton(item)));
-		lastSelected = selectionHead = item;
-		selectionTail = null;
-		
+		var allItems = getAllItems(false);
+		setSelectedIndex(allItems.indexOf(item));
 		setCurrentNetwork(item.getModel().getNetwork());
 	}
 	
@@ -945,7 +973,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		return list;
 	}
 	
-	Collection<RootNetworkPanel> getSelectedRootNetworkItems() {
+	List<RootNetworkPanel> getSelectedRootNetworkItems() {
 		var list = new ArrayList<RootNetworkPanel>();
 		
 		for (var rnp : getRootNetworkListPanel().getAllItems()) {
@@ -956,7 +984,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		return list;
 	}
 	
-	Collection<SubNetworkPanel> getSelectedSubNetworkItems() {
+	List<SubNetworkPanel> getSelectedSubNetworkItems() {
 		var list = new ArrayList<SubNetworkPanel>();
 		
 		for (var snp : getAllSubNetworkItems()) {
@@ -967,17 +995,32 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		return list;
 	}
 	
-	int getSubNetworkCount() {
-		int count = 0;
-		
-		for (var item : getRootNetworkListPanel().getAllItems())
-			count += item.getAllItems().size();
+	int getTotalNetworkCount(boolean includeInvisible) {
+		int count = getSubNetworkCount(includeInvisible);
+		count += getRootNetworkListPanel().getRootNetworkCount();
 		
 		return count;
 	}
 	
-	private static Set<CyNetwork> getNetworks(Collection<SubNetworkPanel> items) {
-		var list = new LinkedHashSet<CyNetwork>();
+	int getSubNetworkCount(boolean includeInvisible) {
+		int count = 0;
+		
+		for (var item : getRootNetworkListPanel().getAllItems()) {
+			if (includeInvisible || item.isExpanded())
+				count += item.getAllItems().size();
+		}
+		
+		return count;
+	}
+	
+	private List<CyNetwork> getAllNetworks(boolean includeInvisible) {
+		var items = getAllItems(includeInvisible);
+		
+		return getNetworks(items);
+	}
+	
+	private static List<CyNetwork> getNetworks(Collection<? extends AbstractNetworkPanel<?>> items) {
+		var list = new ArrayList<CyNetwork>();
 		
 		for (var snp : items)
 			list.add(snp.getModel().getNetwork());
@@ -991,122 +1034,77 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		if (!e.isPopupTrigger() && SwingUtilities.isLeftMouseButton(e)) {
 			// LEFT-CLICK...
 			boolean isMac = LookAndFeelUtil.isMac();
+			boolean isControlDown = (isMac && e.isMetaDown()) || (!isMac && e.isControlDown());
 			
-			if ((isMac && e.isMetaDown()) || (!isMac && e.isControlDown())) {
+			if (isControlDown) {
 				// COMMAND button down on MacOS or CONTROL button down on another OS.
 				// Toggle this item's selection state
-				item.setSelected(!item.isSelected());
-				// Find new selection range head
-				selectionHead = item.isSelected() ? item : findNextSelectionHead(selectionHead);
-				lastSelected = selectionHead;
+				toggleSelection(item);
+			} else if (e.isShiftDown()) {
+				// SHIFT key pressed...
+				var allItems = getAllItems(false);
+				int index = allItems.indexOf(item);
+				shiftSelectTo(index);
+			} else if (e.getClickCount() == 2) {
+				// Rename Network...
+				var network = item.getModel().getNetwork();
+				var factory = serviceRegistrar.getService(EditNetworkTitleTaskFactory.class);
+				var taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
+				taskMgr.execute(factory.createTaskIterator(network));
 			} else {
-				if (e.isShiftDown()) {
-					selectTo(item);
-				} else {
-					// No SHIFT/CTRL pressed
-					selectAndSetCurrent(item);
-				}
-				
-				if (getSelectedItems().size() == 1) {
-					lastSelected = selectionHead = item;
-					selectionTail = null;
-				}
+				// No SHIFT/CTRL pressed
+				selectAndSetCurrent(item);
 			}
 		}
 	}
-
-	private void selectTo(AbstractNetworkPanel<?> target) {
-		if (selectionHead != null && selectionHead.isVisible() && selectionHead.isSelected() && selectionHead != target) {
-			var oldRootSelection = getSelectedRootNetworks();
-			var oldSubSelection = getSelectedNetworks(false);
-			boolean changed = false;
-			ignoreSelectionEvents = true;
-			
-			try {
-				// First deselect previous range, if there is a tail
-				if (selectionTail != null)
-					changed = changeRangeSelection(selectionHead, selectionTail, false);
-				
-				// Now select the new range
-				changed = changed | changeRangeSelection(selectionHead, (selectionTail = target), true);
-			} finally {
-				ignoreSelectionEvents = false;
-				updateNetworkHeader();
-			}
-			
-			if (changed) {
-				fireSelectedRootNetworksChange(oldRootSelection);
-				fireSelectedSubNetworksChange(oldSubSelection);
-			}
-		} else if (!target.isSelected()) {
-			target.setSelected(true);
-			lastSelected = target;
-		}
+	
+	private void shiftSelectTo(int index) {
+		int size = getTotalNetworkCount(false);
+		
+		if (index < 0 || index >= size)
+			return;
+		
+		int anchor = selectionModel.getAnchorSelectionIndex();
+		int lead = selectionModel.getLeadSelectionIndex();
+		
+		selectionModel.setValueIsAdjusting(true);
+		
+		// 1. remove everything between anchor and focus (lead)
+		if (anchor != lead && (anchor >= 0 || lead >= 0))
+			selectionModel.removeIndexInterval(Math.max(0, anchor), Math.max(0, lead));
+		
+		// 2. add everything between anchor and the new index, which  should also be made the new lead
+		selectionModel.addSelectionInterval(Math.max(0, anchor), index);
+		
+		selectionModel.setValueIsAdjusting(false);
+		
+		// 3. Make sure the lead component is focused
+		getItem(index, false).requestFocusInWindow();
 	}
 
-	private boolean changeRangeSelection(AbstractNetworkPanel<?> item1, AbstractNetworkPanel<?> item2,
-			boolean selected) {
-		boolean changed = false;
+	private void toggleSelection(AbstractNetworkPanel<?> item) {
+		var allItems = getAllItems(false);
+		int index = allItems.indexOf(item);
 		
-		var items = getAllItems(false);
-		int idx1 = items.indexOf(item1);
-		int idx2 = items.indexOf(item2);
+		if (selectionModel.isSelectedIndex(index))
+			selectionModel.removeSelectionInterval(index, index);
+		else
+			selectionModel.addSelectionInterval(index, index);
 		
-		final List<AbstractNetworkPanel<?>> subList;
+		selectionModel.setValueIsAdjusting(true);
 		
-		if (idx2 >= idx1) {
-			subList = items.subList(idx1 + 1, idx2 + 1);
-			lastSelected = selectionTail;
+		if (selectionModel.isSelectedIndex(index)) {
+			selectionModel.setAnchorSelectionIndex(index);
+			selectionModel.moveLeadSelectionIndex(index);
 		} else {
-			subList = items.subList(idx2, idx1);
-			Collections.reverse(subList);
-			lastSelected = selectionHead;
+			index = selectionModel.getMaxSelectionIndex();
+			selectionModel.setAnchorSelectionIndex(index);
+			selectionModel.moveLeadSelectionIndex(index);
 		}
 		
-		for (var nextItem : subList) {
-			if (nextItem.isVisible() && nextItem.isSelected() != selected) {
-				nextItem.setSelected(selected);
-				changed = true;
-			}
-		}
-		
-		return changed;
+		selectionModel.setValueIsAdjusting(false);
 	}
-	
-	private AbstractNetworkPanel<?> findNextSelectionHead(AbstractNetworkPanel<?> fromItem) {
-		AbstractNetworkPanel<?> head = null;
-		var items = getAllItems(false);
-		
-		if (fromItem != null) {
-			var subList = items.subList(items.indexOf(fromItem), items.size());
-			
-			// Try with the tail subset first
-			for (var nextItem : subList) {
-				if (nextItem.isVisible() && nextItem.isSelected()) {
-					head = nextItem;
-					break;
-				}
-			}
-			
-			if (head == null) {
-				// Try with the head subset
-				subList = items.subList(0, items.indexOf(fromItem));
-				var li = subList.listIterator(subList.size());
-				
-				while (li.hasPrevious()) {
-					var previousItem = li.previous();
-					
-					if (previousItem.isVisible() && previousItem.isSelected()) {
-						head = previousItem;
-						break;
-					}
-				}
-			}
-		}
-		
-		return head;
-	}
-	
+
 	private void setKeyBindings(JComponent comp) {
 		var actionMap = comp.getActionMap();
 		var inputMap = comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
@@ -1128,10 +1126,12 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 
 	private void fireSelectedSubNetworksChange(Collection<CyNetwork> oldValue) {
+		System.out.println("-->> " + getSelectedNetworks(false));
 		firePropertyChange("selectedSubNetworks", oldValue, getSelectedNetworks(false));
 	}
 	
 	private void fireSelectedRootNetworksChange(Collection<CyRootNetwork> oldValue) {
+		System.out.println("===> " + getSelectedRootNetworks());
 		firePropertyChange("selectedRootNetworks", oldValue, getSelectedRootNetworks());
 	}
 	
@@ -1236,8 +1236,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			
 			add(filler);
 			revalidate();
-			
-			// TODO clear or fix previous selection?
 		}
 		
 		void update() {
@@ -1288,6 +1286,10 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 
 		Collection<RootNetworkPanel> getAllItems() {
 			return new ArrayList<>(items.values());
+		}
+		
+		int getRootNetworkCount() {
+			return items.size();
 		}
 		
 		RootNetworkPanel addItem(CyRootNetwork rootNetwork) {
@@ -1435,6 +1437,111 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		}
 	}
 	
+	private class NetworkListSelectionModel extends DefaultListSelectionModel {
+		
+		public NetworkListSelectionModel() {
+			// Here is where we listen to the changed indexes in order to:
+			// a) select/deselect the the actual items
+			// b) call fireSelectedRootNetworksChange and fireSelectedSubNetworksChange when necessary
+			addListSelectionListener(evt -> {
+				if (!evt.getValueIsAdjusting()) {
+					var oldRootSelection = getSelectedRootNetworks();
+					var oldSubSelection = getSelectedNetworks(false);
+					boolean rootChanged = false;
+					boolean subChanged = false;
+					
+					int first = evt.getFirstIndex();
+					int last = evt.getLastIndex();
+					
+					ignoreSelectionEvents = true;
+					
+					try {
+						var allItems = getAllItems(false); // Ignore collapsed items! 
+						
+						for (int i = first; i <= last; i++) {
+							if (i >= allItems.size())
+								break;
+							
+							var p = allItems.get(i);
+							
+							boolean b = setSelected(p, selectionModel.isSelectedIndex(i));
+						
+							if (b) {
+								if (p.getModel().getNetwork() instanceof CyRootNetwork)
+									rootChanged = true;
+								else
+									subChanged = true;
+							}
+						}
+					} finally {
+						ignoreSelectionEvents = false;
+						updateNetworkHeader();
+					}
+					
+					if (rootChanged)
+						fireSelectedRootNetworksChange(oldRootSelection);
+					if (subChanged)
+						fireSelectedSubNetworksChange(oldSubSelection);
+				}
+			});
+		}
+		
+		/**
+		 * This may have to deselect invisible (collapsed) items,
+		 * but the selection model (actually our ListSelectionListener) only handles indexes of visible items.
+		 * So we need to override this method to prevent it from triggering our
+		 * ListSelectionListener with invalid (from hidden items) indexes. 
+		 */
+		@Override
+		public void clearSelection() {
+			var oldRootSelection = getSelectedRootNetworks();
+			var oldSubSelection = getSelectedNetworks(false);
+			boolean rootChanged = false;
+			boolean subChanged = false;
+			
+			setValueIsAdjusting(true);
+			ignoreSelectionEvents = true;
+			
+			super.clearSelection();
+			
+			try {
+				var allItems = getAllItems(true);
+				
+				for (var p : allItems) {
+					boolean b = setSelected(p, false);
+				
+					if (b) {
+						if (p.getModel().getNetwork() instanceof CyRootNetwork)
+							rootChanged = true;
+						else
+							subChanged = true;
+					}
+				}
+				
+				
+			} finally {
+				ignoreSelectionEvents = false;
+				// so it does not fireValueChanged with false in the next line,
+				// which would trigger our listener with potential bad indexes
+				fireValueChanged(true);
+				setValueIsAdjusting(false);
+				
+				updateNetworkHeader();
+			}
+			
+			// Don't forget to fire these events!
+			if (rootChanged)
+				fireSelectedRootNetworksChange(oldRootSelection);
+			if (subChanged)
+				fireSelectedSubNetworksChange(oldSubSelection);
+		}
+		
+		@Override
+		public void fireValueChanged(boolean isAdjusting) { // We need this method to be public!
+			super.fireValueChanged(isAdjusting);
+		}
+	}
+	
 	private class KeyAction extends AbstractAction {
 
 		final static String VK_UP = "VK_UP";
@@ -1450,36 +1557,30 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			var cmd = e.getActionCommand();
 			var allItems = getAllItems(false);
 			
 			if (allItems.isEmpty())
 				return;
 			
-			if (cmd.equals(VK_UP)) {
-				if (lastSelected != null) {
-					var previous = getPreviousItem(lastSelected, false);
-					selectAndSetCurrent(previous != null ? previous : allItems.get(0));
-				}
-			} else if (cmd.equals(VK_DOWN)) {
-				if (lastSelected != null) {
-					var next = getNextItem(lastSelected, false);
-					selectAndSetCurrent(next != null ? next : allItems.get(allItems.size() - 1));
-				}
-			} else if (cmd.equals(VK_SHIFT_UP)) {
-				var previous = getPreviousItem(lastSelected, false);
-				
-				if (previous != null)
-					selectTo(previous);
-			} else if (cmd.equals(VK_SHIFT_DOWN)) {
-				var next = getNextItem(lastSelected, false);
-				
-				if (next != null)
-					selectTo(next);
-			} else if (cmd.equals(VK_CTRL_A)) {
+			var cmd = e.getActionCommand();
+			boolean shift = cmd.startsWith("VK_SHIFT_");
+			int idx = selectionModel.getLeadSelectionIndex();
+			int newIdx = idx;
+			
+			if (cmd.equals(VK_UP) || cmd.equals(VK_SHIFT_UP))
+				newIdx = idx - 1;
+			else if (cmd.equals(VK_DOWN) || cmd.equals(VK_SHIFT_DOWN))
+				newIdx = idx + 1;
+			else if (cmd.equals(VK_CTRL_A))
 				selectAll();
-			} else if (cmd.equals(VK_CTRL_SHIFT_A)) {
+			else if (cmd.equals(VK_CTRL_SHIFT_A))
 				deselectAll();
+			
+			if (newIdx != idx) {
+				if (shift)
+					shiftSelectTo(newIdx);
+				else
+					setSelectedIndex(newIdx);
 			}
 		}
 	}
