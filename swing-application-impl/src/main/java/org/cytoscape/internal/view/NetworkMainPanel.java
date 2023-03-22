@@ -665,9 +665,16 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		if (sortMode != this.sortMode) // Apply the current sort mode again, if necessary
 			sortNetworks(sortMode);
 		
-		// Scroll to new item
+		// Expand the root panel
+		ignoreExpandedEvents = true;
 		rootNetPanel.expand();
+		ignoreExpandedEvents = false;
+		
+		// Scroll to new item
 		scrollTo(network);
+		
+		// Update other parts of the UI
+		updateCollapseExpandButtons();
 		
 		return subNetPanel;
 	}
