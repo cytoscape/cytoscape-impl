@@ -868,31 +868,47 @@ public class NetworkViewGrid extends JPanel {
 		return thumbnailSlider;
 	}
 	
-	private void setSelectionKeyBindings(final JComponent comp) {
-		final ActionMap actionMap = comp.getActionMap();
-		final InputMap inputMap = comp.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-		final int CTRL = LookAndFeelUtil.isMac() ? InputEvent.META_DOWN_MASK : InputEvent.CTRL_DOWN_MASK;
+	private void setSelectionKeyBindings(JComponent comp) {
+		var actionMap = comp.getActionMap();
+		var inputMap = comp.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+		int CTRL = LookAndFeelUtil.isMac() ? InputEvent.META_DOWN_MASK : InputEvent.CTRL_DOWN_MASK;
 
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), KeyAction.VK_LEFT);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), KeyAction.VK_RIGHT);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), KeyAction.VK_UP);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), KeyAction.VK_DOWN);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.SHIFT_DOWN_MASK), KeyAction.VK_SHIFT_LEFT);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.SHIFT_DOWN_MASK), KeyAction.VK_SHIFT_RIGHT);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.SHIFT_DOWN_MASK), KeyAction.VK_SHIFT_UP);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.SHIFT_DOWN_MASK), KeyAction.VK_SHIFT_DOWN);
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, CTRL), KeyAction.VK_CTRL_A);
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, CTRL + InputEvent.SHIFT_DOWN_MASK), KeyAction.VK_CTRL_SHIFT_A);
 		
+		actionMap.put(KeyAction.VK_LEFT, new KeyAction(KeyAction.VK_LEFT));
+		actionMap.put(KeyAction.VK_RIGHT, new KeyAction(KeyAction.VK_RIGHT));
+		actionMap.put(KeyAction.VK_UP, new KeyAction(KeyAction.VK_UP));
+		actionMap.put(KeyAction.VK_DOWN, new KeyAction(KeyAction.VK_DOWN));
+		actionMap.put(KeyAction.VK_SHIFT_LEFT, new KeyAction(KeyAction.VK_SHIFT_LEFT));
+		actionMap.put(KeyAction.VK_SHIFT_RIGHT, new KeyAction(KeyAction.VK_SHIFT_RIGHT));
+		actionMap.put(KeyAction.VK_SHIFT_UP, new KeyAction(KeyAction.VK_SHIFT_UP));
+		actionMap.put(KeyAction.VK_SHIFT_DOWN, new KeyAction(KeyAction.VK_SHIFT_DOWN));
 		actionMap.put(KeyAction.VK_CTRL_A, new KeyAction(KeyAction.VK_CTRL_A));
 		actionMap.put(KeyAction.VK_CTRL_SHIFT_A, new KeyAction(KeyAction.VK_CTRL_SHIFT_A));
 	}
 	
-	private static int calculateColumns(final int thumbnailSize, final int gridWidth) {
+	private static int calculateColumns(int thumbnailSize, int gridWidth) {
 		return thumbnailSize > 0 ? Math.floorDiv(gridWidth, thumbnailSize) : 0;
 	}
 	
-	private static int calculateRows(final int total, final int cols) {
-		return (int) Math.round(Math.ceil((float)total / (float)cols));
+	private static int calculateRows(int total, int cols) {
+		return (int) Math.round(Math.ceil((float) total / (float) cols));
 	}
-	
-	private static int maxThumbnailSize(int thumbnailSize, final int gridWidth) {
+
+	private static int maxThumbnailSize(int thumbnailSize, int gridWidth) {
 		thumbnailSize = Math.max(thumbnailSize, MIN_THUMBNAIL_SIZE);
 		thumbnailSize = Math.min(thumbnailSize, MAX_THUMBNAIL_SIZE);
 		thumbnailSize = Math.min(thumbnailSize, gridWidth);
-		
+
 		return thumbnailSize;
 	}
 	
@@ -1268,27 +1284,56 @@ public class NetworkViewGrid extends JPanel {
 	
 	private class KeyAction extends AbstractAction {
 
+		final static String VK_LEFT = "VK_LEFT";
+		final static String VK_RIGHT = "VK_RIGHT";
+		final static String VK_UP = "VK_UP";
+		final static String VK_DOWN = "VK_DOWN";
+		final static String VK_SHIFT_LEFT = "VK_SHIFT_LEFT";
+		final static String VK_SHIFT_RIGHT = "VK_SHIFT_RIGHT";
+		final static String VK_SHIFT_UP = "VK_SHIFT_UP";
+		final static String VK_SHIFT_DOWN = "VK_SHIFT_DOWN";		
 		final static String VK_CTRL_A = "VK_CTRL_A";
 		final static String VK_CTRL_SHIFT_A = "VK_CTRL_SHIFT_A";
 		
-		KeyAction(final String actionCommand) {
+		KeyAction(String actionCommand) {
 			putValue(ACTION_COMMAND_KEY, actionCommand);
 		}
 
 		@Override
-		public void actionPerformed(final ActionEvent e) {
-			final Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+		public void actionPerformed(ActionEvent e) {
+			var focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
 			
 			if (focusOwner instanceof JTextComponent || focusOwner instanceof JTable ||
 					!NetworkViewGrid.this.isVisible() || isEmpty())
 				return; // We don't want to steal the key event from these components
 			
-			final String cmd = e.getActionCommand();
+			var cmd = e.getActionCommand();
+			boolean shift = cmd.startsWith("VK_SHIFT_");
+			int size = thumbnailPanels.size();
+			int idx = selectionModel.getLeadSelectionIndex();
+			int newIdx = idx;
 			
-			if (cmd.equals(VK_CTRL_A))
+			if (cmd.equals(VK_RIGHT) || cmd.equals(VK_SHIFT_RIGHT)) {
+				newIdx = idx + 1;
+			} else if (cmd.equals(VK_LEFT) || cmd.equals(VK_SHIFT_LEFT)) {
+				newIdx = idx - 1;
+			} else if (cmd.equals(VK_UP) || cmd.equals(VK_SHIFT_UP)) {
+				newIdx = idx - cols < 0 ? idx : idx - cols;
+			} else if (cmd.equals(VK_DOWN) || cmd.equals(VK_SHIFT_DOWN)) {
+				boolean sameRow = Math.ceil(size / (double) cols) == Math.ceil((idx + 1) / (double) cols);
+				newIdx = sameRow ? idx : Math.min(size - 1, idx + cols);
+			} else if (cmd.equals(VK_CTRL_A)) {
 				selectAll();
-			else if (cmd.equals(VK_CTRL_SHIFT_A))
+			} else if (cmd.equals(VK_CTRL_SHIFT_A)) {
 				deselectAll();
+			}
+			
+			if (newIdx != idx) {
+				if (shift)
+					shiftSelectTo(newIdx);
+				else
+					setSelectedIndex(newIdx);
+			}
 		}
 	}
 }
