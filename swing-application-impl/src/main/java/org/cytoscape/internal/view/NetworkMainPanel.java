@@ -140,6 +140,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	private boolean ignoreSelectionEvents;
 	private boolean ignoreExpandedEvents;
 	private boolean doNotUpdateCollapseExpandButtons;
+	private boolean fireSelectedNetworksEvent = true;
 	
 	private NetworkViewPreviewDialog viewDialog;
 	private TextIcon icon;
@@ -451,9 +452,9 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 
 		selectionModel.setValueIsAdjusting(true);
 		ignoreSelectionEvents = true;
+		fireSelectedNetworksEvent = false;
 		
 		try {
-			// TODO Expand the collection if selected network item is invisible
 			selectionModel.clearSelection();
 			var allNetworks = getAllNetworks(false);
 			int maxIdx = -1;
@@ -470,6 +471,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			selectionModel.setAnchorSelectionIndex(maxIdx);
 			selectionModel.moveLeadSelectionIndex(maxIdx);
 		} finally {
+			fireSelectedNetworksEvent = true;
 			ignoreSelectionEvents = false;
 			selectionModel.setValueIsAdjusting(false);
 		}
@@ -626,7 +628,8 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 					else // It means it was selected before
 						oldSelection.add(item.getModel().getNetwork());
 					
-					fireSelectedRootNetworksChange(oldSelection);
+					if (fireSelectedNetworksEvent)
+						fireSelectedRootNetworksChange(oldSelection);
 				}
 			});
 			
@@ -648,7 +651,8 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 				else // It means it was selected before
 					oldSelection.add(subNetPanel.getModel().getNetwork());
 				
-				fireSelectedSubNetworksChange(oldSelection);
+				if (fireSelectedNetworksEvent)
+					fireSelectedSubNetworksChange(oldSelection);
 			}
 		});
 		subNetPanel.getViewIconLabel().addMouseListener(new MouseAdapter() {
@@ -1077,8 +1081,15 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		selectionModel.setValueIsAdjusting(true);
 		
 		// 1. remove everything between anchor and focus (lead)
-		if (anchor != lead && (anchor >= 0 || lead >= 0))
-			selectionModel.removeIndexInterval(Math.max(0, anchor), Math.max(0, lead));
+		if (anchor != lead && (anchor >= 0 || lead >= 0)) {
+			fireSelectedNetworksEvent = false;
+			
+			try {
+				selectionModel.removeIndexInterval(Math.max(0, anchor), Math.max(0, lead));
+			} finally {
+				fireSelectedNetworksEvent = true;
+			}
+		}
 		
 		// 2. add everything between anchor and the new index, which  should also be made the new lead
 		selectionModel.addSelectionInterval(Math.max(0, anchor), index);
@@ -1485,10 +1496,12 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 						updateNetworkHeader();
 					}
 					
-					if (rootChanged)
-						fireSelectedRootNetworksChange(oldRootSelection);
-					if (subChanged)
-						fireSelectedSubNetworksChange(oldSubSelection);
+					if (fireSelectedNetworksEvent) {
+						if (rootChanged)
+							fireSelectedRootNetworksChange(oldRootSelection);
+						if (subChanged)
+							fireSelectedSubNetworksChange(oldSubSelection);
+					}
 				}
 			});
 		}
@@ -1537,10 +1550,12 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			}
 			
 			// Don't forget to fire these events!
-			if (rootChanged)
-				fireSelectedRootNetworksChange(oldRootSelection);
-			if (subChanged)
-				fireSelectedSubNetworksChange(oldSubSelection);
+			if (fireSelectedNetworksEvent) {
+				if (rootChanged)
+					fireSelectedRootNetworksChange(oldRootSelection);
+				if (subChanged)
+					fireSelectedSubNetworksChange(oldSubSelection);
+			}
 		}
 		
 		@Override

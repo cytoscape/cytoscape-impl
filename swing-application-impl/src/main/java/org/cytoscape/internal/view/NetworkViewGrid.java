@@ -45,6 +45,7 @@ import java.util.TreeMap;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
+import javax.swing.DefaultListSelectionModel;
 import javax.swing.GroupLayout;
 import javax.swing.InputMap;
 import javax.swing.JButton;
@@ -120,44 +121,80 @@ public class NetworkViewGrid extends JPanel {
 	private JSlider thumbnailSlider;
 	private final GridViewTogglePanel gridViewTogglePanel;
 	
-	private Map<CyNetworkView, RenderingEngines> engines;
+	private Map<CyNetworkView, RenderingEngines> enginesMap;
 	
 	private final TreeMap<CyNetworkView, ThumbnailPanel> thumbnailPanels;
 	private CyNetworkView currentNetworkView;
-	private final List<CyNetworkView> selectedNetworkViews;
+	/** Selected views are saved here because they can be set before this component has any {@link ThumbnailPanel} */
+	private final Set<CyNetworkView> selectedNetworkViews;
 	private final Set<CyNetworkView> detachedViews;
 	private int thumbnailSize;
 	private int maxThumbnailSize;
 	private boolean dirty = true;
-	private boolean ignoreSelectedItemsEvent;
-	private final Comparator<CyNetworkView> viewComparator;
+	private boolean fireSelectedNetworkViewsEvent = true;
 	
-	private ThumbnailPanel selectionHead;
-	private ThumbnailPanel selectionTail;
+	private DefaultListSelectionModel selectionModel;
 	
 	private ComponentAdapter componentAdapter;
+	
+	private int cols;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
 	public NetworkViewGrid(
-			final GridViewToggleModel gridViewToggleModel,
-			final Comparator<CyNetworkView> viewComparator,
-			final CyServiceRegistrar serviceRegistrar
+			GridViewToggleModel gridViewToggleModel,
+			Comparator<CyNetworkView> viewComparator,
+			CyServiceRegistrar serviceRegistrar
 	) {
-		this.viewComparator = viewComparator;
 		this.serviceRegistrar = serviceRegistrar;
 		
-		engines = new HashMap<>();
+		enginesMap = new HashMap<>();
 		thumbnailPanels = new TreeMap<>(viewComparator);
-		selectedNetworkViews = new ArrayList<>();
+		selectedNetworkViews = new HashSet<>();
 		detachedViews = new HashSet<>();
 		
 		gridViewTogglePanel = new GridViewTogglePanel(gridViewToggleModel, serviceRegistrar);
 		
+		selectionModel = new DefaultListSelectionModel();
+		// Here is where we listen to the changed indexes in order to:
+		// a) select/deselect the the actual items
+		// b) call firePropertyChange for the "selectedNetworkViews" property when necessary
+		selectionModel.addListSelectionListener(evt -> {
+			if (!evt.getValueIsAdjusting()) {
+				var oldValue = getSelectedNetworkViews();
+				
+				var allItems = getAllItems();
+				boolean changed = false;
+				int first = evt.getFirstIndex();
+				int last = evt.getLastIndex();
+				
+				for (int i = first; i <= last; i++) {
+					if (i >= allItems.size())
+						break;
+					
+					var p = allItems.get(i);
+					boolean selected = selectionModel.isSelectedIndex(i);
+					
+					if (p.isSelected() != selected) {
+						p.setSelected(selected);
+						changed = true;
+						
+						if (selected)
+							selectedNetworkViews.add(p.getNetworkView());
+						else
+							selectedNetworkViews.remove(p.getNetworkView());
+					}
+				}
+				
+				if (changed && fireSelectedNetworkViewsEvent)
+					firePropertyChange("selectedNetworkViews", oldValue, getSelectedNetworkViews());
+			}
+		});
+		
 		init();
 	}
 	
-	public ThumbnailPanel getItem(final CyNetworkView view) {
+	public ThumbnailPanel getItem(CyNetworkView view) {
 		return thumbnailPanels.get(view);
 	}
 	
@@ -185,22 +222,22 @@ public class NetworkViewGrid extends JPanel {
 		return thumbnailPanels.isEmpty();
 	}
 	
-	public void addItem(final RenderingEngine<CyNetwork> re, final RenderingEngineFactory<CyNetwork> thumbnailFactory) {
+	public void addItem(RenderingEngine<CyNetwork> re, RenderingEngineFactory<CyNetwork> thumbnailFactory) {
 		if (!contains(re)) {
-			final Collection<CyNetworkView> oldViews = getNetworkViews();
-			engines.put((CyNetworkView)re.getViewModel(), new RenderingEngines(re, thumbnailFactory));
+			var oldViews = getAllNetworkViews();
+			enginesMap.put((CyNetworkView)re.getViewModel(), new RenderingEngines(re, thumbnailFactory));
 			dirty = true;
-			firePropertyChange("networkViews", oldViews, getNetworkViews());
+			firePropertyChange("networkViews", oldViews, getAllNetworkViews());
 		}
 	}
 	
-	public void removeItems(final Collection<RenderingEngine<CyNetwork>> enginesToRemove) {
+	public void removeItems(Collection<RenderingEngine<CyNetwork>> enginesToRemove) {
 		if (enginesToRemove != null && !enginesToRemove.isEmpty()) {
-			final Collection<CyNetworkView> oldViews = getNetworkViews();
+			var oldViews = getAllNetworkViews();
 			boolean removed = false;
 			
-			for (RenderingEngine<CyNetwork> re : enginesToRemove) {
-				if (re != null && engines.remove(re.getViewModel()) != null) {
+			for (var re : enginesToRemove) {
+				if (re != null && enginesMap.remove(re.getViewModel()) != null) {
 					removed = true;
 					dirty = true;
 				}
@@ -208,17 +245,17 @@ public class NetworkViewGrid extends JPanel {
 			
 			if (removed) {
 				updateToolBar();
-				firePropertyChange("networkViews", oldViews, getNetworkViews());
+				firePropertyChange("networkViews", oldViews, getAllNetworkViews());
 			}
 		}
 	}
 	
-	public Collection<CyNetworkView> getNetworkViews() {
-		return new ArrayList<>(engines.keySet());
+	public List<CyNetworkView> getAllNetworkViews() {
+		return new ArrayList<>(enginesMap.keySet());
 	}
 	
 	public void scrollToCurrentItem() {
-		final ThumbnailPanel tp = getCurrentItem();
+		var tp = getCurrentItem();
 		
 		if (tp != null && tp.getParent() instanceof JComponent) {
 			if (!isValid()) // If invalid, the thumbnail panel may not be ready yet, usually with 0 width/height
@@ -237,23 +274,49 @@ public class NetworkViewGrid extends JPanel {
 		removeAll();
 	}
 	
-	private boolean contains(final RenderingEngine<CyNetwork> re) {
-		return engines.containsKey(re.getViewModel());
+	private boolean contains(RenderingEngine<CyNetwork> re) {
+		return enginesMap.containsKey(re.getViewModel());
+	}
+	
+	void selectAndSetCurrent(ThumbnailPanel item) {
+		if (item == null)
+			return;
+		
+		// First select the clicked item
+		var allItems = getAllItems();
+		setSelectedIndex(allItems.indexOf(item));
+		setCurrentNetworkView(item.getNetworkView());
+	}
+	
+	/**
+     * Selects a single cell. Does nothing if the given index is greater
+     * than or equal to the model size. This is a convenience method that uses
+     * {@code setSelectionInterval} on the selection model. Refer to the
+     * documentation for the selection model class being used for details on
+     * how values less than {@code 0} are handled.
+     *
+     * @param index the index of the cell to select
+     */
+	void setSelectedIndex(int index) {
+		if (index >= thumbnailPanels.size())
+			return;
+		
+		selectionModel.setSelectionInterval(index, index);
 	}
 	
 	protected CyNetworkView getCurrentNetworkView() {
 		return currentNetworkView;
 	}
 	
-	protected boolean setCurrentNetworkView(final CyNetworkView newView) {
+	protected boolean setCurrentNetworkView(CyNetworkView newView) {
 		if ((currentNetworkView == null && newView == null) || 
 				(currentNetworkView != null && currentNetworkView.equals(newView)))
 			return false;
 		
-		final CyNetworkView oldView = currentNetworkView;
+		var oldView = currentNetworkView;
 		currentNetworkView = newView;
 		
-		for (ThumbnailPanel tp : thumbnailPanels.values())
+		for (var tp : thumbnailPanels.values())
 			tp.update(false);
 		
 		firePropertyChange("currentNetworkView", oldView, newView);
@@ -286,7 +349,7 @@ public class NetworkViewGrid extends JPanel {
 		final Dimension size = getSize();
 		
 		if (!dirty && size != null && size.width > 0) {
-			final int cols = calculateColumns(thumbnailSize, size.width);
+			cols = calculateColumns(thumbnailSize, size.width);
 			
 			if (getGridPanel().getLayout() instanceof GridLayout)
 				dirty = cols != ((GridLayout) getGridPanel().getLayout()).getColumns();
@@ -347,7 +410,8 @@ public class NetworkViewGrid extends JPanel {
 	}
 	
 	protected void selectAll() {
-		setSelectedItems(getItems());
+		if (!thumbnailPanels.isEmpty())
+			selectionModel.setSelectionInterval(0, thumbnailPanels.size() - 1);
 	}
 	
 	protected void deselectAll() {
@@ -355,116 +419,147 @@ public class NetworkViewGrid extends JPanel {
 		setSelectedItems(Collections.emptyList());
 	}
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	void onMousePressedItem(final MouseEvent e, final ThumbnailPanel item) {
+	void onMousePressedItem(MouseEvent e, ThumbnailPanel item) {
 		item.requestFocusInWindow();
 		
-		if (e.isPopupTrigger()) {
-			selectionHead = item;
-		} else if (SwingUtilities.isLeftMouseButton(e)) {
+		if (!e.isPopupTrigger() && SwingUtilities.isLeftMouseButton(e)) {
 			// LEFT-CLICK...
-			final Set<ThumbnailPanel> oldValue = new HashSet<>(getSelectedItems());
-			boolean changed = false;
+			boolean isMac = LookAndFeelUtil.isMac();
+			boolean isControlDown = (isMac && e.isMetaDown()) || (!isMac && e.isControlDown());
 			
-			final boolean isMac = LookAndFeelUtil.isMac();
-			
-			if ((isMac && e.isMetaDown()) || (!isMac && e.isControlDown())) {
+			if (isControlDown) {
 				// COMMAND button down on MacOS or CONTROL button down on another OS.
 				// Toggle this item's selection state
-				item.setSelected(!item.isSelected());
-				changed = true;
-				
-				// Find new selection range head
-				selectionHead = item.isSelected() ? item : findNextSelectionHead(selectionHead);
+				toggleSelection(item);
+			} else if (e.isShiftDown()) {
+				// SHIFT key pressed...
+				var allItems = getAllItems();
+				int index = allItems.indexOf(item);
+				shiftSelectTo(index);
 			} else {
-				if (e.isShiftDown()) {
-					if (selectionHead != null && selectionHead.isVisible() && selectionHead.isSelected()
-							&& selectionHead != item) {
-						// First deselect previous range, if there is a tail
-						if (selectionTail != null)
-							changeRangeSelection(selectionHead, selectionTail, false);
-						// Now select the new range
-						changeRangeSelection(selectionHead, (selectionTail = item), true);
-					} else if (!item.isSelected()) {
-						item.setSelected(true);
-						changed = true;
-					}
-				} else {
-					setSelectedItems((Collections.singleton(item)));
-					
-					if (!item.isCurrent())
-						setCurrentNetworkView(item.getNetworkView());
-				}
-				
-				if (getSelectedItems().size() == 1)
-					selectionHead = item;
+				// No SHIFT/CTRL pressed
+				selectAndSetCurrent(item);
 			}
-			
-			if (changed)
-				firePropertyChange("selectedItems", oldValue, getSelectedItems());
 		}
+	}
+	
+	private void shiftSelectTo(int index) {
+		int size = thumbnailPanels.size();
+		
+		if (index < 0 || index >= size)
+			return;
+		
+		int anchor = selectionModel.getAnchorSelectionIndex();
+		int lead = selectionModel.getLeadSelectionIndex();
+		
+		selectionModel.setValueIsAdjusting(true);
+		
+		// 1. remove everything between anchor and focus (lead)
+		if (anchor != lead && (anchor >= 0 || lead >= 0)) {
+			fireSelectedNetworkViewsEvent = false;
+			
+			try {
+				selectionModel.removeIndexInterval(Math.max(0, anchor), Math.max(0, lead));
+			} finally {
+				fireSelectedNetworkViewsEvent = true;
+			}
+		}
+		
+		// 2. add everything between anchor and the new index, which  should also be made the new lead
+		selectionModel.addSelectionInterval(Math.max(0, anchor), index);
+		
+		selectionModel.setValueIsAdjusting(false);
+		
+		// 3. Make sure the lead component is focused
+		var allItems = getAllItems();
+		allItems.get(index).requestFocusInWindow();
+	}
+	
+	private void toggleSelection(ThumbnailPanel item) {
+		var allItems = getAllItems();
+		int index = allItems.indexOf(item);
+		
+		if (selectionModel.isSelectedIndex(index))
+			selectionModel.removeSelectionInterval(index, index);
+		else
+			selectionModel.addSelectionInterval(index, index);
+		
+		selectionModel.setValueIsAdjusting(true);
+		
+		if (selectionModel.isSelectedIndex(index)) {
+			selectionModel.setAnchorSelectionIndex(index);
+			selectionModel.moveLeadSelectionIndex(index);
+		} else {
+			index = selectionModel.getMaxSelectionIndex();
+			selectionModel.setAnchorSelectionIndex(index);
+			selectionModel.moveLeadSelectionIndex(index);
+		}
+		
+		selectionModel.setValueIsAdjusting(false);
 	}
 	
 	protected List<CyNetworkView> getSelectedNetworkViews() {
 		return new ArrayList<>(selectedNetworkViews);
 	}
 	
-	protected void setSelectedNetworkViews(Collection<CyNetworkView> networkViews) {
-		if (Util.equalSets(networkViews, selectedNetworkViews))
+	protected void setSelectedNetworkViews(Collection<CyNetworkView> views) {
+		if (Util.equalSets(views, selectedNetworkViews))
 			return;
 		
-		var oldValue = new ArrayList<>(selectedNetworkViews);
 		selectedNetworkViews.clear();
+		selectedNetworkViews.addAll(views);
 		
-		if (networkViews != null)
-			selectedNetworkViews.addAll(networkViews);
+		if (thumbnailPanels.isEmpty() || enginesMap.isEmpty())
+			return;
 		
-		Set<ThumbnailPanel> selectedItems = new LinkedHashSet<>();
+		var selectedItems = new LinkedHashSet<ThumbnailPanel>();
 		
-		for (var tp : getItems()) {
-			if (selectedNetworkViews.contains(tp.getNetworkView()))
-				selectedItems.add(tp);
+		for (var entry : thumbnailPanels.entrySet()) {
+			if (views.contains(entry.getKey()) && enginesMap.containsKey(entry.getKey()))
+				selectedItems.add(entry.getValue());
 		}
 		
-		ignoreSelectedItemsEvent = true;
+		fireSelectedNetworkViewsEvent = false;
 		
 		try {
 			setSelectedItems(selectedItems);
 		} finally {
-			ignoreSelectedItemsEvent = false;
+			fireSelectedNetworkViewsEvent = true;
 		}
 		
 		updateToolBar();
-		firePropertyChange("selectedNetworkViews", oldValue, new LinkedHashSet<>(selectedNetworkViews));
 	}
 	
-	private void setSelectedItems(final Collection<ThumbnailPanel> selectedItems) {
-		final Set<ThumbnailPanel> oldValue = new HashSet<>(getSelectedItems());
-		boolean changed = false;
+	private void setSelectedItems(Collection<ThumbnailPanel> items) {
+		selectionModel.setValueIsAdjusting(true);
 		
-		for (final ThumbnailPanel tp : thumbnailPanels.values()) {
-			final boolean selected = selectedItems != null && selectedItems.contains(tp);
+		try {
+			selectionModel.clearSelection();
 			
-			if (tp.isSelected() != selected) {
-				tp.setSelected(selected);
-				changed = true;
+			var allKeys = new ArrayList<>(thumbnailPanels.keySet());
+			int maxIdx = -1;
+			
+			for (var p : items) {
+				int idx = allKeys.indexOf(p.getNetworkView());
+				
+				if (idx >= 0) {
+					selectionModel.addSelectionInterval(idx, idx);
+					maxIdx = Math.max(idx, maxIdx);
+				}
 			}
-
-			if (!tp.isSelected()) {
-				if (tp == selectionHead) selectionHead = null;
-				if (tp == selectionTail) selectionTail = null;
-			}
+			
+			selectionModel.setAnchorSelectionIndex(maxIdx);
+			selectionModel.moveLeadSelectionIndex(maxIdx);
+		} finally {
+			selectionModel.setValueIsAdjusting(false);
 		}
-		
-		if (changed)
-			firePropertyChange("selectedItems", oldValue, getSelectedItems());
 	}
 	
 	protected List<ThumbnailPanel> getSelectedItems() {
-		 final List<ThumbnailPanel> list = new ArrayList<>();
+		 var list = new ArrayList<ThumbnailPanel>();
 		 
-		 for (Entry<CyNetworkView, ThumbnailPanel> entry : thumbnailPanels.entrySet()) {
-			 final ThumbnailPanel tp = entry.getValue();
+		 for (var entry : thumbnailPanels.entrySet()) {
+			 var tp = entry.getValue();
 			 
 			 if (tp.isSelected())
 				 list.add(tp);
@@ -473,67 +568,8 @@ public class NetworkViewGrid extends JPanel {
 		 return list;
 	}
 	
-	private void changeRangeSelection(final ThumbnailPanel item1, final ThumbnailPanel item2,
-			final boolean selected) {
-		final Set<ThumbnailPanel> oldValue = new HashSet<>(getSelectedItems());
-		boolean changed = false;
-		
-		final NavigableMap<CyNetworkView, ThumbnailPanel> subMap;
-		
-		if (viewComparator.compare(item1.getNetworkView(), item2.getNetworkView()) <= 0)
-			subMap = thumbnailPanels.subMap(item1.getNetworkView(), false, item2.getNetworkView(), true);
-		else
-			subMap = thumbnailPanels.subMap(item2.getNetworkView(), true, item1.getNetworkView(), false);
-				
-		for (final Map.Entry<CyNetworkView, ThumbnailPanel> entry : subMap.entrySet()) {
-			final ThumbnailPanel nextItem = entry.getValue();
-			
-			if (nextItem.isVisible()) {
-				if (nextItem.isSelected() != selected) {
-					nextItem.setSelected(selected);
-					changed = true;
-				}
-			}
-		}
-		
-		if (changed)
-			firePropertyChange("selectedItems", oldValue, getSelectedItems());
-	}
-	
-	private ThumbnailPanel findNextSelectionHead(final ThumbnailPanel fromItem) {
-		ThumbnailPanel head = null;
-		
-		if (fromItem != null) {
-			NavigableMap<CyNetworkView, ThumbnailPanel> subMap =
-					thumbnailPanels.tailMap(fromItem.getNetworkView(), false);
-			
-			// Try with the tail subset first
-			for (final Map.Entry<CyNetworkView, ThumbnailPanel> entry : subMap.entrySet()) {
-				final ThumbnailPanel nextItem = entry.getValue();
-				
-				if (nextItem.isVisible() && nextItem.isSelected()) {
-					head = nextItem;
-					break;
-				}
-			}
-			
-			if (head == null) {
-				// Try with the head subset
-				subMap = thumbnailPanels.headMap(fromItem.getNetworkView(), false);
-				final NavigableMap<CyNetworkView, ThumbnailPanel> descMap = subMap.descendingMap();
-				
-				for (final Map.Entry<CyNetworkView, ThumbnailPanel> entry : descMap.entrySet()) {
-					final ThumbnailPanel nextItem = entry.getValue();
-					
-					if (nextItem.isVisible() && nextItem.isSelected()) {
-						head = nextItem;
-						break;
-					}
-				}
-			}
-		}
-		
-		return head;
+	private List<ThumbnailPanel> getAllItems() {
+		return new ArrayList<>(thumbnailPanels.values());
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -562,32 +598,24 @@ public class NetworkViewGrid extends JPanel {
 		setSelectionKeyBindings(getGridScrollPane().getViewport());
 		
 		update(thumbnailSize);
-		
-		addPropertyChangeListener("selectedItems", evt -> {
-			if (!ignoreSelectedItemsEvent)
-				setSelectedNetworkViews(getNetworkViews((Collection<ThumbnailPanel>) evt.getNewValue()));
-		});
 	}
 	
 	private void recreateThumbnails() {
-		final Dimension size = getSize();
+		var size = getSize();
 		
 		if (size == null || size.width <= 0)
 			return;
 		
-		final List<ThumbnailPanel> previousSelection = getSelectedItems();
-		
 		getGridPanel().removeAll();
 		
-		for (ThumbnailPanel tp : thumbnailPanels.values()) {
+		for (var tp : thumbnailPanels.values())
 			tp.getThumbnailRenderingEngine().ifPresent(RenderingEngine::dispose);
-		}
 		
 		thumbnailPanels.clear();
 		
-		if (engines == null || engines.isEmpty()) {
+		if (enginesMap == null || enginesMap.isEmpty()) {
 			// Just show an info label
-			final GroupLayout layout = new GroupLayout(getGridPanel());
+			var layout = new GroupLayout(getGridPanel());
 			getGridPanel().setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
 			layout.setAutoCreateGaps(true);
@@ -605,47 +633,56 @@ public class NetworkViewGrid extends JPanel {
 			
 			// Clear cache
 			detachedViews.clear();
-			selectedNetworkViews.clear();
-			currentNetworkView = null;
+			deselectAll();
 		} else {
 			maxThumbnailSize = maxThumbnailSize(thumbnailSize, size.width);
 			
 			int cols = calculateColumns(maxThumbnailSize, size.width);
-			int rows = calculateRows(engines.size(), cols);
+			int rows = calculateRows(enginesMap.size(), cols);
 			getGridPanel().setLayout(new GridLayout(rows, cols));
 			
-			for (RenderingEngines engines : engines.values()) {
-				final ThumbnailPanel tp = new ThumbnailPanel(engines, maxThumbnailSize);
+			for (var entry : enginesMap.entrySet()) {
+				var view = entry.getKey();
+				var engines = entry.getValue();
+				boolean selected = selectedNetworkViews.contains(view);
+				
+				var tp = new ThumbnailPanel(engines, maxThumbnailSize, selected);
 				thumbnailPanels.put(tp.getNetworkView(), tp);
 				
 				setSelectionKeyBindings(tp);
-				
-				if (previousSelection.contains(tp))
-					tp.setSelected(true);
 			}
 			
-			for (Map.Entry<CyNetworkView, ThumbnailPanel> entry : thumbnailPanels.entrySet())
-				getGridPanel().add(entry.getValue());
+			for (var tp : thumbnailPanels.values())
+				getGridPanel().add(tp);
 			
 			if (thumbnailPanels.size() < cols) {
-				final int diff = cols - thumbnailPanels.size();
+				int diff = cols - thumbnailPanels.size();
 				
 				for (int i = 0; i < diff; i++) {
-					final JPanel filler = new JPanel();
+					var filler = new JPanel();
 					filler.setOpaque(false);
 					getGridPanel().add(filler);
 				}
 			}
 			
 			// Clear cache
-			for (Iterator<CyNetworkView> iter = detachedViews.iterator(); iter.hasNext();) {
+			for (var iter = detachedViews.iterator(); iter.hasNext();) {
 				if (!thumbnailPanels.containsKey(iter.next()))
 					iter.remove();
 			}
 			
-			for (Iterator<CyNetworkView> iter = selectedNetworkViews.iterator(); iter.hasNext();) {
+			// Restore the selection
+			for (var iter = selectedNetworkViews.iterator(); iter.hasNext();) {
 				if (!thumbnailPanels.containsKey(iter.next()))
 					iter.remove();
+			}
+			
+			fireSelectedNetworkViewsEvent = false;
+			
+			try {
+				setSelectedItems(getSelectedItems());
+			} finally {
+				fireSelectedNetworkViewsEvent = true;
 			}
 			
 			if (currentNetworkView != null && !thumbnailPanels.containsKey(currentNetworkView))
@@ -655,7 +692,7 @@ public class NetworkViewGrid extends JPanel {
 		dirty = false;
 		updateToolBar();
 		getGridPanel().updateUI();
-		firePropertyChange("thumbnailPanels", null, new ArrayList<>(thumbnailPanels.values()));
+		firePropertyChange("thumbnailPanels", null, getAllItems());
 	}
 
 	private GridPanel getGridPanel() {
@@ -971,8 +1008,9 @@ public class NetworkViewGrid extends JPanel {
 				)
 		);
 		
-		ThumbnailPanel(final RenderingEngines engines, final int size) {
+		ThumbnailPanel(RenderingEngines engines, int size, boolean selected) {
 			this.engines = engines;
+			this.selected = selected;
 			
 			this.setFocusable(true);
 			this.setRequestFocusEnabled(true);
@@ -1017,9 +1055,6 @@ public class NetworkViewGrid extends JPanel {
 					.addComponent(getImagePanel(), PREFERRED_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addGap(PAD, PAD, PAD)
 			);
-			
-			if (selectedNetworkViews.contains(engines.networkEngine.getViewModel()))
-				selected = true;
 			
 			this.update(true);
 			
@@ -1108,8 +1143,8 @@ public class NetworkViewGrid extends JPanel {
 		}
 		
 		private void updateTitleLabel() {
-			final String title = ViewUtil.getTitle(getNetworkView());
-			final String netName = ViewUtil.getName(getNetworkView().getModel());
+			var title = ViewUtil.getTitle(getNetworkView());
+//			var netName = ViewUtil.getName(getNetworkView().getModel());
 			setToolTipText(title);
 // TODO Use this one when multiple views is supported, to show the network name			
 //			setToolTipText("<html><center>" + title + "<br>(" + netName + ")</center></html>");
