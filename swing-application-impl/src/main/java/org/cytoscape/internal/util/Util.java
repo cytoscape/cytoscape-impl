@@ -22,7 +22,6 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
 
@@ -55,20 +54,20 @@ public final class Util {
 	/**
 	 * @return true if both objects are null or obj1 equals obj2.
 	 */
-	public static boolean same(final Object obj1, final Object obj2) {
+	public static boolean same(Object obj1, Object obj2) {
 		return (obj1 == null && obj2 == null) || (obj1 != null && obj1.equals(obj2));
 	}
 	
 	/**
 	 * @return true if both lists are empty or contain the same elements (the order of the elements is not important).
 	 */
-	public static boolean equalSets(final Collection<?> list1, final Collection<?> list2) {
+	public static boolean equalSets(Collection<?> list1, Collection<?> list2) {
 		if ((list1 == null || list1.isEmpty()) && (list2 == null || list2.isEmpty()))
 			return true; // Both are empty
 		
 		if (list1 != null && list2 != null) {
-			final Set<Object> set1 = new HashSet<>(list1);
-			final Set<Object> set2 = new HashSet<>(list2);
+			var set1 = new HashSet<>(list1);
+			var set2 = new HashSet<>(list2);
 			
 			if (set1.equals(set2))
 				return true; // Both contain the same elements
@@ -77,41 +76,47 @@ public final class Util {
 		return false;
 	}
 	
-	public static Set<CyNetwork> getNetworks(final Collection<CyNetworkView> views) {
-		final Set<CyNetwork> networks = new LinkedHashSet<>();
+	public static Set<CyNetwork> getNetworks(Collection<CyNetworkView> views) {
+		var networks = new LinkedHashSet<CyNetwork>();
 		
-		for (CyNetworkView v : views)
+		for (var v : views)
 			networks.add(v.getModel());
 		
 		return networks;
 	}
 	
-	public static Set<CyNetworkView> getNetworkViews(final Collection<CyNetwork> networks,
-			final CyServiceRegistrar serviceRegistrar) {
-		final Set<CyNetworkView> views = new LinkedHashSet<>();
-		final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+	public static Set<CyNetworkView> getNetworkViews(
+			Collection<CyNetwork> networks,
+			CyServiceRegistrar serviceRegistrar
+	) {
+		var views = new LinkedHashSet<CyNetworkView>();
+		var netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
 		
-		for (CyNetwork n : networks)
+		for (var n : networks)
 			views.addAll(netViewMgr.getNetworkViews(n));
 		
 		return views;
 	}
 	
-	public static boolean isDisposed(final CyNetworkView view) {
+	public static boolean isDisposed(CyNetworkView view) {
 		return view.getModel().getDefaultNodeTable() == null || view.getModel().getDefaultEdgeTable() == null;
 	}
 	
-	public static boolean isVisualPropertySupported(final String vpId, final Class<?> type, final CyNetworkView view,
-			final CyServiceRegistrar serviceRegistrar) {
+	public static boolean isVisualPropertySupported(
+			String vpId,
+			Class<?> type,
+			CyNetworkView view,
+			CyServiceRegistrar serviceRegistrar
+	) {
 		if (view == null)
 			return false;
 		
-		VisualLexicon lexicon = getVisualLexicon(view, serviceRegistrar);
+		var lexicon = getVisualLexicon(view, serviceRegistrar);
 		
 		if (lexicon == null) // Should not happen!
 			return false;
 		
-		VisualProperty<?> vp = lexicon.lookup(type, vpId);
+		var vp = lexicon.lookup(type, vpId);
 		
 		return vp != null && lexicon.isSupported(vp);
 	}
@@ -119,29 +124,38 @@ public final class Util {
 	/**
 	 * Sets a {@link VisualProperty} value by property id, but only if it's supported by the view's lexicon.
 	 */
-	public static void setLockedValue(final String vpId, final Class<?> type, final Object value,
-			final CyNetworkView view, final CyServiceRegistrar serviceRegistrar) {
+	public static void setLockedValue(
+			String vpId,
+			Class<?> type,
+			Object value,
+			CyNetworkView view,
+			CyServiceRegistrar serviceRegistrar
+	) {
 		if (view == null)
 			return;
 		
-		VisualLexicon lexicon = getVisualLexicon(view, serviceRegistrar);
+		var lexicon = getVisualLexicon(view, serviceRegistrar);
 		
 		if (lexicon == null) // Should not happen!
 			return;
 		
-		VisualProperty<?> vp = lexicon.lookup(type, vpId);
+		var vp = lexicon.lookup(type, vpId);
 		
 		if (vp != null && lexicon.isSupported(vp))
 			view.setLockedValue(vp, value);
 	}
 	
-	public static Object getVisualProperty(final String vpId, final Class<?> type,
-			final CyNetworkView view, final CyServiceRegistrar serviceRegistrar) {
+	public static Object getVisualProperty(
+			String vpId,
+			Class<?> type,
+			CyNetworkView view,
+			CyServiceRegistrar serviceRegistrar
+	) {
 		if (view != null) {
-			VisualLexicon lexicon = getVisualLexicon(view, serviceRegistrar);
+			var lexicon = getVisualLexicon(view, serviceRegistrar);
 			
 			if (lexicon != null) { // Should never be null, but just in case...
-				VisualProperty<?> vp = lexicon.lookup(type, vpId);
+				var vp = lexicon.lookup(type, vpId);
 				
 				if (vp != null && lexicon.isSupported(vp))
 					return view.getVisualProperty(vp);
@@ -151,16 +165,15 @@ public final class Util {
 		return null;
 	}
 	
-	public static VisualLexicon getVisualLexicon(final CyNetworkView view, final CyServiceRegistrar serviceRegistrar) {
-    	final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
-    	NetworkViewRenderer renderer = applicationManager.getNetworkViewRenderer(view.getRendererId());
-		RenderingEngineFactory<CyNetwork> factory = renderer == null ? null
-				: renderer.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT);
+	public static VisualLexicon getVisualLexicon(CyNetworkView view, CyServiceRegistrar serviceRegistrar) {
+		var applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
+		var renderer = applicationManager.getNetworkViewRenderer(view.getRendererId());
+		var factory = renderer == null ? null : renderer.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT);
 		
 		return factory == null ? null : factory.getVisualLexicon();
 	}
 	
-	public static double squarenessRatio(final double w, final double h) {
+	public static double squarenessRatio(double w, double h) {
 		return Math.abs(1.0 - (w > h ? w / h : h / w));
 	}
 	
@@ -168,11 +181,15 @@ public final class Util {
 		maybeOpenSession(file, owner, serviceRegistrar, null);
 	}
 	
-	public static void maybeOpenSession(File file, Component owner, CyServiceRegistrar serviceRegistrar,
-			TaskObserver observer) {
+	public static void maybeOpenSession(
+			File file,
+			Component owner,
+			CyServiceRegistrar serviceRegistrar,
+			TaskObserver observer
+	) {
 		if (file.exists() && file.canRead()) {
-			final CyNetworkManager netManager = serviceRegistrar.getService(CyNetworkManager.class);
-			final CyTableManager tableManager = serviceRegistrar.getService(CyTableManager.class);
+			var netManager = serviceRegistrar.getService(CyNetworkManager.class);
+			var tableManager = serviceRegistrar.getService(CyTableManager.class);
 			
 			if (netManager.getNetworkSet().isEmpty() && tableManager.getAllTables(false).isEmpty())
 				openSession(file, serviceRegistrar, observer);
@@ -182,8 +199,8 @@ public final class Util {
 	}
 	
 	public static void openSession(File file, CyServiceRegistrar serviceRegistrar, TaskObserver observer) {
-		final OpenSessionTaskFactory taskFactory = serviceRegistrar.getService(OpenSessionTaskFactory.class);
-		final DialogTaskManager taskManager = serviceRegistrar.getService(DialogTaskManager.class);
+		var taskFactory = serviceRegistrar.getService(OpenSessionTaskFactory.class);
+		var taskManager = serviceRegistrar.getService(DialogTaskManager.class);
 		
 		if (observer == null)
 			taskManager.execute(taskFactory.createTaskIterator(file));
@@ -191,8 +208,12 @@ public final class Util {
 			taskManager.execute(taskFactory.createTaskIterator(file), observer);
 	}
 	
-	public static void openSessionWithWarning(File file, Component owner, CyServiceRegistrar serviceRegistrar,
-			TaskObserver observer) {
+	public static void openSessionWithWarning(
+			File file,
+			Component owner,
+			CyServiceRegistrar serviceRegistrar,
+			TaskObserver observer
+	) {
 		if (JOptionPane.showConfirmDialog(
 				owner,
 				"Current session (all networks and tables) will be lost.\nDo you want to continue?",
@@ -201,7 +222,7 @@ public final class Util {
 			openSession(file, serviceRegistrar, observer);
 	}
 	
-	public static URL getURL(final String s) {
+	public static URL getURL(String s) {
 		try {
 			if (s != null)
 				return new URL(s);
@@ -213,5 +234,6 @@ public final class Util {
 	}
 	
 	private Util() {
+		// ...
 	}
 }

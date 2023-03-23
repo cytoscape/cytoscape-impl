@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
@@ -81,8 +80,12 @@ public class NetworkSelectionMediator
 	
 	private final Object lock = new Object();
 
-	public NetworkSelectionMediator(NetworkMainPanel netMainPanel, NetworkViewMainPanel viewMainPanel,
-			RootNetworkManager rootNetManager, CyServiceRegistrar serviceRegistrar) {
+	public NetworkSelectionMediator(
+			NetworkMainPanel netMainPanel,
+			NetworkViewMainPanel viewMainPanel,
+			RootNetworkManager rootNetManager,
+			CyServiceRegistrar serviceRegistrar
+	) {
 		this.netMainPanel = netMainPanel;
 		this.viewMainPanel = viewMainPanel;
 		this.rootNetManager = rootNetManager;
@@ -96,18 +99,18 @@ public class NetworkSelectionMediator
 	}
 
 	@Override
-	public void handleEvent(final SessionAboutToBeLoadedEvent e) {
+	public void handleEvent(SessionAboutToBeLoadedEvent e) {
 		loadingSession = true;
 	}
 	
 	@Override
-	public void handleEvent(final SessionLoadedEvent e) {
+	public void handleEvent(SessionLoadedEvent e) {
 		loadingSession = false;
 	}
 	
 	@Override
-	public void handleEvent(final SetCurrentNetworkEvent e) {
-		final CyNetwork network = e.getNetwork();
+	public void handleEvent(SetCurrentNetworkEvent e) {
+		var network = e.getNetwork();
 		
 		synchronized (lock) {
 			if (same(network, netMainPanel.getCurrentNetwork())) // Nothing has changed!
@@ -123,11 +126,11 @@ public class NetworkSelectionMediator
 	}
 
 	@Override
-	public void handleEvent(final SetCurrentNetworkViewEvent e) {
+	public void handleEvent(SetCurrentNetworkViewEvent e) {
 		if (loadingSession)
 			return;
 		
-		final CyNetworkView view = e.getNetworkView();
+		var view = e.getNetworkView();
 		
 		synchronized (lock) {
 			if (same(view, viewMainPanel.getCurrentNetworkView())) // Nothing has changed!
@@ -143,11 +146,11 @@ public class NetworkSelectionMediator
 	}
 	
 	@Override
-	public void handleEvent(final SetSelectedNetworksEvent e) {
+	public void handleEvent(SetSelectedNetworksEvent e) {
 		if (loadingSession)
 			return;
 		
-		final List<CyNetwork> networks = e.getNetworks();
+		var networks = e.getNetworks();
 		
 		synchronized (lock) {
 			if (equalSets(networks, netMainPanel.getSelectedNetworks(false))) // Nothing has changed!
@@ -163,11 +166,11 @@ public class NetworkSelectionMediator
 	}
 	
 	@Override
-	public void handleEvent(final SetSelectedNetworkViewsEvent e) {
+	public void handleEvent(SetSelectedNetworkViewsEvent e) {
 		if (loadingSession)
 			return;
 		
-		final List<CyNetworkView> views = e.getNetworkViews();
+		var views = e.getNetworkViews();
 		
 		synchronized (lock) {
 			if (equalSets(views, viewMainPanel.getSelectedNetworkViews())) // Nothing has changed!
@@ -182,14 +185,14 @@ public class NetworkSelectionMediator
 		});
 	}
 	
-	private void syncFrom(final CyNetwork currentNet) {
-		CyNetworkView currentView = viewMainPanel.getCurrentNetworkView();
-		Collection<CyNetworkView> selectedViews = viewMainPanel.getSelectedNetworkViews();
-		Collection<CyNetwork> selectedNets = netMainPanel.getSelectedNetworks(false);
+	private void syncFrom(CyNetwork currentNet) {
+		var currentView = viewMainPanel.getCurrentNetworkView();
+		var selectedViews = viewMainPanel.getSelectedNetworkViews();
+		var selectedNets = netMainPanel.getSelectedNetworks(false);
 		
 		if (currentNet != null) {
-			final CyNetworkViewManager viewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
-			final Collection<CyNetworkView> views = viewMgr.getNetworkViews(currentNet);
+			var viewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+			var views = viewMgr.getNetworkViews(currentNet);
 			
 			// If the new current network is not selected, reset the selection and select the current one only
 			if (!selectedNets.contains(currentNet))
@@ -200,13 +203,13 @@ public class NetworkSelectionMediator
 				currentView = views.isEmpty() ? null : views.iterator().next();
 			
 			if (currentView == null)
-				selectedViews = Collections.emptySet();
+				selectedViews = Collections.emptyList();
 			else if (!selectedViews.contains(currentView))
-				selectedViews = Collections.singleton(currentView);
+				selectedViews = Collections.singletonList(currentView);
 		} else {
 			currentView = null;
 			selectedNets = Collections.emptySet();
-			selectedViews = Collections.emptySet();
+			selectedViews = Collections.emptyList();
 		}
 		
 		// First update the UI
@@ -227,10 +230,10 @@ public class NetworkSelectionMediator
 		updateApplicationManager(currentNet, currentView, selectedNets, selectedViews);
 	}
 	
-	private void syncFrom(final CyNetworkView currentView) {
-		CyNetwork currentNet = netMainPanel.getCurrentNetwork();
-		Collection<CyNetworkView> selectedViews = viewMainPanel.getSelectedNetworkViews();
-		Collection<CyNetwork> selectedNets = netMainPanel.getSelectedNetworks(false);
+	private void syncFrom(CyNetworkView currentView) {
+		var currentNet = netMainPanel.getCurrentNetwork();
+		var selectedViews = viewMainPanel.getSelectedNetworkViews();
+		var selectedNets = netMainPanel.getSelectedNetworks(false);
 			
 		// Synchronize the UI first
 		if (currentView != null) {
@@ -240,15 +243,15 @@ public class NetworkSelectionMediator
 				if (selectedNets.contains(currentView.getModel())) {
 					selectedViews.add(currentView);
 				} else {
-					selectedViews = Collections.singleton(currentView);
+					selectedViews = Collections.singletonList(currentView);
 					selectedNets = Collections.singleton(currentNet);
 				}
 			}
 		} else {
 			if (currentNet != null) {
-				final CyNetworkViewManager viewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+				var viewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
 			
-				for (CyNetwork net : selectedNets) {
+				for (var net : selectedNets) {
 					if (viewMgr.viewExists(net)) {
 						currentNet = null;
 						selectedNets = Collections.emptySet();
@@ -257,7 +260,7 @@ public class NetworkSelectionMediator
 				}
 			}
 			
-			selectedViews = Collections.emptySet();
+			selectedViews = Collections.emptyList();
 		}
 		
 		// First update the UI
@@ -278,10 +281,10 @@ public class NetworkSelectionMediator
 		updateApplicationManager(currentNet, currentView, selectedNets, selectedViews);
 	}
 	
-	private void syncFromSelectedNetworks(final Collection<CyNetwork> selectedNets) {
-		CyNetworkView currentView = viewMainPanel.getCurrentNetworkView();
-		CyNetwork currentNet = netMainPanel.getCurrentNetwork();
-		Collection<CyNetworkView> selectedViews = getNetworkViews(selectedNets, serviceRegistrar);
+	private void syncFromSelectedNetworks(Collection<CyNetwork> selectedNets) {
+		var currentView = viewMainPanel.getCurrentNetworkView();
+		var currentNet = netMainPanel.getCurrentNetwork();
+		var selectedViews = getNetworkViews(selectedNets, serviceRegistrar);
 		
 		if (selectedNets.isEmpty()) {
 			currentNet = null;
@@ -291,8 +294,8 @@ public class NetworkSelectionMediator
 				currentNet = selectedNets.iterator().next();
 			
 			if (currentView == null || !currentView.getModel().equals(currentNet)) {
-				final CyNetworkViewManager viewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
-				final Collection<CyNetworkView> views = viewMgr.getNetworkViews(currentNet);
+				var viewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+				var views = viewMgr.getNetworkViews(currentNet);
 				
 				currentView = views == null || views.isEmpty() ? null : views.iterator().next();
 			}
@@ -319,10 +322,10 @@ public class NetworkSelectionMediator
 		updateApplicationManager(currentNet, currentView, selectedNets, selectedViews);
 	}
 	
-	private void syncFromSelectedViews(final Collection<CyNetworkView> selectedViews) {
-		CyNetworkView currentView = viewMainPanel.getCurrentNetworkView();
-		CyNetwork currentNet = netMainPanel.getCurrentNetwork();
-		Collection<CyNetwork> selectedNets = getNetworks(selectedViews);
+	private void syncFromSelectedViews(Collection<CyNetworkView> selectedViews) {
+		var currentView = viewMainPanel.getCurrentNetworkView();
+		var currentNet = netMainPanel.getCurrentNetwork();
+		var selectedNets = getNetworks(selectedViews);
 		
 		// Synchronize the UI first
 		removePropertyChangeListeners();
@@ -334,7 +337,7 @@ public class NetworkSelectionMediator
 				currentView = selectedViews.iterator().next();
 			
 			if (currentView == null) {
-				final CyNetworkViewManager viewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+				var viewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
 				
 				if (currentNet != null && viewMgr.viewExists(currentNet))
 					currentNet = null;
@@ -360,35 +363,39 @@ public class NetworkSelectionMediator
 	private void addPropertyChangeListeners() {
 		removePropertyChangeListeners(); // Just to guarantee we don't add the listeners more than once
 		
-		for (String propName : netPanelPropChangeListener.PROP_NAMES)
+		for (var propName : netPanelPropChangeListener.PROP_NAMES)
 			netMainPanel.addPropertyChangeListener(propName, netPanelPropChangeListener);
 		
-		for (String propName : viewPanelPropChangeListener.PROP_NAMES)
+		for (var propName : viewPanelPropChangeListener.PROP_NAMES)
 			viewMainPanel.addPropertyChangeListener(propName, viewPanelPropChangeListener);
 		
-		for (String propName : gridPanelPropChangeListener.PROP_NAMES)
+		for (var propName : gridPanelPropChangeListener.PROP_NAMES)
 			viewMainPanel.getNetworkViewGrid().addPropertyChangeListener(propName, gridPanelPropChangeListener);
 	}
 	
 	private void removePropertyChangeListeners() {
-		for (String propName : netPanelPropChangeListener.PROP_NAMES)
+		for (var propName : netPanelPropChangeListener.PROP_NAMES)
 			netMainPanel.removePropertyChangeListener(propName, netPanelPropChangeListener);
 		
-		for (String propName : viewPanelPropChangeListener.PROP_NAMES)
+		for (var propName : viewPanelPropChangeListener.PROP_NAMES)
 			viewMainPanel.removePropertyChangeListener(propName, viewPanelPropChangeListener);
 		
-		for (String propName : gridPanelPropChangeListener.PROP_NAMES)
+		for (var propName : gridPanelPropChangeListener.PROP_NAMES)
 			viewMainPanel.getNetworkViewGrid().removePropertyChangeListener(propName, gridPanelPropChangeListener);
 	}
 	
-	private void maybeShowNullView(final CyNetworkView view, final CyNetwork network) {
+	private void maybeShowNullView(CyNetworkView view, CyNetwork network) {
 		if (view == null)
 			viewMainPanel.showNullView(network);
 	}
 	
-	private void updateApplicationManager(final CyNetwork currentNetwork, final CyNetworkView currentView,
-			final Collection<CyNetwork> selectedNetworks, final Collection<CyNetworkView> selectedViews) {
-			final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+	private void updateApplicationManager(
+			CyNetwork currentNetwork,
+			CyNetworkView currentView,
+			Collection<CyNetwork> selectedNetworks,
+			Collection<CyNetworkView> selectedViews
+	) {
+		var appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 		appMgr.setSelectedNetworks(new ArrayList<>(selectedNetworks));
 		appMgr.setCurrentNetwork(currentNetwork);
 		appMgr.setSelectedNetworkViews(new ArrayList<>(selectedViews));
@@ -418,11 +425,11 @@ public class NetworkSelectionMediator
 			if (e.getNewValue() == null || e.getNewValue() instanceof CyRootNetwork)
 				viewMainPanel.showNullView((CyNetwork) e.getNewValue());
 			
-			final CyNetwork net = e.getNewValue() instanceof CySubNetwork ? (CyNetwork) e.getNewValue() : null;
-			final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+			var net = e.getNewValue() instanceof CySubNetwork ? (CyNetwork) e.getNewValue() : null;
+			var appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 			
 			synchronized (lock) {
-				final CyNetwork currentNet = appMgr.getCurrentNetwork();
+				var currentNet = appMgr.getCurrentNetwork();
 				
 				if (same(net, currentNet))
 					return;
@@ -436,10 +443,10 @@ public class NetworkSelectionMediator
 			if (loadingSession)
 				return;
 			
-			final Collection<CyNetwork> selectedNets = (Collection<CyNetwork>) e.getNewValue();
+			var selectedNets = (Collection<CyNetwork>) e.getNewValue();
 			
 			synchronized (lock) {
-				final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+				var appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 				
 				if (equalSets(selectedNets, appMgr.getSelectedNetworks()))
 					return;
@@ -450,7 +457,7 @@ public class NetworkSelectionMediator
 		
 		@SuppressWarnings("unchecked")
 		private void handleSelectedRootNetworksChange(PropertyChangeEvent e) {
-			final Collection<CyRootNetwork> selectedRootNets = (Collection<CyRootNetwork>) e.getNewValue();
+			var selectedRootNets = (Collection<CyRootNetwork>) e.getNewValue();
 			rootNetManager.setSelectedRootNetworks(selectedRootNets);
 		}
 	}
@@ -470,10 +477,10 @@ public class NetworkSelectionMediator
 			if (loadingSession)
 				return;
 			
-			final Collection<CyNetworkView> selectedViews = (Collection<CyNetworkView>) e.getNewValue();
+			var selectedViews = (Collection<CyNetworkView>) e.getNewValue();
 			
 			synchronized (lock) {
-				final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+				var appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 				
 				if (equalSets(selectedViews, appMgr.getSelectedNetworkViews()))
 					return;
@@ -494,11 +501,11 @@ public class NetworkSelectionMediator
 		}
 		
 		private void handleCurrentViewChange(PropertyChangeEvent e) {
-			final CyNetworkView view = (CyNetworkView) e.getNewValue();
-			final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+			var view = (CyNetworkView) e.getNewValue();
+			var appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 			
 			synchronized (lock) {
-				final CyNetworkView currentView = appMgr.getCurrentNetworkView();
+				var currentView = appMgr.getCurrentNetworkView();
 				
 				if (same(view, currentView))
 					return;
