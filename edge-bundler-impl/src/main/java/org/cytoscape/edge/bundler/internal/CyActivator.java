@@ -45,7 +45,7 @@ public class CyActivator extends AbstractCyActivator {
 			EdgeBundlerTaskFactory factory = new EdgeBundlerTaskFactory(0, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, "networkAndView");
-			props.setProperty(PREFERRED_MENU, "Layout.Bundle Edges");
+			props.setProperty(PREFERRED_MENU, "Layout.Bundle Edges[0.09]");
 			props.setProperty(MENU_GRAVITY, "11.0");
 			props.setProperty(TITLE, "All Nodes and Edges");
 			registerAllServices(bc, factory, props);
@@ -54,7 +54,7 @@ public class CyActivator extends AbstractCyActivator {
 			EdgeBundlerTaskFactory factory = new EdgeBundlerTaskFactory(1, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, "networkAndView");
-			props.setProperty(PREFERRED_MENU, "Layout.Bundle Edges");
+			props.setProperty(PREFERRED_MENU, "Layout.Bundle Edges[0.09]");
 			props.setProperty(MENU_GRAVITY, "12.0");
 			props.setProperty(TITLE, "Selected Nodes Only");
 			registerAllServices(bc, factory, props);
@@ -63,7 +63,7 @@ public class CyActivator extends AbstractCyActivator {
 			EdgeBundlerTaskFactory factory = new EdgeBundlerTaskFactory(2, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, "networkAndView");
-			props.setProperty(PREFERRED_MENU, "Layout.Bundle Edges");
+			props.setProperty(PREFERRED_MENU, "Layout.Bundle Edges[0.09]");
 			props.setProperty(MENU_GRAVITY, "13.0");
 			props.setProperty(TITLE, "Selected Edges Only");
 			registerAllServices(bc, factory, props);
