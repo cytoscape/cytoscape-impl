@@ -396,7 +396,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				for (var vpSheet : vpSheets) {
 					if (vpSheet == null) continue; // Shouldn't happen
 					
-					for (var item : vpSheet.getItems()) {
+					for (var item : vpSheet.getAllItems()) {
 						var mapping = item.getModel().getVisualMappingFunction();
 						
 						if (mapping != null) {
@@ -621,7 +621,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	}
 	
 	private void addViewListeners(VisualPropertySheet vpSheet) {
-		for (var vpSheetItem : vpSheet.getItems())
+		for (var vpSheetItem : vpSheet.getAllItems())
 			addViewListeners(vpSheet, vpSheetItem);
 	}
 
@@ -943,7 +943,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				var vpSheets = vizMapperMainPanel.getVisualPropertySheets();
 				
 				for (var sheet : vpSheets) {
-					for (var item : sheet.getItems()) {
+					for (var item : sheet.getAllItems()) {
 						var dep = item.getModel().getVisualPropertyDependency();
 						
 						if (dep != null && !map.containsKey(dep.getIdString())) {
@@ -963,7 +963,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			var vpSheets = vizMapperMainPanel.getVisualPropertySheets();
 			
 			for (var sheet : vpSheets) {
-				for (var item : sheet.getItems()) {
+				for (var item : sheet.getAllItems()) {
 					// Update values
 					var model = item.getModel();
 					var re = vmProxy.getRenderingEngine(model.getLexiconType());
@@ -1224,7 +1224,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		}
 		
 		for (var vpSheet : vizMapperMainPanel.getVisualPropertySheets()) {
-			var vpSheetItems = vpSheet.getItems();
+			var vpSheetItems = vpSheet.getAllItems();
 			
 			for (var item : vpSheetItems) {
 				// First check if this property item must be disabled and show an INFO message
@@ -1250,7 +1250,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			userProps.clear();
 		
 		for (var vpSheet : vizMapperMainPanel.getVisualPropertySheets()) {
-			for (var item : vpSheet.getItems()) {
+			for (var item : vpSheet.getAllItems()) {
 				// Items that are set visible by the user should still be visible when the current style changes.
 				// Items hidden by the user will not be shown again when the current style changes,
 				// unless it has a visual mapping:
@@ -1273,14 +1273,14 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	private void setVisibleItems(VisualPropertySheet vpSheet, boolean visible) {
 		userProps.clear();
 		
-		for (var item : vpSheet.getItems())
+		for (var item : vpSheet.getAllItems())
 			item.setVisible(visible);
 	}
 	
 	private void showDefaultItems(VisualPropertySheet vpSheet) {
 		userProps.clear();
 		
-		for (var item : vpSheet.getItems()) {
+		for (var item : vpSheet.getAllItems()) {
 			var set = defVisibleProps.get(item.getModel().getTargetDataType());
 			var vpId = item.getModel().getId();
 			
@@ -1296,10 +1296,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	private void saveDefaultVisibleItems(VisualPropertySheet vpSheet) {
 		var idSet = new HashSet<String>();
 		
-		for (var item : vpSheet.getItems()) {
-			if (item.isVisible())
-				idSet.add(item.getModel().getId());
-		}
+		for (var item : vpSheet.getAllItems(false))
+			idSet.add(item.getModel().getId());
 		
 		propsProxy.setDefaultVisualProperties(vpSheet.getModel().getLexiconType(), idSet);
 		updateDefaultProps();
@@ -1316,7 +1314,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				for (var col : columns)
 					colTypes.put(col.getName().toLowerCase(), col.getType());
 					
-				for (var item : vpSheet.getItems()) {
+				for (var item : vpSheet.getAllItems()) {
 					var mapping = item.getModel().getVisualMappingFunction();
 					
 					// Passthrough mappings don't need to be updated
@@ -1393,7 +1391,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			var vpSheets = vizMapperMainPanel.getVisualPropertySheets();
 			
 			for (var sheet : vpSheets) {
-				var vpItems = sheet.getItems();
+				var vpItems = sheet.getAllItems();
 				
 				for (var item : vpItems) {
 					var model = item.getModel();
@@ -1597,8 +1595,9 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				if (vpSheet == null)
 					continue;
 				
-				for (var item : vpSheet.getItems()) {
+				for (var item : vpSheet.getAllItems()) {
 					var mapping = item.getModel().getVisualMappingFunction();
+					
 					if (mapping != null && mapping.getMappingColumnName().equalsIgnoreCase(colName))
 						updateMappingStatus(item);
 				}

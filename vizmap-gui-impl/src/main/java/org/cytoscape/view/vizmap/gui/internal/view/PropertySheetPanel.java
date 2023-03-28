@@ -180,8 +180,10 @@ public class PropertySheetPanel {
 		var vpSheet = getSelectedVisualPropertySheet();
 		
 		if (vpSheet != null) {
-			for (var item : vpSheet.getSelectedItems())
-				vpSheet.setVisible(item, false);
+			var visibleList = vpSheet.getAllItems(false);
+			visibleList.removeAll(vpSheet.getSelectedItems());
+			
+			vpSheet.setVisibleItems(visibleList);
 		}
 	}
 	

@@ -78,7 +78,7 @@ public class GenerateDiscreteValuesAction extends AbstractVizMapperAction {
 		if (selVpSheet == null)
 			return;
 		
-		final Set<VisualPropertySheetItem<?>> vpSheetItems = selVpSheet.getSelectedItems();
+		var vpSheetItems = selVpSheet.getSelectedItems();
 		
 		new Thread() {
 			@Override
