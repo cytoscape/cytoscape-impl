@@ -1144,12 +1144,10 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 
 	private void fireSelectedSubNetworksChange(Collection<CyNetwork> oldValue) {
-		System.out.println("-->> " + getSelectedNetworks(false));
 		firePropertyChange("selectedSubNetworks", oldValue, getSelectedNetworks(false));
 	}
 	
 	private void fireSelectedRootNetworksChange(Collection<CyRootNetwork> oldValue) {
-		System.out.println("===> " + getSelectedRootNetworks());
 		firePropertyChange("selectedRootNetworks", oldValue, getSelectedRootNetworks());
 	}
 	

@@ -32,7 +32,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -717,12 +716,16 @@ public class VisualStyleSelector extends JPanel {
 		private final LinkedHashMap<VisualStyle, StylePanel> vsPanelMap = new LinkedHashMap<>();
 		
 		private ListModel<VisualStyle> dataModel;
-		private ListSelectionModel selectionModel;
-		private ListSelectionListener selectionListener;
+		private DefaultListSelectionModel selectionModel;
 		
 		StyleGrid(List<VisualStyle> data) {
-			this.dataModel = new StyleGridModel(data);
-			this.selectionModel = createSelectionModel();
+			dataModel = new StyleGridModel(data);
+			
+			selectionModel = new DefaultListSelectionModel();
+			selectionModel.addListSelectionListener(e -> {
+				fireSelectionValueChanged(e.getFirstIndex(), e.getLastIndex(), e.getValueIsAdjusting());
+			});
+			
 			this.setOpaque(true);
 			this.setBackground(BG_COLOR);
 			
@@ -829,8 +832,7 @@ public class VisualStyleSelector extends JPanel {
 		
 		List<VisualStyle> getSelectedValuesList() {
 			var dm = getModel();
-			var sm = getSelectionModel();
-			int[] selectedIndices = sm.getSelectedIndices();
+			int[] selectedIndices = selectionModel.getSelectedIndices();
 			var selectedItems = new ArrayList<VisualStyle>();
 
 			if (selectedIndices.length > 0) {
@@ -851,14 +853,13 @@ public class VisualStyleSelector extends JPanel {
 
 		void selectAll() {
 			if (getModel().getSize() >= 0)
-				getSelectionModel().setSelectionInterval(0, getModel().getSize() - 1);
+				selectionModel.setSelectionInterval(0, getModel().getSize() - 1);
 		}
 		
 		void deselectAll() {
-			var sm = getSelectionModel();
-			sm.clearSelection();
-			sm.setAnchorSelectionIndex(-1);
-			sm.setLeadSelectionIndex(-1);
+			selectionModel.clearSelection();
+			selectionModel.setAnchorSelectionIndex(-1);
+			selectionModel.setLeadSelectionIndex(-1);
 		}
 		
 		/**
@@ -874,71 +875,63 @@ public class VisualStyleSelector extends JPanel {
 			if (index >= getModel().getSize())
 				return;
 			
-			getSelectionModel().setSelectionInterval(index, index);
+			selectionModel.setSelectionInterval(index, index);
 		}
 		
 		int getMinSelectionIndex() {
-	        return getSelectionModel().getMinSelectionIndex();
+	        return selectionModel.getMinSelectionIndex();
 	    }
 		
 		int getMaxSelectionIndex() {
-	        return getSelectionModel().getMaxSelectionIndex();
+	        return selectionModel.getMaxSelectionIndex();
 	    }
 		
 		boolean isSelectedIndex(int index) {
-	        return getSelectionModel().isSelectedIndex(index);
+	        return selectionModel.isSelectedIndex(index);
 	    }
 		
 		boolean isSelectionEmpty() {
-	        return getSelectionModel().isSelectionEmpty();
+	        return selectionModel.isSelectionEmpty();
 	    }
 		
-		ListSelectionModel getSelectionModel() {
+		DefaultListSelectionModel getSelectionModel() {
 	        return selectionModel;
 	    }
 		
 		void setSelectionInterval(int anchor, int lead) {
-			getSelectionModel().setSelectionInterval(anchor, lead);
+			selectionModel.setSelectionInterval(anchor, lead);
 		}
 
 		void addSelectionInterval(int anchor, int lead) {
-			getSelectionModel().addSelectionInterval(anchor, lead);
+			selectionModel.addSelectionInterval(anchor, lead);
 		}
 
 		void removeSelectionInterval(int index0, int index1) {
-			getSelectionModel().removeSelectionInterval(index0, index1);
+			selectionModel.removeSelectionInterval(index0, index1);
 		}
 		
 		void setSelectedList(List<VisualStyle> styles) {
-			var sm = getSelectionModel();
-			sm.clearSelection();
+			selectionModel.setValueIsAdjusting(true);
 			
-			for (var vs : styles) {
-				int idx = indexOf(vs);
+			try {
+				selectionModel.clearSelection();
+				int maxIdx = -1;
 				
-				if (idx >= 0)
-					sm.addSelectionInterval(idx, idx);
+				for (var vs : styles) {
+					int idx = indexOf(vs);
+					
+					if (idx >= 0) {
+						selectionModel.addSelectionInterval(idx, idx);
+						maxIdx = Math.max(idx, maxIdx);
+					}
+				}
+				
+				selectionModel.setAnchorSelectionIndex(maxIdx);
+				selectionModel.setLeadSelectionIndex(maxIdx);
+			} finally {
+				selectionModel.setValueIsAdjusting(false);
 			}
-			
-			sm.setAnchorSelectionIndex(sm.getMaxSelectionIndex());
-			sm.setLeadSelectionIndex(sm.getMaxSelectionIndex());
 		}
-		
-		void setSelectionModel(ListSelectionModel selectionModel) {
-	        if (selectionModel == null)
-	            throw new IllegalArgumentException("selectionModel must be non null");
-
-	        // Remove the forwarding ListSelectionListener from the old
-	        // selectionModel, and add it to the new one, if necessary.
-	        if (selectionListener != null) {
-	            this.selectionModel.removeListSelectionListener(selectionListener);
-	            selectionModel.addListSelectionListener(selectionListener);
-	        }
-
-	        var oldValue = this.selectionModel;
-	        this.selectionModel = selectionModel;
-	        firePropertyChange("selectionModel", oldValue, selectionModel);
-	    }
 		
 		ListModel<VisualStyle> getModel() {
 			return dataModel;
@@ -1003,29 +996,8 @@ public class VisualStyleSelector extends JPanel {
 	        return null;
 	    }
 		
-		void addListSelectionListener(ListSelectionListener listener) {
-			if (selectionListener == null) {
-				selectionListener = new ListSelectionHandler();
-				getSelectionModel().addListSelectionListener(selectionListener);
-			}
-
-			listenerList.add(ListSelectionListener.class, listener);
-		}
-
-		void removeListSelectionListener(ListSelectionListener listener) {
-			listenerList.remove(ListSelectionListener.class, listener);
-		}
-
-		ListSelectionListener[] getListSelectionListeners() {
-			return listenerList.getListeners(ListSelectionListener.class);
-		}
-		
-		private ListSelectionModel createSelectionModel() {
-	        return new DefaultListSelectionModel();
-	    }
-		
 		protected void fireSelectionValueChanged(int firstIndex, int lastIndex, boolean isAdjusting) {
-			Object[] listeners = listenerList.getListenerList();
+			var listeners = listenerList.getListenerList();
 			ListSelectionEvent e = null;
 
 			for (int i = listeners.length - 2; i >= 0; i -= 2) {
@@ -1186,6 +1158,19 @@ public class VisualStyleSelector extends JPanel {
 				removeSelectionInterval(index, index);
 			else
 				addSelectionInterval(index, index);
+			
+			selectionModel.setValueIsAdjusting(true);
+			
+			if (selectionModel.isSelectedIndex(index)) {
+				selectionModel.setAnchorSelectionIndex(index);
+				selectionModel.moveLeadSelectionIndex(index);
+			} else {
+				index = selectionModel.getMaxSelectionIndex();
+				selectionModel.setAnchorSelectionIndex(index);
+				selectionModel.moveLeadSelectionIndex(index);
+			}
+			
+			selectionModel.setValueIsAdjusting(false);
 		}
 		
 		private void shiftSelectTo(int index) {
@@ -1194,16 +1179,19 @@ public class VisualStyleSelector extends JPanel {
 			if (index < 0 || index >= size)
 				return;
 			
-			var sm = getSelectionModel();
-			int anchor = sm.getAnchorSelectionIndex();
-			int lead = sm.getLeadSelectionIndex();
+			int anchor = selectionModel.getAnchorSelectionIndex();
+			int lead = selectionModel.getLeadSelectionIndex();
+			
+			selectionModel.setValueIsAdjusting(true);
 			
 			// 1. remove everything between anchor and focus (lead)
-			if (anchor >= 0 || lead >= 0)
-				sm.removeIndexInterval(Math.max(0, anchor), Math.max(0, lead));
+			if (anchor != lead && (anchor >= 0 || lead >= 0))
+				selectionModel.removeIndexInterval(Math.max(0, anchor), Math.max(0, lead));
 			
 			// 2. add everything between anchor and the new index, which  should also be made the new lead
-			sm.addSelectionInterval(Math.max(0, anchor), index);
+			selectionModel.addSelectionInterval(Math.max(0, anchor), index);
+			
+			selectionModel.setValueIsAdjusting(false);
 			
 			// 3. Make sure the lead component is focused
 			getItem(index).requestFocusInWindow();
@@ -1279,14 +1267,6 @@ public class VisualStyleSelector extends JPanel {
 			editingTitleItem = null;
 		}
 
-		private class ListSelectionHandler implements ListSelectionListener, Serializable {
-			
-			@Override
-			public void valueChanged(ListSelectionEvent e) {
-				fireSelectionValueChanged(e.getFirstIndex(), e.getLastIndex(), e.getValueIsAdjusting());
-			}
-		}
-		
 		private void setKeyBindings() {
 			var actionMap = this.getActionMap();
 			var inputMap = this.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
