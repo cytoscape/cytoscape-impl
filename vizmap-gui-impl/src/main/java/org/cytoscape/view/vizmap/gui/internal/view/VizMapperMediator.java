@@ -963,6 +963,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			var vpSheets = vizMapperMainPanel.getVisualPropertySheets();
 			
 			for (var sheet : vpSheets) {
+				var visibleList = new ArrayList<VisualPropertySheetItem<?>>();
+				
 				for (var item : sheet.getAllItems()) {
 					// Update values
 					var model = item.getModel();
@@ -974,8 +976,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 					
 					// Also make sure items with mappings are visible
 					if (model.getVisualMappingFunction() != null)
-						item.setVisible(true);
+						visibleList.add(item);
 				}
+				
+				sheet.setVisibleItems(visibleList);
 			}
 			
 			if (resetDefaultVisibleItems)
@@ -1066,12 +1070,12 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 					}
 					{
 						var mi = new JMenuItem("Show All");
-						mi.addActionListener(evt -> setVisibleItems(vpSheet, true));
+						mi.addActionListener(evt -> setAllItemsVisible(vpSheet, true));
 						vpSheet.getVpsMenu().add(mi);
 					}
 					{
 						var mi = new JMenuItem("Hide All");
-						mi.addActionListener(evt -> setVisibleItems(vpSheet, false));
+						mi.addActionListener(evt -> setAllItemsVisible(vpSheet, false));
 						vpSheet.getVpsMenu().add(mi);
 					}
 				}
@@ -1250,6 +1254,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			userProps.clear();
 		
 		for (var vpSheet : vizMapperMainPanel.getVisualPropertySheets()) {
+			var visibleList = new ArrayList<VisualPropertySheetItem<?>>();
+			
 			for (var item : vpSheet.getAllItems()) {
 				// Items that are set visible by the user should still be visible when the current style changes.
 				// Items hidden by the user will not be shown again when the current style changes,
@@ -1265,20 +1271,26 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				// ...or that were set visible by the user
 				b = b || Boolean.TRUE.equals(userProps.get(vpId));
 				
-				item.setVisible(b);
+				if (b)
+					visibleList.add(item);
 			}
+			
+			vpSheet.setVisibleItems(visibleList);
 		}
 	}
 	
-	private void setVisibleItems(VisualPropertySheet vpSheet, boolean visible) {
+	private void setAllItemsVisible(VisualPropertySheet vpSheet, boolean visible) {
 		userProps.clear();
 		
-		for (var item : vpSheet.getAllItems())
-			item.setVisible(visible);
+		if (visible)
+			vpSheet.setVisibleItems(vpSheet.getAllItems());
+		else
+			vpSheet.setVisibleItems(Collections.emptyList());
 	}
 	
 	private void showDefaultItems(VisualPropertySheet vpSheet) {
 		userProps.clear();
+		var visibleList = new ArrayList<VisualPropertySheetItem<?>>();
 		
 		for (var item : vpSheet.getAllItems()) {
 			var set = defVisibleProps.get(item.getModel().getTargetDataType());
@@ -1289,8 +1301,11 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			// ...but still show properties that have a mapping
 			b = b || item.getModel().getVisualMappingFunction() != null;
 			
-			item.setVisible(b);
+			if (b)
+				visibleList.add(item);
 		}
+		
+		vpSheet.setVisibleItems(visibleList);
 	}
 	
 	private void saveDefaultVisibleItems(VisualPropertySheet vpSheet) {
