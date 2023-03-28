@@ -406,6 +406,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		setFocusable(true);
 		setBackground(getBackgroundColor());
 		setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, getButtonBorderColor()));
+		
 		setLayout(new BorderLayout());
 		
 		add(getTopPnl(), BorderLayout.NORTH);
@@ -553,7 +554,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			
 			if (mapping == null) {
 				// Create the properties for a new visual mapping
-				var vp = (VisualProperty<?>) model.getVisualProperty();
+				var vp = model.getVisualProperty();
 				vizMapPropertyBuilder.buildProperty(vp, propSheetPnl, model.getTableType(), forColumn);
 			} else {
 				// There is already a visual mapping for this style's property

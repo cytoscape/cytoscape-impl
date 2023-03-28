@@ -1,5 +1,27 @@
 package org.cytoscape.view.vizmap.gui.internal.action;
 
+import java.awt.event.ActionEvent;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeSet;
+
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
+import org.cytoscape.view.vizmap.gui.internal.event.CellType;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.FitLabelMappingGenerator;
+import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.NumberSeriesMappingGenerator;
+import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RandomNumberMappingGenerator;
+import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheetItem;
+import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
+import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
+import org.cytoscape.work.undo.AbstractCyEdit;
+import org.cytoscape.work.undo.UndoSupport;
+
+import com.l2fprod.common.propertysheet.PropertySheetTableModel.Item;
+
 /*
  * #%L
  * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
@@ -24,37 +46,6 @@ package org.cytoscape.view.vizmap.gui.internal.action;
  * #L%
  */
 
-import java.awt.event.ActionEvent;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.Map.Entry;
-
-import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.view.vizmap.VisualMappingFunction;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
-import org.cytoscape.view.vizmap.gui.internal.event.CellType;
-import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
-import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.FitLabelMappingGenerator;
-import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.NumberSeriesMappingGenerator;
-import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RandomNumberMappingGenerator;
-import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheet;
-import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheetItem;
-import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheetItemModel;
-import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
-import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
-import org.cytoscape.work.undo.AbstractCyEdit;
-import org.cytoscape.work.undo.UndoSupport;
-
-import com.l2fprod.common.propertysheet.Property;
-import com.l2fprod.common.propertysheet.PropertySheetPanel;
-import com.l2fprod.common.propertysheet.PropertySheetTableModel.Item;
-
 public class GenerateDiscreteValuesAction extends AbstractVizMapperAction {
 
 	private static final long serialVersionUID = 3227895615738968589L;
@@ -63,8 +54,7 @@ public class GenerateDiscreteValuesAction extends AbstractVizMapperAction {
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public GenerateDiscreteValuesAction(final String name, final DiscreteMappingGenerator<?> generator,
-			final ServicesUtil servicesUtil) {
+	public GenerateDiscreteValuesAction(String name, DiscreteMappingGenerator<?> generator, ServicesUtil servicesUtil) {
 		super(name, servicesUtil);
 		this.generator = generator;
 	}
@@ -72,8 +62,8 @@ public class GenerateDiscreteValuesAction extends AbstractVizMapperAction {
 	// ==[ PUBLIC METHODS ]=============================================================================================
 	
 	@Override
-	public void actionPerformed(final ActionEvent e) {
-		final VisualPropertySheet selVpSheet = getVizMapperMainPanel().getSelectedVisualPropertySheet();
+	public void actionPerformed(ActionEvent e) {
+		var selVpSheet = getVizMapperMainPanel().getSelectedVisualPropertySheet();
 		
 		if (selVpSheet == null)
 			return;
@@ -83,23 +73,21 @@ public class GenerateDiscreteValuesAction extends AbstractVizMapperAction {
 		new Thread() {
 			@Override
 			public void run() {
-				final Map<DiscreteMapping<?, ?>, Map<Object, Object>> previousMappingValues = 
-						new HashMap<DiscreteMapping<?,?>, Map<Object, Object>>();
-				final Map<DiscreteMapping<?, ?>, Map<Object, ?>> newMappingValues = 
-						new HashMap<DiscreteMapping<?,?>, Map<Object, ?>>();
+				var previousMappingValues = new HashMap<DiscreteMapping<?, ?>, Map<Object, Object>>();
+				var newMappingValues = new HashMap<DiscreteMapping<?, ?>, Map<Object, ?>>();
 				
-				for (final VisualPropertySheetItem<?> vpsItem : vpSheetItems) {
-					final VisualPropertySheetItemModel<?> model = vpsItem.getModel();
+				for (var vpsItem : vpSheetItems) {
+					var model = vpsItem.getModel();
 			
-					final VisualProperty<?> vp = (VisualProperty<?>) model.getVisualProperty();
-					final Class<?> vpValueType = vp.getRange().getType();
-					final Class<?> generatorType = generator.getDataType();
+					var vp = model.getVisualProperty();
+					var vpValueType = vp.getRange().getType();
+					var generatorType = generator.getDataType();
 		
-					final PropertySheetPanel propSheetPnl = vpsItem.getPropSheetPnl();
-					final Item value = (Item) propSheetPnl.getTable().getValueAt(0, 0);
+					var propSheetPnl = vpsItem.getPropSheetPnl();
+					var value = (Item) propSheetPnl.getTable().getValueAt(0, 0);
 					
 					if (value.isProperty()) {
-						final VizMapperProperty<?, ?, ?> prop = (VizMapperProperty<?, ?, ?>) value.getProperty();
+						var prop = (VizMapperProperty<?, ?, ?>) value.getProperty();
 					
 						if ( vpValueType.isAssignableFrom(generatorType)
 								|| ((generator instanceof NumberSeriesMappingGenerator 
@@ -112,7 +100,7 @@ public class GenerateDiscreteValuesAction extends AbstractVizMapperAction {
 				
 				// Undo support
 				if (!previousMappingValues.isEmpty()) {
-					final UndoSupport undo = servicesUtil.get(UndoSupport.class);
+					var undo = servicesUtil.get(UndoSupport.class);
 					undo.postEdit(new GenerateValuesEdit(previousMappingValues, newMappingValues));
 				}
 			}
@@ -122,16 +110,16 @@ public class GenerateDiscreteValuesAction extends AbstractVizMapperAction {
 	@Override
 	public void updateEnableState() {
 		boolean enabled = false;
-		final VisualPropertySheet vpSheet = getVizMapperMainPanel().getSelectedVisualPropertySheet();
+		var vpSheet = getVizMapperMainPanel().getSelectedVisualPropertySheet();
 		
 		if (vpSheet != null) {
-			for (final VisualPropertySheetItem<?> item : vpSheet.getSelectedItems()) {
-				final VisualMappingFunction<?, ?> mapping = item.getModel().getVisualMappingFunction();
+			for (var item : vpSheet.getSelectedItems()) {
+				var mapping = item.getModel().getVisualMappingFunction();
 				
 				if (mapping != null && mapping instanceof DiscreteMapping) {
-					final VisualProperty<?> vp = item.getModel().getVisualProperty();
-					final Class<?> vpValueType = vp.getRange().getType();
-					final Class<?> generatorType = generator.getDataType();
+					var vp = item.getModel().getVisualProperty();
+					var vpValueType = vp.getRange().getType();
+					var generatorType = generator.getDataType();
 					
 					if (generator instanceof FitLabelMappingGenerator) {
 						enabled = vp == BasicVisualLexicon.NODE_SIZE || vp == BasicVisualLexicon.NODE_WIDTH;
@@ -159,25 +147,27 @@ public class GenerateDiscreteValuesAction extends AbstractVizMapperAction {
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void generateValues(final VisualPropertySheetItem<?> vpsItem,
-								final String attrName,
-								final VisualProperty<?> vp,
-								final Map<DiscreteMapping<?, ?>, Map<Object, Object>> previousMappingValues,
-								final Map<DiscreteMapping<?, ?>, Map<Object, ?>> newMappingValues) {
-		final VisualStyle style = servicesUtil.get(VisualMappingManager.class).getCurrentVisualStyle();
-		final VisualMappingFunction<?, ?> mapping = style.getVisualMappingFunction(vp);
+	private void generateValues(
+			VisualPropertySheetItem<?> vpsItem,
+			String attrName,
+			VisualProperty<?> vp,
+			Map<DiscreteMapping<?, ?>, Map<Object, Object>> previousMappingValues,
+			Map<DiscreteMapping<?, ?>, Map<Object, ?>> newMappingValues
+	) {
+		var style = servicesUtil.get(VisualMappingManager.class).getCurrentVisualStyle();
+		var mapping = style.getVisualMappingFunction(vp);
 
 		if (!(mapping instanceof DiscreteMapping))
 			return;
 
-		final DiscreteMapping<Object, Object> dm = (DiscreteMapping) mapping;
-		final PropertySheetPanel propSheetPnl = vpsItem.getPropSheetPnl();
-		final SortedSet<Object> keySet = new TreeSet<Object>();
+		var dm = (DiscreteMapping) mapping;
+		var propSheetPnl = vpsItem.getPropSheetPnl();
+		var keySet = new TreeSet<Object>();
 
-		final Map<Object, Object> previousValues = new HashMap<Object, Object>();
+		var previousValues = new HashMap<Object, Object>();
 		
-		for (final Property p : propSheetPnl.getProperties()) {
-			final VizMapperProperty<?, ?, ?> vmp = (VizMapperProperty<?, ?, ?>) p;
+		for (var p : propSheetPnl.getProperties()) {
+			var vmp = (VizMapperProperty<?, ?, ?>) p;
 			
 			if (vmp.getCellType().equals(CellType.DISCRETE)) {
 				keySet.add(vmp.getKey());
@@ -189,7 +179,7 @@ public class GenerateDiscreteValuesAction extends AbstractVizMapperAction {
 
 		if (!keySet.isEmpty()) {
 			// Generate values
-			final Map<Object, ?> newValues = generator.generateMap(keySet);
+			var newValues = generator.generateMap(keySet);
 			
 			// Save the mapping->old_values for undo
 			previousMappingValues.put(dm, previousValues);
@@ -208,8 +198,10 @@ public class GenerateDiscreteValuesAction extends AbstractVizMapperAction {
 		private final Map<DiscreteMapping<?, ?>, Map<Object, Object>> previousMappingValues;
 		private final Map<DiscreteMapping<?, ?>, Map<Object, ?>> newMappingValues;
 		
-		public GenerateValuesEdit(final Map<DiscreteMapping<?, ?>, Map<Object, Object>> previousMappingValues,
-								  final Map<DiscreteMapping<?, ?>, Map<Object, ?>> newMappingValues) {
+		public GenerateValuesEdit(
+				Map<DiscreteMapping<?, ?>, Map<Object, Object>> previousMappingValues,
+				Map<DiscreteMapping<?, ?>, Map<Object, ?>> newMappingValues
+		) {
 			super("Mapping Value Generators");
 			this.previousMappingValues = previousMappingValues;
 			this.newMappingValues = newMappingValues;
@@ -218,49 +210,44 @@ public class GenerateDiscreteValuesAction extends AbstractVizMapperAction {
 		@Override
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		public void undo() {
-			for (final Entry<DiscreteMapping<?, ?>, Map<Object, Object>> entry : previousMappingValues.entrySet()) {
-				final DiscreteMapping dm = entry.getKey();
-				dm.putAll(entry.getValue());
+			for (var entry : previousMappingValues.entrySet()) {
+				var dm = entry.getKey();
+				dm.putAll((Map) entry.getValue());
 			}
 		}
 
 		@Override
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		public void redo() {
-			for (final Entry<DiscreteMapping<?, ?>, Map<Object, ?>> entry : newMappingValues.entrySet()) {
-				final DiscreteMapping dm = entry.getKey();
-				dm.putAll(entry.getValue());
+			for (var entry : newMappingValues.entrySet()) {
+				var dm = entry.getKey();
+				dm.putAll((Map) entry.getValue());
 			}
 		}
 	}
 
 	@Override
 	public void setIsInMenuBar(boolean b) {
-		// TODO Auto-generated method stub
-		
+		// Ignore...
 	}
 
 	@Override
 	public void setIsInToolBar(boolean b) {
-		// TODO Auto-generated method stub
-		
+		// Ignore...
 	}
 
 	@Override
 	public void setPreferredMenu(String menu) {
-		// TODO Auto-generated method stub
-		
+		// Ignore...
 	}
 
 	@Override
 	public void setToolbarGravity(float f) {
-		// TODO Auto-generated method stub
-		
+		// Ignore...
 	}
 
 	@Override
 	public void setMenuGravity(float f) {
-		// TODO Auto-generated method stub
-		
+		// Ignore...
 	}
 }
