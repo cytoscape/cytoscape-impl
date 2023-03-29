@@ -35,7 +35,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
-import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -223,7 +222,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			rootNetworkScroll.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
 			rootNetworkScroll.addComponentListener(new ComponentAdapter() {
 				@Override
-				public void componentResized(ComponentEvent e) {
+				public void componentResized(ComponentEvent evt) {
 					getRootNetworkListPanel().updateScrollableTracksViewportHeight();
 				}
 			});
@@ -582,14 +581,14 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			
 			var item = rootNetPanel;
 			
-			item.addPropertyChangeListener("expanded", e -> {
+			item.addPropertyChangeListener("expanded", evt -> {
 				if (ignoreExpandedEvents)
 					return;
 				
 				var selectedItems = getSelectedItems();
 				
 				if (!selectedItems.isEmpty()) {
-					boolean expanded = Boolean.TRUE.equals(e.getNewValue());
+					boolean expanded = Boolean.TRUE.equals(evt.getNewValue());
 					
 					// Adjust Selection Model's anchor/lead, because the visible indexes have changed
 					int anchor = -1;
@@ -617,9 +616,9 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 				
 				updateCollapseExpandButtons();
 			});
-			item.addPropertyChangeListener("selected", e -> {
+			item.addPropertyChangeListener("selected", evt -> {
 				if (!ignoreSelectionEvents) {
-					boolean selected = (boolean) e.getNewValue();
+					boolean selected = (boolean) evt.getNewValue();
 					var oldSelection = getSelectedRootNetworks();
 					
 					if (selected) // Then it did not belong to the old selection value
@@ -638,11 +637,11 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		var subNetPanel = rootNetPanel.addItem(network);
 		setKeyBindings(subNetPanel);
 		
-		subNetPanel.addPropertyChangeListener("selected", (PropertyChangeEvent e) -> {
+		subNetPanel.addPropertyChangeListener("selected", evt -> {
 			if (!ignoreSelectionEvents) {
 				updateNetworkSelectionLabel();
 				
-				boolean selected = (boolean) e.getNewValue();
+				boolean selected = (boolean) evt.getNewValue();
 				var oldSelection = getSelectedNetworks(false);
 				
 				if (selected) // Then it did not belong to the old selection value
@@ -656,7 +655,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		});
 		subNetPanel.getViewIconLabel().addMouseListener(new MouseAdapter() {
 			@Override
-			public void mousePressed(MouseEvent e) {
+			public void mousePressed(MouseEvent evt) {
 				maybeShowViewPopup(subNetPanel);
 			}
 		});
@@ -1038,24 +1037,24 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		return list;
 	}
 	
-	protected void onMousePressedItem(MouseEvent e, AbstractNetworkPanel<?> item) {
+	protected void onMousePressedItem(MouseEvent evt, AbstractNetworkPanel<?> item) {
 		item.requestFocusInWindow();
 		
-		if (!e.isPopupTrigger() && SwingUtilities.isLeftMouseButton(e)) {
+		if (!evt.isPopupTrigger() && SwingUtilities.isLeftMouseButton(evt)) {
 			// LEFT-CLICK...
 			boolean isMac = LookAndFeelUtil.isMac();
-			boolean isControlDown = (isMac && e.isMetaDown()) || (!isMac && e.isControlDown());
+			boolean isControlDown = (isMac && evt.isMetaDown()) || (!isMac && evt.isControlDown());
 			
 			if (isControlDown) {
 				// COMMAND button down on MacOS or CONTROL button down on another OS.
 				// Toggle this item's selection state
 				toggleSelection(item);
-			} else if (e.isShiftDown()) {
+			} else if (evt.isShiftDown()) {
 				// SHIFT key pressed...
 				var allItems = getAllItems(false);
 				int index = allItems.indexOf(item);
 				shiftSelectTo(index);
-			} else if (e.getClickCount() == 2) {
+			} else if (evt.getClickCount() == 2) {
 				// Rename Network...
 				var network = item.getModel().getNetwork();
 				var factory = serviceRegistrar.getService(EditNetworkTitleTaskFactory.class);
@@ -1196,8 +1195,8 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			filler.setBackground(getBackground());
 			filler.addMouseListener(new MouseAdapter() {
 				@Override
-				public void mousePressed(MouseEvent e) {
-					if (!e.isPopupTrigger())
+				public void mousePressed(MouseEvent evt) {
+					if (!evt.isPopupTrigger())
 						deselectAll();
 				}
 			});
@@ -1316,7 +1315,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 				
 				rootNetworkPanel.addComponentListener(new ComponentAdapter() {
 					@Override
-					public void componentResized(ComponentEvent e) {
+					public void componentResized(ComponentEvent evt) {
 						updateScrollableTracksViewportHeight();
 					}
 				});
@@ -1412,28 +1411,29 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			
 			viewDialog.addWindowFocusListener(new WindowFocusListener() {
 				@Override
-				public void windowLostFocus(WindowEvent e) {
+				public void windowLostFocus(WindowEvent evt) {
 					if (viewDialog != null)
 						viewDialog.dispose();
 				}
 				@Override
-				public void windowGainedFocus(WindowEvent e) {
+				public void windowGainedFocus(WindowEvent evt) {
+					// Ignore...
 				}
 			});
 			viewDialog.addWindowListener(new WindowAdapter() {
 				@Override
-				public void windowClosed(WindowEvent e) {
+				public void windowClosed(WindowEvent evt) {
 					viewDialog = null;
 				}
 			});
 			viewDialog.addKeyListener(new KeyAdapter() {
 				@Override
-				public void keyPressed(KeyEvent e) {
-					if (e.getKeyCode() == KeyEvent.VK_ESCAPE && viewDialog != null)
+				public void keyPressed(KeyEvent evt) {
+					if (evt.getKeyCode() == KeyEvent.VK_ESCAPE && viewDialog != null)
 						viewDialog.dispose();
 				}
 			});
-			viewDialog.addPropertyChangeListener("currentNetworkView", (PropertyChangeEvent evt) -> {
+			viewDialog.addPropertyChangeListener("currentNetworkView", evt -> {
 				// TODO Move to NetworkSelectionMediator
 				serviceRegistrar.getService(CyApplicationManager.class)
 						.setCurrentNetworkView((CyNetworkView) evt.getNewValue());
@@ -1575,13 +1575,13 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		}
 
 		@Override
-		public void actionPerformed(ActionEvent e) {
+		public void actionPerformed(ActionEvent evt) {
 			var allItems = getAllItems(false);
 			
 			if (allItems.isEmpty())
 				return;
 			
-			var cmd = e.getActionCommand();
+			var cmd = evt.getActionCommand();
 			boolean shift = cmd.startsWith("VK_SHIFT_");
 			int idx = selectionModel.getLeadSelectionIndex();
 			int newIdx = idx;
@@ -1646,10 +1646,12 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 
 		@Override
 		public void dragOver(DropTargetDragEvent evt) {
+			// Ignore...
 		}
 		
 		@Override
 		public void dropActionChanged(DropTargetDragEvent evt) {
+			// Ignore...
 		}
 
 		@Override
