@@ -1085,7 +1085,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			fireSelectedNetworksEvent = false;
 			
 			try {
-				selectionModel.removeIndexInterval(Math.max(0, anchor), Math.max(0, lead));
+				selectionModel.removeSelectionInterval(Math.max(0, anchor), Math.max(0, lead));
 			} finally {
 				fireSelectedNetworksEvent = true;
 			}

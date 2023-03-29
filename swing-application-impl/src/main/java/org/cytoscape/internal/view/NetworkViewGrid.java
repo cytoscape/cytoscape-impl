@@ -448,7 +448,7 @@ public class NetworkViewGrid extends JPanel {
 			fireSelectedNetworkViewsEvent = false;
 			
 			try {
-				selectionModel.removeIndexInterval(Math.max(0, anchor), Math.max(0, lead));
+				selectionModel.removeSelectionInterval(Math.max(0, anchor), Math.max(0, lead));
 			} finally {
 				fireSelectedNetworkViewsEvent = true;
 			}

@@ -706,7 +706,7 @@ public class VisualPropertySheet extends JPanel{
 		
 		// 1. remove everything between anchor and focus (lead)
 		if (anchor != lead && (anchor >= 0 || lead >= 0))
-			selectionModel.removeIndexInterval(Math.max(0, anchor), Math.max(0, lead));
+			selectionModel.removeSelectionInterval(Math.max(0, anchor), Math.max(0, lead));
 		
 		// 2. add everything between anchor and the new index, which  should also be made the new lead
 		selectionModel.addSelectionInterval(Math.max(0, anchor), index);
