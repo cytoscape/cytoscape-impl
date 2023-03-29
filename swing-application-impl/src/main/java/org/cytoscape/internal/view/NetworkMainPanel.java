@@ -596,10 +596,9 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 					int lead = -1;
 					
 					if (expanded) {
-						// When expanded, just use the first/last selection indexes as the new anchor/lead
+						// When expanded, just use the last selection indexes as the new anchor/lead
 						var allItems = getAllItems(false);
-						anchor = allItems.indexOf(selectedItems.get(0));
-						lead = allItems.indexOf(selectedItems.get(selectedItems.size() - 1));
+						anchor = lead = allItems.indexOf(selectedItems.get(0));
 					}
 						
 					selectionModel.setValueIsAdjusting(true);

@@ -290,7 +290,7 @@ public class VisualPropertySheet extends JPanel{
 		 return list;
 	}
 	
-	public synchronized void setSelectedItems(Set<VisualPropertySheetItem<?>> selectedItems) {
+	public synchronized void setSelectedItems(Collection<VisualPropertySheetItem<?>> selectedItems) {
 		selectionModel.setValueIsAdjusting(true);
 		
 		try {
@@ -769,13 +769,28 @@ public class VisualPropertySheet extends JPanel{
 	}
 	
 	private void toggleVisibility(VisualPropertySheetItem<?> item) {
-		if (item.isVisible() && item.isSelected()) // will be hidden in the next step, so deselect it first
-			toggleSelection(item);
-		
+		if (item.isVisible()) {
+			// This item will be hidden in the next step, so deselect it first, if necessary
+			if (item.isSelected())
+				toggleSelection(item);
+		} else {
+			// This item will be shown in the next step and we want it to be the only one selected,
+			// so clear the selection first, before the indexes change
+			// (after hiding an item, the selection model won't have access to it anymore,
+			// as the selection model only handle visible items)
+			deselectAll();
+		}
+			
 		item.setVisible(!item.isVisible());
 		
-		if (item.isVisible()) // Select this item
+		if (item.isVisible()) {
+			// Select this item
 			setSelectedItems(Collections.singleton(item));
+		} else {
+			// Always select the items again to make sure the model's indexes are updated
+			var selectedItems = getSelectedItems();
+			setSelectedItems(selectedItems);
+		}
 	}
 	
 	// ==[ CLASSES ]====================================================================================================
