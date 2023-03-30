@@ -1,5 +1,16 @@
 package org.cytoscape.view.vizmap.gui.internal.task;
 
+import java.util.HashSet;
+
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.view.vizmap.VisualMappingFunction;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.gui.VizMapGUI;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMainPanel;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
@@ -24,21 +35,6 @@ package org.cytoscape.view.vizmap.gui.internal.task;
  * #L%
  */
 
-import java.util.HashSet;
-import java.util.Set;
-
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.view.vizmap.VisualMappingFunction;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.view.vizmap.gui.VizMapGUI;
-import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
-import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheet;
-import org.cytoscape.view.vizmap.gui.internal.view.VisualPropertySheetItem;
-import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMainPanel;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
-
 public class RemoveVisualMappingsTaskFactory extends AbstractTaskFactory {
 
 	private final ServicesUtil servicesUtil;
@@ -49,15 +45,15 @@ public class RemoveVisualMappingsTaskFactory extends AbstractTaskFactory {
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		final VisualStyle style = servicesUtil.get(VisualMappingManager.class).getCurrentVisualStyle();
-		final Set<VisualMappingFunction<?, ?>> mappings = new HashSet<VisualMappingFunction<?,?>>();
-		final VizMapGUI gui = servicesUtil.get(VizMapGUI.class);
+		var style = servicesUtil.get(VisualMappingManager.class).getCurrentVisualStyle();
+		var mappings = new HashSet<VisualMappingFunction<?,?>>();
+		var gui = servicesUtil.get(VizMapGUI.class);
 		
 		if (gui instanceof VizMapperMainPanel) {
-			final VisualPropertySheet vpSheet = ((VizMapperMainPanel)gui).getSelectedVisualPropertySheet();
-			final Set<VisualPropertySheetItem<?>> selectedItems = vpSheet.getSelectedItems();
+			var vpSheet = ((VizMapperMainPanel)gui).getSelectedVisualPropertySheet();
+			var selectedItems = vpSheet.getSelectedItems();
 			
-			for (VisualPropertySheetItem<?> item : selectedItems) {
+			for (var item : selectedItems) {
 				if (item.getModel().getVisualMappingFunction() != null)
 					mappings.add(item.getModel().getVisualMappingFunction());
 			}
@@ -68,13 +64,13 @@ public class RemoveVisualMappingsTaskFactory extends AbstractTaskFactory {
 	
 	@Override
 	public boolean isReady() {
-		final VizMapGUI gui = servicesUtil.get(VizMapGUI.class);
+		var gui = servicesUtil.get(VizMapGUI.class);
 		
 		if (gui instanceof VizMapperMainPanel) {
-			final VisualPropertySheet vpSheet = ((VizMapperMainPanel)gui).getSelectedVisualPropertySheet();
+			var vpSheet = ((VizMapperMainPanel)gui).getSelectedVisualPropertySheet();
 			
 			if (vpSheet.getModel().getLexiconType() != CyNetwork.class) {
-				for (final VisualPropertySheetItem<?> item : vpSheet.getSelectedItems()) {
+				for (var item : vpSheet.getSelectedItems()) {
 					if (item.getModel().getVisualMappingFunction() != null)
 						return true;
 				}

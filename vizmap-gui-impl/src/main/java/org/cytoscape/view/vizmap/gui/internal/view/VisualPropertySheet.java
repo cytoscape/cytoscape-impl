@@ -11,32 +11,29 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.Collator;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.NavigableSet;
 import java.util.PriorityQueue;
-import java.util.Queue;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListSelectionModel;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -49,11 +46,9 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
-import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
 
@@ -99,15 +94,15 @@ public class VisualPropertySheet extends JPanel{
 	private final Map<String/*dependency ID*/, VisualPropertySheetItem<?>> depItemMap;
 	private final Map<VisualPropertySheetItem<?>, JCheckBoxMenuItem> menuItemMap;
 	
-	private VisualPropertySheetItem<?> selectionHead;
-	private VisualPropertySheetItem<?> selectionTail;
+	private DefaultListSelectionModel selectionModel;
+	
 	private boolean doNotUpdateCollapseExpandButtons;
 	
 	private final ServicesUtil servicesUtil;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public VisualPropertySheet(final VisualPropertySheetModel model, final ServicesUtil servicesUtil) {
+	public VisualPropertySheet(VisualPropertySheetModel model, ServicesUtil servicesUtil) {
 		if (model == null)
 			throw new IllegalArgumentException("'model' must not be null");
 		if (servicesUtil == null)
@@ -121,6 +116,27 @@ public class VisualPropertySheet extends JPanel{
 		depItemMap = new HashMap<>();
 		menuItemMap = new HashMap<>();
 		
+		selectionModel = new DefaultListSelectionModel();
+		// Here is where we listen to the changed indexes in order to select/deselect the the actual items
+		selectionModel.addListSelectionListener(evt -> {
+			if (!evt.getValueIsAdjusting()) {
+				var allItems = getAllItems(false);
+				int first = evt.getFirstIndex();
+				int last = evt.getLastIndex();
+				
+				for (int i = first; i <= last; i++) {
+					if (i >= allItems.size())
+						break;
+					
+					var p = allItems.get(i);
+					boolean selected = selectionModel.isSelectedIndex(i);
+					
+					if (p.isSelected() != selected)
+						p.setSelected(selected);
+				}
+			}
+		});
+		
 		init();
 	}
 
@@ -130,7 +146,7 @@ public class VisualPropertySheet extends JPanel{
 		return model;
 	}
 	
-	public void setItems(final Set<VisualPropertySheetItem<?>> newItems) {
+	public void setItems(Set<VisualPropertySheetItem<?>> newItems) {
 		// Remove current items
 		vpItemMap.clear();
 		depItemMap.clear();
@@ -140,8 +156,8 @@ public class VisualPropertySheet extends JPanel{
 			items.addAll(newItems);
 			
 			// Create the internal panel that contains the visual property editors
-			final JPanel p = new JPanel(new GridBagLayout());
-			final GridBagConstraints c = new GridBagConstraints();
+			var p = new JPanel(new GridBagLayout());
+			var c = new GridBagConstraints();
 			c.fill = GridBagConstraints.HORIZONTAL;
 			c.anchor = GridBagConstraints.FIRST_LINE_START;
 			c.gridx = 0;
@@ -151,7 +167,7 @@ public class VisualPropertySheet extends JPanel{
 			int y = 0;
 			int minWidth = 120;
 			
-			for (final VisualPropertySheetItem<?> i : items) {
+			for (var i : items) {
 				c.gridy = y++;
 				p.add(i, c);
 				
@@ -164,7 +180,7 @@ public class VisualPropertySheet extends JPanel{
 				// Add listeners
 				i.addMouseListener(new MouseAdapter() {
 					@Override
-					public void mousePressed(final MouseEvent e) {
+					public void mousePressed(MouseEvent e) {
 						onMousePressedItem(e, i);
 					}
 				});
@@ -172,13 +188,11 @@ public class VisualPropertySheet extends JPanel{
 				if (i.getModel().isVisualMappingAllowed()) {
 					i.addComponentListener(new ComponentAdapter() {
 						@Override
-						public void componentShown(final ComponentEvent e) {
+						public void componentShown(ComponentEvent e) {
 							updateCollapseExpandButtons();
 						}
 						@Override
-						public void componentHidden(final ComponentEvent e) {
-							if (selectionHead == i) selectionHead = null;
-							if (selectionTail == i) selectionTail = null;
+						public void componentHidden(ComponentEvent e) {
 							updateCollapseExpandButtons();
 						}
 					});
@@ -190,7 +204,7 @@ public class VisualPropertySheet extends JPanel{
 					});
 					i.getPropSheetPnl().getTable().addMouseListener(new MouseAdapter() {
 						@Override
-						public void mousePressed(final MouseEvent e) {
+						public void mousePressed(MouseEvent e) {
 							onMousePressedItem(e, i);
 						}
 					});
@@ -200,7 +214,7 @@ public class VisualPropertySheet extends JPanel{
 			}
 			
 			// Add an empty panel to fill the vertical gap
-			final JPanel fillPnl = new JPanel();
+			var fillPnl = new JPanel();
 			fillPnl.setBackground(VisualPropertySheetItem.getBackgroundColor());
 			c.fill = GridBagConstraints.BOTH;
 			c.weighty = 1;
@@ -209,7 +223,7 @@ public class VisualPropertySheet extends JPanel{
 			fillPnl.addMouseListener(new MouseAdapter() {
 				@Override
 				@SuppressWarnings("unchecked")
-				public void mouseClicked(final MouseEvent e) {
+				public void mouseClicked(MouseEvent e) {
 					if (!e.isShiftDown() || e.isControlDown()) // Deselect all items
 						setSelectedItems(Collections.EMPTY_SET);
 				}
@@ -230,55 +244,98 @@ public class VisualPropertySheet extends JPanel{
 		createMenuItems();
 	}
 	
-	@SuppressWarnings("unchecked")
-	public SortedSet<VisualPropertySheetItem<?>> getItems() {
-		return (SortedSet<VisualPropertySheetItem<?>>) items.clone();
+	/**
+	 * @return All {@link VisualPropertySheetItem}s, including the hidden ones.
+	 */
+	public List<VisualPropertySheetItem<?>> getAllItems() {
+		return getAllItems(true);
+	}
+	
+	/**
+	 * @param includeInvisible if true, it includes the hidden items in the returned list
+	 * @return
+	 */
+	public List<VisualPropertySheetItem<?>> getAllItems(boolean includeInvisible) {
+		var list = new ArrayList<VisualPropertySheetItem<?>>();
+		
+		for (var i : items) {
+			if (includeInvisible || i.isVisible())
+				list.add(i);
+		}
+		
+		return list;
 	}
 	
 	@SuppressWarnings("unchecked")
-	public <T> VisualPropertySheetItem<T> getItem(final VisualProperty<T> vp) {
+	public <T> VisualPropertySheetItem<T> getItem(VisualProperty<T> vp) {
 		return (VisualPropertySheetItem<T>) vpItemMap.get(vp);
 	}
 	
 	@SuppressWarnings("unchecked")
-	public <T> VisualPropertySheetItem<T> getItem(final VisualPropertyDependency<T> dep) {
+	public <T> VisualPropertySheetItem<T> getItem(VisualPropertyDependency<T> dep) {
 		return (VisualPropertySheetItem<T>) depItemMap.get(dep.getIdString());
 	}
 	
-	public synchronized Set<VisualPropertySheetItem<?>> getSelectedItems() {
-		 final Set<VisualPropertySheetItem<?>> set = new HashSet<>();
+	/**
+	 * @return All selected {@link VisualPropertySheetItem}s that are also visible.
+	 */
+	public synchronized List<VisualPropertySheetItem<?>> getSelectedItems() {
+		var list = new ArrayList<VisualPropertySheetItem<?>>();
 		 
-		 for (final VisualPropertySheetItem<?> i : items) {
-			 if (i.isSelected())
-				 set.add(i);
+		 for (var i : items) {
+			 if (i.isVisible() && i.isSelected())
+				 list.add(i);
 		 }
 		 
-		 return set;
+		 return list;
 	}
 	
-	public synchronized void setSelectedItems(final Set<VisualPropertySheetItem<?>> selectedItems) {
-		for (final VisualPropertySheetItem<?> i : items) {
-			 i.setSelected(selectedItems != null && i.isVisible() && selectedItems.contains(i));
-			 
-			 if (!i.isSelected()) {
-				 if (i == selectionHead) selectionHead = null;
-				 if (i == selectionTail) selectionTail = null;
-			 }
+	public synchronized void setSelectedItems(Collection<VisualPropertySheetItem<?>> selectedItems) {
+		selectionModel.setValueIsAdjusting(true);
+		
+		try {
+			selectionModel.clearSelection();
+			var allItems = getAllItems(false);
+			int maxIdx = -1;
+			
+			for (var i : selectedItems) {
+				int idx = allItems.indexOf(i);
+				
+				if (idx >= 0) {
+					selectionModel.addSelectionInterval(idx, idx);
+					maxIdx = Math.max(idx, maxIdx);
+				}
+			}
+			
+			selectionModel.setAnchorSelectionIndex(maxIdx);
+			selectionModel.moveLeadSelectionIndex(maxIdx);
+		} finally {
+			selectionModel.setValueIsAdjusting(false);
 		}
 	}
 	
-	public void setVisible(final VisualPropertySheetItem<?> item, final boolean visible) {
-		if (!visible)
-			item.setSelected(false);
+	public void setVisibleItems(Collection<VisualPropertySheetItem<?>> visibleItems) {
+		selectionModel.setValueIsAdjusting(true);
 		
-		item.setVisible(visible);
+		try {
+			deselectAll();
+			var allItems = getAllItems();
+			
+			for (var i : allItems) {
+				i.setVisible(visibleItems.contains(i));
+			}
+			
+			updateCollapseExpandButtons();
+		} finally {
+			selectionModel.setValueIsAdjusting(false);
+		}
 	}
 	
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	private void init() {
 		setOpaque(!isAquaLAF());
-		final GroupLayout layout = new GroupLayout(this);
+		var layout = new GroupLayout(this);
 		setLayout(layout);
 		
 		layout.setVerticalGroup(layout.createSequentialGroup()
@@ -315,18 +372,18 @@ public class VisualPropertySheet extends JPanel{
 			
 			vpListHeaderPnl.add(Box.createRigidArea(new Dimension(2, 12)));
 			
-			final JLabel defLbl = new HeaderLabel("Def.");
+			var defLbl = new HeaderLabel("Def.");
 			defLbl.setToolTipText("Default Value");
 			vpListHeaderPnl.add(defLbl);
 			
 			if (model.getLexiconType() != CyNetwork.class) {
-				final JLabel mapLbl = new HeaderLabel("Map.");
+				var mapLbl = new HeaderLabel("Map.");
 				mapLbl.setToolTipText("Mapping");
 				vpListHeaderPnl.add(mapLbl);
 			}
 			
 			if (model.getLexiconType() != CyColumn.class) {
-				final JLabel bypassLbl = new HeaderLabel("Byp.");
+				var bypassLbl = new HeaderLabel("Byp.");
 				bypassLbl.setToolTipText("Bypass");
 				vpListHeaderPnl.add(bypassLbl);
 			}
@@ -344,7 +401,7 @@ public class VisualPropertySheet extends JPanel{
 			vpListScr.getVerticalScrollBar().setUnitIncrement(8);
 			// Try to fit sheet items to viewport's width when the scroll bar becomes visible
 			vpListScr.getViewport().addChangeListener(evt -> {
-				for (final VisualPropertySheetItem<?> item : getItems())
+				for (var item : getAllItems())
 					item.fitToWidth(vpListScr.getViewport().getWidth());
 			});
 		}
@@ -370,14 +427,16 @@ public class VisualPropertySheet extends JPanel{
 			vpsMenu = new JPopupMenu();
 			vpsMenu.addPopupMenuListener(new PopupMenuListener() {
 				@Override
-				public void popupMenuWillBecomeVisible(final PopupMenuEvent e) {
+				public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
 					updateMenuItems();
 				}
 				@Override
-				public void popupMenuWillBecomeInvisible(final PopupMenuEvent e) {
+				public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+					// Nothing here...
 				}
 				@Override
-				public void popupMenuCanceled(final PopupMenuEvent e) {
+				public void popupMenuCanceled(PopupMenuEvent e) {
+					// Nothing here...
 				}
 			});
 		}
@@ -387,7 +446,7 @@ public class VisualPropertySheet extends JPanel{
 
 	protected JButton getExpandAllBtn() {
 		if (expandAllBtn == null) {
-			final IconManager iconManager = servicesUtil.get(IconManager.class);
+			var iconManager = servicesUtil.get(IconManager.class);
 			
 			expandAllBtn = new JButton(IconManager.ICON_ANGLE_DOUBLE_DOWN);
 			expandAllBtn.setToolTipText("Expand all mappings");
@@ -405,7 +464,7 @@ public class VisualPropertySheet extends JPanel{
 	
 	protected JButton getCollapseAllBtn() {
 		if (collapseAllBtn == null) {
-			final IconManager iconManager = servicesUtil.get(IconManager.class);
+			var iconManager = servicesUtil.get(IconManager.class);
 			
 			collapseAllBtn = new JButton(IconManager.ICON_ANGLE_DOUBLE_UP);
 			collapseAllBtn.setToolTipText("Collapse all mappings");
@@ -422,48 +481,50 @@ public class VisualPropertySheet extends JPanel{
 	}
 	
 	private void createMenuItems() {
-		final JPopupMenu rootMenu = getVpsMenu();
+		var rootMenu = getVpsMenu();
 		
 		// Remove previous menu items
 		menuItemMap.clear();
-		final int length = rootMenu.getSubElements() != null ? rootMenu.getSubElements().length : 0;
+		int length = rootMenu.getSubElements() != null ? rootMenu.getSubElements().length : 0;
 		
 		for (int i = 0; i < length; i++)
 			rootMenu.remove(i);
 		
 		// Add new menu items
-		final VisualLexicon lexicon = model.getVisualLexicon();
-		if(lexicon == null)
+		var lexicon = model.getVisualLexicon();
+		
+		if (lexicon == null)
 			return;
 		
-		final VisualProperty<?> rootVp = model.getRootVisualProperty();
-		final VisualLexiconNode rootNode = lexicon.getVisualLexiconNode(rootVp);
+		var rootVp = model.getRootVisualProperty();
+		var rootNode = lexicon.getVisualLexiconNode(rootVp);
+		var collator = Collator.getInstance(Locale.getDefault());
 		
 		// Menu Items for showing/hiding each VP Sheet Item
 		// ------------------------------------------------
 		// -- Visual Properties --
-		final Queue<VisualLexiconNode> queue = new PriorityQueue<>(50,
+		var queue = new PriorityQueue<>(50,
 				new Comparator<VisualLexiconNode>() {
 					@Override
-					public int compare(final VisualLexiconNode n1, final VisualLexiconNode n2) {
-						final Collator collator = Collator.getInstance(Locale.getDefault());
+					public int compare(VisualLexiconNode n1, VisualLexiconNode n2) {
 						collator.setStrength(Collator.PRIMARY);
 						
 						return collator.compare(
 								VisualPropertySheetItemModel.createTitle(n1.getVisualProperty()),
 								VisualPropertySheetItemModel.createTitle(n2.getVisualProperty()));
 					}
-				});
+				}
+		);
 		queue.addAll(rootNode.getChildren());
 		
-		final Map<VisualLexiconNode, JComponent> menuMap = new HashMap<>();
+		var menuMap = new HashMap<VisualLexiconNode, JComponent>();
 		menuMap.put(rootNode, rootMenu);
 
-		final VisualStyle style = model.getVisualStyle();
-		final Set<VisualProperty<?>> disabledProps = new HashSet<>();
-//		final Set<VisualPropertyDependency<?>> depSet = style.getAllVisualPropertyDependencies();
+		var style = model.getVisualStyle();
+		var disabledProps = new HashSet<VisualProperty<?>>();
+//		var depSet = style.getAllVisualPropertyDependencies();
 		
-//		for (final VisualPropertyDependency<?> dep : depSet) {
+//		for (var dep : depSet) {
 //			// To do the same as in Cytoscape v2.8, we only care about these dependencies
 //			if (!dep.getIdString().equals("arrowColorMatchesEdge") && !dep.getIdString().equals("nodeSizeLocked"))
 //				continue; // TODO: revisit these requirements and remove this workaround.
@@ -475,27 +536,27 @@ public class VisualPropertySheet extends JPanel{
 //				disabledProps.add(dep.getParentVisualProperty());
 //		}
 		
-		final Set<VisualLexiconNode> nextNodes = new HashSet<>();
+		var nextNodes = new HashSet<VisualLexiconNode>();
 
 		while (!queue.isEmpty()) {
-			final VisualLexiconNode curNode = queue.poll();
-			final VisualProperty<?> vp = curNode.getVisualProperty();
+			var curNode = queue.poll();
+			var vp = curNode.getVisualProperty();
 			
 			if (vp.getTargetDataType() == model.getLexiconType()) {
-				final Collection<VisualLexiconNode> children = curNode.getChildren();
+				var children = curNode.getChildren();
 				nextNodes.addAll(children);
 				
 				if (PropertySheetUtil.isCompatible(vp)) {
-					VisualLexiconNode parentNode = curNode.getParent();
+					var parentNode = curNode.getParent();
 					boolean leaf = children.isEmpty();
 					
-					final VisualPropertySheetItem<?> vpSheetItem = getItem(vp);
-					final String label = vpSheetItem != null ? 
+					var vpSheetItem = getItem(vp);
+					var label = vpSheetItem != null ? 
 							vpSheetItem.getModel().getTitle() : VisualPropertySheetItemModel.createTitle(vp);
 					
 					if (!leaf) {
 						// Non-leaf visual property...
-						final JMenuItem nonLeafMenu = new JMenu(label);
+						var nonLeafMenu = new JMenu(label);
 						menuMap.put(curNode, nonLeafMenu);
 						menuMap.get(parentNode).add(nonLeafMenu);
 						// So this VP can also be added as a child of itself
@@ -503,11 +564,9 @@ public class VisualPropertySheet extends JPanel{
 					}
 					
 					if (vpSheetItem != null) {
-						final JCheckBoxMenuItem mi = new JCheckBoxMenuItem(label, vpSheetItem.isVisible());
-						mi.addActionListener(evt -> {
-							// Show/hide the Visual Property Sheet Item
-							setVisible(vpSheetItem, !vpSheetItem.isVisible());
-						});
+						// Show/hide the Visual Property Sheet Item
+						var mi = new JCheckBoxMenuItem(label, vpSheetItem.isVisible());
+						mi.addActionListener(evt -> toggleVisibility(vpSheetItem));
 					
 						menuMap.get(parentNode).add(mi);
 						menuItemMap.put(vpSheetItem, mi);
@@ -527,27 +586,25 @@ public class VisualPropertySheet extends JPanel{
 		}
 		
 		// -- Visual Property Dependencies --
-		final TreeSet<VisualPropertyDependency<?>> depTreeSet =
+		var depTreeSet =
 				new TreeSet<>((VisualPropertyDependency<?> d1, VisualPropertyDependency<?> d2) -> {
-					final Collator collator = Collator.getInstance(Locale.getDefault());
 					collator.setStrength(Collator.PRIMARY);
 					
 					return collator.compare(d1.getDisplayName(), d2.getDisplayName());
-				});
+				}
+		);
 		depTreeSet.addAll(style.getAllVisualPropertyDependencies());
 		
-		for (final VisualPropertyDependency<?> dep : depTreeSet) {
-			final VisualPropertySheetItem<?> vpSheetItem = getItem(dep);
+		for (var dep : depTreeSet) {
+			var vpSheetItem = getItem(dep);
 			
 			if (vpSheetItem != null) {
-				final JCheckBoxMenuItem mi = new JCheckBoxMenuItem(dep.getDisplayName(), vpSheetItem.isVisible());
-				mi.addActionListener(evt -> {
-					// Show/hide the Visual Property Sheet Item
-					setVisible(vpSheetItem, !vpSheetItem.isVisible());
-				});
+				// Show/hide the Visual Property Sheet Item
+				var mi = new JCheckBoxMenuItem(dep.getDisplayName(), vpSheetItem.isVisible());
+				mi.addActionListener(evt -> toggleVisibility(vpSheetItem));
 			
-				final VisualLexiconNode parentNode = lexicon.getVisualLexiconNode(dep.getParentVisualProperty());
-				JComponent parentMenu = menuMap.get(parentNode);
+				var parentNode = lexicon.getVisualLexiconNode(dep.getParentVisualProperty());
+				var parentMenu = menuMap.get(parentNode);
 				
 				if (parentMenu == null) // just add it directly to the popup menu
 					parentMenu = rootMenu; 
@@ -560,7 +617,7 @@ public class VisualPropertySheet extends JPanel{
 	
 	private void updateMenuItems() {
 		// Update the selected state of each menu item
-		for (final Entry<VisualPropertySheetItem<?>, JCheckBoxMenuItem> entry : menuItemMap.entrySet()) {
+		for (var entry : menuItemMap.entrySet()) {
 			entry.getValue().setSelected(entry.getKey().isVisible());
 		}
 	}
@@ -572,7 +629,7 @@ public class VisualPropertySheet extends JPanel{
 		boolean enableCollapse = false;
 		boolean enableExpand = false;
 		
-		for (final VisualPropertySheetItem<?> item : items) {
+		for (var item : items) {
 			if (item.isVisible() && item.isEnabled()) {
 				if (item.isExpanded())
 					enableCollapse = true;
@@ -591,7 +648,7 @@ public class VisualPropertySheet extends JPanel{
 	private void collapseAllMappings() {
 		doNotUpdateCollapseExpandButtons = true;
 		
-		for (final VisualPropertySheetItem<?> item : items)
+		for (var item : items)
 			item.collapse();
 		
 		doNotUpdateCollapseExpandButtons = false;
@@ -601,7 +658,7 @@ public class VisualPropertySheet extends JPanel{
 	private void expandAllMappings() {
 		doNotUpdateCollapseExpandButtons = true;
 		
-		for (final VisualPropertySheetItem<?> item : items) {
+		for (var item : items) {
 			// Expand only the ones that have a mapping
 			if (item.isEnabled() && item.getModel().getVisualMappingFunction() != null)
 				item.expand();
@@ -611,101 +668,142 @@ public class VisualPropertySheet extends JPanel{
 		updateCollapseExpandButtons();
 	}
 	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private void onMousePressedItem(final MouseEvent e, final VisualPropertySheetItem<?> item) {
-		if (e.isPopupTrigger()) {
-			selectionHead = item;
-		} else if (SwingUtilities.isLeftMouseButton(e)) {
+	void onMousePressedItem(MouseEvent e, VisualPropertySheetItem<?> item) {
+		item.requestFocusInWindow();
+		
+		if (!e.isPopupTrigger() && SwingUtilities.isLeftMouseButton(e)) {
 			// LEFT-CLICK...
-			final boolean isMac = LookAndFeelUtil.isMac();
+			boolean isMac = LookAndFeelUtil.isMac();
+			boolean isControlDown = (isMac && e.isMetaDown()) || (!isMac && e.isControlDown());
 			
-			if ((isMac && e.isMetaDown()) || (!isMac && e.isControlDown())) {
+			if (isControlDown) {
 				// COMMAND button down on MacOS or CONTROL button down on another OS.
 				// Toggle this item's selection state
-				item.setSelected(!item.isSelected());
-				// Find new selection range head
-				selectionHead = item.isSelected() ? item : findNextSelectionHead(selectionHead);
+				toggleSelection(item);
+			} else if (e.isShiftDown()) {
+				// SHIFT key pressed...
+				var allItems = getAllItems(false);
+				int index = allItems.indexOf(item);
+				shiftSelectTo(index);
 			} else {
-				if (e.isShiftDown()) {
-					if (selectionHead != null && selectionHead.isVisible() && selectionHead.isSelected()
-							&& selectionHead != item) {
-						// First deselect previous range, if there is a tail
-						if (selectionTail != null)
-							changeRangeSelection(selectionHead, selectionTail, false);
-						// Now select the new range
-						changeRangeSelection(selectionHead, (selectionTail = item), true);
-					} else if (!item.isSelected()) {
-						item.setSelected(true);
-					}
-				} else {
-					setSelectedItems((Set) (Collections.singleton(item)));
-				}
-				
-				if (getSelectedItems().size() == 1)
-					selectionHead = item;
+				// No SHIFT/CTRL pressed
+				var allItems = getAllItems(false);
+				setSelectedIndex(allItems.indexOf(item));
 			}
 		}
 	}
 	
-	private void changeRangeSelection(final VisualPropertySheetItem<?> item1, final VisualPropertySheetItem<?> item2,
-			final boolean selected) {
-		final NavigableSet<VisualPropertySheetItem<?>> subSet;
+	private void shiftSelectTo(int index) {
+		int size = items.size();
 		
-		if (item1.compareTo(item2) <= 0)
-			subSet = items.subSet(item1, false, item2, true);
+		if (index < 0 || index >= size)
+			return;
+		
+		int anchor = selectionModel.getAnchorSelectionIndex();
+		int lead = selectionModel.getLeadSelectionIndex();
+		
+		selectionModel.setValueIsAdjusting(true);
+		
+		// 1. remove everything between anchor and focus (lead)
+		if (anchor != lead && (anchor >= 0 || lead >= 0))
+			selectionModel.removeSelectionInterval(Math.max(0, anchor), Math.max(0, lead));
+		
+		// 2. add everything between anchor and the new index, which  should also be made the new lead
+		selectionModel.addSelectionInterval(Math.max(0, anchor), index);
+		
+		selectionModel.setValueIsAdjusting(false);
+		
+		// 3. Make sure the lead component is focused
+		var allItems = getAllItems(false);
+		allItems.get(index).requestFocusInWindow();
+	}
+	
+	private void toggleSelection(VisualPropertySheetItem<?> item) {
+		var allItems = getAllItems(false);
+		int index = allItems.indexOf(item);
+		
+		if (selectionModel.isSelectedIndex(index))
+			selectionModel.removeSelectionInterval(index, index);
 		else
-			subSet = items.subSet(item2, true, item1, false);
-				
-		for (final VisualPropertySheetItem<?> nextItem : subSet) {
-			if (nextItem.isVisible())
-				nextItem.setSelected(selected);
+			selectionModel.addSelectionInterval(index, index);
+		
+		selectionModel.setValueIsAdjusting(true);
+		
+		if (selectionModel.isSelectedIndex(index)) {
+			selectionModel.setAnchorSelectionIndex(index);
+			selectionModel.moveLeadSelectionIndex(index);
+		} else {
+			index = selectionModel.getMaxSelectionIndex();
+			selectionModel.setAnchorSelectionIndex(index);
+			selectionModel.moveLeadSelectionIndex(index);
 		}
+		
+		selectionModel.setValueIsAdjusting(false);
 	}
 	
-	private VisualPropertySheetItem<?> findNextSelectionHead(final VisualPropertySheetItem<?> fromItem) {
-		VisualPropertySheetItem<?> head = null;
+	void selectAll() {
+		if (items.size() >= 0)
+			selectionModel.setSelectionInterval(0, items.size() - 1);
+	}
+	
+	void deselectAll() {
+		selectionModel.clearSelection();
+		selectionModel.setAnchorSelectionIndex(-1);
+		selectionModel.setLeadSelectionIndex(-1);
+	}
+	
+	/**
+     * Selects a single cell. Does nothing if the given index is greater
+     * than or equal to the model size. This is a convenience method that uses
+     * {@code setSelectionInterval} on the selection model. Refer to the
+     * documentation for the selection model class being used for details on
+     * how values less than {@code 0} are handled.
+     *
+     * @param index the index of the cell to select
+     */
+	void setSelectedIndex(int index) {
+		if (index >= items.size())
+			return;
 		
-		if (fromItem != null) {
-			NavigableSet<VisualPropertySheetItem<?>> subSet = items.tailSet(fromItem, false);
-			
-			// Try with the tail subset first
-			for (final VisualPropertySheetItem<?> nextItem : subSet) {
-				if (nextItem.isVisible() && nextItem.isSelected()) {
-					head = nextItem;
-					break;
-				}
-			}
-			
-			if (head == null) {
-				// Try with the head subset
-				subSet = items.headSet(fromItem, false);
-				final Iterator<VisualPropertySheetItem<?>> iterator = subSet.descendingIterator();
-				
-				while (iterator.hasNext()) {
-					final VisualPropertySheetItem<?> nextItem = iterator.next();
-					
-					if (nextItem.isVisible() && nextItem.isSelected()) {
-						head = nextItem;
-						break;
-					}
-				}
-			}
+		selectionModel.setSelectionInterval(index, index);
+	}
+	
+	private void toggleVisibility(VisualPropertySheetItem<?> item) {
+		if (item.isVisible()) {
+			// This item will be hidden in the next step, so deselect it first, if necessary
+			if (item.isSelected())
+				toggleSelection(item);
+		} else {
+			// This item will be shown in the next step and we want it to be the only one selected,
+			// so clear the selection first, before the indexes change
+			// (after hiding an item, the selection model won't have access to it anymore,
+			// as the selection model only handle visible items)
+			deselectAll();
 		}
+			
+		item.setVisible(!item.isVisible());
 		
-		return head;
+		if (item.isVisible()) {
+			// Select this item
+			setSelectedItems(Collections.singleton(item));
+		} else {
+			// Always select the items again to make sure the model's indexes are updated
+			var selectedItems = getSelectedItems();
+			setSelectedItems(selectedItems);
+		}
 	}
 	
 	// ==[ CLASSES ]====================================================================================================
 	
 	private static class HeaderLabel extends JLabel {
 		
-		HeaderLabel(final String text) {
+		HeaderLabel(String text) {
 			super(text);
 			setFont(getFont().deriveFont(Font.BOLD).deriveFont(10.0f));
 			setHorizontalAlignment(CENTER);
 			setVerticalAlignment(BOTTOM);
 			
-			final Dimension d = new Dimension(VisualPropertySheetItem.VPButtonUI.getPreferredWidth(), 18);
+			var d = new Dimension(VisualPropertySheetItem.VPButtonUI.getPreferredWidth(), 18);
 			setMinimumSize(d);
 			setPreferredSize(d);
 			setMaximumSize(d);

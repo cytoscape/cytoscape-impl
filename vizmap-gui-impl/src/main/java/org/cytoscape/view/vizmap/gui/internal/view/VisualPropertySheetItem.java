@@ -176,17 +176,28 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		return model;
 	}
 	
+	@Override
+	public void setVisible(boolean b) {
+		if (!b)
+			setSelected(false);
+			
+		super.setVisible(b);
+	}
+	
 	public boolean isSelected() {
 		return selected;
 	}
 	
 	public void setSelected(boolean selected) {
-		this.selected = selected;
-		
-		if (!selected && getModel().isVisualMappingAllowed())
-			getPropSheetTbl().clearSelection(); // This prevents some bugs when editing discrete mappings!
-		
-		updateSelection();
+		if (this.selected != selected) {
+			this.selected = selected;
+			
+			if (!selected && getModel().isVisualMappingAllowed())
+				getPropSheetTbl().clearSelection(); // This prevents some bugs when editing discrete mappings!
+			
+			updateSelection();
+			firePropertyChange("selected", !selected, selected);
+		}
 	}
 	
 	public void expand() {
@@ -392,8 +403,10 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	private void init() {
+		setFocusable(true);
 		setBackground(getBackgroundColor());
 		setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, getButtonBorderColor()));
+		
 		setLayout(new BorderLayout());
 		
 		add(getTopPnl(), BorderLayout.NORTH);
@@ -541,7 +554,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			
 			if (mapping == null) {
 				// Create the properties for a new visual mapping
-				var vp = (VisualProperty<?>) model.getVisualProperty();
+				var vp = model.getVisualProperty();
 				vizMapPropertyBuilder.buildProperty(vp, propSheetPnl, model.getTableType(), forColumn);
 			} else {
 				// There is already a visual mapping for this style's property
