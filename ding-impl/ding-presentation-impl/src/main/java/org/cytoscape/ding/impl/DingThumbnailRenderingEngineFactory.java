@@ -41,6 +41,8 @@ public class DingThumbnailRenderingEngineFactory implements RenderingEngineFacto
 					+ "which is invalid for this implementation of PresentationFactory");
 		
 		DRenderingEngine re = viewFactoryMediator.getRenderingEngine((CyNetworkView)view);
+		if(re == null)
+			throw new IllegalStateException("Rendering engine not available to create thumbnail");
 		
 		JComponent container = (JComponent) visualizationContainer;
 		ThumbnailView tv = new ThumbnailView(re);

@@ -1180,6 +1180,17 @@ public class NetworkViewGrid extends JPanel {
 			return titleLabel;
 		}
 		
+		private JLabel createIconLabel() {
+			var label = new JLabel(IconManager.ICON_SHARE_ALT_SQUARE);
+			label.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(40.0f));
+			var c = UIManager.getColor("Label.disabledForeground");
+			c = new Color(c.getRed(), c.getGreen(), c.getBlue(), 40);
+			label.setForeground(c);
+			label.setHorizontalAlignment(JLabel.CENTER);
+			label.setVerticalAlignment(JLabel.CENTER);
+			return label;
+		}
+		
 		JRootPane getImagePanel() {
 			if (imagePanel == null) {
 				imagePanel = new JRootPane();
@@ -1188,22 +1199,21 @@ public class NetworkViewGrid extends JPanel {
 				imagePanel.getGlassPane().setVisible(true);
 				var contentPane = imagePanel.getContentPane();
 				
+				thumbnailRenderer = Optional.empty();
+				
 				if (engines.thumbnailEngineFactory.isPresent()) {
-					var engineFactory = engines.thumbnailEngineFactory.get();
-					var netView = getNetworkView();
-					thumbnailRenderer = Optional.of(engineFactory.createRenderingEngine(contentPane, netView));
+					try {
+						var engineFactory = engines.thumbnailEngineFactory.get();
+						var netView = getNetworkView();
+						var re = engineFactory.createRenderingEngine(contentPane, netView);
+						thumbnailRenderer = Optional.of(re);
+					} catch(IllegalArgumentException | IllegalStateException e) {
+						contentPane.setLayout(new BorderLayout());
+						contentPane.add(createIconLabel(), BorderLayout.CENTER);
+					}
 				} else {
-					var label = new JLabel(IconManager.ICON_SHARE_ALT_SQUARE);
-					label.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(40.0f));
-					var c = UIManager.getColor("Label.disabledForeground");
-					c = new Color(c.getRed(), c.getGreen(), c.getBlue(), 40);
-					label.setForeground(c);
-
-					label.setHorizontalAlignment(JLabel.CENTER);
-					label.setVerticalAlignment(JLabel.CENTER);
 					contentPane.setLayout(new BorderLayout());
-					contentPane.add(label, BorderLayout.CENTER);
-					thumbnailRenderer = Optional.empty();
+					contentPane.add(createIconLabel(), BorderLayout.CENTER);
 				}
 			}
 			
