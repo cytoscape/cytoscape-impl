@@ -266,11 +266,7 @@ public final class GraphRenderer {
             // System.out.println("textCenter = "+textXCenter+","+textYCenter);
             // System.out.println("edgeAnchorPoint = "+edgeAnchorPointX+","+edgeAnchorPointY);
 
-            final Justification justify;
-            if (text.indexOf('\n') >= 0)
-              justify = edgeDetails.getLabelJustify(edge);
-            else
-              justify = Justification.JUSTIFY_CENTER;
+            final Justification justify = edgeDetails.getLabelJustify(edge);
 
 						renderText(grafx, labelInfo, (float) textXCenter, (float) textYCenter,
 								textXCenter, textYCenter, justify, paint, backgroundPaint, backgroundShape, theta, flags.has(LOD_TEXT_AS_SHAPE));
@@ -614,7 +610,7 @@ public final class GraphRenderer {
 						final float offsetVectorY = nodeDetails.getLabelOffsetVectorY(node);
 						final double theta = nodeDetails.getLabelRotation(node)*.01745329252;
 						final double nodeLabelWidth = nodeDetails.getLabelWidth(node);
-						final Justification justify = text.indexOf('\n') >= 0 ? nodeDetails.getLabelJustify(node) : Justification.JUSTIFY_CENTER;
+						final Justification justify = nodeDetails.getLabelJustify(node);
 						final Paint backgroundPaint = nodeDetails.getLabelBackgroundPaint(node);
 						final byte backgroundShape = nodeDetails.getLabelBackgroundShape(node);
 						
