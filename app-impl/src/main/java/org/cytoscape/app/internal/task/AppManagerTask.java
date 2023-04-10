@@ -9,18 +9,17 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.swing.Icon;
 
 import org.cytoscape.app.internal.event.AppsChangedListener;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
+import org.cytoscape.app.internal.util.AppUtil;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.command.CommandExecutorTaskFactory;
-import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
@@ -60,14 +59,8 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-
-		final CyProperty<Properties> cyProps =
-						serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
-		final Properties props = cyProps.getProperties();
-		String appStoreUrl = props.getProperty("appStoreDownloadSiteUrl1");
-		if (appStoreUrl == null) {
-			appStoreUrl = "https://apps.cytoscape.org/";
-		}
+		String appStoreUrl = AppUtil.getAppStoreURL(serviceRegistrar);
+		
 		appManager.getWebQuerier().setCurrentAppStoreUrl(appStoreUrl);
 
 		StringBuilder contentBuilder = new StringBuilder();
@@ -446,13 +439,8 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 	@SuppressWarnings({ "unchecked" })
 	@Override
 	public <R> R getResults(Class<? extends R> type) {
-		final CyProperty<Properties> cyProps =
-						serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
-		final Properties props = cyProps.getProperties();
-		String appStoreUrl = props.getProperty("appStoreDownloadSiteUrl1");
-		if (appStoreUrl == null) {
-			appStoreUrl = "https://apps.cytoscape.org/";
-		}
+		String appStoreUrl = AppUtil.getAppStoreURL(serviceRegistrar);
+		
 		if (type.equals(JSONResult.class)) {
 			JSONResult res = () -> {
 				return "{}";

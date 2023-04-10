@@ -6,11 +6,14 @@ import java.awt.Frame;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Properties;
 
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
 
 /*
  * #%L
@@ -36,7 +39,21 @@ import org.cytoscape.application.swing.CySwingApplication;
  * #L%
  */
 
-public class AppUtil {
+public class AppUtil { 
+
+	public static final String APP_STORE_URL = "https://apps.cytoscape.org/";
+
+	public static String getAppStoreURL(CyServiceRegistrar registrar) {
+		@SuppressWarnings("unchecked")
+		CyProperty<Properties> cyProps = registrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+		var props = cyProps.getProperties();
+		
+		String appStoreUrl = props.getProperty("appStoreDownloadSiteUrl1");
+		if(appStoreUrl == null || appStoreUrl.equals("http://apps.cytoscape.org/")) {
+			appStoreUrl = APP_STORE_URL;
+		}
+		return appStoreUrl;
+	}
 
 	/*
 	 * dumbSplit splits a string on delimiter boundaries and doesn't try any
@@ -107,8 +124,7 @@ public class AppUtil {
 	 * function is sensitive to quoted strings, which are not split if they
 	 * contain the delimiter.
 	 */
-	public static ArrayList<String> splitByChar(String packageList,
-			char delimiter) {
+	public static ArrayList<String> splitByChar(String packageList, char delimiter) {
 		ArrayList<String> splitList = new ArrayList<>();
 		int index = 0;
 		while (index < packageList.length()) {
