@@ -14,7 +14,7 @@
   <properties>
 		<bundle.symbolicName>org.cytoscape.cycl-impl</bundle.symbolicName>
 		<bundle.namespace>org.cytoscape.cycl.internal</bundle.namespace>
-    <lwjgl.version>3.3.1</lwjgl.version>
+    <lwjgl.version>3.3.2</lwjgl.version>
   </properties>
 
     <build>
