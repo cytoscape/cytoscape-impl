@@ -1,12 +1,6 @@
 package org.cytoscape.app.internal.action;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.io.*;
-import java.nio.charset.Charset;
-import java.util.Map;
-import java.util.Properties;
+import static org.cytoscape.util.swing.IconManager.ICON_FONT;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -16,33 +10,32 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
 
+import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.Icon;
 
-import org.cytoscape.application.CyApplicationConfiguration;
-import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.application.swing.CytoPanel;
-import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.UpdateManager;
 import org.cytoscape.app.internal.ui.AppManagerMediator;
+import org.cytoscape.app.internal.util.AppUtil;
 import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.application.swing.CytoPanel;
+import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.event.DebounceTimer;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
-import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
-import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
-import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.util.swing.IconManager;
-import org.cytoscape.util.swing.TextIcon;
-import static org.cytoscape.util.swing.IconManager.ICON_FONT;
 /*
  * #%L
  * Cytoscape App Impl (app-impl)
@@ -106,14 +99,7 @@ public class UpdateNotificationAction extends AbstractCyAction {
 
 	@Override
 	public void actionPerformed(ActionEvent evt) {
-
-		final CyProperty<Properties> cyProps =
-						serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
-		final Properties props = cyProps.getProperties();
-		String appStoreUrl = props.getProperty("appStoreDownloadSiteUrl1");
-		if (appStoreUrl == null) {
-			appStoreUrl = "https://apps.cytoscape.org/";
-		}
+		String appStoreUrl = AppUtil.getAppStoreURL(serviceRegistrar); 
 
 		StringBuilder contentBuilder = new StringBuilder();
 		try {
