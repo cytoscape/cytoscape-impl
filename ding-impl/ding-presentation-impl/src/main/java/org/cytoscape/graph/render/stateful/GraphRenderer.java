@@ -298,16 +298,12 @@ public final class GraphRenderer {
     final double slope = rise/run;
     final double lineAngle = Math.atan2(rise, run);
     final double theta = edgeDetails.getLabelRotation(edge, rise, run)*.01745329252;
-    final Justification justify;
+    final Justification justify = edgeDetails.getLabelJustify(edge);
 		final GeneralPath path2d = new GeneralPath();
 		final float[] floatBuff5 = new float[8];
 		final double[] doubleBuff1 = new double[4];
     final double[] anchorBuff = new double[2];
 
-    if (text.indexOf('\n') >= 0)
-      justify = edgeDetails.getLabelJustify(edge);
-    else
-      justify = Justification.JUSTIFY_CENTER;
 
     final double edgeAnchorPointX;
     final double edgeAnchorPointY;
