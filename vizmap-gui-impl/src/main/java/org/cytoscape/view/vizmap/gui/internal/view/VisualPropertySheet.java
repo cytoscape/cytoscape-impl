@@ -205,7 +205,8 @@ public class VisualPropertySheet extends JPanel{
 					i.getPropSheetPnl().getTable().addMouseListener(new MouseAdapter() {
 						@Override
 						public void mousePressed(MouseEvent e) {
-							onMousePressedItem(e, i);
+							if (!i.getPropSheetPnl().getTable().isEditing())
+								onMousePressedItem(e, i);
 						}
 					});
 				}
@@ -318,12 +319,22 @@ public class VisualPropertySheet extends JPanel{
 		selectionModel.setValueIsAdjusting(true);
 		
 		try {
+			// Save the current selection for later
+			var selectedItems = getSelectedItems();
+			// Make sure everything is unselected, because they may be hidden in the next steps
 			deselectAll();
+			
 			var allItems = getAllItems();
 			
 			for (var i : allItems) {
 				i.setVisible(visibleItems.contains(i));
+				
+				if (!i.isVisible()) // remove the invisible item from the items that will be selected again later
+					selectedItems.remove(i);
 			}
+			
+			// Restore the previous selection
+			setSelectedItems(selectedItems);
 			
 			updateCollapseExpandButtons();
 		} finally {

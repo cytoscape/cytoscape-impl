@@ -970,7 +970,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			var vpSheets = vizMapperMainPanel.getVisualPropertySheets();
 			
 			for (var sheet : vpSheets) {
-				var visibleList = new ArrayList<VisualPropertySheetItem<?>>();
+				var visibleList = sheet.getAllItems(false);
 				
 				for (var item : sheet.getAllItems()) {
 					// Update values
