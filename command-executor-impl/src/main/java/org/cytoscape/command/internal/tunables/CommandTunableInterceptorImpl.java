@@ -82,7 +82,7 @@ public class CommandTunableInterceptorImpl extends AbstractTunableInterceptor<St
 					// which will hopefully be: set the tunable value based on
 					// information parsed from the arg string.
 					h.processArgString(args);
-				} else {
+				} else if (mapArgs != null) {
 					for ( String string: mapArgs.keySet() ) {
 						if (h.getName().equals(string) || h.getName().equals(upperFirstChar(string))) {
 							Object v = mapArgs.get(string);
