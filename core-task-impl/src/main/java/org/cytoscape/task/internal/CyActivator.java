@@ -872,7 +872,7 @@ public class CyActivator extends AbstractCyActivator {
 
 			var props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_SELECTED_NODES_OR_EDGES);
-			props.setProperty(PREFERRED_MENU, "Select.Nodes.First Neighbors of Selected Nodes");
+			props.setProperty(PREFERRED_MENU, "Select.Nodes[2].First Neighbors of Selected Nodes[0.5]");
 			props.setProperty(MENU_GRAVITY, "6");
 			props.setProperty(TOOL_BAR_GRAVITY, "9.15");
 			props.setProperty(ACCELERATOR, "cmd 6");
@@ -892,7 +892,7 @@ public class CyActivator extends AbstractCyActivator {
 			var factory = new SelectFirstNeighborsTaskFactoryImpl(CyEdge.Type.INCOMING, serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
-			props.setProperty(PREFERRED_MENU, "Select.Nodes.First Neighbors of Selected Nodes");
+			props.setProperty(PREFERRED_MENU, "Select.Nodes[2].First Neighbors of Selected Nodes[0.5]");
 //			props.setProperty(PREFERRED_MENU, "Select");
 			props.setProperty(MENU_GRAVITY, "0.11");
 //			props.setProperty(TITLE, "FirstIncomingNeighbors");
@@ -908,7 +908,7 @@ public class CyActivator extends AbstractCyActivator {
 			var factory = new SelectFirstNeighborsTaskFactoryImpl(CyEdge.Type.OUTGOING, serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
-			props.setProperty(PREFERRED_MENU, "Select.Nodes.First Neighbors of Selected Nodes");
+			props.setProperty(PREFERRED_MENU, "Select.Nodes[2].First Neighbors of Selected Nodes[0.5]");
 //			props.setProperty(PREFERRED_MENU, "Select");
 			props.setProperty(MENU_GRAVITY, "6.2");
 			props.setProperty(TITLE, "Directed: Outgoing");
