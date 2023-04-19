@@ -1047,7 +1047,6 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(TOOLTIP, factory.getDescription());
 			props.setProperty(TOOLTIP_LONG_DESCRIPTION, "Unhides the current view's hidden nodes and edges.");
 			props.setProperty(TOOLTIP_IMAGE, getClass().getResource("/images/tooltips/show-hide.gif").toString());
-			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 			registerService(bc, factory, UnHideAllTaskFactory.class, props);
 		}
@@ -2370,7 +2369,6 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(ACCELERATOR, "cmd o");
 			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(TITLE, "Open Session...");
-			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
 			props.setProperty(TOOL_BAR_GRAVITY, "1.0");
 			props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(MENU_GRAVITY, "0.5");
