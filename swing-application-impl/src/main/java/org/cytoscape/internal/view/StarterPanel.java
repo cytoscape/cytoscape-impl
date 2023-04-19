@@ -42,12 +42,18 @@ import javax.swing.border.Border;
 
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyUserLog;
-import org.cytoscape.internal.util.Util;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.read.OpenSessionTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.work.FinishStatus;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.TaskObserver;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,7 +124,9 @@ public class StarterPanel extends JPanel {
 	
 	private final Icon missingImageIcon;
 	
-	private boolean ignoreClickEvents;
+	/** This flag prevents opening more than one session concurrently when one is about to be loaded by an action on this panel */
+	private boolean sessionMayBeLoading;
+	/** This flag prevents opening another session here when another one is already being loaded from anywhere else */
 	private boolean sessionLoading;
 	
 	private final CyServiceRegistrar serviceRegistrar;
@@ -369,8 +377,13 @@ public class StarterPanel extends JPanel {
 	}
 	
 	private void maybeOpenSession(File file) {
+		// This flag prevents opening more than one session concurrently (e.g. if the user clicks a session thumbnail
+		// repeatedly because Cytoscape is temporarily unresponsive for some reason), which could cause
+		// many issues and put Cytoscape in a bad state.
+		sessionMayBeLoading = true;
+		
 		if (file.exists()) {
-			Util.maybeOpenSession(file, StarterPanel.this.getTopLevelAncestor(), serviceRegistrar);
+			maybeOpenSession(file, StarterPanel.this.getTopLevelAncestor());
 		} else {
 			JOptionPane.showMessageDialog(
 					StarterPanel.this.getTopLevelAncestor(),
@@ -386,7 +399,52 @@ public class StarterPanel extends JPanel {
 			} catch (Exception e) {
 				logger.error("Error removing session file from RecentlyOpenedTracker.", e);
 			}
+			
+			sessionMayBeLoading = false; // Set it to false whenever the session open action is cancelled!
 		}
+	}
+	
+	private void maybeOpenSession(File file, Component owner) {
+		if (file.exists() && file.canRead()) {
+			var netManager = serviceRegistrar.getService(CyNetworkManager.class);
+			var tableManager = serviceRegistrar.getService(CyTableManager.class);
+			
+			if (netManager.getNetworkSet().isEmpty() && tableManager.getAllTables(false).isEmpty())
+				openSession(file);
+			else
+				openSessionWithWarning(file, owner);
+		} else {
+			sessionMayBeLoading = false;
+		}
+	}
+	
+	private void openSessionWithWarning(File file, Component owner) {
+		if (JOptionPane.showConfirmDialog(
+				owner,
+				"Current session (all networks and tables) will be lost.\nDo you want to continue?",
+				"Open Session",
+				JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION)
+			openSession(file);
+		else
+			sessionMayBeLoading = false;
+	}
+	
+	private void openSession(File file) {
+		var taskFactory = serviceRegistrar.getService(OpenSessionTaskFactory.class);
+		var taskManager = serviceRegistrar.getService(DialogTaskManager.class);
+		
+		var observer = new TaskObserver() {
+			@Override
+			public void taskFinished(ObservableTask task) {
+				// Ignore...
+			}
+			@Override
+			public void allFinished(FinishStatus finishStatus) {
+				sessionMayBeLoading = false;
+			}
+		};
+		
+		taskManager.execute(taskFactory.createTaskIterator(file), observer);
 	}
 	
 	private void drawFocus(SessionPanel panel) {
@@ -556,16 +614,9 @@ public class StarterPanel extends JPanel {
 			var mouseListener = new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent e) {
-					if (!ignoreClickEvents && !sessionLoading
-							&& e.getClickCount() == 1 && SwingUtilities.isLeftMouseButton(e)) {
-						ignoreClickEvents = true;
-						
-						try {
-							maybeOpenSession(fileInfo.getFile());
-						} finally {
-							ignoreClickEvents = false;
-						}
-					}
+					if (!sessionMayBeLoading && !sessionLoading
+							&& e.getClickCount() == 1 && SwingUtilities.isLeftMouseButton(e))
+						maybeOpenSession(fileInfo.getFile());
 				}
 				@Override
 				public void mouseEntered(MouseEvent e) {
@@ -574,7 +625,7 @@ public class StarterPanel extends JPanel {
 				}
 				@Override
 				public void mouseExited(MouseEvent e) {
-					Component c = SwingUtilities.getDeepestComponentAt(e.getComponent(), e.getX(), e.getY());
+					var c = SwingUtilities.getDeepestComponentAt(e.getComponent(), e.getX(), e.getY());
 					boolean inside = c != null && SwingUtilities.isDescendingFrom(c, SessionPanel.this);
 					
 					if (!inside)
@@ -666,7 +717,7 @@ public class StarterPanel extends JPanel {
 				if (w == 0)
 					w = Integer.MAX_VALUE;
 
-				Insets insets = target.getInsets();
+				var insets = target.getInsets();
 				
 				if (insets == null)
 					insets = new Insets(0, 0, 0, 0);
@@ -680,10 +731,10 @@ public class StarterPanel extends JPanel {
 				int rowHeight = 0;
 
 				for (int i = 0; i < n; i++) {
-					Component c = target.getComponent(i);
+					var c = target.getComponent(i);
 					
 					if (c.isVisible()) {
-						Dimension d = c.getPreferredSize();
+						var d = c.getPreferredSize();
 						
 						if ((x == 0) || ((x + d.width) <= maxwidth)) {
 							// fits in current row.
@@ -718,11 +769,11 @@ public class StarterPanel extends JPanel {
 				int n = target.getComponentCount();
 
 				for (int i = 0; i < n; i++) {
-					Component c = target.getComponent(i);
+					var c = target.getComponent(i);
 					
 					if (c.isVisible()) {
 						found_one = true;
-						Dimension d = c.getPreferredSize();
+						var d = c.getPreferredSize();
 						minx = Math.min(minx, d.width);
 						miny = Math.min(miny, d.height);
 					}

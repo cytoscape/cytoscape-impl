@@ -1,7 +1,5 @@
 package org.cytoscape.internal.util;
 
-import java.awt.Component;
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
@@ -9,21 +7,14 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import javax.swing.JOptionPane;
-
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.read.OpenSessionTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.work.TaskObserver;
-import org.cytoscape.work.swing.DialogTaskManager;
 
 /*
  * #%L
@@ -175,51 +166,6 @@ public final class Util {
 	
 	public static double squarenessRatio(double w, double h) {
 		return Math.abs(1.0 - (w > h ? w / h : h / w));
-	}
-	
-	public static void maybeOpenSession(File file, Component owner, CyServiceRegistrar serviceRegistrar) {
-		maybeOpenSession(file, owner, serviceRegistrar, null);
-	}
-	
-	public static void maybeOpenSession(
-			File file,
-			Component owner,
-			CyServiceRegistrar serviceRegistrar,
-			TaskObserver observer
-	) {
-		if (file.exists() && file.canRead()) {
-			var netManager = serviceRegistrar.getService(CyNetworkManager.class);
-			var tableManager = serviceRegistrar.getService(CyTableManager.class);
-			
-			if (netManager.getNetworkSet().isEmpty() && tableManager.getAllTables(false).isEmpty())
-				openSession(file, serviceRegistrar, observer);
-			else
-				openSessionWithWarning(file, owner, serviceRegistrar, observer);
-		}
-	}
-	
-	public static void openSession(File file, CyServiceRegistrar serviceRegistrar, TaskObserver observer) {
-		var taskFactory = serviceRegistrar.getService(OpenSessionTaskFactory.class);
-		var taskManager = serviceRegistrar.getService(DialogTaskManager.class);
-		
-		if (observer == null)
-			taskManager.execute(taskFactory.createTaskIterator(file));
-		else
-			taskManager.execute(taskFactory.createTaskIterator(file), observer);
-	}
-	
-	public static void openSessionWithWarning(
-			File file,
-			Component owner,
-			CyServiceRegistrar serviceRegistrar,
-			TaskObserver observer
-	) {
-		if (JOptionPane.showConfirmDialog(
-				owner,
-				"Current session (all networks and tables) will be lost.\nDo you want to continue?",
-				"Open Session",
-				JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION)
-			openSession(file, serviceRegistrar, observer);
 	}
 	
 	public static URL getURL(String s) {
