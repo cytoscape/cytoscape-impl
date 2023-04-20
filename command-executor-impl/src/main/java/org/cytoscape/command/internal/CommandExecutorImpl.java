@@ -197,20 +197,22 @@ public class CommandExecutorImpl {
 			throw new RuntimeException("Failed to find command: '" + comm +"' (from namespace: " + ns + ")");
 
 		Map<String, Object> modifiedSettings = new HashMap<String, Object>();
-		// Now check the arguments
-		List<String> argList = availableCommands.getArguments(ns, comm);
-		for (String inputArg: settings.keySet()) {
-			boolean found = false;
-			for (String arg: argList) {
-				String[] bareArg = arg.split("=");
-				if (bareArg[0].trim().equalsIgnoreCase(inputArg)) {
-					found = true;
-					modifiedSettings.put(bareArg[0].trim(), settings.get(inputArg));
-					break;
-				}
-			}	
-			if (!found)
-				throw new RuntimeException("Argument: '"+inputArg+" isn't applicable to command: '"+ns+" "+comm+"'");	
+		// Now check the arguments (if we have any)
+		if (settings.size() > 0) {
+			List<String> argList = availableCommands.getArguments(ns, comm);
+			for (String inputArg: settings.keySet()) {
+				boolean found = false;
+				for (String arg: argList) {
+					String[] bareArg = arg.split("=");
+					if (bareArg[0].trim().equalsIgnoreCase(inputArg)) {
+						found = true;
+						modifiedSettings.put(bareArg[0].trim(), settings.get(inputArg));
+						break;
+					}
+				}	
+				if (!found)
+					throw new RuntimeException("Argument: '"+inputArg+" isn't applicable to command: '"+ns+" "+comm+"'");	
+			}
 		}
 
 		executeCommand(ns, sub, modifiedSettings, tm, observer);
