@@ -16,7 +16,6 @@ import org.cytoscape.app.internal.manager.App.AppStatus;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.WebApp;
 import org.cytoscape.app.internal.net.WebApp.Release;
-import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
@@ -29,7 +28,7 @@ public abstract class AbstractAppTask extends AbstractTask {
 
 	AbstractAppTask(AppManager appManager) {
 		this.appManager = appManager;
-		updateApps();
+		// updateApps();
 	}
 
 	protected App getApp(String appName) {
@@ -69,6 +68,9 @@ public abstract class AbstractAppTask extends AbstractTask {
 
 	protected void updateApps() {
 		appList = appManager.getApps();
+	}
+
+	protected void updateWebApps() {
 		webAppList = appManager.getWebQuerier().getAllApps();
 	}
 

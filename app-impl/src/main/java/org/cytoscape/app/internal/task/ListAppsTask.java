@@ -12,7 +12,6 @@ import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.App.AppStatus;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.WebApp;
-import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
@@ -30,6 +29,7 @@ public class ListAppsTask extends AbstractAppTask implements ObservableTask {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setTitle("Listing "+status.toString()+" apps");
+		updateWebApps();
 		updateApps();
 	}
 

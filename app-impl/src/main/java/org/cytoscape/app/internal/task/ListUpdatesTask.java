@@ -27,6 +27,7 @@ public class ListUpdatesTask extends AbstractAppTask implements ObservableTask {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setTitle("Listing available apps");
+		updateApps();
 		WebQuerier webQuerier = appManager.getWebQuerier();
 		Set<App> apps = appManager.getInstalledApps();
 		updates = webQuerier.checkForUpdates(apps, appManager);

@@ -16,7 +16,6 @@ import org.cytoscape.app.internal.net.Update;
 import org.cytoscape.app.internal.net.UpdateManager;
 import org.cytoscape.app.internal.net.WebApp;
 import org.cytoscape.app.internal.net.WebApp.Release;
-import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
@@ -48,6 +47,9 @@ public class UpdateTask extends AbstractAppTask implements ObservableTask {
 		}
 
 		updateList = new ArrayList<>();
+
+		updateApps();
+		updateWebApps();
 
 		Set<Update> updates = updateManager.getUpdates();
     if (updates.size() == 0) {

@@ -8,7 +8,6 @@ import java.util.Map;
 import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.WebApp;
-import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.OpenBrowser;
@@ -40,6 +39,7 @@ public class AppStoreTask extends AbstractAppTask implements ObservableTask {
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		WebApp webApp = null;
 		if (app != null) {
+			updateWebApps();
 			webApp = getWebApp(app);
 			url = APP_STORE+"apps/"+app;
 		} else {

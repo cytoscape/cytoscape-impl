@@ -63,6 +63,9 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		
 		appManager.getWebQuerier().setCurrentAppStoreUrl(appStoreUrl);
 
+		updateApps();
+		updateWebApps();
+
 		StringBuilder contentBuilder = new StringBuilder();
 		try {
 		    BufferedReader in = new BufferedReader(new InputStreamReader(AppManagerTask.class.getClassLoader().getResourceAsStream("/AppManager/AppManager.html"), Charset.forName("UTF-8").newDecoder()));

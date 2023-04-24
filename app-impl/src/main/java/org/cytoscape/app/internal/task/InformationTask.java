@@ -14,7 +14,6 @@ import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.WebApp;
 import org.cytoscape.app.internal.net.WebApp.Release;
-import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.app.internal.util.AppUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
@@ -42,6 +41,7 @@ public class InformationTask extends AbstractAppTask implements ObservableTask {
 			return;
 		}
 		taskMonitor.setTitle("Getting app "+app+" information");
+		updateWebApps();
 		webApp = getWebApp(app);
 		if (webApp == null) {
 			error = "Can't find app '"+app+"'";
