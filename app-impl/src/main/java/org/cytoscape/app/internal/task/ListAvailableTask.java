@@ -14,7 +14,6 @@ import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.WebApp;
 import org.cytoscape.app.internal.net.WebApp.Release;
-import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.app.internal.util.AppUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
@@ -29,6 +28,8 @@ public class ListAvailableTask extends AbstractAppTask implements ObservableTask
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setTitle("Listing available apps");
+		updateApps();
+		updateWebApps();
 	}
 
 	@Override

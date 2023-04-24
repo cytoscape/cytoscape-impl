@@ -227,16 +227,18 @@ public class AppManager implements FrameworkListener {
 	}
 
 	void attemptInitialization() {
-		synchronized (lock ) {
+		// synchronized (lock ) {
 			if (!isInitialized && startLevel.getStartLevel() >= APP_START_LEVEL) {
 				final ExecutorService service = Executors.newSingleThreadExecutor();
 				service.submit(()-> {
 					// Initialize the apps list and start apps
-					initializeApps();
-					isInitialized = true;
+					synchronized (lock) {
+						initializeApps();
+						isInitialized = true;
+					}
 				});
 			}
-		}
+		// }
 	}
 
 	void initializeApps() {
@@ -932,7 +934,10 @@ public class AppManager implements FrameworkListener {
 	 * @return The set of all apps registered to this app manager.
 	 */
 	public Set<App> getApps() {
-		return apps;
+		// Don't return a list of apps until we're initialized
+		synchronized (lock ) {
+			return apps;
+		}
 	}
 
 	/**

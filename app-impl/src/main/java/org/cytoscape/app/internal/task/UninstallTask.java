@@ -12,9 +12,6 @@ import java.util.Set;
 
 import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.AppManager;
-import org.cytoscape.app.internal.net.WebApp;
-import org.cytoscape.app.internal.net.WebApp.Release;
-import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
@@ -41,6 +38,7 @@ public class UninstallTask extends AbstractAppTask implements ObservableTask {
 			return;
 		}
 		taskMonitor.setTitle("Uninstalling app "+app);
+		updateApps();
 		appObject = getApp(app);
 		if (appObject == null) {
 			error = "Can't find app '"+app+"'";

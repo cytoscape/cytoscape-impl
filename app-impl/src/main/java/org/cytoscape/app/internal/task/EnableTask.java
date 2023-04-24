@@ -14,7 +14,6 @@ import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.WebApp;
 import org.cytoscape.app.internal.net.WebApp.Release;
-import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
@@ -41,6 +40,7 @@ public class EnableTask extends AbstractAppTask implements ObservableTask {
 			return;
 		}
 		taskMonitor.setTitle("Enabling app "+app);
+		updateApps();
 		appObject = getApp(app);
 		// System.out.println("App "+appObject.getAppName()+" version "+appObject.getVersion());
 		if (appObject == null) {
