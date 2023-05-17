@@ -6,6 +6,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 
 import org.cytoscape.model.CyDisposable;
@@ -22,6 +23,10 @@ public class OrderedMouseAdapter implements MouseListener, MouseMotionListener, 
 
 	private final List<MouseAdapter> listeners = new ArrayList<>();
 	
+	private int pressedX = -1;
+	private int pressedY = -1;
+	private boolean dragged = false;
+	
 
 	public OrderedMouseAdapter(MouseAdapter ... adapters) {
 		for(var a : adapters) {
@@ -30,6 +35,7 @@ public class OrderedMouseAdapter implements MouseListener, MouseMotionListener, 
 	}
 	
 	public void add(MouseAdapter mouseAdapter) {
+		Objects.requireNonNull(mouseAdapter);
 		listeners.add(mouseAdapter);
 	}
 	
@@ -42,29 +48,51 @@ public class OrderedMouseAdapter implements MouseListener, MouseMotionListener, 
 		return null;
 	}
 	
+	private void fire(MouseEvent e, BiConsumer<MouseAdapter,MouseEvent> consumer) {
+		for(var l : listeners) {
+			if(e.isConsumed())
+				return;
+			consumer.accept(l, e);
+		}
+	}
+	
+	
+	@Override
+	public void mousePressed(MouseEvent e) {
+		pressedX = e.getX();
+		pressedY = e.getY();
+		dragged = false;
+		fire(e, MouseAdapter::mousePressed);
+	}
+	
 	@Override
 	public void mouseDragged(MouseEvent e) {
+		dragged = true;
 		fire(e, MouseAdapter::mouseDragged);
 	}
-
+	
 	@Override
-	public void mouseMoved(MouseEvent e) {
-		fire(e, MouseAdapter::mouseMoved);
+	public void mouseReleased(MouseEvent e) {
+		fire(e, MouseAdapter::mouseReleased);
+		if(isVerySmallMove(e)) {
+			fire(e, MouseAdapter::mouseClicked);
+		}
+		pressedX = -1;
+		pressedY = -1;
+		dragged = false;
 	}
-
+	
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		fire(e, MouseAdapter::mouseClicked);
 	}
 
-	@Override
-	public void mousePressed(MouseEvent e) {
-		fire(e, MouseAdapter::mousePressed);
-	}
-
-	@Override
-	public void mouseReleased(MouseEvent e) {
-		fire(e, MouseAdapter::mouseReleased);
+	private boolean isVerySmallMove(MouseEvent e) {
+		return dragged
+			&& pressedX >= 0
+			&& pressedY >= 0
+			&& Math.abs(pressedX - e.getX()) <= 1 
+			&& Math.abs(pressedY - e.getY()) <= 1;
 	}
 
 	@Override
@@ -77,13 +105,9 @@ public class OrderedMouseAdapter implements MouseListener, MouseMotionListener, 
 		fire(e, MouseAdapter::mouseExited);
 	}
 
-	
-	private void fire(MouseEvent e, BiConsumer<MouseAdapter,MouseEvent> consumer) {
-		for(var l : listeners) {
-			if(e.isConsumed())
-				return;
-			consumer.accept(l, e);
-		}
+	@Override
+	public void mouseMoved(MouseEvent e) {
+		fire(e, MouseAdapter::mouseMoved);
 	}
 
 	@Override
