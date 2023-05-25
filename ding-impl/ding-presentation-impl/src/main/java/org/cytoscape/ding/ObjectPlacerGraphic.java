@@ -176,7 +176,7 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 	
 	public ObjectPlacerGraphic(
 			ObjectPosition op,
-			ObjectPositionVisualProperty vp,
+			ObjectPositionVisualProperty vp, // may be null
 			Integer width,
 			Integer height,
 			boolean fullDetail
@@ -259,9 +259,9 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 		if (txtHeight <= 0)
 			txtHeight = fm1.getHeight();
 		
-		var isNodeLabel = NODE_LABEL_POSITION.equals(vp);
+		var isNodeLabel = vp == null || NODE_LABEL_POSITION.equals(vp);
 		var isEdgeLabel = EDGE_LABEL_POSITION.equals(vp);
-		var isCGLabel = vp.getIdString().startsWith("NODE_CUSTOMGRAPHICS_POSITION");
+		var isCGLabel = vp != null && vp.getIdString().startsWith("NODE_CUSTOMGRAPHICS_POSITION");
 		
 		var tgtTxt = isEdgeLabel ? "EDGE" : "NODE";
 		var objTxt = "OBJECT";

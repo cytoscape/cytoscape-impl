@@ -37,17 +37,15 @@ import org.cytoscape.view.presentation.property.values.ObjectPosition;
 public class ObjectPositionIcon extends VisualPropertyIcon<ObjectPosition> {
 	
 	private final ObjectPlacerGraphic lp;
-	private final ObjectPositionVisualProperty vp;
 
 	public ObjectPositionIcon(
 			ObjectPosition op,
-			ObjectPositionVisualProperty vp,
+			ObjectPositionVisualProperty vp, // may be null
 			int width,
 			int height,
 			String name
 	) {
 		super(op, width, height, name);
-		this.vp = vp;
 		this.lp = new ObjectPlacerGraphic(op, vp, width, height, false);
 	}
 
@@ -56,11 +54,11 @@ public class ObjectPositionIcon extends VisualPropertyIcon<ObjectPosition> {
 		var g2 = (Graphics2D) g;
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
-		g2.translate(x,  y);
+		g2.translate(x, y);
 		g2.fillRect(0, 0, width, height);
 		
 		lp.applyPosition();
 		lp.paint(g2);
-		g2.translate(-x,  -y);
+		g2.translate(-x, -y);
 	}
 }
