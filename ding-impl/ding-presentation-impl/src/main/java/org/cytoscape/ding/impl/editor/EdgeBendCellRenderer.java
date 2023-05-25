@@ -26,7 +26,6 @@ package org.cytoscape.ding.impl.editor;
 
 import java.awt.Component;
 
-import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
@@ -44,8 +43,7 @@ public class EdgeBendCellRenderer extends DefaultCellRenderer {
 	private static final int ICON_HEIGHT = 48;
 
 	@Override
-	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
-			int row, int column) {
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 		final JLabel label = new JLabel();
 
 		if (isSelected) {
@@ -56,10 +54,8 @@ public class EdgeBendCellRenderer extends DefaultCellRenderer {
 			label.setForeground(table.getForeground());
 		}
 
-		if (value instanceof Bend) {
-			final Bend bend = (Bend) value;
-			final Icon icon = VisualPropertyIconFactory.createIcon(bend, ICON_WIDTH, ICON_HEIGHT);
-			label.setIcon(icon);
+		if (value instanceof Bend bend) {
+			label.setIcon(VisualPropertyIconFactory.createIcon(bend, ICON_WIDTH, ICON_HEIGHT));
 			label.setVerticalAlignment(SwingConstants.CENTER);
 			label.setHorizontalAlignment(SwingConstants.CENTER);
 		}

@@ -59,10 +59,8 @@ public class ObjectPositionCellRenderer extends DefaultCellRenderer {
 			label.setForeground(table.getForeground());
 		}
 
-		if ((value != null) && value instanceof ObjectPosition) {
-			final ObjectPosition lp = (ObjectPosition) value;
-			
-			label.setIcon(VisualPropertyIconFactory.createIcon(lp, ICON_WIDTH, ICON_HEIGHT));
+		if (value instanceof ObjectPosition op) {
+			label.setIcon(VisualPropertyIconFactory.createIcon(op, ICON_WIDTH, ICON_HEIGHT));
 			label.setVerticalAlignment(SwingConstants.CENTER);
 			label.setHorizontalAlignment(SwingConstants.CENTER);
 		} 
