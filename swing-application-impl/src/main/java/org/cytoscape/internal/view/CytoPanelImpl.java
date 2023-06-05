@@ -6,19 +6,8 @@ import static org.cytoscape.internal.view.CytoPanelNameInternal.BOTTOM;
 import static org.cytoscape.internal.view.CytoPanelNameInternal.EAST;
 import static org.cytoscape.internal.view.CytoPanelNameInternal.SOUTH;
 import static org.cytoscape.internal.view.CytoPanelNameInternal.WEST;
-import static org.cytoscape.internal.view.CytoPanelStateInternal.DOCK;
-import static org.cytoscape.internal.view.CytoPanelStateInternal.FLOAT;
-import static org.cytoscape.internal.view.CytoPanelStateInternal.HIDE;
-import static org.cytoscape.internal.view.CytoPanelStateInternal.MINIMIZE;
-import static org.cytoscape.internal.view.CytoPanelStateInternal.UNDOCK;
-import static org.cytoscape.internal.view.CytoPanelUtil.BOTTOM_MIN_HEIGHT;
-import static org.cytoscape.internal.view.CytoPanelUtil.BOTTOM_MIN_WIDTH;
-import static org.cytoscape.internal.view.CytoPanelUtil.EAST_MIN_HEIGHT;
-import static org.cytoscape.internal.view.CytoPanelUtil.EAST_MIN_WIDTH;
-import static org.cytoscape.internal.view.CytoPanelUtil.SOUTH_MIN_HEIGHT;
-import static org.cytoscape.internal.view.CytoPanelUtil.SOUTH_MIN_WIDTH;
-import static org.cytoscape.internal.view.CytoPanelUtil.WEST_MIN_HEIGHT;
-import static org.cytoscape.internal.view.CytoPanelUtil.WEST_MIN_WIDTH;
+import static org.cytoscape.internal.view.CytoPanelStateInternal.*;
+import static org.cytoscape.internal.view.CytoPanelUtil.*;
 import static org.cytoscape.util.swing.IconManager.ICON_WINDOW_MAXIMIZE;
 import static org.cytoscape.util.swing.IconManager.ICON_WINDOW_MINIMIZE;
 import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
@@ -458,7 +447,7 @@ public class CytoPanelImpl implements CytoPanel {
 					
 					for (CytoPanelComponent cpc : cytoPanelComponents) {
 						int index = i++;
-						String title = cpc.getTitle();
+						String title = ViewUtil.removeHtmlTags(cpc.getTitle());
 						Icon icon = cpc.getIcon();
 						
 						if (icon == null)
@@ -515,6 +504,7 @@ public class CytoPanelImpl implements CytoPanel {
 		CytoPanelComponent cpc = getCytoPanelComponentAt(index);
 
 		String text = cpc != null && cpc.getTitle() != null ? cpc.getTitle().trim() : "";
+		text = ViewUtil.removeHtmlTags(text);
 		
 		// Show icon instead, if there's no text
 		Icon icon = cpc != null && text.isEmpty() ? cpc.getIcon() : null;
@@ -534,7 +524,7 @@ public class CytoPanelImpl implements CytoPanel {
 		if (cpc instanceof CytoPanelComponent2)
 			return ((CytoPanelComponent2) cpc).getIdentifier();
 		
-		return cpc.getTitle() + "__" + cpc.getClass().getName();
+		return ViewUtil.removeHtmlTags(cpc.getTitle()) + "__" + cpc.getClass().getName();
 	}
 	
 	@Override

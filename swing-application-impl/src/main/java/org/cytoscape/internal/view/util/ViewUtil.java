@@ -30,6 +30,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
@@ -38,6 +39,9 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.StyledDocument;
+import javax.swing.text.View;
 
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyNetwork;
@@ -334,6 +338,25 @@ public final class ViewUtil {
 	
 	public static String getViewProperty(String key, CyServiceRegistrar serviceRegistrar) {
 		return getViewProperty(key, null, serviceRegistrar);
+	}
+	
+	public static String removeHtmlTags(String text) {
+		if(text == null)
+			return null;
+		
+		var label = new JLabel(text);
+		var htmlProperty = label.getClientProperty("html");
+		
+		if(htmlProperty instanceof View view) {
+			var doc = view.getDocument();
+            if(doc instanceof StyledDocument) {
+                try {
+					return doc.getText(0, doc.getLength());
+				} catch (BadLocationException e) { }
+            }
+		}
+		
+		return text;
 	}
 	
 	@SuppressWarnings("unchecked")

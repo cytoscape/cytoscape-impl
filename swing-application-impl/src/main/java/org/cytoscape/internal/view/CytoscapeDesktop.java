@@ -2,16 +2,8 @@ package org.cytoscape.internal.view;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
-import static org.cytoscape.internal.view.CytoPanelNameInternal.BOTTOM;
-import static org.cytoscape.internal.view.CytoPanelNameInternal.EAST;
-import static org.cytoscape.internal.view.CytoPanelNameInternal.SOUTH;
-import static org.cytoscape.internal.view.CytoPanelNameInternal.SOUTH_WEST;
-import static org.cytoscape.internal.view.CytoPanelNameInternal.WEST;
-import static org.cytoscape.internal.view.CytoPanelStateInternal.DOCK;
-import static org.cytoscape.internal.view.CytoPanelStateInternal.FLOAT;
-import static org.cytoscape.internal.view.CytoPanelStateInternal.HIDE;
-import static org.cytoscape.internal.view.CytoPanelStateInternal.MINIMIZE;
-import static org.cytoscape.internal.view.CytoPanelStateInternal.UNDOCK;
+import static org.cytoscape.internal.view.CytoPanelNameInternal.*;
+import static org.cytoscape.internal.view.CytoPanelStateInternal.*;
 import static org.cytoscape.internal.view.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.internal.view.util.ViewUtil.invokeOnEDTAndWait;
 import static org.cytoscape.internal.view.util.ViewUtil.isScreenMenuBar;
@@ -1656,7 +1648,7 @@ public class CytoscapeDesktop extends JFrame
 						if (btn == null) {
 							// This means this CytoPanelComponent has been added recently
 							// and it does not have a button yet, so let's create one
-							var title = cpc.getTitle();
+							var title = ViewUtil.removeHtmlTags(cpc.getTitle());
 							var icon = cpc.getIcon();
 							
 							if ((title == null || title.trim().isEmpty()) && icon == null)
@@ -1687,7 +1679,7 @@ public class CytoscapeDesktop extends JFrame
 						buttons.add(btn);
 						
 						// Always reset the text, ButtonUI and button's size
-						btn.setText(showLabels ? cpc.getTitle() : null);
+						btn.setText(showLabels ? ViewUtil.removeHtmlTags(cpc.getTitle()) : null);
 						
 						if (showLabels && orientation == SwingConstants.VERTICAL)
 							btn.setUI(new VerticalButtonUI(compassDirection == SwingConstants.EAST));
@@ -1932,7 +1924,7 @@ public class CytoscapeDesktop extends JFrame
 		
 		@Override
 		public String toString() {
-			return cytoPanelComponent != null ? cytoPanelComponent.getTitle() : super.toString();
+			return cytoPanelComponent != null ? ViewUtil.removeHtmlTags(cytoPanelComponent.getTitle()) : super.toString();
 		}
 	}
 	
