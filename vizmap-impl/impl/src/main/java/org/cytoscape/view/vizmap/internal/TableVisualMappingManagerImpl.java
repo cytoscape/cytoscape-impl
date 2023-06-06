@@ -89,18 +89,12 @@ public class TableVisualMappingManagerImpl implements TableVisualMappingManager,
 	
 	
 	// Internal record, just used to return two things from a method.
-	private record NetworkStyleAndTableType(VisualStyle networkStyle, Class<? extends CyIdentifiable> tableType) {
-		final static NetworkStyleAndTableType NO_VIEWS = new NetworkStyleAndTableType(null, null);
-		final static NetworkStyleAndTableType TOO_MANY_VIEWS = new NetworkStyleAndTableType(null, null);
-		boolean isValid() { return this != NO_VIEWS && this != TOO_MANY_VIEWS; }
-	}
+	private record NetworkStyleAndTableType(VisualStyle networkStyle, Class<? extends CyIdentifiable> tableType) {}
 	
 	
 	/**
 	 * If then given colView is from a network's default node/edge/network table, then return the visual style
 	 * currently applied to that network, and the type of the table.
-	 * Note: Throws an exception if the network has no network views or more than one network view with different
-	 * styles applied.
 	 */
 	private NetworkStyleAndTableType getNetworkStyleAndTableType(View<CyColumn> colView) {
 		// If the column is from a default node/edge/network table, then make it part of the associated style
@@ -111,17 +105,13 @@ public class TableVisualMappingManagerImpl implements TableVisualMappingManager,
 		var table = colView.getModel().getTable();
 		
 		var namespace = networkTableManager.getTableNamespace(table);
-		var network = networkTableManager.getNetworkForTable(table);
+		var network   = networkTableManager.getNetworkForTable(table);
 		var tableType = networkTableManager.getTableType(table);
 		
 		if(network != null && namespace == CyNetwork.DEFAULT_ATTRS && (tableType == CyNode.class || tableType == CyEdge.class)) {
 			var netViews = networkViewManager.getNetworkViews(network);
 			
-			if(tableType != null && netViews != null) {
-				if(netViews.isEmpty()) {
-					return NetworkStyleAndTableType.NO_VIEWS;
-				} 
-				
+			if(tableType != null && netViews != null && !netViews.isEmpty()) {
 				var netViewCount = netViews.size();
 				var iter = netViews.iterator();
 				var firstStyle = visualMappingManager.getVisualStyle(iter.next());
@@ -130,7 +120,7 @@ public class TableVisualMappingManagerImpl implements TableVisualMappingManager,
 					while(iter.hasNext()) {
 						var nextStyle = visualMappingManager.getVisualStyle(iter.next());
 						if(!firstStyle.equals(nextStyle)) {
-							return NetworkStyleAndTableType.TOO_MANY_VIEWS;
+							return null;
 						}
 					}
 				}
@@ -155,14 +145,10 @@ public class TableVisualMappingManagerImpl implements TableVisualMappingManager,
 
 		var nsatt = getNetworkStyleAndTableType(colView);
 		if(nsatt != null) {
-			if(nsatt.isValid()) {
-				var networkStyle = nsatt.networkStyle();
-				var tableType = nsatt.tableType();
-				var colName = colView.getModel().getName();
-				return getAssociatedColumnVisualStyle(networkStyle, tableType, colName);
-			} else {
-				return null;
-			}
+			var networkStyle = nsatt.networkStyle();
+			var tableType = nsatt.tableType();
+			var colName = colView.getModel().getName();
+			return getAssociatedColumnVisualStyle(networkStyle, tableType, colName);
 		}
 		
 		synchronized (lock) {
@@ -177,17 +163,6 @@ public class TableVisualMappingManagerImpl implements TableVisualMappingManager,
 		// If the column is from a default node/edge/network table, then make it part of the associated style.
 		var nsatt = getNetworkStyleAndTableType(colView);
 		if(nsatt != null) {
-			if(nsatt == NetworkStyleAndTableType.NO_VIEWS && columnStyle == null) {
-				return;
-			} else if(nsatt == NetworkStyleAndTableType.NO_VIEWS) {
-				throw new IllegalStateException("The given colView is for a default network table for a network that has no network views.");
-			} else if(nsatt == NetworkStyleAndTableType.TOO_MANY_VIEWS && columnStyle == null) {
-				return;
-			} else if(nsatt == NetworkStyleAndTableType.TOO_MANY_VIEWS) {
-				throw new IllegalStateException("The given colView is for a default network table for a network that has multiple network views "
-						+ "with different styles. Please use setAssociatedVisualStyle() to specify the networkStyle to association with the column style.");
-			}
-			
 			var networkStyle = nsatt.networkStyle();
 			var tableType = nsatt.tableType();
 			var colName = colView.getModel().getName();
@@ -269,7 +244,7 @@ public class TableVisualMappingManagerImpl implements TableVisualMappingManager,
 			throw new IllegalArgumentException("tableType is not a supported type, got: " + tableType);
 	}
 	
-	
+	@Override
 	public void setAssociatedVisualStyle(VisualStyle networkVisualStyle, Class<? extends CyIdentifiable> tableType, String colName, VisualStyle columnVisualStyle) {
 		Objects.requireNonNull(networkVisualStyle, "networkVisualStyle is null");
 		Objects.requireNonNull(tableType, "tableType is null");
@@ -296,7 +271,7 @@ public class TableVisualMappingManagerImpl implements TableVisualMappingManager,
 		}
 	}
 	
-	
+	@Override
 	public Map<String,VisualStyle> getAssociatedColumnVisualStyles(VisualStyle networkVisualStyle, Class<? extends CyIdentifiable> tableType) {
 		var styleMap = getAssociatedStyleMap(tableType);
 		Map<String, VisualStyle> associatedStyles = styleMap.get(networkVisualStyle);
