@@ -144,8 +144,13 @@ public class NetworkViewMainPanel extends JPanel {
 		if (isRendered(view))
 			return null;
 		
-		var vc = new NetworkViewContainer(view, view.equals(getCurrentNetworkView()), engineFactory, thumbnailFactory,
-				gridViewToggleModel, serviceRegistrar);
+		NetworkViewContainer vc;
+		try {
+			var isCurrent = view.equals(getCurrentNetworkView());
+			vc = new NetworkViewContainer(view, isCurrent, engineFactory, thumbnailFactory, gridViewToggleModel, serviceRegistrar);
+		} catch (IllegalArgumentException e) {
+			return null; // CYTOSCAPE-13083
+		}
 		
 		vc.getDetachViewButton().addActionListener(evt -> {
 			detachNetworkView(view);
