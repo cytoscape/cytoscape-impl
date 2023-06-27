@@ -56,13 +56,20 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 		if (view instanceof CyNetworkView == false)
 			throw new IllegalArgumentException("Ding accepts CyNetworkView only.");
 
-		DRenderingEngine re = viewFactory.getRenderingEngine((CyNetworkView) view);
+		CyNetworkView networkView = (CyNetworkView) view;
+		if(!DingRenderer.ID.equals(networkView.getRendererId())) {
+			throw new IllegalArgumentException("The given network view was not created by the ding renderer: '" +  networkView.getRendererId() + "'");
+		}
 		
-		if (container instanceof RootPaneContainer) {
-			RootPaneContainer rootPane = (RootPaneContainer) container;
+		DRenderingEngine re = viewFactory.getRenderingEngine(networkView);
+		if(re == null) {
+			throw new IllegalArgumentException("The given network view is not registered with the CyNetworkViewManager service. "
+					+ "Its possible the network view has not been registered yet, or it was registered and has already been destroyed.");
+		}
+		
+		if (container instanceof RootPaneContainer rootPane) {
 			re.install(rootPane);
-		} else if (container instanceof JComponent){
-			JComponent component = (JComponent) container;
+		} else if (container instanceof JComponent component) {
 			re.install(component);
 		} else {
 			throw new IllegalArgumentException("container object must be of type JComponent or RootPaneContainer");

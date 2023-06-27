@@ -1,8 +1,8 @@
 package org.cytoscape.ding.impl;
 
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
@@ -34,7 +34,7 @@ public class DingNetworkViewFactory implements CyNetworkViewFactory, NetworkView
 	
 	
 	private final CyNetworkViewFactory delegateFactory;
-	private final Map<CyNetworkView, DRenderingEngine> mainRenderingEngines = new HashMap<>();
+	private final Map<CyNetworkView, DRenderingEngine> mainRenderingEngines = new ConcurrentHashMap<>();
 
 	private final DVisualLexicon dingLexicon;
 	private final AnnotationFactoryManager annMgr;
@@ -87,11 +87,15 @@ public class DingNetworkViewFactory implements CyNetworkViewFactory, NetworkView
 	}
 	
 	public DRenderingEngine getRenderingEngine(CyNetworkView networkView) {
+		if(networkView == null)
+			return null;
 		return mainRenderingEngines.get(networkView);
 	}
 
 	public void removeRenderingEngine(CyNetworkView networkView) {
-		DRenderingEngine re = mainRenderingEngines.remove(networkView);
+		if(networkView == null)
+			return;
+		mainRenderingEngines.remove(networkView);
 	}
 	
 	@Override
