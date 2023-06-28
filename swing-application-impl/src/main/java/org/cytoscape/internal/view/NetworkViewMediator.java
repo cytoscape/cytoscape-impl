@@ -66,7 +66,6 @@ import org.cytoscape.view.model.events.ViewChangeRecord;
 import org.cytoscape.view.model.events.ViewChangedEvent;
 import org.cytoscape.view.model.events.ViewChangedListener;
 import org.cytoscape.view.presentation.RenderingEngine;
-import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
@@ -575,23 +574,23 @@ public class NetworkViewMediator
 			if (renderer == null)
 				renderer = appMgr.getDefaultNetworkViewRenderer();
 
-			final RenderingEngineFactory<CyNetwork> engineFactory = renderer
-					.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT);
-			final RenderingEngineFactory<CyNetwork> thumbnailFactory = renderer
-					.getRenderingEngineFactory(NetworkViewRenderer.THUMBNAIL_CONTEXT);
+			var engineFactory    = renderer.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT);
+			var thumbnailFactory = renderer.getRenderingEngineFactory(NetworkViewRenderer.THUMBNAIL_CONTEXT);
 			
-			final RenderingEngine<CyNetwork> renderingEngine =
-					getNetworkViewMainPanel().addNetworkView(view, engineFactory, thumbnailFactory);
-			presentationMap.put(view, renderingEngine);
+			var renderingEngine = getNetworkViewMainPanel().addNetworkView(view, engineFactory, thumbnailFactory);
 			
-			final boolean isCurrentView = view.equals(appMgr.getCurrentNetworkView());
-			
-			new Thread(() -> {
-				serviceRegistrar.getService(RenderingEngineManager.class).addRenderingEngine(renderingEngine);
+			if(renderingEngine != null) {
+				presentationMap.put(view, renderingEngine);
 				
-				if (isCurrentView)
-					appMgr.setCurrentRenderingEngine(renderingEngine);
-			}).start();
+				final boolean isCurrentView = view.equals(appMgr.getCurrentNetworkView());
+				
+				new Thread(() -> {
+					serviceRegistrar.getService(RenderingEngineManager.class).addRenderingEngine(renderingEngine);
+					
+					if (isCurrentView)
+						appMgr.setCurrentRenderingEngine(renderingEngine);
+				}).start();
+			}
 		});
 	}
 
