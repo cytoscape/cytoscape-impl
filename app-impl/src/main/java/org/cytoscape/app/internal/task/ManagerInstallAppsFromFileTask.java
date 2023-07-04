@@ -1,31 +1,22 @@
 package org.cytoscape.app.internal.task;
 
-import java.io.File;
-import java.awt.Container;
-import java.awt.FileDialog;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.LinkedList;
-import java.util.Arrays;
-import javax.swing.JFrame;
 import java.awt.Window;
+import java.io.File;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedList;
+
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 
-import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.AppManager;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
-import org.cytoscape.service.util.CyServiceRegistrar;
-
-import org.cytoscape.app.internal.task.InstallAppsFromFileTask;
-import org.cytoscape.app.internal.task.ShowInstalledAppsTask;
+import org.cytoscape.work.TaskMonitor;
 
 
 public class ManagerInstallAppsFromFileTask extends AbstractTask {

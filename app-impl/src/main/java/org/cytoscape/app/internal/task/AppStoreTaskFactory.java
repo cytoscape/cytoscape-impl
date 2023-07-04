@@ -1,10 +1,5 @@
 package org.cytoscape.app.internal.task;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTaskFactory;

@@ -1,21 +1,16 @@
 package org.cytoscape.app.internal.task;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.application.swing.CytoPanelState;
-import org.cytoscape.app.internal.manager.AppManager;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskManager;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.json.JSONResult;
 
 
 public class ChangeTabTask extends AbstractAppTask implements ObservableTask {

@@ -1,19 +1,13 @@
 package org.cytoscape.app.internal.manager;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.cytoscape.app.event.AppsFinishedStartingEvent;
 import org.cytoscape.app.event.AppsFinishedStartingListener;
-import org.cytoscape.app.internal.manager.App;
-import org.cytoscape.app.internal.manager.AppManager;
-import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
-import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
 import org.cytoscape.app.internal.task.AppManagerTaskFactory;
+import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.application.swing.CySwingApplication;
 
 public class LaunchManager implements AppsFinishedStartingListener {
 

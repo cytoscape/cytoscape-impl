@@ -11,11 +11,10 @@ import org.cytoscape.app.internal.net.WebApp;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
 

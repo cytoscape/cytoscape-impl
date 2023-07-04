@@ -28,7 +28,6 @@ import org.cytoscape.app.internal.exception.AppLoadingException;
 import org.cytoscape.app.internal.exception.AppStartupException;
 import org.cytoscape.app.internal.exception.AppStoppingException;
 import org.cytoscape.app.internal.exception.AppUnloadingException;
-import org.cytoscape.app.internal.util.AppHelper;
 import org.cytoscape.application.CyVersion;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;

@@ -1,13 +1,10 @@
 package org.cytoscape.app.internal.ui;
 
-import static javax.swing.GroupLayout.DEFAULT_SIZE;
-
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;

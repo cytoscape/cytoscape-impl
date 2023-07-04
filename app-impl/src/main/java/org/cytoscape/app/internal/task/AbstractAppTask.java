@@ -1,14 +1,9 @@
 package org.cytoscape.app.internal.task;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.app.internal.manager.App;
@@ -17,9 +12,6 @@ import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.WebApp;
 import org.cytoscape.app.internal.net.WebApp.Release;
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.json.JSONResult;
 
 public abstract class AbstractAppTask extends AbstractTask {
 	final protected AppManager appManager;
@@ -82,6 +74,7 @@ public abstract class AbstractAppTask extends AbstractTask {
 	}
 
 	class VersionCompare implements Comparator<App> {
+		@Override
 		public int compare(App o1, App o2) {
 			String version1 = o1.getVersion();
 			String version2 = o2.getVersion();
