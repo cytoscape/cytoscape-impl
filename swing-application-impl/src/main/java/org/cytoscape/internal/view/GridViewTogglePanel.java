@@ -8,24 +8,13 @@ import static org.cytoscape.util.swing.IconManager.ICON_SHARE_ALT_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_TH;
 import static org.cytoscape.util.swing.LookAndFeelUtil.equalizeSize;
 
-import java.awt.Component;
-import java.awt.KeyboardFocusManager;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
 import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JTable;
 import javax.swing.JToggleButton;
-import javax.swing.KeyStroke;
-import javax.swing.text.JTextComponent;
 
 import org.cytoscape.internal.view.GridViewToggleModel.Mode;
 import org.cytoscape.internal.view.util.ViewUtil;
@@ -107,7 +96,6 @@ public class GridViewTogglePanel extends JPanel {
 		);
 		
 		equalizeSize(getGridModeButton(), getViewModeButton());
-		setKeyBindings(this);
 		
 		model.addPropertyChangeListener("mode", modePropertyListener);
 		update();
@@ -122,7 +110,7 @@ public class GridViewTogglePanel extends JPanel {
 	JToggleButton getGridModeButton() {
 		if (gridModeButton == null) {
 			gridModeButton = new JToggleButton(ICON_TH);
-			gridModeButton.setToolTipText("Show Grid (G)");
+			gridModeButton.setToolTipText("Show Grid");
 			styleToolBarButton(gridModeButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
 			
 			gridModeButton.addActionListener(evt -> {
@@ -136,7 +124,7 @@ public class GridViewTogglePanel extends JPanel {
 	JToggleButton getViewModeButton() {
 		if (viewModeButton == null) {
 			viewModeButton = new JToggleButton(ICON_SHARE_ALT_SQUARE);
-			viewModeButton.setToolTipText("Show View (V)");
+			viewModeButton.setToolTipText("Show View");
 			styleToolBarButton(viewModeButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
 			
 			viewModeButton.addActionListener(evt -> {
@@ -151,43 +139,6 @@ public class GridViewTogglePanel extends JPanel {
 		return modeButtonGroup;
 	}
 	
-	private void setKeyBindings(final JComponent comp) {
-		final ActionMap actionMap = comp.getActionMap();
-		final InputMap inputMap = comp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-
-		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_G, 0), KeyAction.VK_G);
-		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, 0), KeyAction.VK_V);
-		
-		actionMap.put(KeyAction.VK_G, new KeyAction(KeyAction.VK_G));
-		actionMap.put(KeyAction.VK_V, new KeyAction(KeyAction.VK_V));
-	}
-	
-	private class KeyAction extends AbstractAction {
-
-		final static String VK_G = "VK_G";
-		final static String VK_V = "VK_V";
-		
-		KeyAction(final String actionCommand) {
-			putValue(ACTION_COMMAND_KEY, actionCommand);
-		}
-
-		@Override
-		public void actionPerformed(final ActionEvent e) {
-			final Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-			
-			if (focusOwner instanceof JTextComponent || focusOwner instanceof JTable ||
-					!GridViewTogglePanel.this.isVisible())
-				return; // We don't want to steal the key event from these components
-			
-			final String cmd = e.getActionCommand();
-			
-			if (cmd.equals(VK_G))
-				getGridModeButton().doClick();
-			else if (cmd.equals(VK_V))
-				getViewModeButton().doClick();
-		}
-	}
-
 	void dispose() {
 		// prevent memory leak
 		model.removePropertyChangeListener("mode", modePropertyListener);
