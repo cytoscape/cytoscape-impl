@@ -7,22 +7,23 @@ import static javax.swing.GroupLayout.Alignment.LEADING;
 import static javax.swing.GroupLayout.Alignment.TRAILING;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 import static org.cytoscape.internal.view.util.ViewUtil.styleToolBarButton;
-import static org.cytoscape.util.swing.IconManager.*;
+import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE;
+import static org.cytoscape.util.swing.IconManager.ICON_CIRCLE;
+import static org.cytoscape.util.swing.IconManager.ICON_CROSSHAIRS;
+import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
+import static org.cytoscape.util.swing.IconManager.ICON_EYE_SLASH;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.KeyboardFocusManager;
 import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
@@ -32,15 +33,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.JSeparator;
-import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JToolTip;
-import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
 import javax.swing.UIManager;
-import javax.swing.text.JTextComponent;
 
 import org.cytoscape.internal.model.SelectionMode;
 import org.cytoscape.internal.util.IconUtil;
@@ -177,12 +175,6 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			
 			// Hide Navigator when starting Compare Mode
 			hideBirdsEyePanel();
-			
-			removeKeyBindings(this);
-			removeKeyBindings(getRootPane());
-		} else {
-			setKeyBindings(this);
-			setKeyBindings(getRootPane());
 		}
 	}
 	
@@ -328,7 +320,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	
 	private void updateBirdsEyeButton() {
 		boolean bevVisible = getBirdsEyeViewPanel().isVisible();
-		getBirdsEyeViewButton().setToolTipText((bevVisible ? "Hide" : "Show") + " Navigator (N)");
+		getBirdsEyeViewButton().setToolTipText((bevVisible ? "Hide" : "Show") + " Navigator");
 		ViewUtil.updateToolBarStyle(getBirdsEyeViewButton());
 	}
 	
@@ -380,9 +372,6 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		getContentPane().setLayout(new BorderLayout());
 		getContentPane().add(getVisualizationContainer(), BorderLayout.CENTER);
 		getContentPane().add(getToolBar(), BorderLayout.SOUTH);
-		
-		setKeyBindings(this);
-		setKeyBindings(getRootPane());
 		
 		updateTollBar(true, true);
 		updateBirdsEyeViewPanel();
@@ -856,47 +845,6 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			
 			if (comp.isVisible())
 				visibleCount++;
-		}
-	}
-	
-	private void setKeyBindings(JComponent comp) {
-		var actionMap = comp.getActionMap();
-		var inputMap = comp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-
-		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_N, 0), KeyAction.VK_N);
-		actionMap.put(KeyAction.VK_N, new KeyAction(KeyAction.VK_N));
-	}
-	
-	private void removeKeyBindings(final JComponent comp) {
-		var actionMap = comp.getActionMap();
-		var inputMap = comp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-		
-		inputMap.remove(KeyStroke.getKeyStroke(KeyEvent.VK_N, 0));
-		actionMap.remove(KeyAction.VK_N);
-	}
-	
-	private class KeyAction extends AbstractAction {
-
-		final static String VK_N = "VK_N";
-		
-		KeyAction(String actionCommand) {
-			putValue(ACTION_COMMAND_KEY, actionCommand);
-		}
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			var focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-			
-			if (focusOwner instanceof JTextComponent || focusOwner instanceof JTable ||
-					!NetworkViewContainer.this.getContentPane().isVisible())
-				return; // We don't want to steal the key event from these components
-			
-			var cmd = e.getActionCommand();
-			
-			if (cmd.equals(VK_N)) {
-				// Toggle Navigator (bird's eye view) visibility state
-				getBirdsEyeViewButton().doClick();
-			}
 		}
 	}
 	
