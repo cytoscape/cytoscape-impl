@@ -10,16 +10,12 @@ import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
 import static org.cytoscape.util.swing.LookAndFeelUtil.equalizeSize;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridLayout;
-import java.awt.KeyboardFocusManager;
-import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,24 +25,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
-import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRootPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
-import javax.swing.JTable;
-import javax.swing.KeyStroke;
 import javax.swing.UIManager;
-import javax.swing.text.JTextComponent;
 
 import org.cytoscape.internal.util.Util;
 import org.cytoscape.internal.view.util.ViewUtil;
@@ -266,8 +255,6 @@ public class NetworkViewComparisonPanel extends JPanel {
 			}
 		});
 		
-		setKeyBindings(this);
-		
 		arrangePanels();
 		update();
 	}
@@ -484,42 +471,6 @@ public class NetworkViewComparisonPanel extends JPanel {
 		}
 		
 		getGridPanel().updateUI();
-	}
-	
-	private void setKeyBindings(final JComponent comp) {
-		final ActionMap actionMap = comp.getActionMap();
-		final InputMap inputMap = comp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-
-		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_N, 0), KeyAction.VK_N);
-		actionMap.put(KeyAction.VK_N, new KeyAction(KeyAction.VK_N));
-	}
-	
-	private class KeyAction extends AbstractAction {
-
-		final static String VK_N = "VK_N";
-		
-		KeyAction(final String actionCommand) {
-			putValue(ACTION_COMMAND_KEY, actionCommand);
-		}
-
-		@Override
-		public void actionPerformed(final ActionEvent e) {
-			final Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-			
-			if (focusOwner instanceof JTextComponent || focusOwner instanceof JTable ||
-					!NetworkViewComparisonPanel.this.isVisible())
-				return; // We don't want to steal the key event from these components
-			
-			final String cmd = e.getActionCommand();
-			
-			if (cmd.equals(VK_N)) {
-				// Toggle current view's Navigator (bird's eye view) visibility
-				final NetworkViewContainer vc = getCurrentContainer();
-				
-				if (vc != null)
-					vc.getBirdsEyeViewButton().doClick();
-			}
-		}
 	}
 	
 	protected class ViewPanel extends JPanel {
