@@ -96,9 +96,9 @@ public class CyTableViewManagerImpl implements CyTableViewManager, TableAboutToB
 			var suidCol = view.getColumnView(CyNetwork.SUID);
 			var selectedCol = view.getColumnView(CyNetwork.SELECTED);
 			if(suidCol != null)
-				suidCol.setVisualProperty(COLUMN_VISIBLE, false);
+				suidCol.setLockedValue(COLUMN_VISIBLE, false);
 			if(selectedCol != null)
-				selectedCol.setVisualProperty(COLUMN_VISIBLE, false);
+				selectedCol.setLockedValue(COLUMN_VISIBLE, false);
 			
 			boolean gravitySet = view.getColumnViews().stream()
 					.anyMatch(c -> !COLUMN_GRAVITY.getDefault().equals(c.getVisualProperty(COLUMN_GRAVITY)));
