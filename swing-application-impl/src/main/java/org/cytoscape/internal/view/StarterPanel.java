@@ -86,8 +86,8 @@ public class StarterPanel extends JPanel {
 	
 	public static String NAME = "__STARTER_PANEL__";
 	
-	public static final String TUTORIAL_URL = "http://tutorials.cytoscape.org";
-	public static final String NEWS_URL = "http://cytoscape-publications.tumblr.com";
+	public static final String TUTORIAL_URL = "https://tutorials.cytoscape.org";
+	public static final String NEWS_URL = "https://www.ncbi.nlm.nih.gov/pmc/?term=(cytoscape+AND+network)&report=imagesdocsum&dispmax=100";
 	
 	public final Color LIST_BG_COLOR = UIManager.getColor("Table.background");
 	public final Color LIST_FOCUS_BG_COLOR = UIManager.getColor("Table.selectionBackground");
@@ -120,7 +120,7 @@ public class StarterPanel extends JPanel {
 	private JButton closeButton;
 	
 	private JLabel tutorialsLabel = createLinkLabel("<html><u>Tutorials</u></html>", TUTORIAL_URL);
-	private JLabel newsLabel = createLinkLabel("<html><u>News</u></html>", NEWS_URL);
+	private JLabel newsLabel = createLinkLabel("<html><u>Published Figures</u></html>", NEWS_URL);
 	
 	private final Icon missingImageIcon;
 	
