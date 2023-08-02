@@ -11,6 +11,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.AbstractAction;
 import javax.swing.GroupLayout;
@@ -22,6 +25,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.Timer;
+import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 
 import org.cytoscape.search.internal.search.SearchResults;
@@ -90,6 +94,50 @@ public abstract class SearchBox extends JPanel {
 		);
 	}
 	
+	
+	/**
+	 * Hack to prolong a tooltip’s visible delay
+	 * Thanks to: http://tech.chitgoks.com/2010/05/31/disable-tooltip-delay-in-java-swing/
+	 */
+	private class DismissDelayMouseAdapter extends MouseAdapter {
+		
+		final int defaultDismissTimeout = ToolTipManager.sharedInstance().getDismissDelay();
+		final int dismissDelayMinutes;
+		
+		public DismissDelayMouseAdapter(int milliseconds) {
+		    dismissDelayMinutes = milliseconds;
+		}
+	    
+	    @Override
+	    public void mouseEntered(MouseEvent e) {
+	        ToolTipManager.sharedInstance().setDismissDelay(dismissDelayMinutes);
+	    }
+	 
+	    @Override
+	    public void mouseExited(MouseEvent e) {
+	        ToolTipManager.sharedInstance().setDismissDelay(defaultDismissTimeout);
+	    }
+	}
+	
+	
+	private static final String TOOLTIP_TEXT = """
+			<html>
+			Example Search Queries:<br>
+			<br>
+			<table>
+			<tr><td><b>YL</b></td><td>Search all text columns for "YL"</td></tr>
+			<tr><td><b>YL*</b></td><td>Search all text columns for terms that start with "YL"</td></tr>
+			<tr><td><b>name:YL</b></td><td>Search the "name" column for "YL"</td></tr>
+			<tr><td><b>GO\\:1232</b></td><td>Escape special characters and spaces with a backslash</td></tr>
+			<tr><td><b>pvalue:0.1</b></td><td>Numeric searches must include the column name</td></tr>
+			<tr><td><b>pvalue:[0.2 TO 0.4]</b></td><td>Search the "pvalue" column for values between 0.2 and 0.4 inclusive</td></tr>
+			</table>
+			<br>
+			See the Cytoscape Manual for more examples.
+			</html>""";
+	
+	
+	
 	private JTextField getSearchTextField() {
 		if(searchTextField == null) {
 			var defText = "Enter search term...";
@@ -98,16 +146,9 @@ public abstract class SearchBox extends JPanel {
 			
 			searchTextField = new JTextField();
 			searchTextField.putClientProperty("JTextField.variant", "search");
-
-			searchTextField.setToolTipText("""
-					<html>
-					Example Search Queries:<br><br>
-					YL* -- Search all columns<br>
-					name:YL* -- Search 'name' column<br>
-					GO\\:1232 -- Escape special characters and spaces with backslash
-					</html>""");
-			
+			searchTextField.setToolTipText(TOOLTIP_TEXT);
 			searchTextField.setName("tfSearchText");
+			searchTextField.addMouseListener(new DismissDelayMouseAdapter((int)TimeUnit.MINUTES.toMillis(5))); // 5 min
 			
 			if (!isAquaLAF()) {
 				searchTextField.setText(defText);
