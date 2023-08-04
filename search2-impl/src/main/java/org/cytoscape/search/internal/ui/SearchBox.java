@@ -125,8 +125,8 @@ public abstract class SearchBox extends JPanel {
 			Example Search Queries:<br>
 			<br>
 			<table>
-			<tr><td><b>YL</b></td><td>Search all text columns for "YL"</td></tr>
-			<tr><td><b>YL*</b></td><td>Search all text columns for terms that start with "YL"</td></tr>
+			<tr><td><b>YL</b></td><td>Search all text columns for the exact word "YL"</td></tr>
+			<tr><td><b>YL*</b></td><td>Search all text columns for words that start with "YL"</td></tr>
 			<tr><td><b>name:YL</b></td><td>Search the "name" column for "YL"</td></tr>
 			<tr><td><b>GO\\:1232</b></td><td>Escape special characters and spaces with a backslash</td></tr>
 			<tr><td><b>pvalue:0.1</b></td><td>Numeric searches must include the column name</td></tr>
