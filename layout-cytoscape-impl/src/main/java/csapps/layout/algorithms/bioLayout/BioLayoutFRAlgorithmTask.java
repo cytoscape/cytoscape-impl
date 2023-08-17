@@ -707,6 +707,6 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 	 */
 /// fa(z) := begin return z*z/k end;
 	private double forceA(double k, double distance, double weight) {
-		return ((distance / k) * weight);
+		return ((distance * distance / k) * weight);
 	}
 }
