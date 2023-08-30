@@ -158,6 +158,9 @@ window.addEventListener('load', function() {
         setTimeout(function(){
             getUpdatesAppsCyB(); //a delay between CyBrowser calls is necessary
         }, 300);
+        setTimeout(function(){
+            getAvailableAppsCyB(); //a delay between CyBrowser calls is necessary
+        }, 400);
     } else {
         alert("Sorry, this page only runs in CyBrowser.");
     }
@@ -172,6 +175,7 @@ const coreApps = ["BioPAX Reader",  "Biomart Web Service Client", "CX Support",
                   "cyChart", "cyREST", "enhancedGraphics", "Largest Subnetwork", "EnrichmentTable",
                   "mapSourceAndTarget"]
 
+const allApps = []
 
 function getInstalledAppsCyB() {
     cybrowser.executeCyCommandWithResults('apps list installed', 'renderInstalledApps' );
@@ -181,6 +185,18 @@ function getDisabledAppsCyB() {
 }
 function getUpdatesAppsCyB() {
     cybrowser.executeCyCommandWithResults('apps list updates', 'renderUpdatesApps' );
+}
+function getAvailableAppsCyB() {
+    cybrowser.executeCyCommandWithResults('apps list available', 'renderAvailableApps' );
+}
+
+function renderAvailableApps(res) {
+  const jsonData = JSON.parse(res);
+  for (const item of jsonData) {
+    if (item.hasOwnProperty('appName')) {
+      allApps.push(item.appName.toLowerCase().replace(/\s/g, ''));
+    }
+  }
 }
 
 function renderInstalledApps(res) {
@@ -435,13 +451,18 @@ function openAppStore(app=null){
     cybrowser.executeCyCommand('cybrowser native url="'+appUrl+'" ');
 }
 function searchAppStore(){
-    var query = document.getElementById("search").value
+    var query = document.getElementById("search").value.replace(/\s/g, '')
     qUrl = "https://apps.cytoscape.org/"
-    if (query != ""){
-        qUrl += "search?q="+query
+    if (query == ""){
+      cybrowser.executeCyCommand('cybrowser native url="'+qUrl+'" ');
     }
-    cybrowser.executeCyCommand('cybrowser native url="'+qUrl+'" ');
-}
+      else if (allApps.includes(query.toLowerCase())){
+      qUrl += "apps/"+query
+      cybrowser.executeCyCommand('cybrowser native url="'+qUrl+'" ');
+    } else {
+        qUrl += "search?q="+query
+        cybrowser.executeCyCommand('cybrowser native url="'+qUrl+'" ');
+    }}
 
 function updateAppAndIcon(app) {
     var cmd = 'apps update app="'+app+'"';
