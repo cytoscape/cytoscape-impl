@@ -60,7 +60,7 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		String appStoreUrl = AppUtil.getAppStoreURL(serviceRegistrar);
-		
+
 		appManager.getWebQuerier().setCurrentAppStoreUrl(appStoreUrl);
 
 		updateApps();
@@ -88,6 +88,9 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		contentBuilder.append("        setTimeout(function(){\n");
 		contentBuilder.append("            getUpdatesAppsCyB();\n");
 		contentBuilder.append("        }, 300);\n");
+		contentBuilder.append("        setTimeout(function(){\n");
+		contentBuilder.append("            getAvailableAppsCyB();\n");
+		contentBuilder.append("        }, 400);\n");
 		contentBuilder.append("    } else {\n");
 		contentBuilder.append("        alert(\"Sorry, this page only runs in CyBrowser.\");\n");
 		contentBuilder.append("    }\n");
@@ -98,6 +101,7 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		contentBuilder.append("                  \"OpenCL Prefuse Layout\", \"PSI-MI Reader\", \"PSICQUIC Web Service Client\",\n");
 		contentBuilder.append("                  \"SBML Reader\", \"aMatReader\", \"copycatLayout\", \"cyBrowser\",\n");
 		contentBuilder.append("                  \"cyChart\", \"cyREST\", \"enhancedGraphics\", \"Largest Subnetwork\", \"EnrichmentTable\", \"mapSourceAndTarget\"]\n");
+		contentBuilder.append("const allApps = []\n");
 		contentBuilder.append("function getInstalledAppsCyB() {\n");
 		contentBuilder.append("    cybrowser.executeCyCommandWithResults('apps list installed', 'renderInstalledApps' );\n");
 		contentBuilder.append("}\n");
@@ -106,6 +110,17 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		contentBuilder.append("}\n");
 		contentBuilder.append("function getUpdatesAppsCyB() {\n");
 		contentBuilder.append("    cybrowser.executeCyCommandWithResults('apps list updates', 'renderUpdatesApps' );\n");
+		contentBuilder.append("}\n");
+		contentBuilder.append("function getAvailableAppsCyB() {\n");
+		contentBuilder.append("    cybrowser.executeCyCommandWithResults('apps list available', 'renderAvailableApps' );\n");
+		contentBuilder.append("}\n");
+		contentBuilder.append("function renderAvailableApps(res) {\n");
+		contentBuilder.append("        const jsonData = JSON.parse(res);\n");
+		contentBuilder.append("        for (const item of jsonData) {;\n");
+		contentBuilder.append("         if (item.hasOwnProperty('appName')) {;\n");
+		contentBuilder.append("         allApps.push(item.appName.toLowerCase().replace(/\\s/g,\"\"));\n");
+		contentBuilder.append("}\n");
+		contentBuilder.append("}\n");
 		contentBuilder.append("}\n");
 		contentBuilder.append("function renderInstalledApps(res) {\n");
 		contentBuilder.append("        array = JSON.parse(res);\n");
@@ -334,13 +349,18 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		contentBuilder.append("    cybrowser.executeCyCommand('cybrowser native url=\"'+appUrl+'\"');\n");
 		contentBuilder.append("}\n");
 		contentBuilder.append("function searchAppStore(){\n");
-		contentBuilder.append("    var query = document.getElementById(\"search\").value\n");
+		contentBuilder.append("    var query = document.getElementById(\"search\").value.replace(/\\s/g,\"\");\n");
 		contentBuilder.append("    qUrl = \"" + appStoreUrl + "\"\n");
-		contentBuilder.append("    if (query != \"\"){\n");
-		contentBuilder.append("        qUrl += \"search?q=\"+query\n");
-		contentBuilder.append("    }\n");
+		contentBuilder.append("    if (query == \"\"){\n");
 		contentBuilder.append("    cybrowser.executeCyCommand('cybrowser native url=\"'+qUrl+'\" ');\n");
-		contentBuilder.append("}\n");
+		contentBuilder.append("    }\n");
+		contentBuilder.append("    else if (allApps.includes(query.toLowerCase())){;\n");
+		contentBuilder.append("     qUrl += 'apps/'+query;\n");
+		contentBuilder.append("    cybrowser.executeCyCommand('cybrowser native url=\"'+qUrl+'\" ');\n");
+		contentBuilder.append("        } else {;\n");
+		contentBuilder.append("            qUrl += 'search?q='+query;\n");
+		contentBuilder.append("    cybrowser.executeCyCommand('cybrowser native url=\"'+qUrl+'\" ');\n");
+		contentBuilder.append("}}\n");
 		contentBuilder.append("function updateAppAndIcon(app) {\n");
 		contentBuilder.append("    var cmd = 'apps update app=\"'+app+'\"';\n");
 		contentBuilder.append("    cybrowser.executeCyCommand(cmd);\n");
@@ -443,7 +463,7 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 	@Override
 	public <R> R getResults(Class<? extends R> type) {
 		String appStoreUrl = AppUtil.getAppStoreURL(serviceRegistrar);
-		
+
 		if (type.equals(JSONResult.class)) {
 			JSONResult res = () -> {
 				return "{}";
