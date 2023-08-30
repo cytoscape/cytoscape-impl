@@ -99,7 +99,7 @@ public class UpdateNotificationAction extends AbstractCyAction {
 
 	@Override
 	public void actionPerformed(ActionEvent evt) {
-		String appStoreUrl = AppUtil.getAppStoreURL(serviceRegistrar); 
+		String appStoreUrl = AppUtil.getAppStoreURL(serviceRegistrar);
 
 		StringBuilder contentBuilder = new StringBuilder();
 		try {
@@ -123,6 +123,9 @@ public class UpdateNotificationAction extends AbstractCyAction {
 		contentBuilder.append("        setTimeout(function(){\n");
 		contentBuilder.append("            getUpdatesAppsCyB();\n");
 		contentBuilder.append("        }, 300);\n");
+		contentBuilder.append("        setTimeout(function(){\n");
+		contentBuilder.append("            getAvailableAppsCyB();\n");
+		contentBuilder.append("        }, 400);\n");
 		contentBuilder.append("    } else {\n");
 		contentBuilder.append("        alert(\"Sorry, this page only runs in CyBrowser.\");\n");
 		contentBuilder.append("    }\n");
@@ -133,11 +136,23 @@ public class UpdateNotificationAction extends AbstractCyAction {
 		contentBuilder.append("                  \"OpenCL Prefuse Layout\", \"PSI-MI Reader\", \"PSICQUIC Web Service Client\",\n");
 		contentBuilder.append("                  \"SBML Reader\", \"aMatReader\", \"copycatLayout\", \"cyBrowser\",\n");
 		contentBuilder.append("                  \"cyChart\", \"cyREST\", \"enhancedGraphics\", \"Largest Subnetwork\", \"EnrichmentTable\"]\n");
+		contentBuilder.append("const allApps = []\n");
 		contentBuilder.append("function getInstalledAppsCyB() {\n");
 		contentBuilder.append("    cybrowser.executeCyCommandWithResults('apps list installed', 'renderInstalledApps' );\n");
 		contentBuilder.append("}\n");
 		contentBuilder.append("function getDisabledAppsCyB() {\n");
 		contentBuilder.append("    cybrowser.executeCyCommandWithResults('apps list disabled', 'renderDisabledApps' );\n");
+		contentBuilder.append("}\n");
+		contentBuilder.append("function getAvailableAppsCyB() {\n");
+		contentBuilder.append("    cybrowser.executeCyCommandWithResults('apps list available', 'renderAvailableApps' );\n");
+		contentBuilder.append("}\n");
+		contentBuilder.append("function renderAvailableApps(res) {\n");
+		contentBuilder.append("        const jsonData = JSON.parse(res);\n");
+		contentBuilder.append("        for (const item of jsonData) {;\n");
+		contentBuilder.append("         if (item.hasOwnProperty('appName')) {;\n");
+		contentBuilder.append("         allApps.push(item.appName.toLowerCase().replace(/\\s/g,\"\"));\n");
+		contentBuilder.append("}\n");
+		contentBuilder.append("}\n");
 		contentBuilder.append("}\n");
 		contentBuilder.append("function getUpdatesAppsCyB() {\n");
 		contentBuilder.append("    cybrowser.executeCyCommandWithResults('apps list updates', 'renderUpdatesApps' );\n");
@@ -369,13 +384,18 @@ public class UpdateNotificationAction extends AbstractCyAction {
 		contentBuilder.append("    cybrowser.executeCyCommand('cybrowser native url=\"'+appUrl+'\"');\n");
 		contentBuilder.append("}\n");
 		contentBuilder.append("function searchAppStore(){\n");
-		contentBuilder.append("    var query = document.getElementById(\"search\").value\n");
+		contentBuilder.append("    var query = document.getElementById(\"search\").value.replace(/\\s/g,\"\");\n");
 		contentBuilder.append("    qUrl = \"" + appStoreUrl + "\"\n");
-		contentBuilder.append("    if (query != \"\"){\n");
-		contentBuilder.append("        qUrl += \"search?q=\"+query\n");
+		contentBuilder.append("    if (query == \"\"){\n");
+		contentBuilder.append("    cybrowser.executeCyCommand('cybrowser native url=\"'+qUrl+'\" ');\n");
 		contentBuilder.append("    }\n");
-		contentBuilder.append("    cybrowser.executeCyCommand('cybrowser native url=\"'+qUrl+'\"');\n");
-		contentBuilder.append("}\n");
+		contentBuilder.append("    else if (allApps.includes(query.toLowerCase())){;\n");
+		contentBuilder.append("     qUrl += 'apps/'+query;\n");
+		contentBuilder.append("    cybrowser.executeCyCommand('cybrowser native url=\"'+qUrl+'\" ');\n");
+		contentBuilder.append("        } else {;\n");
+		contentBuilder.append("            qUrl += 'search?q='+query;\n");
+		contentBuilder.append("    cybrowser.executeCyCommand('cybrowser native url=\"'+qUrl+'\" ');\n");
+		contentBuilder.append("}}\n");
 		contentBuilder.append("function updateAppAndIcon(app) {\n");
 		contentBuilder.append("    var cmd = 'apps update app=\"'+app+'\"';\n");
 		contentBuilder.append("    cybrowser.executeCyCommand(cmd);\n");
