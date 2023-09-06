@@ -1,6 +1,14 @@
 package org.cytoscape.view.manual.internal;
 
 import static org.cytoscape.view.manual.internal.util.Util.invokeOnEDTAndWait;
+import static org.cytoscape.work.ServiceProperties.COMMAND;
+import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
+import static org.cytoscape.work.ServiceProperties.COMMAND_EXAMPLE_JSON;
+import static org.cytoscape.work.ServiceProperties.COMMAND_LONG_DESCRIPTION;
+import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
+import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
+
+import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
@@ -9,7 +17,10 @@ import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.manual.internal.control.actions.ControlPanelAction;
 import org.cytoscape.view.manual.internal.control.view.LayoutToolsPanel;
+import org.cytoscape.view.manual.internal.tasks.RotateTaskFactory;
+import org.cytoscape.view.manual.internal.tasks.ScaleTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +62,28 @@ public class CyActivator extends AbstractCyActivator {
 		final CySwingApplication swingApplication = getService(bc, CySwingApplication.class);
 		final CyApplicationManager applicationManager = getService(bc, CyApplicationManager.class);
 		final CyNetworkViewManager netViewManager = getService(bc, CyNetworkViewManager.class);
+
+		{
+			var props = new Properties();
+			props.setProperty(COMMAND, "scale");
+			props.setProperty(COMMAND_NAMESPACE, "layout");
+			props.setProperty(COMMAND_DESCRIPTION, "Scale the layout.");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Scale the layout in either the X, Y, or both directions");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
+			registerService(bc, new ScaleTaskFactory(serviceRegistrar), TaskFactory.class, props);
+		}
+
+		{
+			var props = new Properties();
+			props.setProperty(COMMAND, "rotate");
+			props.setProperty(COMMAND_NAMESPACE, "layout");
+			props.setProperty(COMMAND_DESCRIPTION, "Rotate the layout.");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Rotate the layout");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
+			registerService(bc, new RotateTaskFactory(serviceRegistrar), TaskFactory.class, props);
+		}
 
 		invokeOnEDTAndWait(() -> {
 			layoutToolsPanel = new LayoutToolsPanel(serviceRegistrar);
