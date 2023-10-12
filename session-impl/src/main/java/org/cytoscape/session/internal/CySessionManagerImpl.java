@@ -877,6 +877,9 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		
 		// Reset groups
 		serviceRegistrar.getService(CyGroupManager.class).reset();
+
+		// Reset the session
+		serviceRegistrar.getService(CyNetworkTableManager.class).reset();
 		
 		// Unregister session properties
 		var cyPropsClone = getAllProperties();
