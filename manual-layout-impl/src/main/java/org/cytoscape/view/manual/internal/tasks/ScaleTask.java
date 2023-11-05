@@ -44,7 +44,7 @@ public class ScaleTask extends AbstractTask {
 
   private final CyServiceRegistrar serviceRegistrar;
 
-	@Tunable(description="The network to be rotated", context="nogui", longDescription="The name of the network to be rotated.  CURRENT may be used to indicate the currently selected network")
+	@Tunable(description="The network to be scaled", context="nogui", longDescription="The name of the network to be scaled.  CURRENT may be used to indicate the currently selected network")
 	public CyNetwork network;
 
 	@Tunable(description="The scale factor", context="nogui", longDescription="The scale factor to apply to the network.")
@@ -87,7 +87,8 @@ public class ScaleTask extends AbstractTask {
 		MutablePolyEdgeGraphLayout nativeGraph = GraphConverter2.getGraphReference(128.0d, true,
 				selectedOnly, currentView);
 
-		double scale = Math.pow(2, scaleFactor);
+		// This doesn't make sense if we're actually entering the number
+		// double scale = Math.pow(2, scaleFactor);
 
 		ScaleLayouter.Direction direction = ScaleLayouter.Direction.BOTH_AXES;
 		String dir = axis.getSelectedValue();
@@ -98,6 +99,6 @@ public class ScaleTask extends AbstractTask {
 
 		ScaleLayouter scaler = new ScaleLayouter(nativeGraph);
 
-		scaler.scaleGraph(scale, direction);
+		scaler.scaleGraph(scaleFactor, direction);
 	}
 }
