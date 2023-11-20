@@ -186,10 +186,10 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 						singleSeriesValues.add(row.get(colName, Double.class));
 					} else if (type == Integer.class) {
 						Integer i = row.get(colName, Integer.class);
-						singleSeriesValues.add(i.doubleValue());
+						singleSeriesValues.add(i == null ? Double.NaN : i.doubleValue());
 					} else if (type == Float.class) {
 						Float f = row.get(colName, Float.class);
-						singleSeriesValues.add(f.doubleValue());
+						singleSeriesValues.add(f == null ? Double.NaN : f.doubleValue());
 					}
 					
 					singleSeriesKey.append(colName + ",");
