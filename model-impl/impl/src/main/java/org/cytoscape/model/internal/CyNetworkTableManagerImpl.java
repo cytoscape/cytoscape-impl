@@ -2,6 +2,7 @@ package org.cytoscape.model.internal;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -232,7 +233,7 @@ public class CyNetworkTableManagerImpl implements CyNetworkTableManager, TableAb
 	@Override
 	public Set<CyNetwork> getNetworkSet() {
 		synchronized (lock) {
-			return Collections.unmodifiableSet(tables.keySet());
+			return new HashSet<>(tables.keySet());
 		}
 	}
 	

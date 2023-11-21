@@ -831,21 +831,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		tvMgr.reset();
 		
 		// Destroy networks
-		var netMgr = serviceRegistrar.getService(CyNetworkManager.class);
-		var networks = netMgr.getNetworkSet();
-		
-		for (var n : networks) {
-			try {
-				if (netMgr.networkExists(n.getSUID())) // Check whether the network still exists in the Network Manager
-					netMgr.destroyNetwork(n);
-			} catch (IllegalArgumentException e) {
-				// The manager throws this exception if the network is not registered (or not anymore),
-				// so it is probably safe to catch it here and just log it, instead of interrupting the whole action.
-				logger.warn("Error when trying to destroy network: " + n, e);
-			}
-		}
-		
-		netMgr.reset();
+		disposeNetworks();
 
 		// Destroy table styles. Must be done before destroying network styles because style associations refer to them.
 		var tvmMgr = serviceRegistrar.getService(TableVisualMappingManager.class);
@@ -897,5 +883,46 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		
 		currentFileName = null;
 		disposed = true;
+	}
+	
+	private void disposeNetworks() {
+		logger.debug("Disposing all registered networks...");
+		var netMgr = serviceRegistrar.getService(CyNetworkManager.class);
+		var publicNetworks = netMgr.getNetworkSet();
+		
+		for (var n : publicNetworks) {
+			try {
+				if (netMgr.networkExists(n.getSUID())) // Check whether the network still exists in the Network Manager
+					netMgr.destroyNetwork(n);
+			} catch (IllegalArgumentException e) {
+				// The manager throws this exception if the network is not registered (or not anymore),
+				// so it is probably safe to catch it here and just log it, instead of interrupting the whole action.
+				logger.warn("Error when trying to destroy network: " + n, e);
+			}
+		}
+		
+		netMgr.reset();
+		
+		logger.debug("Disposing other networks with SESSION_FILE save policy...");
+		var netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
+		var otherNetworks = netTblMgr.getNetworkSet();
+		
+		for (var n : otherNetworks) {
+			if (n.getSavePolicy() == SavePolicy.SESSION_FILE) {
+				try {
+					n.dispose();
+				} catch (Exception e) {
+					logger.warn("Error when trying to destroy network: " + n, e);
+				}
+			}
+		}
+		
+		
+		// IMPORTANT: Do NOT reset the CyNetworkTableManager because it may contain unregistered networks
+		//            used by other Cy3 bundles or apps!
+		//            --> however we assume such networks must have the DO_NOT_SAVE SavePolicy
+		// ***********************************************************************************************
+		// netTblMgr.reset();
+		// ***********************************************************************************************
 	}
 }
