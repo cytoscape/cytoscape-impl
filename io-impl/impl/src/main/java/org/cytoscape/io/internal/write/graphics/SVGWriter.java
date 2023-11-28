@@ -97,6 +97,8 @@ public class SVGWriter extends AbstractTask implements CyWriter {
 		logger.debug("SVG Rendering Start.");
 
 		final SVGGraphics2D g = new SVGGraphics2D(stream, new Dimension(width.intValue(), height.intValue()));
+		g.setCreator("Creator: Cytoscape via FreeHEP Graphics2D Driver");
+		g.setDeviceIndependent(true);
 
 		// this sets text as shape
 		final Properties p = new Properties();
