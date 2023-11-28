@@ -1037,7 +1037,9 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	private void createVisualPropertySheets(VisualStyle style, List<Class<? extends CyIdentifiable>> sheetTypes, boolean resetDefaultVisibleItems) {
 		invokeOnEDT(() -> {
 			var selVpSheet = getSelectedVisualPropertySheet();
-			var selectedTargetDataType = selVpSheet != null ? selVpSheet.getModel().getLexiconType() : null;
+
+			// If we don't have a selected type, use node as the default, otherwise, we wind up with Network, which seems wrong...
+			var selectedTargetDataType = selVpSheet != null ? selVpSheet.getModel().getLexiconType() : CyNode.class;
 			
 			for (var lexiconType : sheetTypes) {
 				// Create Visual Property Sheet
@@ -1059,6 +1061,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				var model = new VisualPropertySheetModel(lexiconType, tableType, style, lexicon);
 				vpSheet = new VisualPropertySheet(model, servicesUtil);
 				vizMapperMainPanel.addVisualPropertySheet(vpSheet);
+
+				// Adding a new property sheet doesn't select it, but we depend
+				// on the right propertysheet to be selected when we create mapping items
+				vizMapperMainPanel.setSelectedVisualPropertySheet(vpSheet);
 				
 				vpSheetItems = createVisualPropertySheetItems(lexiconType, tableType, lexicon, style);
 				vpSheet.setItems(vpSheetItems);
