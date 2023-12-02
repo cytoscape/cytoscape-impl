@@ -2,12 +2,12 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.10.1</version>
+		<version>3.10.2</version>
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>cycl-impl</artifactId>
-  <version>3.10.1</version>
+  <version>3.10.2</version>
 	<packaging>bundle</packaging>
 	<name>Cytoscape CyCL Impl (${project.artifactId})</name>
 
@@ -181,7 +181,7 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>cycl-api</artifactId>
-      <version>3.10.1</version>
+      <version>3.10.2</version>
       <scope>provided</scope>
     </dependency>
 		<dependency>
