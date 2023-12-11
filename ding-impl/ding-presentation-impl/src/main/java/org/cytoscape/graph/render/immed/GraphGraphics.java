@@ -119,7 +119,7 @@ public final class GraphGraphics {
 	// package scoped for unit testing
 	static final byte s_last_shape = SHAPE_VEE;
 	public static final int CUSTOM_SHAPE_MAX_VERTICES = 100;
-	public static final int MAX_EDGE_ANCHORS = 64;
+	public static final int MAX_EDGE_ANCHORS = 256;
 	private static final float DEF_SHAPE_SIZE = 32;
 	
 	// A constant for controlling how cubic Bezier curves are drawn; This particular constant results in elliptical-looking curves.
