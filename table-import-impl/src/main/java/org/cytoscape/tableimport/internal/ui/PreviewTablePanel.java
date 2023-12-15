@@ -631,7 +631,7 @@ public class PreviewTablePanel extends JPanel {
 	}
 	
 	public int getPreviewSize() {
-		return 100;
+		return 500;
 	}
 	
 	/**
@@ -855,8 +855,7 @@ public class PreviewTablePanel extends JPanel {
 		return new PreviewTableModel(data, new Vector<String>(), colTypes, firstRowNames);
 	}
 	
-	private PreviewTableModel parseText(InputStream tempIs, List<String> delimiters, int startLine)
-			throws IOException {
+	private PreviewTableModel parseText(InputStream tempIs, List<String> delimiters, int startLine) throws IOException {
 		String line;
 		String attrName = "Attr1";
 		Vector<Vector<String>> data = null;
