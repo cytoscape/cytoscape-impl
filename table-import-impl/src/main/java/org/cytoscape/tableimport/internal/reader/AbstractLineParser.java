@@ -36,15 +36,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.util.AttributeDataType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractLineParser {
 
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
+	
 	protected CyServiceRegistrar serviceRegistrar;
 	private EquationCompiler compiler;
+	
+	boolean errorEquationLogged = false;
 
 	protected AbstractLineParser(final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
@@ -132,13 +139,24 @@ public abstract class AbstractLineParser {
 		final String text = "=\"" + value + "\"";
 		final String msg = "Invalid value: " + value;
 		
+		if(!errorEquationLogged) {
+			logger.warn("At least one value in the imported file could not be converted to the expected data type. "
+					+ "Value: " + value + ", Expected Type: " + type.getDescription());
+			errorEquationLogged = true;
+		}
+		
 		return getEquationCompiler().getErrorEquation(text, type.getType(), msg);
 	}
 	
-	private Equation createInvalidListEquation(final String list, final String listItem,
-			final AttributeDataType type) {
+	private Equation createInvalidListEquation(final String list, final String listItem, final AttributeDataType type) {
 		final String text = "=\"" + list + "\"";
 		final String msg = "Invalid list item: " + listItem;
+		
+		if(!errorEquationLogged) {
+			logger.warn("At least one value in the imported file could not be converted to the expected data type. "
+					+ "Value: " + listItem + ", Expected Type: " + type.getDescription());
+			errorEquationLogged = true;
+		}
 		
 		return getEquationCompiler().getErrorEquation(text, type.getType(), msg);
 	}
