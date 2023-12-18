@@ -10,6 +10,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.JPanel;
 
@@ -107,7 +108,7 @@ public class VizMapperProxy extends Proxy
 
 	private volatile boolean cytoscapeStarted;
 	private volatile boolean loadingSession;
-	private volatile boolean ignoreStyleEvents;
+	private final AtomicBoolean ignoreStyleEvents = new AtomicBoolean(false);
 	
 	private final Object lock = new Object();
 
@@ -442,19 +443,15 @@ public class VizMapperProxy extends Proxy
 	}
 	
 	public void setIgnoreStyleEvents(final boolean b) {
-		synchronized (lock) {
-			ignoreStyleEvents = b;
-		}
+		ignoreStyleEvents.set(b);
 	}
 	
 	// --- Cytoscape EVENTS ---
 	
 	@Override
 	public void handleEvent(final VisualStyleAddedEvent e) {
-		synchronized (lock) {
-			if (!cytoscapeStarted || ignoreStyleEvents)
-				return;
-		}
+		if (!cytoscapeStarted || ignoreStyleEvents.get())
+			return;
 		
 		final VisualStyle vs = e.getVisualStyleAdded();
 		boolean changed = false;
@@ -469,10 +466,8 @@ public class VizMapperProxy extends Proxy
 	
 	@Override
 	public void handleEvent(final VisualStyleAboutToBeRemovedEvent e) {
-		synchronized (lock) {
-			if (!cytoscapeStarted || ignoreStyleEvents)
-				return;
-		}
+		if (!cytoscapeStarted || ignoreStyleEvents.get())
+			return;
 		
 		final VisualStyle vs = e.getVisualStyleToBeRemoved();
 		boolean changed = false;
@@ -487,10 +482,8 @@ public class VizMapperProxy extends Proxy
 	
 	@Override
 	public void handleEvent(final VisualStyleChangedEvent e) {
-		synchronized (lock) {
-			if (ignoreStyleEvents)
-				return;
-		}
+		if (ignoreStyleEvents.get())
+			return;
 		
 		if (cytoscapeStarted && !loadingSession)
 			sendNotification(VISUAL_STYLE_UPDATED, e.getSource());
