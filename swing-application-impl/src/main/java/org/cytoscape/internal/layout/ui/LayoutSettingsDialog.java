@@ -27,6 +27,7 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -59,6 +60,7 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -610,18 +612,17 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		}
 		
 		@Override
-		public Component getListCellRendererComponent(JList<?> list, Object value, int index,
-		                                              boolean isSelected, boolean cellHasFocus) {
+		public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 			super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 			
 			CyLayoutAlgorithm defaultLayout = serviceRegistrar.getService(CyLayoutAlgorithmManager.class).getDefaultLayout();
 			
-			// If this is a String, we don't want to allow selection.  If this is
-			// index 0, we want to set the font 
 			if (value instanceof CyLayoutAlgorithm) {
 				setHorizontalAlignment(LEFT);
 				if(value.equals(defaultLayout)) {
-					setText(value.toString() + " (default)");
+					Color color = UIManager.getColor("List.selectionBackground");
+					String htmlHex = String.format("%06X", 0xFFFFFF & color.getRGB());
+					setText(String.format("<html>%s <font color=%s><b>(default)</b></font></html>", value.toString(), htmlHex));
 				} else {
 					setText(value.toString());
 				}
