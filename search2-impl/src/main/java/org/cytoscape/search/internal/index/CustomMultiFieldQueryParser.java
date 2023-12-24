@@ -22,6 +22,7 @@ public class CustomMultiFieldQueryParser extends MultiFieldQueryParser {
 	public CustomMultiFieldQueryParser(AttributeFields fields, Analyzer analyzer) {
 		super(fields.getFields(), analyzer);
 		this.fields = fields;
+		setAllowLeadingWildcard(true);
 	}
 	
 	@Override
