@@ -305,6 +305,8 @@ public class GMLParser {
 	private static class FilterNewlineReader extends FilterReader {
 		boolean inComment = false;
 		boolean inQuote = false;
+		int inListOpen = 0;
+		int inListClose = 0;
 		
 		public FilterNewlineReader(Reader r) {
 			super(r);
@@ -312,18 +314,44 @@ public class GMLParser {
 
 		@Override
 		public int read() throws IOException {
+
+			// We do this to make sure that we see the open and close lists as tokens
+			if (inListOpen == 1) {
+				inListOpen = 2;
+				return '[';  
+			} else if (inListClose == 1) {
+				inListClose = 2;
+				return ']';
+			} else if (inListOpen == 2) {
+				inListOpen = 0;
+				return ' ';
+			} else if (inListClose == 2) {
+				inListClose = 0;
+				return ' ';
+			}
+
 			int c = super.read();
-			
-			if ((c == '\n') || (c == '\r')) {
+
+			// Surround [ and ] by spaces
+			if ((c == '[') && !inQuote && !inComment) {
+				inListOpen = 1;
+				return ' ';  // Force a whitespace
+			} else if ((c == ']') && !inQuote && !inComment) {
+				inListClose = 1;
+				return ' ';  // Force a whitespace
+			} else if ((c == '\n') || (c == '\r')) {
 				if(inComment == true) { // end of comment
 					inComment = false;
 				}
-				else return ' '; // whitespace
+				else {
+					return ' '; // whitespace
+				}
 			}
 			else if (c == '#' && !inQuote) // starting a comment
 				inComment = true;
 			else if (c == '"' && !inComment) // toggle quote
 				inQuote = !inQuote;
+
 			return c;
 		}
 	}
