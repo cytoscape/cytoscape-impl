@@ -12,7 +12,7 @@ nodelinkouturl.Sequences\ and\ Proteins.Ensembl\ Gene\ View.human=http://www.ens
 nodelinkouturl.Sequences\ and\ Proteins.Ensembl\ Gene\ View.fly=http://www.ensembl.org/Drosophila_melanogaster/geneview?gene=%ID%
 nodelinkouturl.Sequences\ and\ Proteins.Ensembl\ Gene\ View.mouse=http://www.ensembl.org/Mus_musculus/geneview?gene=%ID%
 nodelinkouturl.Sequences\ and\ Proteins.Ensembl\ Gene\ View.worm=http://www.ensembl.org/Caenorhabditis_elegans/geneview?gene=%ID%
-nodelinkouturl.Sequences\ and\ Proteins.UniProt=http://www.uniprot.org/uniprot/?query=%ID%&sort=score
+nodelinkouturl.Sequences\ and\ Proteins.UniProt=http://www.uniprot.org/uniprotkb/?query=gene:%ID%
 nodelinkouturl.Sequences\ and\ Proteins.Entrez\ Protein=http\://www.ncbi.nlm.nih.gov/entrez/query.fcgi?cmd\=Search&db\=Protein&term\=%ID%&doptcmdl\=GenPept
 
 nodelinkouturl.Publications.Pubmed=http\://www.ncbi.nlm.nih.gov/entrez/query.fcgi?cmd\=Search&db\=PubMed&term\=%ID%&doptcmdl\=Abstract
