@@ -52,7 +52,7 @@
 				<enabled>false</enabled>
 			</releases>
 			<name>Cytoscape Snapshots</name>
-			<url>http://nrnb-nexus.ucsd.edu/repository/cytoscape_snapshots/</url>
+			<url>https://nrnb-nexus.ucsd.edu/repository/cytoscape_snapshots/</url>
 		</repository>
 		<repository>
 			<id>cytoscape_releases</id>
@@ -63,7 +63,12 @@
 				<enabled>true</enabled>
 			</releases>
 			<name>Cytoscape Releases</name>
-			<url>http://nrnb-nexus.ucsd.edu/repository/cytoscape_releases/</url>
+			<url>https://nrnb-nexus.ucsd.edu/repository/cytoscape_releases/</url>
+		</repository>
+		<repository>
+		      <id>mvnrepository.com</id>
+		      <name>mvnrepository.com</name>
+		      <url>https://mvnrepository.com/artifact/</url>
 		</repository>
 	</repositories>
 
@@ -80,7 +85,7 @@
 		<dependency>
 			<groupId>org.ops4j.pax.logging</groupId>
 			<artifactId>pax-logging-service</artifactId>
-			<version>1.11.2</version>
+			<version>1.11.17</version>
 			<scope>compile</scope>
 		</dependency>
 	</dependencies>

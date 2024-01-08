@@ -79,7 +79,7 @@
 				<enabled>false</enabled>
 			</releases>
 			<name>Cytoscape Snapshots</name>
-			<url>http://nrnb-nexus.ucsd.edu/repository/cytoscape_snapshots/</url>
+			<url>https://nrnb-nexus.ucsd.edu/repository/cytoscape_snapshots/</url>
 		</repository>
 		<repository>
 			<id>cytoscape_releases</id>
@@ -90,19 +90,19 @@
 				<enabled>true</enabled>
 			</releases>
 			<name>Cytoscape Releases</name>
-			<url>http://nrnb-nexus.ucsd.edu/repository/cytoscape_releases/</url>
+			<url>https://nrnb-nexus.ucsd.edu/repository/cytoscape_releases/</url>
 		</repository>
 
 		<repository>
 			<id>com.springsource.repository.bundles.release</id>
 			<name>SpringSource Enterprise Bundle Repository - SpringSource Bundle Releases</name>
-			<url>http://repository.springsource.com/maven/bundles/release</url>
+			<url>https://repository.springsource.com/maven/bundles/release</url>
 		</repository>
 
 		<repository>
 			<id>com.springsource.repository.bundles.external</id>
 			<name>SpringSource Enterprise Bundle Repository - External Bundle Releases</name>
-			<url>http://repository.springsource.com/maven/bundles/external</url>
+			<url>https://repository.springsource.com/maven/bundles/external</url>
 		</repository>
 
 	</repositories>
@@ -132,7 +132,7 @@
   			<version>2.1</version>
 		</dependency>
 		
-		<!-- dependency for a freely available json parser (http://www.json.org/java/) -->
+		<!-- dependency for a freely available json parser (https://www.json.org/java/) -->
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>org.json</artifactId>
