@@ -100,7 +100,7 @@ public final class VisualPropertyIconFactory {
 			if (dShape.getShape() == null)
 				icon = new TextIcon(value, w, h, ""); // No arrow
 			else
-				icon = new ArrowIcon(dShape.getShape(), w, h, dShape.getDisplayName());
+				icon = new ArrowIcon(dShape.getShape(), arrowShape.isFilled(), w, h, dShape.getDisplayName());
 		} else if (value instanceof Bend bend) {
 			icon = new EdgeBendIcon(bend, w, h, value.toString());
 		} else if (value instanceof EdgeStacking es) {

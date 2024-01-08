@@ -33,43 +33,45 @@ import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
-import java.awt.geom.Rectangle2D;
 
 
 /**
  * Icon for arrow shape.
  */
 public class ArrowIcon extends VisualPropertyIcon<Shape> {
+	
 	private final static long serialVersionUID = 1202339877462891L;
 	
 	private static final int EDGE_WIDTH = 4;
 	private static final Stroke EDGE_STROKE = new BasicStroke(EDGE_WIDTH, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER);
-	protected Graphics2D g2d;
+	private static final Stroke ARROW_STROKE = new BasicStroke(EDGE_WIDTH / 2, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER);
+	
+	private final boolean filled;
 
-
-	public ArrowIcon(final Shape shape, int width, int height, String name) {
+	public ArrowIcon(Shape shape, boolean filled, int width, int height, String name) {
 		super(shape, width, height, name);
+		this.filled = filled;
 	}
 
 	@Override
 	public void paintIcon(Component c, Graphics g, int x, int y) {
-		g2d = (Graphics2D) g;
+		var g2d = (Graphics2D) g;
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		g2d.setColor(c.getForeground());
 
 		double x1 = x;
 		double y1 = y + height / 2.0;
 		double x2 = x1 + width;
 		double y2 = y1;
 		
-		// If shape is not defined, treat as no-arrow.
-		if (value != null) {
-			final AffineTransform af = new AffineTransform();
-			g2d.setStroke(new BasicStroke(2.0f));
+		if (value == null) {
+			// If shape is not defined, treat as no-arrow.
+			drawEdge(c, g2d, x1, y1, x2, y2);
+		} else {
+			var af = new AffineTransform();
 	
-			Shape shape = value;
-			final double minx = shape.getBounds2D().getMinX();
-			final double miny = shape.getBounds2D().getMinY();
+			var shape = value;
+			double minx = shape.getBounds2D().getMinX();
+			double miny = shape.getBounds2D().getMinY();
 			
 			// Adjust position if it is NOT in first quadrant.
 			if (minx < 0) {
@@ -82,24 +84,37 @@ public class ArrowIcon extends VisualPropertyIcon<Shape> {
 				shape = af.createTransformedShape(shape);
 			}
 	
-			final double shapeWidth = shape.getBounds2D().getWidth();
-			final double shapeHeight = shape.getBounds2D().getHeight() * 2;
+			double shapeWidth = shape.getBounds2D().getWidth();
+			double shapeHeight = shape.getBounds2D().getHeight() * 2;
 	
-			final double originalXYRatio = shapeWidth / shapeHeight;
-			final double xRatio = (width / 3) / shapeWidth;
-			final double yRatio = height / shapeHeight;
+			double originalXYRatio = shapeWidth / shapeHeight;
+			double xRatio = (width / 3) / shapeWidth;
+			double yRatio = height / shapeHeight;
 			af.setToScale(xRatio * originalXYRatio, yRatio);
 			shape = af.createTransformedShape(shape);
 	
-			Rectangle2D bound = shape.getBounds2D();
+			var bound = shape.getBounds2D();
 			af.setToTranslation(x2 - bound.getWidth(), y2 - bound.getHeight() / 2);
 			shape = af.createTransformedShape(shape);
 			
-			g2d.fill(shape);
-			
 			x2 = shape.getBounds2D().getCenterX() - 2;
+			drawEdge(c, g2d, x1, y1, x2, y2);
+			
+			if (filled) {
+				g2d.setColor(c.getForeground());
+				g2d.fill(shape);
+			} else {
+				g2d.setColor(c.getBackground());
+				g2d.fill(shape);
+				g2d.setColor(c.getForeground());
+				g2d.setStroke(ARROW_STROKE);
+				g2d.draw(shape);
+			}
 		}
-		
+	}
+
+	private void drawEdge(Component c, Graphics2D g2d, double x1, double y1, double x2, double y2) {
+		g2d.setColor(c.getForeground());
 		g2d.setStroke(EDGE_STROKE);
 		g2d.draw(new Line2D.Double(x1, y1, x2, y2));
 	}

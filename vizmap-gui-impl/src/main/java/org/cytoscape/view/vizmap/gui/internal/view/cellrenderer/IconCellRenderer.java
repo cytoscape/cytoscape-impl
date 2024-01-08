@@ -39,7 +39,6 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
-import javax.swing.border.Border;
 import javax.swing.table.TableCellRenderer;
 
 /**
@@ -54,17 +53,17 @@ public class IconCellRenderer<T> extends JPanel implements TableCellRenderer, Li
 	
 	private static final float FONT_SIZE = 14.0f;
 	
-	
-
-	final JLabel iconLbl;
-	final JLabel textLbl;
+	private final JLabel iconLbl;
+	private final JLabel textLbl;
 	
 	private Map<? extends T, Icon> icons;
 	
-	public IconCellRenderer(final Map<? extends T, Icon> icons) {
+	public IconCellRenderer(Map<? extends T, Icon> icons) {
 		this.icons = icons;
+		
 		iconLbl = new JLabel();
 		iconLbl.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+		
 		textLbl = new JLabel();
 		
 		setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
@@ -75,18 +74,17 @@ public class IconCellRenderer<T> extends JPanel implements TableCellRenderer, Li
 	}
 
 	@Override
-	public Component getListCellRendererComponent(final JList list,
-												  final Object value,
-												  final int index,
-												  final boolean isSelected,
-												  final boolean cellHasFocus) {
-		update(value, isSelected, cellHasFocus);
-		setBackground(isSelected ?
-				UIManager.getColor("Table.selectionBackground") : UIManager.getColor("Table.background"));
+	public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
+			boolean cellHasFocus) {
+		var bg = isSelected ? UIManager.getColor("Table.selectionBackground") : UIManager.getColor("Table.background");
+		var fg = getForeground();
+		
+		update(value, bg, fg);
+		
 		textLbl.setFont(UIManager.getFont("TextField.font").deriveFont(FONT_SIZE));
 		
-		final Color BORDER_COLOR = UIManager.getColor("Separator.foreground");
-		final Border BORDER = BorderFactory.createCompoundBorder(
+		var BORDER_COLOR = UIManager.getColor("Separator.foreground");
+		var BORDER = BorderFactory.createCompoundBorder(
 				BorderFactory.createMatteBorder(0, 0, 1, 0, BORDER_COLOR),
 				BorderFactory.createEmptyBorder(4, 4, 4, 4)
 		);
@@ -96,26 +94,32 @@ public class IconCellRenderer<T> extends JPanel implements TableCellRenderer, Li
 	}
 	
 	@Override
-	public Component getTableCellRendererComponent(final JTable table, final Object value, final boolean isSelected, final boolean hasFocus,
-			final int row, final int column) {
-		update(value, isSelected, hasFocus);
-		setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
-		iconLbl.setForeground(isSelected ? table.getSelectionForeground() : table.getForeground());
-		textLbl.setForeground(isSelected ? table.getSelectionForeground() : table.getForeground());
-
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+			int row, int column) {
+		var bg = isSelected ? table.getSelectionBackground() : table.getBackground();
+		var fg = isSelected ? table.getSelectionForeground() : table.getForeground();
+		
+		update(value, bg, fg);
+		
 		return this;
 	}
 	
 	@SuppressWarnings("unchecked")
-	private void update(final Object value, final boolean isSelected, final boolean hasFocus) {
-		setBackground(isSelected ?
-				UIManager.getColor("Table.selectionBackground") : UIManager.getColor("Table.background"));
-		final String label = getLabel((T)value);
-		final Icon icon = icons.get(value);
+	private void update(Object value, Color bg, Color fg) {
+		setBackground(bg);
+		setForeground(fg);
+		
+		var label = getLabel((T) value);
+		var icon = icons.get(value);
 		
 		iconLbl.setIcon(icon);
+		iconLbl.setBackground(bg);
+		iconLbl.setForeground(fg);
+		
 		textLbl.setText(label);
 		textLbl.setToolTipText(label);
+		textLbl.setBackground(bg);
+		textLbl.setForeground(fg);
 	}
 	
 	private String getLabel(final T value) {
