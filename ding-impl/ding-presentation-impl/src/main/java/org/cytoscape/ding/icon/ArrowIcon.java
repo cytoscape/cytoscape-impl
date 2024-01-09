@@ -1,5 +1,31 @@
 package org.cytoscape.ding.icon;
 
+import static org.cytoscape.ding.DArrowShape.ARROW;
+import static org.cytoscape.ding.DArrowShape.ARROW_SHORT;
+import static org.cytoscape.ding.DArrowShape.CIRCLE;
+import static org.cytoscape.ding.DArrowShape.HALF_BOTTOM;
+import static org.cytoscape.ding.DArrowShape.HALF_CIRCLE;
+import static org.cytoscape.ding.DArrowShape.HALF_TOP;
+import static org.cytoscape.ding.DArrowShape.OPEN_CIRCLE;
+import static org.cytoscape.ding.DArrowShape.OPEN_HALF_CIRCLE;
+import static org.cytoscape.ding.DArrowShape.OPEN_SQUARE;
+import static org.cytoscape.ding.DArrowShape.SQUARE;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
+
+import javax.swing.UIManager;
+
+import org.cytoscape.ding.DArrowShape;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -24,83 +50,180 @@ package org.cytoscape.ding.icon;
  * #L%
  */
 
-import java.awt.BasicStroke;
-import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.Shape;
-import java.awt.Stroke;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Line2D;
-import java.awt.geom.Rectangle2D;
-
-
 /**
  * Icon for arrow shape.
  */
-public class ArrowIcon extends VisualPropertyIcon<Shape> {
+public class ArrowIcon extends VisualPropertyIcon<DArrowShape> {
+	
 	private final static long serialVersionUID = 1202339877462891L;
 	
-	private static final int EDGE_WIDTH = 4;
-	private static final Stroke EDGE_STROKE = new BasicStroke(EDGE_WIDTH, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER);
-	protected Graphics2D g2d;
-
-
-	public ArrowIcon(final Shape shape, int width, int height, String name) {
-		super(shape, width, height, name);
+	private static final int MIN_EDGE_LENGTH = 4;
+	private static final int MIN_EDGE_WIDTH = 1;
+	private static final int MIN_ARROW_BORDER_WIDTH = 2;
+	
+	public ArrowIcon(DArrowShape dArrowShape, int width, int height) {
+		super(dArrowShape, width, height, dArrowShape.getDisplayName());
 	}
 
 	@Override
 	public void paintIcon(Component c, Graphics g, int x, int y) {
-		g2d = (Graphics2D) g;
+		var g2d = (Graphics2D) g;
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		g2d.setColor(c.getForeground());
 
+		double w = width;
+		double h = height;
 		double x1 = x;
-		double y1 = y + height / 2.0;
-		double x2 = x1 + width;
+		double y1 = y + h / 2.0;
+		double x2 = x1 + w;
 		double y2 = y1;
 		
-		// If shape is not defined, treat as no-arrow.
-		if (value != null) {
-			final AffineTransform af = new AffineTransform();
-			g2d.setStroke(new BasicStroke(2.0f));
-	
-			Shape shape = value;
-			final double minx = shape.getBounds2D().getMinX();
-			final double miny = shape.getBounds2D().getMinY();
+		float edgeWidth = Math.max(height / 10f, MIN_EDGE_WIDTH);
+		var fg = getForeground(c);
+		
+		if (value == null) {
+			// If shape is not defined, treat as no-arrow.
+			drawEdge(edgeWidth, fg, g2d, x1, y1, x2, y2);
+		} else {
+			var arrowShape = value.getPresentationShape();
+			var shape = value.getShape();
+			var bounds = shape.getBounds2D();
+			var af = new AffineTransform();
 			
 			// Adjust position if it is NOT in first quadrant.
+			double minx = bounds.getMinX();
+			double miny = bounds.getMinY();
+			
 			if (minx < 0) {
 				af.setToTranslation(Math.abs(minx), 0);
 				shape = af.createTransformedShape(shape);
 			}
-	
 			if (miny < 0) {
 				af.setToTranslation(0, Math.abs(miny));
 				shape = af.createTransformedShape(shape);
 			}
+			
+			bounds = shape.getBounds2D();
+			
+			double sw = bounds.getWidth(); // Shape width
+			double sh = bounds.getHeight() * 2; // Shape height
 	
-			final double shapeWidth = shape.getBounds2D().getWidth();
-			final double shapeHeight = shape.getBounds2D().getHeight() * 2;
-	
-			final double originalXYRatio = shapeWidth / shapeHeight;
-			final double xRatio = (width / 3) / shapeWidth;
-			final double yRatio = height / shapeHeight;
+			double maxArrowHeight = maxArrowHeight(bounds);
+			double maxArrowWidth = maxArrowWidth(bounds);
+			
+			if (isSquaredShape())
+				maxArrowHeight = maxArrowWidth = Math.min(maxArrowHeight, maxArrowWidth);
+			
+			double originalXYRatio = sw / sh;
+			double xRatio = maxArrowWidth / sw;
+			double yRatio = maxArrowHeight / sh;
 			af.setToScale(xRatio * originalXYRatio, yRatio);
 			shape = af.createTransformedShape(shape);
 	
-			Rectangle2D bound = shape.getBounds2D();
-			af.setToTranslation(x2 - bound.getWidth(), y2 - bound.getHeight() / 2);
+			bounds = shape.getBounds2D();
+			
+			af.setToTranslation(x2 - bounds.getWidth(), yTranslation(y2, bounds));
 			shape = af.createTransformedShape(shape);
 			
-			g2d.fill(shape);
+			bounds = shape.getBounds2D();
 			
-			x2 = shape.getBounds2D().getCenterX() - 2;
+			x2 = xIntersection(bounds);
+			drawEdge(edgeWidth, fg, g2d, x1, y1, x2, y2);
+			drawArrow(shape, arrowShape.isFilled(), edgeWidth, fg, c.getBackground(), g2d);
 		}
+	}
+
+	private void drawEdge(float edgeWidth, Color fg, Graphics2D g2d, double x1, double y1, double x2, double y2) {
+		fg = new Color(fg.getRed(), fg.getGreen(), fg.getBlue(), 128);
 		
-		g2d.setStroke(EDGE_STROKE);
+		g2d.setColor(fg);
+		g2d.setStroke(new BasicStroke(edgeWidth, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER));
 		g2d.draw(new Line2D.Double(x1, y1, x2, y2));
+	}
+	
+	private void drawArrow(Shape shape, boolean filled, float edgeWidth, Color fg, Color bg, Graphics2D g2d) {
+		if (filled) {
+			g2d.setColor(fg);
+			g2d.fill(shape);
+		} else {
+			float borderWidth = Math.max(edgeWidth / 2f, MIN_ARROW_BORDER_WIDTH);
+			
+			g2d.setColor(bg);
+			g2d.fill(shape);
+			g2d.setColor(fg);
+			g2d.setStroke(new BasicStroke(borderWidth, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER));
+			g2d.draw(shape);
+		}
+	}
+	
+	/**
+	 * @return true if the arrow shape must have the same values for its width and its height.
+	 */
+	private boolean isSquaredShape() {
+		return value == SQUARE || value == OPEN_SQUARE ||
+				value == CIRCLE || value == OPEN_CIRCLE ||
+				value == HALF_CIRCLE || value == OPEN_HALF_CIRCLE;
+	}
+	
+	private double maxArrowWidth(Rectangle2D bounds) {
+		double w = width;
+		double ratio = width / height;
+		
+		if (ratio <= 1.1)
+			w = Math.max(height, w);
+		else if (ratio >= 3.0)
+			w /= 3;
+		else if (ratio >= 2.0)
+			w /= 2;
+		
+		w -= MIN_EDGE_LENGTH;
+		
+		return w;
+	}
+	
+	private double maxArrowHeight(Rectangle2D bounds) {
+		double h = height;
+		double ratio = width / height;
+		
+		if (ratio <= 1.1)
+			h = Math.min(height, width);
+		
+		return h;
+	}
+	
+	private double yTranslation(double y2, Rectangle2D bounds) {
+		double ty = y2 - bounds.getHeight() / 2;
+		
+		if (value == HALF_TOP)
+			return ty - bounds.getHeight() / 2;
+		
+		if (value == HALF_BOTTOM)
+			return ty + bounds.getHeight() / 2;
+		
+		return ty;
+	}
+	
+	/**
+	 * Adjusts the x2 value so the edge intersects the arrow properly, depending on the arrow type.
+	 */
+	private double xIntersection(Rectangle2D bounds) {
+		final double x;
+		
+		if (value == ARROW || value == ARROW_SHORT)
+			x = bounds.getMinX();
+		else if (value == HALF_TOP || value == HALF_BOTTOM)
+			x = bounds.getCenterX() + (bounds.getMaxX() - bounds.getCenterX()) / 2;
+		else
+			x = bounds.getCenterX() - 2;
+		
+		return x;
+	}
+	
+	private static Color getForeground(Component c) {
+		var fg = c.getForeground();
+		
+		if (fg == null)
+			fg = UIManager.getColor("Label.foreground");
+		
+		return fg;
 	}
 }
