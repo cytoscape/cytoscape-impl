@@ -51,8 +51,6 @@ public class IconCellRenderer<T> extends JPanel implements TableCellRenderer, Li
 	
 	private static final long serialVersionUID = 8942821990143018260L;
 	
-	private static final float FONT_SIZE = 14.0f;
-	
 	private final JLabel iconLbl;
 	private final JLabel textLbl;
 	
@@ -80,8 +78,6 @@ public class IconCellRenderer<T> extends JPanel implements TableCellRenderer, Li
 		var fg = getForeground();
 		
 		update(value, bg, fg);
-		
-		textLbl.setFont(UIManager.getFont("TextField.font").deriveFont(FONT_SIZE));
 		
 		var BORDER_COLOR = UIManager.getColor("Separator.foreground");
 		var BORDER = BorderFactory.createCompoundBorder(
