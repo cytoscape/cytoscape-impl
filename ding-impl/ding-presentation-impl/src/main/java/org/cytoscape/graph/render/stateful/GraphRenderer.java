@@ -244,29 +244,28 @@ public final class GraphRenderer {
 							return;
 						}
 
-            final String text = edgeDetails.getLabelText(edge);
-            final Font font = edgeDetails.getLabelFont(edge, flags.has(OPT_PDF_FONT_HACK));
-            final Paint paint = edgeDetails.getLabelPaint(edge);
-            final double rise = floatBuff4[1]-floatBuff3[1];
-            final double run = floatBuff4[0]-floatBuff3[0];
-            final double theta = edgeDetails.getLabelRotation(edge, rise, run)*.01745329252;
-            final Paint backgroundPaint = edgeDetails.getLabelBackgroundPaint(edge);
-            final byte backgroundShape = edgeDetails.getLabelBackgroundShape(edge);
-            final double edgeLabelWidth = edgeDetails.getLabelWidth(edge);
+						final String text = edgeDetails.getLabelText(edge);
+						final Font font = edgeDetails.getLabelFont(edge, flags.has(OPT_PDF_FONT_HACK));
+						final Paint paint = edgeDetails.getLabelPaint(edge);
+						final double rise = floatBuff4[1] - floatBuff3[1];
+						final double run = floatBuff4[0] - floatBuff3[0];
+						final double theta = edgeDetails.getLabelRotation(edge, rise, run) * .01745329252;
+						final Paint backgroundPaint = edgeDetails.getLabelBackgroundPaint(edge);
+						final byte backgroundShape = edgeDetails.getLabelBackgroundShape(edge);
+						final double edgeLabelWidth = edgeDetails.getLabelWidth(edge);
 
-            LabelInfo labelInfo = labelInfoProvider.getLabelInfo(text, font, edgeLabelWidth, grafx.getFontRenderContextFull());
+						LabelInfo labelInfo = labelInfoProvider.getLabelInfo(text, font, edgeLabelWidth,
+								grafx.getFontRenderContextFull());
 
-            getEdgeLabelPosition(edge, edgeDetails, flags, labelInfo, floatBuff3, floatBuff4, anchors, offsetBuff, doubleBuff1);
+						getEdgeLabelPosition(edge, edgeDetails, flags, labelInfo, floatBuff3, floatBuff4, anchors,
+								offsetBuff, doubleBuff1);
 
 						final double textXCenter = doubleBuff1[0];
 						final double textYCenter = doubleBuff1[1];
-            final double edgeAnchorPointX = doubleBuff1[2];
-            final double edgeAnchorPointY = doubleBuff1[3];
+						final double edgeAnchorPointX = doubleBuff1[2];
+						final double edgeAnchorPointY = doubleBuff1[3];
 
-            // System.out.println("textCenter = "+textXCenter+","+textYCenter);
-            // System.out.println("edgeAnchorPoint = "+edgeAnchorPointX+","+edgeAnchorPointY);
-
-            final Justification justify = edgeDetails.getLabelJustify(edge);
+						final Justification justify = edgeDetails.getLabelJustify(edge);
 
 						renderText(grafx, labelInfo, (float) textXCenter, (float) textYCenter,
 								textXCenter, textYCenter, justify, paint, backgroundPaint, backgroundShape, theta, flags.has(LOD_TEXT_AS_SHAPE));
@@ -281,250 +280,258 @@ public final class GraphRenderer {
 		}
 	}
 
-  public static void getEdgeLabelPosition(View<CyEdge> edge, EdgeDetails edgeDetails, RenderDetailFlags flags, 
-                                          LabelInfo labelInfo,
-                                          float[] floatBuff3, float[] floatBuff4, EdgeAnchors anchors, double[] offsetBuff,
-                                          double[] returnBuff) {
+	public static void getEdgeLabelPosition(View<CyEdge> edge, EdgeDetails edgeDetails, RenderDetailFlags flags,
+			LabelInfo labelInfo, float[] floatBuff3, float[] floatBuff4, EdgeAnchors anchors, double[] offsetBuff,
+			double[] returnBuff) {
 
-    final String text = edgeDetails.getLabelText(edge);
-    final Font font = edgeDetails.getLabelFont(edge, flags.has(OPT_PDF_FONT_HACK));
-    final Position textAnchor = edgeDetails.getLabelTextAnchor(edge);
-    final Position edgeAnchor = edgeDetails.getLabelEdgeAnchor(edge);
-    float offsetVectorX = edgeDetails.getLabelOffsetVectorX(edge);
-    float offsetVectorY = edgeDetails.getLabelOffsetVectorY(edge);
+		final String text = edgeDetails.getLabelText(edge);
+		final Font font = edgeDetails.getLabelFont(edge, flags.has(OPT_PDF_FONT_HACK));
+		final Position textAnchor = edgeDetails.getLabelTextAnchor(edge);
+		final Position edgeAnchor = edgeDetails.getLabelEdgeAnchor(edge);
+		float offsetVectorX = edgeDetails.getLabelOffsetVectorX(edge);
+		float offsetVectorY = edgeDetails.getLabelOffsetVectorY(edge);
 		final float thickness = (float) edgeDetails.getWidth(edge);
-    final double rise = floatBuff4[1]-floatBuff3[1];
-    final double run = floatBuff4[0]-floatBuff3[0];
-    final double slope = rise/run;
-    final double lineAngle = Math.atan2(rise, run);
-    final double theta = edgeDetails.getLabelRotation(edge, rise, run)*.01745329252;
-    final Justification justify = edgeDetails.getLabelJustify(edge);
+		final double rise = floatBuff4[1] - floatBuff3[1];
+		final double run = floatBuff4[0] - floatBuff3[0];
+		final double slope = rise / run;
+		final double lineAngle = Math.atan2(rise, run);
+		final double theta = edgeDetails.getLabelRotation(edge, rise, run) * .01745329252;
+		final Justification justify = edgeDetails.getLabelJustify(edge);
 		final GeneralPath path2d = new GeneralPath();
 		final float[] floatBuff5 = new float[8];
 		final double[] doubleBuff1 = new double[4];
-    final double[] anchorBuff = new double[2];
+		final double[] anchorBuff = new double[2];
 
+		final double edgeAnchorPointX;
+		final double edgeAnchorPointY;
 
-    final double edgeAnchorPointX;
-    final double edgeAnchorPointY;
+		final float srcXAdj = floatBuff3[0];
+		final float srcYAdj = floatBuff3[1];
+		final float trgXAdj = floatBuff4[0];
+		final float trgYAdj = floatBuff4[1];
 
-    final float srcXAdj = floatBuff3[0];
-    final float srcYAdj = floatBuff3[1];
-    final float trgXAdj = floatBuff4[0];
-    final float trgYAdj = floatBuff4[1];
-
-    // Note that we reuse the position enum here.  West == source and East == target
-    // This is sort of safe since we don't provide an API for changing this
-    // in any case.
+		// Note that we reuse the position enum here. West == source and East == target
+		// This is sort of safe since we don't provide an API for changing this
+		// in any case.
 		// Handle above/below...
 		if (edgeAnchor == Position.NORTH || edgeAnchor == Position.NORTH_WEST || edgeAnchor == Position.NORTH_EAST) {
-			// We sort of "fake" this by adding the edge width to the offsetVectorY.  That way, any trigonometry only needs
+			// We sort of "fake" this by adding the edge width to the offsetVectorY. That
+			// way, any trigonometry only needs
 			// to get done once
-			offsetVectorY = offsetVectorY - thickness/2f;
-		} else if (edgeAnchor == Position.SOUTH || edgeAnchor == Position.SOUTH_WEST || edgeAnchor == Position.SOUTH_EAST) {
-			offsetVectorY = offsetVectorY + thickness/2f;
+			offsetVectorY = offsetVectorY - thickness / 2f;
+		} else if (edgeAnchor == Position.SOUTH || edgeAnchor == Position.SOUTH_WEST
+				|| edgeAnchor == Position.SOUTH_EAST) {
+			offsetVectorY = offsetVectorY + thickness / 2f;
 		}
-    if (edgeAnchor == Position.WEST || edgeAnchor == Position.SOUTH_WEST || edgeAnchor == Position.NORTH_WEST) {
-      edgeAnchorPointX = srcXAdj; 
-      edgeAnchorPointY = srcYAdj;
-    } else if (edgeAnchor == Position.EAST || edgeAnchor == Position.SOUTH_EAST || edgeAnchor == Position.NORTH_EAST) { 
-      edgeAnchorPointX = trgXAdj; 
-      edgeAnchorPointY = trgYAdj;
-    } else if (edgeAnchor == Position.CENTER || edgeAnchor == Position.SOUTH || edgeAnchor == Position.NORTH) {
-      // Compute arrows.
-      final ArrowShape srcArrow;
-      final ArrowShape trgArrow;
-      final float srcArrowSize;
-      final float trgArrowSize;
-      final Paint srcArrowPaint;
-      final Paint trgArrowPaint;
+		if (edgeAnchor == Position.WEST || edgeAnchor == Position.SOUTH_WEST || edgeAnchor == Position.NORTH_WEST) {
+			edgeAnchorPointX = srcXAdj;
+			edgeAnchorPointY = srcYAdj;
+		} else if (edgeAnchor == Position.EAST || edgeAnchor == Position.SOUTH_EAST
+				|| edgeAnchor == Position.NORTH_EAST) {
+			edgeAnchorPointX = trgXAdj;
+			edgeAnchorPointY = trgYAdj;
+		} else if (edgeAnchor == Position.CENTER || edgeAnchor == Position.SOUTH || edgeAnchor == Position.NORTH) {
+			// Compute arrows.
+			final ArrowShape srcArrow;
+			final ArrowShape trgArrow;
+			final float srcArrowSize;
+			final float trgArrowSize;
+			final Paint srcArrowPaint;
+			final Paint trgArrowPaint;
 
-      if (flags.not(LOD_EDGE_ARROWS)) { // Not rendering arrows.
-        trgArrow = srcArrow = ArrowShapeVisualProperty.NONE;
-        trgArrowSize = srcArrowSize = 0.0f;
-        trgArrowPaint = srcArrowPaint = null;
-      } else { // Rendering edge arrows.
-        srcArrow = edgeDetails.getSourceArrowShape(edge);
-        trgArrow = edgeDetails.getTargetArrowShape(edge);
-        srcArrowSize  = ((srcArrow == ArrowShapeVisualProperty.NONE) ? 0.0f : edgeDetails.getSourceArrowSize(edge));
-        trgArrowSize  = ((trgArrow == ArrowShapeVisualProperty.NONE) ? 0.0f : edgeDetails.getTargetArrowSize(edge));
-        srcArrowPaint = ((srcArrow == ArrowShapeVisualProperty.NONE) ? null : edgeDetails.getSourceArrowPaint(edge));
-        trgArrowPaint = ((trgArrow == ArrowShapeVisualProperty.NONE) ? null : edgeDetails.getTargetArrowPaint(edge));
-      }
-      if (!GraphGraphics.getEdgePath(srcArrow, srcArrowSize, trgArrow,
-                    trgArrowSize, srcXAdj, srcYAdj, anchors,  trgXAdj, trgYAdj, path2d)) {
-        return;
-      }
+			if (flags.not(LOD_EDGE_ARROWS)) { // Not rendering arrows.
+				trgArrow = srcArrow = ArrowShapeVisualProperty.NONE;
+				trgArrowSize = srcArrowSize = 0.0f;
+				trgArrowPaint = srcArrowPaint = null;
+			} else { // Rendering edge arrows.
+				srcArrow = edgeDetails.getSourceArrowShape(edge);
+				trgArrow = edgeDetails.getTargetArrowShape(edge);
+				srcArrowSize = ((srcArrow == ArrowShapeVisualProperty.NONE) ? 0.0f
+						: edgeDetails.getSourceArrowSize(edge));
+				trgArrowSize = ((trgArrow == ArrowShapeVisualProperty.NONE) ? 0.0f
+						: edgeDetails.getTargetArrowSize(edge));
+				srcArrowPaint = ((srcArrow == ArrowShapeVisualProperty.NONE) ? null
+						: edgeDetails.getSourceArrowPaint(edge));
+				trgArrowPaint = ((trgArrow == ArrowShapeVisualProperty.NONE) ? null
+						: edgeDetails.getTargetArrowPaint(edge));
+			}
+			if (!GraphGraphics.getEdgePath(srcArrow, srcArrowSize, trgArrow, trgArrowSize, srcXAdj, srcYAdj, anchors,
+					trgXAdj, trgYAdj, path2d)) {
+				return;
+			}
 
-      // Count the number of path segments.  This count
-      // includes the initial SEG_MOVETO.  So, for example, a
-      // path composed of 2 cubic curves would have a numPaths
-      // of 3.  Note that numPaths will be at least 2 in all
-      // cases.
-      final int numPaths;
+			// Count the number of path segments. This count
+			// includes the initial SEG_MOVETO. So, for example, a
+			// path composed of 2 cubic curves would have a numPaths
+			// of 3. Note that numPaths will be at least 2 in all
+			// cases.
+			final int numPaths;
 
-      {
-        final PathIterator pathIter = path2d.getPathIterator(null);
-        int numPathsTemp = 0;
+			{
+				final PathIterator pathIter = path2d.getPathIterator(null);
+				int numPathsTemp = 0;
 
-        while (!pathIter.isDone()) {
-          numPathsTemp++; // pathIter.currentSegment().
-          pathIter.next();
-        }
+				while (!pathIter.isDone()) {
+					numPathsTemp++; // pathIter.currentSegment().
+					pathIter.next();
+				}
 
-        numPaths = numPathsTemp;
-      }
+				numPaths = numPathsTemp;
+			}
 
-      // Compute "midpoint" of edge.
-      if ((numPaths % 2) != 0) {
-        final PathIterator pathIter = path2d.getPathIterator(null);
+			// Compute "midpoint" of edge.
+			if ((numPaths % 2) != 0) {
+				final PathIterator pathIter = path2d.getPathIterator(null);
 
-        for (int i = numPaths / 2; i > 0; i--)
-          pathIter.next();
+				for (int i = numPaths / 2; i > 0; i--)
+					pathIter.next();
 
-        final int subPathType = pathIter.currentSegment(floatBuff5);
+				final int subPathType = pathIter.currentSegment(floatBuff5);
 
-        if (subPathType == PathIterator.SEG_LINETO) {
-          edgeAnchorPointX = floatBuff5[0];
-          edgeAnchorPointY = floatBuff5[1];
-        } else if (subPathType == PathIterator.SEG_QUADTO) {
-          edgeAnchorPointX = floatBuff5[2];
-          edgeAnchorPointY = floatBuff5[3];
-        } else if (subPathType == PathIterator.SEG_CUBICTO) {
-          edgeAnchorPointX = floatBuff5[4];
-          edgeAnchorPointY = floatBuff5[5];
-        } else
-          throw new IllegalStateException("got unexpected PathIterator segment type: " + subPathType);
-      } else { // numPaths % 2 == 0.
+				if (subPathType == PathIterator.SEG_LINETO) {
+					edgeAnchorPointX = floatBuff5[0];
+					edgeAnchorPointY = floatBuff5[1];
+				} else if (subPathType == PathIterator.SEG_QUADTO) {
+					edgeAnchorPointX = floatBuff5[2];
+					edgeAnchorPointY = floatBuff5[3];
+				} else if (subPathType == PathIterator.SEG_CUBICTO) {
+					edgeAnchorPointX = floatBuff5[4];
+					edgeAnchorPointY = floatBuff5[5];
+				} else
+					throw new IllegalStateException("got unexpected PathIterator segment type: " + subPathType);
+			} else { // numPaths % 2 == 0.
 
-        final PathIterator pathIter = path2d.getPathIterator(null);
+				final PathIterator pathIter = path2d.getPathIterator(null);
 
-        for (int i = numPaths / 2; i > 0; i--) {
-          if (i == 1) {
-            final int subPathType = pathIter.currentSegment(floatBuff5);
+				for (int i = numPaths / 2; i > 0; i--) {
+					if (i == 1) {
+						final int subPathType = pathIter.currentSegment(floatBuff5);
 
-            if ((subPathType == PathIterator.SEG_MOVETO)
-                || (subPathType == PathIterator.SEG_LINETO)) {
-              floatBuff5[6] = floatBuff5[0];
-              floatBuff5[7] = floatBuff5[1];
-            } else if (subPathType == PathIterator.SEG_QUADTO) {
-              floatBuff5[6] = floatBuff5[2];
-              floatBuff5[7] = floatBuff5[3];
-            } else if (subPathType == PathIterator.SEG_CUBICTO) {
-              floatBuff5[6] = floatBuff5[4];
-              floatBuff5[7] = floatBuff5[5];
-            } else
-              throw new IllegalStateException("got unexpected PathIterator segment type: " + subPathType);
-          }
+						if ((subPathType == PathIterator.SEG_MOVETO) || (subPathType == PathIterator.SEG_LINETO)) {
+							floatBuff5[6] = floatBuff5[0];
+							floatBuff5[7] = floatBuff5[1];
+						} else if (subPathType == PathIterator.SEG_QUADTO) {
+							floatBuff5[6] = floatBuff5[2];
+							floatBuff5[7] = floatBuff5[3];
+						} else if (subPathType == PathIterator.SEG_CUBICTO) {
+							floatBuff5[6] = floatBuff5[4];
+							floatBuff5[7] = floatBuff5[5];
+						} else
+							throw new IllegalStateException("got unexpected PathIterator segment type: " + subPathType);
+					}
 
-          pathIter.next();
-        }
+					pathIter.next();
+				}
 
-        final int subPathType = pathIter.currentSegment(floatBuff5);
+				final int subPathType = pathIter.currentSegment(floatBuff5);
 
-        if (subPathType == PathIterator.SEG_LINETO) {
-          edgeAnchorPointX = (0.5d * floatBuff5[6]) + (0.5d * floatBuff5[0]);
-          edgeAnchorPointY = (0.5d * floatBuff5[7]) + (0.5d * floatBuff5[1]);
-        } else if (subPathType == PathIterator.SEG_QUADTO) {
-          edgeAnchorPointX = (0.25d * floatBuff5[6]) + (0.5d * floatBuff5[0]) + (0.25d * floatBuff5[2]);
-          edgeAnchorPointY = (0.25d * floatBuff5[7]) + (0.5d * floatBuff5[1]) + (0.25d * floatBuff5[3]);
-        } else if (subPathType == PathIterator.SEG_CUBICTO) {
-          edgeAnchorPointX = (0.125d * floatBuff5[6]) + (0.375d * floatBuff5[0]) + (0.375d * floatBuff5[2]) + (0.125d * floatBuff5[4]);
-          edgeAnchorPointY = (0.125d * floatBuff5[7]) + (0.375d * floatBuff5[1]) + (0.375d * floatBuff5[3]) + (0.125d * floatBuff5[5]);
-        } else
-          throw new IllegalStateException("got unexpected PathIterator segment type: " + subPathType);
-      }
-    } else
-      throw new IllegalStateException("encountered an invalid EDGE_ANCHOR_* constant: " + edgeAnchor);
+				if (subPathType == PathIterator.SEG_LINETO) {
+					edgeAnchorPointX = (0.5d * floatBuff5[6]) + (0.5d * floatBuff5[0]);
+					edgeAnchorPointY = (0.5d * floatBuff5[7]) + (0.5d * floatBuff5[1]);
+				} else if (subPathType == PathIterator.SEG_QUADTO) {
+					edgeAnchorPointX = (0.25d * floatBuff5[6]) + (0.5d * floatBuff5[0]) + (0.25d * floatBuff5[2]);
+					edgeAnchorPointY = (0.25d * floatBuff5[7]) + (0.5d * floatBuff5[1]) + (0.25d * floatBuff5[3]);
+				} else if (subPathType == PathIterator.SEG_CUBICTO) {
+					edgeAnchorPointX = (0.125d * floatBuff5[6]) + (0.375d * floatBuff5[0]) + (0.375d * floatBuff5[2])
+							+ (0.125d * floatBuff5[4]);
+					edgeAnchorPointY = (0.125d * floatBuff5[7]) + (0.375d * floatBuff5[1]) + (0.375d * floatBuff5[3])
+							+ (0.125d * floatBuff5[5]);
+				} else
+					throw new IllegalStateException("got unexpected PathIterator segment type: " + subPathType);
+			}
+		} else
+			throw new IllegalStateException("encountered an invalid EDGE_ANCHOR_* constant: " + edgeAnchor);
 
-    doubleBuff1[0] = -0.5d * labelInfo.getMaxLineWidth();
-    doubleBuff1[1] = -0.5d * labelInfo.getTotalHeight(); 
-    doubleBuff1[2] =  0.5d * labelInfo.getMaxLineWidth(); 
-    doubleBuff1[3] =  0.5d * labelInfo.getTotalHeight(); 
-    computeAnchor(textAnchor, doubleBuff1, anchorBuff);
+		doubleBuff1[0] = -0.5d * labelInfo.getMaxLineWidth();
+		doubleBuff1[1] = -0.5d * labelInfo.getTotalHeight();
+		doubleBuff1[2] = 0.5d * labelInfo.getMaxLineWidth();
+		doubleBuff1[3] = 0.5d * labelInfo.getTotalHeight();
+		computeAnchor(textAnchor, doubleBuff1, anchorBuff);
 
-    updateOffset(offsetVectorX, offsetVectorY, slope, lineAngle, offsetBuff);
+		updateOffset(offsetVectorX, offsetVectorY, slope, lineAngle, offsetBuff);
 
-    // System.out.println("offsetVectorX,Y="+offsetVectorX+","+offsetVectorY+" offsetBuff="+offsetBuff[0]+","+offsetBuff[1]);
+		// System.out.println("offsetVectorX,Y="+offsetVectorX+","+offsetVectorY+"
+		// offsetBuff="+offsetBuff[0]+","+offsetBuff[1]);
 
-    returnBuff[0] = edgeAnchorPointX - anchorBuff[0] + offsetBuff[0];
-    returnBuff[1] = edgeAnchorPointY - anchorBuff[1] + offsetBuff[1];
-    returnBuff[2] = edgeAnchorPointX;
-    returnBuff[3] = edgeAnchorPointY;
+		returnBuff[0] = edgeAnchorPointX - anchorBuff[0] + offsetBuff[0];
+		returnBuff[1] = edgeAnchorPointY - anchorBuff[1] + offsetBuff[1];
+		returnBuff[2] = edgeAnchorPointX;
+		returnBuff[3] = edgeAnchorPointY;
 
-    return;
+		return;
 
-  }
+	}
 
-  public static void reverseOffset(double xOffset, double yOffset, double slope, double lineAngle, double[] xy) {
-    // We have two equations and two unknowns:
-    // (1) a*xy[0]+b*xy[1] = e
-    // (2) c*xy[0]+d*xy[1] = f
-    // where a = Math.cos(angle)
-    //       b = Math.sqrt(1/(1+Math.pow((-1/slope),2.0)))
-    //       c = Math.sin(angle)
-    //       d = -1/slope * b
+	public static void reverseOffset(double xOffset, double yOffset, double slope, double lineAngle, double[] xy) {
+		// We have two equations and two unknowns:
+		// (1) a*xy[0]+b*xy[1] = e
+		// (2) c*xy[0]+d*xy[1] = f
+		// where a = Math.cos(angle)
+		// b = Math.sqrt(1/(1+Math.pow((-1/slope),2.0)))
+		// c = Math.sin(angle)
+		// d = -1/slope * b
 
-    // Deal with our "flipping"
-    // double deg = Math.toDegrees(lineAngle);
-    // if (deg > 0 && deg < 90)
-    //   yOffset = -yOffset;
-    // if (deg < -90 && deg > -180)
-    //   yOffset = -yOffset;
+		// Deal with our "flipping"
+		// double deg = Math.toDegrees(lineAngle);
+		// if (deg > 0 && deg < 90)
+		// yOffset = -yOffset;
+		// if (deg < -90 && deg > -180)
+		// yOffset = -yOffset;
 
-    double perpSlope = -1/slope;
-    double a = Math.cos(lineAngle);
-    double b = Math.sqrt(1/(1+Math.pow(perpSlope,2.0)));
-    double c = Math.sin(lineAngle);
-    double d = perpSlope*b;
-    double e = xOffset;
-    double f = yOffset;
+		double perpSlope = -1 / slope;
+		double a = Math.cos(lineAngle);
+		double b = Math.sqrt(1 / (1 + Math.pow(perpSlope, 2.0)));
+		double c = Math.sin(lineAngle);
+		double d = perpSlope * b;
+		double e = xOffset;
+		double f = yOffset;
 
-    // Solve using Cramer's method
-    double determinant = a*d - b*c;
-    if (determinant != 0) {
-        xy[0] = (e*d - b*f)/determinant;
-        xy[1] = (a*f - e*c)/determinant;
-        // Deal with our "flipping"
-        double deg = Math.toDegrees(lineAngle);
-        if (deg > 0 && deg < 90)
-          xy[1] = -xy[1];
-        if (deg < -90 && deg > -180)
-          xy[1] = -xy[1];
-        return;
-    }
+		// Solve using Cramer's method
+		double determinant = a * d - b * c;
+		if (determinant != 0) {
+			xy[0] = (e * d - b * f) / determinant;
+			xy[1] = (a * f - e * c) / determinant;
+			// Deal with our "flipping"
+			double deg = Math.toDegrees(lineAngle);
+			if (deg > 0 && deg < 90)
+				xy[1] = -xy[1];
+			if (deg < -90 && deg > -180)
+				xy[1] = -xy[1];
+			return;
+		}
 
-    return;
-  }
+		return;
+	}
 
-  public static void updateOffset(double xOffset, double yOffset, double slope, double lineAngle, double[] xy) {
-    // (1) a*xOffset+b*yOffset = xy[0]
-    // (2) c*xOffset+d*yOffset = xy[1]
-    // where a = Math.cos(angle)
-    //       b = Math.sqrt(1/(1+Math.pow((-1/slope),2.0)))
-    //       c = Math.sin(angle)
-    //       d = -1/slope * b
-    // However, we do want to recognize that yOffset < 0 should always be above the edge and
-    // yOffset > 0 should be below the edge
-    double deg = Math.toDegrees(lineAngle);
-    if (deg > 0 && deg < 90)
-      yOffset = -yOffset;
-    if (deg < -90 && deg > -180)
-      yOffset = -yOffset;
+	public static void updateOffset(double xOffset, double yOffset, double slope, double lineAngle, double[] xy) {
+		// (1) a*xOffset+b*yOffset = xy[0]
+		// (2) c*xOffset+d*yOffset = xy[1]
+		// where a = Math.cos(angle)
+		// b = Math.sqrt(1/(1+Math.pow((-1/slope),2.0)))
+		// c = Math.sin(angle)
+		// d = -1/slope * b
+		// However, we do want to recognize that yOffset < 0 should always be above the
+		// edge and
+		// yOffset > 0 should be below the edge
+		double deg = Math.toDegrees(lineAngle);
+		if (deg > 0 && deg < 90)
+			yOffset = -yOffset;
+		if (deg < -90 && deg > -180)
+			yOffset = -yOffset;
 
-    double perpSlope = -1/slope;
-    double a = Math.cos(lineAngle);
-    double b = Math.sqrt(1/(1+Math.pow(perpSlope,2.0)));
-    double c = Math.sin(lineAngle);
-    double d = perpSlope*b;
+		double perpSlope = -1 / slope;
+		double a = Math.cos(lineAngle);
+		double b = Math.sqrt(1 / (1 + Math.pow(perpSlope, 2.0)));
+		double c = Math.sin(lineAngle);
+		double d = perpSlope * b;
 
-    xy[0] = a*xOffset + b*yOffset;
-    xy[1] = c*xOffset + d*yOffset;
+		xy[0] = a * xOffset + b * yOffset;
+		xy[1] = c * xOffset + d * yOffset;
 
-    // xy[1] = Math.copySign(xy[1], yOffset); // Make sure the sign is consistent
+		// xy[1] = Math.copySign(xy[1], yOffset); // Make sure the sign is consistent
 
-    return;
-  }
+		return;
+	}
 	
 	public static void renderNodes(ProgressMonitor pm, GraphGraphics grafx, CyNetworkViewSnapshot netView,
 			RenderDetailFlags flags, NodeDetails nodeDetails, Set<VisualPropertyDependency<?>> dependencies, 
