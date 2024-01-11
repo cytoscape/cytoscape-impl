@@ -1,6 +1,9 @@
 package org.cytoscape.ding.impl.canvas;
 
-import static org.cytoscape.ding.impl.DRenderingEngine.UpdateType.*;
+import static org.cytoscape.ding.impl.DRenderingEngine.UpdateType.ALL_FAST;
+import static org.cytoscape.ding.impl.DRenderingEngine.UpdateType.ALL_FULL;
+import static org.cytoscape.ding.impl.DRenderingEngine.UpdateType.JUST_ANNOTATIONS;
+import static org.cytoscape.ding.impl.DRenderingEngine.UpdateType.JUST_EDGES;
 import static org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID.BACKGROUND;
 import static org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID.FOREGROUND;
 
@@ -261,6 +264,7 @@ public class CompositeImageCanvas {
 			if(params.isPan) {
 				// edge buffer pan optimization
 				Image image = params.slowCanvas.getEdgeCanvas().getGraphicsProvier().getImage();
+				ProgressMonitor.notNull(pms[1]).emptyTask(edgeCanvas.getCanvasDebugName());
 				overlayImage(composite, image, params.panDx, params.panDy);
 				pms[1].addProgress(1.0);
 			} else {
