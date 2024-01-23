@@ -1,15 +1,20 @@
 package org.cytoscape.view.vizmap.gui.internal.view;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isNimbusLAF;
 
 import java.awt.Dimension;
-import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,10 +30,9 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
@@ -41,6 +45,7 @@ import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import javax.swing.plaf.basic.BasicLabelUI;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
@@ -79,7 +84,6 @@ import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
 @SuppressWarnings("serial")
 public class VisualPropertySheet extends JPanel{
 
-	private JPanel toolBarPnl;
 	private JPanel vpListHeaderPnl;
 	private JScrollPane vpListScr;
 	private DropDownMenuButton vpsBtn;
@@ -350,56 +354,59 @@ public class VisualPropertySheet extends JPanel{
 		setLayout(layout);
 		
 		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addComponent(getToolBarPnl())
 				.addComponent(getVpListHeaderPnl())
 				.addComponent(getVpListScr()));
 		layout.setHorizontalGroup(layout.createParallelGroup()
-				.addComponent(getToolBarPnl())
 				.addComponent(getVpListHeaderPnl())
 				.addComponent(getVpListScr()));
-	}
-	
-	private JPanel getToolBarPnl() {
-		if (toolBarPnl == null) {
-			toolBarPnl = new JPanel();
-			toolBarPnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
-			toolBarPnl.setLayout(new BoxLayout(toolBarPnl, BoxLayout.X_AXIS));
-			toolBarPnl.add(getVpsBtn());
-			toolBarPnl.add(Box.createHorizontalGlue());
-			
-			if (model.getLexiconType() != CyNetwork.class) {
-				toolBarPnl.add(getExpandAllBtn());
-				toolBarPnl.add(getCollapseAllBtn());
-			}
-		}
-		
-		return toolBarPnl;
 	}
 	
 	private JPanel getVpListHeaderPnl() {
 		if (vpListHeaderPnl == null) {
 			vpListHeaderPnl = new JPanel();
-			vpListHeaderPnl.setLayout(new BoxLayout(vpListHeaderPnl, BoxLayout.X_AXIS));
+			vpListHeaderPnl.setOpaque(!isAquaLAF());
 			
-			vpListHeaderPnl.add(Box.createRigidArea(new Dimension(2, 12)));
+			var layout = new GroupLayout(vpListHeaderPnl);
+			vpListHeaderPnl.setLayout(layout);
 			
-			var defLbl = new HeaderLabel("Def.");
+			var hGroup = layout.createSequentialGroup();
+			var vGroup = layout.createParallelGroup(Alignment.TRAILING, false);
+			layout.setHorizontalGroup(hGroup);
+			layout.setVerticalGroup(vGroup);
+			
+			hGroup.addGap(3);
+			
+			var defLbl = new HeaderLabel("Default");
 			defLbl.setToolTipText("Default Value");
-			vpListHeaderPnl.add(defLbl);
+			hGroup.addComponent(defLbl);
+			vGroup.addComponent(defLbl);
 			
 			if (model.getLexiconType() != CyNetwork.class) {
-				var mapLbl = new HeaderLabel("Map.");
-				mapLbl.setToolTipText("Mapping");
-				vpListHeaderPnl.add(mapLbl);
+				var mapLbl = new HeaderLabel("Mapping");
+				mapLbl.setToolTipText("Mapped from a Table Column");
+				hGroup.addComponent(mapLbl);
+				vGroup.addComponent(mapLbl);
 			}
 			
 			if (model.getLexiconType() != CyColumn.class) {
-				var bypassLbl = new HeaderLabel("Byp.");
-				bypassLbl.setToolTipText("Bypass");
-				vpListHeaderPnl.add(bypassLbl);
+				var bypassLbl = new HeaderLabel("Bypass");
+				bypassLbl.setToolTipText("Overrides Default and Mapping values");
+				hGroup.addComponent(bypassLbl);
+				vGroup.addComponent(bypassLbl);
 			}
 			
-			vpListHeaderPnl.add(Box.createHorizontalGlue());
+			hGroup.addComponent(getVpsBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+			vGroup.addComponent(getVpsBtn(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+			
+			hGroup.addGap(10, 10, Short.MAX_VALUE);
+			
+			if (model.getLexiconType() != CyNetwork.class) {
+				hGroup.addComponent(getExpandAllBtn());
+				vGroup.addComponent(getExpandAllBtn());
+				
+				hGroup.addComponent(getCollapseAllBtn());
+				vGroup.addComponent(getCollapseAllBtn());
+			}
 		}
 		
 		return vpListHeaderPnl;
@@ -422,12 +429,10 @@ public class VisualPropertySheet extends JPanel{
 	
 	private DropDownMenuButton getVpsBtn() {
 		if (vpsBtn == null) {
-			vpsBtn = new DropDownMenuButton(getVpsMenu());
-			vpsBtn.setText("Properties");
+			vpsBtn = new DropDownMenuButton(getVpsMenu(), false);
+			vpsBtn.setText("Show Properties...");
 			vpsBtn.setToolTipText("Show/Hide Properties...");
 			vpsBtn.setHorizontalAlignment(DropDownMenuButton.LEFT);
-			vpsBtn.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-			vpsBtn.setContentAreaFilled(false);
 		}
 		
 		return vpsBtn;
@@ -808,16 +813,44 @@ public class VisualPropertySheet extends JPanel{
 	
 	private static class HeaderLabel extends JLabel {
 		
+		static final int WIDTH = 36;
+		static final int HEIGHT = 36;
+		static final int BORDER_WIDTH = 2;
+		static final int ROTATION = -45;
+		
 		HeaderLabel(String text) {
 			super(text);
-			setFont(getFont().deriveFont(Font.BOLD).deriveFont(10.0f));
+			
+			if (isNimbusLAF())
+				setUI(new BasicLabelUI());
+			
+			setBorder(BorderFactory.createEmptyBorder(0, BORDER_WIDTH, 0, BORDER_WIDTH));
+			setFont(getFont().deriveFont(10.0f));
 			setHorizontalAlignment(CENTER);
 			setVerticalAlignment(BOTTOM);
 			
-			var d = new Dimension(VisualPropertySheetItem.VPButtonUI.getPreferredWidth(), 18);
+			var d = new Dimension(WIDTH, HEIGHT);
 			setMinimumSize(d);
 			setPreferredSize(d);
 			setMaximumSize(d);
 		}
+		
+		@Override
+	    protected void paintComponent(Graphics g) {
+	        var g2d = (Graphics2D) g.create();
+
+	        // Get the current font and rotate it
+	        var font = getFont();
+	        var trans = new AffineTransform();
+			trans.rotate(Math.toRadians(ROTATION));
+			trans.translate(1 + BORDER_WIDTH, 0);
+	        var rotatedFont = font.deriveFont(trans);
+
+	        // Apply the rotated font to the graphics context and draw it
+	        g2d.setFont(rotatedFont);
+	        super.paintComponent(g2d);
+
+	        g2d.dispose();
+	    }
 	}
 }
