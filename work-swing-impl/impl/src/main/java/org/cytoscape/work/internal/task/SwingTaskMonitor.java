@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
 class SwingTaskMonitor implements TaskMonitor {
 
 	private static final String LOG_PREFIX = "TaskMonitor";
-	
+
 	/**
 	 * This is used to execute the task's cancel method.
 	 */
@@ -70,24 +70,20 @@ class SwingTaskMonitor implements TaskMonitor {
 
 	/**
 	 * Based on the expected number of tasks, this is the fraction of the overall
-	 * task monitor that a given task is allocated. So, if there are 4 tasks 
-	 * executed with this task monitor, each task is allocated 0.25 of the 
-	 * space in the progress bar.
+	 * task monitor that a given task is allocated. So, if there are 4 tasks
+	 * executed with this task monitor, each task is allocated 0.25 of the space in
+	 * the progress bar.
 	 */
 	private double fractionOfOverall = 1.0;
 
 	/**
- 	 * We log all messages to our log channel.  This allows interested listeners
- 	 * to "hear" them.
- 	 */
+	 * We log all messages to our log channel. This allows interested listeners to
+	 * "hear" them.
+	 */
 	Logger thisLog = null;
 
-	public SwingTaskMonitor(
-			final ExecutorService cancelExecutorService,
-			final Window parent,
-			final TaskHistory.History history,
-			final CyServiceRegistrar serviceRegistrar
-	) {
+	public SwingTaskMonitor(final ExecutorService cancelExecutorService, final Window parent,
+			final TaskHistory.History history, final CyServiceRegistrar serviceRegistrar) {
 		this.cancelExecutorService = cancelExecutorService;
 		this.parent = parent;
 		this.history = history;
@@ -101,59 +97,55 @@ class SwingTaskMonitor implements TaskMonitor {
 	}
 
 	public void setTask(final Task newTask) {
-		this.currentTaskNum++;	
+		this.currentTaskNum++;
 		this.task = newTask;
 		this.thisLog = LoggerFactory.getLogger(LOG_PREFIX + "." + newTask.getClass().getName());
 	}
 
 	public void open() {
 		invokeOnEDT(() -> {
-			synchronized(this) {
+			synchronized (this) {
 				if (dialog != null)
 					return;
-	
+
 				dialog = new TaskDialog(parent, serviceRegistrar);
 				dialog.addPropertyChangeListener(TaskDialog.CLOSE_EVENT, evt -> close());
 				dialog.addPropertyChangeListener(TaskDialog.CANCEL_EVENT, evt -> cancel());
-	
+
 				if (firstTitle != null && firstTitle != title /* don't need to call firstTitle.equals() */)
 					dialog.setTaskTitle(firstTitle);
 				if (title != null)
 					dialog.setTaskTitle(title);
-	
+
 				if (exception == null) {
 					if (statusMessage != null) {
 						if (statusMessageLevel == null)
 							dialog.setStatus(null, null, statusMessage);
 						else
-							dialog.setStatus(
-									GUIDefaults.getIconText(statusMessageLevel),
-									GUIDefaults.getForeground(statusMessageLevel),
-									statusMessage
-							);
+							dialog.setStatus(GUIDefaults.getIconText(statusMessageLevel),
+									GUIDefaults.getForeground(statusMessageLevel), statusMessage);
 					}
-					
+
 					if (progress != 0)
 						dialog.setPercentCompleted((float) progress);
 				} else {
 					dialog.setException(exception);
 					exception = null;
 				}
-	
+
 				dialog.setVisible(showDialog);
 			}
 		});
 	}
 
 	/**
-	 * Used to toggle the monitor dialog so that when tunables
-	 * are being displayed there are no Swing related threading 
-	 * issues.
+	 * Used to toggle the monitor dialog so that when tunables are being displayed
+	 * there are no Swing related threading issues.
 	 */
 	public void showDialog(final boolean sd) {
 		invokeOnEDT(() -> {
 			showDialog = sd;
-			
+
 			if (dialog != null && dialog.isVisible() != showDialog) {
 				if (showDialog == false) {
 					dialog.dispose();
@@ -167,12 +159,12 @@ class SwingTaskMonitor implements TaskMonitor {
 
 	public void close() {
 		invokeOnEDT(() -> {
-			synchronized(this) {
+			synchronized (this) {
 				if (dialog != null) {
 					dialog.dispose();
 					dialog = null;
 				}
-				
+
 				task = null;
 			}
 		});
@@ -185,8 +177,11 @@ class SwingTaskMonitor implements TaskMonitor {
 		cancelled = true;
 		Runnable cancel = () -> task.cancel();
 		cancelExecutorService.submit(cancel);
-		
-		/* Do NOT close the dialog here; dialog closes when the task terminates itself after its cancel method is invoked */
+
+		/*
+		 * Do NOT close the dialog here; dialog closes when the task terminates itself
+		 * after its cancel method is invoked
+		 */
 	}
 
 	protected boolean cancelled() {
@@ -201,7 +196,7 @@ class SwingTaskMonitor implements TaskMonitor {
 
 			this.title = title;
 			history.setTitle(title);
-			
+
 			if (dialog != null)
 				dialog.setTaskTitle(title);
 		});
@@ -214,8 +209,8 @@ class SwingTaskMonitor implements TaskMonitor {
 
 	@Override
 	public void showMessage(TaskMonitor.Level level, String message) {
-    showMessage(level, message, -2);
-  }
+		showMessage(level, message, -2);
+	}
 
 	@Override
 	public void showMessage(TaskMonitor.Level level, String message, int wait) {
@@ -269,65 +264,63 @@ class SwingTaskMonitor implements TaskMonitor {
 	}
 
 	private void showStatusMessage(final TaskMonitor.Level level, final String statusMessage, int wait) {
+		history.addMessage(level, statusMessage);
 		invokeOnEDT(() -> {
 			this.statusMessage = statusMessage;
 			this.statusMessageLevel = level;
-			
+
 			if (dialog != null) {
-        if (level.equals(TaskMonitor.Level.ERROR)) {
-          dialog.setErrorStatus(statusMessage);
-        } else if (level.equals(TaskMonitor.Level.WARN) && wait > 0) {
-          dialog.setWarnStatus(statusMessage);
-        } else {
-          dialog.setStatus(
-              GUIDefaults.getIconText(statusMessageLevel),
-              GUIDefaults.getForeground(statusMessageLevel),
-              statusMessage
-          );
-        }
-      }
-			
-			history.addMessage(level, statusMessage);
+				if (level.equals(TaskMonitor.Level.ERROR)) {
+					dialog.setErrorStatus(statusMessage);
+				} else if (level.equals(TaskMonitor.Level.WARN) && wait > 0) {
+					dialog.setWarnStatus(statusMessage);
+				} else {
+					dialog.setStatus(GUIDefaults.getIconText(statusMessageLevel),
+							GUIDefaults.getForeground(statusMessageLevel), statusMessage);
+				}
+			}
 		});
 
-    if (level.equals(TaskMonitor.Level.WARN)) {
-      if (wait == -2)
-        waitForTime(1);
-      else if (wait > 0)
-        waitForTime(wait);
-      else if (wait == -1) // Wait forever
-        waitUntilClosed();
-    } else if (level.equals(TaskMonitor.Level.ERROR)) {
-      if (wait == -2)
-        waitForTime(10);
-      else if (wait == -1) // Wait forever
-        waitUntilClosed();
-      else if (wait > 0)
-        waitForTime(wait);
-    }
+		if (level.equals(TaskMonitor.Level.WARN)) {
+			if (wait == -2)
+				waitForTime(1);
+			else if (wait > 0)
+				waitForTime(wait);
+			else if (wait == -1) // Wait forever
+				waitUntilClosed();
+		} else if (level.equals(TaskMonitor.Level.ERROR)) {
+			if (wait == -2)
+				waitForTime(10);
+			else if (wait == -1) // Wait forever
+				waitUntilClosed();
+			else if (wait > 0)
+				waitForTime(wait);
+		}
 	}
 
 	public String getFirstTitle() {
 		return firstTitle;
 	}
 
-  private void waitForTime(int wait) {
-    try {
-      int count = wait*1000/500; // Don't wait forever...
-      while (!isClosed()) {
-        Thread.sleep(500);
-        if (count-- <= 0) {
-          break;
-        }
-      }
-    } catch (Exception e) {}
-  }
+	private void waitForTime(int wait) {
+		try {
+			int count = wait * 1000 / 500; // Don't wait forever...
+			while (!isClosed()) {
+				Thread.sleep(500);
+				if (count-- <= 0) {
+					break;
+				}
+			}
+		} catch (Exception e) {
+		}
+	}
 
-  private void waitUntilClosed() {
-    try {
-      while (!isClosed()) {
-        Thread.sleep(500);
-      }
-    } catch (Exception e) {}
-  }
+	private void waitUntilClosed() {
+		try {
+			while (!isClosed()) {
+				Thread.sleep(500);
+			}
+		} catch (Exception e) {
+		}
+	}
 }
