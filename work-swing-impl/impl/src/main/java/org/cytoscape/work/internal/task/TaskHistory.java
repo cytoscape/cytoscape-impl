@@ -2,6 +2,7 @@ package org.cytoscape.work.internal.task;
 
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.cytoscape.work.FinishStatus;
@@ -32,128 +33,149 @@ import org.cytoscape.work.TaskMonitor;
  */
 
 /**
- * A data structure for representing histories of task iterators.
- * The {@code TaskHistory} instance can consist of many {@code History} instances,
+ * A data structure for representing histories of task iterators. The
+ * {@code TaskHistory} instance can consist of many {@code History} instances,
  * which represents the history of a single task iterator execution.
- * {@code History}'s contain the task's title, completion status, and {@code Message}s.
+ * {@code History}'s contain the task's title, completion status, and
+ * {@code Message}s.
  *
- * <p>
- * This class is thread-safe.
- * </p>
+ * <p> This class is thread-safe. </p>
  */
-public class TaskHistory implements Iterable<Object> {
+public class TaskHistory implements Iterable<TaskHistory.History> {
 	
-  public static interface FinishListener {
-    public void taskFinished(History history);
-  }
+	// In an automation environment its important that the task history doesn't grow forever.
+	private static final int HISTORY_CAPACITY = 5000;
 
-  public static final TaskMonitor.Level[] levels = TaskMonitor.Level.values();
-  public static final FinishStatus.Type[] finishTypes = FinishStatus.Type.values();
+	public static interface FinishListener {
+		public void taskFinished(History history);
+	}
 
-  public static class Message {
-    // Use a byte to reference TaskMonitor.Level to save memory
-    final byte levelOrdinal;
-    final String message;
-
-    public Message(final TaskMonitor.Level level, final String message) {
-      this.levelOrdinal = (level == null) ? -1 : (byte) level.ordinal();
-      this.message = message;
-    }
-
-    public TaskMonitor.Level level() {
-      return (this.levelOrdinal < 0) ? null : levels[this.levelOrdinal];
-    }
-
-    public String message() {
-      return message;
-    }
-  }
-
-  public class History implements Iterable<Message> {
 	
-    /** Use a byte to reference FinishStatus.Type to save memory */
-    volatile byte finishType = -1;
-    volatile Class<?> firstTaskClass;
-    final AtomicReference<String> title = new AtomicReference<>();
-    final ConcurrentLinkedQueue<Message> messages = new ConcurrentLinkedQueue<>();
+	public static record Message(TaskMonitor.Level level, String message) { }
 
-    protected History() {}
+	
+	/**
+	 * The history for a TaskIterator
+	 */
+	public class History implements Iterable<Message> {
 
-    public void setTitle(final String newTitle) {
-      if (!title.compareAndSet(null, newTitle)) {
-        addMessage(null, newTitle);
-      }
-    }
+		private volatile FinishStatus.Type finishType;
+		private volatile Class<?> firstTaskClass;
+		private final boolean isUnnested;
+		
+		private final AtomicReference<String> title = new AtomicReference<>();
+		private final ConcurrentLinkedQueue<Message> messages = new ConcurrentLinkedQueue<>();
 
-    public void setFinishType(final FinishStatus.Type finishType) {
-      this.finishType = (finishType == null) ? -1 : (byte) finishType.ordinal();
-      if (finishListener != null) {
-        finishListener.taskFinished(this);
-      }
-    }
+		private History() {
+			isUnnested = false;
+		}
+		
+		private History(TaskMonitor.Level level, String message) {
+			addMessage(level, message);
+			isUnnested = true;
+		}
 
-    public void addMessage(final TaskMonitor.Level level, final String message) {
-      messages.add(new Message(level, message));
-    }
+		public void setTitle(final String newTitle) {
+			if (!title.compareAndSet(null, newTitle)) {
+				addMessage(null, newTitle);
+			}
+		}
 
-    @Override
-    public Iterator<Message> iterator() {
-      return messages.iterator();
-    }
+		public void setFinishType(FinishStatus.Type finishType) {
+			this.finishType = finishType;
+			if (finishListener != null) {
+				finishListener.taskFinished(this);
+			}
+		}
 
-    public String getTitle() {
-      return title.get();
-    }
+		public void addMessage(TaskMonitor.Level level, String message) {
+			messages.add(new Message(level, message));
+		}
 
-    public FinishStatus.Type getFinishType() {
-      return finishType < 0 ? null : finishTypes[finishType];
-    }
+		public Message getFirstMessage() {
+			return messages.isEmpty() ? null : messages.peek();
+		}
+		
+		@Override
+		public Iterator<Message> iterator() {
+			return messages.iterator();
+		}
 
-    public boolean hasMessages() {
-      return !messages.isEmpty();
-    }
+		public String getTitle() {
+			return title.get();
+		}
 
-    public void setFirstTaskClass(final Class<?> klass) {
-      this.firstTaskClass = klass;
-    }
+		public FinishStatus.Type getFinishType() {
+			return finishType;
+		}
 
-    public Class<?> getFirstTaskClass() {
-      return firstTaskClass;
-    }
-  }
+		public boolean hasMessages() {
+			return !messages.isEmpty();
+		}
 
-  final ConcurrentLinkedQueue<Object> histories = new ConcurrentLinkedQueue<>();
-  volatile FinishListener finishListener;
+		public boolean isUnnested() {
+			return isUnnested;
+		}
+		
+		public void setFirstTaskClass(final Class<?> klass) {
+			this.firstTaskClass = klass;
+		}
 
-  /**
-   * Create a new {@code History} for a single task.
-   */
-  public History newHistory() {
-    final History history = new History();
-    histories.add(history);
-    return history;
-  }
+		public Class<?> getFirstTaskClass() {
+			return firstTaskClass;
+		}
+	}
+	
 
-  /**
-   * Return all {@code History}'s contained in this instance.
-   */
-  @Override
-  public Iterator<Object> iterator() {
-    return histories.iterator();
-  }
+	private final ConcurrentLinkedQueue<History> histories = new ConcurrentLinkedQueue<>();
+	private final AtomicInteger counter = new AtomicInteger();
+	
+	private volatile FinishListener finishListener;
+	private final int drainAmount = HISTORY_CAPACITY / 10;
+	
+	/**
+	 * Create a new {@code History} for a TaskIterator.
+	 */
+	public History newHistory() {
+		// Use an atomic counter to keep track of size of the history without locks.
+		// Can't use the ConcurrentLinkedQueue.size() method because it's O(n).
+		int size = counter.getAndUpdate(count ->
+			1 + (count > HISTORY_CAPACITY ? count-drainAmount : count)
+		);
+		
+		// Clear the oldest entries from the history in chunks.
+		if(size > HISTORY_CAPACITY) {
+			for(int i = 0; i < drainAmount; i++) {
+				histories.poll();
+			}
+		}
+		
+		History history = new History();
+		histories.add(history);
+		return history;
+	}
 
-  /**
-   * Clear out all {@code History}'s contained in this instance.
-   */
-  public void clear() {
-    histories.clear();
-  }
+	/**
+	 * Return all {@code History}'s contained in thiwads instance.
+	 */
+	@Override
+	public Iterator<History> iterator() {
+		return histories.iterator();
+	}
 
-  public void setFinishListener(final FinishListener finishListener) {
-    this.finishListener = finishListener;
-  }
+	/**
+	 * Clear out all {@code History}'s contained in this instance.
+	 */
+	public void clear() {
+		counter.set(0);
+		histories.clear();
+	}
 
-  public void addUnnestedMessage(final TaskMonitor.Level level, final String message) {
-    histories.add(new Message(level, message));
-  }
+	public void setFinishListener(FinishListener finishListener) {
+		this.finishListener = finishListener;
+	}
+
+	public void addUnnestedMessage(TaskMonitor.Level level, String message) {
+		histories.add(new History(level, message));
+	}
 }
