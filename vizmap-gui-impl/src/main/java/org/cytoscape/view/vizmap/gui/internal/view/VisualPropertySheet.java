@@ -377,20 +377,20 @@ public class VisualPropertySheet extends JPanel{
 			hGroup.addGap(3);
 			
 			var defLbl = new HeaderLabel("Default");
-			defLbl.setToolTipText("Default Value");
+			defLbl.setToolTipText("Default values");
 			hGroup.addComponent(defLbl);
 			vGroup.addComponent(defLbl);
 			
 			if (model.getLexiconType() != CyNetwork.class) {
 				var mapLbl = new HeaderLabel("Mapping");
-				mapLbl.setToolTipText("Mapped from a Table Column");
+				mapLbl.setToolTipText("Values mapped from a table column");
 				hGroup.addComponent(mapLbl);
 				vGroup.addComponent(mapLbl);
 			}
 			
 			if (model.getLexiconType() != CyColumn.class) {
 				var bypassLbl = new HeaderLabel("Bypass");
-				bypassLbl.setToolTipText("Overrides Default and Mapping values");
+				bypassLbl.setToolTipText("Overrides the Default and Mapping values");
 				hGroup.addComponent(bypassLbl);
 				vGroup.addComponent(bypassLbl);
 			}
@@ -430,8 +430,8 @@ public class VisualPropertySheet extends JPanel{
 	private DropDownMenuButton getVpsBtn() {
 		if (vpsBtn == null) {
 			vpsBtn = new DropDownMenuButton(getVpsMenu(), false);
-			vpsBtn.setText("Show Properties...");
-			vpsBtn.setToolTipText("Show/Hide Properties...");
+			vpsBtn.setText("More Properties...");
+			vpsBtn.setToolTipText("Choose which properties to use");
 			vpsBtn.setHorizontalAlignment(DropDownMenuButton.LEFT);
 		}
 		
