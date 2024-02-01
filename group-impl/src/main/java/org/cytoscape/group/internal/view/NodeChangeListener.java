@@ -24,6 +24,8 @@ import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
+import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.model.events.ViewChangeRecord;
 import org.cytoscape.view.model.events.ViewChangedEvent;
 import org.cytoscape.view.model.events.ViewChangedListener;
@@ -58,7 +60,8 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
  * Handle the view portion of group collapse/expand
  */
 public class NodeChangeListener implements ViewChangedListener, GroupAboutToBeDestroyedListener,
-                                           GroupAboutToBeRemovedListener, SessionLoadedListener {
+                                           GroupAboutToBeRemovedListener, SessionLoadedListener,
+                                           NetworkViewAboutToBeDestroyedListener {
 	
 	private final CyGroupManagerImpl cyGroupManager;
 	private final CyGroupSettingsImpl cyGroupSettings;
@@ -159,6 +162,13 @@ public class NodeChangeListener implements ViewChangedListener, GroupAboutToBeDe
 		
 		final CyEventHelper cyEventHelper = cyGroupManager.getService(CyEventHelper.class);
 		cyEventHelper.flushPayloadEvents(e.getSource()); // Do we need to update the view?
+	}
+
+	public void handleEvent(NetworkViewAboutToBeDestroyedEvent e) {
+		CyNetworkView view = e.getNetworkView();
+		groupMap.remove(view);
+		nodeMap.remove(view);
+		node2GroupMap.remove(view);
 	}
 
 	public void handleEvent(SessionLoadedEvent e) {
