@@ -22,6 +22,7 @@ import static org.cytoscape.work.ServiceProperties.COMMAND_LONG_DESCRIPTION;
 import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
 import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
 import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
 import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
 import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
 import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
@@ -108,9 +109,11 @@ import org.cytoscape.internal.view.NetworkSearchMediator;
 import org.cytoscape.internal.view.NetworkSelectionMediator;
 import org.cytoscape.internal.view.NetworkViewMainPanel;
 import org.cytoscape.internal.view.NetworkViewMediator;
+import org.cytoscape.internal.view.StarterPanel;
 import org.cytoscape.internal.view.ToolBarEnableUpdater;
 import org.cytoscape.internal.view.help.ArrangeTaskFactory;
 import org.cytoscape.internal.view.help.HelpContactHelpDeskTaskFactory;
+import org.cytoscape.internal.view.help.HelpLinkTaskFactory;
 import org.cytoscape.internal.view.help.HelpReportABugTaskFactory;
 import org.cytoscape.internal.view.help.HelpTourTaskFactory;
 import org.cytoscape.internal.view.help.HelpTutorialsTaskFactory;
@@ -175,6 +178,7 @@ public class CyActivator extends AbstractCyActivator {
 	private static final String CONTEXT_MENU_FILTER = "(" + IN_NETWORK_PANEL_CONTEXT_MENU + "=true)";
 	
 	private static final String HELP_MENU = "Help";
+	private static final String HELP_AUTOMATION_MENU = "Help.Automation[1.9999999]";
 	private static final String ARRANGE_VIEWS_MENU = "View.Arrange Detached Views[8]";
 	
 	private static Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
@@ -203,6 +207,8 @@ public class CyActivator extends AbstractCyActivator {
 	private HelpTourTaskFactory helpTourTaskFactory;
 	private HelpTutorialsTaskFactory helpTutorialsTaskFactory;
 	private HelpVideosTaskFactory helpVideosTaskFactory;
+	private HelpLinkTaskFactory py4CytoscapeTaskFactory;
+	private HelpLinkTaskFactory rCy3TaskFactory;
 	private HelpContactHelpDeskTaskFactory helpContactHelpDeskTaskFactory;
 	private HelpReportABugTaskFactory helpReportABugTaskFactory;
 	
@@ -257,7 +263,6 @@ public class CyActivator extends AbstractCyActivator {
 
 	// Show Welcome Screen
 	private CheckForUpdatesAction welcomeScreenAction;
-
 
 	@Override
 	public void start(BundleContext bc) throws Exception {
@@ -349,6 +354,21 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(TITLE, "Report a Bug");
 			props.setProperty(MENU_GRAVITY, "8.0");
 			registerService(bc, helpReportABugTaskFactory, TaskFactory.class, props);
+		}
+		{
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_MENU, HELP_AUTOMATION_MENU);
+			props.setProperty(TITLE, "py4cytoscape");
+			props.setProperty(MENU_GRAVITY, "0.1");
+			registerService(bc, py4CytoscapeTaskFactory, TaskFactory.class, props);
+		}
+		{
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_MENU, HELP_AUTOMATION_MENU);
+			props.setProperty(TITLE, "RCy3");
+			props.setProperty(MENU_GRAVITY, "0.2");
+			props.setProperty(INSERT_SEPARATOR_AFTER, "true");
+			registerService(bc, rCy3TaskFactory, TaskFactory.class, props);
 		}
 		{
 			Properties props = new Properties();
@@ -533,6 +553,8 @@ public class CyActivator extends AbstractCyActivator {
 		helpUserManualTaskFactory = new HelpUserManualTaskFactory(serviceRegistrar);
 		helpTutorialsTaskFactory = new HelpTutorialsTaskFactory(serviceRegistrar);
 		helpVideosTaskFactory = new HelpVideosTaskFactory(serviceRegistrar);
+		py4CytoscapeTaskFactory = new HelpLinkTaskFactory(StarterPanel.PY4CYTOSCAPE_URL, serviceRegistrar);
+		rCy3TaskFactory = new HelpLinkTaskFactory(StarterPanel.RCY3_URL, serviceRegistrar);
 		helpContactHelpDeskTaskFactory = new HelpContactHelpDeskTaskFactory(serviceRegistrar);
 		helpReportABugTaskFactory = new HelpReportABugTaskFactory(serviceRegistrar);
 		helpTourTaskFactory = new HelpTourTaskFactory(serviceRegistrar);

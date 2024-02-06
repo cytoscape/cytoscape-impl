@@ -4,8 +4,10 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static org.cytoscape.util.swing.IconManager.ICON_REMOVE;
+import static org.cytoscape.util.swing.LookAndFeelUtil.equalizeSize;
 import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -13,13 +15,18 @@ import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipFile;
@@ -38,22 +45,22 @@ import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.border.Border;
 
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyUserLog;
+import org.cytoscape.internal.view.util.SVGIcon;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.read.OpenSessionTaskFactory;
 import org.cytoscape.util.swing.IconManager;
-import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
+import org.jdesktop.swingx.color.ColorUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,21 +93,15 @@ public class StarterPanel extends JPanel {
 	
 	public static String NAME = "__STARTER_PANEL__";
 	
+	public static final String PY4CYTOSCAPE_URL = "https://py4cytoscape.readthedocs.io/en/latest/";
+	public static final String RCY3_URL = "https://bioconductor.org/packages/release/bioc/html/RCy3.html";
 	public static final String TUTORIAL_URL = "https://tutorials.cytoscape.org";
 	public static final String NEWS_URL = "https://www.ncbi.nlm.nih.gov/pmc/?term=(cytoscape+AND+network)&report=imagesdocsum&dispmax=100";
 	
-	public final Color LIST_BG_COLOR = UIManager.getColor("Table.background");
-	public final Color LIST_FOCUS_BG_COLOR = UIManager.getColor("Table.selectionBackground");
-	public final Color LINK_FONT_COLOR = UIManager.getColor("Table.focusCellBackground");
+	private final Color BG_COLOR = UIManager.getColor("Table.background");
+	private final Color CONTRAST_COLOR = UIManager.getColor("Panel.background");
 	
 	private static final int PANEL_PAD = 4;
-	private static final int V_GAP = 10;
-	private static final int BORDER_WIDTH = 2;
-	
-	private final Border DEF_BORDER = BorderFactory.createEmptyBorder(BORDER_WIDTH, BORDER_WIDTH, BORDER_WIDTH, BORDER_WIDTH);
-	private final Border FOCUS_BORDER = BorderFactory.createCompoundBorder(
-			BorderFactory.createLineBorder(UIManager.getColor("Focus.color"), BORDER_WIDTH / 2),
-			BorderFactory.createLineBorder(LIST_FOCUS_BG_COLOR, BORDER_WIDTH / 2));
 	
 	private static final String SAMPLE_DATA_DIR = "sampleData/sessions";
 	private static final String SESSION_EXT = ".cys";
@@ -119,8 +120,10 @@ public class StarterPanel extends JPanel {
 	
 	private JButton closeButton;
 	
-	private JLabel tutorialsLabel = createLinkLabel("<html><u>Tutorials</u></html>", TUTORIAL_URL);
-	private JLabel newsLabel = createLinkLabel("<html><u>Published Figures</u></html>", NEWS_URL);
+	private JLabel py4cytoscapeLabel = createLinkLabel("py4cytoscape", "/images/python-logo.svg", PY4CYTOSCAPE_URL);
+	private JLabel rcy3Label = createLinkLabel("RCy3", "/images/r-logo.svg", RCY3_URL);
+	private JLabel tutorialsLabel = createLinkLabel("Tutorials", null, TUTORIAL_URL);
+	private JLabel newsLabel = createLinkLabel("Published Figures", null, NEWS_URL);
 	
 	private final Icon missingImageIcon;
 	
@@ -154,7 +157,6 @@ public class StarterPanel extends JPanel {
 			int h = 2 * PANEL_PAD
 					+ getTitlePanel().getPreferredSize().height
 					+ getRecentSessionsPanel().getPreferredSize().height
-					+ V_GAP
 					+ getSampleSessionsPanel().getPreferredSize().height
 					+ getLinksPanel().getPreferredSize().height;
 			
@@ -171,8 +173,6 @@ public class StarterPanel extends JPanel {
 	}
 	
 	private void init() {
-		setBorder(BorderFactory.createEmptyBorder(PANEL_PAD, PANEL_PAD, PANEL_PAD, PANEL_PAD));
-		
 		setLayout(new BorderLayout());
 		add(getTitlePanel(), BorderLayout.NORTH);
 		add(getContentPane(), BorderLayout.CENTER);
@@ -182,7 +182,7 @@ public class StarterPanel extends JPanel {
 	public JPanel getContentPane() {
 		if (contentPane == null) {
 			contentPane = new JPanel();
-			contentPane.setOpaque(false);
+			contentPane.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, BG_COLOR));
 			
 			var layout = new GroupLayout(contentPane);
 			contentPane.setLayout(layout);
@@ -195,7 +195,6 @@ public class StarterPanel extends JPanel {
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addComponent(getRecentSessionsPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addGap(V_GAP)
 					.addComponent(getSampleSessionsPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 			);
 		}
@@ -206,7 +205,10 @@ public class StarterPanel extends JPanel {
 	private JPanel getTitlePanel() {
 		if (titlePanel == null) {
 			titlePanel = new JPanel();
-			titlePanel.setOpaque(false);
+			titlePanel.setBorder(BorderFactory.createCompoundBorder(
+					BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground")),
+					BorderFactory.createEmptyBorder(3, 4, 3, 4)
+			));
 			
 			var titleLabel = new JLabel("Welcome to Cytoscape");
 			titleLabel.setHorizontalAlignment(JLabel.CENTER);
@@ -215,7 +217,7 @@ public class StarterPanel extends JPanel {
 			var layout = new GroupLayout(titlePanel);
 			titlePanel.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
-			layout.setAutoCreateGaps(false);
+			layout.setAutoCreateGaps(true);
 			
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addGap(getCloseButton().getPreferredSize().width)
@@ -233,7 +235,7 @@ public class StarterPanel extends JPanel {
 	
 	private SessionListPanel getRecentSessionsPanel() {
 		if (recentSessionsPanel == null) {
-			recentSessionsPanel = new SessionListPanel("Recent Sessions");
+			recentSessionsPanel = new SessionListPanel("Recent Sessions:");
 		}
 		
 		return recentSessionsPanel;
@@ -241,7 +243,7 @@ public class StarterPanel extends JPanel {
 	
 	private SessionListPanel getSampleSessionsPanel() {
 		if (sampleSessionsPanel == null) {
-			sampleSessionsPanel = new SessionListPanel("Sample Sessions");
+			sampleSessionsPanel = new SessionListPanel("Sample Sessions:");
 		}
 		
 		return sampleSessionsPanel;
@@ -249,24 +251,45 @@ public class StarterPanel extends JPanel {
 	
 	private JPanel getLinksPanel() {
 		if (linksPanel == null) {
-			linksPanel = new JPanel();
+			linksPanel = new JPanel() {
+				@Override
+				protected void paintComponent(Graphics g) {
+					super.paintComponent(g);
+			        
+					var g2d = (Graphics2D) g;
+			        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+			        
+			        int w = getWidth(), h = getHeight();
+			        var color1 = CONTRAST_COLOR;
+			        var color2 = BG_COLOR;
+			        var gp = new GradientPaint(0, 0, color1, 0, h * 4, color2);
+			        g2d.setPaint(gp);
+			        g2d.fillRect(0, 0, w, h);
+				}
+			};
 			linksPanel.setOpaque(false);
-		
-			LookAndFeelUtil.equalizeSize(tutorialsLabel, newsLabel);
 			
-			GroupLayout layout = new GroupLayout(linksPanel);
+			equalizeSize(py4cytoscapeLabel, rcy3Label, tutorialsLabel, newsLabel);
+			
+			var layout = new GroupLayout(linksPanel);
 			linksPanel.setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
 			layout.setAutoCreateGaps(true);
 			
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addGap(0, 0, Short.MAX_VALUE)
+					.addComponent(py4cytoscapeLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGap(10)
+					.addComponent(rcy3Label, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGap(40)
 					.addComponent(tutorialsLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addGap(80)
+					.addGap(10)
 					.addComponent(newsLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGap(0, 0, Short.MAX_VALUE)
 			);
 			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
+					.addComponent(py4cytoscapeLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(rcy3Label, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(tutorialsLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(newsLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
@@ -281,24 +304,53 @@ public class StarterPanel extends JPanel {
 			closeButton.setToolTipText("Hide Starter Panel");
 			CytoPanelUtil.styleButton(closeButton);
 			closeButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(13));
-			closeButton.setSelected(true);
 		}
 		
 		return closeButton;
 	}
 	
-	private JLabel createLinkLabel(String text, String url) {
-		var label = new JLabel(text);
-		label.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
-		label.setForeground(LINK_FONT_COLOR);
-		label.setHorizontalAlignment(SwingConstants.CENTER);
+	private JLabel createLinkLabel(String text, String svgPath, String url) {
+		int hpad = 5;
+		var icon = svgPath != null ? new LeftSVGIcon(getClass().getResourceAsStream(svgPath), 24, 24, hpad) : null;
+		int vpad = icon == null ? 5 : 1;
+		int bw = 1; // border width
+		
+		var label = new JLabel(text, SwingConstants.CENTER);
+		label.setOpaque(true);
+		label.setBackground(BG_COLOR);
+		label.setForeground(UIManager.getColor("CyColor.complement(+1)"));
+		label.setBorder(BorderFactory.createCompoundBorder(
+				BorderFactory.createLineBorder(BG_COLOR, bw),
+				BorderFactory.createEmptyBorder(vpad, hpad, vpad, hpad)
+		));
+		
+		if (icon != null) {
+			// Calculate the best label width before setting the icon, so the icon can be positioned
+			// at the left side of the label while the text is kept centered
+			int iconTextGap = 5;
+			var fm = label.getFontMetrics(label.getFont());
+			int w = fm.stringWidth(text) + 2 * (icon.getIconWidth() + iconTextGap + hpad + bw);
+			int h = icon.getIconHeight() + 2 * (vpad + bw);
+			
+			label.setPreferredSize(new Dimension(w, h));
+			label.setHorizontalTextPosition(SwingConstants.CENTER); // keep the text centered!
+			label.setIcon(icon);
+		}
+		
 		label.setCursor(new Cursor(Cursor.HAND_CURSOR));
 		
 		label.addMouseListener(new MouseAdapter() {
 			@Override
-			public void mouseClicked(MouseEvent e) {
-				if (e.getClickCount() == 1)
-					serviceRegistrar.getService(OpenBrowser.class).openURL(url);
+			public void mouseClicked(MouseEvent evt) {
+				serviceRegistrar.getService(OpenBrowser.class).openURL(url);
+			}
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				label.setText("<html><u>" + text + "</u></html>");
+			}
+			@Override
+			public void mouseExited(MouseEvent e) {
+				label.setText(text);
 			}
 		});
 		
@@ -447,34 +499,37 @@ public class StarterPanel extends JPanel {
 		taskManager.execute(taskFactory.createTaskIterator(file), observer);
 	}
 	
-	private void drawFocus(SessionPanel panel) {
-		var all = getRecentSessionsPanel().getAllPanels();
-		all.addAll(getSampleSessionsPanel().getAllPanels());
-		
-		for (var p : all)
-			drawFocus(p, panel == p);
-	}
-	
-	private void drawFocus(SessionPanel panel, boolean hasFocus) {
-		panel.setBorder(hasFocus ? FOCUS_BORDER : DEF_BORDER);
-		panel.setBackground(hasFocus ? LIST_FOCUS_BG_COLOR : LIST_BG_COLOR);
-	}
-	
 	private class SessionListPanel extends JPanel {
 		
 		private JScrollPane scrollPane;
+		private JLabel titleLabel;
 		private ScrollableListPanel listPanel;
 		
+		private final String title;
+		
 		SessionListPanel(String title) {
+			this.title = title;
+			
 			setOpaque(false);
 			
-			var titleLabel = new JLabel(title);
-			titleLabel.setBorder(BorderFactory.createEmptyBorder(2, 16, 2, 16));
-			makeSmall(titleLabel);
-			
 			setLayout(new BorderLayout());
-			add(titleLabel, BorderLayout.NORTH);
+			add(getTitleLabel(), BorderLayout.NORTH);
 			add(getScrollPane(), BorderLayout.CENTER);
+		}
+		
+		@Override
+		protected void paintComponent(Graphics g) {
+			super.paintComponent(g);
+	        
+			var g2d = (Graphics2D) g;
+	        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+	        
+	        int w = getWidth(), h = getTitleLabel().getHeight();
+	        var color1 = UIManager.getColor("Panel.background");
+	        var color2 = BG_COLOR;
+	        var gp = new GradientPaint(0, 0, color1, 0, h, color2);
+	        g2d.setPaint(gp);
+	        g2d.fillRect(0, 0, w, h);
 		}
 		
 		void update(List<FileInfo> files) {
@@ -498,6 +553,16 @@ public class StarterPanel extends JPanel {
 			return list;
 		}
 		
+		JLabel getTitleLabel() {
+			if (titleLabel == null) {
+				titleLabel = new JLabel(title);
+				titleLabel.setBorder(BorderFactory.createEmptyBorder(4, 10, 8, 10));
+				makeSmall(titleLabel);
+			}
+			
+			return titleLabel;
+		}
+		
 		JScrollPane getScrollPane() {
 			if (scrollPane == null) {
 				scrollPane = new JScrollPane(getListPanel()) {
@@ -509,8 +574,7 @@ public class StarterPanel extends JPanel {
 						// Trying to set the size of the scrollpane container so that the scrollbar does not appear
 						int w = getViewport().getView().getPreferredSize().width;
 						setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-						Dimension dim = new Dimension(w,
-								super.getPreferredSize().height + getHorizontalScrollBar().getSize().height);
+						var dim = new Dimension(w, super.getPreferredSize().height + getHorizontalScrollBar().getSize().height);
 						setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 						
 						return dim;
@@ -518,14 +582,15 @@ public class StarterPanel extends JPanel {
 				};
 				scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 				scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+				scrollPane.setBackground(getListPanel().getBackground());
 				scrollPane.getViewport().setBackground(getListPanel().getBackground());
-				scrollPane.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, UIManager.getColor("Separator.foreground")));
+				scrollPane.setBorder(BorderFactory.createEmptyBorder());
 				
 				// Set a minimum size that shows at least one row
-				SessionPanel tmpSessionPanel = new SessionPanel(new FileInfo(new File("_tmp"), "TEMP", null));
-				ScrollableListPanel tmpListPanel = new ScrollableListPanel();
+				var tmpSessionPanel = new SessionPanel(new FileInfo(new File("_tmp"), "TEMP", null));
+				var tmpListPanel = new ScrollableListPanel();
 				tmpListPanel.add(tmpSessionPanel);
-				JScrollPane tmpScrollPane = new JScrollPane(tmpListPanel);
+				var tmpScrollPane = new JScrollPane(tmpListPanel);
 				int w = tmpListPanel.getPreferredSize().width + 2;
 				tmpScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 				int vgap = ((ModifiedFlowLayout) tmpListPanel.getLayout()).getVgap() / 2;
@@ -539,7 +604,8 @@ public class StarterPanel extends JPanel {
 		private ScrollableListPanel getListPanel() {
 			if (listPanel == null) {
 				listPanel = new ScrollableListPanel();
-				listPanel.setBackground(LIST_BG_COLOR);
+				listPanel.setOpaque(false);
+				listPanel.setBackground(BG_COLOR);
 			}
 			
 			return listPanel;
@@ -580,22 +646,40 @@ public class StarterPanel extends JPanel {
 	
 	private class SessionPanel extends JPanel {
 		
+		static final int BORDER_WIDTH = 1;
+		static final int PAD = 2;
 		static final int NAME_WIDTH = 124;
+		
+		final Color PANEL_COLOR;
+		final Color BORDER_COLOR;
+		final Color FOCUS_BORDER_COLOR;
+		final Color FOCUS_OVERLAY_COLOR;
 		
 		private JLabel thumbnailLabel;
 		private JLabel nameLabel;
 		
+		protected SessionPanel overItem;
+		
 		private final FileInfo fileInfo;
+	
 		
 		SessionPanel(FileInfo fileInfo) {
 			this.fileInfo = fileInfo;
+			
+			PANEL_COLOR = ColorUtil.setAlpha(CONTRAST_COLOR, 100);
+			BORDER_COLOR = UIManager.getColor("Separator.foreground");
+			FOCUS_BORDER_COLOR = UIManager.getColor("Focus.color");
+			FOCUS_OVERLAY_COLOR = ColorUtil.setAlpha(UIManager.getColor("Table.selectionBackground"), 55);
+			
 			init();
 		}
 		
 		private void init() {
+			setOpaque(false);
 			setFocusable(true);
-			setBorder(DEF_BORDER);
-			setBackground(LIST_BG_COLOR);
+			
+			int bw = BORDER_WIDTH + PAD;
+			setBorder(BorderFactory.createEmptyBorder(bw, bw, bw, bw));
 			
 			var layout = new GroupLayout(this);
 			setLayout(layout);
@@ -621,15 +705,13 @@ public class StarterPanel extends JPanel {
 				@Override
 				public void mouseEntered(MouseEvent e) {
 					SessionPanel.this.requestFocusInWindow();
-					drawFocus(SessionPanel.this);
+					overItem = SessionPanel.this;
+					repaint();
 				}
 				@Override
 				public void mouseExited(MouseEvent e) {
-					var c = SwingUtilities.getDeepestComponentAt(e.getComponent(), e.getX(), e.getY());
-					boolean inside = c != null && SwingUtilities.isDescendingFrom(c, SessionPanel.this);
-					
-					if (!inside)
-						drawFocus(SessionPanel.this, false);
+					overItem = null;
+					repaint();
 				}
 			};
 			
@@ -642,11 +724,11 @@ public class StarterPanel extends JPanel {
 			if (thumbnailLabel == null) {
 				thumbnailLabel = new JLabel(fileInfo.getIcon());
 				thumbnailLabel.setOpaque(true);
-				thumbnailLabel.setBackground(LIST_BG_COLOR);
+				thumbnailLabel.setBackground(BG_COLOR);
 				thumbnailLabel.setHorizontalAlignment(SwingConstants.CENTER);
 				thumbnailLabel.setHorizontalTextPosition(SwingConstants.CENTER);
 				thumbnailLabel.setToolTipText(fileInfo.getHelp());
-				thumbnailLabel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
+				thumbnailLabel.setBorder(BorderFactory.createLineBorder(BORDER_COLOR));
 			}
 			
 			return thumbnailLabel;
@@ -655,7 +737,6 @@ public class StarterPanel extends JPanel {
 		private JLabel getNameLabel() {
 			if (nameLabel == null) {
 				nameLabel = new JLabel(fileInfo.getName());
-				nameLabel.setForeground(LINK_FONT_COLOR);
 				makeSmall(nameLabel);
 				
 				if (fileInfo.getFile() != null)
@@ -670,6 +751,34 @@ public class StarterPanel extends JPanel {
 			}
 			
 			return nameLabel;
+		}
+		
+		@Override
+		public void paint(Graphics g) {
+			var g2d = (Graphics2D) g.create();
+			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+			
+			int w = this.getWidth();
+			int h = this.getHeight();
+			int arc = 10;
+
+			g2d.setColor(PANEL_COLOR);
+			g2d.fillRoundRect(BORDER_WIDTH, BORDER_WIDTH, w - 2 * BORDER_WIDTH, h - 2 * BORDER_WIDTH, arc, arc);
+			
+			super.paint(g);
+			
+			// Add a colored border and transparent overlay on top if it currently has focus
+			if (overItem == this) {
+				g2d.setColor(FOCUS_OVERLAY_COLOR);
+				g2d.fillRect(BORDER_WIDTH, BORDER_WIDTH, w - 2 * BORDER_WIDTH, h - 2 * BORDER_WIDTH);
+				
+				g2d.setColor(FOCUS_BORDER_COLOR);
+				g2d.setStroke(new BasicStroke(BORDER_WIDTH));
+				g2d.drawRoundRect(BORDER_WIDTH, BORDER_WIDTH, w - 2 * BORDER_WIDTH, h - 2 * BORDER_WIDTH, arc, arc);
+			}
+
+			g2d.dispose();
 		}
 	}
 	
@@ -784,6 +893,34 @@ public class StarterPanel extends JPanel {
 				
 				return new Dimension(0, 0);
 			}
+		}
+	}
+	
+	/**
+	 * A version of SVGIcon which makes sure the icon is aligned at the left edge of the component,
+	 * not just positioned to the left of the text.
+	 */
+	private class LeftSVGIcon extends SVGIcon {
+		
+		private int padding;
+
+		public LeftSVGIcon(InputStream is, int width, int height, int padding) {
+			super(is, width, height);
+			this.padding = padding;
+		}
+		
+		@Override
+		public void paintIcon(Component c, Graphics g, int x, int y) {
+			var g2d = (Graphics2D) g.create();
+			
+			// Translate to close to the left border
+            var insets = getInsets();
+            int tx = ((c.getWidth() - getIconWidth()) / 2) - insets.left - padding;
+			
+            g2d.translate(-tx, 0);
+			super.paintIcon(c, g2d, x, y);
+			
+			g2d.dispose();
 		}
 	}
 	
