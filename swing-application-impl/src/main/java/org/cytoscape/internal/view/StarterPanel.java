@@ -182,7 +182,6 @@ public class StarterPanel extends JPanel {
 	public JPanel getContentPane() {
 		if (contentPane == null) {
 			contentPane = new JPanel();
-			contentPane.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, BG_COLOR));
 			
 			var layout = new GroupLayout(contentPane);
 			contentPane.setLayout(layout);
@@ -236,6 +235,7 @@ public class StarterPanel extends JPanel {
 	private SessionListPanel getRecentSessionsPanel() {
 		if (recentSessionsPanel == null) {
 			recentSessionsPanel = new SessionListPanel("Recent Sessions:");
+			recentSessionsPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, BG_COLOR));
 		}
 		
 		return recentSessionsPanel;
@@ -244,6 +244,7 @@ public class StarterPanel extends JPanel {
 	private SessionListPanel getSampleSessionsPanel() {
 		if (sampleSessionsPanel == null) {
 			sampleSessionsPanel = new SessionListPanel("Sample Sessions:");
+			sampleSessionsPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, CONTRAST_COLOR));
 		}
 		
 		return sampleSessionsPanel;
@@ -527,7 +528,7 @@ public class StarterPanel extends JPanel {
 	        int w = getWidth(), h = getTitleLabel().getHeight();
 	        var color1 = UIManager.getColor("Panel.background");
 	        var color2 = BG_COLOR;
-	        var gp = new GradientPaint(0, 0, color1, 0, h, color2);
+	        var gp = new GradientPaint(0, 0, color2, 0, h, color1);
 	        g2d.setPaint(gp);
 	        g2d.fillRect(0, 0, w, h);
 		}
@@ -556,7 +557,7 @@ public class StarterPanel extends JPanel {
 		JLabel getTitleLabel() {
 			if (titleLabel == null) {
 				titleLabel = new JLabel(title);
-				titleLabel.setBorder(BorderFactory.createEmptyBorder(4, 10, 8, 10));
+				titleLabel.setBorder(BorderFactory.createEmptyBorder(4, 10, 4, 10));
 				makeSmall(titleLabel);
 			}
 			
@@ -565,21 +566,7 @@ public class StarterPanel extends JPanel {
 		
 		JScrollPane getScrollPane() {
 			if (scrollPane == null) {
-				scrollPane = new JScrollPane(getListPanel()) {
-					@Override
-					public Dimension getPreferredSize() {
-						if (getViewport().getView() == null)
-							return super.getPreferredSize();
-						
-						// Trying to set the size of the scrollpane container so that the scrollbar does not appear
-						int w = getViewport().getView().getPreferredSize().width;
-						setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-						var dim = new Dimension(w, super.getPreferredSize().height + getHorizontalScrollBar().getSize().height);
-						setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-						
-						return dim;
-					}
-				};
+				scrollPane = new JScrollPane(getListPanel());
 				scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 				scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 				scrollPane.setBackground(getListPanel().getBackground());
@@ -593,8 +580,7 @@ public class StarterPanel extends JPanel {
 				var tmpScrollPane = new JScrollPane(tmpListPanel);
 				int w = tmpListPanel.getPreferredSize().width + 2;
 				tmpScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-				int vgap = ((ModifiedFlowLayout) tmpListPanel.getLayout()).getVgap() / 2;
-				int h = tmpListPanel.getPreferredSize().height + tmpScrollPane.getHorizontalScrollBar().getHeight() + vgap + 2;
+				int h = tmpListPanel.getPreferredSize().height + tmpScrollPane.getHorizontalScrollBar().getHeight();
 				scrollPane.setMinimumSize(new Dimension(w, h));
 			}
 			
@@ -604,7 +590,6 @@ public class StarterPanel extends JPanel {
 		private ScrollableListPanel getListPanel() {
 			if (listPanel == null) {
 				listPanel = new ScrollableListPanel();
-				listPanel.setOpaque(false);
 				listPanel.setBackground(BG_COLOR);
 			}
 			
@@ -647,8 +632,8 @@ public class StarterPanel extends JPanel {
 	private class SessionPanel extends JPanel {
 		
 		static final int BORDER_WIDTH = 1;
-		static final int PAD = 2;
-		static final int NAME_WIDTH = 124;
+		static final int PAD = 5;
+		static final int NAME_WIDTH = 128;
 		
 		final Color PANEL_COLOR;
 		final Color BORDER_COLOR;
