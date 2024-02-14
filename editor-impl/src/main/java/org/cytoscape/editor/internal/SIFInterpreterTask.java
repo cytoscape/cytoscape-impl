@@ -16,6 +16,7 @@ import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.undo.UndoSupport;
 
 /*
  * #%L
@@ -45,10 +46,13 @@ public class SIFInterpreterTask extends AbstractNetworkViewTask {
 
 	@Tunable(description="Type in a nodes/edges expression in SIF format (e.g. A inhibits B):")
 	public String sifString;
-
+	public static String interactionType;
+	public static List<String> nodeNames = new ArrayList<>();
 	private final CyNetwork network;
 	private final CyServiceRegistrar serviceRegistrar;
-	
+	private List<CyEdge> newEdges;
+	private List<CyNode> newNodes;
+
 	@ProvidesTitle
 	public String getTitle() {
 		return "SIF Interpreter";
@@ -77,6 +81,11 @@ public class SIFInterpreterTask extends AbstractNetworkViewTask {
 					if (node1 == null) {
 						node1 = network.addNode();
 						network.getRow(node1).set("name", terms[0]);
+						nodeNames.add(terms[0]);
+						newNodes = new ArrayList<>();
+						newNodes.add(node1);
+						final UndoSupport undoSupport = serviceRegistrar.getService(UndoSupport.class);
+						undoSupport.postEdit(new SIFInterpreterNodeEdit(network, newNodes));
 
 						// nv1 = view.getNodeView(node1);
 						// double[] nextLocn = new double[2];
@@ -93,10 +102,16 @@ public class SIFInterpreterTask extends AbstractNetworkViewTask {
 					if (terms.length == 3) {
 						// simple case of 'A interaction B'
 						CyNode node2 = findNode(terms[2]);
-						
+						interactionType = terms[1];
+
 						if (node2 == null) {
 							node2 = network.addNode();
 							network.getRow(node2).set("name", terms[2]);
+							nodeNames.add(terms[2]);
+							newNodes = new ArrayList<>();
+							newNodes.add(node2);
+							final UndoSupport undoSupport = serviceRegistrar.getService(UndoSupport.class);
+							undoSupport.postEdit(new SIFInterpreterNodeEdit(network, newNodes));
 
 							// nv2 = view.getNodeView(node2);
 							// nv2.setOffset(nv1.getXPosition() + spacing, nv1.getYPosition());
@@ -104,11 +119,15 @@ public class SIFInterpreterTask extends AbstractNetworkViewTask {
 
 						CyEdge edge = network.addEdge(node1, node2, true);
 						network.getRow(edge).set("name", terms[1]);
+						newEdges = new ArrayList<>();
+						newEdges.add(edge);
+						final UndoSupport undoSupport = serviceRegistrar.getService(UndoSupport.class);
+						undoSupport.postEdit(new SIFInterpreterEdgeEdit(network, newEdges));
 
 					} else if (terms.length > 3) {
 						// process multiple targets and one source
 						List<View<CyNode>> nodeViews = new ArrayList<View<CyNode>>();
-						String interactionType = terms[1];
+						interactionType = terms[1];
 						
 						for (int i = 2; i < terms.length; i++) {
 							CyNode node2 = findNode(terms[i]);
@@ -116,6 +135,11 @@ public class SIFInterpreterTask extends AbstractNetworkViewTask {
 							if (node2 == null) {
 								node2 = network.addNode();
 								network.getRow(node2).set("name", terms[i]);
+								nodeNames.add(terms[i]);
+								newNodes = new ArrayList<>();
+								newNodes.add(node2);
+								final UndoSupport undoSupport = serviceRegistrar.getService(UndoSupport.class);
+								undoSupport.postEdit(new SIFInterpreterNodeEdit(network, newNodes));
 
 								// nv2 = view.getNodeView(node2);
 
@@ -126,6 +150,10 @@ public class SIFInterpreterTask extends AbstractNetworkViewTask {
 							CyEdge edge = network.addEdge(node1, node2, true);
 							network.getRow(edge).set("name", terms[1]);
 							// doCircleLayout(nodeViews, nv1);
+							newEdges = new ArrayList<>();
+							newEdges.add(edge);
+							final UndoSupport undoSupport = serviceRegistrar.getService(UndoSupport.class);
+							undoSupport.postEdit(new SIFInterpreterEdgeEdit(network, newEdges));
 						}
 					}
 				}
@@ -140,6 +168,7 @@ public class SIFInterpreterTask extends AbstractNetworkViewTask {
 				view.updateView();
 			}
 		}
+	
 	}
 
 	@Override
