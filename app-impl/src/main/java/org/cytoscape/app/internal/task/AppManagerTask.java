@@ -362,7 +362,7 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		contentBuilder.append("    cybrowser.executeCyCommand('cybrowser native url=\"'+qUrl+'\" ');\n");
 		contentBuilder.append("}}\n");
 		contentBuilder.append("function updateAppAndIcon(app) {\n");
-		contentBuilder.append("    var cmd = 'apps update app=\"'+app+'\"';\n");
+		contentBuilder.append("    var cmd = 'apps install app=\"'+app+'\"';\n");
 		contentBuilder.append("    cybrowser.executeCyCommand(cmd);\n");
 		contentBuilder.append("    var row = getRowByAname(app);\n");
 		contentBuilder.append("    updateAppRow(row);\n");
@@ -372,6 +372,8 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		contentBuilder.append("}\n");
 		contentBuilder.append(" function updateAllApps() {\n");
 		contentBuilder.append("    cybrowser.executeCyCommand('apps update app=\"all\"');\n");
+		contentBuilder.append("    var delayDuration = 3000;\n");
+		contentBuilder.append("    setTimeout(function() {;\n");
 		contentBuilder.append("    var table = document.getElementById(\"appTable\");\n");
 		contentBuilder.append("    for (var i = 0, row; row = table.rows[i]; i++) {\n");
 		contentBuilder.append("        updateAppRow(row);\n");
@@ -380,6 +382,7 @@ public class AppManagerTask extends AbstractAppTask implements ObservableTask {
 		contentBuilder.append("    for (var i = 0, row; row = table.rows[i]; i++) {\n");
 		contentBuilder.append("        updateAppRow(row);\n");
 		contentBuilder.append("    }\n");
+		contentBuilder.append("    }, delayDuration);\n");
 		contentBuilder.append("}\n");
 		contentBuilder.append("function updateAppRow(row) {\n");
 		contentBuilder.append("    row.cells[2].children[0].src = \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDcuMS1jMDAwIDc5LmRhYmFjYmIsIDIwMjEvMDQvMTQtMDA6Mzk6NDQgICAgICAgICI+IDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+IDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiIHhtbG5zOnhtcD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLyIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIFBob3Rvc2hvcCAyMy4wIChNYWNpbnRvc2gpIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOkUxQ0U2MEE4MEFFRDExRUQ4NjREODIxQzM5RDg0OTA5IiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOkUxQ0U2MEE5MEFFRDExRUQ4NjREODIxQzM5RDg0OTA5Ij4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6OTZCMDBCN0YwQUVEMTFFRDg2NEQ4MjFDMzlEODQ5MDkiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6OTZCMDBCODAwQUVEMTFFRDg2NEQ4MjFDMzlEODQ5MDkiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz4BVp+lAAACaElEQVR42syVz6sSURTHz70zavlzRkNNSARBcGNIu1oIBgVBFm4CIWrvpoV/itgiiFZhP+jRywjkSW1rH4IuRWcGFy40f//oHJ/zuPp8r7do8S5cnLnnnM+559zvHZnD4YBYLAaMMVitViAOeo9Go8lSqXTIOZfy+fzjRqPxi3zFYcY2m01gyWQSyuUyyLK8BVwul+B0Om8FAoGDbrd7g2x+v79jGEZ2MBj8xASngLlcDmRaIJgIJJjH47nj8/k+67ruG41G63V8DgWDwW8WiyXb7/d/mFATSL/cLM2ci8UCXC5XWlXVr51OZw2jQJrj8Rg0TUOT+gV97pOvGEuTi73Y7OwBBhxioGcymYBYGj3TGtqciqocKIryiGLEwUUYOmQR+Al35phOp1swEUo2raNddbvdHzD5ExHKTRgacujwDrPbZrPZXpgInc/ngIkteHBvvV7vMxMqD4dDwIXnaHiNDoz6ch5MPFnyxRgeCoXe4JIVWa+kQqHwIp1Ov2y324yy7GrsX1A6CJQRoCIe4qH9YbiwarVasF0myec8MJ0onCQnqCRJEA6HQa5Wqx9TqdQ9dOFsbVw7Uiuu9Hq9U+Vv+g12u32MoDkxj9OzVa1WO2KJRAIqlcp1FDanTJsbcttqsb7XDX0vEMVNFT1FcX8n+6b0ZSaT0eSNtjRTpBRgs9l0vA1nF4x+CNQxri0A18llejGn2Wgq+QIHsjeWw38elx8oC30Te8gu0EO228OTHe5+gkgd9H08cxfHtuWeOGCoOYjH41uqxy/OtWKxeBSJRG7uA+LN+o1/B3dR+Ia4u3q9Dn8FGAD59mR3qY4dvgAAAABJRU5ErkJggg==\";\n");
