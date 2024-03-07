@@ -465,7 +465,7 @@ function searchAppStore(){
     }}
 
 function updateAppAndIcon(app) {
-    var cmd = 'apps update app="'+app+'"';
+    var cmd = 'apps install app="'+app+'"';
     cybrowser.executeCyCommand(cmd);
     //and swap update1.png icon back in for row
     var row = getRowByAname(app);
@@ -478,6 +478,8 @@ function updateAppAndIcon(app) {
  function updateAllApps() {
     cybrowser.executeCyCommand('apps update app="all"');
     //and clear all green arrows
+    var delayDuration = 3000;
+    setTimeout(function() {
     var table = document.getElementById("appTable");
     for (var i = 0, row; row = table.rows[i]; i++) {
         updateAppRow(row);
@@ -486,6 +488,7 @@ function updateAppAndIcon(app) {
     for (var i = 0, row; row = table.rows[i]; i++) {
         updateAppRow(row);
     }
+  }, delayDuration);
 }
 
 function updateAppRow(row) {
