@@ -490,7 +490,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
         tm.setStatusMessage("Copied "+rowsCopied+" rows");
       else {
         tm.setTitle("Possible import error!");
-        tm.showMessage(TaskMonitor.Level.ERROR, "No rows copied!! Check that 'Key Column for Network' matches imported key column", 10);
+        tm.showMessage(TaskMonitor.Level.ERROR, "No rows copied!! Check that 'Key Column for Network' matches imported key column and check the column name doesn't conflict", 10);
         // try { Thread.sleep(5000); } catch (Exception e) {}
       }
 		} else if (where.matches(NETWORK_SELECTION)) {
@@ -511,7 +511,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
       if (rowsCopied > 0)
         tm.setStatusMessage("Copied "+rowsCopied+" rows");
       else {
-        tm.showMessage(TaskMonitor.Level.WARN, "Copied 0 rows!! Check that 'Key Column for Network' matches imported key column", 2);
+        tm.showMessage(TaskMonitor.Level.WARN, "Copied 0 rows!! Check that 'Key Column for Network' matches imported key column and check the column name doesn't conflict", 10);
         // tm.setStatusMessage("Copied 0 rows!! Check that 'Key Column for Network' matches imported key column");
       }
 
@@ -604,7 +604,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			
 			if (targetTable != null) {
 				mappedTables.add(targetTable);
-				rowsCopied += applyMapping(targetTable, caseSensitiveNetworkKeys);
+				rowsCopied += applyMapping(targetTable, caseSensitiveNetworkKeys, false);
 			}
 		}
     return rowsCopied;
@@ -616,7 +616,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		
 		if (targetTable != null) {
 			mappedTables.add(targetTable);
-			return applyMapping(targetTable, caseSensitiveNetworkCollectionKeys);
+			return applyMapping(targetTable, caseSensitiveNetworkCollectionKeys, true);
 		}
     return 0;
 	}
@@ -635,7 +635,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		return null;
 	}
 
-	private int applyMapping(CyTable targetTable, boolean caseSensitive) {
+	private int applyMapping(CyTable targetTable, boolean caseSensitive, boolean global) {
 		var columns = new ArrayList<CyColumn>();
 		
 		if (byReader) {
@@ -643,15 +643,15 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
         int rowsCopied = 0;
 				for (CyTable sourceTable : reader.getTables()) {
 					columns.addAll(sourceTable.getColumns());
-					copyColumns(sourceTable, columns, targetTable, false);
-			    rowsCopied = copyRows(sourceTable, columns, targetTable, caseSensitive);
+					copyColumns(sourceTable, columns, targetTable, false, global);
+			    rowsCopied += copyRows(sourceTable, columns, targetTable, caseSensitive);
 				}
         return rowsCopied;
 			}
 		} else {
 			if (globalTable != null) {
 				columns.addAll(globalTable.getColumns());
-				copyColumns(globalTable, columns, targetTable, true);
+				copyColumns(globalTable, columns, targetTable, true, global);
 				//copyRows(globalTable, columns, targetTable, caseSensitive);
 			}
 		}
@@ -728,20 +728,28 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
     return rowsCopied;
 	}
 
-	private void copyColumns(CyTable sourceTable, List<CyColumn> sourceColumns, CyTable targetTable, boolean addVirtual) {
+	private void copyColumns(CyTable sourceTable, List<CyColumn> sourceColumns, CyTable targetTable, boolean addVirtual, boolean global) {
 		var rootNet = name2RootMap.get(targetNetworkCollection.getSelectedValue());
-		var columnNames = rootNet != null ? getAllColumnNames(rootNet) : Collections.emptySet();
+		Set<String> columnNames = Collections.emptySet();
+		if (rootNet != null) {
+			if (global) 
+				columnNames = getAllColumnNames(rootNet);
+			else
+				columnNames = getSharedColumnNames(rootNet);
+		}
+
 		
 		for (var col : sourceColumns) {
 			if (col == sourceTable.getPrimaryKey())
 				continue;
-			
+
 			var name = col.getName();
 			boolean exists = targetTable.getColumn(name) != null;
 			
 			// Also check if the column exists in the root network or other subnetworks in the same collection
-			if (!exists)
+			if (!exists && global) {
 				exists = columnNames.contains(name.toLowerCase());
+			}
 			
 			if (!exists) {
 				if (!addVirtual) {
@@ -761,6 +769,10 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 					logger.error("Column '" + name + "' has a different type in the target table -- skipping column");
 					
 					continue;
+				} else {
+					logger.error("Column '"+ name + "' exists in another network and is preventing it's creation here -- skipping column");
+
+					continue;
 				}
 			}
 
@@ -768,6 +780,23 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		}
 	}
 	
+	/**
+	 * @return All shared column names in lower case.
+	 */
+	private Set<String> getSharedColumnNames(CyRootNetwork rootNet) {
+		var tables = new ArrayList<CyTable>();
+		var type = getDataTypeTargetForNetworkCollection().getSelectedValue().type;
+		var netTableMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
+		var rootTbl = netTableMgr.getTable(rootNet, type, CyNetwork.LOCAL_ATTRS);
+		var columns = rootTbl.getColumns();
+		var set = new HashSet<String>();
+
+		for (var col : columns)
+			set.add(col.getName().toLowerCase());
+
+		return set;
+	}
+
 	/**
 	 * @return All column names in lower case.
 	 */
