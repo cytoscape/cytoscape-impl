@@ -159,6 +159,7 @@ public class MappingIntegrationTest {
 		
 		//creating first network with 2 nodes
 		net1 = support.getNetwork();
+		assertNotNull(net1);
 		net1.getRow(net1).set(CyNetwork.NAME, "net1");
 		final CyNode node1 =  net1.addNode();
 		final CyNode node2 =  net1.addNode();
@@ -183,6 +184,12 @@ public class MappingIntegrationTest {
 		row2.set(table1sCol, table1sRow2);
 		
 		root = rootNetMgr.getRootNetwork(net1);
+		// Make sure the root network has a SHARED_NAME
+		if (root.getRow(root).get(CyRootNetwork.SHARED_NAME, String.class) == null) {
+			root.getRow(root).set(CyRootNetwork.SHARED_NAME, "collection");
+			root.getRow(root).set(CyRootNetwork.NAME, "collection");
+		}
+		assertNotNull(root);
 		mapping(table1, net1, root, root.getDefaultNodeTable().getColumn(CyRootNetwork.SHARED_NAME),false);
 		//check the mapping by task
 		assertNotNull(net1.getDefaultNodeTable().getColumn(table1sCol));
@@ -225,8 +232,7 @@ public class MappingIntegrationTest {
 		CyRow row4 = table2.getRow(node2Name);
 		row4.set(table2sCol,table2sRow2);
 		
-		root = rootNetMgr.getRootNetwork(net1);
-		mapping(table2, net1,root, root.getDefaultNodeTable().getColumn(CyRootNetwork.SHARED_NAME), true);
+		mapping(table2, net1, root, root.getDefaultNodeTable().getColumn(CyRootNetwork.SHARED_NAME), true);
 		//check the mapping by task
 		assertNotNull(net1.getDefaultNodeTable().getColumn(table2sCol));
 		assertEquals(table2sRow1, net1.getDefaultNodeTable().getRow(node1.getSUID()).get(table2sCol, String.class) );
@@ -265,8 +271,9 @@ public class MappingIntegrationTest {
 		var mappingTF = new ImportTableDataTaskFactoryImpl(new TableImportContext(), serviceRegistrar);
 		List<CyNetwork> nets = new ArrayList<>();
 		nets.add(net);
+		assertNotNull("RootNet is not null", rootNet);
 
-		TaskIterator ti = mappingTF.createTaskIterator(table, selectedOnly, false, nets ,rootNet,col, CyNode.class);
+		TaskIterator ti = mappingTF.createTaskIterator(table, selectedOnly, false, nets, rootNet, col, CyNode.class);
 		assertNotNull("task iterator is null", ti);
 		
 		assertTrue(ti.hasNext());
