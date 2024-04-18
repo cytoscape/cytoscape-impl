@@ -637,7 +637,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 
 	private int applyMapping(CyTable targetTable, boolean caseSensitive, boolean global) {
 		var columns = new ArrayList<CyColumn>();
-		
+
 		if (byReader) {
 			if (reader.getTables() != null && reader.getTables().length > 0) {
         int rowsCopied = 0;
@@ -788,8 +788,10 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		var type = getDataTypeTargetForNetworkCollection().getSelectedValue().type;
 		var netTableMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
 		var rootTbl = netTableMgr.getTable(rootNet, type, CyNetwork.LOCAL_ATTRS);
-		var columns = rootTbl.getColumns();
 		var set = new HashSet<String>();
+
+		if (rootTbl == null) return set;
+		var columns = rootTbl.getColumns();
 
 		for (var col : columns)
 			set.add(col.getName().toLowerCase());
