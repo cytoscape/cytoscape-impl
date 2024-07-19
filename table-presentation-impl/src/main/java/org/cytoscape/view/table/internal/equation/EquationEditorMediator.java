@@ -150,12 +150,15 @@ public class EquationEditorMediator {
 	}
 	
 	private static class RequestFocusListener implements AncestorListener {
+		@Override
 		public void ancestorAdded(AncestorEvent e) {
 			var c = e.getComponent();
 			c.requestFocusInWindow();
 			c.removeAncestorListener(this);
 		}
+		@Override
 		public void ancestorRemoved(AncestorEvent event) { }
+		@Override
 		public void ancestorMoved(AncestorEvent event) { }
 	}
 	
@@ -279,11 +282,13 @@ public class EquationEditorMediator {
 
 		tree.setCellRenderer(new DefaultTreeCellRenderer() {
 			{ setLeafIcon(funcIcon); }
+			@Override
 			public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 				super.getTreeCellRendererComponent(tree, value, false, expanded, leaf, row, hasFocus);
 				var node = (DefaultMutableTreeNode) value;
-				var functionInfo = (FunctionInfo) node.getUserObject();
-				setText(functionInfo.getName());
+				var userObj = node.getUserObject();
+				var name = userObj instanceof FunctionInfo ? ((FunctionInfo) userObj).getName() : ("" + userObj);
+				setText(name);
 				return this;
 			}
 		});
