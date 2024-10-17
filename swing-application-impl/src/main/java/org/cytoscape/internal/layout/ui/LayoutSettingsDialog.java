@@ -621,6 +621,9 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 				setHorizontalAlignment(LEFT);
 				if(value.equals(defaultLayout)) {
 					Color color = UIManager.getColor("List.selectionBackground");
+					if(color == null) { // can happen on linux
+						color = Color.BLUE;
+					}
 					String htmlHex = String.format("%06X", 0xFFFFFF & color.getRGB());
 					setText(String.format("<html>%s <font color=%s><b>(default)</b></font></html>", value.toString(), htmlHex));
 				} else {
