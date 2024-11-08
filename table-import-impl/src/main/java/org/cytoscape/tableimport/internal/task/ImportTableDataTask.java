@@ -691,6 +691,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		for (var targetRow : targetTable.getAllRows()) {
 			var key = targetRow.get(targetKeyColumn.getName(), targetKeyColumn.getType());
 
+
 			if (key == null)
 				continue;
 
@@ -750,7 +751,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			if (!exists && global) {
 				exists = columnNames.contains(name.toLowerCase());
 			}
-			
+
 			if (!exists) {
 				if (!addVirtual) {
 					if (col.getType() == List.class)
@@ -769,7 +770,8 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 					logger.error("Column '" + name + "' has a different type in the target table -- skipping column");
 					
 					continue;
-				} else {
+				} else if (targetCol == null) {
+					// If we get here, the columnn exists, but not in our target network
 					logger.error("Column '"+ name + "' exists in another network and is preventing it's creation here -- skipping column");
 
 					continue;
