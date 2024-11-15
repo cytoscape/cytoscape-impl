@@ -558,7 +558,6 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	}
 	
 	private String getLayoutAttribute() {
-		if (layoutNodeAttrTunable != null)
 		if ((layoutEdgeAttrTunable != null && layoutEdgeAttrTunable.layoutAttribute != null)) {
 			if (layoutEdgeAttrTunable.layoutAttribute.getSelectedValue().equals(UNWEIGHTED))
 				return null;
