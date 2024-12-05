@@ -2,7 +2,7 @@ name: Update Copyright Year
 
 on:
   schedule:
-    - cron: "0 0 1 1 *" # At midnight on January 1st
+    - cron: "0 1 1 1 *" # At 1AM on January 1st
   workflow_dispatch: # Also allows manual triggering of the workflow
   
 jobs:
@@ -22,30 +22,30 @@ jobs:
           find . -type f -exec sed -i \
             -E "s/(Copyright \(C\) [0-9]{4} - )[0-9]{4}(.*)/\1${CURRENT_YEAR}\2/g" {} +
 
-      # Step 3a: TEST - Check diff
-      - name: Test updating copyright year
-        run: |
-          echo "Number of files changed:"
-          git status --short | wc -l
-
-          echo "Diff of changes:"
-          git diff --stat
-
-          echo "Detailed diff for the first changed file:"
-          FIRST_CHANGED_FILE=$(git status --short | awk '{print $2}' | head -n 1)
-          if [ -n "$FIRST_CHANGED_FILE" ]; then
-            git diff "$FIRST_CHANGED_FILE"
-          else
-            echo "No changes detected."
-          fi
-      
-      # # Step 3b: PROD - Commit and push changes if any
-      # - name: Commit and push changes
+      # # Step 3a: TEST - Check diff
+      # - name: Test updating copyright year
       #   run: |
-      #     git config user.name "github-actions[bot]"
-      #     git config user.email "github-actions[bot]@users.noreply.github.com"
-      #     git diff --quiet || (
-      #       git add .
-      #       git commit -m "Update copyright year to ${CURRENT_YEAR}"
-      #       git push
-      #     )
+      #     echo "Number of files changed:"
+      #     git status --short | wc -l
+
+      #     echo "Diff of changes:"
+      #     git diff --stat
+
+      #     echo "Detailed diff for the first changed file:"
+      #     FIRST_CHANGED_FILE=$(git status --short | awk '{print $2}' | head -n 1)
+      #     if [ -n "$FIRST_CHANGED_FILE" ]; then
+      #       git diff "$FIRST_CHANGED_FILE"
+      #     else
+      #       echo "No changes detected."
+      #     fi
+      
+      # Step 3b: PROD - Commit and push changes if any
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git diff --quiet || (
+            git add .
+            git commit -m "Update copyright year to ${CURRENT_YEAR}"
+            git push
+          )
