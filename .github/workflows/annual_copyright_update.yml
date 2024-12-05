@@ -30,6 +30,14 @@ jobs:
 
           echo "Diff of changes:"
           git diff --stat
+
+          echo "Detailed diff for the first changed file:"
+          FIRST_CHANGED_FILE=$(git status --short | awk '{print $2}' | head -n 1)
+          if [ -n "$FIRST_CHANGED_FILE" ]; then
+            git diff "$FIRST_CHANGED_FILE"
+          else
+            echo "No changes detected."
+          fi
       
       # # Step 3b: PROD - Commit and push changes if any
       # - name: Commit and push changes
