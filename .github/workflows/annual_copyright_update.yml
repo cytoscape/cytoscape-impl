@@ -1,0 +1,43 @@
+name: Update Copyright Year
+
+on:
+  schedule:
+    - cron: "0 0 1 1 *" # At midnight on January 1st
+  workflow_dispatch: # Also allows manual triggering of the workflow
+  
+jobs:
+  update-copyright:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Update copyright years
+      - name: Update copyright year
+        run: |
+          CURRENT_YEAR=$(date +'%Y')
+          # Find and update copyright lines in all files
+          find . -type f -exec sed -i \
+            -E "s/(Copyright \(C\) [0-9]{4} - )[0-9]{4}(.*)/\1${CURRENT_YEAR}\2/g" {} +
+
+      # Step 3a: TEST - Check diff
+      - name: Test updating copyright year
+        run: |
+          echo "Number of files changed:"
+          git status --short | wc -l
+
+          echo "Diff of changes:"
+          git diff --stat
+      
+      # # Step 3b: PROD - Commit and push changes if any
+      # - name: Commit and push changes
+      #   run: |
+      #     git config user.name "github-actions[bot]"
+      #     git config user.email "github-actions[bot]@users.noreply.github.com"
+      #     git diff --quiet || (
+      #       git add .
+      #       git commit -m "Update copyright year to ${CURRENT_YEAR}"
+      #       git push
+      #     )
