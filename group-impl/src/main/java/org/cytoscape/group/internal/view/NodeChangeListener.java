@@ -19,8 +19,8 @@ import org.cytoscape.group.internal.CyGroupManagerImpl;
 import org.cytoscape.group.internal.data.CyGroupSettingsImpl;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.session.events.SessionLoadedEvent;
-import org.cytoscape.session.events.SessionLoadedListener;
+import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
+import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
@@ -60,7 +60,7 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
  * Handle the view portion of group collapse/expand
  */
 public class NodeChangeListener implements ViewChangedListener, GroupAboutToBeDestroyedListener,
-                                           GroupAboutToBeRemovedListener, SessionLoadedListener,
+                                           GroupAboutToBeRemovedListener, SessionAboutToBeLoadedListener,
                                            NetworkViewAboutToBeDestroyedListener {
 	
 	private final CyGroupManagerImpl cyGroupManager;
@@ -124,8 +124,10 @@ public class NodeChangeListener implements ViewChangedListener, GroupAboutToBeDe
 		}
 
 		CyNetworkView networkView = e.getSource();
-		if (!groupMap.containsKey(networkView))
+		if (!groupMap.containsKey(networkView)) {
+			// System.out.println("No entry in groupMap for "+networkView);
 			return;
+		}
 
 		Set<CyNode> groupNodes = groupMap.get(networkView);
 		Set<CyNode> nodes = nodeMap.get(networkView);
@@ -153,12 +155,12 @@ public class NodeChangeListener implements ViewChangedListener, GroupAboutToBeDe
 						updateGroupLocation(networkView, nodeView);
 					} catch (Exception ee) { ee.printStackTrace(); }
 				}
-					// System.out.println("It's a node: "+node);
-					try {
+				// System.out.println("It's a node: "+node);
+				try {
 					updateNodeLocation(networkView, nodeView);
-					} catch (Exception ee) { ee.printStackTrace(); }
-				}
+				} catch (Exception ee) { ee.printStackTrace(); }
 			}
+		}
 		
 		final CyEventHelper cyEventHelper = cyGroupManager.getService(CyEventHelper.class);
 		cyEventHelper.flushPayloadEvents(e.getSource()); // Do we need to update the view?
@@ -171,13 +173,15 @@ public class NodeChangeListener implements ViewChangedListener, GroupAboutToBeDe
 		node2GroupMap.remove(view);
 	}
 
-	public void handleEvent(SessionLoadedEvent e) {
+	public void handleEvent(SessionAboutToBeLoadedEvent e) {
+		// System.out.println("SessionAboutToBeLoadedEvent");
 		groupMap = new HashMap<>();
 		nodeMap = new HashMap<>();
 		node2GroupMap = new HashMap<>();
 	}
 
 	public void addGroup(CyGroup group, CyNetworkView networkView) {
+		// System.out.println("addGroup: "+group+" to "+networkView);
 		if (!groupMap.containsKey(networkView))
 			groupMap.put(networkView, new HashSet<CyNode>());
 
