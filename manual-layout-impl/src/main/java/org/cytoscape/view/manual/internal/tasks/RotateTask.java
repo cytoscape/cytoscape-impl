@@ -23,7 +23,7 @@ import org.cytoscape.view.manual.internal.rotate.RotationLayouter;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2023 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2025 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as

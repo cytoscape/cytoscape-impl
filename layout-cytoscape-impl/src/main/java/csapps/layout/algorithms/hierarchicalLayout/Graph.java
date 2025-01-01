@@ -6,7 +6,7 @@ package csapps.layout.algorithms.hierarchicalLayout;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2004 - 2013
+ * Copyright (C) 2004 - 2025
  *   Institute for Systems Biology
  *   University of California at San Diego
  *   Memorial Sloan-Kettering Cancer Center

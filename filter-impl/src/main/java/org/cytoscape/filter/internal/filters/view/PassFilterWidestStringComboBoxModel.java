@@ -6,7 +6,7 @@ package org.cytoscape.filter.internal.filters.view;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2009 - 2021 The Cytoscape Consortium
+ * Copyright (C) 2009 - 2025 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
