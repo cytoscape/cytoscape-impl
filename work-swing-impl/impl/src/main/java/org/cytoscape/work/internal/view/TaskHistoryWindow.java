@@ -120,24 +120,30 @@ public class TaskHistoryWindow {
 		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(dialog.getRootPane(), null, closeButton.getAction());
 		dialog.getRootPane().setDefaultButton(closeButton);
 
-		taskHistory.setFinishListener(history -> {
-			update();
-		});
-
 		dialog.pack();
 		open();
 	}
 	
 	private void close() {
-		dialog.dispose();
+		// Remove the listener -- we don't want to update while closed
+		taskHistory.setFinishListener(null);
+		// Shutdown the debounce timer
 		debounceTimer.shutdown();
 		debounceTimer = null;
+		// Now the dialog can be disposed
+		dialog.dispose();
 	}
 	
 	public void open() {
-		if(debounceTimer == null) {
+		// Recreate the debounce timer
+		if (debounceTimer == null || debounceTimer.isShutdown()) {
 			debounceTimer = new DebounceTimer();
 		}
+		// We can receive updates from TaskHistory again
+		taskHistory.setFinishListener(history -> {
+			update();
+		});
+		// Update the content before displaying the dialog 
 		update();
 		dialog.setVisible(true);
 	}
@@ -228,12 +234,14 @@ public class TaskHistoryWindow {
 		return buffer.append("</html>").toString();
 	}
 
-	public void update() {
-		debounceTimer.debounce(() -> {
-			invokeOnEDT(() -> {
-				String content = generateHistoryHTML();
-				pane.setText(content);
+	private void update() {
+		if (debounceTimer != null && !debounceTimer.isShutdown()) { // Make sure the debounce timer is available!
+			debounceTimer.debounce(() -> {
+				var content = generateHistoryHTML();
+				invokeOnEDT(() -> {
+					pane.setText(content);
+				});
 			});
-		});
+		}
 	}
 }
