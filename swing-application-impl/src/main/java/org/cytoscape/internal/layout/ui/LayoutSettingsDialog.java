@@ -54,7 +54,6 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -80,7 +79,6 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.Tunable;
-import org.cytoscape.work.TunableMutator;
 import org.cytoscape.work.swing.PanelTaskManager;
 import org.cytoscape.work.swing.TunableUIHelper;
 import org.cytoscape.work.util.ListChangeListener;
@@ -101,6 +99,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	
 	private CyLayoutAlgorithm currentLayout;
 	private TaskFactory currentAction;
+	private LocalNetworkViewTaskFactory networkViewTaskFactory;
 
 	private JPanel settingsPnl;
 	private JPanel buttonPnl;
@@ -109,9 +108,9 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	private JPanel layoutAttrPnl;
 	private JButton makeDefaultBtn;
     private JButton applyBtn;
+    private JButton applySelectedBtn;
     private JButton resetBtn;
     private JButton doneBtn;
-    private JCheckBox selectedOnlyChk;
 
 	private LayoutSettingsManager layoutSettingsMgr;
 	private LayoutEdgeAttributeTunable layoutEdgeAttrTunable;
@@ -260,12 +259,23 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			getAlgorithmCmb().setSelectedIndex(0);
 		
 		updateMakeDefaultBtn();
+		updateApplySelectedBtn();
 	}
 	
 	private void updateMakeDefaultBtn() {
 		CyLayoutAlgorithm defLayout = serviceRegistrar.getService(CyLayoutAlgorithmManager.class).getDefaultLayout();
 		boolean enabled = defLayout != null && !defLayout.equals(getAlgorithmCmb().getSelectedItem());
 		getMakeDefaultBtn().setEnabled(enabled);
+	}
+	
+	private void updateApplySelectedBtn() {
+		boolean enabled = false;
+		if(currentLayout.getSupportsSelectedOnly()) {
+			var appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+			var view = appMgr.getCurrentNetworkView();
+			enabled = hasSelectedNodes(view);
+		}
+		getApplySelectedBtn().setEnabled(enabled);
 	}
 	
 	private JButton getMakeDefaultBtn() {
@@ -337,9 +347,9 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 			buttonPnl.setLayout(new BoxLayout(buttonPnl, BoxLayout.LINE_AXIS));
 			buttonPnl.setBorder(BorderFactory.createEmptyBorder(2, 2, 5, 2));
 			
-			buttonPnl.add(getSelectedOnlyChk());
-			buttonPnl.add(Box.createHorizontalGlue());
 			buttonPnl.add(getResetBtn());
+			buttonPnl.add(Box.createHorizontalGlue());
+			buttonPnl.add(getApplySelectedBtn());
 			buttonPnl.add(getApplyBtn());
 			buttonPnl.add(getDoneBtn());
 		}
@@ -347,20 +357,34 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		return buttonPnl;
 	}
 	
+	
+	private JButton getApplySelectedBtn() {
+		if (applySelectedBtn == null) {
+			applySelectedBtn = createApplyBtn(true, "Apply to Selected Nodes", "Apply layout to selected nodes only.");
+		}
+		return applySelectedBtn;
+	}
+	
 	private JButton getApplyBtn() {
 		if (applyBtn == null) {
-			applyBtn = new JButton(new AbstractAction("Apply Layout") {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					final Object context = currentLayout.getDefaultLayoutContext();
-					if (taskMgr.validateAndApplyTunables(context))
-						taskMgr.execute(currentAction.createTaskIterator());
-				}
-			});
+			applyBtn = createApplyBtn(false, "Apply", "Apply layout to entire network.");
 		}
-		
 		return applyBtn;
 	}
+	
+	private JButton createApplyBtn(final boolean selectedNodesOnly, String label, String tooltip) {
+		JButton button = new JButton(label);
+		button.setToolTipText(tooltip);
+		button.addActionListener(evt -> {
+			var context = currentLayout.getDefaultLayoutContext();
+			networkViewTaskFactory.setSelectedNodesOnly(selectedNodesOnly);
+			if(taskMgr.validateAndApplyTunables(context))
+				taskMgr.execute(currentAction.createTaskIterator());
+		});
+		return button;
+	}
+	
+	
 	/*
 	 * a new button added in 3.8, as per  https://cytoscape.atlassian.net/browse/CYTOSCAPE-12502
 	 */
@@ -379,9 +403,9 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 					layoutSettingsMgr.restoreLayoutContext(currentLayout);
 
 					// Get the TunableMutator for our task manager and reset our tunables
-					TunableMutator tunableMutator = taskMgr.getTunableMutator();
-					if (tunableMutator instanceof TunableUIHelper)
-						((TunableUIHelper)tunableMutator).update(currentLayout.getDefaultLayoutContext());
+					var tunableMutator = taskMgr.getTunableMutator();
+					if (tunableMutator instanceof TunableUIHelper helper)
+						helper.update(currentLayout.getDefaultLayoutContext());
 				}
 			});
 		}
@@ -414,21 +438,22 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 				
 				if (o instanceof CyLayoutAlgorithm) {
 					currentLayout = (CyLayoutAlgorithm) o;
-					final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+					CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 					
 					//Checking if the context has already been charged, if so there is no need to do it again
-					final Object context = currentLayout.getDefaultLayoutContext();
+					Object context = currentLayout.getDefaultLayoutContext();
 					tunablesToSave.add(currentLayout);
 
-					final DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
-					final TaskFactory provisioner = factoryProvisioner.createFor(wrapWithContext(currentLayout, context));
-					final JPanel tunablePnl = taskMgr.getConfiguration(provisioner, context);
+					DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
+					networkViewTaskFactory = wrapWithContext(currentLayout, context);
+					TaskFactory provisioner = factoryProvisioner.createFor(networkViewTaskFactory);
+					JPanel tunablePnl = taskMgr.getConfiguration(provisioner, context);
 
 					layoutAttrPnl = new JPanel();
 					layoutAttrPnl.setLayout(new BoxLayout(layoutAttrPnl, BoxLayout.PAGE_AXIS));
 					layoutAttrPnl.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 					
-					final CyNetworkView view = appMgr.getCurrentNetworkView();
+					CyNetworkView view = appMgr.getCurrentNetworkView();
 					setNetworkView(view);
 
 					getAlgorithmPnl().removeAll();
@@ -440,9 +465,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 						getAlgorithmPnl().add(tunablePnl);
 					}
 					
-					boolean selectedNodes = currentLayout.getSupportsSelectedOnly() && hasSelectedNodes(view);
-					getSelectedOnlyChk().setVisible(selectedNodes);
-					getSelectedOnlyChk().setSelected(selectedNodes);
+					updateApplySelectedBtn();
 					
 					currentAction = provisioner;
 					LayoutSettingsDialog.this.pack();
@@ -455,16 +478,10 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		return algorithmCmb;
 	}
 	
-	private JCheckBox getSelectedOnlyChk() {
-		if(selectedOnlyChk == null) {
-			selectedOnlyChk = new JCheckBox("Layout only selected nodes");
-		}
-		return selectedOnlyChk;
-	}
-	
 	
 	void setNetworkView(final CyNetworkView view) {
 		getApplyBtn().setEnabled(view != null);
+		updateApplySelectedBtn();
 		
 		if (layoutAttrPnl == null)
 			return;
@@ -516,13 +533,11 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		}
 	}
 
-	private boolean hasSelectedNodes(final CyNetworkView view) {
-		if (view == null)
+	private static boolean hasSelectedNodes(CyNetworkView view) {
+		if(view == null)
 			return false;
-		
-		final CyNetwork network = view.getModel();
-		final CyTable table = network.getDefaultNodeTable();
-		
+		CyNetwork network = view.getModel();
+		CyTable table = network.getDefaultNodeTable();
 		return table.countMatchingRows(CyNetwork.SELECTED, Boolean.TRUE) > 0;
 	}
 	
@@ -571,8 +586,8 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		return null;
 	}
 
-	private Set<View<CyNode>> getLayoutNodes(CyLayoutAlgorithm layout, CyNetworkView networkView) {
-		if (layout.getSupportsSelectedOnly() && getSelectedOnlyChk().isSelected()) {
+	private Set<View<CyNode>> getLayoutNodes(CyLayoutAlgorithm layout, CyNetworkView networkView, boolean selectedNodesOnly) {
+		if (layout.getSupportsSelectedOnly() && selectedNodesOnly) {
 			Set<View<CyNode>> nodeViews = new HashSet<>();
 			CyNetwork network = networkView.getModel();
 			for (View<CyNode> view : networkView.getNodeViews()) {
@@ -586,20 +601,40 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		return CyLayoutAlgorithm.ALL_NODE_VIEWS;
 	}
 
-	private NetworkViewTaskFactory wrapWithContext(final CyLayoutAlgorithm layout, final Object tunableContext) {
-		return new NetworkViewTaskFactory() {
-			@Override
-			public boolean isReady(CyNetworkView networkView) {
-				return layout.isReady(networkView, tunableContext, getLayoutNodes(layout, networkView), getLayoutAttribute());
-			}
-			
-			@Override
-			public TaskIterator createTaskIterator(CyNetworkView networkView) {
-				return layout.createTaskIterator(networkView, tunableContext, getLayoutNodes(layout, networkView), getLayoutAttribute());
-			}
-		};
+	private LocalNetworkViewTaskFactory wrapWithContext(CyLayoutAlgorithm layout, Object tunableContext) {
+		return new LocalNetworkViewTaskFactory(layout, tunableContext);
+	}
+	
+	private class LocalNetworkViewTaskFactory implements NetworkViewTaskFactory {
+		
+		private final CyLayoutAlgorithm layout;
+		private final Object tunableContext;
+		
+		private boolean selectedNodesOnly;
+		
+		public LocalNetworkViewTaskFactory(CyLayoutAlgorithm layout, Object tunableContext) {
+			this.layout = layout;
+			this.tunableContext = tunableContext;
+		}
+		
+		public void setSelectedNodesOnly(boolean b) {
+			this.selectedNodesOnly = b;
+		}
+		
+		@Override
+		public boolean isReady(CyNetworkView networkView) {
+			var nodes = getLayoutNodes(layout, networkView, selectedNodesOnly);
+			return layout.isReady(networkView, tunableContext, nodes, getLayoutAttribute());
+		}
+		
+		@Override
+		public TaskIterator createTaskIterator(CyNetworkView networkView) {
+			var nodes = getLayoutNodes(layout, networkView, selectedNodesOnly);
+			return layout.createTaskIterator(networkView, tunableContext, nodes, getLayoutAttribute());
+		}
 	}
 
+	
 	private class LayoutAlgorithmListCellRenderer extends DefaultListCellRenderer {
 		
 		private final static long serialVersionUID = 1202339874266209L;
