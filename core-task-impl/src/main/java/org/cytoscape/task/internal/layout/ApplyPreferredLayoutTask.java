@@ -1,5 +1,7 @@
 package org.cytoscape.task.internal.layout;
 
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_VISIBLE;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -14,7 +16,6 @@ import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -124,8 +125,7 @@ public class ApplyPreferredLayoutTask extends AbstractNetworkViewCollectionTask 
 			Set<View<CyNode>> nodeViews = new HashSet<>();
 			CyNetwork network = networkView.getModel();
 			for (View<CyNode> view : networkView.getNodeViews()) {
-				if (network.getRow(view.getModel()).get(CyNetwork.SELECTED, Boolean.class) &&
-						view.getVisualProperty(BasicVisualLexicon.NODE_VISIBLE)) {
+				if (network.getRow(view.getModel()).get(CyNetwork.SELECTED, Boolean.class) && view.getVisualProperty(NODE_VISIBLE)) {
 					nodeViews.add(view);
 				}
 			}
