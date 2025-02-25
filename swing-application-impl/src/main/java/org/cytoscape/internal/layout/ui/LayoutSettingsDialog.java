@@ -586,7 +586,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		return null;
 	}
 
-	private Set<View<CyNode>> getLayoutNodes(CyLayoutAlgorithm layout, CyNetworkView networkView, boolean selectedNodesOnly) {
+	private static Set<View<CyNode>> getLayoutNodes(CyLayoutAlgorithm layout, CyNetworkView networkView, boolean selectedNodesOnly) {
 		if (layout.getSupportsSelectedOnly() && selectedNodesOnly) {
 			Set<View<CyNode>> nodeViews = new HashSet<>();
 			CyNetwork network = networkView.getModel();

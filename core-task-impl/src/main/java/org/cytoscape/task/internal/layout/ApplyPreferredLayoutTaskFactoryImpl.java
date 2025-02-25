@@ -1,7 +1,9 @@
 package org.cytoscape.task.internal.layout;
 
 import java.util.Collection;
+import java.util.Collections;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNetworkViewCollectionTaskFactory;
 import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory;
@@ -37,19 +39,22 @@ public class ApplyPreferredLayoutTaskFactoryImpl extends AbstractNetworkViewColl
 		ApplyPreferredLayoutTaskFactory, TaskFactory {
 
 	private final CyServiceRegistrar serviceRegistrar;
+	private final boolean applyToSelectedOnly;
 
-	public ApplyPreferredLayoutTaskFactoryImpl(CyServiceRegistrar serviceRegistrar) {
+	public ApplyPreferredLayoutTaskFactoryImpl(CyServiceRegistrar serviceRegistrar, boolean applyToSelectedOnly) {
 		this.serviceRegistrar = serviceRegistrar;
+		this.applyToSelectedOnly = applyToSelectedOnly;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(final Collection<CyNetworkView> networkViews) {
-		return new TaskIterator(2, new ApplyPreferredLayoutTask(networkViews, serviceRegistrar));
+		return new TaskIterator(2, new ApplyPreferredLayoutTask(serviceRegistrar, networkViews, applyToSelectedOnly));
 	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(2, new ApplyPreferredLayoutTask(serviceRegistrar));
+		var networkViews = Collections.singletonList(serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView());
+		return new TaskIterator(2, new ApplyPreferredLayoutTask(serviceRegistrar, networkViews, applyToSelectedOnly));
 	}
 
 	@Override

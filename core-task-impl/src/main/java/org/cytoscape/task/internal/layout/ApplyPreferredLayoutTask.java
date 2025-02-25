@@ -1,17 +1,20 @@
 package org.cytoscape.task.internal.layout;
 
 import java.util.Collection;
-import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNetworkViewCollectionTask;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -43,19 +46,26 @@ import org.cytoscape.work.json.JSONResult;
 
 public class ApplyPreferredLayoutTask extends AbstractNetworkViewCollectionTask {
 
-	@Tunable(description = "Network view to apply the layout currently set as default to", context = "nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
+	@Tunable(description = "Network view to apply the layout currently set as default to", 
+			context = "nogui", 
+			longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, 
+			exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
 	public CyNetwork networkSelected;
+	
+	@Tunable(description = "If true the layout will be applied only to selected nodes. "
+			+ "Note, the layout must support this option, if not then the layout will be applied to all nodes.",
+			context = "nogui")
+	public boolean selectedOnly = false;
+	
 
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	public ApplyPreferredLayoutTask(Collection<CyNetworkView> networkViews, CyServiceRegistrar serviceRegistrar) {
+	public ApplyPreferredLayoutTask(CyServiceRegistrar serviceRegistrar, Collection<CyNetworkView> networkViews, boolean selectedOnly) {
 		super(networkViews);
 		this.serviceRegistrar = serviceRegistrar;
+		this.selectedOnly = selectedOnly;
 	}
 
-	public ApplyPreferredLayoutTask(CyServiceRegistrar serviceRegistrar) {
-		this(Collections.singletonList(serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView()), serviceRegistrar);
-	}
 
 	@Override
 	public void run(TaskMonitor tm) {
@@ -85,12 +95,13 @@ public class ApplyPreferredLayoutTask extends AbstractNetworkViewCollectionTask 
 				return;
 			
 			//clearEdgeBends(view);
-			String layoutAttribute = layoutMgr.getLayoutAttribute(layout, view);
-			TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(),
-					CyLayoutAlgorithm.ALL_NODE_VIEWS, layoutAttribute);
+			var nodes = getLayoutNodes(layout, view, selectedOnly);
 			
-			if (itr != null) // For unit tests...
-				insertTasksAfterCurrentTask(itr);
+			String layoutAttribute = layoutMgr.getLayoutAttribute(layout, view);
+			TaskIterator tasks = layout.createTaskIterator(view, layout.getDefaultLayoutContext(), nodes, layoutAttribute);
+			
+			if (tasks != null) // For unit tests...
+				insertTasksAfterCurrentTask(tasks);
 
 			i++;
 			tm.setProgress((i / (double) viewCount));
@@ -102,11 +113,25 @@ public class ApplyPreferredLayoutTask extends AbstractNetworkViewCollectionTask 
 	@SuppressWarnings({"rawtypes"})
 	public Object getResults(Class type) {
 		if (type.equals(JSONResult.class)) {
-			JSONResult res = () -> { return "{}"; };
+			JSONResult res = () -> "{}";
 			return res;
 		}
-		
 		return null;
+	}
+	
+	private static Set<View<CyNode>> getLayoutNodes(CyLayoutAlgorithm layout, CyNetworkView networkView, boolean selectedNodesOnly) {
+		if (layout.getSupportsSelectedOnly() && selectedNodesOnly) {
+			Set<View<CyNode>> nodeViews = new HashSet<>();
+			CyNetwork network = networkView.getModel();
+			for (View<CyNode> view : networkView.getNodeViews()) {
+				if (network.getRow(view.getModel()).get(CyNetwork.SELECTED, Boolean.class) &&
+						view.getVisualProperty(BasicVisualLexicon.NODE_VISIBLE)) {
+					nodeViews.add(view);
+				}
+			}
+			return nodeViews;
+		}
+		return CyLayoutAlgorithm.ALL_NODE_VIEWS;
 	}
 
 //	/**

@@ -248,7 +248,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 			} else if (layout == true) {
 				final Set<CyNetworkView> views = new HashSet<>();
 				views.add(view);
-				insertTasksAfterCurrentTask(new ApplyPreferredLayoutTask(views, serviceRegistrar));
+				insertTasksAfterCurrentTask(new ApplyPreferredLayoutTask(serviceRegistrar, views, false));
 //				executeInParallel(view, style, new ApplyPreferredLayoutTask(views, layoutMgr), tMonitor);
 			}
 			
