@@ -472,32 +472,26 @@ public class CyActivator extends AbstractCyActivator {
 
 			// menu and toolbar
 			var props = new Properties();
-			props.setProperty(PREFERRED_MENU, "Layout.Apply Preferred Layout[1]");
+			props.setProperty(PREFERRED_MENU, "Layout.Apply Preferred Layout[5.0]");
 			props.setProperty(ACCELERATOR, "fn5");
 			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			props.setProperty(TITLE, "All Nodes");
 			props.setProperty(TOOL_BAR_GRAVITY, "7.0");
 			props.setProperty(IN_TOOL_BAR, "true");
-			props.setProperty(MENU_GRAVITY, "5.0");
+			props.setProperty(MENU_GRAVITY, "1");
 			props.setProperty(TOOLTIP, "Apply Preferred Layout");
 			props.setProperty(TOOLTIP_LONG_DESCRIPTION, "Applies the preferred layout to the selected views.");
 			props.setProperty(TOOLTIP_IMAGE, getClass().getResource("/images/tooltips/apply-preferred-layout.gif").toString());
 			registerService(bc, applyPreferred, NetworkViewCollectionTaskFactory.class, props);
 			registerService(bc, applyPreferred, ApplyPreferredLayoutTaskFactory.class, props);
 			
+			// just menu
 			props = new Properties();
-			props.setProperty(PREFERRED_MENU, "Layout.Apply Preferred Layout[2]");
-//			props.setProperty(ACCELERATOR, "fn5");
-			props.setProperty(LARGE_ICON_ID, iconId);
+			props.setProperty(PREFERRED_MENU, "Layout.Apply Preferred Layout[5.1]");
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			props.setProperty(TITLE, "Selected Nodes Only");
-			props.setProperty(TOOL_BAR_GRAVITY, "7.1");
-			props.setProperty(IN_TOOL_BAR, "true");
-			props.setProperty(MENU_GRAVITY, "5.1");
-			props.setProperty(TOOLTIP, "Apply Preferred Layout to Selected Nodes");
-			props.setProperty(TOOLTIP_LONG_DESCRIPTION, "Applies the preferred layout to selected nodes in the selected views.");
-			props.setProperty(TOOLTIP_IMAGE, getClass().getResource("/images/tooltips/apply-preferred-layout.gif").toString());
+			props.setProperty(MENU_GRAVITY, "2");
 			registerService(bc, applyPreferredSelected, NetworkViewCollectionTaskFactory.class, props);
 			registerService(bc, applyPreferredSelected, ApplyPreferredLayoutTaskFactory.class, props);
 
