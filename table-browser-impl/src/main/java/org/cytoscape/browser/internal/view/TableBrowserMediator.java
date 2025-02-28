@@ -160,18 +160,25 @@ public class TableBrowserMediator implements SetCurrentNetworkListener, SetCurre
 					// Just add the table--do NOT select the table here, or there can be UI/Manager event loops!
 					tb.addTable(table);
 					
-					// Show the Unassigned Tables panel
-					if (tb.getObjectType() == null && tb.getTableChooser().getItemCount() == 1) {
-						serviceRegistrar.registerService(tb, CytoPanelComponent.class);
+					// Unassigned table?
+					if (tb.getObjectType() == null) {
+						// Set the current global table, or it may not appear when
+						// the user switches to the global table browser
+						tb.setCurrentTable(table);
 						
-						var appManager = serviceRegistrar.getService(CyApplicationManager.class);
-						
-						if (table.equals(appManager.getCurrentTable())) {
-							selectTableBrowser(tb);
-							tb.selectTable(table);
+						if (tb.getTableChooser().getItemCount() == 1) {
+							// Show the Unassigned Tables panel
+							serviceRegistrar.registerService(tb, CytoPanelComponent.class);
+							
+							var appManager = serviceRegistrar.getService(CyApplicationManager.class);
+							
+							if (table.equals(appManager.getCurrentTable())) {
+								selectTableBrowser(tb);
+								tb.selectTable(table);
+							}
 						}
 					}
-				});
+			    });
 			}
 		}
 	}
