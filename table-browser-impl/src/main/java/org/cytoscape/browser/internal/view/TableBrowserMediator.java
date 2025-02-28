@@ -166,7 +166,10 @@ public class TableBrowserMediator implements SetCurrentNetworkListener, SetCurre
 						// the user switches to the global table browser
 						tb.setCurrentTable(table);
 						
-						if (tb.getTableChooser().getItemCount() == 1) {
+						if (getTableCytoPanel().getSelectedComponent().equals(tb.getComponent())) {
+							// The "Unassigned Tables" tab is the selected CytoPanelComponent...
+							serviceRegistrar.getService(CyApplicationManager.class).setCurrentTable(table);
+						} else if (tb.getTableChooser().getItemCount() == 1) {
 							// Show the Unassigned Tables panel
 							serviceRegistrar.registerService(tb, CytoPanelComponent.class);
 							
