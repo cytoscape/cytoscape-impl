@@ -463,38 +463,47 @@ public class CyActivator extends AbstractCyActivator {
 
 	private void createLayoutTaskFactories(BundleContext bc) {
 		{
-			var factory = new ApplyPreferredLayoutTaskFactoryImpl(serviceRegistrar);
+			var applyPreferred = new ApplyPreferredLayoutTaskFactoryImpl(serviceRegistrar, false);
+			var applyPreferredSelected = new ApplyPreferredLayoutTaskFactoryImpl(serviceRegistrar, true);
 
 			var icon = new TextIcon(APPLY_LAYOUT, iconFont, C1, LARGE_ICON_SIZE, LARGE_ICON_SIZE);
 			var iconId = "cy::APPLY_LAYOUT";
 			iconManager.addIcon(iconId, icon);
 
+			// menu and toolbar
 			var props = new Properties();
-			props.setProperty(PREFERRED_MENU, "Layout");
+			props.setProperty(PREFERRED_MENU, "Layout.Apply Preferred Layout[5.0]");
 			props.setProperty(ACCELERATOR, "fn5");
 			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
-			props.setProperty(TITLE, "Apply Preferred Layout");
+			props.setProperty(TITLE, "All Nodes");
 			props.setProperty(TOOL_BAR_GRAVITY, "7.0");
 			props.setProperty(IN_TOOL_BAR, "true");
-			props.setProperty(MENU_GRAVITY, "5.0");
+			props.setProperty(MENU_GRAVITY, "1");
 			props.setProperty(TOOLTIP, "Apply Preferred Layout");
 			props.setProperty(TOOLTIP_LONG_DESCRIPTION, "Applies the preferred layout to the selected views.");
 			props.setProperty(TOOLTIP_IMAGE, getClass().getResource("/images/tooltips/apply-preferred-layout.gif").toString());
-			registerService(bc, factory, NetworkViewCollectionTaskFactory.class, props);
-			registerService(bc, factory, ApplyPreferredLayoutTaskFactory.class, props);
+			registerService(bc, applyPreferred, NetworkViewCollectionTaskFactory.class, props);
+			registerService(bc, applyPreferred, ApplyPreferredLayoutTaskFactory.class, props);
+			
+			// just menu
+			props = new Properties();
+			props.setProperty(PREFERRED_MENU, "Layout.Apply Preferred Layout[5.1]");
+			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
+			props.setProperty(TITLE, "Selected Nodes Only");
+			props.setProperty(MENU_GRAVITY, "2");
+			registerService(bc, applyPreferredSelected, NetworkViewCollectionTaskFactory.class, props);
+			registerService(bc, applyPreferredSelected, ApplyPreferredLayoutTaskFactory.class, props);
 
 			// For commands
 			props = new Properties();
 			props.setProperty(COMMAND, "apply preferred");
 			props.setProperty(COMMAND_NAMESPACE, "layout");
 			props.setProperty(COMMAND_DESCRIPTION, "Execute the preferred layout on a network");
-			props.setProperty(COMMAND_LONG_DESCRIPTION,
-					"Executes the current preferred layout. "
-					+ "Default is ```grid```.");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Executes the current preferred layout. Default is ```grid```.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
-			registerService(bc, factory, TaskFactory.class, props);
+			registerService(bc, applyPreferred, TaskFactory.class, props);
 		}
 		// ---------- COMMANDS ----------
 		// NAMESPACE: layout
@@ -505,8 +514,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "layout");
 			props.setProperty(COMMAND_DESCRIPTION, "Return the current preferred layout");
 			props.setProperty(COMMAND_LONG_DESCRIPTION,
-					"Returns the name of the current preferred layout or empty string if not set. "
-					+ "Default is ```grid```.");
+					"Returns the name of the current preferred layout or empty string if not set.  Default is ```grid```.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "\"grid\"");
 
@@ -519,8 +527,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "layout");
 			props.setProperty(COMMAND_DESCRIPTION, "Set the preferred layout");
 			props.setProperty(COMMAND_LONG_DESCRIPTION,
-					"Sets the preferred layout. Takes a specific name as defined in the API "
-					+ "Default is ```grid```.");
+					"Sets the preferred layout. Takes a specific name as defined in the API. Default is ```grid```.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
 			registerService(bc, factory, TaskFactory.class, props);
