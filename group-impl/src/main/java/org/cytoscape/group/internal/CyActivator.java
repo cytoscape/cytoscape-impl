@@ -39,6 +39,7 @@ import org.cytoscape.model.events.NetworkAddedListener;
 import org.cytoscape.property.PropertyUpdatedListener;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
@@ -131,7 +132,7 @@ public class CyActivator extends AbstractCyActivator {
 		// Set up listener for node movement
 		NodeChangeListener nodeChangeListener = new NodeChangeListener(cyGroupManager, cyGroupSettings);
 		registerService(bc, nodeChangeListener, NetworkViewAboutToBeDestroyedListener.class, new Properties());
-		registerService(bc, nodeChangeListener, SessionLoadedListener.class, new Properties());
+		registerService(bc, nodeChangeListener, SessionAboutToBeLoadedListener.class, new Properties());
 		registerService(bc, nodeChangeListener, ViewChangedListener.class, new Properties());
 		registerService(bc, nodeChangeListener, GroupAboutToBeRemovedListener.class, new Properties());
 		registerService(bc, nodeChangeListener, GroupAboutToBeDestroyedListener.class, new Properties());

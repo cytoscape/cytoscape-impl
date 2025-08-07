@@ -19,8 +19,8 @@ import org.cytoscape.group.internal.CyGroupManagerImpl;
 import org.cytoscape.group.internal.data.CyGroupSettingsImpl;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.session.events.SessionLoadedEvent;
-import org.cytoscape.session.events.SessionLoadedListener;
+import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
+import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
@@ -60,7 +60,7 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
  * Handle the view portion of group collapse/expand
  */
 public class NodeChangeListener implements ViewChangedListener, GroupAboutToBeDestroyedListener,
-                                           GroupAboutToBeRemovedListener, SessionLoadedListener,
+                                           GroupAboutToBeRemovedListener, SessionAboutToBeLoadedListener,
                                            NetworkViewAboutToBeDestroyedListener {
 	
 	private final CyGroupManagerImpl cyGroupManager;
@@ -171,7 +171,8 @@ public class NodeChangeListener implements ViewChangedListener, GroupAboutToBeDe
 		node2GroupMap.remove(view);
 	}
 
-	public void handleEvent(SessionLoadedEvent e) {
+	@Override
+	public void handleEvent(SessionAboutToBeLoadedEvent e) {
 		groupMap = new HashMap<>();
 		nodeMap = new HashMap<>();
 		node2GroupMap = new HashMap<>();
