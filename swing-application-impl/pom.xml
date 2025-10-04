@@ -37,16 +37,17 @@
 						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
 						<Bundle-Version>${project.version}</Bundle-Version>
 						<Export-Package>!${bundle.namespace}.*</Export-Package>
+            <Import-Package>*;resolution:=optional</Import-Package>
 						<Private-Package>${bundle.namespace}.*</Private-Package>
 						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
-						<Embed-Dependency>flexmark,flexmark-util,jsoup</Embed-Dependency>
+						<Embed-Dependency>flexmark,flexmark-util,jsoup,jaxb-runtime,jaxb-core</Embed-Dependency>
 					</instructions>
 				</configuration>
 			</plugin>
 			<plugin>
-				<groupId>org.jvnet.jaxb2.maven2</groupId>
-				<artifactId>maven-jaxb2-plugin</artifactId>
-				<version>0.13.3</version>
+				<groupId>org.jvnet.jaxb</groupId>
+				<artifactId>jaxb-maven-plugin</artifactId>
+				<version>4.0.0</version>
 				<executions>
 					<execution>
 						<id>sessionState</id>
@@ -237,6 +238,24 @@
 			<artifactId>svgSalamander</artifactId>
 			<version>1.1.3</version>
 		</dependency>
+
+    <dependency>
+        <groupId>jakarta.xml.bind</groupId>
+        <artifactId>jakarta.xml.bind-api</artifactId>
+        <version>4.0.2</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glassfish.jaxb</groupId>
+      <artifactId>jaxb-runtime</artifactId>
+      <version>4.0.5</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glassfish.jaxb</groupId>
+      <artifactId>jaxb-core</artifactId>
+      <version>4.0.5</version>
+    </dependency>
 
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>

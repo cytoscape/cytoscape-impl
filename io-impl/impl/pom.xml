@@ -33,7 +33,7 @@
 						<Export-Package>!${bundle.namespace}.*</Export-Package>
 						<Private-Package>${bundle.namespace}.*</Private-Package>
 						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
-						<Embed-Dependency>gson</Embed-Dependency>
+						<Embed-Dependency>gson,jaxb-runtime,jaxb-core</Embed-Dependency>
 					</instructions>
 				</configuration>
 			</plugin>
@@ -47,17 +47,9 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<groupId>org.jvnet.jaxb2.maven2</groupId>
-				<artifactId>maven-jaxb2-plugin</artifactId>
-				<version>0.14.0</version>
-				<!--  https://github.com/highsource/maven-jaxb2-plugin/issues/201  -->
-				<dependencies>
-					<dependency>
-						<groupId>org.glassfish.jaxb</groupId>
-						<artifactId>jaxb-runtime</artifactId>
-						<version>2.3.3</version>
-					</dependency>
-				</dependencies>
+				<groupId>org.jvnet.jaxb</groupId>
+				<artifactId>jaxb-maven-plugin</artifactId>
+				<version>4.0.0</version>
 				<executions>
 					<execution>
 						<id>vizmap</id>

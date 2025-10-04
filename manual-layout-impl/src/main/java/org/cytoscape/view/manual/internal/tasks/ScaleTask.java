@@ -10,7 +10,7 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
-import org.cytoscape.work.util.ListSingleSelection;;
+import org.cytoscape.work.util.ListSingleSelection;
 
 import org.cytoscape.view.manual.internal.common.GraphConverter2;
 import org.cytoscape.view.manual.internal.layout.algorithm.MutablePolyEdgeGraphLayout;

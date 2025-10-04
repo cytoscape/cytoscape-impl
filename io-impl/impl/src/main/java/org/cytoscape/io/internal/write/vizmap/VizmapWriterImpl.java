@@ -30,8 +30,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Set;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.Marshaller;
 
 import org.cytoscape.io.internal.util.vizmap.VisualStyleSerializer;
 import org.cytoscape.io.internal.util.vizmap.model.Vizmap;

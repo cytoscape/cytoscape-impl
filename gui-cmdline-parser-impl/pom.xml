@@ -48,7 +48,7 @@
 						<Private-Package>${bundle.namespace}.*</Private-Package>
 						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
 						<Embed-Dependency>install4j-runtime</Embed-Dependency>
-						<Import-Package>!com.sun.javafx.stage,!com.sun.management,!org.eclipse.swt.widgets,!sun.font,!sun.misc,*</Import-Package>
+						<Import-Package>!com.sun.javafx.stage,!com.sun.management,!org.eclipse.swt.widgets,!sun.font,!sun.misc,*;resolution:=optional</Import-Package>
 					</instructions>
 				</configuration>
 			</plugin>
@@ -120,7 +120,7 @@
 		<dependency>
 			<groupId>com.install4j</groupId>
 			<artifactId>install4j-runtime</artifactId>
-			<version>10.0</version>
+			<version>11.0</version>
 		</dependency>
 
 	</dependencies>

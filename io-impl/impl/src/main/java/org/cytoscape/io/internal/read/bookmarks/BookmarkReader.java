@@ -26,8 +26,8 @@ package org.cytoscape.io.internal.read.bookmarks;
 
 import java.io.InputStream;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Unmarshaller;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.Unmarshaller;
 
 import org.cytoscape.io.internal.read.AbstractPropertyReader;
 import org.cytoscape.property.bookmark.Bookmarks;

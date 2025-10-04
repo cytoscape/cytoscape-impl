@@ -26,8 +26,8 @@ package org.cytoscape.io.internal.write.cysession;
 
 import java.io.OutputStream;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.Marshaller;
 
 import org.cytoscape.io.internal.util.session.model.Cysession;
 import org.cytoscape.io.write.CyWriter;

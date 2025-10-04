@@ -19,7 +19,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.swing.CySwingApplication;

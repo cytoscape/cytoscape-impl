@@ -27,8 +27,8 @@ package org.cytoscape.io.internal.read.vizmap;
 import java.io.InputStream;
 import java.util.HashSet;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Unmarshaller;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.Unmarshaller;
 
 import org.cytoscape.io.internal.read.AbstractVizmapReader;
 import org.cytoscape.io.internal.util.vizmap.VisualStyleSerializer;

@@ -16,7 +16,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Properties;
 
-import javax.xml.bind.DatatypeConverter;
+import jakarta.xml.bind.DatatypeConverter;
 
 import org.apache.log4j.Logger;
 import org.cytoscape.application.CyUserLog;

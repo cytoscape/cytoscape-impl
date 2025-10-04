@@ -14,7 +14,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import javax.xml.bind.DatatypeConverter;
+import jakarta.xml.bind.DatatypeConverter;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.StreamUtil;
@@ -124,18 +124,18 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 
     public void assignSystemProperties() {
         if ("direct".equals(type.getSelectedValue())) {
-            System.setProperty("http.proxyHost", "");
-            System.setProperty("http.proxyPort", "");
-            System.setProperty("socksProxyHost", "");
-            System.setProperty("socksProxyPort", "");
+            System.clearProperty("http.proxyHost");
+            System.clearProperty("http.proxyPort");
+            System.clearProperty("socksProxyHost");
+            System.clearProperty("socksProxyPort");
         } else if ("http".equals(type.getSelectedValue())) {
             System.setProperty("http.proxyHost", hostname);
             System.setProperty("http.proxyPort", Integer.toString(port));
-            System.setProperty("socksProxyHost", "");
-            System.setProperty("socksProxyPort", "");
+            System.clearProperty("socksProxyHost");
+            System.clearProperty("socksProxyPort");
         } else if ("socks".equals(type.getSelectedValue())) {
-            System.setProperty("http.proxyHost", "");
-            System.setProperty("http.proxyPort", "");
+            System.clearProperty("http.proxyHost");
+            System.clearProperty("http.proxyPort");
             System.setProperty("socksProxyHost", hostname);
             System.setProperty("socksProxyPort", Integer.toString(port));
         }

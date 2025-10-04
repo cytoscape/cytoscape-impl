@@ -354,7 +354,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerAllServices(bc, factory);
 		}
 
-		createPreferencesTaskFactories(bc);
+		// createPreferencesTaskFactories(bc);
 		createFilterTaskFactories(bc);
 		createTableTaskFactories(bc);
 		createNetworkTaskFactories(bc, groupManager, groupFactory);

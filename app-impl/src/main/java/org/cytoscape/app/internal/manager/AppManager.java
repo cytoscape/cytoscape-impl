@@ -375,6 +375,7 @@ public class AppManager implements FrameworkListener {
 
 		if(!startApps(otherAppsToStart))
 			userLogger.warn("One or more apps failed to load or start");
+		System.out.println("Firing AppsFinishedStartingEvent");
 		eventHelper.fireEvent(new AppsFinishedStartingEvent(this));
 	}
 
