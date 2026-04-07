@@ -1,6 +1,7 @@
 package prefuse.util.force;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -114,7 +115,7 @@ public class ForceSimulator {
 		Spring.SpringFactory f = Spring.getFactory();
 		
 		while (siter.hasNext())
-			f.reclaim((Spring) siter.next());
+			f.reclaim(siter.next());
 		
 		springs.clear();
 	}
@@ -246,10 +247,18 @@ public class ForceSimulator {
      */
     protected void accumulate() {
     	// Init
-		for (int i = 0; i < iflen && !monitor.isCancelled(); i++)
-			iforces[i].init(this);
-		for (int i = 0; i < sflen && !monitor.isCancelled(); i++)
-			sforces[i].init(this);
+    	Arrays.asList(iforces).parallelStream().forEach(f -> {
+			if (!monitor.isCancelled() && f != null)
+				f.init(this);
+		});
+    	Arrays.asList(sforces).parallelStream().forEach(f -> {
+			if (!monitor.isCancelled() && f != null)
+				f.init(this);
+		});
+//		for (int i = 0; i < iflen && !monitor.isCancelled(); i++)
+//			iforces[i].init(this);
+//		for (int i = 0; i < sflen && !monitor.isCancelled(); i++)
+//			sforces[i].init(this);
 		
 		// Update forces
 		updateForceItems(items);
@@ -257,25 +266,40 @@ public class ForceSimulator {
     }
 
 	private void updateForceItems(Collection<ForceItem> list) {
-		for (ForceItem item : list) {
-			if (monitor.isCancelled())
-				return;
-			
-			item.force[0] = 0.0f;
-			item.force[1] = 0.0f;
-			
-			for (int i = 0; i < iflen && !monitor.isCancelled(); i++)
-				iforces[i].getForce(item);
-		}
+		list.parallelStream().forEach(item -> {
+			if (!monitor.isCancelled()) {
+				item.force[0] = 0.0f;
+				item.force[1] = 0.0f;
+				
+				for (int i = 0; i < iflen && !monitor.isCancelled(); i++)
+					iforces[i].getForce(item);
+			}
+		});
+//		for (ForceItem item : list) {
+//			if (monitor.isCancelled())
+//				return;
+//			
+//			item.force[0] = 0.0f;
+//			item.force[1] = 0.0f;
+//			
+//			for (int i = 0; i < iflen && !monitor.isCancelled(); i++)
+//				iforces[i].getForce(item);
+//		}
 	}
 	
 	private void updateSprings(Collection<Spring> list) {
-		for (Spring s : list) {
-			if (monitor.isCancelled())
-				return;
-			
-			for (int i = 0; i < sflen && !monitor.isCancelled(); i++)
-				sforces[i].getForce(s);
-		}
+		list.parallelStream().forEach(item -> {
+			if (!monitor.isCancelled()) {
+				for (int i = 0; i < sflen && !monitor.isCancelled(); i++)
+					sforces[i].getForce(item);
+			}
+		});
+//		for (Spring s : list) {
+//			if (monitor.isCancelled())
+//				return;
+//			
+//			for (int i = 0; i < sflen && !monitor.isCancelled(); i++)
+//				sforces[i].getForce(s);
+//		}
 	}
 }
