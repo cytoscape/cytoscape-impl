@@ -64,7 +64,7 @@ public class BioLayoutKKAlgorithm  extends BioLayoutAlgorithm {
 	
 	public BioLayoutKKAlgorithm(final boolean supportEdgeWeights, final UndoSupport undoSupport) {
 		super((supportEdgeWeights ? "kamada-kawai" : "kamada-kawai-noweight"),
-				(supportEdgeWeights ? "Edge-weighted Spring Embedded Layout" : "Spring Embedded Layout"),
+				(supportEdgeWeights ? "Edge-Weighted Spring Embedded Layout" : "Spring Embedded Layout"),
 				supportEdgeWeights, undoSupport);
 	}
 
