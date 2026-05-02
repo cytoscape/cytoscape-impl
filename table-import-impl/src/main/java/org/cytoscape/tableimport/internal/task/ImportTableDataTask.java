@@ -132,6 +132,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			xorChildren = true, 
 			longDescription = "Determines what network(s) the imported table will be associated with (if any).  "+
 			                  "A table can be imported into a ```Network Collection```, ```Selected networks``` or ```to an unassigned table```.", 
+			required = true,
 			exampleStringValue = "To a Network Collection"
 	)
 	public ListSingleSelection<String> getWhereImportTable() {
@@ -259,7 +260,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		updateKeyColumnForMappingNetworkList();
 	}
 	
-	public ListSingleSelection<String> keyColumnForMappingNetworkList;
+	public ListSingleSelection<String> keyColumnForMappingNetworkList = null;
 	
 	@Tunable(
 			description = "Key Column for Networks:",
@@ -270,7 +271,11 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			longDescription="The column in the network to use as the merge key", 
 			exampleStringValue = "name"
 	)
-	public ListSingleSelection<String> getKeyColumnForMappingNetworkList() {	return keyColumnForMappingNetworkList;	}
+	public ListSingleSelection<String> getKeyColumnForMappingNetworkList() {	
+			if (keyColumnForMappingNetworkList == null)
+				keyColumnForMappingNetworkList = new <String>ListSingleSelection(Collections.singletonList("name"));
+			return keyColumnForMappingNetworkList;	
+	}
 	
 	public void setKeyColumnForMappingNetworkList(ListSingleSelection<String> colList) {	keyColumnForMappingNetworkList = colList;	}
 	
@@ -690,7 +695,6 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
     int rowsCopied = 0;
 		for (var targetRow : targetTable.getAllRows()) {
 			var key = targetRow.get(targetKeyColumn.getName(), targetKeyColumn.getType());
-
 
 			if (key == null)
 				continue;

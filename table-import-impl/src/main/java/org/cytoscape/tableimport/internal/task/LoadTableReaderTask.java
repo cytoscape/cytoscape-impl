@@ -96,19 +96,19 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 	         longDescription="The first row of the input table to load.  This allows the skipping of headers that are not part of the import.",
 	         exampleStringValue="10",
 	         context="both")
-	public int startLoadRow = -1;
+	public int startLoadRow = 2; // This is a reasonable default value (assuming the first row contains column names
 	
 	@Tunable(description="Key Column Index", 
 	         longDescription="The column that contains the key values for this import.  These values will be used to match with the key values in the network.",
 	         exampleStringValue="1",
 	         context="both")
-	public int keyColumnIndex = -1;
+	public int keyColumnIndex = 1; // This is a reasonable default value
 	
 	@Tunable(description="First row used for column names", 
 	         longDescription="If the first imported row contains column names, set this to ```true```.",
 	         exampleStringValue="true",
 	         context="both")
-	public boolean firstRowAsColumnNames;
+	public boolean firstRowAsColumnNames = true;
 	
 	@Tunable(description="List of column data types ordered by column index (e.g. \"string,int,long,double,boolean,intlist\" or just \"s,i,l,d,b,il\")", 
 	         longDescription="List of column data types ordered by column index (e.g. \"string,int,long,double,boolean,intlist\" or just \"s,i,l,d,b,il\")",
