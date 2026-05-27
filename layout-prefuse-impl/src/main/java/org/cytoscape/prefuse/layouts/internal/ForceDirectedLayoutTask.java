@@ -96,7 +96,7 @@ public class ForceDirectedLayoutTask extends AbstractParallelPartitionLayoutTask
 		// if (taskMonitor != null)
 		// 	taskMonitor.setStatusMessage("Partition " + part.getPartitionNumber() + ": Initializing...");
 		
-		ForceSimulator m_fsim = new ForceSimulator(monitor);
+		ForceSimulator m_fsim = new ForceSimulator(monitor, context.isDeterministic);
 		m_fsim.addForce(new NBodyForce(monitor));
 		m_fsim.addForce(new SpringForce());
 		m_fsim.addForce(new DragForce());
@@ -104,7 +104,7 @@ public class ForceDirectedLayoutTask extends AbstractParallelPartitionLayoutTask
 		// Calculate our edge weights
 		part.calculateEdgeWeights();
 		
-		m_fsim = new ForceSimulator(monitor);
+		m_fsim = new ForceSimulator(monitor, context.isDeterministic);
 		m_fsim.addForce(new NBodyForce(monitor));
 		m_fsim.addForce(new SpringForce());
 		m_fsim.addForce(new DragForce());

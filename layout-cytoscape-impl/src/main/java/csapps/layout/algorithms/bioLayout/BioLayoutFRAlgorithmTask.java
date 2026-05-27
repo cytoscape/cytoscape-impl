@@ -288,33 +288,52 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 	 * @return an updated temperature factor.
 	 */
 	public double doOneIteration(int iteration, double temp) {
-		double xAverage = 0;
-		double yAverage = 0;
-		double zAverage = 0;
-
 		// repulseProfile.start();
-		// Calculate repulsive forces
-		for (LayoutNode v : partition.getNodeList()) {
-			if (cancelled)
-				return 0;
-			
-			if (!v.isLocked()) {
-				xAverage += v.getX()/partition.nodeCount();
-				yAverage += v.getY()/partition.nodeCount();
-				zAverage += v.getZ()/partition.nodeCount();
-			}
-		}
+		// Calculate repulsive forces...
+		
+		// Calculate average position using parallel streams:
+		// The reduce uses a 4-element array to accumulate x, y, z, and the count of unlocked nodes in one pass.
+		// The three-argument form of reduce takes an identity value, an accumulator (per element), and a combiner
+		// (to merge partial results from different threads) — which is exactly what makes it safe for 
+		// parallel execution with no shared mutable state.
+		double[] averages = partition.getNodeList().parallelStream()
+				.filter(v -> !v.isLocked())
+				.reduce(
+						new double[] { 0, 0, 0, 0 }, // [xSum, ySum, zSum, count]
+						(acc, v) -> new double[] {
+								acc[0] + v.getX(),
+								acc[1] + v.getY(),
+								acc[2] + v.getZ(),
+								acc[3] + 1
+						},
+						(a, b) -> new double[]{
+								a[0] + b[0],
+								a[1] + b[1],
+								a[2] + b[2],
+								a[3] + b[3]
+						}
+				);
 
-		for (LayoutNode v: partition.getNodeList()) {
-			if (cancelled)
-				return 0;
-			
-			if (!v.isLocked()) {
-				calculateRepulsion(v);
-				if (gravity_constant != 0)
-					calculateGravity(v,xAverage,yAverage,zAverage);
-			}
-		}
+		final double count = averages[3] > 0 ? averages[3] : partition.nodeCount();
+		final double xAverage = averages[0] / count;
+		final double yAverage = averages[1] / count;
+		final double zAverage = averages[2] / count;
+
+		// Each call to calculateRepulsion(v) iterates over all other nodes, making this O(n²),
+		// which makes it the most expensive part of the algorithm. By parallelizing this loop,
+		// we can get a significant performance boost on large graphs, especially on multi-core systems.
+		partition.getNodeList().parallelStream()
+			.forEach(v -> {
+				if (!cancelled && !v.isLocked()) {
+					calculateRepulsion(v);
+					
+					if (gravity_constant != 0)
+						calculateGravity(v, xAverage, yAverage, zAverage);
+				}
+			});
+		
+		if (cancelled)
+			return 0;
 
 		// repulseProfile.checkpoint();
 
