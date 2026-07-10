@@ -117,7 +117,12 @@ public class UpdateManager implements AppsFinishedStartingListener {
 	
 	private void fireUpdatesChangedEvent() {
 		UpdatesChangedEvent evt = new UpdatesChangedEvent(this);
-		
+
+		// [bell-diag] If listenerCount is 0 here, the bell action had not yet registered its listener
+		// when the update set was computed (startup race) -> badge never receives the count.
+		sysLogger.info("[bell-diag] fireUpdatesChangedEvent: notifying {} listener(s), updates.size()={}",
+				updatesChangedListeners.size(), updates.size());
+
 		for (UpdatesChangedListener listener : updatesChangedListeners)
 			listener.updatesChanged(evt);
 	}
@@ -128,25 +133,54 @@ public class UpdateManager implements AppsFinishedStartingListener {
 
 	@Override
 	public void handleEvent(AppsFinishedStartingEvent evt) {
+		sysLogger.info("[bell-diag] handleEvent(AppsFinishedStartingEvent) invoked on thread {}", Thread.currentThread().getName());
 		final ExecutorService service = Executors.newSingleThreadExecutor();
 		service.submit(() -> {
-			for (DownloadSite downloadSite : downloadSitesManager.getDownloadSites()) {
-				appManager.getWebQuerier().setCurrentSiteName(downloadSite.getSiteName());
-				appManager.getWebQuerier().setCurrentAppStoreUrl(downloadSite.getSiteUrl());
-				appManager.getWebQuerier().getAllApps();
+			// [bell-diag] Wrap the whole body: previously any exception here was captured in the
+			// discarded Future and silently swallowed, leaving the update bell dark with no log trace.
+			try {
+				final int siteCount = downloadSitesManager.getDownloadSites().size();
+				final int installedCount = appManager.getInstalledApps().size();
+				sysLogger.info("[bell-diag] startup update check START: {} download site(s), {} installed app(s)", siteCount, installedCount);
+				userLogger.info("[bell-diag] App update startup check started (" + siteCount + " site(s), " + installedCount + " installed app(s))");
+
+				// [bell-diag][FIX] Always fetch the DEFAULT Cytoscape App Store catalog first.
+				// The loop below only covers custom download sites (DownloadSitesManager), which
+				// does NOT include the default store; without this fetch, checkForUpdates() compares
+				// installed apps against an empty appsByUrl cache and finds nothing -> bell stays dark.
+				appManager.getWebQuerier().setCurrentAppStoreUrl(WebQuerier.DEFAULT_APP_STORE_URL);
+				final int defaultStoreCount = appManager.getWebQuerier().getAllApps().size();
+				sysLogger.info("[bell-diag][FIX] default store getAllApps ({}) returned {} app(s)",
+						WebQuerier.DEFAULT_APP_STORE_URL, defaultStoreCount);
+
+				for (DownloadSite downloadSite : downloadSitesManager.getDownloadSites()) {
+					appManager.getWebQuerier().setCurrentSiteName(downloadSite.getSiteName());
+					appManager.getWebQuerier().setCurrentAppStoreUrl(downloadSite.getSiteUrl());
+					final int appCount = appManager.getWebQuerier().getAllApps().size();
+					sysLogger.info("[bell-diag] getAllApps for site '{}' ({}) returned {} app(s)",
+							downloadSite.getSiteName(), downloadSite.getSiteUrl(), appCount);
+				}
+
+				checkForUpdates(appManager.getInstalledApps());
+
+				// [bell-diag] Log the count UNCONDITIONALLY (the original only logged when > 0, so the
+				// "found zero" case was invisible).
+				sysLogger.info("[bell-diag] startup update check FINISHED: updates.size()={}", updates.size());
+				userLogger.info("[bell-diag] App update startup check finished: " + updates.size() + " update(s) found");
+
+				for (Update update : updates) {
+					userLogger.info(
+							"Update for " + update +
+							" available (latest version: " + update.getUpdateVersion() + ", " + update.getApp().getVersion() + " installed)"
+					);
+				}
+
+				if (updates.size() > 0)
+					userLogger.info(updates.size() + " " + (updates.size() == 1 ? "update" : "updates") + " available");
+			} catch (Throwable t) {
+				sysLogger.error("[bell-diag] startup update check FAILED with an exception", t);
+				userLogger.error("[bell-diag] App update startup check failed: " + t);
 			}
-			
-			checkForUpdates(appManager.getInstalledApps());
-			
-			for (Update update : updates) {
-				userLogger.info(
-						"Update for " + update + 
-						" available (latest version: " + update.getUpdateVersion() + ", " + update.getApp().getVersion() + " installed)"
-				);
-			}
-			
-			if (updates.size() > 0)
-				userLogger.info(updates.size() + " " + (updates.size() == 1 ? "update" : "updates") + " available");
 		});
 	}
 }
