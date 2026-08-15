@@ -52,7 +52,7 @@
 				<enabled>false</enabled>
 			</releases>
 			<name>Cytoscape Snapshots</name>
-			<url>http://nrnb-nexus.ucsd.edu/repository/cytoscape_snapshots/</url>
+			<url>https://nrnb-nexus.ucsd.edu/repository/cytoscape_snapshots/</url>
 		</repository>
 		<repository>
 			<id>cytoscape_releases</id>
@@ -63,7 +63,23 @@
 				<enabled>true</enabled>
 			</releases>
 			<name>Cytoscape Releases</name>
-			<url>http://nrnb-nexus.ucsd.edu/repository/cytoscape_releases/</url>
+			<url>https://nrnb-nexus.ucsd.edu/repository/cytoscape_releases/</url>
+		</repository>
+		<!--
+			Declared only to override the URL scheme.  This module depends on
+			org.ops4j.pax.logging:pax-logging-service, whose POM declares a
+			repository with this same id over plain http and pulls in
+			org.knopflerfish.kf6:log-API.  Maven 3.8.1+ blocks plain-http
+			repositories, so dependency collection failed here on any machine
+			that had not already cached that artifact.  A repository declared by
+			the project wins over one contributed by a dependency's POM, so
+			redeclaring the same id over https is enough.  The artifact is not
+			mirrored on cytoscape_thirdparty.
+		-->
+		<repository>
+			<id>knopflerfish</id>
+			<name>Knopflerfish OSGi Repository</name>
+			<url>https://resources.knopflerfish.org/repo/maven2/release</url>
 		</repository>
 	</repositories>
 
