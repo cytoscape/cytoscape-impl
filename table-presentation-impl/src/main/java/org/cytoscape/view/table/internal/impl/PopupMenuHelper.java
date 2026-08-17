@@ -8,12 +8,7 @@ import static org.cytoscape.work.ServiceProperties.TITLE;
 
 import java.awt.Component;
 import java.awt.Point;
-import java.awt.Toolkit;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -21,7 +16,6 @@ import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
@@ -43,7 +37,6 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.util.swing.PopupMenuGravityTracker;
 import org.cytoscape.util.swing.TextIcon;
-import org.cytoscape.view.table.internal.util.TableBrowserUtil;
 import org.cytoscape.view.table.internal.util.ValidatedObjectAndEditString;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskManager;
@@ -97,7 +90,6 @@ public class PopupMenuHelper {
 		tableColumnFactoryMap = new HashMap<>();
 	}
 
-	@SuppressWarnings("serial")
 	public void createColumnHeaderMenu(
 			CyColumn column,
 			Class<? extends CyIdentifiable> tableType,
@@ -144,7 +136,6 @@ public class PopupMenuHelper {
 			menu.show(invoker, x, y);
 	}
 
-	@SuppressWarnings("serial")
 	public JPopupMenu createTableCellMenu(
 			CyColumn column,
 			Object primaryKeyValue,
@@ -200,17 +191,7 @@ public class PopupMenuHelper {
 			}
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				var point = new Point(x, y);
-				int row = table.rowAtPoint(point);
-				int column = table.columnAtPoint(point);
-				var object = table.getValueAt(row, column);
-				var data = object instanceof ValidatedObjectAndEditString
-						? TableBrowserUtil.createCopyString((ValidatedObjectAndEditString) object)
-						: (object != null ? object.toString() : "");
-
-				var stringSelection = new StringSelection(data);
-				var clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-				clipboard.setContents(stringSelection, null);
+				GridClipboard.copy(table);
 			}
 		}));
 		menu.add(new JMenuItem(new AbstractAction("Paste") {
@@ -219,40 +200,10 @@ public class PopupMenuHelper {
 			}
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				var sourceRow = column.getTable().getRow(primaryKeyValue);
-				var columnName = column.getName();
-				var clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-				
-				try {
-					var pasteValue = (String) clipboard.getData(DataFlavor.stringFlavor);
-					var parsedData = TableBrowserUtil.parseCellInput(column.getTable(), columnName, pasteValue);
-
-					if (parsedData.get(0) != null)
-						sourceRow.set(columnName, parsedData.get(0));
-					else
-						JOptionPane.showMessageDialog(null, parsedData.get(1), "Invalid Value", JOptionPane.ERROR_MESSAGE);
-				} catch (UnsupportedFlavorException | IOException ex) {
-					JOptionPane.showMessageDialog(null, ex.getMessage(), "Invalid Value", JOptionPane.ERROR_MESSAGE);
-					logger.warn("Error pasting cell value", ex);
-				}
+				GridClipboard.paste(table);
 			}
 		}));
 		
-		menu.add(new JSeparator());
-		
-		menu.add(new JMenuItem(new AbstractAction("Copy Selected") {
-			{
-				putValue(SMALL_ICON, copyIcon);
-			}
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				var action = table.getActionMap().get("copy");
-				
-				if (action != null)
-					action.actionPerformed(new ActionEvent(table, e.getID(), "copy"));
-			}
-		}));
-
 		if (tableType == CyNode.class || tableType == CyEdge.class) {
 			menu.add(new JSeparator());
 
@@ -325,7 +276,7 @@ public class PopupMenuHelper {
 		}
 		
 		if (togglable)
-			((JCheckBoxMenuItem) mi).setSelected(tf.isOn());
+			mi.setSelected(tf.isOn());
 		
 		boolean insertSepAfter = getBooleanProperty(props, INSERT_SEPARATOR_AFTER);
 		

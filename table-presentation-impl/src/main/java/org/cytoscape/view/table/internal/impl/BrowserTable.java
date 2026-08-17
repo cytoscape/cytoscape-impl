@@ -2,7 +2,17 @@ package org.cytoscape.view.table.internal.impl;
 
 import static org.cytoscape.util.swing.LookAndFeelUtil.getSmallFontSize;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isMac;
-import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.*;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.CELL;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_EDITABLE;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_GRAVITY;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_SELECTED;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_VISIBLE;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.COLUMN_WIDTH;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.ROW_HEIGHT;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.ROW_SELECTED;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_GRID_VISIBLE;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_ROW_HEIGHT;
+import static org.cytoscape.view.presentation.property.table.BasicTableVisualLexicon.TABLE_VIEW_MODE;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.ALL;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.AUTO;
 import static org.cytoscape.view.table.internal.impl.BrowserTableModel.ViewMode.SELECTED;
@@ -957,6 +967,10 @@ public class BrowserTable extends JTable
 				}
 			}
 		});
+		
+		// Install the copy/paste support after everything else has been initialized,
+		// because it relies on some of the existing functionality (e.g. getCellRenderer)
+		GridClipboard.installCopyPaste(this);
 	}
 	
 	/**
