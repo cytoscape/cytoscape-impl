@@ -1,6 +1,7 @@
 package prefuse.util.force;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -43,6 +44,7 @@ public class ForceSimulator {
     private Force[] sforces;
     private int iflen, sflen;
     private Integrator integrator;
+    private final boolean isDeterministic;
     private float speedLimit = 1.0f;
     
     private final StateMonitor monitor;
@@ -51,17 +53,18 @@ public class ForceSimulator {
      * Create a new, empty ForceSimulator. A RungeKuttaIntegrator is used
      * by default.
      */
-    public ForceSimulator(StateMonitor monitor) {
-        this(new RungeKuttaIntegrator(monitor), monitor);
+    public ForceSimulator(StateMonitor monitor, boolean isDeterministic) {
+        this(new RungeKuttaIntegrator(monitor), monitor, isDeterministic);
     }
 
     /**
      * Create a new, empty ForceSimulator.
      * @param integrator the Integrator to use
      */
-    public ForceSimulator(Integrator integrator, StateMonitor monitor) {
+    public ForceSimulator(Integrator integrator, StateMonitor monitor, boolean isDeterministic) {
         this.integrator = integrator;
         this.monitor = monitor;
+        this.isDeterministic = isDeterministic;
         iforces = new Force[5];
         sforces = new Force[5];
         iflen = 0;
@@ -114,7 +117,7 @@ public class ForceSimulator {
 		Spring.SpringFactory f = Spring.getFactory();
 		
 		while (siter.hasNext())
-			f.reclaim((Spring) siter.next());
+			f.reclaim(siter.next());
 		
 		springs.clear();
 	}
@@ -246,10 +249,22 @@ public class ForceSimulator {
      */
     protected void accumulate() {
     	// Init
-		for (int i = 0; i < iflen && !monitor.isCancelled(); i++)
-			iforces[i].init(this);
-		for (int i = 0; i < sflen && !monitor.isCancelled(); i++)
-			sforces[i].init(this);
+    	if (isDeterministic) {
+			for (int i = 0; i < iflen && !monitor.isCancelled(); i++)
+				iforces[i].init(this);
+			for (int i = 0; i < sflen && !monitor.isCancelled(); i++)
+				sforces[i].init(this);
+    	} else {
+    		// Can Be Parallelized
+    		Arrays.asList(iforces).parallelStream().forEach(f -> {
+    			if (!monitor.isCancelled() && f != null)
+    				f.init(this);
+    		});
+        	Arrays.asList(sforces).parallelStream().forEach(f -> {
+    			if (!monitor.isCancelled() && f != null)
+    				f.init(this);
+    		});
+    	}
 		
 		// Update forces
 		updateForceItems(items);
@@ -257,25 +272,45 @@ public class ForceSimulator {
     }
 
 	private void updateForceItems(Collection<ForceItem> list) {
-		for (ForceItem item : list) {
-			if (monitor.isCancelled())
-				return;
-			
-			item.force[0] = 0.0f;
-			item.force[1] = 0.0f;
-			
-			for (int i = 0; i < iflen && !monitor.isCancelled(); i++)
-				iforces[i].getForce(item);
+		if (isDeterministic) {
+			for (ForceItem item : list) {
+				if (!monitor.isCancelled())
+					updateForceItem(item);
+			}
+		} else {
+			// Can Be Parallelized
+			list.parallelStream().forEach(item -> {
+				if (!monitor.isCancelled())
+					updateForceItem(item);
+			});
 		}
 	}
 	
+	private void updateForceItem(ForceItem item) {
+		item.force[0] = 0.0f;
+		item.force[1] = 0.0f;
+		
+		for (int i = 0; i < iflen && !monitor.isCancelled(); i++)
+			iforces[i].getForce(item);
+	}
+	
 	private void updateSprings(Collection<Spring> list) {
-		for (Spring s : list) {
-			if (monitor.isCancelled())
-				return;
-			
-			for (int i = 0; i < sflen && !monitor.isCancelled(); i++)
-				sforces[i].getForce(s);
+		if (isDeterministic) {
+			for (Spring s : list) {
+				if (!monitor.isCancelled())
+					updateSpring(s);
+			}
+		} else {
+			// Can Be Parallelized
+			list.parallelStream().forEach(s -> {
+				if (!monitor.isCancelled())
+					updateSpring(s);
+			});
 		}
+	}
+	
+	private void updateSpring(Spring s) {
+		for (int i = 0; i < sflen && !monitor.isCancelled(); i++)
+			sforces[i].getForce(s);
 	}
 }

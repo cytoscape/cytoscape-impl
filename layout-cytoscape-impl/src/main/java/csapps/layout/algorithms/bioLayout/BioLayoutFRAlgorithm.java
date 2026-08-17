@@ -60,7 +60,7 @@ public class BioLayoutFRAlgorithm extends BioLayoutAlgorithm {
 	
 	public BioLayoutFRAlgorithm(final boolean supportEdgeWeights, final UndoSupport undoSupport) {
 		super("fruchterman-rheingold", 
-				(supportEdgeWeights ? "Edge-weighted Force directed (BioLayout)" : "Force directed (BioLayout)"),
+				(supportEdgeWeights ? "Edge-Weighted Force Directed (BioLayout)" : "Force Directed (BioLayout)"),
 				supportEdgeWeights, undoSupport);
 	}
 
