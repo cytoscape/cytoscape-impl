@@ -36,6 +36,8 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 /*
  * #%L
  * Cytoscape App Impl (app-impl)
@@ -62,6 +64,8 @@ import org.cytoscape.work.TaskManager;
 
 @SuppressWarnings("serial")
 public class UpdateNotificationAction extends AbstractCyAction {
+	private static final Logger sysLogger = LoggerFactory.getLogger(UpdateNotificationAction.class);
+
 	final CyServiceRegistrar serviceRegistrar;
 	private final BadgeIcon icon;
 
@@ -94,7 +98,13 @@ public class UpdateNotificationAction extends AbstractCyAction {
 		setToolbarGravity(Float.MAX_VALUE);
 
 		appManager.addAppListener(evt -> updateEnableState(true));
-		updateManager.addUpdatesChangedListener(evt -> updateEnableState(false));
+		updateManager.addUpdatesChangedListener(evt -> {
+			sysLogger.info("[bell-diag] UpdateNotificationAction received UpdatesChangedEvent");
+			updateEnableState(false);
+		});
+		// [bell-diag] If this line is timestamped AFTER UpdateManager's fireUpdatesChangedEvent line,
+		// the startup update event was fired before the bell registered its listener (startup race).
+		sysLogger.info("[bell-diag] UpdateNotificationAction constructed and UpdatesChangedListener registered");
 	}
 
 	@Override
@@ -495,6 +505,10 @@ public class UpdateNotificationAction extends AbstractCyAction {
 		putValue(LONG_DESCRIPTION, text);
 		icon.setCount(count);
 		setEnabled(count > 0); // this should force the UI to repaint because we disabled this action previously
+
+		// [bell-diag] This is the moment the bell badge is (re)painted. count>0 here == bell should light up.
+		sysLogger.info("[bell-diag] updateEnableState: count={}, setEnabled({}) on thread {}",
+				count, count > 0, Thread.currentThread().getName());
 	}
 
 	public void updateEnableState(boolean checkForUpdates) {
