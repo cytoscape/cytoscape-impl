@@ -215,7 +215,6 @@
 			<version>${project.version}</version>
 		</dependency>
 		
-		
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-api</artifactId>
@@ -241,10 +240,6 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>util-api</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>swing-util-api</artifactId>
-		</dependency>
 
 		<dependency>
 			<groupId>org.osgi</groupId>
@@ -269,9 +264,6 @@
 			<artifactId>mockito-core</artifactId>
 			<scope>test</scope>
 		</dependency>
-
 	</dependencies>
-
-
 
 </project>
