@@ -32,7 +32,7 @@ public class GradientRoundRectangleLayer extends GradientLayerCustomGraphics {
 		layers.clear();
 
 		r = (int) (Math.min(width, height) / 4f);
-		shape = new RoundRectangle2D.Double(-width / 2, -height / 2, width, height, r, r);
+		shape = new RoundRectangle2D.Double(-width / 2.0, -height / 2.0, width, height, r, r);
 		paintFactory = new LinearGradientPaintFactory(colorList, stopList);
 		var cg = new PaintCustomGraphics(shape, paintFactory);
 		layers.add(cg);

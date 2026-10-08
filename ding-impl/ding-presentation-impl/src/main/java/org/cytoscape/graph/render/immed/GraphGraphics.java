@@ -1686,8 +1686,7 @@ public final class GraphGraphics {
 		m_g2d.translate(xOffset, yOffset);
 		if(paint instanceof TexturePaint) {
 			final BufferedImage bImg = ((TexturePaint) paint).getImage();
-			Rectangle bounds = shape.getBounds2D().getBounds();
-			m_g2d.drawImage(bImg, bounds.x, bounds.y, bounds.width, bounds.height, null);
+			drawImage(bImg, shape.getBounds2D());
 		}
 		m_g2d.setTransform(m_currNativeXform);
 	}
@@ -1740,9 +1739,9 @@ public final class GraphGraphics {
 			var layer = (Cy2DGraphicLayer) cg;
 			layer.draw(m_g2d, nodeShape, netView, node);
 		} else if (cg instanceof ImageCustomGraphicLayer) {
-			var bounds = cg.getBounds2D().getBounds();
+			var bounds = cg.getBounds2D();
 			var img = ((ImageCustomGraphicLayer) cg).getPaint(bounds).getImage();
-			m_g2d.drawImage(img, bounds.x, bounds.y, bounds.width, bounds.height, null);
+			drawImage(img, bounds);
 		} else {
 			var bounds = nodeShape.getBounds2D();
 			m_g2d.setPaint(cg.getPaint(bounds));
@@ -1752,6 +1751,26 @@ public final class GraphGraphics {
 		m_g2d.setTransform(m_currNativeXform);
 	}
 
+	/**
+	 * Draws the image so that it fills exactly the given bounds.
+	 * <p>
+	 * Do NOT convert the bounds to an integer {@link Rectangle} (e.g. with {@link Rectangle2D#getBounds()}) and use
+	 * {@link Graphics2D#drawImage(java.awt.Image, int, int, int, int, java.awt.image.ImageObserver)} instead, because
+	 * the bounds are in node coordinates, so any rounding error is magnified by the current zoom level
+	 * (e.g. a 35x35 node would get a 36 units wide image, which then overflows the node by half a unit on each side).
+	 */
+	private void drawImage(BufferedImage img, Rectangle2D bounds) {
+		int imgW = img.getWidth();
+		int imgH = img.getHeight();
+		
+		if (imgW <= 0 || imgH <= 0 || bounds.isEmpty())
+			return;
+		
+		var xform = AffineTransform.getTranslateInstance(bounds.getX(), bounds.getY());
+		xform.scale(bounds.getWidth() / imgW, bounds.getHeight() / imgH);
+		m_g2d.drawImage(img, xform, null);
+	}
+	
 	/**
 	 * Create border stroke for given width value.
 	 * 

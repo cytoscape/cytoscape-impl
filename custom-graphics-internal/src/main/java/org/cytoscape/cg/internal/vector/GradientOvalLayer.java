@@ -30,7 +30,7 @@ public class GradientOvalLayer extends GradientLayerCustomGraphics {
 	public void update() {
 		// First, remove all layers.
 		layers.clear();
-		shape = new Ellipse2D.Double(-width / 2, -height / 2, width, height);
+		shape = new Ellipse2D.Double(-width / 2.0, -height / 2.0, width, height);
 		paintFactory = new RadialGradientPaintFactory(colorList, stopList);
 		var cg = new PaintCustomGraphics(shape, paintFactory);
 

@@ -868,9 +868,9 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		int imageWidth = snapshotImage.getWidth();
 		int imageHeight = snapshotImage.getHeight();
 		double ratio = (double)imageHeight / (double) imageWidth;
-		int adjustedWidth = (int)((double)width/ratio)+1;
+		double adjustedWidth = width / ratio;
 
-		final Rectangle2D rect = new Rectangle2D.Double(-adjustedWidth / 2, -height / 2, adjustedWidth, height);
+		final Rectangle2D rect = new Rectangle2D.Double(-adjustedWidth / 2.0, -height / 2.0, adjustedWidth, height);
 		final TexturePaint texturePaint = new TexturePaint(snapshotImage, rect);
 		return texturePaint;
 	}

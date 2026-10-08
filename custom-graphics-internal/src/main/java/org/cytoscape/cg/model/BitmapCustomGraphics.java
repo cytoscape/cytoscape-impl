@@ -32,7 +32,7 @@ public class BitmapCustomGraphics extends AbstractURLImageCustomGraphics<BitmapL
 	
 	static {
 		try {
-			DEF_IMAGE = ImageIO.read(BitmapCustomGraphics.class.getClassLoader().getResource(DEF_IMAGE_FILE));
+			DEF_IMAGE = ImageIO.read(BitmapCustomGraphics.class.getResource(DEF_IMAGE_FILE));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -128,7 +128,7 @@ public class BitmapCustomGraphics extends AbstractURLImageCustomGraphics<BitmapL
 		width = targetImg.getWidth();
 		height = targetImg.getHeight();
 
-		var bound = new Rectangle2D.Double(-width / 2, -height / 2, width, height);
+		var bound = new Rectangle2D.Double(-width / 2.0, -height / 2.0, width, height);
 		var paintFactory = new TexturePaintFactory(targetImg);
 
 		var cg = new BitmapLayer(bound, paintFactory);
