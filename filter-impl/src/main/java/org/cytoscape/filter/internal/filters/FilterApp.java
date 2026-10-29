@@ -176,7 +176,7 @@ public class FilterApp implements CyShutdownListener, SessionLoadedListener, CyS
 		InputStream is = null;
 		
 		try {
-			// Load global filters from CyProperty.DEFAULT_PROPS_CONFIG_DIR  directory.
+			// Load global filters from the config directory.
 			final File file = getGlobalFilterFile();
 			
 			if (file.exists()) {
@@ -222,7 +222,7 @@ public class FilterApp implements CyShutdownListener, SessionLoadedListener, CyS
 				globalFilters.add(cf);
 		}
 		
-		// Save global filters in the CyProperty.DEFAULT_PROPS_CONFIG_DIR  directory
+		// Save global filters in the config directory
 		final File file = getGlobalFilterFile();
 		writer.saveGlobalPropFile(globalFilters, file);
 	}

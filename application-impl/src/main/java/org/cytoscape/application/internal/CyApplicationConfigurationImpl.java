@@ -37,7 +37,7 @@ import java.util.jar.Manifest;
 
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyUserLog;
-import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.CyConfigurationDirectory;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.slf4j.Logger;
@@ -45,13 +45,9 @@ import org.slf4j.LoggerFactory;
 
 public class CyApplicationConfigurationImpl implements CyApplicationConfiguration {
 	
-	/** Default configuration directory used for all Cytoscape configuration files */
-	public static final String DEFAULT_CONFIG_DIR = CyProperty.DEFAULT_PROPS_CONFIG_DIR ;
-
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	private static final String USER_DIR = System.getProperty("user.dir");
-	private static final String USER_HOME_DIR = System.getProperty("user.home");
 	private static final String CYTOSCAPE_HOME_DIR = System.getProperty("cytoscape.home");
 	private static final String APP_CONFIGURATION_DIR = "app-data";
 	
@@ -62,10 +58,10 @@ public class CyApplicationConfigurationImpl implements CyApplicationConfiguratio
 	private final File cytoscapeInstallationDir;
 	
 	public CyApplicationConfigurationImpl(String version) {
-		cytoscapeConfigurationDir = new File(USER_HOME_DIR, DEFAULT_CONFIG_DIR);
+		cytoscapeConfigurationDir = CyConfigurationDirectory.get();
 		
 		if(cytoscapeConfigurationDir.exists() == false) {
-			cytoscapeConfigurationDir.mkdir();
+			cytoscapeConfigurationDir.mkdirs();
 			logger.warn("CytoscapeConfiguration directory was not available.  New directory created.");
 		} else {
 			logger.info("Setting file directory = " + cytoscapeConfigurationDir.getAbsolutePath());
@@ -80,7 +76,7 @@ public class CyApplicationConfigurationImpl implements CyApplicationConfiguratio
 		
 		addActiveSessionFile(version);
 	}
-	
+
 	//------------------------------
 	/* we keep a file in the configuration folder that should be removed on exit
 	 * 
