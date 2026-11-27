@@ -121,7 +121,11 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	private Map<String, String> source2targetColumnMap;
 	private boolean networksPresent;
 	private List<CyTable> mappedTables;
-	
+	/** Columns this task created in the target tables, so they can be removed again if the import fails. */
+	private List<CreatedColumn> createdColumns;
+
+	private record CreatedColumn(CyTable table, String name) {}
+
 	
 	public ListSingleSelection<String> whereImportTable;
 	
@@ -341,6 +345,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		this.name2RootMap = new HashMap<>();
 		this.source2targetColumnMap = new HashMap<>();
 		this.mappedTables = new ArrayList<>();
+		this.createdColumns = new ArrayList<>();
 
 		var appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 		var netMgr = serviceRegistrar.getService(CyNetworkManager.class);
@@ -477,20 +482,28 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		var where = getWhereImportTable().getSelectedValue();
 		var tableType = getDataTypeOptions();
     int rowsCopied = 0;
-		
+
 		if (where.matches(NETWORK_COLLECTION)) {
-			// Import to shared columns first, because if a column has to be created,
-			// we must create them as a shared one, as requested by the user
-			rowsCopied = mapTableToDefaultAttrs(tableType);
-			
-			// Now try to import to local columns as well (but this should not create local columns!)
-			var rootNet = name2RootMap.get(targetNetworkCollection.getSelectedValue());
-			
-      // Why do we need to want to do this?
-			if (rootNet != null) {
-			 	var networks = rootNet.getSubNetworkList();
-			 	mapTableToLocalAttrs(tableType, networks);
+			int localRowsCopied = 0;
+
+			try {
+				// Import to shared columns first, because if a column has to be created,
+				// we must create them as a shared one, as requested by the user
+				rowsCopied = mapTableToDefaultAttrs(tableType);
+
+				// Now try to import to local columns as well (but this should not create local columns!)
+				var rootNet = name2RootMap.get(targetNetworkCollection.getSelectedValue());
+
+	      // Why do we need to want to do this?
+				if (rootNet != null) {
+				 	var networks = rootNet.getSubNetworkList();
+				 	localRowsCopied = mapTableToLocalAttrs(tableType, networks);
+				}
+			} catch (Exception e) {
+				rollBack();
+				throw e;
 			}
+
       if (rowsCopied > 0)
         tm.setStatusMessage("Copied "+rowsCopied+" rows");
       else {
@@ -498,26 +511,42 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
         tm.showMessage(TaskMonitor.Level.ERROR, "No rows copied!! Check that 'Key Column for Network' matches imported key column and check the column name doesn't conflict", 10);
         // try { Thread.sleep(5000); } catch (Exception e) {}
       }
+
+      // Nothing was imported, so don't leave behind any empty columns created by this import
+      // (only when importing from a reader: the virtual-column merge of a global table never counts rows)
+      if (byReader && rowsCopied == 0 && localRowsCopied == 0)
+        rollBack();
 		} else if (where.matches(NETWORK_SELECTION)) {
-			if (!targetNetworkList.getSelectedValues().isEmpty()) {
-				var networks = new HashSet<CyNetwork>();
+			try {
+				if (!targetNetworkList.getSelectedValues().isEmpty()) {
+					var networks = new HashSet<CyNetwork>();
 
-				if (!targetNetworkList.getSelectedValues().get(0).equals(NO_NETWORKS)) {
-					for (var netName : targetNetworkList.getSelectedValues()) {
-						var net = name2NetworkMap.get(netName);
+					if (!targetNetworkList.getSelectedValues().get(0).equals(NO_NETWORKS)) {
+						for (var netName : targetNetworkList.getSelectedValues()) {
+							var net = name2NetworkMap.get(netName);
 
-						if (net != null)
-							networks.add(net);
+							if (net != null)
+								networks.add(net);
+						}
+
+						rowsCopied += mapTableToLocalAttrs(tableType, networks);
 					}
-
-					rowsCopied += mapTableToLocalAttrs(tableType, networks);
 				}
+			} catch (Exception e) {
+				rollBack();
+				throw e;
 			}
+
       if (rowsCopied > 0)
         tm.setStatusMessage("Copied "+rowsCopied+" rows");
       else {
         tm.showMessage(TaskMonitor.Level.WARN, "Copied 0 rows!! Check that 'Key Column for Network' matches imported key column and check the column name doesn't conflict", 10);
         // tm.setStatusMessage("Copied 0 rows!! Check that 'Key Column for Network' matches imported key column");
+
+        // Nothing was imported, so don't leave behind any empty columns created by this import
+        // (only when importing from a reader: the virtual-column merge of a global table never counts rows)
+        if (byReader)
+          rollBack();
       }
 
 		} else if (where.matches(UNASSIGNED_TABLE)) {
@@ -762,6 +791,8 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 						targetTable.createListColumn(name, col.getListElementType(), col.isImmutable());
 					else
 						targetTable.createColumn(name, col.getType(), col.isImmutable(), col.getDefaultValue());
+
+					createdColumns.add(new CreatedColumn(targetTable, name));
 				} else {
 					targetTable.addVirtualColumn(name, col.getName(), sourceTable, getJoinTargetColumn(targetTable).getName(), false);
 				}
@@ -786,6 +817,29 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		}
 	}
 	
+	/**
+	 * Undoes a failed import (an exception, or no data copied): removes the columns this task added to the
+	 * target tables, so no new empty columns are left behind, and clears the mapped tables, so the task results
+	 * (e.g. for Automation/JSON commands) don't report tables that received no data.
+	 */
+	private void rollBack() {
+		// Delete in reverse creation order
+		for (int i = createdColumns.size() - 1; i >= 0; i--) {
+			var cc = createdColumns.get(i);
+
+			try {
+				if (cc.table().getColumn(cc.name()) != null)
+					cc.table().deleteColumn(cc.name());
+			} catch (Exception e) {
+				logger.warn("Could not remove column '" + cc.name() + "' after failed import", e);
+			}
+		}
+
+		createdColumns.clear();
+		source2targetColumnMap.clear();
+		mappedTables.clear();
+	}
+
 	/**
 	 * @return All shared column names in lower case.
 	 */
