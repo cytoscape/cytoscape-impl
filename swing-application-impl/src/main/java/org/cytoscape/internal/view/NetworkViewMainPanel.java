@@ -3,6 +3,7 @@ package org.cytoscape.internal.view;
 import static org.cytoscape.internal.view.util.ViewUtil.createUniqueKey;
 import static org.cytoscape.internal.view.util.ViewUtil.getTitle;
 import static org.cytoscape.internal.view.util.ViewUtil.isScreenMenuBar;
+import static org.cytoscape.internal.view.util.ViewUtil.toFrontIfAppActive;
 
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
@@ -317,12 +318,11 @@ public class NetworkViewMainPanel extends JPanel {
 				
 				var vc = getNetworkViewContainer(view);
 				
-				if (vc != null) {
-					var window = SwingUtilities.getWindowAncestor(vc);
-					
-					if (window != null && !window.isActive())
-						window.toFront();
-				}
+				// If the view is in another Cytoscape window (e.g. a detached view frame), bring that window to the front,
+				// but never when Cytoscape is not the active application, because the current view can also be set
+				// by cyREST, commands, tasks or Apps, and we must not steal the focus from the user's current app.
+				if (vc != null)
+					toFrontIfAppActive(SwingUtilities.getWindowAncestor(vc));
 			} else {
 				showNullView(null);
 			}

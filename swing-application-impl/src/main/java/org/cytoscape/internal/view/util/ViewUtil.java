@@ -8,6 +8,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GraphicsConfiguration;
 import java.awt.Image;
+import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.Window;
@@ -108,7 +109,38 @@ public final class ViewUtil {
 	
 	private static final String DEF_ICON_REGEX = "([A-Z]?[0-9a-z]+)|([A-Z]+)"; // Finds camelCase and PascalCase groups
 	private static final Pattern DEF_ICON_PATTERN = Pattern.compile(DEF_ICON_REGEX);
-	
+
+	/**
+	 * Brings the passed window to the front, but only if Cytoscape is already the active application
+	 * (i.e. one of its windows is active) and the window is not the active one yet.
+	 * <br>
+	 * Use this instead of {@link Window#toFront()} when the call can be triggered by something other than
+	 * the user interacting with Cytoscape (e.g. a cyREST request, a command, a task or an App),
+	 * because on some platforms (e.g. Linux/X11) {@link Window#toFront()} also requests the keyboard focus,
+	 * which steals the focus from the application the user is currently working on.
+	 * Must be called on the EDT.
+	 * @return true if {@link Window#toFront()} was called.
+	 */
+	public static boolean toFrontIfAppActive(Window window) {
+		var activeWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
+
+		if (!canBringToFront(window, activeWindow))
+			return false;
+
+		window.toFront();
+
+		return true;
+	}
+
+	/**
+	 * @param window the window that should be brought to the front
+	 * @param activeWindow the current active window of this application, or null if the application is not active
+	 */
+	static boolean canBringToFront(Window window, Window activeWindow) {
+		// A null active window means the user is working on another application
+		return window != null && activeWindow != null && window != activeWindow;
+	}
+
 	public static String getName(CyNetwork network) {
 		var name = "";
 		
