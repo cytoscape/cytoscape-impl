@@ -142,6 +142,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	public ListSingleSelection<String> getWhereImportTable() {
 		return whereImportTable;
 	}
+	
 	public void setWhereImportTable(ListSingleSelection<String> chooser) {
 		if (chooser != null && chooser != whereImportTable) {
 			chooser.addListener(new ListChangeListener<String>() {
@@ -150,13 +151,14 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 					if (tableImportContext != null)
 						tableImportContext.setKeyRequired(isKeyMandatory());
 				}
+
 				@Override
 				public void listChanged(ListSelection<String> source) {
 					// Ignore...
 				}
 			});
 		}
-		
+
 		whereImportTable = chooser;
 	}
 
@@ -175,6 +177,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	public ListSingleSelection<String> getTargetNetworkCollection() {
 		return targetNetworkCollection;
 	}
+
 	public void setTargetNetworkCollection(ListSingleSelection<String> roots) {
 		targetNetworkCollection = roots;
 		updateKeyColumnForMapping();
@@ -240,7 +243,9 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			longDescription="The list of networks into which the table is imported", 
 			exampleStringValue = "all"
 	)
-	public ListMultipleSelection<String> getTargetNetworkList() {	return targetNetworkList;	}
+	public ListMultipleSelection<String> getTargetNetworkList() {
+		return targetNetworkList;
+	}
 
 	public void setTargetNetworkList(ListMultipleSelection<String> list) {
 		this.targetNetworkList = list;
@@ -257,7 +262,9 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			longDescription="The data type of the targets", 
 			exampleStringValue = "int"
 	)
-	public ListSingleSelection<TableType> getDataTypeTargetForNetworkList() {	return dataTypeTargetForNetworkList;	}
+	public ListSingleSelection<TableType> getDataTypeTargetForNetworkList() {
+		return dataTypeTargetForNetworkList;
+	}
 
 	public void setDataTypeTargetForNetworkList(ListSingleSelection<TableType> options) {
 		dataTypeTargetForNetworkList = options;
@@ -275,14 +282,17 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			longDescription="The column in the network to use as the merge key", 
 			exampleStringValue = "name"
 	)
-	public ListSingleSelection<String> getKeyColumnForMappingNetworkList() {	
-			if (keyColumnForMappingNetworkList == null)
-				keyColumnForMappingNetworkList = new <String>ListSingleSelection(Collections.singletonList("name"));
-			return keyColumnForMappingNetworkList;	
+	public ListSingleSelection<String> getKeyColumnForMappingNetworkList() {
+		if (keyColumnForMappingNetworkList == null)
+			keyColumnForMappingNetworkList = new ListSingleSelection<>(Collections.singletonList("name"));
+		
+		return keyColumnForMappingNetworkList;
 	}
-	
-	public void setKeyColumnForMappingNetworkList(ListSingleSelection<String> colList) {	keyColumnForMappingNetworkList = colList;	}
-	
+
+	public void setKeyColumnForMappingNetworkList(ListSingleSelection<String> colList) {
+		keyColumnForMappingNetworkList = colList;
+	}
+
 	@Tunable(
 			description = "Case Sensitive Key Values:",
 			groups = { "Target Table Data", "Select Networks" },
@@ -324,6 +334,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		this.tableImportContext = tableImportContext;
 		this.serviceRegistrar = serviceRegistrar;
 		this.byReader = true;
+		
 		init();
 	}
 
@@ -349,7 +360,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 
 		var appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 		var netMgr = serviceRegistrar.getService(CyNetworkManager.class);
-		
+
 		if (!netMgr.getNetworkSet().isEmpty()) {
 			setWhereImportTable(new ListSingleSelection<>(NETWORK_COLLECTION, NETWORK_SELECTION, UNASSIGNED_TABLE));
 			getWhereImportTable().setSelectedValue(NETWORK_COLLECTION);
@@ -358,11 +369,11 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			setWhereImportTable(new ListSingleSelection<>(UNASSIGNED_TABLE));
 			getWhereImportTable().setSelectedValue(UNASSIGNED_TABLE);
 		}
-		
+
 		// Force-update the TableImportContext!
 		if (tableImportContext != null)
 			tableImportContext.setKeyRequired(isKeyMandatory());
-		
+
 		if (byReader) {
 			if (reader != null && reader.getTables() != null)
 				newTableName = reader.getTables()[0].getTitle();
@@ -378,62 +389,62 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 				tableImportContext.setTableType(TableType.NODE_ATTR);
 				tableType = tableImportContext.getTableType();
 			}
-			
+
 			for (var type : TableType.values())
 				options.add(type);
-			
+
 			var currNet = appMgr.getCurrentNetwork();
-			
+
 			dataTypeTargetForNetworkCollection = new ListSingleSelection<>(options);
 			dataTypeTargetForNetworkList = new ListSingleSelection<>(options);
-			
+
 			if (tableType == null) {
 				getWhereImportTable().setSelectedValue(UNASSIGNED_TABLE);
 			} else {
 				dataTypeTargetForNetworkCollection.setSelectedValue(tableType);
 				dataTypeTargetForNetworkList.setSelectedValue(tableType);
 			}
-	
+
 			for (var net : netMgr.getNetworkSet()) {
 				final String netName = net.getRow(net).get(CyNetwork.NAME, String.class);
 				name2NetworkMap.put(netName, net);
 			}
-			
+
 			var names = new ArrayList<String>();
 			names.addAll(name2NetworkMap.keySet());
 			sort(names);
-			
+
 			if (names.isEmpty()) {
 				targetNetworkList = new ListMultipleSelection<>(NO_NETWORKS);
 			} else {
 				targetNetworkList = new ListMultipleSelection<>(names);
-				
+
 				if (currNet != null) {
 					final String currName = currNet.getRow(currNet).get(CyNetwork.NAME, String.class);
-					
+
 					if (currName != null && targetNetworkList.getPossibleValues().contains(currName))
 						targetNetworkList.setSelectedValues(Collections.singletonList(currName));
 				}
-				
+
 				var selectedNetworks = new ArrayList<CyNetwork>();
-				
+
 				for (var netName : targetNetworkList.getSelectedValues()) {
 					if (name2NetworkMap.containsKey(netName))
 						selectedNetworks.add(name2NetworkMap.get(netName));
 				}
-				
+
 				keyColumnForMappingNetworkList = getColumns(
 						selectedNetworks,
 						dataTypeTargetForNetworkList.getSelectedValue(),
 						CyRootNetwork.DEFAULT_ATTRS
 				);
 			}
-	
+
 			var rootNetMgr = serviceRegistrar.getService(CyRootNetworkManager.class);
-			
+
 			for (var net : netMgr.getNetworkSet()) {
 				var rootNet = rootNetMgr.getRootNetwork(net);
-				
+
 				if (!name2RootMap.containsValue(rootNet))
 					name2RootMap.put(rootNet.getRow(rootNet).get(CyRootNetwork.NAME, String.class), rootNet);
 			}
@@ -442,14 +453,14 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			rootNames.addAll(name2RootMap.keySet());
 			sort(rootNames);
 			targetNetworkCollection = new ListSingleSelection<>(rootNames);
-			
+
 			if (!rootNames.isEmpty()) {
 				targetNetworkCollection.setSelectedValue(rootNames.get(0));
 				var currRootNet = currNet instanceof CySubNetwork ? rootNetMgr.getRootNetwork(currNet) : null;
-		
+
 				if (currRootNet != null) {
 					var currName = currRootNet.getRow(currRootNet).get(CyNetwork.NAME, String.class);
-					
+
 					if (currName != null && targetNetworkCollection.getPossibleValues().contains(currName))
 						targetNetworkCollection.setSelectedValue(currName);
 				}
@@ -473,7 +484,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 				throw new IllegalArgumentException("Types of keys selected for tables are not valid.\n"
 						+ "Keys must be of type Integer, Long, or String, and must be the same type for a soft merge.");
 		}
-		
+
 		if (networksPresent) {
 			if (name2RootMap.isEmpty())
 				return;
@@ -481,7 +492,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 
 		var where = getWhereImportTable().getSelectedValue();
 		var tableType = getDataTypeOptions();
-    int rowsCopied = 0;
+		int rowsCopied = 0;
 
 		if (where.matches(NETWORK_COLLECTION)) {
 			int localRowsCopied = 0;
@@ -494,28 +505,32 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 				// Now try to import to local columns as well (but this should not create local columns!)
 				var rootNet = name2RootMap.get(targetNetworkCollection.getSelectedValue());
 
-	      // Why do we need to want to do this?
+				// Why do we need to want to do this?
 				if (rootNet != null) {
-				 	var networks = rootNet.getSubNetworkList();
-				 	localRowsCopied = mapTableToLocalAttrs(tableType, networks);
+					var networks = rootNet.getSubNetworkList();
+					localRowsCopied = mapTableToLocalAttrs(tableType, networks);
 				}
 			} catch (Exception e) {
 				rollBack();
 				throw e;
 			}
 
-      if (rowsCopied > 0)
-        tm.setStatusMessage("Copied "+rowsCopied+" rows");
-      else {
-        tm.setTitle("Possible import error!");
-        tm.showMessage(TaskMonitor.Level.ERROR, "No rows copied!! Check that 'Key Column for Network' matches imported key column and check the column name doesn't conflict", 10);
-        // try { Thread.sleep(5000); } catch (Exception e) {}
-      }
+			if (rowsCopied > 0) {
+				tm.setStatusMessage("Copied " + rowsCopied + " rows");
+			} else {
+				tm.setTitle("Possible import error!");
+				tm.showMessage(
+						TaskMonitor.Level.ERROR,
+						"No rows copied!! Check that 'Key Column for Network' matches imported key column and check the column name doesn't conflict",
+						10
+				);
+				// try { Thread.sleep(5000); } catch (Exception e) {}
+			}
 
-      // Nothing was imported, so don't leave behind any empty columns created by this import
-      // (only when importing from a reader: the virtual-column merge of a global table never counts rows)
-      if (byReader && rowsCopied == 0 && localRowsCopied == 0)
-        rollBack();
+			// Nothing was imported, so don't leave behind any empty columns created by this import
+			// (only when importing from a reader: the virtual-column merge of a global table never counts rows)
+			if (byReader && rowsCopied == 0 && localRowsCopied == 0)
+				rollBack();
 		} else if (where.matches(NETWORK_SELECTION)) {
 			try {
 				if (!targetNetworkList.getSelectedValues().isEmpty()) {
@@ -537,17 +552,22 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 				throw e;
 			}
 
-      if (rowsCopied > 0)
-        tm.setStatusMessage("Copied "+rowsCopied+" rows");
-      else {
-        tm.showMessage(TaskMonitor.Level.WARN, "Copied 0 rows!! Check that 'Key Column for Network' matches imported key column and check the column name doesn't conflict", 10);
-        // tm.setStatusMessage("Copied 0 rows!! Check that 'Key Column for Network' matches imported key column");
+			if (rowsCopied > 0) {
+				tm.setStatusMessage("Copied " + rowsCopied + " rows");
+			} else {
+				tm.showMessage(
+						TaskMonitor.Level.WARN,
+						"Copied 0 rows!! Check that 'Key Column for Network' matches imported key column and check the column name doesn't conflict",
+						10
+				);
+				// tm.setStatusMessage("Copied 0 rows!! Check that 'Key Column for Network'
+				// matches imported key column");
 
-        // Nothing was imported, so don't leave behind any empty columns created by this import
-        // (only when importing from a reader: the virtual-column merge of a global table never counts rows)
-        if (byReader)
-          rollBack();
-      }
+				// Nothing was imported, so don't leave behind any empty columns created by this import
+				// (only when importing from a reader: the virtual-column merge of a global table never counts rows)
+				if (byReader)
+					rollBack();
+			}
 
 		} else if (where.matches(UNASSIGNED_TABLE)) {
 			addTable();
@@ -625,34 +645,36 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	private boolean isMappableColumn(CyColumn col) {
 		var name = col.getName();
 		var type = col.getType();
-		
-		return (type == Integer.class || type == Long.class || type == String.class) && 
-				!name.equals(CyNetwork.SUID) && 
-				!name.endsWith(".SUID");
+
+		return (type == Integer.class || type == Long.class || type == String.class)
+				&& !name.equals(CyNetwork.SUID)
+				&& !name.endsWith(".SUID");
 	}
-	
+
 	private int mapTableToLocalAttrs(TableType tableType, Collection<? extends CyNetwork> networks) {
-    int rowsCopied = 0;
+		int rowsCopied = 0;
+		
 		for (var net : networks) {
 			var targetTable = getTable(net, tableType, CyNetwork.LOCAL_ATTRS);
-			
+
 			if (targetTable != null) {
 				mappedTables.add(targetTable);
 				rowsCopied += applyMapping(targetTable, caseSensitiveNetworkKeys, false);
 			}
 		}
-    return rowsCopied;
+		return rowsCopied;
 	}
 
 	private int mapTableToDefaultAttrs(TableType tableType) {
 		var targetTable = getTable(name2RootMap.get(targetNetworkCollection.getSelectedValue()), tableType,
 				CyRootNetwork.SHARED_DEFAULT_ATTRS);
-		
+
 		if (targetTable != null) {
 			mappedTables.add(targetTable);
 			return applyMapping(targetTable, caseSensitiveNetworkCollectionKeys, true);
 		}
-    return 0;
+		
+		return 0;
 	}
 
 	private CyTable getTable(CyNetwork network, TableType tableType, String namespace) {
@@ -674,32 +696,32 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 
 		if (byReader) {
 			if (reader.getTables() != null && reader.getTables().length > 0) {
-        int rowsCopied = 0;
+				int rowsCopied = 0;
 				for (CyTable sourceTable : reader.getTables()) {
 					columns.addAll(sourceTable.getColumns());
 					copyColumns(sourceTable, columns, targetTable, false, global);
-			    rowsCopied += copyRows(sourceTable, columns, targetTable, caseSensitive);
+					rowsCopied += copyRows(sourceTable, columns, targetTable, caseSensitive);
 				}
-        return rowsCopied;
+				return rowsCopied;
 			}
 		} else {
 			if (globalTable != null) {
 				columns.addAll(globalTable.getColumns());
 				copyColumns(globalTable, columns, targetTable, true, global);
-				//copyRows(globalTable, columns, targetTable, caseSensitive);
+				// copyRows(globalTable, columns, targetTable, caseSensitive);
 			}
 		}
-    return 0;
+		return 0;
 	}
 
 	private CyColumn getJoinTargetColumn(CyTable targetTable) {
 		var joinKeyName = CyNetwork.NAME;
-		
+
 		if (getWhereImportTable().getSelectedValue().matches(NETWORK_COLLECTION))
 			joinKeyName = keyColumnForMapping.getSelectedValue();
 		else if (getWhereImportTable().getSelectedValue().matches(NETWORK_SELECTION))
 			joinKeyName = keyColumnForMappingNetworkList.getSelectedValue();
-		
+
 		return targetTable.getColumn(joinKeyName);
 	}
 
@@ -720,8 +742,9 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 				}
 			}
 		}
+
+		int rowsCopied = 0;
 		
-    int rowsCopied = 0;
 		for (var targetRow : targetTable.getAllRows()) {
 			var key = targetRow.get(targetKeyColumn.getName(), targetKeyColumn.getType());
 
@@ -755,24 +778,25 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 
 				if (targetColName != null && targetTable.getColumn(targetColName) != null) {
 					targetRow.set(targetColName, sourceRow.getRaw(col.getName()));
-          rowsCopied++;
-        }
+					rowsCopied++;
+				}
 			}
 		}
-    return rowsCopied;
+		return rowsCopied;
 	}
 
 	private void copyColumns(CyTable sourceTable, List<CyColumn> sourceColumns, CyTable targetTable, boolean addVirtual, boolean global) {
 		var rootNet = name2RootMap.get(targetNetworkCollection.getSelectedValue());
+
 		Set<String> columnNames = Collections.emptySet();
+
 		if (rootNet != null) {
-			if (global) 
+			if (global)
 				columnNames = getAllColumnNames(rootNet);
 			else
 				columnNames = getSharedColumnNames(rootNet);
 		}
 
-		
 		for (var col : sourceColumns) {
 			if (col == sourceTable.getPrimaryKey())
 				continue;
@@ -844,7 +868,6 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	 * @return All shared column names in lower case.
 	 */
 	private Set<String> getSharedColumnNames(CyRootNetwork rootNet) {
-		var tables = new ArrayList<CyTable>();
 		var type = getDataTypeTargetForNetworkCollection().getSelectedValue().type;
 		var netTableMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
 		var rootTbl = netTableMgr.getTable(rootNet, type, CyNetwork.LOCAL_ATTRS);
