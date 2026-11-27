@@ -394,24 +394,49 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
-
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<version>${maven-source-plugin.version}</version>
-				<executions>
-					<execution>
-						<id>aggregate-source</id>
-						<phase>package</phase>
-						<goals>
-							<goal>aggregate</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
 	</build>
+
+	<!--
+		The 'sources' profile builds the aggregated sources JAR that the
+		app-developer distribution ships (org.cytoscape:impl-parent:jar:sources).
+
+		It is deliberately kept out of the default build.  source:aggregate is an
+		aggregator goal: it forks a generate-sources lifecycle over every module
+		below, and a forked lifecycle resolves its dependencies from the local
+		repository instead of the reactor.  Running at impl-parent - module 33 of
+		the reactor - it looks for impl artifacts the reactor has not built yet,
+		so a build from a cold repository dies there.  Note that
+		-Dmaven.source.skip=true does not help: the fork is planned before the
+		skip flag is evaluated.  See cytoscape/cytoscape#35.
+
+		Run it as a second pass, after a normal build has populated ~/.m2:
+
+		    mvn clean install -DskipTests
+		    mvn install -Psources -DskipTests
+	-->
+	<profiles>
+		<profile>
+			<id>sources</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-source-plugin</artifactId>
+						<version>${maven-source-plugin.version}</version>
+						<executions>
+							<execution>
+								<id>aggregate-source</id>
+								<phase>package</phase>
+								<goals>
+									<goal>aggregate</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 
 	<scm>
 		<connection>scm:git:git://github.com/cytoscape/cytoscape-impl.git</connection>
